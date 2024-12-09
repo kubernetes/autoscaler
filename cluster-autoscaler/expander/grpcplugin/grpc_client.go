@@ -142,8 +142,7 @@ func transformAndSanitizeOptionsFromGRPC(bestOptionsResponseOptions []*protos.Op
 			klog.Error("GRPC server returned nil Option")
 			continue
 		}
-		if _, ok := nodeGroupIDOptionMap[option.NodeGroupId]; ok {
-			expanderOption := nodeGroupIDOptionMap[option.NodeGroupId]
+		if expanderOption, ok := nodeGroupIDOptionMap[option.NodeGroupId]; ok {
 			expanderOption.SimilarNodeGroups = getRetainedSimilarNodegroups(option, expanderOption)
 			options = append(options, expanderOption)
 		} else {
