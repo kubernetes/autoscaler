@@ -31,6 +31,7 @@ function print_help {
   echo " - recommender-externalmetrics"
   echo " - updater"
   echo " - admission-controller"
+  echo " - actuation"
   echo " - full-vpa"
 }
 
@@ -52,6 +53,9 @@ case ${SUITE} in
     ;;
   full-vpa)
     COMPONENTS="recommender updater admission-controller"
+    ;;
+  actuation)
+    COMPONENTS="updater admission-controller"
     ;;
   *)
     print_help
