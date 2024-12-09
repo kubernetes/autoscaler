@@ -311,30 +311,85 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 	}
 }
 
+func TestNodeInfoResourceClaims(t *testing.T) {
+	node := test.BuildTestNode("node", 1000, 1000)
+	pods := []*apiv1.Pod{
+		test.BuildTestPod("pod-0", 100, 16),
+		test.BuildTestPod("pod-1", 100, 16),
+		test.BuildTestPod("pod-2", 100, 16),
+	}
+
+	for _, tc := range []struct {
+		testName   string
+		nodeInfo   *NodeInfo
+		wantClaims []*resourceapi.ResourceClaim
+	}{
+		{
+			testName:   "no pods",
+			nodeInfo:   NewNodeInfo(node, nil),
+			wantClaims: nil,
+		},
+		{
+			testName:   "pods but no claims",
+			nodeInfo:   NewNodeInfo(node, nil, testPodInfos(pods, false)...),
+			wantClaims: nil,
+		},
+		{
+			testName: "pods with claims, shared claims are not repeated",
+			nodeInfo: NewNodeInfo(node, nil, testPodInfos(pods, true)...),
+			wantClaims: []*resourceapi.ResourceClaim{
+				testClaim("pod-0-claim-0"),
+				testClaim("pod-0-claim-1"),
+				testClaim("pod-0-claim-2"),
+				testClaim("pod-1-claim-0"),
+				testClaim("pod-1-claim-1"),
+				testClaim("pod-1-claim-2"),
+				testClaim("pod-2-claim-0"),
+				testClaim("pod-2-claim-1"),
+				testClaim("pod-2-claim-2"),
+				testClaim("shared-claim-0"),
+				testClaim("shared-claim-1"),
+				testClaim("shared-claim-2"),
+			},
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			claims := tc.nodeInfo.ResourceClaims()
+			ignoreClaimOrder := cmpopts.SortSlices(func(c1, c2 *resourceapi.ResourceClaim) bool { return c1.Name < c2.Name })
+			if diff := cmp.Diff(tc.wantClaims, claims, ignoreClaimOrder, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("NodeInfo.ResourceClaims(): unexpected output (-want +got): %s", diff)
+			}
+		})
+	}
+}
+
 func testPodInfos(pods []*apiv1.Pod, addClaims bool) []*PodInfo {
 	var result []*PodInfo
 	for _, pod := range pods {
 		podInfo := &PodInfo{Pod: pod}
 		if addClaims {
 			for i := range 3 {
-				podInfo.NeededResourceClaims = append(podInfo.NeededResourceClaims, &resourceapi.ResourceClaim{
-					ObjectMeta: v1.ObjectMeta{
-						Name: fmt.Sprintf("%s-claim-%d", pod.Name, i),
-					},
-					Spec: resourceapi.ResourceClaimSpec{
-						Devices: resourceapi.DeviceClaim{
-							Requests: []resourceapi.DeviceRequest{
-								{Name: "request-0"},
-								{Name: "request-1"},
-							},
-						},
-					},
-				})
+				podInfo.NeededResourceClaims = append(podInfo.NeededResourceClaims, testClaim(fmt.Sprintf("%s-claim-%d", pod.Name, i)))
+				podInfo.NeededResourceClaims = append(podInfo.NeededResourceClaims, testClaim(fmt.Sprintf("shared-claim-%d", i)))
 			}
 		}
 		result = append(result, podInfo)
 	}
 	return result
+}
+
+func testClaim(claimName string) *resourceapi.ResourceClaim {
+	return &resourceapi.ResourceClaim{
+		ObjectMeta: v1.ObjectMeta{Name: claimName, UID: types.UID(claimName)},
+		Spec: resourceapi.ResourceClaimSpec{
+			Devices: resourceapi.DeviceClaim{
+				Requests: []resourceapi.DeviceRequest{
+					{Name: "request-0"},
+					{Name: "request-1"},
+				},
+			},
+		},
+	}
 }
 
 func newSchedNodeInfo(node *apiv1.Node, pods []*apiv1.Pod) *schedulerframework.NodeInfo {

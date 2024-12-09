@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/mock"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -85,6 +86,28 @@ func MarkUnschedulable() func(*apiv1.Pod) {
 func AddSchedulerName(schedulerName string) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		pod.Spec.SchedulerName = schedulerName
+	}
+}
+
+// WithResourceClaim adds a reference to the given resource claim/claim template to a pod.
+func WithResourceClaim(refName, claimName, templateName string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		claimRef := apiv1.PodResourceClaim{
+			Name: refName,
+		}
+		claimStatus := apiv1.PodResourceClaimStatus{
+			Name: refName,
+		}
+
+		if templateName != "" {
+			claimRef.ResourceClaimTemplateName = &templateName
+			claimStatus.ResourceClaimName = &claimName
+		} else {
+			claimRef.ResourceClaimName = &claimName
+		}
+
+		pod.Spec.ResourceClaims = append(pod.Spec.ResourceClaims, claimRef)
+		pod.Status.ResourceClaimStatuses = append(pod.Status.ResourceClaimStatuses, claimStatus)
 	}
 }
 
