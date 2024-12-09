@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -525,4 +527,12 @@ func (l *HttpServerMock) handle(req *http.Request, w http.ResponseWriter, server
 		}
 	}
 	return response
+}
+
+// IgnoreObjectOrder returns a cmp.Option that ignores the order of elements when comparing slices of K8s objects of type T,
+// depending on their GetName() function for sorting.
+func IgnoreObjectOrder[T interface{ GetName() string }]() cmp.Option {
+	return cmpopts.SortSlices(func(c1, c2 T) bool {
+		return c1.GetName() < c2.GetName()
+	})
 }

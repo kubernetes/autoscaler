@@ -17,7 +17,6 @@ limitations under the License.
 package utils
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -722,14 +721,4 @@ func TestAddPodReservationInPlace(t *testing.T) {
 			}
 		})
 	}
-}
-
-func testClaimReservations(count int) []resourceapi.ResourceClaimConsumerReference {
-	var result []resourceapi.ResourceClaimConsumerReference
-	for i := range count {
-		podName := fmt.Sprintf("pod-%d", i)
-		result = append(result, resourceapi.ResourceClaimConsumerReference{Resource: "pods",
-			Name: podName, UID: types.UID(podName + "Uid")})
-	}
-	return result
 }
