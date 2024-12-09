@@ -113,6 +113,24 @@ func (n *NodeInfo) DeepCopy() *NodeInfo {
 	return NewNodeInfo(n.Node().DeepCopy(), newSlices, newPods...)
 }
 
+// ResourceClaims returns all ResourceClaims contained in the PodInfos in this NodeInfo. Shared claims
+// are taken into account, each claim should only be returned once.
+func (n *NodeInfo) ResourceClaims() []*resourceapi.ResourceClaim {
+	processedClaims := map[types.UID]bool{}
+	var result []*resourceapi.ResourceClaim
+	for _, pod := range n.Pods() {
+		for _, claim := range pod.NeededResourceClaims {
+			if processedClaims[claim.UID] {
+				// Shared claim, already grouped.
+				continue
+			}
+			result = append(result, claim)
+			processedClaims[claim.UID] = true
+		}
+	}
+	return result
+}
+
 // NewNodeInfo returns a new internal NodeInfo from the provided data.
 func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...*PodInfo) *NodeInfo {
 	result := &NodeInfo{
