@@ -117,14 +117,14 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
-		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig)
+		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled)
 		if err != nil {
 			return err
 		}
 		opts.FrameworkHandle = fwHandle
 	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), opts.FrameworkHandle)
+		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled)
 	}
 	if opts.RemainingPdbTracker == nil {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()

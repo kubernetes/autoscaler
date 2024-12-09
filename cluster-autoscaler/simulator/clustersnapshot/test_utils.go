@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -38,7 +39,7 @@ func InitializeClusterSnapshotOrDie(
 	pods []*apiv1.Pod) {
 	var err error
 
-	assert.NoError(t, snapshot.SetClusterState(nil, nil))
+	assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
 
 	for _, node := range nodes {
 		err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
