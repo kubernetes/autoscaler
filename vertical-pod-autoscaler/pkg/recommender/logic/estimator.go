@@ -23,8 +23,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
-// TODO: Split the estimator to have a separate estimator object for CPU and memory.
-
 // ResourceEstimator is a function from AggregateContainerState to
 // model.Resources, e.g. a prediction of resources needed by a group of
 // containers.
@@ -32,74 +30,146 @@ type ResourceEstimator interface {
 	GetResourceEstimation(s *model.AggregateContainerState) model.Resources
 }
 
-// Implementation of ResourceEstimator that returns constant amount of
-// resources. This can be used as by a fake recommender for test purposes.
-type constEstimator struct {
-	resources model.Resources
+// CPUEstimator predicts CPU resources needed by a container
+type CPUEstimator interface {
+	GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount
 }
 
-// Simple implementation of the ResourceEstimator interface. It returns specific
-// percentiles of CPU usage distribution and memory peaks distribution.
-type percentileEstimator struct {
-	cpuPercentile    float64
-	memoryPercentile float64
+// MemoryEstimator predicts memory resources needed by a container
+type MemoryEstimator interface {
+	GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount
 }
 
-type marginEstimator struct {
+// combinedEstimator is a ResourceEstimator that combines two estimators: one for CPU and one for memory.
+type combinedEstimator struct {
+	cpuEstimator    CPUEstimator
+	memoryEstimator MemoryEstimator
+}
+
+type percentileCPUEstimator struct {
+	percentile float64
+}
+
+type percentileMemoryEstimator struct {
+	percentile float64
+}
+
+// margins
+
+type cpuMarginEstimator struct {
 	marginFraction float64
-	baseEstimator  ResourceEstimator
+	baseEstimator  CPUEstimator
 }
 
-type minResourcesEstimator struct {
-	minResources  model.Resources
-	baseEstimator ResourceEstimator
+type memoryMarginEstimator struct {
+	marginFraction float64
+	baseEstimator  MemoryEstimator
 }
 
-type confidenceMultiplier struct {
+type cpuConfidenceMultiplier struct {
 	multiplier    float64
 	exponent      float64
-	baseEstimator ResourceEstimator
+	baseEstimator CPUEstimator
 }
 
-// NewConstEstimator returns a new constEstimator with given resources.
-func NewConstEstimator(resources model.Resources) ResourceEstimator {
-	return &constEstimator{resources}
+type memoryConfidenceMultiplier struct {
+	multiplier    float64
+	exponent      float64
+	baseEstimator MemoryEstimator
 }
 
-// NewPercentileEstimator returns a new percentileEstimator that uses provided percentiles.
-func NewPercentileEstimator(cpuPercentile float64, memoryPercentile float64) ResourceEstimator {
-	return &percentileEstimator{cpuPercentile, memoryPercentile}
+type cpuMinResourceEstimator struct {
+	minResource   model.ResourceAmount
+	baseEstimator CPUEstimator
 }
 
-// WithMargin returns a given ResourceEstimator with margin applied.
-// The returned resources are equal to the original resources plus (originalResource * marginFraction)
-func WithMargin(marginFraction float64, baseEstimator ResourceEstimator) ResourceEstimator {
-	return &marginEstimator{marginFraction, baseEstimator}
+type memoryMinResourceEstimator struct {
+	minResource   model.ResourceAmount
+	baseEstimator MemoryEstimator
 }
 
-// WithMinResources returns a given ResourceEstimator with minResources applied.
-// The returned resources are equal to the max(original resources, minResources)
-func WithMinResources(minResources model.Resources, baseEstimator ResourceEstimator) ResourceEstimator {
-	return &minResourcesEstimator{minResources, baseEstimator}
+// NewCombinedEstimator returns a new combinedEstimator that uses provided estimators.
+func NewCombinedEstimator(cpuEstimator CPUEstimator, memoryEstimator MemoryEstimator) ResourceEstimator {
+	return &combinedEstimator{cpuEstimator, memoryEstimator}
 }
 
-// WithConfidenceMultiplier returns a given ResourceEstimator with confidenceMultiplier applied.
-func WithConfidenceMultiplier(multiplier, exponent float64, baseEstimator ResourceEstimator) ResourceEstimator {
-	return &confidenceMultiplier{multiplier, exponent, baseEstimator}
+// NewPercentileCPUEstimator returns a new percentileCPUEstimator that uses provided percentile.
+func NewPercentileCPUEstimator(percentile float64) CPUEstimator {
+	return &percentileCPUEstimator{percentile}
 }
 
-// Returns a constant amount of resources.
-func (e *constEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
-	return e.resources
+// NewPercentileMemoryEstimator returns a new percentileMemoryEstimator that uses provided percentile.
+func NewPercentileMemoryEstimator(percentile float64) MemoryEstimator {
+	return &percentileMemoryEstimator{percentile}
 }
 
-// Returns specific percentiles of CPU and memory peaks distributions.
-func (e *percentileEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
+// NewMemoryEstimator returns a new percentileMemoryEstimator that uses provided percentile.
+func NewMemoryEstimator(percentile float64) MemoryEstimator {
+	return &percentileMemoryEstimator{percentile}
+}
+
+// GetCPUEstimation returns the CPU estimation for the given AggregateContainerState.
+func (e *cpuMarginEstimator) GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount {
+	base := e.baseEstimator.GetCPUEstimation(s)
+	margin := model.ScaleResource(base, e.marginFraction)
+	return base + margin
+}
+
+// GetMemoryEstimation returns the memory estimation for the given AggregateContainerState.
+func (e *memoryMarginEstimator) GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount {
+	base := e.baseEstimator.GetMemoryEstimation(s)
+	margin := model.ScaleResource(base, e.marginFraction)
+	return base + margin
+}
+
+// WithCPUMargin returns a CPUEstimator that adds a margin to the base estimator.
+func WithCPUMargin(marginFraction float64, baseEstimator CPUEstimator) CPUEstimator {
+	return &cpuMarginEstimator{marginFraction: marginFraction, baseEstimator: baseEstimator}
+}
+
+// WithMemoryMargin returns a MemoryEstimator that adds a margin to the base estimator.
+func WithMemoryMargin(marginFraction float64, baseEstimator MemoryEstimator) MemoryEstimator {
+	return &memoryMarginEstimator{marginFraction: marginFraction, baseEstimator: baseEstimator}
+}
+
+// WithCPUConfidenceMultiplier return a CPUEstimator estimator
+func WithCPUConfidenceMultiplier(multiplier, exponent float64, baseEstimator CPUEstimator) CPUEstimator {
+	return &cpuConfidenceMultiplier{
+		multiplier:    multiplier,
+		exponent:      exponent,
+		baseEstimator: baseEstimator,
+	}
+}
+
+// WithMemoryConfidenceMultiplier returns a MemoryEstimator that scales the
+func WithMemoryConfidenceMultiplier(multiplier, exponent float64, baseEstimator MemoryEstimator) MemoryEstimator {
+	return &memoryConfidenceMultiplier{
+		multiplier:    multiplier,
+		exponent:      exponent,
+		baseEstimator: baseEstimator,
+	}
+}
+
+func (e *percentileCPUEstimator) GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount {
+	return model.CPUAmountFromCores(s.AggregateCPUUsage.Percentile(e.percentile))
+}
+
+func (e *percentileMemoryEstimator) GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount {
+	return model.MemoryAmountFromBytes(s.AggregateMemoryPeaks.Percentile(e.percentile))
+}
+
+// Returns resources computed by the underlying estimators, scaled based on the
+// confidence metric, which depends on the amount of available historical data.
+// Each resource is transformed as follows:
+//
+//	scaledResource = originalResource * (1 + 1/confidence)^exponent.
+//
+// This can be used to widen or narrow the gap between the lower and upper bound
+// estimators depending on how much input data is available to the estimators.
+func (c *combinedEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
 	return model.Resources{
-		model.ResourceCPU: model.CPUAmountFromCores(
-			s.AggregateCPUUsage.Percentile(e.cpuPercentile)),
-		model.ResourceMemory: model.MemoryAmountFromBytes(
-			s.AggregateMemoryPeaks.Percentile(e.memoryPercentile)),
+		model.ResourceCPU:    c.cpuEstimator.GetCPUEstimation(s),
+		model.ResourceMemory: c.memoryEstimator.GetMemoryEstimation(s),
 	}
 }
 
@@ -118,43 +188,58 @@ func getConfidence(s *model.AggregateContainerState) float64 {
 	return math.Min(lifespanInDays, samplesAmount)
 }
 
-// Returns resources computed by the underlying estimator, scaled based on the
-// confidence metric, which depends on the amount of available historical data.
-// Each resource is transformed as follows:
-//
-//	scaledResource = originalResource * (1 + 1/confidence)^exponent.
-//
-// This can be used to widen or narrow the gap between the lower and upper bound
-// estimators depending on how much input data is available to the estimators.
-func (e *confidenceMultiplier) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
+func (e *cpuConfidenceMultiplier) GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount {
 	confidence := getConfidence(s)
-	originalResources := e.baseEstimator.GetResourceEstimation(s)
-	scaledResources := make(model.Resources)
-	for resource, resourceAmount := range originalResources {
-		scaledResources[resource] = model.ScaleResource(
-			resourceAmount, math.Pow(1.+e.multiplier/confidence, e.exponent))
-	}
-	return scaledResources
+	base := e.baseEstimator.GetCPUEstimation(s)
+	return model.ScaleResource(base, math.Pow(1.+e.multiplier/confidence, e.exponent))
 }
 
-func (e *marginEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
-	originalResources := e.baseEstimator.GetResourceEstimation(s)
-	newResources := make(model.Resources)
-	for resource, resourceAmount := range originalResources {
-		margin := model.ScaleResource(resourceAmount, e.marginFraction)
-		newResources[resource] = originalResources[resource] + margin
-	}
-	return newResources
+func (e *memoryConfidenceMultiplier) GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount {
+	confidence := getConfidence(s)
+	base := e.baseEstimator.GetMemoryEstimation(s)
+	return model.ScaleResource(base, math.Pow(1.+e.multiplier/confidence, e.exponent))
 }
 
-func (e *minResourcesEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
-	originalResources := e.baseEstimator.GetResourceEstimation(s)
-	newResources := make(model.Resources)
-	for resource, resourceAmount := range originalResources {
-		if resourceAmount < e.minResources[resource] {
-			resourceAmount = e.minResources[resource]
-		}
-		newResources[resource] = resourceAmount
-	}
-	return newResources
+// WithCPUMinResource returns a CPUEstimator that returns at least minResource
+func WithCPUMinResource(minResource model.ResourceAmount, baseEstimator CPUEstimator) CPUEstimator {
+	return &cpuMinResourceEstimator{minResource, baseEstimator}
+}
+
+// WithMemoryMinResource returns a MemoryEstimator that returns at least minResource
+func WithMemoryMinResource(minResource model.ResourceAmount, baseEstimator MemoryEstimator) MemoryEstimator {
+	return &memoryMinResourceEstimator{minResource, baseEstimator}
+}
+
+func (e *cpuMinResourceEstimator) GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount {
+	return model.ResourceAmountMax(e.baseEstimator.GetCPUEstimation(s), e.minResource)
+}
+
+func (e *memoryMinResourceEstimator) GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount {
+	return model.ResourceAmountMax(e.baseEstimator.GetMemoryEstimation(s), e.minResource)
+}
+
+// NewConstMemoryEstimator returns a Memory estimator that always returns the same value
+func NewConstMemoryEstimator(memory model.ResourceAmount) MemoryEstimator {
+	return &constMemoryEstimator{memory}
+}
+
+type constCPUEstimator struct {
+	value model.ResourceAmount
+}
+
+type constMemoryEstimator struct {
+	value model.ResourceAmount
+}
+
+func (e *constCPUEstimator) GetCPUEstimation(_ *model.AggregateContainerState) model.ResourceAmount {
+	return e.value
+}
+
+func (e *constMemoryEstimator) GetMemoryEstimation(_ *model.AggregateContainerState) model.ResourceAmount {
+	return e.value
+}
+
+// NewConstCPUEstimator returns a CPU estimator that always returns the same value
+func NewConstCPUEstimator(cpu model.ResourceAmount) CPUEstimator {
+	return &constCPUEstimator{cpu}
 }
