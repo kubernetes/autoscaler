@@ -44,7 +44,7 @@ func (p *sequentialRecommendationProcessor) Apply(
 		return nil, nil, nil
 	}
 
-	var recommendation *vpa_types.RecommendedPodResources
+	recommendation := vpa.Status.Recommendation
 
 	accumulatedContainerToAnnotationsMap := ContainerToAnnotationsMap{}
 
