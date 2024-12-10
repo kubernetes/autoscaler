@@ -158,6 +158,14 @@ func (e *percentileMemoryEstimator) GetMemoryEstimation(s *model.AggregateContai
 	return model.MemoryAmountFromBytes(s.AggregateMemoryPeaks.Percentile(e.percentile))
 }
 
+// Returns resources computed by the underlying estimators, scaled based on the
+// confidence metric, which depends on the amount of available historical data.
+// Each resource is transformed as follows:
+//
+//	scaledResource = originalResource * (1 + 1/confidence)^exponent.
+//
+// This can be used to widen or narrow the gap between the lower and upper bound
+// estimators depending on how much input data is available to the estimators.
 func (c *combinedEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
 	return model.Resources{
 		model.ResourceCPU:    c.cpuEstimator.GetCPUEstimation(s),
