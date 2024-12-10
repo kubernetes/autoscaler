@@ -41,22 +41,24 @@ var verticalpodautoscalersKind = v1beta2.SchemeGroupVersion.WithKind("VerticalPo
 
 // Get takes name of the verticalPodAutoscaler, and returns the corresponding verticalPodAutoscaler object, and an error if there is any.
 func (c *FakeVerticalPodAutoscalers) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta2.VerticalPodAutoscaler, err error) {
+	emptyResult := &v1beta2.VerticalPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(verticalpodautoscalersResource, c.ns, name), &v1beta2.VerticalPodAutoscaler{})
+		Invokes(testing.NewGetActionWithOptions(verticalpodautoscalersResource, c.ns, name, options), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta2.VerticalPodAutoscaler), err
 }
 
 // List takes label and field selectors, and returns the list of VerticalPodAutoscalers that match those selectors.
 func (c *FakeVerticalPodAutoscalers) List(ctx context.Context, opts v1.ListOptions) (result *v1beta2.VerticalPodAutoscalerList, err error) {
+	emptyResult := &v1beta2.VerticalPodAutoscalerList{}
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(verticalpodautoscalersResource, verticalpodautoscalersKind, c.ns, opts), &v1beta2.VerticalPodAutoscalerList{})
+		Invokes(testing.NewListActionWithOptions(verticalpodautoscalersResource, verticalpodautoscalersKind, c.ns, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 
 	label, _, _ := testing.ExtractFromListOptions(opts)
@@ -75,40 +77,43 @@ func (c *FakeVerticalPodAutoscalers) List(ctx context.Context, opts v1.ListOptio
 // Watch returns a watch.Interface that watches the requested verticalPodAutoscalers.
 func (c *FakeVerticalPodAutoscalers) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(verticalpodautoscalersResource, c.ns, opts))
+		InvokesWatch(testing.NewWatchActionWithOptions(verticalpodautoscalersResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a verticalPodAutoscaler and creates it.  Returns the server's representation of the verticalPodAutoscaler, and an error, if there is any.
 func (c *FakeVerticalPodAutoscalers) Create(ctx context.Context, verticalPodAutoscaler *v1beta2.VerticalPodAutoscaler, opts v1.CreateOptions) (result *v1beta2.VerticalPodAutoscaler, err error) {
+	emptyResult := &v1beta2.VerticalPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(verticalpodautoscalersResource, c.ns, verticalPodAutoscaler), &v1beta2.VerticalPodAutoscaler{})
+		Invokes(testing.NewCreateActionWithOptions(verticalpodautoscalersResource, c.ns, verticalPodAutoscaler, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta2.VerticalPodAutoscaler), err
 }
 
 // Update takes the representation of a verticalPodAutoscaler and updates it. Returns the server's representation of the verticalPodAutoscaler, and an error, if there is any.
 func (c *FakeVerticalPodAutoscalers) Update(ctx context.Context, verticalPodAutoscaler *v1beta2.VerticalPodAutoscaler, opts v1.UpdateOptions) (result *v1beta2.VerticalPodAutoscaler, err error) {
+	emptyResult := &v1beta2.VerticalPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(verticalpodautoscalersResource, c.ns, verticalPodAutoscaler), &v1beta2.VerticalPodAutoscaler{})
+		Invokes(testing.NewUpdateActionWithOptions(verticalpodautoscalersResource, c.ns, verticalPodAutoscaler, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta2.VerticalPodAutoscaler), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeVerticalPodAutoscalers) UpdateStatus(ctx context.Context, verticalPodAutoscaler *v1beta2.VerticalPodAutoscaler, opts v1.UpdateOptions) (*v1beta2.VerticalPodAutoscaler, error) {
+func (c *FakeVerticalPodAutoscalers) UpdateStatus(ctx context.Context, verticalPodAutoscaler *v1beta2.VerticalPodAutoscaler, opts v1.UpdateOptions) (result *v1beta2.VerticalPodAutoscaler, err error) {
+	emptyResult := &v1beta2.VerticalPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(verticalpodautoscalersResource, "status", c.ns, verticalPodAutoscaler), &v1beta2.VerticalPodAutoscaler{})
+		Invokes(testing.NewUpdateSubresourceActionWithOptions(verticalpodautoscalersResource, "status", c.ns, verticalPodAutoscaler, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta2.VerticalPodAutoscaler), err
 }
@@ -123,7 +128,7 @@ func (c *FakeVerticalPodAutoscalers) Delete(ctx context.Context, name string, op
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeVerticalPodAutoscalers) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(verticalpodautoscalersResource, c.ns, listOpts)
+	action := testing.NewDeleteCollectionActionWithOptions(verticalpodautoscalersResource, c.ns, opts, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1beta2.VerticalPodAutoscalerList{})
 	return err
@@ -131,11 +136,12 @@ func (c *FakeVerticalPodAutoscalers) DeleteCollection(ctx context.Context, opts 
 
 // Patch applies the patch and returns the patched verticalPodAutoscaler.
 func (c *FakeVerticalPodAutoscalers) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta2.VerticalPodAutoscaler, err error) {
+	emptyResult := &v1beta2.VerticalPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(verticalpodautoscalersResource, c.ns, name, pt, data, subresources...), &v1beta2.VerticalPodAutoscaler{})
+		Invokes(testing.NewPatchSubresourceActionWithOptions(verticalpodautoscalersResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta2.VerticalPodAutoscaler), err
 }
