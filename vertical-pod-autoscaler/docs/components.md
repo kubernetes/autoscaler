@@ -39,8 +39,8 @@ can be inspected.
 
 ## Running the recommender
 
-- In order to have historical data pulled in by the recommender, install
-  Prometheus in your cluster and pass its address through a flag.
+- By default the VPA will use a VerticalPodAutoscalerCheckpoint to store history, but
+  it is possible to fetch historical from Prometheus in your cluster.
 - Create RBAC configuration from `../deploy/vpa-rbac.yaml`.
 - Create a deployment with the recommender pod from
   `../deploy/recommender-deployment.yaml`.
@@ -55,7 +55,7 @@ their configuration (e.g. labels) as well as other information, e.g. usage data 
 each container.
 
 After starting the binary, recommender reads the history of running pods and
-their usage from Prometheus into the model.
+their usage from VerticalPodAutoscalerCheckpoint (or Prometheus) into the model.
 It then runs in a loop and at each step performs the following actions:
 
 - update model with recent information on resources (using listers based on
