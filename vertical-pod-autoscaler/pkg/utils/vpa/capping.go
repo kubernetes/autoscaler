@@ -52,11 +52,19 @@ type cappingRecommendationProcessor struct {
 
 // Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
 func (c *cappingRecommendationProcessor) Apply(
-	podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	vpa *vpa_types.VerticalPodAutoscaler,
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	// TODO: Annotate if request enforced by maintaining proportion with limit and allowed limit range is in conflict with policy.
+
+	if vpa == nil {
+		return nil, nil, fmt.Errorf("cannot process nil vpa")
+	}
+	if pod == nil {
+		return nil, nil, fmt.Errorf("cannot process nil pod")
+	}
+
+	policy := vpa.Spec.ResourcePolicy
+	podRecommendation := vpa.Status.Recommendation
 
 	if podRecommendation == nil && policy == nil {
 		// If there is no recommendation and no policies have been defined then no recommendation can be computed.
@@ -76,7 +84,7 @@ func (c *cappingRecommendationProcessor) Apply(
 		container := getContainer(containerRecommendation.ContainerName, pod)
 
 		if container == nil {
-			klog.V(2).InfoS("No matching Container found for recommendation", "containerName", containerRecommendation.ContainerName)
+			klog.V(2).InfoS("No matching Container found for recommendation", "containerName", containerRecommendation.ContainerName, "vpa", klog.KObj(vpa))
 			continue
 		}
 
