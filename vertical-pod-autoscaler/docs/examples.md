@@ -52,7 +52,7 @@ You can then choose which recommender to use by setting `recommenders` inside th
 
 ## Custom memory bump-up after OOMKill
 
-After an OOMKill event was observed, VPA increases the memory recommendation based on the observed memory usage in the event according to this formula: `recommendation = memory-usage-in-oomkill-event + max(oom-min-bump-up-bytes, memory-usage-in-oomkill-event * oom-bump-up-ratio)`.
+After an OOMKill event was observed, VPA increases the memory recommendation based on the observed memory usage in the event according to this formula: `recommendation = max(memory-usage-in-oomkill-event + oom-min-bump-up-bytes, memory-usage-in-oomkill-event * oom-bump-up-ratio)`.
 You can configure the minimum bump-up as well as the multiplier by specifying startup arguments for the recommender:
 `oom-bump-up-ratio` specifies the memory bump up ratio when OOM occurred, default is `1.2`. This means, memory will be increased by 20% after an OOMKill event.
 `oom-min-bump-up-bytes` specifies minimal increase of memory after observing OOM. Defaults to `100 * 1024 * 1024` (=100MiB)
