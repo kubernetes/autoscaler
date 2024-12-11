@@ -43,7 +43,7 @@ The Vertical Pod Autoscaler consists of three parts. The recommender, updater an
 
 ## Features and Known limitations
 
-You can also read about the [features](./docs/features.md) and [known limitations](./docs/known-limitaions.md) of the VPA.
+You can also read about the [features](./docs/features.md) and [known limitations](./docs/known-limitations.md) of the VPA.
 
 ## Related links
 
