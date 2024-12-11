@@ -29,7 +29,7 @@ ARG TARGETOS TARGETARCH
 
 RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/admission-controller -o admission-controller-$TARGETARCH
 
-FROM gcr.io/distroless/static:latest
+FROM gcr.io/distroless/static:nonroot
 
 ARG TARGETARCH
 
