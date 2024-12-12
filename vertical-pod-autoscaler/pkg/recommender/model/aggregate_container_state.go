@@ -110,6 +110,8 @@ type AggregateContainerState struct {
 	UpdateMode          *vpa_types.UpdateMode
 	ScalingMode         *vpa_types.ContainerScalingMode
 	ControlledResources *[]ResourceName
+	LastUpdateTime      time.Time
+	PruningGracePeriod  metav1.Duration
 }
 
 // GetLastRecommendation returns last recorded recommendation.
@@ -143,6 +145,16 @@ func (a *AggregateContainerState) GetControlledResources() []ResourceName {
 	return DefaultControlledResources
 }
 
+// GetLastUpdate returns the time of the last update of the VPA object controlling this aggregator.
+func (a *AggregateContainerState) GetLastUpdate() time.Time {
+	return a.LastUpdateTime
+}
+
+// GetPruningGracePeriod returns the pruning grace period set in the VPA object controlling this aggregator.
+func (a *AggregateContainerState) GetPruningGracePeriod() metav1.Duration {
+	return a.PruningGracePeriod
+}
+
 // MarkNotAutoscaled registers that this container state is not controlled by
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
@@ -171,10 +183,12 @@ func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerS
 // NewAggregateContainerState returns a new, empty AggregateContainerState.
 func NewAggregateContainerState() *AggregateContainerState {
 	config := GetAggregationsConfig()
+	now := time.Now()
 	return &AggregateContainerState{
 		AggregateCPUUsage:    util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife),
 		AggregateMemoryPeaks: util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife),
-		CreationTime:         time.Now(),
+		CreationTime:         now,
+		LastUpdateTime:       now,
 	}
 }
 
