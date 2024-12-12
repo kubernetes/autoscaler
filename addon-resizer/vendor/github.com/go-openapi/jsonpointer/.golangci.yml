@@ -10,13 +10,14 @@ linters-settings:
   dupl:
     threshold: 200
   goconst:
-    min-len: 3
+    min-len: 2
     min-occurrences: 3
 
 linters:
   enable-all: true
   disable:
     - maligned
+    - unparam
     - lll
     - gochecknoinits
     - gochecknoglobals
