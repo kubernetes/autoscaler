@@ -504,10 +504,10 @@ func (feeder *clusterStateFeeder) SweepAggregates() {
 	// is still a reference to them in feeder.clusterState.aggregateStateMap, and those get
 	// garbage collected eventually by the rate limited aggregate garbage collector later.
 	// Maybe we should clean those up here too since we know which ones are stale?
+	now := time.Now()
 	for _, vpa := range feeder.clusterState.VPAs() {
-
 		for containerKey, container := range vpa.AggregateContainerStates() {
-			if !container.IsUnderVPA {
+			if !container.IsUnderVPA && now.After(container.GetLastUpdate().Add(container.GetPruningGracePeriod().Duration)) {
 				klog.V(4).InfoS("Deleting Aggregate for VPA: container no longer present",
 					"namespace", vpa.ID.Namespace,
 					"vpaName", vpa.ID.VpaName,
@@ -517,7 +517,7 @@ func (feeder *clusterStateFeeder) SweepAggregates() {
 			}
 		}
 		for containerKey, container := range vpa.ContainersInitialAggregateState {
-			if !container.IsUnderVPA {
+			if !container.IsUnderVPA && now.After(container.GetLastUpdate().Add(container.GetPruningGracePeriod().Duration)) {
 				klog.V(4).InfoS("Deleting Initial Aggregate for VPA: container no longer present",
 					"namespace", vpa.ID.Namespace,
 					"vpaName", vpa.ID.VpaName,

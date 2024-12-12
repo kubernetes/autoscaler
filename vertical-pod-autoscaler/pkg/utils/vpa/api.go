@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	autoscaling "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -237,6 +238,22 @@ func GetContainerControlledValues(name string, vpaResourcePolicy *vpa_types.PodR
 		return vpa_types.ContainerControlledValuesRequestsAndLimits
 	}
 	return *containerPolicy.ControlledValues
+}
+
+// GetContainerPruningGracePeriod returns the pruning grace period for a container.
+func GetContainerPruningGracePeriod(containerName string, vpaResourcePolicy *vpa_types.PodResourcePolicy, targetRef *autoscaling.CrossVersionObjectReference) meta.Duration {
+	containerPolicy := GetContainerResourcePolicy(containerName, vpaResourcePolicy)
+	if containerPolicy == nil || containerPolicy.PruningGracePeriod == nil {
+		defaultGracePeriod := meta.Duration{Duration: time.Duration(0)}
+		if targetRef != nil && targetRef.Kind == "CronJob" {
+			// CronJob is a special case, because they create containers they are usually supposed to be deleted after the job is done.
+			// So we set a higher default grace period so that future recommendations for the same workload are not pruned too early.
+			// TODO(maxcao13): maybe it makes sense to set the default based on the cron schedule?
+			defaultGracePeriod = meta.Duration{Duration: 24 * time.Hour}
+		}
+		return defaultGracePeriod
+	}
+	return *containerPolicy.PruningGracePeriod
 }
 
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.

@@ -214,6 +214,15 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// PruningGracePeriod is the duration to wait before pruning recommendations for containers that no longer exist.
+	// This is useful for containers created by Jobs from CronJobs, which are frequently created and deleted.
+	// By setting a grace period, recommendations for these containers are not pruned immediately
+	// after they are removed, providing recommendations to new containers created by subsequent Jobs.
+	// If not specified, recommendations for non-existent containers are pruned the next time a recommendation
+	// loop is run. However, if the targetRef points to a CronJob, the default value is 24 hours.
+	// +optional
+	PruningGracePeriod *metav1.Duration `json:"pruningGracePeriod,omitempty" protobuf:"bytes,4,opt,name=pruningGracePeriod"`
 }
 
 const (

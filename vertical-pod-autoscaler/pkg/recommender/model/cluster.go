@@ -243,6 +243,8 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 		container.Request = request
 		// Mark this container as still managed so the aggregates don't get garbage collected
 		aggregateState.IsUnderVPA = true
+		// Update the last update time so we potentially don't garbage collect it too soon
+		aggregateState.LastUpdateTime = time.Now()
 	}
 	return nil
 }
@@ -308,7 +310,7 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		vpaExists = false
 	}
 	if !vpaExists {
-		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
+		vpa = NewVpa(vpaID, selector, apiObject.Spec.TargetRef, apiObject.CreationTimestamp.Time)
 		cluster.vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)

@@ -120,7 +120,7 @@ type Vpa struct {
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
 // links to the matched aggregations.
-func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
+func NewVpa(id VpaID, selector labels.Selector, targetRef *autoscaling.CrossVersionObjectReference, created time.Time) *Vpa {
 	vpa := &Vpa{
 		ID:                              id,
 		PodSelector:                     selector,
@@ -129,6 +129,7 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		Created:                         created,
 		Annotations:                     make(vpaAnnotationsMap),
 		Conditions:                      make(vpaConditionsMap),
+		TargetRef:                       targetRef,
 		// APIVersion defaults to the version of the client used to read resources.
 		// If a new version is introduced that needs to be differentiated beyond the
 		// client conversion, this needs to be done based on the resource content.
@@ -161,6 +162,7 @@ func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggre
 		vpa.aggregateContainerStates[aggregationKey] = aggregation
 		aggregation.IsUnderVPA = true
 		aggregation.UpdateMode = vpa.UpdateMode
+		aggregation.PruningGracePeriod = vpa_api_util.GetContainerPruningGracePeriod(aggregationKey.ContainerName(), vpa.ResourcePolicy, vpa.TargetRef)
 		aggregation.UpdateFromPolicy(vpa_api_util.GetContainerResourcePolicy(aggregationKey.ContainerName(), vpa.ResourcePolicy))
 	}
 }
