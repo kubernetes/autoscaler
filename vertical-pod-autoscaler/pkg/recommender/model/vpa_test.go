@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	autoscaling "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
@@ -30,14 +31,20 @@ import (
 )
 
 var (
-	anyTime = time.Unix(0, 0)
+	anyTime          = time.Unix(0, 0)
+	regularTargetRef = &autoscaling.CrossVersionObjectReference{
+		Kind:       "Deployment",
+		Name:       "test-deployment",
+		APIVersion: "apps/v1",
+	}
+	// TODO(maxcao13): write tests for new container policy field
 )
 
 func TestMergeAggregateContainerState(t *testing.T) {
 
 	containersInitialAggregateState := ContainerNameToAggregateStateMap{}
 	containersInitialAggregateState["test"] = NewAggregateContainerState()
-	vpa := NewVpa(VpaID{}, nil, anyTime)
+	vpa := NewVpa(VpaID{}, nil, nil, anyTime)
 	vpa.ContainersInitialAggregateState = containersInitialAggregateState
 
 	containerNameToAggregateStateMap := ContainerNameToAggregateStateMap{}
@@ -119,7 +126,7 @@ func TestUpdateConditions(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			containerName := "container"
-			vpa := NewVpa(VpaID{Namespace: "test-namespace", VpaName: "my-favourite-vpa"}, labels.Nothing(), time.Unix(0, 0))
+			vpa := NewVpa(VpaID{Namespace: "test-namespace", VpaName: "my-favourite-vpa"}, labels.Nothing(), nil, time.Unix(0, 0))
 			if tc.hasRecommendation {
 				vpa.Recommendation = test.Recommendation().WithContainer(containerName).WithTarget("5", "200").Get()
 			}
@@ -189,7 +196,7 @@ func TestUpdateRecommendation(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			namespace := "test-namespace"
-			vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, labels.Nothing(), anyTime)
+			vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, labels.Nothing(), regularTargetRef, anyTime)
 			for container, rec := range tc.containers {
 				state := &AggregateContainerState{}
 				if rec != nil {
@@ -355,7 +362,7 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			if !assert.NoError(t, err) {
 				t.FailNow()
 			}
-			vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, selector, anyTime)
+			vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, selector, regularTargetRef, anyTime)
 			vpa.UpdateMode = tc.updateMode
 			key := mockAggregateStateKey{
 				namespace:     namespace,
@@ -542,7 +549,7 @@ func TestSetResourcePolicy(t *testing.T) {
 			if !assert.NoError(t, err) {
 				t.FailNow()
 			}
-			vpa := NewVpa(VpaID{Namespace: "test-namespace", VpaName: "my-favourite-vpa"}, selector, anyTime)
+			vpa := NewVpa(VpaID{Namespace: "test-namespace", VpaName: "my-favourite-vpa"}, selector, regularTargetRef, anyTime)
 			for _, container := range tc.containers {
 				containerKey, aggregation := testAggregation(vpa, container, labels.Set(testLabels).String())
 				vpa.aggregateContainerStates[containerKey] = aggregation
