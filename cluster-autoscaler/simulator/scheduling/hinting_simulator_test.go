@@ -35,6 +35,7 @@ func TestTrySchedulePods(t *testing.T) {
 		nodes           []*apiv1.Node
 		pods            []*apiv1.Pod
 		newPods         []*apiv1.Pod
+		hints           map[*apiv1.Pod]string
 		acceptableNodes func(*framework.NodeInfo) bool
 		wantStatuses    []Status
 		wantErr         bool
@@ -52,6 +53,27 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p2", 800, 500000),
 				BuildTestPod("p3", 500, 500000),
 			},
+			acceptableNodes: ScheduleAnywhere,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
+				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
+			},
+		},
+
+		{
+			desc: "hinted Node no longer in the cluster doesn't cause an error",
+			nodes: []*apiv1.Node{
+				buildReadyNode("n1", 1000, 2000000),
+				buildReadyNode("n2", 1000, 2000000),
+			},
+			pods: []*apiv1.Pod{
+				buildScheduledPod("p1", 300, 500000, "n1"),
+			},
+			newPods: []*apiv1.Pod{
+				BuildTestPod("p2", 800, 500000),
+				BuildTestPod("p3", 500, 500000),
+			},
+			hints:           map[*apiv1.Pod]string{BuildTestPod("p2", 800, 500000): "non-existing-node"},
 			acceptableNodes: ScheduleAnywhere,
 			wantStatuses: []Status{
 				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
@@ -136,6 +158,11 @@ func TestTrySchedulePods(t *testing.T) {
 			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
 			s := NewHintingSimulator()
+
+			for pod, nodeName := range tc.hints {
+				s.hints.Set(HintKeyFromPod(pod), nodeName)
+			}
+
 			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
 			if tc.wantErr {
 				assert.Error(t, err)
