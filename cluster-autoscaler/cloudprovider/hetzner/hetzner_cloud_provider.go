@@ -223,7 +223,13 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 			placementGroupRef := manager.clusterConfig.NodeConfigs[spec.name].PlacementGroup
 
 			if placementGroupRef != "" {
-				placementGroup = getPlacementGroup(manager, placementGroupRef)
+				placementGroup, err = getPlacementGroup(manager, placementGroupRef)
+				if err != nil {
+					klog.Fatalf("Encountered error while fetching placement group: %v", err)
+				}
+				if placementGroup == nil {
+					klog.Fatalf("The requested placement group `%s` does not appear to exist.", placementGroupRef)
+				}
 				placementGroupTotals[placementGroup.Name] += spec.maxSize
 			}
 		}
@@ -256,7 +262,7 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 	return provider
 }
 
-func getPlacementGroup(manager *hetznerManager, placementGroupRef string) *hcloud.PlacementGroup {
+func getPlacementGroup(manager *hetznerManager, placementGroupRef string) (*hcloud.PlacementGroup, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -265,17 +271,12 @@ func getPlacementGroup(manager *hetznerManager, placementGroupRef string) *hclou
 	// Check if an error occurred
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			klog.Fatalf("Timed out checking if placement group `%s` exists.", placementGroupRef)
-		} else {
-			klog.Fatalf("Failed to verify if placement group `%s` exists. Error: %v", placementGroupRef, err)
+			return nil, fmt.Errorf("Timed out checking if placement group `%s` exists.", placementGroupRef)
 		}
+		return nil, fmt.Errorf("Failed to verify if placement group `%s` exists. Error: %w", placementGroupRef, err)
 	}
 
-	if placementGroup == nil {
-		klog.Fatalf("The requested placement group `%s` does not appear to exist.", placementGroupRef)
-	}
-
-	return placementGroup
+	return placementGroup, nil
 }
 
 func createNodePoolSpec(groupSpec string) (*hetznerNodeGroupSpec, error) {
