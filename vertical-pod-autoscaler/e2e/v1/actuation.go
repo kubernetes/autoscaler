@@ -730,7 +730,7 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 	for label, value := range hamsterLabels {
 		job.Spec.Template.Labels[label] = value
 	}
-	err := testutils.CreateJobWithRetries(f.ClientSet, f.Namespace.Name, job)
+	_, err := framework_job.CreateJob(context.TODO(), f.ClientSet, f.Namespace.Name, job)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = framework_job.WaitForJobPodsRunning(context.TODO(), f.ClientSet, f.Namespace.Name, job.Name, replicas)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())

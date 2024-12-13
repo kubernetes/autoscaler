@@ -19,9 +19,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -38,25 +38,17 @@ type VerticalPodAutoscalerLister interface {
 
 // verticalPodAutoscalerLister implements the VerticalPodAutoscalerLister interface.
 type verticalPodAutoscalerLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1alpha1.VerticalPodAutoscaler]
 }
 
 // NewVerticalPodAutoscalerLister returns a new VerticalPodAutoscalerLister.
 func NewVerticalPodAutoscalerLister(indexer cache.Indexer) VerticalPodAutoscalerLister {
-	return &verticalPodAutoscalerLister{indexer: indexer}
-}
-
-// List lists all VerticalPodAutoscalers in the indexer.
-func (s *verticalPodAutoscalerLister) List(selector labels.Selector) (ret []*v1alpha1.VerticalPodAutoscaler, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.VerticalPodAutoscaler))
-	})
-	return ret, err
+	return &verticalPodAutoscalerLister{listers.New[*v1alpha1.VerticalPodAutoscaler](indexer, v1alpha1.Resource("verticalpodautoscaler"))}
 }
 
 // VerticalPodAutoscalers returns an object that can list and get VerticalPodAutoscalers.
 func (s *verticalPodAutoscalerLister) VerticalPodAutoscalers(namespace string) VerticalPodAutoscalerNamespaceLister {
-	return verticalPodAutoscalerNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return verticalPodAutoscalerNamespaceLister{listers.NewNamespaced[*v1alpha1.VerticalPodAutoscaler](s.ResourceIndexer, namespace)}
 }
 
 // VerticalPodAutoscalerNamespaceLister helps list and get VerticalPodAutoscalers.
@@ -74,26 +66,5 @@ type VerticalPodAutoscalerNamespaceLister interface {
 // verticalPodAutoscalerNamespaceLister implements the VerticalPodAutoscalerNamespaceLister
 // interface.
 type verticalPodAutoscalerNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all VerticalPodAutoscalers in the indexer for a given namespace.
-func (s verticalPodAutoscalerNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.VerticalPodAutoscaler, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.VerticalPodAutoscaler))
-	})
-	return ret, err
-}
-
-// Get retrieves the VerticalPodAutoscaler from the indexer for a given namespace and name.
-func (s verticalPodAutoscalerNamespaceLister) Get(name string) (*v1alpha1.VerticalPodAutoscaler, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("verticalpodautoscaler"), name)
-	}
-	return obj.(*v1alpha1.VerticalPodAutoscaler), nil
+	listers.ResourceIndexer[*v1alpha1.VerticalPodAutoscaler]
 }

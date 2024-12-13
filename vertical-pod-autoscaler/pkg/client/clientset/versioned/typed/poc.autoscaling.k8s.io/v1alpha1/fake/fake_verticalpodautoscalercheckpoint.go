@@ -41,22 +41,24 @@ var verticalpodautoscalercheckpointsKind = v1alpha1.SchemeGroupVersion.WithKind(
 
 // Get takes name of the verticalPodAutoscalerCheckpoint, and returns the corresponding verticalPodAutoscalerCheckpoint object, and an error if there is any.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.VerticalPodAutoscalerCheckpoint, err error) {
+	emptyResult := &v1alpha1.VerticalPodAutoscalerCheckpoint{}
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(verticalpodautoscalercheckpointsResource, c.ns, name), &v1alpha1.VerticalPodAutoscalerCheckpoint{})
+		Invokes(testing.NewGetActionWithOptions(verticalpodautoscalercheckpointsResource, c.ns, name, options), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.VerticalPodAutoscalerCheckpoint), err
 }
 
 // List takes label and field selectors, and returns the list of VerticalPodAutoscalerCheckpoints that match those selectors.
 func (c *FakeVerticalPodAutoscalerCheckpoints) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.VerticalPodAutoscalerCheckpointList, err error) {
+	emptyResult := &v1alpha1.VerticalPodAutoscalerCheckpointList{}
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(verticalpodautoscalercheckpointsResource, verticalpodautoscalercheckpointsKind, c.ns, opts), &v1alpha1.VerticalPodAutoscalerCheckpointList{})
+		Invokes(testing.NewListActionWithOptions(verticalpodautoscalercheckpointsResource, verticalpodautoscalercheckpointsKind, c.ns, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 
 	label, _, _ := testing.ExtractFromListOptions(opts)
@@ -75,28 +77,30 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) List(ctx context.Context, opts v1
 // Watch returns a watch.Interface that watches the requested verticalPodAutoscalerCheckpoints.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(verticalpodautoscalercheckpointsResource, c.ns, opts))
+		InvokesWatch(testing.NewWatchActionWithOptions(verticalpodautoscalercheckpointsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a verticalPodAutoscalerCheckpoint and creates it.  Returns the server's representation of the verticalPodAutoscalerCheckpoint, and an error, if there is any.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Create(ctx context.Context, verticalPodAutoscalerCheckpoint *v1alpha1.VerticalPodAutoscalerCheckpoint, opts v1.CreateOptions) (result *v1alpha1.VerticalPodAutoscalerCheckpoint, err error) {
+	emptyResult := &v1alpha1.VerticalPodAutoscalerCheckpoint{}
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(verticalpodautoscalercheckpointsResource, c.ns, verticalPodAutoscalerCheckpoint), &v1alpha1.VerticalPodAutoscalerCheckpoint{})
+		Invokes(testing.NewCreateActionWithOptions(verticalpodautoscalercheckpointsResource, c.ns, verticalPodAutoscalerCheckpoint, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.VerticalPodAutoscalerCheckpoint), err
 }
 
 // Update takes the representation of a verticalPodAutoscalerCheckpoint and updates it. Returns the server's representation of the verticalPodAutoscalerCheckpoint, and an error, if there is any.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Update(ctx context.Context, verticalPodAutoscalerCheckpoint *v1alpha1.VerticalPodAutoscalerCheckpoint, opts v1.UpdateOptions) (result *v1alpha1.VerticalPodAutoscalerCheckpoint, err error) {
+	emptyResult := &v1alpha1.VerticalPodAutoscalerCheckpoint{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(verticalpodautoscalercheckpointsResource, c.ns, verticalPodAutoscalerCheckpoint), &v1alpha1.VerticalPodAutoscalerCheckpoint{})
+		Invokes(testing.NewUpdateActionWithOptions(verticalpodautoscalercheckpointsResource, c.ns, verticalPodAutoscalerCheckpoint, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.VerticalPodAutoscalerCheckpoint), err
 }
@@ -111,7 +115,7 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) Delete(ctx context.Context, name 
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeVerticalPodAutoscalerCheckpoints) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(verticalpodautoscalercheckpointsResource, c.ns, listOpts)
+	action := testing.NewDeleteCollectionActionWithOptions(verticalpodautoscalercheckpointsResource, c.ns, opts, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.VerticalPodAutoscalerCheckpointList{})
 	return err
@@ -119,11 +123,12 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) DeleteCollection(ctx context.Cont
 
 // Patch applies the patch and returns the patched verticalPodAutoscalerCheckpoint.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.VerticalPodAutoscalerCheckpoint, err error) {
+	emptyResult := &v1alpha1.VerticalPodAutoscalerCheckpoint{}
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(verticalpodautoscalercheckpointsResource, c.ns, name, pt, data, subresources...), &v1alpha1.VerticalPodAutoscalerCheckpoint{})
+		Invokes(testing.NewPatchSubresourceActionWithOptions(verticalpodautoscalercheckpointsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.VerticalPodAutoscalerCheckpoint), err
 }
