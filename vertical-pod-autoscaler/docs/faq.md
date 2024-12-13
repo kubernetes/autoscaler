@@ -9,6 +9,7 @@
 - [Can I run the VPA in an HA configuration?](#can-i-run-the-vpa-in-an-ha-configuration)
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
 - [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
+- [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
@@ -252,3 +253,45 @@ Name | Type | Description | Default
 `leader-elect-resource-name` | String | The name of resource object that is used for locking during leader election. | "vpa-updater"
 `leader-elect-resource-namespace` | String | The namespace of resource object that is used for locking during leader election. | "kube-system"
 `leader-elect-retry-period` | Duration | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s
+
+### How can I configure VPA to manage only specific resources?
+
+You can configure VPA to manage only specific resources (CPU or memory) using the controlledResources field in the resourcePolicy section of your VPA configuration. This is particularly useful when you want to:
+
+* Combine VPA with HPA without resource conflicts
+* Focus VPA's management on specific resource types
+* Implement separate scaling strategies for different resources
+
+Example configuration:
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: resource-specific-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: my-app
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: "*"
+      controlledResources: ["memory"]  # Only manage memory resources
+```
+
+The controlledResources field accepts the following values:
+* ["cpu"] - VPA will only manage CPU resources
+* ["memory"] - VPA will only manage memory resources
+* ["cpu", "memory"] - VPA will manage both resources (default behavior)
+
+Common use cases:
+1. Memory-only VPA with CPU-based HPA:
+* Configure VPA to manage only memory using controlledResources: ["memory"]
+* Set up HPA to handle CPU-based scaling
+* This prevents conflicts between VPA and HPA
+
+2. CPU-only VPA:
+* Use controlledResources: ["cpu"] when you want to automate CPU resource allocation
+* Useful when memory requirements are stable but CPU usage varies
