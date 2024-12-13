@@ -131,6 +131,9 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 
 // WrapSchedulerNodeInfo wraps a *schedulerframework.NodeInfo into an internal *NodeInfo.
 func WrapSchedulerNodeInfo(schedNodeInfo *schedulerframework.NodeInfo, slices []*resourceapi.ResourceSlice, podExtraInfos map[types.UID]PodExtraInfo) *NodeInfo {
+	if podExtraInfos == nil {
+		podExtraInfos = map[types.UID]PodExtraInfo{}
+	}
 	return &NodeInfo{
 		schedNodeInfo:       schedNodeInfo,
 		podsExtraInfo:       podExtraInfos,
