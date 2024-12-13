@@ -43,6 +43,7 @@ func TestNodeInfo(t *testing.T) {
 		test.BuildTestPod("regular-pod-1", 100, 16),
 		test.BuildTestPod("regular-pod-2", 100, 16),
 	}
+	extraPod := test.BuildTestPod("extra-pod", 1, 1)
 	schedulerNodeInfo := newSchedNodeInfo(node, pods)
 	slices := []*resourceapi.ResourceSlice{
 		{
@@ -169,9 +170,29 @@ func TestNodeInfo(t *testing.T) {
 			wantLocalResourceSlices: slices,
 			wantPods:                testPodInfos([]*apiv1.Pod{pods[1], pods[3], pods[5]}, true),
 		},
+		{
+			testName: "wrapping via WrapSchedulerNodeInfo and adding more pods",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				result := WrapSchedulerNodeInfo(info, nil, nil)
+				result.AddPod(testPodInfos([]*apiv1.Pod{extraPod}, false)[0])
+				return result
+			},
+			wantSchedNodeInfo: newSchedNodeInfo(node, append(pods, extraPod)),
+			wantPods:          testPodInfos(append(pods, extraPod), false),
+		},
+		{
+			testName: "wrapping via WrapSchedulerNodeInfo and adding more pods using DRA",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				result := WrapSchedulerNodeInfo(info, nil, nil)
+				result.AddPod(testPodInfos([]*apiv1.Pod{extraPod}, true)[0])
+				return result
+			},
+			wantSchedNodeInfo: newSchedNodeInfo(node, append(pods, extraPod)),
+			wantPods:          append(testPodInfos(pods, false), testPodInfos([]*apiv1.Pod{extraPod}, true)...),
+		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
-			wrappedNodeInfo := tc.modFn(schedulerNodeInfo)
+			wrappedNodeInfo := tc.modFn(schedulerNodeInfo.Snapshot())
 
 			// Assert that the scheduler NodeInfo object is as expected.
 			nodeInfoCmpOpts := []cmp.Option{
