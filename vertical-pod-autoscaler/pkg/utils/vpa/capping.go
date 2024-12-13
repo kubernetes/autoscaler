@@ -195,33 +195,30 @@ func applyVPAPolicyForContainer(containerName string,
 
 	process := func(recommendation apiv1.ResourceList) {
 		for resourceName, recommended := range recommendation {
+			var maxAllowed apiv1.ResourceList
 			// containerPolicy can be nil (user does not have to configure it).
 			if containerPolicy != nil {
 				cappedToMin, _ := maybeCapToPolicyMin(recommended, resourceName, containerPolicy)
 				recommendation[resourceName] = cappedToMin
 
-				maxAllowed := containerPolicy.MaxAllowed
-				if globalMaxAllowed != nil {
-					if maxAllowed == nil {
-						maxAllowed = globalMaxAllowed
-					} else {
-						// Set resources from the global maxAllowed if the VPA maxAllowed is missing them.
-						for resourceName, quantity := range globalMaxAllowed {
-							if _, ok := maxAllowed[resourceName]; !ok {
-								maxAllowed[resourceName] = quantity
-							}
+				maxAllowed = containerPolicy.MaxAllowed
+			}
+
+			if globalMaxAllowed != nil {
+				if maxAllowed == nil {
+					maxAllowed = globalMaxAllowed
+				} else {
+					// Set resources from the global maxAllowed if the VPA maxAllowed is missing them.
+					for resourceName, quantity := range globalMaxAllowed {
+						if _, ok := maxAllowed[resourceName]; !ok {
+							maxAllowed[resourceName] = quantity
 						}
 					}
 				}
-
-				cappedToMax, _ := maybeCapToMax(cappedToMin, resourceName, maxAllowed)
-				recommendation[resourceName] = cappedToMax
-			} else {
-				if globalMaxAllowed != nil {
-					cappedToMax, _ := maybeCapToMax(recommended, resourceName, globalMaxAllowed)
-					recommendation[resourceName] = cappedToMax
-				}
 			}
+
+			cappedToMax, _ := maybeCapToMax(recommendation[resourceName], resourceName, maxAllowed)
+			recommendation[resourceName] = cappedToMax
 		}
 	}
 
