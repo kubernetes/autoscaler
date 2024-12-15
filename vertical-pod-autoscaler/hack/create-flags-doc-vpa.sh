@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function generate_vpa_docs_componenets {
-  componenets="recommender updater admission-controller"
-  for component in $componenets; do
+function generate_vpa_docs_components {
+  components="recommender updater admission-controller"
+  for component in $components; do
     echo "generate docs for $component"
     cd ../pkg/$component
     make document-flags
@@ -37,5 +37,5 @@ function move_and_merge_docs {
   cd -
 }
 
-generate_vpa_docs_componenets
+generate_vpa_docs_components
 move_and_merge_docs
