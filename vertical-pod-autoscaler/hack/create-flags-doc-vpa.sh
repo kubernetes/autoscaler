@@ -14,27 +14,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# Get the absolute path to the script's directory
+SCRIPT_DIR=$(realpath $(dirname ${BASH_SOURCE}))
+# Get the repository root (parent of hack directory)
+REPOSITORY_ROOT=$(realpath ${SCRIPT_DIR}/..)
+
 function generate_vpa_docs_components {
   components="recommender updater admission-controller"
   for component in $components; do
     echo "generate docs for $component"
-    cd ../pkg/$component
+    # Use absolute paths based on REPOSITORY_ROOT
+    cd "${REPOSITORY_ROOT}/pkg/${component}"
     make document-flags
-    cd -
+    cd - > /dev/null  # Suppress directory change messages
   done
 }
 
 function move_and_merge_docs {
   files="vpa-admission-flags.md vpa-recommender-flags.md vpa-updater-flags.md"
-  cd ../docs
+  # Use absolute path for docs directory
+  cd "${REPOSITORY_ROOT}/docs"
   rm -f flags.md
   touch flags.md
   for file in $files; do
     echo "merge $file"
-    cat $file >> flags.md
+    cat "$file" >> flags.md
     echo "" >> flags.md
   done
-  cd -
+  cd - > /dev/null  # Suppress directory change messages
 }
 
 generate_vpa_docs_components
