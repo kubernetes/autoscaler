@@ -37,15 +37,16 @@ function generate_vpa_docs_components {
 function move_and_merge_docs {
   files="vpa-admission-flags.md vpa-recommender-flags.md vpa-updater-flags.md"
   # Use absolute path for docs directory
-  cd "${REPOSITORY_ROOT}/docs"
-  rm -f flags.md
-  touch flags.md
-  for file in $files; do
-    echo "merge $file"
-    cat "$file" >> flags.md
-    echo "" >> flags.md
-  done
-  cd - > /dev/null  # Suppress directory change messages
+  (
+    cd "${REPOSITORY_ROOT}/docs"
+    rm -f flags.md
+    touch flags.md
+    for file in $files; do
+      echo "merge $file"
+      cat "$file" >> flags.md
+      echo "" >> flags.md
+    done
+  )
 }
 
 generate_vpa_docs_components
