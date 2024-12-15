@@ -124,10 +124,26 @@ func extractFlagFromCall(call *ast.CallExpr, sourcePath string) *flagInfo {
 	switch v := call.Args[1].(type) {
 	case *ast.BasicLit:
 		defaultValue = strings.Trim(v.Value, "\"")
+	case *ast.BinaryExpr:
+		// Handle Duration expressions like "1*time.Minute"
+		if lit, ok := v.X.(*ast.BasicLit); ok {
+			if sel, ok := v.Y.(*ast.SelectorExpr); ok {
+				if ident, ok := sel.X.(*ast.Ident); ok && ident.Name == "time" {
+					number := strings.Trim(lit.Value, "\"")
+					unit := sel.Sel.Name
+					defaultValue = fmt.Sprintf("%s%s", number, unit)
+				}
+			}
+		}
+	case *ast.UnaryExpr:
+		// Handle negative numbers
+		if lit, ok := v.X.(*ast.BasicLit); ok {
+			defaultValue = fmt.Sprintf("%s%s", v.Op.String(), lit.Value)
+		}
 	case *ast.Ident:
 		defaultValue = v.Name
 	default:
-		defaultValue = fmt.Sprintf("%v", v)
+		defaultValue = "0"
 	}
 
 	// Extract description
@@ -136,6 +152,9 @@ func extractFlagFromCall(call *ast.CallExpr, sourcePath string) *flagInfo {
 		return nil
 	}
 	description := strings.Trim(descArg.Value, "\"")
+	description = strings.ReplaceAll(description, "\n\t\t", " ")
+	description = strings.ReplaceAll(description, "\n", " ")
+	description = strings.TrimSpace(description)
 
 	return &flagInfo{
 		Name:         name,

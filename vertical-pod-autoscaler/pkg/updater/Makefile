@@ -89,6 +89,6 @@ format:
 
 .PHONY: all build test-unit clean format release
 
-.PHONY: updater-flags
-updater-flags:
+.PHONY: document-flags
+document-flags:
 	go run ../../hack/vpa-generate-flags.go . ../../docs/vpa-updater-flags.md
