@@ -45,6 +45,8 @@ function move_and_merge_docs {
       echo "merge $file"
       cat "$file" >> flags.md
       echo "" >> flags.md
+      # Remove the temporary file after merging
+      rm -f "$file"
     done
   )
 }
