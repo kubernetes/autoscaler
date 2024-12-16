@@ -446,6 +446,10 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) 
 					{toBeDeletedTaint},
 					{},
 				},
+				"test-node-3": {
+					{toBeDeletedTaint},
+					{},
+				},
 			},
 			wantErr: cmpopts.AnyError,
 		},
@@ -469,6 +473,10 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) 
 					{},
 				},
 				"atomic-4-node-1": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-3": {
 					{toBeDeletedTaint},
 					{},
 				},
@@ -1046,7 +1054,7 @@ func TestStartDeletion(t *testing.T) {
 					nodeName string
 					taints   []apiv1.Taint
 				}
-				taintUpdates := make(chan nodeTaints, 10)
+				taintUpdates := make(chan nodeTaints, 20)
 				deletedNodes := make(chan string, 10)
 				deletedPods := make(chan string, 10)
 

@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	default_context "context"
 	"strings"
 	"time"
 
@@ -43,11 +44,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/expiring"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 )
 
 const (
-	pastLatencyExpireDuration = time.Hour
+	pastLatencyExpireDuration  = time.Hour
+	maxConcurrentNodesTainting = 5
 )
 
 // Actuator is responsible for draining and deleting nodes.
@@ -179,33 +183,55 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView, nod
 // taintNodesSync synchronously taints all provided nodes with NoSchedule. If tainting fails for any of the nodes, already
 // applied taints are cleaned up.
 func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) (time.Duration, errors.AutoscalerError) {
-	var taintedNodes []*apiv1.Node
+	nodesToTaint := make([]*apiv1.Node, 0)
 	var updateLatencyTracker *UpdateLatencyTracker
 	nodeDeleteDelayAfterTaint := a.nodeDeleteDelayAfterTaint
 	if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
 		updateLatencyTracker = NewUpdateLatencyTracker(a.ctx.AutoscalingKubeClients.ListerRegistry.AllNodeLister())
 		go updateLatencyTracker.Start()
 	}
+
 	for _, bucket := range NodeGroupViews {
 		for _, node := range bucket.Nodes {
 			if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
 				updateLatencyTracker.StartTimeChan <- nodeTaintStartTime{node.Name, time.Now()}
 			}
-			err := a.taintNode(node)
-			if err != nil {
-				a.ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
-				// Clean up already applied taints in case of issues.
-				for _, taintedNode := range taintedNodes {
-					_, _ = taints.CleanToBeDeleted(taintedNode, a.ctx.ClientSet, a.ctx.CordonNodeBeforeTerminate)
-				}
-				if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
-					close(updateLatencyTracker.AwaitOrStopChan)
-				}
-				return nodeDeleteDelayAfterTaint, errors.NewAutoscalerError(errors.ApiCallError, "couldn't taint node %q with ToBeDeleted", node)
-			}
-			taintedNodes = append(taintedNodes, node)
+			nodesToTaint = append(nodesToTaint, node)
 		}
 	}
+	failedTaintedNodes := make(chan struct {
+		node *apiv1.Node
+		err  error
+	}, len(nodesToTaint))
+	taintedNodes := make(chan *apiv1.Node, len(nodesToTaint))
+	workqueue.ParallelizeUntil(default_context.Background(), maxConcurrentNodesTainting, len(nodesToTaint), func(piece int) {
+		node := nodesToTaint[piece]
+		err := a.taintNode(node)
+		if err != nil {
+			failedTaintedNodes <- struct {
+				node *apiv1.Node
+				err  error
+			}{node: node, err: err}
+		} else {
+			taintedNodes <- node
+		}
+	})
+	close(failedTaintedNodes)
+	close(taintedNodes)
+	if len(failedTaintedNodes) > 0 {
+		for nodeWithError := range failedTaintedNodes {
+			a.ctx.Recorder.Eventf(nodeWithError.node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", nodeWithError.err)
+		}
+		// Clean up already applied taints in case of issues.
+		for taintedNode := range taintedNodes {
+			_, _ = taints.CleanToBeDeleted(taintedNode, a.ctx.ClientSet, a.ctx.CordonNodeBeforeTerminate)
+		}
+		if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+			close(updateLatencyTracker.AwaitOrStopChan)
+		}
+		return nodeDeleteDelayAfterTaint, errors.NewAutoscalerError(errors.ApiCallError, "couldn't taint %d nodes with ToBeDeleted", len(failedTaintedNodes))
+	}
+
 	if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
 		updateLatencyTracker.AwaitOrStopChan <- true
 		latency, ok := <-updateLatencyTracker.ResultChan
