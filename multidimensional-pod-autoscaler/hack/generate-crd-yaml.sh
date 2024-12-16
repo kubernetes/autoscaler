@@ -45,12 +45,5 @@ grep -v -e 'map keys must be strings, not int' -e 'not all generators ran succes
     && { echo "Failed to generate CRD YAMLs."; exit 1; }
 
 cd ${WORKSPACE}
-cat <<EOF > kustomization.yaml
-resources:
-- autoscaling.k8s.io_multidimpodautoscalers.yaml
-- autoscaling.k8s.io_multidimpodautoscalercheckpoints.yaml
-commonAnnotations:
-  "api-approved.kubernetes.io": "https://github.com/kubernetes/kubernetes/pull/63797"
-EOF
-echo --- > ${OUTPUT}
-kubectl kustomize . >> ${OUTPUT}
+cat "${WORKSPACE}/autoscaling.k8s.io_multidimpodautoscalercheckpoints.yaml" > ${OUTPUT}
+cat "${WORKSPACE}/autoscaling.k8s.io_multidimpodautoscalers.yaml" >> ${OUTPUT}
