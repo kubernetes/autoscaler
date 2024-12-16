@@ -25,7 +25,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	mpa_clientset "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	mpa_api "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/recommender/checkpoint"
@@ -39,11 +38,8 @@ import (
 	vpa_model "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/client-go/informers"
 	coreinformers "k8s.io/client-go/informers/core/v1"
-	kube_client "k8s.io/client-go/kubernetes"
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 	klog "k8s.io/klog/v2"
 	hpa "k8s.io/kubernetes/pkg/controller/podautoscaler"
@@ -62,7 +58,6 @@ const (
 var (
 	checkpointsWriteTimeout = flag.Duration("checkpoints-timeout", time.Minute, `Timeout for writing checkpoints since the start of the recommender's main loop`)
 	minCheckpointsPerRun    = flag.Int("min-checkpoints", 10, "Minimum number of checkpoints to write per recommender's main loop")
-	memorySaver             = flag.Bool("memory-saver", false, `If true, only track pods which have an associated MPA`)
 )
 
 // From HPA
@@ -370,36 +365,4 @@ func (c RecommenderFactory) Make() Recommender {
 
 	klog.V(3).Infof("New Recommender created!")
 	return recommender
-}
-
-// NewRecommender creates a new recommender instance.
-// Dependencies are created automatically.
-// Deprecated; use RecommenderFactory instead.
-func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool, namespace string, recommenderName string, evtNamespacer v1core.EventsGetter, metricsClient metricsclient.MetricsClient, resyncPeriod time.Duration, downscaleStabilisationWindow time.Duration, tolerance float64, cpuInitializationPeriod time.Duration, delayOfInitialReadinessStatus time.Duration,
-) Recommender {
-	clusterState := model.NewClusterState(AggregateContainerStateGCInterval)
-	kubeClient := kube_client.NewForConfigOrDie(config)
-	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(namespace))
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
-	return RecommenderFactory{
-		ClusterState:           clusterState,
-		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace, "default-metrics-client", recommenderName),
-		ControllerFetcher:      controllerFetcher,
-		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, mpa_clientset.NewForConfigOrDie(config).AutoscalingV1alpha1()),
-		MpaClient:              mpa_clientset.NewForConfigOrDie(config).AutoscalingV1alpha1(),
-		SelectorFetcher:        target.NewMpaTargetSelectorFetcher(config, kubeClient, factory),
-		PodResourceRecommender: logic.CreatePodResourceRecommender(),
-		CheckpointsGCInterval:  checkpointsGCInterval,
-		UseCheckpoints:         useCheckpoints,
-
-		// For HPA.
-		EvtNamespacer:                 evtNamespacer,
-		PodInformer:                   factory.Core().V1().Pods(),
-		MetricsClient:                 metricsClient,
-		ResyncPeriod:                  resyncPeriod,
-		DownscaleStabilisationWindow:  downscaleStabilisationWindow,
-		Tolerance:                     tolerance,
-		CpuInitializationPeriod:       cpuInitializationPeriod,
-		DelayOfInitialReadinessStatus: delayOfInitialReadinessStatus,
-	}.Make()
 }
