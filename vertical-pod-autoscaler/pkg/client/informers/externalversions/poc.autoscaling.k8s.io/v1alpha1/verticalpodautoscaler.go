@@ -19,16 +19,16 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	pocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	apispocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	versioned "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	pocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -36,7 +36,7 @@ import (
 // VerticalPodAutoscalers.
 type VerticalPodAutoscalerInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.VerticalPodAutoscalerLister
+	Lister() pocautoscalingk8siov1alpha1.VerticalPodAutoscalerLister
 }
 
 type verticalPodAutoscalerInformer struct {
@@ -71,7 +71,7 @@ func NewFilteredVerticalPodAutoscalerInformer(client versioned.Interface, namesp
 				return client.PocV1alpha1().VerticalPodAutoscalers(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&pocautoscalingk8siov1alpha1.VerticalPodAutoscaler{},
+		&apispocautoscalingk8siov1alpha1.VerticalPodAutoscaler{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,9 +82,9 @@ func (f *verticalPodAutoscalerInformer) defaultInformer(client versioned.Interfa
 }
 
 func (f *verticalPodAutoscalerInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&pocautoscalingk8siov1alpha1.VerticalPodAutoscaler{}, f.defaultInformer)
+	return f.factory.InformerFor(&apispocautoscalingk8siov1alpha1.VerticalPodAutoscaler{}, f.defaultInformer)
 }
 
-func (f *verticalPodAutoscalerInformer) Lister() v1alpha1.VerticalPodAutoscalerLister {
-	return v1alpha1.NewVerticalPodAutoscalerLister(f.Informer().GetIndexer())
+func (f *verticalPodAutoscalerInformer) Lister() pocautoscalingk8siov1alpha1.VerticalPodAutoscalerLister {
+	return pocautoscalingk8siov1alpha1.NewVerticalPodAutoscalerLister(f.Informer().GetIndexer())
 }

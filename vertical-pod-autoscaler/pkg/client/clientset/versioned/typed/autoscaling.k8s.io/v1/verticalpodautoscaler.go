@@ -19,12 +19,12 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	autoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	scheme "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -37,33 +37,36 @@ type VerticalPodAutoscalersGetter interface {
 
 // VerticalPodAutoscalerInterface has methods to work with VerticalPodAutoscaler resources.
 type VerticalPodAutoscalerInterface interface {
-	Create(ctx context.Context, verticalPodAutoscaler *v1.VerticalPodAutoscaler, opts metav1.CreateOptions) (*v1.VerticalPodAutoscaler, error)
-	Update(ctx context.Context, verticalPodAutoscaler *v1.VerticalPodAutoscaler, opts metav1.UpdateOptions) (*v1.VerticalPodAutoscaler, error)
+	Create(ctx context.Context, verticalPodAutoscaler *autoscalingk8siov1.VerticalPodAutoscaler, opts metav1.CreateOptions) (*autoscalingk8siov1.VerticalPodAutoscaler, error)
+	Update(ctx context.Context, verticalPodAutoscaler *autoscalingk8siov1.VerticalPodAutoscaler, opts metav1.UpdateOptions) (*autoscalingk8siov1.VerticalPodAutoscaler, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, verticalPodAutoscaler *v1.VerticalPodAutoscaler, opts metav1.UpdateOptions) (*v1.VerticalPodAutoscaler, error)
+	UpdateStatus(ctx context.Context, verticalPodAutoscaler *autoscalingk8siov1.VerticalPodAutoscaler, opts metav1.UpdateOptions) (*autoscalingk8siov1.VerticalPodAutoscaler, error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
-	Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.VerticalPodAutoscaler, error)
-	List(ctx context.Context, opts metav1.ListOptions) (*v1.VerticalPodAutoscalerList, error)
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*autoscalingk8siov1.VerticalPodAutoscaler, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*autoscalingk8siov1.VerticalPodAutoscalerList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.VerticalPodAutoscaler, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *autoscalingk8siov1.VerticalPodAutoscaler, err error)
 	VerticalPodAutoscalerExpansion
 }
 
 // verticalPodAutoscalers implements VerticalPodAutoscalerInterface
 type verticalPodAutoscalers struct {
-	*gentype.ClientWithList[*v1.VerticalPodAutoscaler, *v1.VerticalPodAutoscalerList]
+	*gentype.ClientWithList[*autoscalingk8siov1.VerticalPodAutoscaler, *autoscalingk8siov1.VerticalPodAutoscalerList]
 }
 
 // newVerticalPodAutoscalers returns a VerticalPodAutoscalers
 func newVerticalPodAutoscalers(c *AutoscalingV1Client, namespace string) *verticalPodAutoscalers {
 	return &verticalPodAutoscalers{
-		gentype.NewClientWithList[*v1.VerticalPodAutoscaler, *v1.VerticalPodAutoscalerList](
+		gentype.NewClientWithList[*autoscalingk8siov1.VerticalPodAutoscaler, *autoscalingk8siov1.VerticalPodAutoscalerList](
 			"verticalpodautoscalers",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1.VerticalPodAutoscaler { return &v1.VerticalPodAutoscaler{} },
-			func() *v1.VerticalPodAutoscalerList { return &v1.VerticalPodAutoscalerList{} }),
+			func() *autoscalingk8siov1.VerticalPodAutoscaler { return &autoscalingk8siov1.VerticalPodAutoscaler{} },
+			func() *autoscalingk8siov1.VerticalPodAutoscalerList {
+				return &autoscalingk8siov1.VerticalPodAutoscalerList{}
+			},
+		),
 	}
 }

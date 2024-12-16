@@ -19,10 +19,10 @@ limitations under the License.
 package v1beta2
 
 import (
-	"k8s.io/apimachinery/pkg/labels"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	labels "k8s.io/apimachinery/pkg/labels"
+	autoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // VerticalPodAutoscalerCheckpointLister helps list VerticalPodAutoscalerCheckpoints.
@@ -30,7 +30,7 @@ import (
 type VerticalPodAutoscalerCheckpointLister interface {
 	// List lists all VerticalPodAutoscalerCheckpoints in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta2.VerticalPodAutoscalerCheckpoint, err error)
+	List(selector labels.Selector) (ret []*autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpoint, err error)
 	// VerticalPodAutoscalerCheckpoints returns an object that can list and get VerticalPodAutoscalerCheckpoints.
 	VerticalPodAutoscalerCheckpoints(namespace string) VerticalPodAutoscalerCheckpointNamespaceLister
 	VerticalPodAutoscalerCheckpointListerExpansion
@@ -38,17 +38,17 @@ type VerticalPodAutoscalerCheckpointLister interface {
 
 // verticalPodAutoscalerCheckpointLister implements the VerticalPodAutoscalerCheckpointLister interface.
 type verticalPodAutoscalerCheckpointLister struct {
-	listers.ResourceIndexer[*v1beta2.VerticalPodAutoscalerCheckpoint]
+	listers.ResourceIndexer[*autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpoint]
 }
 
 // NewVerticalPodAutoscalerCheckpointLister returns a new VerticalPodAutoscalerCheckpointLister.
 func NewVerticalPodAutoscalerCheckpointLister(indexer cache.Indexer) VerticalPodAutoscalerCheckpointLister {
-	return &verticalPodAutoscalerCheckpointLister{listers.New[*v1beta2.VerticalPodAutoscalerCheckpoint](indexer, v1beta2.Resource("verticalpodautoscalercheckpoint"))}
+	return &verticalPodAutoscalerCheckpointLister{listers.New[*autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpoint](indexer, autoscalingk8siov1beta2.Resource("verticalpodautoscalercheckpoint"))}
 }
 
 // VerticalPodAutoscalerCheckpoints returns an object that can list and get VerticalPodAutoscalerCheckpoints.
 func (s *verticalPodAutoscalerCheckpointLister) VerticalPodAutoscalerCheckpoints(namespace string) VerticalPodAutoscalerCheckpointNamespaceLister {
-	return verticalPodAutoscalerCheckpointNamespaceLister{listers.NewNamespaced[*v1beta2.VerticalPodAutoscalerCheckpoint](s.ResourceIndexer, namespace)}
+	return verticalPodAutoscalerCheckpointNamespaceLister{listers.NewNamespaced[*autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpoint](s.ResourceIndexer, namespace)}
 }
 
 // VerticalPodAutoscalerCheckpointNamespaceLister helps list and get VerticalPodAutoscalerCheckpoints.
@@ -56,15 +56,15 @@ func (s *verticalPodAutoscalerCheckpointLister) VerticalPodAutoscalerCheckpoints
 type VerticalPodAutoscalerCheckpointNamespaceLister interface {
 	// List lists all VerticalPodAutoscalerCheckpoints in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta2.VerticalPodAutoscalerCheckpoint, err error)
+	List(selector labels.Selector) (ret []*autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpoint, err error)
 	// Get retrieves the VerticalPodAutoscalerCheckpoint from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1beta2.VerticalPodAutoscalerCheckpoint, error)
+	Get(name string) (*autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpoint, error)
 	VerticalPodAutoscalerCheckpointNamespaceListerExpansion
 }
 
 // verticalPodAutoscalerCheckpointNamespaceLister implements the VerticalPodAutoscalerCheckpointNamespaceLister
 // interface.
 type verticalPodAutoscalerCheckpointNamespaceLister struct {
-	listers.ResourceIndexer[*v1beta2.VerticalPodAutoscalerCheckpoint]
+	listers.ResourceIndexer[*autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpoint]
 }
