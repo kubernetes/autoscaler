@@ -214,7 +214,7 @@ func (m *Manager) coresMemoryTotal(ctx *context.AutoscalingContext, nodeInfos ma
 
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
-			return 0, 0, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for: %s", nodeGroup.Id())
+			return 0, 0, errors.NewAutoscalerErrorf(errors.CloudProviderError, "No node info for: %s", nodeGroup.Id())
 		}
 
 		if currentSize > 0 {
@@ -243,7 +243,7 @@ func (m *Manager) customResourcesTotal(ctx *context.AutoscalingContext, nodeInfo
 
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
-			return nil, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for: %s", nodeGroup.Id())
+			return nil, errors.NewAutoscalerErrorf(errors.CloudProviderError, "No node info for: %s", nodeGroup.Id())
 		}
 
 		if currentSize > 0 {

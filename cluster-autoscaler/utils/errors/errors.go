@@ -68,8 +68,16 @@ const (
 	UnexpectedScaleDownStateError AutoscalerErrorType = "unexpectedScaleDownStateError"
 )
 
-// NewAutoscalerError returns new autoscaler error with a message constructed from format string
-func NewAutoscalerError(errorType AutoscalerErrorType, msg string, args ...interface{}) AutoscalerError {
+// NewAutoscalerError returns new autoscaler error with a message constructed from string
+func NewAutoscalerError(errorType AutoscalerErrorType, msg string) AutoscalerError {
+	return autoscalerErrorImpl{
+		errorType: errorType,
+		msg:       msg,
+	}
+}
+
+// NewAutoscalerErrorf returns new autoscaler error with a message constructed from format string
+func NewAutoscalerErrorf(errorType AutoscalerErrorType, msg string, args ...interface{}) AutoscalerError {
 	return autoscalerErrorImpl{
 		errorType: errorType,
 		msg:       fmt.Sprintf(msg, args...),

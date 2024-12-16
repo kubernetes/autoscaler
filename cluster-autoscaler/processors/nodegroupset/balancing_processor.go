@@ -41,7 +41,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 	nodeGroupId := nodeGroup.Id()
 	nodeInfo, found := nodeInfosForGroups[nodeGroupId]
 	if !found {
-		return []cloudprovider.NodeGroup{}, errors.NewAutoscalerError(
+		return []cloudprovider.NodeGroup{}, errors.NewAutoscalerErrorf(
 			errors.InternalError,
 			"failed to find template node for node group %s",
 			nodeGroupId)
@@ -88,7 +88,7 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 	for _, ng := range groups {
 		currentSize, err := ng.TargetSize()
 		if err != nil {
-			return []ScaleUpInfo{}, errors.NewAutoscalerError(
+			return []ScaleUpInfo{}, errors.NewAutoscalerErrorf(
 				errors.CloudProviderError,
 				"failed to get node group size: %v", err)
 		}

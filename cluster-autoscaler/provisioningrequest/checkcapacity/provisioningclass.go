@@ -103,7 +103,7 @@ func (o *checkCapacityProvClass) Provision(
 	// Gather ProvisioningRequests.
 	prs, err := o.getProvisioningRequestsAndPods(unschedulablePods)
 	if err != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "Error fetching provisioning requests and associated pods: %s", err.Error()))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "Error fetching provisioning requests and associated pods: %s", err.Error()))
 	} else if len(prs) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
@@ -213,7 +213,7 @@ func updateRequests(client *provreqclient.ProvisioningRequestClient, prWrappers 
 			_, updErr := client.UpdateProvisioningRequest(provReq)
 			if updErr != nil {
 				err := fmt.Errorf("failed to update ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
-				scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "error during ScaleUp: %s", err.Error()))
+				scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))
 				lock.Lock()
 				combinedStatus.Add(scaleUpStatus)
 				lock.Unlock()

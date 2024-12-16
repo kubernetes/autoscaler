@@ -253,7 +253,7 @@ func checkUniqueNodeGroups(scaleUpInfos []nodegroupset.ScaleUpInfo) errors.Autos
 	uniqueGroups := make(map[string]bool)
 	for _, info := range scaleUpInfos {
 		if uniqueGroups[info.Group.Id()] {
-			return errors.NewAutoscalerError(
+			return errors.NewAutoscalerErrorf(
 				errors.InternalError,
 				"assertion failure: detected group double scaling: %s", info.Group.Id(),
 			)
