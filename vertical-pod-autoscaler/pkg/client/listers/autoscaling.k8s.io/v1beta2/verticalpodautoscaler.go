@@ -19,10 +19,10 @@ limitations under the License.
 package v1beta2
 
 import (
-	"k8s.io/apimachinery/pkg/labels"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	labels "k8s.io/apimachinery/pkg/labels"
+	autoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // VerticalPodAutoscalerLister helps list VerticalPodAutoscalers.
@@ -30,7 +30,7 @@ import (
 type VerticalPodAutoscalerLister interface {
 	// List lists all VerticalPodAutoscalers in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta2.VerticalPodAutoscaler, err error)
+	List(selector labels.Selector) (ret []*autoscalingk8siov1beta2.VerticalPodAutoscaler, err error)
 	// VerticalPodAutoscalers returns an object that can list and get VerticalPodAutoscalers.
 	VerticalPodAutoscalers(namespace string) VerticalPodAutoscalerNamespaceLister
 	VerticalPodAutoscalerListerExpansion
@@ -38,17 +38,17 @@ type VerticalPodAutoscalerLister interface {
 
 // verticalPodAutoscalerLister implements the VerticalPodAutoscalerLister interface.
 type verticalPodAutoscalerLister struct {
-	listers.ResourceIndexer[*v1beta2.VerticalPodAutoscaler]
+	listers.ResourceIndexer[*autoscalingk8siov1beta2.VerticalPodAutoscaler]
 }
 
 // NewVerticalPodAutoscalerLister returns a new VerticalPodAutoscalerLister.
 func NewVerticalPodAutoscalerLister(indexer cache.Indexer) VerticalPodAutoscalerLister {
-	return &verticalPodAutoscalerLister{listers.New[*v1beta2.VerticalPodAutoscaler](indexer, v1beta2.Resource("verticalpodautoscaler"))}
+	return &verticalPodAutoscalerLister{listers.New[*autoscalingk8siov1beta2.VerticalPodAutoscaler](indexer, autoscalingk8siov1beta2.Resource("verticalpodautoscaler"))}
 }
 
 // VerticalPodAutoscalers returns an object that can list and get VerticalPodAutoscalers.
 func (s *verticalPodAutoscalerLister) VerticalPodAutoscalers(namespace string) VerticalPodAutoscalerNamespaceLister {
-	return verticalPodAutoscalerNamespaceLister{listers.NewNamespaced[*v1beta2.VerticalPodAutoscaler](s.ResourceIndexer, namespace)}
+	return verticalPodAutoscalerNamespaceLister{listers.NewNamespaced[*autoscalingk8siov1beta2.VerticalPodAutoscaler](s.ResourceIndexer, namespace)}
 }
 
 // VerticalPodAutoscalerNamespaceLister helps list and get VerticalPodAutoscalers.
@@ -56,15 +56,15 @@ func (s *verticalPodAutoscalerLister) VerticalPodAutoscalers(namespace string) V
 type VerticalPodAutoscalerNamespaceLister interface {
 	// List lists all VerticalPodAutoscalers in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta2.VerticalPodAutoscaler, err error)
+	List(selector labels.Selector) (ret []*autoscalingk8siov1beta2.VerticalPodAutoscaler, err error)
 	// Get retrieves the VerticalPodAutoscaler from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1beta2.VerticalPodAutoscaler, error)
+	Get(name string) (*autoscalingk8siov1beta2.VerticalPodAutoscaler, error)
 	VerticalPodAutoscalerNamespaceListerExpansion
 }
 
 // verticalPodAutoscalerNamespaceLister implements the VerticalPodAutoscalerNamespaceLister
 // interface.
 type verticalPodAutoscalerNamespaceLister struct {
-	listers.ResourceIndexer[*v1beta2.VerticalPodAutoscaler]
+	listers.ResourceIndexer[*autoscalingk8siov1beta2.VerticalPodAutoscaler]
 }

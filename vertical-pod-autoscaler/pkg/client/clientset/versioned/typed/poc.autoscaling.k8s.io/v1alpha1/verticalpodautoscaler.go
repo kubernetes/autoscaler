@@ -19,12 +19,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	pocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	scheme "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -37,33 +37,38 @@ type VerticalPodAutoscalersGetter interface {
 
 // VerticalPodAutoscalerInterface has methods to work with VerticalPodAutoscaler resources.
 type VerticalPodAutoscalerInterface interface {
-	Create(ctx context.Context, verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler, opts v1.CreateOptions) (*v1alpha1.VerticalPodAutoscaler, error)
-	Update(ctx context.Context, verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (*v1alpha1.VerticalPodAutoscaler, error)
+	Create(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts v1.CreateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
+	Update(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (*v1alpha1.VerticalPodAutoscaler, error)
+	UpdateStatus(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.VerticalPodAutoscaler, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.VerticalPodAutoscalerList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
+	List(ctx context.Context, opts v1.ListOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.VerticalPodAutoscaler, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, err error)
 	VerticalPodAutoscalerExpansion
 }
 
 // verticalPodAutoscalers implements VerticalPodAutoscalerInterface
 type verticalPodAutoscalers struct {
-	*gentype.ClientWithList[*v1alpha1.VerticalPodAutoscaler, *v1alpha1.VerticalPodAutoscalerList]
+	*gentype.ClientWithList[*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerList]
 }
 
 // newVerticalPodAutoscalers returns a VerticalPodAutoscalers
 func newVerticalPodAutoscalers(c *PocV1alpha1Client, namespace string) *verticalPodAutoscalers {
 	return &verticalPodAutoscalers{
-		gentype.NewClientWithList[*v1alpha1.VerticalPodAutoscaler, *v1alpha1.VerticalPodAutoscalerList](
+		gentype.NewClientWithList[*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerList](
 			"verticalpodautoscalers",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1alpha1.VerticalPodAutoscaler { return &v1alpha1.VerticalPodAutoscaler{} },
-			func() *v1alpha1.VerticalPodAutoscalerList { return &v1alpha1.VerticalPodAutoscalerList{} }),
+			func() *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler {
+				return &pocautoscalingk8siov1alpha1.VerticalPodAutoscaler{}
+			},
+			func() *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerList {
+				return &pocautoscalingk8siov1alpha1.VerticalPodAutoscalerList{}
+			},
+		),
 	}
 }
