@@ -39,6 +39,7 @@ import (
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/updater/priority"
 	mpa_api_util "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/mpa"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -73,6 +74,8 @@ type updater struct {
 	selectorFetcher              target.MpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
+	controllerFetcher            controllerfetcher.ControllerFetcher
+	ignoredNamespaces            []string
 }
 
 // NewUpdater creates Updater with given configuration
@@ -88,8 +91,10 @@ func NewUpdater(
 	recommendationProcessor mpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
 	selectorFetcher target.MpaTargetSelectorFetcher,
+	controllerFetcher controllerfetcher.ControllerFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
+	ignoredNamespaces []string,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -106,12 +111,14 @@ func NewUpdater(
 		evictionAdmission:            evictionAdmission,
 		priorityProcessor:            priorityProcessor,
 		selectorFetcher:              selectorFetcher,
+		controllerFetcher:            controllerFetcher,
 		useAdmissionControllerStatus: useAdmissionControllerStatus,
 		statusValidator: status.NewValidator(
 			kubeClient,
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
+		ignoredNamespaces: ignoredNamespaces,
 	}, nil
 }
 
@@ -121,7 +128,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer timer.ObserveTotal()
 
 	if u.useAdmissionControllerStatus {
-		isValid, err := u.statusValidator.IsStatusValid(status.AdmissionControllerStatusTimeout)
+		isValid, err := u.statusValidator.IsStatusValid(ctx, status.AdmissionControllerStatusTimeout)
 		if err != nil {
 			klog.Errorf("Error getting Admission Controller status: %v. Skipping eviction loop", err)
 			return
@@ -148,7 +155,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).Infof("skipping MPA object %v because its mode is not \"Recreate\" or \"Auto\"", mpa.Name)
 			continue
 		}
-		selector, err := u.selectorFetcher.Fetch(mpa)
+		selector, err := u.selectorFetcher.Fetch(ctx, mpa)
 		if err != nil {
 			klog.V(3).Infof("skipping MPA object %v because we cannot fetch selector", mpa.Name)
 			continue
@@ -179,7 +186,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*mpa_types.MultidimPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
-		controllingMPA := mpa_api_util.GetControllingMPAForPod(pod, mpas)
+		controllingMPA := mpa_api_util.GetControllingMPAForPod(ctx, pod, mpas, u.controllerFetcher)
 		if controllingMPA != nil {
 			controlledPods[controllingMPA.Mpa] = append(controlledPods[controllingMPA.Mpa], pod)
 		}
@@ -226,7 +233,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				return
 			}
 			klog.V(2).Infof("evicting pod %v", pod.Name)
-			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
+			evictErr := evictionLimiter.Evict(pod, mpa, u.eventRecorder)
 			if evictErr != nil {
 				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
 			} else {
@@ -253,7 +260,7 @@ func (u *updater) RunOnceUpdatingDeployment(ctx context.Context) {
 	defer timer.ObserveTotal()
 
 	if u.useAdmissionControllerStatus {
-		isValid, err := u.statusValidator.IsStatusValid(status.AdmissionControllerStatusTimeout)
+		isValid, err := u.statusValidator.IsStatusValid(ctx, status.AdmissionControllerStatusTimeout)
 		if err != nil {
 			klog.Errorf("Error getting Admission Controller status: %v. Skipping eviction loop", err)
 			return
@@ -280,7 +287,7 @@ func (u *updater) RunOnceUpdatingDeployment(ctx context.Context) {
 			klog.V(3).Infof("skipping MPA object %v because its mode is not \"Recreate\" or \"Auto\"", mpa.Name)
 			continue
 		}
-		selector, err := u.selectorFetcher.Fetch(mpa)
+		selector, err := u.selectorFetcher.Fetch(ctx, mpa)
 		if err != nil {
 			klog.V(3).Infof("skipping MPA object %v because we cannot fetch selector", mpa.Name)
 			continue
@@ -355,7 +362,7 @@ func (u *updater) RunOnceUpdatingDeployment(ctx context.Context) {
 
 	controlledPods := make(map[*mpa_types.MultidimPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
-		controllingMPA := mpa_api_util.GetControllingMPAForPod(pod, mpas)
+		controllingMPA := mpa_api_util.GetControllingMPAForPod(ctx, pod, mpas, u.controllerFetcher)
 		if controllingMPA != nil {
 			controlledPods[controllingMPA.Mpa] = append(controlledPods[controllingMPA.Mpa], pod)
 		}
@@ -402,7 +409,7 @@ func (u *updater) RunOnceUpdatingDeployment(ctx context.Context) {
 				return
 			}
 			klog.V(2).Infof("evicting pod %v", pod.Name)
-			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
+			evictErr := evictionLimiter.Evict(pod, mpa, u.eventRecorder)
 			if evictErr != nil {
 				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
 			} else {

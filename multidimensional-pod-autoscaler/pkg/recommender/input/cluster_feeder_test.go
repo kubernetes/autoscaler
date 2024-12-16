@@ -17,6 +17,7 @@ limitations under the License.
 package input
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -48,7 +49,7 @@ type fakeControllerFetcher struct {
 	scaleNamespacer scale.ScalesGetter
 }
 
-func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(_ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
 	return f.key, f.err
 }
 
@@ -329,7 +330,7 @@ func TestLoadPods(t *testing.T) {
 			if tc.expectedMpaFetch {
 				targetSelectorFetcher.EXPECT().Fetch(mpa).Return(tc.selector, tc.fetchSelectorError)
 			}
-			clusterStateFeeder.LoadMPAs()
+			clusterStateFeeder.LoadMPAs(context.Background())
 
 			mpaID := model.MpaID{
 				Namespace: mpa.Namespace,

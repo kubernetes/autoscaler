@@ -20,22 +20,33 @@ import (
 	"context"
 	"flag"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/spf13/pflag"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/common"
 	mpa_clientset "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/target"
 	updater "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/updater/logic"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/updater/priority"
 	mpa_api_util "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/mpa"
+	vpa_common "k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
+	componentbaseconfig "k8s.io/component-base/config"
+	componentbaseoptions "k8s.io/component-base/config/options"
 	"k8s.io/klog/v2"
 )
 
@@ -55,44 +66,125 @@ var (
 
 	evictionRateBurst = flag.Int("eviction-rate-burst", 1, `Burst of pods that can be evicted.`)
 
-	address      = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
-	kubeconfig   = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
-	kubeApiQps   = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
-	kubeApiBurst = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
+	address = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
 
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
 
-	namespace          = os.Getenv("NAMESPACE")
-	mpaObjectNamespace = flag.String("mpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for MPA objects. Empty means all namespaces will be used.")
+	namespace                  = os.Getenv("NAMESPACE")
+	mpaObjectNamespace         = flag.String("mpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for MPA objects. Empty means all namespaces will be used.")
+	ignoredMpaObjectNamespaces = flag.String("ignored-mpa-object-namespaces", "", "Comma separated list of namespaces to ignore when searching for MPA objects. Empty means no namespaces will be ignored.")
 )
 
-const defaultResyncPeriod time.Duration = 10 * time.Minute
+const (
+	defaultResyncPeriod          time.Duration = 10 * time.Minute
+	scaleCacheEntryLifetime      time.Duration = time.Hour
+	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
+	scaleCacheEntryJitterFactor  float64       = 1.
+)
 
 func main() {
+	commonFlags := vpa_common.InitCommonFlags()
 	klog.InitFlags(nil)
+	vpa_common.InitLoggingFlags()
+
+	leaderElection := defaultLeaderElectionConfiguration()
+	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Multidimensional Pod Autoscaler %s Updater", common.MultidimPodAutoscalerVersion)
 
+	if len(*mpaObjectNamespace) > 0 && len(*ignoredMpaObjectNamespaces) > 0 {
+		klog.Fatalf("--mpa-object-namespace and --ignored-mpa-object-namespaces are mutually exclusive and can't be set together.")
+	}
+
 	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
-	metrics.Initialize(*address, healthCheck)
+	server.Initialize(&commonFlags.EnableProfiling, healthCheck, address)
+
 	metrics_updater.Register()
 
-	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
+	if !leaderElection.LeaderElect {
+		run(healthCheck, commonFlags)
+	} else {
+		id, err := os.Hostname()
+		if err != nil {
+			klog.Fatalf("Unable to get hostname: %v", err)
+		}
+		id = id + "_" + string(uuid.NewUUID())
+
+		config := common.CreateKubeConfigOrDie(commonFlags.KubeConfig, float32(commonFlags.KubeApiQps), int(commonFlags.KubeApiBurst))
+		kubeClient := kube_client.NewForConfigOrDie(config)
+
+		lock, err := resourcelock.New(
+			leaderElection.ResourceLock,
+			leaderElection.ResourceNamespace,
+			leaderElection.ResourceName,
+			kubeClient.CoreV1(),
+			kubeClient.CoordinationV1(),
+			resourcelock.ResourceLockConfig{
+				Identity: id,
+			},
+		)
+		if err != nil {
+			klog.Fatalf("Unable to create leader election lock: %v", err)
+		}
+
+		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
+			Lock:            lock,
+			LeaseDuration:   leaderElection.LeaseDuration.Duration,
+			RenewDeadline:   leaderElection.RenewDeadline.Duration,
+			RetryPeriod:     leaderElection.RetryPeriod.Duration,
+			ReleaseOnCancel: true,
+			Callbacks: leaderelection.LeaderCallbacks{
+				OnStartedLeading: func(_ context.Context) {
+					run(healthCheck, commonFlags)
+				},
+				OnStoppedLeading: func() {
+					klog.Fatal("lost master")
+				},
+			},
+		})
+	}
+}
+
+const (
+	defaultLeaseDuration = 15 * time.Second
+	defaultRenewDeadline = 10 * time.Second
+	defaultRetryPeriod   = 2 * time.Second
+)
+
+func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+	return componentbaseconfig.LeaderElectionConfiguration{
+		LeaderElect:       false,
+		LeaseDuration:     metav1.Duration{Duration: defaultLeaseDuration},
+		RenewDeadline:     metav1.Duration{Duration: defaultRenewDeadline},
+		RetryPeriod:       metav1.Duration{Duration: defaultRetryPeriod},
+		ResourceLock:      resourcelock.LeasesResourceLock,
+		ResourceName:      "mpa-updater",
+		ResourceNamespace: metav1.NamespaceSystem,
+	}
+}
+
+func run(healthCheck *metrics.HealthCheck, commonFlag *vpa_common.CommonFlags) {
+	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	mpaClient := mpa_clientset.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewMpaTargetSelectorFetcher(config, kubeClient, factory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
-		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
+		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	admissionControllerStatusNamespace := status.AdmissionControllerStatusNamespace
 	if namespace != "" {
 		admissionControllerStatusNamespace = namespace
 	}
+
+	ignoredNamespaces := strings.Split(*ignoredMpaObjectNamespaces, ",")
+
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
@@ -106,14 +198,18 @@ func main() {
 		mpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		nil,
 		targetSelectorFetcher,
+		controllerFetcher,
 		priority.NewProcessor(),
 		*mpaObjectNamespace,
+		ignoredNamespaces,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
-	} else {
-		klog.V(1).Infof("Updater created!")
 	}
+
+	// Start updating health check endpoint.
+	healthCheck.StartMonitoring()
+
 	ticker := time.Tick(*updaterInterval)
 	for range ticker {
 		ctx, cancel := context.WithTimeout(context.Background(), *updaterInterval)

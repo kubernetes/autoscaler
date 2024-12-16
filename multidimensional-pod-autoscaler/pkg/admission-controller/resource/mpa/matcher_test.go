@@ -17,6 +17,7 @@ limitations under the License.
 package mpa
 
 import (
+	"context"
 	"testing"
 
 	core "k8s.io/api/core/v1"
@@ -26,6 +27,7 @@ import (
 	target_mock "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/test"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	test_vpa "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 
 	"github.com/golang/mock/gomock"
@@ -115,10 +117,16 @@ func TestGetMatchingVpa(t *testing.T) {
 			mpaLister := &test.MultidimPodAutoscalerListerMock{}
 			mpaLister.On("MultidimPodAutoscalers", "default").Return(mpaNamespaceLister)
 
-			mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
-			matcher := NewMatcher(mpaLister, mockSelectorFetcher)
+			if tc.labelSelector != "" {
+				mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
+			}
+			// This test is using a FakeControllerFetcher which returns the same ownerRef that is passed to it.
+			// In other words, it cannot go through the hierarchy of controllers like "ReplicaSet => Deployment"
+			// For this reason we are using "StatefulSet" as the ownerRef kind in the test, since it is a direct link.
+			// The hierarchy part is being test in the "TestControllerFetcher" test.
+			matcher := NewMatcher(mpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
 
-			mpa := matcher.GetMatchingMPA(tc.pod)
+			mpa := matcher.GetMatchingMPA(context.Background(), tc.pod)
 			if tc.expectedFound && assert.NotNil(t, mpa) {
 				assert.Equal(t, tc.expectedVpaName, mpa.Name)
 			} else {

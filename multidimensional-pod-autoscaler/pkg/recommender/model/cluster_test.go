@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -82,7 +83,7 @@ func (f *fakeControllerFetcher) Scales(namespace string) scale.ScaleInterface {
 	return f.scaleNamespacer.Scales(namespace)
 }
 
-func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(controller *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, controller *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
 	return f.key, f.err
 }
 
@@ -112,6 +113,8 @@ func TestClusterAddSample(t *testing.T) {
 }
 
 func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	mpa := addTestMpa(cluster)
@@ -127,7 +130,7 @@ func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since last sample
-	cluster.garbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(9*24*time.Hour), testControllerFetcher)
+	cluster.garbageCollectAggregateCollectionStates(ctx, usageSample.MeasureStart.Add(9*24*time.Hour), testControllerFetcher)
 
 	// AggegateContainerState should be deleted from both cluster and mpa
 	assert.Empty(t, cluster.aggregateStateMap)
@@ -135,6 +138,8 @@ func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 }
 
 func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	mpa := addTestMpa(cluster)
@@ -153,12 +158,12 @@ func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
 	}
 
 	// Verify empty aggregate states are not removed right away.
-	cluster.garbageCollectAggregateCollectionStates(creationTime.Add(1*time.Minute), testControllerFetcher) // AggegateContainerState should be deleted from both cluster and mpa
+	cluster.garbageCollectAggregateCollectionStates(ctx, creationTime.Add(1*time.Minute), testControllerFetcher) // AggegateContainerState should be deleted from both cluster and mpa
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since creation
-	cluster.garbageCollectAggregateCollectionStates(creationTime.Add(9*24*time.Hour), testControllerFetcher)
+	cluster.garbageCollectAggregateCollectionStates(ctx, creationTime.Add(9*24*time.Hour), testControllerFetcher)
 
 	// AggegateContainerState should be deleted from both cluster and mpa
 	assert.Empty(t, cluster.aggregateStateMap)
@@ -166,6 +171,8 @@ func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
 }
 
 func TestClusterGCAggregateContainerStateDeletesEmptyInactiveWithoutController(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	mpa := addTestMpa(cluster)
@@ -182,14 +189,14 @@ func TestClusterGCAggregateContainerStateDeletesEmptyInactiveWithoutController(t
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
-	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
+	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, controller)
 
 	// AggegateContainerState should not be deleted as the pod is still active.
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
 	cluster.Pods[pod.ID].Phase = apiv1.PodSucceeded
-	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
+	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, controller)
 
 	// AggegateContainerState should be empty as the pod is no longer active, controller is not alive
 	// and there are no usage samples.
@@ -198,6 +205,8 @@ func TestClusterGCAggregateContainerStateDeletesEmptyInactiveWithoutController(t
 }
 
 func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	mpa := addTestMpa(cluster)
@@ -211,14 +220,14 @@ func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *te
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
-	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
+	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, controller)
 
 	// AggegateContainerState should not be deleted as the pod is still active.
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
 	cluster.Pods[pod.ID].Phase = apiv1.PodSucceeded
-	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
+	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, controller)
 
 	// AggegateContainerState should not be delated as the controller is still alive.
 	assert.NotEmpty(t, cluster.aggregateStateMap)
@@ -226,6 +235,8 @@ func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *te
 }
 
 func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	mpa := addTestMpa(cluster)
@@ -241,13 +252,15 @@ func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since last sample
-	cluster.garbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(7*24*time.Hour), testControllerFetcher)
+	cluster.garbageCollectAggregateCollectionStates(ctx, usageSample.MeasureStart.Add(7*24*time.Hour), testControllerFetcher)
 
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 }
 
 func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	mpa := addTestMpa(cluster)
@@ -268,7 +281,7 @@ func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 
 	// AggegateContainerState are invalid after 8 days since last sample
 	gcTimestamp := usageSample.MeasureStart.Add(10 * 24 * time.Hour)
-	cluster.garbageCollectAggregateCollectionStates(gcTimestamp, testControllerFetcher)
+	cluster.garbageCollectAggregateCollectionStates(ctx, gcTimestamp, testControllerFetcher)
 
 	assert.Empty(t, cluster.aggregateStateMap)
 	assert.Empty(t, mpa.aggregateContainerStates)
@@ -287,13 +300,15 @@ func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 }
 
 func TestClusterGCRateLimiting(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	usageSample := makeTestUsageSample()
 	sampleExpireTime := usageSample.MeasureStart.Add(9 * 24 * time.Hour)
 	// AggegateContainerState are valid for 8 days since last sample but this run
 	// doesn't remove the sample, because we didn't add it yet.
-	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime, testControllerFetcher)
+	cluster.RateLimitedGarbageCollectAggregateCollectionStates(ctx, sampleExpireTime, testControllerFetcher)
 	mpa := addTestMpa(cluster)
 	addTestPod(cluster)
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
@@ -305,12 +320,12 @@ func TestClusterGCRateLimiting(t *testing.T) {
 
 	// Sample is expired but this run doesn't remove it yet, because less than testGcPeriod
 	// elapsed since the previous run.
-	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime.Add(testGcPeriod/2), testControllerFetcher)
+	cluster.RateLimitedGarbageCollectAggregateCollectionStates(ctx, sampleExpireTime.Add(testGcPeriod/2), testControllerFetcher)
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, mpa.aggregateContainerStates)
 
 	// AggegateContainerState should be deleted from both cluster and mpa
-	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime.Add(2*testGcPeriod), testControllerFetcher)
+	cluster.RateLimitedGarbageCollectAggregateCollectionStates(ctx, sampleExpireTime.Add(2*testGcPeriod), testControllerFetcher)
 	assert.Empty(t, cluster.aggregateStateMap)
 	assert.Empty(t, mpa.aggregateContainerStates)
 }

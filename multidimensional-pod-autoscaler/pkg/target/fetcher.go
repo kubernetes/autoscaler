@@ -50,7 +50,7 @@ const (
 type MpaTargetSelectorFetcher interface {
 	// Fetch returns a labelSelector used to gather Pods controlled by the given MPA.
 	// If error is nil, the returned labelSelector is not nil.
-	Fetch(mpa *mpa_types.MultidimPodAutoscaler) (labels.Selector, error)
+	Fetch(ctx context.Context, mpa *mpa_types.MultidimPodAutoscaler) (labels.Selector, error)
 
 	// For updating the Deployments.
 	GetRESTMappings(groupKind schema.GroupKind) ([]*apimeta.RESTMapping, error)
@@ -120,7 +120,7 @@ type mpaTargetSelectorFetcher struct {
 	informersMap    map[wellKnownController]cache.SharedIndexInformer
 }
 
-func (f *mpaTargetSelectorFetcher) Fetch(mpa *mpa_types.MultidimPodAutoscaler) (labels.Selector, error) {
+func (f *mpaTargetSelectorFetcher) Fetch(ctx context.Context, mpa *mpa_types.MultidimPodAutoscaler) (labels.Selector, error) {
 	if mpa.Spec.ScaleTargetRef == nil {
 		return nil, fmt.Errorf("scaleTargetRef not defined.")
 	}
@@ -141,7 +141,7 @@ func (f *mpaTargetSelectorFetcher) Fetch(mpa *mpa_types.MultidimPodAutoscaler) (
 		Kind:  mpa.Spec.ScaleTargetRef.Kind,
 	}
 
-	selector, err := f.getLabelSelectorFromResource(groupKind, mpa.Namespace, mpa.Spec.ScaleTargetRef.Name)
+	selector, err := f.getLabelSelectorFromResource(ctx, groupKind, mpa.Namespace, mpa.Spec.ScaleTargetRef.Name)
 	if err != nil {
 		return nil, fmt.Errorf("Unhandled ScaleTargetRef %s / %s / %s, last error %v",
 			mpa.Spec.ScaleTargetRef.APIVersion, mpa.Spec.ScaleTargetRef.Kind, mpa.Spec.ScaleTargetRef.Name, err)
@@ -177,7 +177,7 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 }
 
 func (f *mpaTargetSelectorFetcher) getLabelSelectorFromResource(
-	groupKind schema.GroupKind, namespace, name string,
+	ctx context.Context, groupKind schema.GroupKind, namespace, name string,
 ) (labels.Selector, error) {
 	mappings, err := f.mapper.RESTMappings(groupKind)
 	if err != nil {
@@ -187,7 +187,7 @@ func (f *mpaTargetSelectorFetcher) getLabelSelectorFromResource(
 	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
+		scale, err := f.scaleNamespacer.Scales(namespace).Get(ctx, groupResource, name, metav1.GetOptions{})
 		if err == nil {
 			if scale.Status.Selector == "" {
 				return nil, fmt.Errorf("Resource %s/%s has an empty selector for scale sub-resource", namespace, name)

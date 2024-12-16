@@ -81,7 +81,7 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 
 	handler, ok := s.resourceHandlers[admittedGroupResource]
 	if ok {
-		patches, err = handler.GetPatches(ar.Request)
+		patches, err = handler.GetPatches(ctx, ar.Request)
 		resource = handler.AdmissionResource()
 
 		if handler.DisallowIncorrectObjects() && err != nil {

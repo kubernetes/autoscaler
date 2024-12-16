@@ -31,11 +31,11 @@ import (
 	mpa_clientset "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned"
 	mpa_api "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1alpha1"
 	mpa_lister "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1alpha1"
+	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/target"
 	mpa_api_util "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/mpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	vpa_model "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -73,7 +73,7 @@ type ClusterStateFeeder interface {
 	InitFromCheckpoints()
 
 	// LoadMPAs updates clusterState with current state of MPAs.
-	LoadMPAs()
+	LoadMPAs(ctx context.Context)
 
 	// LoadPods updates clusterState with current specification of Pods and their Containers.
 	LoadPods()
@@ -101,6 +101,7 @@ type ClusterStateFeederFactory struct {
 	MemorySaveMode      bool
 	ControllerFetcher   controllerfetcher.ControllerFetcher
 	RecommenderName     string
+	IgnoredNamespaces   []string
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -118,6 +119,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		memorySaveMode:      m.MemorySaveMode,
 		controllerFetcher:   m.ControllerFetcher,
 		recommenderName:     m.RecommenderName,
+		ignoredNamespaces:   m.IgnoredNamespaces,
 	}
 }
 
@@ -235,6 +237,7 @@ type clusterStateFeeder struct {
 	memorySaveMode      bool
 	controllerFetcher   controllerfetcher.ControllerFetcher
 	recommenderName     string
+	ignoredNamespaces   []string
 	PodLister           v1lister.PodLister // For HPA.
 }
 
@@ -287,7 +290,7 @@ func (feeder *clusterStateFeeder) setMpaCheckpoint(checkpoint *mpa_types.Multidi
 
 func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 	klog.V(3).Info("Initializing MPA from checkpoints")
-	feeder.LoadMPAs()
+	feeder.LoadMPAs(context.TODO())
 
 	namespaces := make(map[string]bool)
 	for _, v := range feeder.clusterState.Mpas {
@@ -318,7 +321,7 @@ func (feeder *clusterStateFeeder) GetPodLister() v1lister.PodLister {
 
 func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
-	feeder.LoadMPAs()
+	feeder.LoadMPAs(context.TODO())
 
 	namspaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -386,7 +389,7 @@ func filterMPAs(feeder *clusterStateFeeder, allMpaCRDs []*mpa_types.MultidimPodA
 }
 
 // Fetch MPA objects and load them into the cluster state.
-func (feeder *clusterStateFeeder) LoadMPAs() {
+func (feeder *clusterStateFeeder) LoadMPAs(ctx context.Context) {
 	// List MPA API objects.
 	allMpaCRDs, err := feeder.mpaLister.List(labels.Everything())
 	if err != nil {
@@ -406,7 +409,7 @@ func (feeder *clusterStateFeeder) LoadMPAs() {
 			MpaName:   mpaCRD.Name,
 		}
 
-		selector, conditions := feeder.getSelector(mpaCRD)
+		selector, conditions := feeder.getSelector(ctx, mpaCRD)
 		klog.V(4).Infof("Using selector %s for MPA %s/%s", selector.String(), mpaCRD.Namespace, mpaCRD.Name)
 
 		if feeder.clusterState.AddOrUpdateMpa(mpaCRD, selector) == nil {
@@ -535,7 +538,7 @@ type condition struct {
 	message       string
 }
 
-func (feeder *clusterStateFeeder) validateTargetRef(mpa *mpa_types.MultidimPodAutoscaler) (bool, condition) {
+func (feeder *clusterStateFeeder) validateTargetRef(ctx context.Context, mpa *mpa_types.MultidimPodAutoscaler) (bool, condition) {
 	if mpa.Spec.ScaleTargetRef == nil {
 		return false, condition{}
 	}
@@ -547,7 +550,7 @@ func (feeder *clusterStateFeeder) validateTargetRef(mpa *mpa_types.MultidimPodAu
 		},
 		ApiVersion: mpa.Spec.ScaleTargetRef.APIVersion,
 	}
-	top, err := feeder.controllerFetcher.FindTopMostWellKnownOrScalable(&k)
+	top, err := feeder.controllerFetcher.FindTopMostWellKnownOrScalable(ctx, &k)
 	if err != nil {
 		return false, condition{conditionType: mpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Error checking if target is a topmost well-known or scalable controller: %s", err)}
 	}
@@ -560,10 +563,10 @@ func (feeder *clusterStateFeeder) validateTargetRef(mpa *mpa_types.MultidimPodAu
 	return true, condition{}
 }
 
-func (feeder *clusterStateFeeder) getSelector(mpa *mpa_types.MultidimPodAutoscaler) (labels.Selector, []condition) {
-	selector, fetchErr := feeder.selectorFetcher.Fetch(mpa)
+func (feeder *clusterStateFeeder) getSelector(ctx context.Context, mpa *mpa_types.MultidimPodAutoscaler) (labels.Selector, []condition) {
+	selector, fetchErr := feeder.selectorFetcher.Fetch(ctx, mpa)
 	if selector != nil {
-		validTargetRef, unsupportedCondition := feeder.validateTargetRef(mpa)
+		validTargetRef, unsupportedCondition := feeder.validateTargetRef(ctx, mpa)
 		if !validTargetRef {
 			return labels.Nothing(), []condition{
 				unsupportedCondition,

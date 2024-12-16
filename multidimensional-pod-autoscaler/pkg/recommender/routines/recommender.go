@@ -110,6 +110,7 @@ type recommender struct {
 	podResourceRecommender        logic.PodResourceRecommender
 	useCheckpoints                bool
 	lastAggregateContainerStateGC time.Time
+	recommendationPostProcessor   []RecommendationPostProcessor
 
 	// Fields for HPA.
 	replicaCalc                  *hpa.ReplicaCalculator
@@ -158,7 +159,14 @@ func (r *recommender) UpdateMPAs(ctx context.Context, vpaOrHpa string) {
 			klog.V(4).Infof("Vertical scaling...")
 			resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(mpa))
 			had := mpa.HasRecommendation()
-			mpa.UpdateRecommendation(getCappedRecommendation(mpa.ID, resources, observedMpa.Spec.ResourcePolicy))
+
+			listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
+
+			for _, postProcessor := range r.recommendationPostProcessor {
+				listOfResourceRecommendation = postProcessor.Process(observedMpa, listOfResourceRecommendation)
+			}
+
+			mpa.UpdateRecommendation(listOfResourceRecommendation)
 			klog.V(4).Infof("MPA %v recommendation updated: %v (%v)", key, resources, had)
 			if mpa.HasRecommendation() && !had {
 				metrics_recommender.ObserveRecommendationLatency(mpa.Created)
@@ -221,10 +229,10 @@ func getCappedRecommendation(mpaID model.MpaID, resources logic.RecommendedPodRe
 	for _, name := range containerNames {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
 			ContainerName:  name,
-			Target:         vpa_model.ResourcesAsResourceList(resources[name].Target),
-			LowerBound:     vpa_model.ResourcesAsResourceList(resources[name].LowerBound),
-			UpperBound:     vpa_model.ResourcesAsResourceList(resources[name].UpperBound),
-			UncappedTarget: vpa_model.ResourcesAsResourceList(resources[name].Target),
+			Target:         vpa_model.ResourcesAsResourceList(resources[name].Target, logic.GetHumanizeMemory()),
+			LowerBound:     vpa_model.ResourcesAsResourceList(resources[name].LowerBound, logic.GetHumanizeMemory()),
+			UpperBound:     vpa_model.ResourcesAsResourceList(resources[name].UpperBound, logic.GetHumanizeMemory()),
+			UncappedTarget: vpa_model.ResourcesAsResourceList(resources[name].Target, logic.GetHumanizeMemory()),
 		})
 	}
 	recommendation := &vpa_types.RecommendedPodResources{
@@ -266,7 +274,7 @@ func (r *recommender) RunOnce(workers int, vpaOrHpa string) {
 	klog.V(3).Infof("Recommender Run")
 	defer klog.V(3).Infof("Shutting down MPA Recommender")
 
-	r.clusterStateFeeder.LoadMPAs()
+	r.clusterStateFeeder.LoadMPAs(ctx)
 	timer.ObserveStep("LoadMPAs")
 
 	r.clusterStateFeeder.LoadPods()
@@ -282,7 +290,7 @@ func (r *recommender) RunOnce(workers int, vpaOrHpa string) {
 	r.MaintainCheckpoints(ctx, *minCheckpointsPerRun)
 	timer.ObserveStep("MaintainCheckpoints")
 
-	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(time.Now(), r.controllerFetcher)
+	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(ctx, time.Now(), r.controllerFetcher)
 	timer.ObserveStep("GarbageCollect")
 	klog.V(3).Infof("ClusterState is tracking %d aggregated container states", r.clusterState.StateMapSize())
 }
@@ -297,6 +305,8 @@ type RecommenderFactory struct {
 	PodResourceRecommender logic.PodResourceRecommender
 	MpaClient              mpa_api.MultidimPodAutoscalersGetter
 	SelectorFetcher        target.MpaTargetSelectorFetcher
+
+	RecommendationPostProcessors []RecommendationPostProcessor
 
 	CheckpointsGCInterval time.Duration
 	UseCheckpoints        bool
@@ -332,6 +342,7 @@ func (c RecommenderFactory) Make() Recommender {
 		mpaClient:                     c.MpaClient,
 		selectorFetcher:               c.SelectorFetcher,
 		podResourceRecommender:        c.PodResourceRecommender,
+		recommendationPostProcessor:   c.RecommendationPostProcessors,
 		lastAggregateContainerStateGC: time.Now(),
 		lastCheckpointGC:              time.Now(),
 

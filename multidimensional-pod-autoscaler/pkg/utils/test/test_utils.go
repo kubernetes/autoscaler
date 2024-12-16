@@ -127,7 +127,7 @@ type PodsEvictionRestrictionMock struct {
 }
 
 // Evict is a mock implementation of PodsEvictionRestriction.Evict
-func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, eventRecorder record.EventRecorder) error {
+func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, mpa *mpa_types.MultidimPodAutoscaler, eventRecorder record.EventRecorder) error {
 	args := m.Called(pod, eventRecorder)
 	return args.Error(0)
 }

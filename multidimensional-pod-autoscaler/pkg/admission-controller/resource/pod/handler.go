@@ -17,6 +17,7 @@ limitations under the License.
 package pod
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -63,7 +64,7 @@ func (h *resourceHandler) DisallowIncorrectObjects() bool {
 }
 
 // GetPatches builds patches for Pod in given admission request.
-func (h *resourceHandler) GetPatches(ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, error) {
+func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, error) {
 	if ar.Resource.Version != "v1" {
 		return nil, fmt.Errorf("only v1 Pods are supported")
 	}
@@ -77,7 +78,7 @@ func (h *resourceHandler) GetPatches(ar *admissionv1.AdmissionRequest) ([]resour
 		pod.Namespace = namespace
 	}
 	klog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
-	controllingMpa := h.mpaMatcher.GetMatchingMPA(&pod)
+	controllingMpa := h.mpaMatcher.GetMatchingMPA(ctx, &pod)
 	if controllingMpa == nil {
 		klog.V(4).Infof("No matching MPA found for pod %s/%s", pod.Namespace, pod.Name)
 		return []resource_admission.PatchRecord{}, nil

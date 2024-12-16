@@ -37,6 +37,11 @@ var (
 	humanizeMemory             = flag.Bool("humanize-memory", false, "Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability.")
 )
 
+// GetHumanizeMemory returns the value of the HumanizeMemory flag.
+func GetHumanizeMemory() bool {
+	return *humanizeMemory
+}
+
 // PodResourceRecommender computes resource recommendation for a Vpa object.
 type PodResourceRecommender interface {
 	GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources

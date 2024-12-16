@@ -17,6 +17,7 @@ limitations under the License.
 package pod
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -43,7 +44,7 @@ type fakeMpaMatcher struct {
 	mpa *mpa_types.MultidimPodAutoscaler
 }
 
-func (m *fakeMpaMatcher) GetMatchingMPA(_ *apiv1.Pod) *mpa_types.MultidimPodAutoscaler {
+func (m *fakeMpaMatcher) GetMatchingMPA(_ context.Context, _ *apiv1.Pod) *mpa_types.MultidimPodAutoscaler {
 	return m.mpa
 }
 
@@ -176,7 +177,7 @@ func TestGetPatches(t *testing.T) {
 			fppp := &fakePodPreProcessor{tc.podPreProcessorError}
 			fvm := &fakeMpaMatcher{mpa: tc.mpa}
 			h := NewResourceHandler(fppp, fvm, tc.calculators)
-			patches, err := h.GetPatches(&admissionv1.AdmissionRequest{
+			patches, err := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
 				Resource: v1.GroupVersionResource{
 					Version: "v1",
 				},
