@@ -389,8 +389,9 @@ func TestControllerFetcher(t *testing.T) {
 					},
 				},
 			}},
-			expectedKey:   nil,
-			expectedError: fmt.Errorf("Unhandled targetRef v1 / Node / node, last error node is not a valid owner"),
+			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}, // Parent does not support scale subresource so should return itself"
+			expectedError: nil,
 		},
 		{
 			name: "custom resource with no scale subresource",

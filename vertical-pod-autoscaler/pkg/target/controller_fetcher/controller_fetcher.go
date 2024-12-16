@@ -290,7 +290,7 @@ func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupK
 		// Some pods specify nodes as their owners. This causes performance problems
 		// in big clusters when VPA tries to get all nodes. We know nodes aren't
 		// valid controllers so we can skip trying to fetch them.
-		return nil, fmt.Errorf("node is not a valid owner")
+		return nil, nil
 	}
 	mappings, err := f.mapper.RESTMappings(groupKind)
 	if err != nil {
