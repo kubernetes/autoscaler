@@ -28,9 +28,10 @@ function generate_vpa_docs_components {
   for component in $components; do
     echo "generate docs for $component"
     # Use absolute paths based on REPOSITORY_ROOT
-    cd "${REPOSITORY_ROOT}/pkg/${component}"
-    make document-flags
-    cd - > /dev/null  # Suppress directory change messages
+    (
+      cd "${REPOSITORY_ROOT}/pkg/${component}"
+      make document-flags
+    )
   done
 }
 
