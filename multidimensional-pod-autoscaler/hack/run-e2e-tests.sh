@@ -50,20 +50,14 @@ case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-mpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
-    go test -mod vendor ./v1beta2/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[MPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=90m
-    V1BETA2_RESULT=$?
-    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[MPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=90m
-    V1_RESULT=$?
+    go test ./v1alpha1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[MPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=90m
+    V1ALPHA1_RESULT=$?
     popd
-    echo v1beta2 test result: ${V1BETA2_RESULT}
-    if [ $V1BETA2_RESULT -gt 0 ]; then
-      echo "Please check v1beta2 \"go test\" logs!"
+    echo v1alpha1 test result: ${V1ALPHA1_RESULT}
+    if [ $V1ALPHA1_RESULT -gt 0 ]; then
+      echo "Please check v1alpha1 \"go test\" logs!"
     fi
-    echo v1 test result: ${V1_RESULT}
-    if [ $V1_RESULT -gt 0 ]; then
-      echo "Please check v1 \"go test\" logs!"
-    fi
-    if [ $V1BETA2_RESULT -gt 0 ] || [ $V1_RESULT -gt 0 ]; then
+    if [ $V1ALPHA1_RESULT -gt 0 ]; then
       echo "Tests failed"
       exit 1
     fi

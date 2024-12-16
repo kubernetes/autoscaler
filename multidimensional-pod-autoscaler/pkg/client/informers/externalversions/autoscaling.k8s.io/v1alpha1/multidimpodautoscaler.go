@@ -19,16 +19,16 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
+	apisautoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
 	versioned "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1alpha1"
+	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1alpha1"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -36,7 +36,7 @@ import (
 // MultidimPodAutoscalers.
 type MultidimPodAutoscalerInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.MultidimPodAutoscalerLister
+	Lister() autoscalingk8siov1alpha1.MultidimPodAutoscalerLister
 }
 
 type multidimPodAutoscalerInformer struct {
@@ -71,7 +71,7 @@ func NewFilteredMultidimPodAutoscalerInformer(client versioned.Interface, namesp
 				return client.AutoscalingV1alpha1().MultidimPodAutoscalers(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&autoscalingk8siov1alpha1.MultidimPodAutoscaler{},
+		&apisautoscalingk8siov1alpha1.MultidimPodAutoscaler{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,9 +82,9 @@ func (f *multidimPodAutoscalerInformer) defaultInformer(client versioned.Interfa
 }
 
 func (f *multidimPodAutoscalerInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&autoscalingk8siov1alpha1.MultidimPodAutoscaler{}, f.defaultInformer)
+	return f.factory.InformerFor(&apisautoscalingk8siov1alpha1.MultidimPodAutoscaler{}, f.defaultInformer)
 }
 
-func (f *multidimPodAutoscalerInformer) Lister() v1alpha1.MultidimPodAutoscalerLister {
-	return v1alpha1.NewMultidimPodAutoscalerLister(f.Informer().GetIndexer())
+func (f *multidimPodAutoscalerInformer) Lister() autoscalingk8siov1alpha1.MultidimPodAutoscalerLister {
+	return autoscalingk8siov1alpha1.NewMultidimPodAutoscalerLister(f.Informer().GetIndexer())
 }

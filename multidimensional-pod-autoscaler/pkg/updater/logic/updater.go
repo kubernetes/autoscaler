@@ -254,7 +254,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 }
 
 // RunOnceUpdatingDeployment represents single iteration in the main-loop of Updater which evicts
-// pods for VPA and updates the Deployment for HPA.
+// pods for MPA and updates the Deployment for HPA.
 func (u *updater) RunOnceUpdatingDeployment(ctx context.Context) {
 	timer := metrics_updater.NewExecutionTimer()
 	defer timer.ObserveTotal()

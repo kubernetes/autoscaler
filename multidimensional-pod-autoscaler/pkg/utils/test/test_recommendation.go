@@ -18,6 +18,7 @@ package test
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
@@ -25,6 +26,7 @@ import (
 type RecommendationBuilder interface {
 	WithContainer(containerName string) RecommendationBuilder
 	WithTarget(cpu, memory string) RecommendationBuilder
+	WithTargetResource(resource apiv1.ResourceName, value string) RecommendationBuilder
 	WithLowerBound(cpu, memory string) RecommendationBuilder
 	WithUpperBound(cpu, memory string) RecommendationBuilder
 	Get() *vpa_types.RecommendedPodResources
@@ -52,6 +54,15 @@ func (b *recommendationBuilder) WithContainer(containerName string) Recommendati
 func (b *recommendationBuilder) WithTarget(cpu, memory string) RecommendationBuilder {
 	c := *b
 	c.target = Resources(cpu, memory)
+	return &c
+}
+
+func (b *recommendationBuilder) WithTargetResource(resource apiv1.ResourceName, value string) RecommendationBuilder {
+	c := *b
+	if c.target == nil {
+		c.target = apiv1.ResourceList{}
+	}
+	addResource(c.target, resource, value)
 	return &c
 }
 
@@ -91,4 +102,14 @@ func (b *recommendationBuilder) GetContainerResources() vpa_types.RecommendedCon
 		LowerBound:     b.lowerBound,
 		UpperBound:     b.upperBound,
 	}
+}
+
+// addResource add a resource to the given resource list
+func addResource(rl apiv1.ResourceList, resourceName apiv1.ResourceName, value string) apiv1.ResourceList {
+	val, _ := resource.ParseQuantity(value)
+	if rl == nil {
+		rl = apiv1.ResourceList{}
+	}
+	rl[resourceName] = val
+	return rl
 }

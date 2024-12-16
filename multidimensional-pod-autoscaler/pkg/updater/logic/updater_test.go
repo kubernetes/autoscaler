@@ -168,8 +168,8 @@ func testRunOnceBase(
 	mpaObj := mpa_test.MultidimPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G").
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G").
 		Get()
 	mpaObj.Spec.Policy = &mpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	mpaLister.On("List").Return([]*mpa_types.MultidimPodAutoscaler{mpaObj}, nil).Once()

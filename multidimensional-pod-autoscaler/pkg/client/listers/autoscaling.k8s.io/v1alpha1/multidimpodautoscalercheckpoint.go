@@ -19,10 +19,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/apimachinery/pkg/labels"
-	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	labels "k8s.io/apimachinery/pkg/labels"
+	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // MultidimPodAutoscalerCheckpointLister helps list MultidimPodAutoscalerCheckpoints.
@@ -30,7 +30,7 @@ import (
 type MultidimPodAutoscalerCheckpointLister interface {
 	// List lists all MultidimPodAutoscalerCheckpoints in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.MultidimPodAutoscalerCheckpoint, err error)
+	List(selector labels.Selector) (ret []*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, err error)
 	// MultidimPodAutoscalerCheckpoints returns an object that can list and get MultidimPodAutoscalerCheckpoints.
 	MultidimPodAutoscalerCheckpoints(namespace string) MultidimPodAutoscalerCheckpointNamespaceLister
 	MultidimPodAutoscalerCheckpointListerExpansion
@@ -38,17 +38,17 @@ type MultidimPodAutoscalerCheckpointLister interface {
 
 // multidimPodAutoscalerCheckpointLister implements the MultidimPodAutoscalerCheckpointLister interface.
 type multidimPodAutoscalerCheckpointLister struct {
-	listers.ResourceIndexer[*v1alpha1.MultidimPodAutoscalerCheckpoint]
+	listers.ResourceIndexer[*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint]
 }
 
 // NewMultidimPodAutoscalerCheckpointLister returns a new MultidimPodAutoscalerCheckpointLister.
 func NewMultidimPodAutoscalerCheckpointLister(indexer cache.Indexer) MultidimPodAutoscalerCheckpointLister {
-	return &multidimPodAutoscalerCheckpointLister{listers.New[*v1alpha1.MultidimPodAutoscalerCheckpoint](indexer, v1alpha1.Resource("multidimpodautoscalercheckpoint"))}
+	return &multidimPodAutoscalerCheckpointLister{listers.New[*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint](indexer, autoscalingk8siov1alpha1.Resource("multidimpodautoscalercheckpoint"))}
 }
 
 // MultidimPodAutoscalerCheckpoints returns an object that can list and get MultidimPodAutoscalerCheckpoints.
 func (s *multidimPodAutoscalerCheckpointLister) MultidimPodAutoscalerCheckpoints(namespace string) MultidimPodAutoscalerCheckpointNamespaceLister {
-	return multidimPodAutoscalerCheckpointNamespaceLister{listers.NewNamespaced[*v1alpha1.MultidimPodAutoscalerCheckpoint](s.ResourceIndexer, namespace)}
+	return multidimPodAutoscalerCheckpointNamespaceLister{listers.NewNamespaced[*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint](s.ResourceIndexer, namespace)}
 }
 
 // MultidimPodAutoscalerCheckpointNamespaceLister helps list and get MultidimPodAutoscalerCheckpoints.
@@ -56,15 +56,15 @@ func (s *multidimPodAutoscalerCheckpointLister) MultidimPodAutoscalerCheckpoints
 type MultidimPodAutoscalerCheckpointNamespaceLister interface {
 	// List lists all MultidimPodAutoscalerCheckpoints in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.MultidimPodAutoscalerCheckpoint, err error)
+	List(selector labels.Selector) (ret []*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, err error)
 	// Get retrieves the MultidimPodAutoscalerCheckpoint from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.MultidimPodAutoscalerCheckpoint, error)
+	Get(name string) (*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, error)
 	MultidimPodAutoscalerCheckpointNamespaceListerExpansion
 }
 
 // multidimPodAutoscalerCheckpointNamespaceLister implements the MultidimPodAutoscalerCheckpointNamespaceLister
 // interface.
 type multidimPodAutoscalerCheckpointNamespaceLister struct {
-	listers.ResourceIndexer[*v1alpha1.MultidimPodAutoscalerCheckpoint]
+	listers.ResourceIndexer[*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint]
 }

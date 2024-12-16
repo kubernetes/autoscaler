@@ -33,15 +33,21 @@ type MultidimPodAutoscalerBuilder interface {
 	WithNamespace(namespace string) MultidimPodAutoscalerBuilder
 	WithUpdateMode(updateMode vpa_types.UpdateMode) MultidimPodAutoscalerBuilder
 	WithCreationTimestamp(timestamp time.Time) MultidimPodAutoscalerBuilder
-	WithMinAllowed(cpu, memory string) MultidimPodAutoscalerBuilder
-	WithMaxAllowed(cpu, memory string) MultidimPodAutoscalerBuilder
-	WithControlledValues(mode vpa_types.ContainerControlledValues) MultidimPodAutoscalerBuilder
+	WithMinAllowed(containerName, cpu, memory string) MultidimPodAutoscalerBuilder
+	WithMaxAllowed(containerName, cpu, memory string) MultidimPodAutoscalerBuilder
+	WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) MultidimPodAutoscalerBuilder
+	WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) MultidimPodAutoscalerBuilder
 	WithTarget(cpu, memory string) MultidimPodAutoscalerBuilder
+	WithTargetResource(resource core.ResourceName, value string) MultidimPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) MultidimPodAutoscalerBuilder
 	WithScaleTargetRef(targetRef *autoscaling.CrossVersionObjectReference) MultidimPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) MultidimPodAutoscalerBuilder
 	WithAnnotations(map[string]string) MultidimPodAutoscalerBuilder
 	WithRecommender(string2 string) MultidimPodAutoscalerBuilder
+	WithGroupVersion(gv meta.GroupVersion) MultidimPodAutoscalerBuilder
+	// WithEvictionRequirements([]*vpa_types.EvictionRequirement) MultidimPodAutoscalerBuilder // TODO: add this functionality
+	WithScalingConstraints(constraints mpa_types.ScalingConstraints) MultidimPodAutoscalerBuilder
+	WithHorizontalScalingConstraints(hconstraints mpa_types.HorizontalScalingConstraints) MultidimPodAutoscalerBuilder
 	AppendCondition(conditionType mpa_types.MultidimPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) MultidimPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) MultidimPodAutoscalerBuilder
@@ -51,28 +57,37 @@ type MultidimPodAutoscalerBuilder interface {
 // MultidimPodAutoscaler returns a new MultidimPodAutoscalerBuilder.
 func MultidimPodAutoscaler() MultidimPodAutoscalerBuilder {
 	return &multidimPodAutoscalerBuilder{
+		groupVersion:            meta.GroupVersion(mpa_types.SchemeGroupVersion),
 		recommendation:          Recommendation(),
 		appendedRecommendations: []vpa_types.RecommendedContainerResources{},
 		namespace:               "default",
 		conditions:              []mpa_types.MultidimPodAutoscalerCondition{},
+		minAllowed:              map[string]core.ResourceList{},
+		maxAllowed:              map[string]core.ResourceList{},
+		controlledValues:        map[string]*vpa_types.ContainerControlledValues{},
+		scalingMode:             map[string]*vpa_types.ContainerScalingMode{},
+		scalingConstraints:      mpa_types.ScalingConstraints{},
 	}
 }
 
 type multidimPodAutoscalerBuilder struct {
+	groupVersion            meta.GroupVersion
 	mpaName                 string
-	containerName           string
+	containerNames          []string
 	namespace               string
 	updatePolicy            *mpa_types.PodUpdatePolicy
 	creationTimestamp       time.Time
-	minAllowed              core.ResourceList
-	maxAllowed              core.ResourceList
-	ControlledValues        *vpa_types.ContainerControlledValues
+	minAllowed              map[string]core.ResourceList
+	maxAllowed              map[string]core.ResourceList
+	controlledValues        map[string]*vpa_types.ContainerControlledValues
+	scalingMode             map[string]*vpa_types.ContainerScalingMode
 	recommendation          RecommendationBuilder
 	conditions              []mpa_types.MultidimPodAutoscalerCondition
 	annotations             map[string]string
 	scaleTargetRef          *autoscaling.CrossVersionObjectReference
 	appendedRecommendations []vpa_types.RecommendedContainerResources
 	recommender             string
+	scalingConstraints      mpa_types.ScalingConstraints
 }
 
 func (b *multidimPodAutoscalerBuilder) WithName(mpaName string) MultidimPodAutoscalerBuilder {
@@ -83,7 +98,7 @@ func (b *multidimPodAutoscalerBuilder) WithName(mpaName string) MultidimPodAutos
 
 func (b *multidimPodAutoscalerBuilder) WithContainer(containerName string) MultidimPodAutoscalerBuilder {
 	c := *b
-	c.containerName = containerName
+	c.containerNames = append(c.containerNames, containerName)
 	return &c
 }
 
@@ -108,27 +123,39 @@ func (b *multidimPodAutoscalerBuilder) WithCreationTimestamp(timestamp time.Time
 	return &c
 }
 
-func (b *multidimPodAutoscalerBuilder) WithMinAllowed(cpu, memory string) MultidimPodAutoscalerBuilder {
+func (b *multidimPodAutoscalerBuilder) WithMinAllowed(containerName, cpu, memory string) MultidimPodAutoscalerBuilder {
 	c := *b
-	c.minAllowed = Resources(cpu, memory)
+	c.minAllowed[containerName] = Resources(cpu, memory)
 	return &c
 }
 
-func (b *multidimPodAutoscalerBuilder) WithMaxAllowed(cpu, memory string) MultidimPodAutoscalerBuilder {
+func (b *multidimPodAutoscalerBuilder) WithMaxAllowed(containerName, cpu, memory string) MultidimPodAutoscalerBuilder {
 	c := *b
-	c.maxAllowed = Resources(cpu, memory)
+	c.maxAllowed[containerName] = Resources(cpu, memory)
 	return &c
 }
 
-func (b *multidimPodAutoscalerBuilder) WithControlledValues(mode vpa_types.ContainerControlledValues) MultidimPodAutoscalerBuilder {
+func (b *multidimPodAutoscalerBuilder) WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) MultidimPodAutoscalerBuilder {
 	c := *b
-	c.ControlledValues = &mode
+	c.controlledValues[containerName] = &mode
+	return &c
+}
+
+func (b *multidimPodAutoscalerBuilder) WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) MultidimPodAutoscalerBuilder {
+	c := *b
+	c.scalingMode[containerName] = &scalingMode
 	return &c
 }
 
 func (b *multidimPodAutoscalerBuilder) WithTarget(cpu, memory string) MultidimPodAutoscalerBuilder {
 	c := *b
 	c.recommendation = c.recommendation.WithTarget(cpu, memory)
+	return &c
+}
+
+func (b *multidimPodAutoscalerBuilder) WithTargetResource(resource core.ResourceName, value string) MultidimPodAutoscalerBuilder {
+	c := *b
+	c.recommendation = c.recommendation.WithTargetResource(resource, value)
 	return &c
 }
 
@@ -162,6 +189,35 @@ func (b *multidimPodAutoscalerBuilder) WithRecommender(recommender string) Multi
 	return &c
 }
 
+func (b *multidimPodAutoscalerBuilder) WithGroupVersion(gv meta.GroupVersion) MultidimPodAutoscalerBuilder {
+	c := *b
+	c.groupVersion = gv
+	return &c
+}
+
+func (b *multidimPodAutoscalerBuilder) WithScalingConstraints(constraints mpa_types.ScalingConstraints) MultidimPodAutoscalerBuilder {
+	c := *b
+	c.scalingConstraints = constraints
+	return &c
+}
+
+func (b *multidimPodAutoscalerBuilder) WithHorizontalScalingConstraints(constraints mpa_types.HorizontalScalingConstraints) MultidimPodAutoscalerBuilder {
+	c := *b
+	c.scalingConstraints.Global = &constraints
+	return &c
+}
+
+// TODO: add this functionality
+// func (b *multidimPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirements []*vpa_types.EvictionRequirement) MultidimPodAutoscalerBuilder {
+// 	updateModeAuto := vpa_types.UpdateModeAuto
+// 	c := *b
+// 	if c.updatePolicy == nil {
+// 		c.updatePolicy = &mpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
+// 	}
+// 	c.updatePolicy.EvictionRequirements = evictionRequirements
+// 	return &c
+// }
+
 func (b *multidimPodAutoscalerBuilder) AppendCondition(conditionType mpa_types.MultidimPodAutoscalerConditionType,
 	status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) MultidimPodAutoscalerBuilder {
 	c := *b
@@ -181,21 +237,34 @@ func (b *multidimPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_t
 }
 
 func (b *multidimPodAutoscalerBuilder) Get() *mpa_types.MultidimPodAutoscaler {
-	if b.containerName == "" {
+	if len(b.containerNames) == 0 {
 		panic("Must call WithContainer() before Get()")
 	}
 	var recommenders []*mpa_types.MultidimPodAutoscalerRecommenderSelector
 	if b.recommender != "" {
 		recommenders = []*mpa_types.MultidimPodAutoscalerRecommenderSelector{{Name: b.recommender}}
 	}
-	resourcePolicy := vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
-		ContainerName:    b.containerName,
-		MinAllowed:       b.minAllowed,
-		MaxAllowed:       b.maxAllowed,
-		ControlledValues: b.ControlledValues,
-	}}}
-
-	recommendation := b.recommendation.WithContainer(b.containerName).Get()
+	resourcePolicy := vpa_types.PodResourcePolicy{}
+	recommendation := &vpa_types.RecommendedPodResources{}
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	for _, containerName := range b.containerNames {
+		containerResourcePolicy := vpa_types.ContainerResourcePolicy{
+			ContainerName:    containerName,
+			MinAllowed:       b.minAllowed[containerName],
+			MaxAllowed:       b.maxAllowed[containerName],
+			ControlledValues: b.controlledValues[containerName],
+			Mode:             &scalingModeAuto,
+		}
+		if scalingMode, ok := b.scalingMode[containerName]; ok {
+			containerResourcePolicy.Mode = scalingMode
+		}
+		resourcePolicy.ContainerPolicies = append(resourcePolicy.ContainerPolicies, containerResourcePolicy)
+	}
+	// MPAs with a single container may still use the old/implicit way of adding recommendations
+	r := b.recommendation.WithContainer(b.containerNames[0]).Get()
+	if r.ContainerRecommendations[0].Target != nil {
+		recommendation = r
+	}
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
 
 	return &mpa_types.MultidimPodAutoscaler{
@@ -210,6 +279,7 @@ func (b *multidimPodAutoscalerBuilder) Get() *mpa_types.MultidimPodAutoscaler {
 			ResourcePolicy: &resourcePolicy,
 			ScaleTargetRef: b.scaleTargetRef,
 			Recommenders:   recommenders,
+			Constraints:    &b.scalingConstraints,
 		},
 		Status: mpa_types.MultidimPodAutoscalerStatus{
 			Recommendation: recommendation,

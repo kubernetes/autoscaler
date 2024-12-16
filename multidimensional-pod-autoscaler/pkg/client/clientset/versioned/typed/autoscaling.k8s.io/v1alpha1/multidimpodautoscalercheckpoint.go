@@ -19,12 +19,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
+	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
 	scheme "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -37,33 +37,36 @@ type MultidimPodAutoscalerCheckpointsGetter interface {
 
 // MultidimPodAutoscalerCheckpointInterface has methods to work with MultidimPodAutoscalerCheckpoint resources.
 type MultidimPodAutoscalerCheckpointInterface interface {
-	Create(ctx context.Context, multidimPodAutoscalerCheckpoint *v1alpha1.MultidimPodAutoscalerCheckpoint, opts v1.CreateOptions) (*v1alpha1.MultidimPodAutoscalerCheckpoint, error)
-	Update(ctx context.Context, multidimPodAutoscalerCheckpoint *v1alpha1.MultidimPodAutoscalerCheckpoint, opts v1.UpdateOptions) (*v1alpha1.MultidimPodAutoscalerCheckpoint, error)
+	Create(ctx context.Context, multidimPodAutoscalerCheckpoint *autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, opts v1.CreateOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, error)
+	Update(ctx context.Context, multidimPodAutoscalerCheckpoint *autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, opts v1.UpdateOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.MultidimPodAutoscalerCheckpoint, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MultidimPodAutoscalerCheckpointList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, error)
+	List(ctx context.Context, opts v1.ListOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MultidimPodAutoscalerCheckpoint, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, err error)
 	MultidimPodAutoscalerCheckpointExpansion
 }
 
 // multidimPodAutoscalerCheckpoints implements MultidimPodAutoscalerCheckpointInterface
 type multidimPodAutoscalerCheckpoints struct {
-	*gentype.ClientWithList[*v1alpha1.MultidimPodAutoscalerCheckpoint, *v1alpha1.MultidimPodAutoscalerCheckpointList]
+	*gentype.ClientWithList[*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, *autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointList]
 }
 
 // newMultidimPodAutoscalerCheckpoints returns a MultidimPodAutoscalerCheckpoints
 func newMultidimPodAutoscalerCheckpoints(c *AutoscalingV1alpha1Client, namespace string) *multidimPodAutoscalerCheckpoints {
 	return &multidimPodAutoscalerCheckpoints{
-		gentype.NewClientWithList[*v1alpha1.MultidimPodAutoscalerCheckpoint, *v1alpha1.MultidimPodAutoscalerCheckpointList](
+		gentype.NewClientWithList[*autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint, *autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointList](
 			"multidimpodautoscalercheckpoints",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1alpha1.MultidimPodAutoscalerCheckpoint { return &v1alpha1.MultidimPodAutoscalerCheckpoint{} },
-			func() *v1alpha1.MultidimPodAutoscalerCheckpointList {
-				return &v1alpha1.MultidimPodAutoscalerCheckpointList{}
-			}),
+			func() *autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint {
+				return &autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint{}
+			},
+			func() *autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointList {
+				return &autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointList{}
+			},
+		),
 	}
 }

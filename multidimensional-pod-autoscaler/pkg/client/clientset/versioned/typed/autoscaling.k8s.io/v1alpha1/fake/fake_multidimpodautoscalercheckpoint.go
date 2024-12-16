@@ -19,116 +19,36 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
 	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
-	testing "k8s.io/client-go/testing"
+	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1alpha1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakeMultidimPodAutoscalerCheckpoints implements MultidimPodAutoscalerCheckpointInterface
-type FakeMultidimPodAutoscalerCheckpoints struct {
+// fakeMultidimPodAutoscalerCheckpoints implements MultidimPodAutoscalerCheckpointInterface
+type fakeMultidimPodAutoscalerCheckpoints struct {
+	*gentype.FakeClientWithList[*v1alpha1.MultidimPodAutoscalerCheckpoint, *v1alpha1.MultidimPodAutoscalerCheckpointList]
 	Fake *FakeAutoscalingV1alpha1
-	ns   string
 }
 
-var multidimpodautoscalercheckpointsResource = v1alpha1.SchemeGroupVersion.WithResource("multidimpodautoscalercheckpoints")
-
-var multidimpodautoscalercheckpointsKind = v1alpha1.SchemeGroupVersion.WithKind("MultidimPodAutoscalerCheckpoint")
-
-// Get takes name of the multidimPodAutoscalerCheckpoint, and returns the corresponding multidimPodAutoscalerCheckpoint object, and an error if there is any.
-func (c *FakeMultidimPodAutoscalerCheckpoints) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MultidimPodAutoscalerCheckpoint, err error) {
-	emptyResult := &v1alpha1.MultidimPodAutoscalerCheckpoint{}
-	obj, err := c.Fake.
-		Invokes(testing.NewGetActionWithOptions(multidimpodautoscalercheckpointsResource, c.ns, name, options), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
+func newFakeMultidimPodAutoscalerCheckpoints(fake *FakeAutoscalingV1alpha1, namespace string) autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointInterface {
+	return &fakeMultidimPodAutoscalerCheckpoints{
+		gentype.NewFakeClientWithList[*v1alpha1.MultidimPodAutoscalerCheckpoint, *v1alpha1.MultidimPodAutoscalerCheckpointList](
+			fake.Fake,
+			namespace,
+			v1alpha1.SchemeGroupVersion.WithResource("multidimpodautoscalercheckpoints"),
+			v1alpha1.SchemeGroupVersion.WithKind("MultidimPodAutoscalerCheckpoint"),
+			func() *v1alpha1.MultidimPodAutoscalerCheckpoint { return &v1alpha1.MultidimPodAutoscalerCheckpoint{} },
+			func() *v1alpha1.MultidimPodAutoscalerCheckpointList {
+				return &v1alpha1.MultidimPodAutoscalerCheckpointList{}
+			},
+			func(dst, src *v1alpha1.MultidimPodAutoscalerCheckpointList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha1.MultidimPodAutoscalerCheckpointList) []*v1alpha1.MultidimPodAutoscalerCheckpoint {
+				return gentype.ToPointerSlice(list.Items)
+			},
+			func(list *v1alpha1.MultidimPodAutoscalerCheckpointList, items []*v1alpha1.MultidimPodAutoscalerCheckpoint) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1alpha1.MultidimPodAutoscalerCheckpoint), err
-}
-
-// List takes label and field selectors, and returns the list of MultidimPodAutoscalerCheckpoints that match those selectors.
-func (c *FakeMultidimPodAutoscalerCheckpoints) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.MultidimPodAutoscalerCheckpointList, err error) {
-	emptyResult := &v1alpha1.MultidimPodAutoscalerCheckpointList{}
-	obj, err := c.Fake.
-		Invokes(testing.NewListActionWithOptions(multidimpodautoscalercheckpointsResource, multidimpodautoscalercheckpointsKind, c.ns, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha1.MultidimPodAutoscalerCheckpointList{ListMeta: obj.(*v1alpha1.MultidimPodAutoscalerCheckpointList).ListMeta}
-	for _, item := range obj.(*v1alpha1.MultidimPodAutoscalerCheckpointList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested multidimPodAutoscalerCheckpoints.
-func (c *FakeMultidimPodAutoscalerCheckpoints) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchActionWithOptions(multidimpodautoscalercheckpointsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a multidimPodAutoscalerCheckpoint and creates it.  Returns the server's representation of the multidimPodAutoscalerCheckpoint, and an error, if there is any.
-func (c *FakeMultidimPodAutoscalerCheckpoints) Create(ctx context.Context, multidimPodAutoscalerCheckpoint *v1alpha1.MultidimPodAutoscalerCheckpoint, opts v1.CreateOptions) (result *v1alpha1.MultidimPodAutoscalerCheckpoint, err error) {
-	emptyResult := &v1alpha1.MultidimPodAutoscalerCheckpoint{}
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateActionWithOptions(multidimpodautoscalercheckpointsResource, c.ns, multidimPodAutoscalerCheckpoint, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.MultidimPodAutoscalerCheckpoint), err
-}
-
-// Update takes the representation of a multidimPodAutoscalerCheckpoint and updates it. Returns the server's representation of the multidimPodAutoscalerCheckpoint, and an error, if there is any.
-func (c *FakeMultidimPodAutoscalerCheckpoints) Update(ctx context.Context, multidimPodAutoscalerCheckpoint *v1alpha1.MultidimPodAutoscalerCheckpoint, opts v1.UpdateOptions) (result *v1alpha1.MultidimPodAutoscalerCheckpoint, err error) {
-	emptyResult := &v1alpha1.MultidimPodAutoscalerCheckpoint{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateActionWithOptions(multidimpodautoscalercheckpointsResource, c.ns, multidimPodAutoscalerCheckpoint, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.MultidimPodAutoscalerCheckpoint), err
-}
-
-// Delete takes name of the multidimPodAutoscalerCheckpoint and deletes it. Returns an error if one occurs.
-func (c *FakeMultidimPodAutoscalerCheckpoints) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(multidimpodautoscalercheckpointsResource, c.ns, name, opts), &v1alpha1.MultidimPodAutoscalerCheckpoint{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeMultidimPodAutoscalerCheckpoints) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionActionWithOptions(multidimpodautoscalercheckpointsResource, c.ns, opts, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha1.MultidimPodAutoscalerCheckpointList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched multidimPodAutoscalerCheckpoint.
-func (c *FakeMultidimPodAutoscalerCheckpoints) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MultidimPodAutoscalerCheckpoint, err error) {
-	emptyResult := &v1alpha1.MultidimPodAutoscalerCheckpoint{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(multidimpodautoscalercheckpointsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.MultidimPodAutoscalerCheckpoint), err
 }

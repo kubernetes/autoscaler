@@ -17,13 +17,15 @@ FROM --platform=$BUILDPLATFORM golang:1.23.4 AS builder
 WORKDIR /workspace
 
 # Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
+COPY multidimensional-pod-autoscaler/go.mod go.mod
+COPY multidimensional-pod-autoscaler/go.sum go.sum
+# TODO: This is temporary until the VPA has cut a new release
+COPY vertical-pod-autoscaler /vertical-pod-autoscaler
 
 RUN go mod download
 
-COPY common common
-COPY pkg pkg
+COPY multidimensional-pod-autoscaler/common common
+COPY multidimensional-pod-autoscaler/pkg pkg
 
 ARG TARGETOS TARGETARCH
 

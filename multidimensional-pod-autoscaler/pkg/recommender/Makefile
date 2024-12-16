@@ -37,7 +37,7 @@ ifndef TAG
 	ERR = $(error TAG is undefined)
 	$(ERR)
 endif
-	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} -f ./Dockerfile ../../
+	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} -f ./Dockerfile ../../../
 
 .PHONY: docker-push
 docker-push: $(addprefix do-push-,$(ALL_ARCHITECTURES)) push-multi-arch;

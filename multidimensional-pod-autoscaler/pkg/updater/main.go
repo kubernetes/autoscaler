@@ -197,6 +197,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *vpa_common.CommonFlags) {
 		admissionControllerStatusNamespace,
 		mpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		nil,
+		// priority.NewScalingDirectionPodEvictionAdmission(),
 		targetSelectorFetcher,
 		controllerFetcher,
 		priority.NewProcessor(),

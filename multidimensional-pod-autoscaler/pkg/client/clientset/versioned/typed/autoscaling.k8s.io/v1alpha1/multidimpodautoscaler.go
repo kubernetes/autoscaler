@@ -19,12 +19,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
+	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
 	scheme "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -37,33 +37,38 @@ type MultidimPodAutoscalersGetter interface {
 
 // MultidimPodAutoscalerInterface has methods to work with MultidimPodAutoscaler resources.
 type MultidimPodAutoscalerInterface interface {
-	Create(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.CreateOptions) (*v1alpha1.MultidimPodAutoscaler, error)
-	Update(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (*v1alpha1.MultidimPodAutoscaler, error)
+	Create(ctx context.Context, multidimPodAutoscaler *autoscalingk8siov1alpha1.MultidimPodAutoscaler, opts v1.CreateOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscaler, error)
+	Update(ctx context.Context, multidimPodAutoscaler *autoscalingk8siov1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscaler, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (*v1alpha1.MultidimPodAutoscaler, error)
+	UpdateStatus(ctx context.Context, multidimPodAutoscaler *autoscalingk8siov1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscaler, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.MultidimPodAutoscaler, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MultidimPodAutoscalerList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscaler, error)
+	List(ctx context.Context, opts v1.ListOptions) (*autoscalingk8siov1alpha1.MultidimPodAutoscalerList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MultidimPodAutoscaler, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *autoscalingk8siov1alpha1.MultidimPodAutoscaler, err error)
 	MultidimPodAutoscalerExpansion
 }
 
 // multidimPodAutoscalers implements MultidimPodAutoscalerInterface
 type multidimPodAutoscalers struct {
-	*gentype.ClientWithList[*v1alpha1.MultidimPodAutoscaler, *v1alpha1.MultidimPodAutoscalerList]
+	*gentype.ClientWithList[*autoscalingk8siov1alpha1.MultidimPodAutoscaler, *autoscalingk8siov1alpha1.MultidimPodAutoscalerList]
 }
 
 // newMultidimPodAutoscalers returns a MultidimPodAutoscalers
 func newMultidimPodAutoscalers(c *AutoscalingV1alpha1Client, namespace string) *multidimPodAutoscalers {
 	return &multidimPodAutoscalers{
-		gentype.NewClientWithList[*v1alpha1.MultidimPodAutoscaler, *v1alpha1.MultidimPodAutoscalerList](
+		gentype.NewClientWithList[*autoscalingk8siov1alpha1.MultidimPodAutoscaler, *autoscalingk8siov1alpha1.MultidimPodAutoscalerList](
 			"multidimpodautoscalers",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1alpha1.MultidimPodAutoscaler { return &v1alpha1.MultidimPodAutoscaler{} },
-			func() *v1alpha1.MultidimPodAutoscalerList { return &v1alpha1.MultidimPodAutoscalerList{} }),
+			func() *autoscalingk8siov1alpha1.MultidimPodAutoscaler {
+				return &autoscalingk8siov1alpha1.MultidimPodAutoscaler{}
+			},
+			func() *autoscalingk8siov1alpha1.MultidimPodAutoscalerList {
+				return &autoscalingk8siov1alpha1.MultidimPodAutoscalerList{}
+			},
+		),
 	}
 }

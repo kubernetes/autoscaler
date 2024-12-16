@@ -19,16 +19,16 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
+	apisautoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
 	versioned "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1alpha1"
+	autoscalingk8siov1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1alpha1"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -36,7 +36,7 @@ import (
 // MultidimPodAutoscalerCheckpoints.
 type MultidimPodAutoscalerCheckpointInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.MultidimPodAutoscalerCheckpointLister
+	Lister() autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointLister
 }
 
 type multidimPodAutoscalerCheckpointInformer struct {
@@ -71,7 +71,7 @@ func NewFilteredMultidimPodAutoscalerCheckpointInformer(client versioned.Interfa
 				return client.AutoscalingV1alpha1().MultidimPodAutoscalerCheckpoints(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint{},
+		&apisautoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,9 +82,9 @@ func (f *multidimPodAutoscalerCheckpointInformer) defaultInformer(client version
 }
 
 func (f *multidimPodAutoscalerCheckpointInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint{}, f.defaultInformer)
+	return f.factory.InformerFor(&apisautoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpoint{}, f.defaultInformer)
 }
 
-func (f *multidimPodAutoscalerCheckpointInformer) Lister() v1alpha1.MultidimPodAutoscalerCheckpointLister {
-	return v1alpha1.NewMultidimPodAutoscalerCheckpointLister(f.Informer().GetIndexer())
+func (f *multidimPodAutoscalerCheckpointInformer) Lister() autoscalingk8siov1alpha1.MultidimPodAutoscalerCheckpointLister {
+	return autoscalingk8siov1alpha1.NewMultidimPodAutoscalerCheckpointLister(f.Informer().GetIndexer())
 }
