@@ -50,6 +50,7 @@ function move_and_merge_docs {
       rm -f "$file"
     done
   )
+  echo "updated docs/flags.md"
 }
 
 generate_vpa_docs_components
