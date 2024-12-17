@@ -7,15 +7,12 @@
   - [Recommender](#recommender)
     - [Running](#running-the-recommender)
     - [Implementation](#implementation-of-the-recommender)
-    - [Flags](flags.md#what-are-the-parameters-to-vpa-recommender)
   - [Updater](#updater)
     - [Current implementation](#current-implementation)
     - [Missing Parts](#missing-parts)
-    - [Flags](flags.md#what-are-the-parameters-to-vpa-updater)
   - [Admission Controller](#admission-controller)
     - [Running](#running-the-admission-controller)
     - [Implementation](#implementation-of-the-admission-controller)
-    - [Flags](flags.md#what-are-the-parameters-to-vpa-admission-controller)
 
 ## Introduction
 
@@ -29,6 +26,8 @@ The VPA project consists of 3 components:
 
 - [Admission Controller](#admission-controller) - sets the correct resource requests on new pods (either just created
   or recreated by their controller due to Updater's activity).
+
+For detailed information about configuration parameters for each component, see the [flags documentation](flags.md).
 
 More on the architecture can be found [HERE](https://github.com/kubernetes/design-proposals-archive/blob/main/autoscaling/vertical-pod-autoscaler.md).
 
