@@ -301,16 +301,26 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 
 	vpa, vpaExists := cluster.vpas[vpaID]
-	if vpaExists && (vpa.PodSelector.String() != selector.String()) {
-		// Pod selector was changed. Delete the VPA object and recreate
-		// it with the new selector.
-		if err := cluster.DeleteVpa(vpaID); err != nil {
-			return err
+	if vpaExists {
+		if vpa.PodSelector.String() != selector.String() {
+			// Pod selector was changed. Delete the VPA object and recreate
+			// it with the new selector.
+			if err := cluster.DeleteVpa(vpaID); err != nil {
+				return err
+			}
+
+			vpaExists = false
+		} else {
+			// Update the pruningGracePeriod to ensure a potential new grace period is applied.
+			// This prevents an old, excessively long grace period from persisting and
+			// potentially causing the VPA to keep stale aggregates with an outdated grace period.
+			for key, containerState := range vpa.aggregateContainerStates {
+				containerState.UpdatePruningGracePeriod(vpa_utils.GetContainerPruningGracePeriod(key.ContainerName(), apiObject.Spec.ResourcePolicy))
+			}
 		}
-		vpaExists = false
 	}
 	if !vpaExists {
-		vpa = NewVpa(vpaID, selector, apiObject.Spec.TargetRef, apiObject.CreationTimestamp.Time)
+		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
 		cluster.vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)

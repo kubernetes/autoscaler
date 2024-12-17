@@ -105,6 +105,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--prometheus-address` | "http://prometheus.monitoring.svc" |                              Where to reach for Prometheus metrics |
 | `--prometheus-cadvisor-job-name` | "kubernetes-cadvisor" |                    Name of the prometheus job name which scrapes the cAdvisor metrics |
 | `--prometheus-query-timeout` | "5m" |                        How long to wait before killing long queries |
+| `--pruning-grace-period-duration` |  |                   The grace period for deleting stale aggregates and recommendations. An empty duration will disable the grace period for all containers by default. |
 | `--recommendation-lower-bound-cpu-percentile` | 0.5 |        CPU usage percentile that will be used for the lower bound on CPU recommendation. |
 | `--recommendation-lower-bound-memory-percentile` | 0.5 |     Memory usage percentile that will be used for the lower bound on memory recommendation. |
 | `--recommendation-margin-fraction` | 0.15 |                   Fraction of usage added as the safety margin to the recommended request |
