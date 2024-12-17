@@ -91,7 +91,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		if _, found := result[id]; !found {
 			nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(node.Name)
 			if err != nil {
-				return false, "", caerror.NewAutoscalerError(caerror.InternalError, "error while retrieving node %s from cluster snapshot - this shouldn't happen: %v", node.Name, err)
+				return false, "", caerror.NewAutoscalerErrorf(caerror.InternalError, "error while retrieving node %s from cluster snapshot - this shouldn't happen: %v", node.Name, err)
 			}
 			templateNodeInfo, caErr := simulator.SanitizedTemplateNodeInfoFromNodeInfo(nodeInfo, id, daemonsets, p.forceDaemonSets, taintConfig)
 			if caErr != nil {

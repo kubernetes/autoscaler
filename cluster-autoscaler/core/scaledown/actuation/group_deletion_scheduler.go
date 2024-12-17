@@ -79,7 +79,7 @@ func (ds *GroupDeletionScheduler) ResetAndReportMetrics() {
 func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool) {
 	opts, err := nodeGroup.GetOptions(ds.ctx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
-		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "GetOptions returned error %v", err)}
+		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "GetOptions returned error %v", err)}
 		ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "failed to get autoscaling options for a node group", nodeDeleteResult)
 		return
 	}
