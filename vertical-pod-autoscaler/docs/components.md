@@ -7,12 +7,15 @@
   - [Recommender](#recommender)
     - [Running](#running-the-recommender)
     - [Implementation](#implementation-of-the-recommender)
+    - [Flags](flags.md#what-are-the-parameters-to-vpa-recommender)
   - [Updater](#updater)
     - [Current implementation](#current-implementation)
     - [Missing Parts](#missing-parts)
+    - [Flags](flags.md#what-are-the-parameters-to-vpa-updater)
   - [Admission Controller](#admission-controller)
     - [Running](#running-the-admission-controller)
     - [Implementation](#implementation-of-the-admission-controller)
+    - [Flags](flags.md#what-are-the-parameters-to-vpa-admission-controller)
 
 ## Introduction
 
