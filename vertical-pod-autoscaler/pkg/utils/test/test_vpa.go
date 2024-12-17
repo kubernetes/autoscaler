@@ -245,11 +245,12 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	for _, containerName := range b.containerNames {
 		containerResourcePolicy := vpa_types.ContainerResourcePolicy{
-			ContainerName:    containerName,
-			MinAllowed:       b.minAllowed[containerName],
-			MaxAllowed:       b.maxAllowed[containerName],
-			ControlledValues: b.controlledValues[containerName],
-			Mode:             &scalingModeAuto,
+			ContainerName:      containerName,
+			Mode:               &scalingModeAuto,
+			MinAllowed:         b.minAllowed[containerName],
+			MaxAllowed:         b.maxAllowed[containerName],
+			ControlledValues:   b.controlledValues[containerName],
+			PruningGracePeriod: b.pruningGracePeriod[containerName],
 		}
 		if scalingMode, ok := b.scalingMode[containerName]; ok {
 			containerResourcePolicy.Mode = scalingMode

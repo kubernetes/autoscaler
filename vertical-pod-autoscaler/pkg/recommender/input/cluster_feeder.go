@@ -462,7 +462,7 @@ func (feeder *clusterStateFeeder) SweepAggregates() {
 	now := time.Now()
 	for _, vpa := range feeder.clusterState.Vpas {
 		for containerKey, container := range vpa.AggregateContainerStates() {
-			if !container.IsUnderVPA && now.After(container.GetLastUpdate().Add(container.GetPruningGracePeriod().Duration)) {
+			if !container.IsUnderVPA && container.IsAggregateStale(now) {
 				klog.V(4).InfoS("Deleting Aggregate for VPA: container no longer present",
 					"namespace", vpa.ID.Namespace,
 					"vpaName", vpa.ID.VpaName,
@@ -472,7 +472,7 @@ func (feeder *clusterStateFeeder) SweepAggregates() {
 			}
 		}
 		for containerKey, container := range vpa.ContainersInitialAggregateState {
-			if !container.IsUnderVPA && now.After(container.GetLastUpdate().Add(container.GetPruningGracePeriod().Duration)) {
+			if !container.IsUnderVPA && container.IsAggregateStale(now) {
 				klog.V(4).InfoS("Deleting Initial Aggregate for VPA: container no longer present",
 					"namespace", vpa.ID.Namespace,
 					"vpaName", vpa.ID.VpaName,
