@@ -434,6 +434,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(hamsterTargetRef).
 			WithContainer("*").
+			WithPruningGracePeriod("*", 0).
 			Get()
 
 		InstallVPA(f, vpaCRD)
@@ -477,6 +478,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(hamsterTargetRef).
 			WithContainer("*").
+			WithPruningGracePeriod("*", 0).
 			Get()
 
 		InstallVPA(f, vpaCRD)

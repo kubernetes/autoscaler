@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"flag"
 	"testing"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -291,6 +293,47 @@ func TestUpdateFromPolicyControlledResources(t *testing.T) {
 			cs := NewAggregateContainerState()
 			cs.UpdateFromPolicy(tc.policy)
 			assert.Equal(t, tc.expected, cs.GetControlledResources())
+		})
+	}
+}
+
+func TestParsePruningGracePeriodDuration(t *testing.T) {
+
+	testCases := []struct {
+		name        string
+		initialFlag string
+		policy      *vpa_types.ContainerResourcePolicy
+		expected    *time.Duration
+	}{
+		{
+			name:        "Explicit PruningGracePeriod",
+			initialFlag: "10m",
+			policy: &vpa_types.ContainerResourcePolicy{
+				PruningGracePeriod: &metav1.Duration{Duration: 10 * time.Minute},
+			},
+			expected: ptr.To(10 * time.Minute),
+		}, {
+			name:        "No PruningGracePeriod specified - default to nil",
+			initialFlag: "",
+			policy:      &vpa_types.ContainerResourcePolicy{},
+			expected:    nil,
+		}, {
+			name:        "Invalid policy - exit with error",
+			initialFlag: "badDuration",
+			policy:      nil,
+			expected:    nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			flag.Set("pruning-grace-period-duration", tc.initialFlag)
+			cs := NewAggregateContainerState()
+			cs.UpdateFromPolicy(tc.policy)
+			if tc.policy != nil {
+				assert.Equal(t, tc.expected, parsePruningGracePeriodDuration())
+			} else {
+				assert.Panics(t, func() { parsePruningGracePeriodDuration() })
+			}
 		})
 	}
 }

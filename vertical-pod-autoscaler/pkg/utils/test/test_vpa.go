@@ -36,6 +36,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithMinAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
 	WithMaxAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
 	WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
+	WithPruningGracePeriod(containerName string, pruningGracePeriodSeconds int32) VerticalPodAutoscalerBuilder
 	WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) VerticalPodAutoscalerBuilder
 	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetResource(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder
@@ -66,6 +67,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 		minAllowed:              map[string]core.ResourceList{},
 		maxAllowed:              map[string]core.ResourceList{},
 		controlledValues:        map[string]*vpa_types.ContainerControlledValues{},
+		pruningGracePeriod:      map[string]*meta.Duration{},
 		scalingMode:             map[string]*vpa_types.ContainerScalingMode{},
 	}
 }
@@ -80,6 +82,7 @@ type verticalPodAutoscalerBuilder struct {
 	minAllowed              map[string]core.ResourceList
 	maxAllowed              map[string]core.ResourceList
 	controlledValues        map[string]*vpa_types.ContainerControlledValues
+	pruningGracePeriod      map[string]*meta.Duration
 	scalingMode             map[string]*vpa_types.ContainerScalingMode
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
@@ -137,6 +140,12 @@ func (b *verticalPodAutoscalerBuilder) WithMaxAllowed(containerName, cpu, memory
 func (b *verticalPodAutoscalerBuilder) WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.controlledValues[containerName] = &mode
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithPruningGracePeriod(containerName string, pruningGracePeriodSeconds int32) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.pruningGracePeriod[containerName] = &meta.Duration{Duration: time.Duration(pruningGracePeriodSeconds) * time.Second}
 	return &c
 }
 
@@ -245,11 +254,12 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	for _, containerName := range b.containerNames {
 		containerResourcePolicy := vpa_types.ContainerResourcePolicy{
-			ContainerName:    containerName,
-			MinAllowed:       b.minAllowed[containerName],
-			MaxAllowed:       b.maxAllowed[containerName],
-			ControlledValues: b.controlledValues[containerName],
-			Mode:             &scalingModeAuto,
+			ContainerName:      containerName,
+			Mode:               &scalingModeAuto,
+			MinAllowed:         b.minAllowed[containerName],
+			MaxAllowed:         b.maxAllowed[containerName],
+			ControlledValues:   b.controlledValues[containerName],
+			PruningGracePeriod: b.pruningGracePeriod[containerName],
 		}
 		if scalingMode, ok := b.scalingMode[containerName]; ok {
 			containerResourcePolicy.Mode = scalingMode
