@@ -640,13 +640,16 @@ When using this class, Cluster Autoscaler performs following actions:
   implementation of the AtomicIncreaseSize method. If the method is not implemented, the scale-up
   request will try to increase the node group atomically but doesn't guarantee atomicity.
 
-  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes, 
+  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes,
   preventing other ProvReqs from using it.
 
   * __Condition Updates__:
     * Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler.
     * Adds a Provisioned=True condition to the ProvReq if the node group scale up request is successful.
     * Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+  Note: make sure you setup --max-nodes-per-scaleup flag correctly. By default --max-nodes-per-scaleup=1000, so any scale up that
+  require more than 1000 nodes will be rejected.
 
 #### Example Usage
 

@@ -43,6 +43,7 @@ type ProvisioningRequestPodsInjector struct {
 	clock                              clock.PassiveClock
 	client                             *provreqclient.ProvisioningRequestClient
 	lastProvisioningRequestProcessTime time.Time
+	checkCapacityBatchProcessing       bool
 }
 
 // IsAvailableForProvisioning checks if the provisioning request is the correct state for processing and provisioning has not been attempted recently.
@@ -116,6 +117,12 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 			p.MarkAsFailed(pr, provreqconditions.FailedToCreatePodsReason, err.Error())
 			continue
 		}
+		// Don't mark as accepted the check capacity ProvReq when batch processing is enabled.
+		// It will be marked later, in parallel, during processing the requests.
+		if pr.Spec.ProvisioningClassName == v1.ProvisioningClassCheckCapacity && p.checkCapacityBatchProcessing {
+			p.UpdateLastProcessTime()
+			return podsFromProvReq, nil
+		}
 		if err := p.MarkAsAccepted(pr); err != nil {
 			continue
 		}
@@ -188,12 +195,20 @@ func (p *ProvisioningRequestPodsInjector) Process(
 func (p *ProvisioningRequestPodsInjector) CleanUp() {}
 
 // NewProvisioningRequestPodsInjector creates a ProvisioningRequest filter processor.
-func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int) (*ProvisioningRequestPodsInjector, error) {
+func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int, checkCapacityBatchProcessing bool) (*ProvisioningRequestPodsInjector, error) {
 	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
-	return &ProvisioningRequestPodsInjector{initialRetryTime: initialBackoffTime, maxBackoffTime: maxBackoffTime, backoffDuration: lru.New(maxCacheSize), client: client, clock: clock.RealClock{}, lastProvisioningRequestProcessTime: time.Now()}, nil
+	return &ProvisioningRequestPodsInjector{
+		initialRetryTime:                   initialBackoffTime,
+		maxBackoffTime:                     maxBackoffTime,
+		backoffDuration:                    lru.New(maxCacheSize),
+		client:                             client,
+		clock:                              clock.RealClock{},
+		lastProvisioningRequestProcessTime: time.Now(),
+		checkCapacityBatchProcessing:       checkCapacityBatchProcessing,
+	}, nil
 }
 
 func key(pr *provreqwrapper.ProvisioningRequest) string {

@@ -149,16 +149,16 @@ func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
 func deleteNodesFromCloudProvider(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, nodes []*apiv1.Node) (cloudprovider.NodeGroup, error) {
 	nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(nodes[0])
 	if err != nil {
-		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to find node group for %s: %v", nodes[0].Name, err)
+		return nodeGroup, errors.NewAutoscalerErrorf(errors.CloudProviderError, "failed to find node group for %s: %v", nodes[0].Name, err)
 	}
 	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		return nil, errors.NewAutoscalerError(errors.InternalError, "picked node that doesn't belong to a node group: %s", nodes[0].Name)
+		return nil, errors.NewAutoscalerErrorf(errors.InternalError, "picked node that doesn't belong to a node group: %s", nodes[0].Name)
 	}
 	if err := nodeGroup.DeleteNodes(nodes); err != nil {
 		scaleStateNotifier.RegisterFailedScaleDown(nodeGroup,
 			string(errors.CloudProviderError),
 			time.Now())
-		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete nodes from group %s: %v", nodeGroup.Id(), err)
+		return nodeGroup, errors.NewAutoscalerErrorf(errors.CloudProviderError, "failed to delete nodes from group %s: %v", nodeGroup.Id(), err)
 	}
 	return nodeGroup, nil
 }
