@@ -411,7 +411,7 @@ func TestApplyVPAPolicy(t *testing.T) {
 			},
 		},
 		{
-			Name:              "resource policy is nil and global max allowed is set",
+			Name:              "resource policy is nil and global max allowed is set for cpu and memory",
 			PodRecommendation: recommendation,
 			ResourcePolicy:    nil,
 			GlobalMaxAllowed: apiv1.ResourceList{
@@ -475,6 +475,46 @@ func TestApplyVPAPolicy(t *testing.T) {
 						UpperBound: apiv1.ResourceList{
 							apiv1.ResourceCPU:    resource.MustParse("50m"),
 							apiv1.ResourceMemory: resource.MustParse("50Mi"),
+						},
+						UncappedTarget: apiv1.ResourceList{
+							apiv1.ResourceCPU:    resource.MustParse("42m"),
+							apiv1.ResourceMemory: resource.MustParse("42Mi"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Name:              "resource policy has max allowed for cpu and global max allowed is set for memory",
+			PodRecommendation: recommendation,
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "foo",
+						MaxAllowed: apiv1.ResourceList{
+							apiv1.ResourceCPU: resource.MustParse("40m"),
+						},
+					},
+				},
+			},
+			GlobalMaxAllowed: apiv1.ResourceList{
+				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			},
+			Expected: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName: "foo",
+						Target: apiv1.ResourceList{
+							apiv1.ResourceCPU:    resource.MustParse("40m"),
+							apiv1.ResourceMemory: resource.MustParse("40Mi"),
+						},
+						LowerBound: apiv1.ResourceList{
+							apiv1.ResourceCPU:    resource.MustParse("31m"),
+							apiv1.ResourceMemory: resource.MustParse("31Mi"),
+						},
+						UpperBound: apiv1.ResourceList{
+							apiv1.ResourceCPU:    resource.MustParse("40m"),
+							apiv1.ResourceMemory: resource.MustParse("40Mi"),
 						},
 						UncappedTarget: apiv1.ResourceList{
 							apiv1.ResourceCPU:    resource.MustParse("42m"),

@@ -204,15 +204,13 @@ func applyVPAPolicyForContainer(containerName string,
 				maxAllowed = containerPolicy.MaxAllowed
 			}
 
-			if globalMaxAllowed != nil {
-				if maxAllowed == nil {
-					maxAllowed = globalMaxAllowed
-				} else {
-					// Set resources from the global maxAllowed if the VPA maxAllowed is missing them.
-					for resourceName, quantity := range globalMaxAllowed {
-						if _, ok := maxAllowed[resourceName]; !ok {
-							maxAllowed[resourceName] = quantity
-						}
+			if maxAllowed == nil {
+				maxAllowed = globalMaxAllowed
+			} else {
+				// Set resources from the global maxAllowed if the VPA maxAllowed is missing them.
+				for resourceName, quantity := range globalMaxAllowed {
+					if _, ok := maxAllowed[resourceName]; !ok {
+						maxAllowed[resourceName] = quantity
 					}
 				}
 			}

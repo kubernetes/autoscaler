@@ -118,10 +118,12 @@ const (
 	defaultResyncPeriod               time.Duration = 10 * time.Minute
 )
 
-func main() {
+func init() {
 	flag.Var(&maxAllowedCPU, "container-recommendation-max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
 	flag.Var(&maxAllowedMemory, "container-recommendation-max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+}
 
+func main() {
 	commonFlags := common.InitCommonFlags()
 	klog.InitFlags(nil)
 	common.InitLoggingFlags()
@@ -227,14 +229,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
 
-	var globalMaxAllowed apiv1.ResourceList
-	if !maxAllowedCPU.Quantity.IsZero() {
-		setGlobalMaxAllowed(&globalMaxAllowed, apiv1.ResourceCPU, maxAllowedCPU.Quantity)
-	}
-	if !maxAllowedMemory.Quantity.IsZero() {
-		setGlobalMaxAllowed(&globalMaxAllowed, apiv1.ResourceMemory, maxAllowedMemory.Quantity)
-	}
-
+	globalMaxAllowed := initGlobalMaxAllowed()
 	// CappingPostProcessor, should always come in the last position for post-processing
 	postProcessors = append(postProcessors, routines.NewCappingRecommendationProcessor(globalMaxAllowed))
 	var source input_metrics.PodMetricsLister
@@ -331,10 +326,14 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	}
 }
 
-func setGlobalMaxAllowed(globalMaxAllowed *apiv1.ResourceList, key apiv1.ResourceName, value resource.Quantity) {
-	if *globalMaxAllowed == nil {
-		*globalMaxAllowed = make(map[apiv1.ResourceName]resource.Quantity, 2)
+func initGlobalMaxAllowed() apiv1.ResourceList {
+	result := make(apiv1.ResourceList)
+	if !maxAllowedCPU.Quantity.IsZero() {
+		result[apiv1.ResourceCPU] = maxAllowedCPU.Quantity
+	}
+	if !maxAllowedMemory.Quantity.IsZero() {
+		result[apiv1.ResourceMemory] = maxAllowedMemory.Quantity
 	}
 
-	(*globalMaxAllowed)[key] = value
+	return result
 }
