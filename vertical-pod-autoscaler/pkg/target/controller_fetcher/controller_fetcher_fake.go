@@ -16,13 +16,20 @@ limitations under the License.
 
 package controllerfetcher
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // FakeControllerFetcher should be used in test only. It returns exactly the same controllerKey
 type FakeControllerFetcher struct{}
 
-// FindTopMostWellKnownOrScalable returns the same key for that fake implementation
+// FindTopMostWellKnownOrScalable returns the same key for that fake implementation and returns and error when the kind is Node
+// See pkg/target/controller_fetcher/controller_fetcher.go:296 where the original implementation does the same.
 func (f FakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+	if controller.Kind == "Node" {
+		return nil, fmt.Errorf("node is not a valid owner")
+	}
 	return controller, nil
 }
 
