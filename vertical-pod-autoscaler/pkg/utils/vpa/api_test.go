@@ -144,7 +144,6 @@ func TestPodMatchesVPA(t *testing.T) {
 func TestGetControllingVPAForPod(t *testing.T) {
 	ctx := context.Background()
 
-	isController := true
 	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
 	pod.OwnerReferences = []meta.OwnerReference{
@@ -152,7 +151,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 			APIVersion: "apps/v1",
 			Kind:       "StatefulSet",
 			Name:       "test-sts",
-			Controller: &isController,
+			Controller: ptr.To(true),
 		},
 	}
 
