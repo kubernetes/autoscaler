@@ -373,6 +373,24 @@ func TestFindParentControllerForPod(t *testing.T) {
 				ApiVersion: "apps/v1",
 			},
 		},
+		{
+			name: "should not return an error for Node owner reference",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Namespace: "bar",
+					OwnerReferences: []meta.OwnerReference{
+						{
+							APIVersion: "v1",
+							Controller: ptr.To(true),
+							Kind:       "Node",
+							Name:       "foo",
+						},
+					},
+				},
+			},
+			ctrlFetcher: &controllerfetcher.FakeControllerFetcher{},
+			expected:    nil,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := FindParentControllerForPod(context.Background(), tc.pod, tc.ctrlFetcher)
