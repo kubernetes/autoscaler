@@ -26,4 +26,12 @@ func (f FakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context,
 	return controller, nil
 }
 
+// NilControllerFetcher is a fake ControllerFetcher which always returns 'nil'
+type NilControllerFetcher struct{}
+
+// FindTopMostWellKnownOrScalable always returns nil
+func (f NilControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+	return nil, nil
+}
+
 var _ ControllerFetcher = &FakeControllerFetcher{}

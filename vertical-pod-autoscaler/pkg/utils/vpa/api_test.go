@@ -141,15 +141,6 @@ func TestPodMatchesVPA(t *testing.T) {
 	}
 }
 
-type NilControllerFetcher struct{}
-
-// FindTopMostWellKnownOrScalable returns the same key for that fake implementation
-func (f NilControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
-	return nil, nil
-}
-
-var _ controllerfetcher.ControllerFetcher = &NilControllerFetcher{}
-
 func TestGetControllingVPAForPod(t *testing.T) {
 	ctx := context.Background()
 
@@ -188,7 +179,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	// For some Pods (which are *not* under VPA), controllerFetcher.FindTopMostWellKnownOrScalable will return `nil`, e.g. when the Pod owner is a custom resource, which doesn't implement the /scale subresource
 	// See pkg/target/controller_fetcher/controller_fetcher_test.go:393 for testing this behavior
 	// This test case makes sure that GetControllingVPAForPod will just return `nil` in that case as well
-	chosen = GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{{vpaA, parseLabelSelector("app = testingApp")}}, &NilControllerFetcher{})
+	chosen = GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{{vpaA, parseLabelSelector("app = testingApp")}}, &controllerfetcher.NilControllerFetcher{})
 	assert.Nil(t, chosen)
 }
 
@@ -321,7 +312,7 @@ func TestFindParentControllerForPod(t *testing.T) {
 					OwnerReferences: nil,
 				},
 			},
-			ctrlFetcher: &NilControllerFetcher{},
+			ctrlFetcher: &controllerfetcher.NilControllerFetcher{},
 			expected:    nil,
 		},
 		{
