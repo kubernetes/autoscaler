@@ -924,7 +924,7 @@ Expanders can be selected by passing the name to the `--expander` flag, i.e.
 
 Currently Cluster Autoscaler has 5 expanders:
 
-* `random` - this is the default expander, and should be used when you don't have a particular
+* `random` - should be used when you don't have a particular
 need for the node groups to scale differently.
 
 * `most-pods` - selects the node group that would be able to schedule the most pods when scaling
@@ -932,7 +932,7 @@ up. This is useful when you are using nodeSelector to make sure certain pods lan
 Note that this won't cause the autoscaler to select bigger nodes vs. smaller, as it can add multiple
 smaller nodes at once.
 
-* `least-waste` - selects the node group that will have the least idle CPU (if tied, unused memory)
+* `least-waste` - this is the default expander, selects the node group that will have the least idle CPU (if tied, unused memory)
 after scale-up. This is useful when you have different classes of nodes, for example, high CPU or high memory nodes, and only want to expand those when there are pending pods that need a lot of those resources.
 
 * `least-nodes` - selects the node group that will use the least number of nodes after scale-up. This is useful when you want to minimize the number of nodes in the cluster and instead opt for fewer larger nodes. Useful when chained with the `most-pods` expander before it to ensure that the node group selected can fit the most pods on the fewest nodes.
@@ -995,7 +995,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `node-group-auto-discovery` | One or more definition(s) of node group auto-discovery.<br>A definition is expressed `<name of discoverer>:[<key>[=<value>]]`<br>The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`<br>GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10`<br> Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size for VMSSs, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`.<br>Can be used multiple times | ""
 | `emit-per-nodegroup-metrics` | If true, emit per node group metrics. | false
 | `estimator` | Type of resource estimator to be used in scale up | binpacking
-| `expander` | Type of node group expander to be used in scale up.  | random
+| `expander` | Type of node group expander to be used in scale up.  | least-waste
 | `ignore-daemonsets-utilization` | Whether DaemonSet pods will be ignored when calculating resource utilization for scaling down | false
 | `ignore-mirror-pods-utilization` | Whether [Mirror pods](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/) will be ignored when calculating resource utilization for scaling down | false
 | `write-status-configmap` | Should CA write status information to a configmap  | true
