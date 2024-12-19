@@ -254,7 +254,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 			return testsnapshot.NewCustomTestSnapshotOrDie(b, store.NewBasicSnapshotStore())
 		},
 		"delta": func() clustersnapshot.ClusterSnapshot {
-			return testsnapshot.NewCustomTestSnapshotOrDie(b, store.NewDeltaSnapshotStore())
+			return testsnapshot.NewCustomTestSnapshotOrDie(b, store.NewDeltaSnapshotStore(16))
 		},
 	}
 	for snapshotName, snapshotFactory := range snapshots {
