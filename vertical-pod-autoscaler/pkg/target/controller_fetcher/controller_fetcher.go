@@ -60,6 +60,7 @@ const (
 	discoveryResetPeriod time.Duration = 5 * time.Minute
 )
 
+// ErrNodeInvalidOwner is thrown when a Pod is owned by a Node.
 var ErrNodeInvalidOwner = errors.New("node is not a valid owner")
 
 // ControllerKey identifies a controller.
