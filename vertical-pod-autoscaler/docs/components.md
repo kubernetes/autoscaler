@@ -27,6 +27,8 @@ The VPA project consists of 3 components:
 - [Admission Controller](#admission-controller) - sets the correct resource requests on new pods (either just created
   or recreated by their controller due to Updater's activity).
 
+For detailed information about configuration parameters for each component, see the [flags documentation](flags.md).
+
 More on the architecture can be found [HERE](https://github.com/kubernetes/design-proposals-archive/blob/main/autoscaling/vertical-pod-autoscaler.md).
 
 ## Recommender
