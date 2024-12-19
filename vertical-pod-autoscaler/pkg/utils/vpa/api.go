@@ -187,7 +187,7 @@ func FindParentControllerForPod(ctx context.Context, pod *core.Pod, ctrlFetcher 
 	// validating the targetRef of a VPA, this is a valid scenario when iterating over all Pods and finding their owner.
 	// vpa updater and admission-controller don't care about these Pods, because they cannot have a valid VPA point to
 	// them, so it is safe to ignore this here.
-	if err != nil && !errors.Is(err, controllerfetcher.NodeInvalidOwnerError) {
+	if err != nil && !errors.Is(err, controllerfetcher.ErrNodeInvalidOwner) {
 		return nil, err
 	}
 	return controller, nil

@@ -25,7 +25,7 @@ type FakeControllerFetcher struct{}
 // See pkg/target/controller_fetcher/controller_fetcher.go:296 where the original implementation does the same.
 func (f FakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if controller.Kind == "Node" {
-		return nil, NodeInvalidOwnerError
+		return nil, ErrNodeInvalidOwner
 	}
 	return controller, nil
 }
