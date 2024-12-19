@@ -22,7 +22,7 @@ ARCH ?= amd64
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
 GOARM=7
-GOLANG_VERSION = 1.22
+GOLANG_VERSION = 1.23
 REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
@@ -55,7 +55,7 @@ container: .container-$(ARCH)
 	cp -r * $(TEMP_DIR)
 	cd $(TEMP_DIR) && sed -i 's|BASEIMAGE|$(BASEIMAGE)|g' Dockerfile
 
-	docker run --rm -it -v $(TEMP_DIR):$(TEMP_DIR):Z -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
+	docker run --rm -v $(TEMP_DIR):$(TEMP_DIR):Z -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
         golang:${GOLANG_VERSION} \
         /bin/bash -c "\
             cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
@@ -68,7 +68,7 @@ container: .container-$(ARCH)
 		-t $(MULTI_ARCH_IMG):$(TAG) $(TEMP_DIR)
 
 test:
-	docker run --rm -it -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
+	docker run --rm -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
 	golang:${GOLANG_VERSION} \
         /bin/bash -c "\
             cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
