@@ -44,6 +44,5 @@ ${CONTROLLER_GEN} ${CRD_OPTS} paths="${APIS_PATH}/..." output:crd:dir="\"${WORKS
 grep -v -e 'map keys must be strings, not int' -e 'not all generators ran successfully' -e 'usage' ${WORKSPACE}/errors.log \
     && { echo "Failed to generate CRD YAMLs."; exit 1; }
 
-cd ${WORKSPACE}
 cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalercheckpoints.yaml" > ${OUTPUT}
 cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalers.yaml" >> ${OUTPUT}
