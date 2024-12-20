@@ -122,7 +122,7 @@ func (m *PodsEvictionRestrictionMock) CanEvict(pod *apiv1.Pod) bool {
 }
 
 // InPlaceUpdate is a mock implementation of PodsEvictionRestriction.InPlaceUpdate
-func (m *PodsEvictionRestrictionMock) InPlaceUpdate(pod *apiv1.Pod, eventRecorder record.EventRecorder) error {
+func (m *PodsEvictionRestrictionMock) InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
 	args := m.Called(pod, eventRecorder)
 	return args.Error(0)
 }

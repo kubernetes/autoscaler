@@ -36,9 +36,11 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/inplace"
 	updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
@@ -56,6 +58,7 @@ var (
 	minReplicas = flag.Int("min-replicas", 2,
 		`Minimum number of replicas to perform update`)
 
+	// TODO(maxcao13): Should this be combined into disruption tolerance, or should we have a separate flag for that, or we just don't rename?
 	evictionToleranceFraction = flag.Float64("eviction-tolerance", 0.5,
 		`Fraction of replica count that can be evicted for update, if more than one pod can be evicted.`)
 
@@ -185,6 +188,11 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
+	inPlaceRecommendationProvider := inplace.NewInPlaceRecommendationProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+
+	// TODO(maxcao13): figure out if we need to use NewInPlaceUpdatedCalculator; does it help the user to know if their pod was updated in-place as an annotation?
+	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(inPlaceRecommendationProvider), inplace.NewInPlaceUpdatedCalculator()}
+
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
@@ -202,6 +210,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		priority.NewProcessor(),
 		commonFlag.VpaObjectNamespace,
 		ignoredNamespaces,
+		calculators,
 	)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create updater")

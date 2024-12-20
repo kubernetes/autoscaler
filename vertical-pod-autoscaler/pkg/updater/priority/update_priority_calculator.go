@@ -117,7 +117,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		}
 	}
 
-	disruptionlessRecommendation := calc.CalcualteDisruptionFreeActions(pod, processedRecommendation)
+	disruptionlessRecommendation := calc.CalculateDisruptionFreeActions(pod, processedRecommendation)
 
 	// The update is allowed in following cases:
 	// - the request is outside the recommended range for some container.
@@ -129,22 +129,27 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			klog.V(4).InfoS("Not updating pod, missing field pod.Status.StartTime", "pod", klog.KObj(pod))
 			return
 		}
+		// TODO(maxcao13): hopefully this doesn't break anything but we switch the order so that significant change is checked first before lifetime
+		// this way we don't in-place scale it for insignificant change, else we would mark it disruptionless and still have an in-place update
+		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
+			klog.V(4).InfoS("Not updating pod, resource diff too low", "pod", klog.KObj(pod), "updatePriority", updatePriority)
+			return
+		}
 		if now.Before(pod.Status.StartTime.Add(*podLifetimeUpdateThreshold)) {
 			// TODO(jkyros): do we need an in-place update threshold arg ?
 			// If our recommendations are disruptionless, we can bypass the threshold limit
 			if len(disruptionlessRecommendation.ContainerRecommendations) > 0 {
-				klog.V(2).Infof("pod accepted for DISRUPTIONLESS (%d/%d) update %v/%v with priority %v", len(disruptionlessRecommendation.ContainerRecommendations), len(processedRecommendation.ContainerRecommendations), pod.Namespace, pod.Name, updatePriority.ResourceDiff)
+				klog.V(2).Infof("Short-lived, but pod still accepted for DISRUPTIONLESS (%d/%d) in-place update %v/%v with priority %v", len(disruptionlessRecommendation.ContainerRecommendations), len(processedRecommendation.ContainerRecommendations), pod.Namespace, pod.Name, updatePriority.ResourceDiff)
 				updatePriority.Disruptionless = true
 				calc.pods = append(calc.pods, PrioritizedPod{
 					pod:            pod,
 					priority:       updatePriority,
 					recommendation: disruptionlessRecommendation})
+			} else {
+				// if it's not disruptionless, we fallback to the Recreate conditions which already failed
+				// (quick oom, outside recommended range, long-lived + significant change), so don't update this pod
+				klog.V(4).InfoS("Not updating a short-lived pod, request within recommended range", "pod", klog.KObj(pod))
 			}
-			klog.V(4).InfoS("Not updating a short-lived pod, request within recommended range", "pod", klog.KObj(pod))
-			return
-		}
-		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
-			klog.V(4).InfoS("Not updating pod, resource diff too low", "pod", klog.KObj(pod), "updatePriority", updatePriority)
 			return
 		}
 	}
@@ -302,9 +307,9 @@ func (p PodPriority) Less(other PodPriority) bool {
 	return p.ResourceDiff < other.ResourceDiff
 }
 
-// CalcualteDisruptionFreeActions calculates the set of actions we think we can perform without disruption based on the pod/container resize/restart
+// CalculateDisruptionFreeActions calculates the set of actions we think we can perform without disruption based on the pod/container resize/restart
 // policies and returns that set of actions.
-func (calc *UpdatePriorityCalculator) CalcualteDisruptionFreeActions(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+func (calc *UpdatePriorityCalculator) CalculateDisruptionFreeActions(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
 
 	var disruptionlessRecommendation = &vpa_types.RecommendedPodResources{}
 
