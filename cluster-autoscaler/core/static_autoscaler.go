@@ -46,6 +46,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
@@ -92,6 +93,7 @@ type StaticAutoscaler struct {
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	taintConfig             taints.TaintConfig
+	draProvider             *draprovider.Provider
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -144,7 +146,8 @@ func NewStaticAutoscaler(
 	remainingPdbTracker pdb.RemainingPdbTracker,
 	scaleUpOrchestrator scaleup.Orchestrator,
 	deleteOptions options.NodeDeleteOptions,
-	drainabilityRules rules.Rules) *StaticAutoscaler {
+	drainabilityRules rules.Rules,
+	draProvider *draprovider.Provider) *StaticAutoscaler {
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
@@ -174,7 +177,7 @@ func NewStaticAutoscaler(
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
+	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor, draProvider)
 	autoscalingContext.ScaleDownActuator = scaleDownActuator
 
 	if scaleUpOrchestrator == nil {
@@ -198,6 +201,7 @@ func NewStaticAutoscaler(
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		taintConfig:             taintConfig,
+		draProvider:             draProvider,
 	}
 }
 
@@ -337,8 +341,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
-	// Initialize cluster state to ClusterSnapshot
-	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, drasnapshot.Snapshot{}); err != nil {
+
+	var draSnapshot drasnapshot.Snapshot
+	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.draProvider != nil {
+		draSnapshot, err = a.draProvider.Snapshot()
+		if err != nil {
+			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
+		}
+	}
+
+	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
 	}
 	// Initialize Pod Disruption Budget tracking
@@ -659,7 +671,11 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 	nodeGroups := a.nodeGroupsById()
 	upcomingNodeGroups := make(map[string]int)
 	upcomingNodesFromUpcomingNodeGroups := 0
-	for nodeGroupName, upcomingNodeInfos := range getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups) {
+	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups)
+	if err != nil {
+		return err
+	}
+	for nodeGroupName, upcomingNodeInfos := range upcomingNodeInfosPerNg {
 		nodeGroup := nodeGroups[nodeGroupName]
 		if nodeGroup == nil {
 			return fmt.Errorf("failed to find node group: %s", nodeGroupName)
@@ -1008,7 +1024,7 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }
 
-func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo) map[string][]*framework.NodeInfo {
+func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo) (map[string][]*framework.NodeInfo, error) {
 	upcomingNodes := make(map[string][]*framework.NodeInfo)
 	for nodeGroup, numberOfNodes := range upcomingCounts {
 		nodeTemplate, found := nodeInfos[nodeGroup]
@@ -1027,11 +1043,15 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*f
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			nodes = append(nodes, simulator.NodeInfoSanitizedDeepCopy(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
+			freshNodeInfo, err := simulator.SanitizedNodeInfo(nodeTemplate, fmt.Sprintf("upcoming-%d", i))
+			if err != nil {
+				return nil, err
+			}
+			nodes = append(nodes, freshNodeInfo)
 		}
 		upcomingNodes[nodeGroup] = nodes
 	}
-	return upcomingNodes
+	return upcomingNodes, nil
 }
 
 func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {

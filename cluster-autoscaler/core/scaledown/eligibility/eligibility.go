@@ -139,9 +139,10 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 	}
 
 	gpuConfig := context.CloudProvider.GetNodeGpuConfig(node)
-	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, context.IgnoreMirrorPodsUtilization, gpuConfig, timestamp)
+	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, context.IgnoreMirrorPodsUtilization, context.DynamicResourceAllocationEnabled, gpuConfig, timestamp)
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
+		return simulator.UnexpectedError, nil
 	}
 
 	// If scale down of unready nodes is disabled, skip the node if it is unready
