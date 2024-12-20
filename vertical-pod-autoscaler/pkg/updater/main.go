@@ -26,19 +26,12 @@ import (
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/leaderelection"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	kube_flag "k8s.io/component-base/cli/flag"
-	componentbaseconfig "k8s.io/component-base/config"
-	componentbaseoptions "k8s.io/component-base/config/options"
-	"k8s.io/klog/v2"
-
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
 	updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
@@ -47,6 +40,14 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/informers"
+	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	kube_flag "k8s.io/component-base/cli/flag"
+	componentbaseconfig "k8s.io/component-base/config"
+	componentbaseoptions "k8s.io/component-base/config/options"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -89,7 +90,7 @@ func main() {
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	kube_flag.InitFlags()
-	klog.V(1).InfoS("Vertical Pod Autoscaler Updater", "version", common.VerticalPodAutoscalerVersion)
+	klog.V(1).InfoS("Vertical Pod Autoscaler Updater FOR INPALCE!!!!!!", "version", common.VerticalPodAutoscalerVersion)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
@@ -182,6 +183,11 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
+	// in-place recommendation provider
+	inPlaceRecommendationProvider := eviction.NewInPlaceProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+	// resource calculator which will generate patches
+	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(inPlaceRecommendationProvider)}
+
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
@@ -199,6 +205,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		priority.NewProcessor(),
 		commonFlag.VpaObjectNamespace,
 		ignoredNamespaces,
+		calculators,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)

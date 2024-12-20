@@ -157,8 +157,7 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 				AdmissionReviewVersions: []string{"v1"},
 				Rules: []admissionregistration.RuleWithOperations{
 					{
-						// we're watching for updates now also because of in-place VPA, but we only patch if the update was triggered by the updater
-						Operations: []admissionregistration.OperationType{admissionregistration.Create, admissionregistration.Update},
+						Operations: []admissionregistration.OperationType{admissionregistration.Create},
 						Rule: admissionregistration.Rule{
 							APIGroups:   []string{""},
 							APIVersions: []string{"v1"},

@@ -39,11 +39,3 @@ func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admi
 		Value: annotationValue,
 	}
 }
-
-// GetRemoveAnnotationPatch returns a patch that removes the specified annotation.
-func GetRemoveAnnotationPatch(annotationName string) resource_admission.PatchRecord {
-	return resource_admission.PatchRecord{
-		Op:   "remove",
-		Path: fmt.Sprintf("/metadata/annotations/%s", annotationName),
-	}
-}
