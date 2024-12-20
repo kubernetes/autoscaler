@@ -72,6 +72,15 @@ func (se *schedulingError) Type() SchedulingErrorType {
 	return se.errorType
 }
 
+// Is returns whether this error is the same as another error by comparing the types.
+func (se *schedulingError) Is(otherErr error) bool {
+	otherSchedErr, ok := otherErr.(SchedulingError)
+	if !ok {
+		return false
+	}
+	return se.Type() == otherSchedErr.Type()
+}
+
 // Error satisfies the builtin error interface.
 func (se *schedulingError) Error() string {
 	msg := ""

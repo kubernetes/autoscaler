@@ -37,10 +37,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	"k8s.io/kubernetes/pkg/features"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -503,10 +505,17 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
+	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore()
+	if autoscalingOptions.DynamicResourceAllocationEnabled {
+		// TODO(DRA): Remove this once DeltaSnapshotStore is integrated with DRA.
+		klog.Warningf("Using BasicSnapshotStore instead of DeltaSnapshotStore because DRA is enabled. Autoscaling performance/scalability might be decreased.")
+		snapshotStore = store.NewBasicSnapshotStore()
+	}
+
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		FrameworkHandle:      fwHandle,
-		ClusterSnapshot:      predicate.NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled),
+		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,
@@ -686,6 +695,15 @@ func main() {
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
+
+	// If the DRA flag is passed, we need to set the DRA feature gate as well. The selection of scheduler plugins for the default
+	// scheduling profile depends on feature gates, and the DRA plugin is only included if the DRA feature gate is enabled. The DRA
+	// plugin itself also checks the DRA feature gate and doesn't do anything if it's not enabled.
+	if *enableDynamicResourceAllocation && !featureGate.Enabled(features.DynamicResourceAllocation) {
+		if err := featureGate.SetFromMap(map[string]bool{string(features.DynamicResourceAllocation): true}); err != nil {
+			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
+		}
+	}
 
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true

@@ -28,9 +28,11 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -300,7 +302,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 	}
 }
 
-func TestNodeInfoSanitizedDeepCopy(t *testing.T) {
+func TestSanitizedNodeInfo(t *testing.T) {
 	nodeName := "template-node"
 	templateNode := BuildTestNode(nodeName, 1000, 1000)
 	templateNode.Spec.Taints = []apiv1.Taint{
@@ -315,7 +317,10 @@ func TestNodeInfoSanitizedDeepCopy(t *testing.T) {
 	templateNodeInfo := framework.NewNodeInfo(templateNode, nil, pods...)
 
 	suffix := "abc"
-	freshNodeInfo := NodeInfoSanitizedDeepCopy(templateNodeInfo, suffix)
+	freshNodeInfo, err := SanitizedNodeInfo(templateNodeInfo, suffix)
+	if err != nil {
+		t.Fatalf("FreshNodeInfoFromTemplateNodeInfo(): want nil error, got %v", err)
+	}
 	// Verify that the taints are not sanitized (they should be sanitized in the template already).
 	// Verify that the NodeInfo is sanitized using the template Node name as base.
 	initialTaints := templateNodeInfo.Node().Spec.Taints
@@ -324,7 +329,7 @@ func TestNodeInfoSanitizedDeepCopy(t *testing.T) {
 	}
 }
 
-func TestSanitizeNodeInfo(t *testing.T) {
+func TestCreateSanitizedNodeInfo(t *testing.T) {
 	oldNodeName := "old-node"
 	basicNode := BuildTestNode(oldNodeName, 1000, 1000)
 
@@ -346,9 +351,68 @@ func TestSanitizeNodeInfo(t *testing.T) {
 	taintsLabelsNode := labelsNode.DeepCopy()
 	taintsLabelsNode.Spec.Taints = taintsNode.Spec.Taints
 
-	pods := []*framework.PodInfo{
-		{Pod: BuildTestPod("p1", 80, 0, WithNodeName(oldNodeName))},
-		{Pod: BuildTestPod("p2", 80, 0, WithNodeName(oldNodeName))},
+	resourceSlices := []*resourceapi.ResourceSlice{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "slice1", UID: "slice1Uid"},
+			Spec: resourceapi.ResourceSliceSpec{
+				NodeName: oldNodeName,
+				Pool: resourceapi.ResourcePool{
+					Name:               "pool1",
+					ResourceSliceCount: 1,
+				},
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "slice2", UID: "slice2Uid"},
+			Spec: resourceapi.ResourceSliceSpec{
+				NodeName: oldNodeName,
+				Pool: resourceapi.ResourcePool{
+					Name:               "pool2",
+					ResourceSliceCount: 1,
+				},
+			},
+		},
+	}
+
+	pod1 := BuildTestPod("pod1", 80, 0, WithNodeName(oldNodeName))
+	pod2 := BuildTestPod("pod2", 80, 0, WithNodeName(oldNodeName))
+
+	pod1WithClaims := BuildTestPod("pod1", 80, 0, WithNodeName(oldNodeName),
+		WithResourceClaim("claim1", "pod1Claim1", "pod1ClaimTemplate"),
+		WithResourceClaim("claim2", "pod1Claim2", "pod1ClaimTemplate"),
+		WithResourceClaim("claim3", "sharedClaim1", "sharedClaimTemplate"),
+		WithResourceClaim("claim4", "sharedClaim2", "sharedClaimTemplate"),
+	)
+	pod2WithClaims := BuildTestPod("pod2", 80, 0, WithNodeName(oldNodeName),
+		WithResourceClaim("claim1", "pod2Claim1", "pod2ClaimTemplate"),
+		WithResourceClaim("claim2", "pod2Claim2", "pod2ClaimTemplate"),
+		WithResourceClaim("claim3", "sharedClaim1", "sharedClaimTemplate"),
+		WithResourceClaim("claim4", "sharedClaim2", "sharedClaimTemplate"),
+	)
+	nodeAllocation := &resourceapi.AllocationResult{
+		NodeSelector: &apiv1.NodeSelector{NodeSelectorTerms: []apiv1.NodeSelectorTerm{{
+			MatchFields: []apiv1.NodeSelectorRequirement{
+				{Key: "metadata.name", Operator: apiv1.NodeSelectorOpIn, Values: []string{oldNodeName}},
+			}},
+		}},
+	}
+	pod1Claim1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "pod1claim1", UID: "pod1claim1Uid", Namespace: "default"}}
+	pod1Claim2 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "pod1claim2", UID: "pod1claim2Uid", Namespace: "default"}}
+	pod2Claim1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "pod2claim1", UID: "pod2claim1Uid", Namespace: "default"}}
+	pod2Claim2 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "pod2claim2", UID: "pod2claim2Uid", Namespace: "default"}}
+	sharedClaim1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "sharedClaim1", UID: "sharedClaim1Uid", Namespace: "default"}}
+	sharedClaim2 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "sharedClaim2", UID: "sharedClaim2Uid", Namespace: "default"}}
+	pod1ResourceClaims := []*resourceapi.ResourceClaim{
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(drautils.TestClaimWithPodOwnership(pod1WithClaims, pod1Claim1), nodeAllocation), pod1WithClaims),
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(drautils.TestClaimWithPodOwnership(pod1WithClaims, pod1Claim2), nodeAllocation), pod1WithClaims),
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim1, nil), pod1WithClaims, pod2WithClaims),
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim2, nil), pod1WithClaims, pod2WithClaims),
+	}
+	pod2ResourceClaims := []*resourceapi.ResourceClaim{
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(drautils.TestClaimWithPodOwnership(pod2WithClaims, pod2Claim1), nodeAllocation), pod2WithClaims),
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(drautils.TestClaimWithPodOwnership(pod2WithClaims, pod2Claim2), nodeAllocation), pod2WithClaims),
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim1, nil), pod1WithClaims, pod2WithClaims),
+		drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim2, nil), pod1WithClaims, pod2WithClaims),
 	}
 
 	for _, tc := range []struct {
@@ -368,6 +432,10 @@ func TestSanitizeNodeInfo(t *testing.T) {
 			nodeInfo: framework.NewTestNodeInfo(labelsNode),
 		},
 		{
+			testName: "sanitize node with ResourceSlices",
+			nodeInfo: framework.NewNodeInfo(basicNode, resourceSlices),
+		},
+		{
 			testName:    "sanitize node taints - disabled",
 			nodeInfo:    framework.NewTestNodeInfo(taintsNode),
 			taintConfig: nil,
@@ -381,11 +449,15 @@ func TestSanitizeNodeInfo(t *testing.T) {
 		},
 		{
 			testName: "sanitize pods",
-			nodeInfo: framework.NewNodeInfo(basicNode, nil, pods...),
+			nodeInfo: framework.NewNodeInfo(basicNode, nil, framework.NewPodInfo(pod1, nil), framework.NewPodInfo(pod2, nil)),
+		},
+		{
+			testName: "sanitize pods with ResourceClaims",
+			nodeInfo: framework.NewNodeInfo(basicNode, nil, framework.NewPodInfo(pod1WithClaims, pod1ResourceClaims), framework.NewPodInfo(pod2WithClaims, pod2ResourceClaims)),
 		},
 		{
 			testName:    "sanitize everything",
-			nodeInfo:    framework.NewNodeInfo(taintsLabelsNode, nil, pods...),
+			nodeInfo:    framework.NewNodeInfo(taintsLabelsNode, resourceSlices, framework.NewPodInfo(pod1WithClaims, pod1ResourceClaims), framework.NewPodInfo(pod2WithClaims, pod2ResourceClaims)),
 			taintConfig: &taintConfig,
 			wantTaints:  []apiv1.Taint{{Key: "a", Value: "b", Effect: apiv1.TaintEffectNoSchedule}},
 		},
@@ -393,8 +465,11 @@ func TestSanitizeNodeInfo(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			newNameBase := "node"
 			suffix := "abc"
-			sanitizedNodeInfo := sanitizeNodeInfo(tc.nodeInfo, newNameBase, suffix, tc.taintConfig)
-			if err := verifyNodeInfoSanitization(tc.nodeInfo, sanitizedNodeInfo, nil, newNameBase, suffix, tc.wantTaints); err != nil {
+			nodeInfo, err := createSanitizedNodeInfo(tc.nodeInfo, newNameBase, suffix, tc.taintConfig)
+			if err != nil {
+				t.Fatalf("sanitizeNodeInfo(): want nil error, got %v", err)
+			}
+			if err := verifyNodeInfoSanitization(tc.nodeInfo, nodeInfo, nil, newNameBase, suffix, tc.wantTaints); err != nil {
 				t.Fatalf("sanitizeNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 			}
 		})
@@ -429,52 +504,168 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 
 	// Verification below assumes the same set of pods between initialNodeInfo and sanitizedNodeInfo.
 	wantNodeName := fmt.Sprintf("%s-%s", nameBase, nameSuffix)
-	if gotName := sanitizedNodeInfo.Node().Name; gotName != wantNodeName {
+	if err := verifySanitizedNode(initialNodeInfo.Node(), sanitizedNodeInfo.Node(), wantNodeName, wantTaints); err != nil {
+		return err
+	}
+	if err := verifySanitizedNodeResourceSlices(initialNodeInfo.LocalResourceSlices, sanitizedNodeInfo.LocalResourceSlices, nameSuffix); err != nil {
+		return err
+	}
+	if err := verifySanitizedPods(initialNodeInfo.Pods(), sanitizedNodeInfo.Pods(), wantNodeName, nameSuffix); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func verifySanitizedNode(initialNode, sanitizedNode *apiv1.Node, wantNodeName string, wantTaints []apiv1.Taint) error {
+	if gotName := sanitizedNode.Name; gotName != wantNodeName {
 		return fmt.Errorf("want sanitized Node name %q, got %q", wantNodeName, gotName)
 	}
-	if gotUid, oldUid := sanitizedNodeInfo.Node().UID, initialNodeInfo.Node().UID; gotUid == "" || gotUid == oldUid {
+	if gotUid, oldUid := sanitizedNode.UID, initialNode.UID; gotUid == "" || gotUid == oldUid {
 		return fmt.Errorf("sanitized Node UID wasn't randomized - got %q, old UID was %q", gotUid, oldUid)
 	}
+
 	wantLabels := make(map[string]string)
-	for k, v := range initialNodeInfo.Node().Labels {
+	for k, v := range initialNode.Labels {
 		wantLabels[k] = v
 	}
 	wantLabels[apiv1.LabelHostname] = wantNodeName
-	if diff := cmp.Diff(wantLabels, sanitizedNodeInfo.Node().Labels); diff != "" {
+	if diff := cmp.Diff(wantLabels, sanitizedNode.Labels); diff != "" {
 		return fmt.Errorf("sanitized Node labels unexpected, diff (-want +got): %s", diff)
 	}
-	if diff := cmp.Diff(wantTaints, sanitizedNodeInfo.Node().Spec.Taints); diff != "" {
+
+	if diff := cmp.Diff(wantTaints, sanitizedNode.Spec.Taints); diff != "" {
 		return fmt.Errorf("sanitized Node taints unexpected, diff (-want +got): %s", diff)
 	}
-	if diff := cmp.Diff(initialNodeInfo.Node(), sanitizedNodeInfo.Node(),
+
+	if diff := cmp.Diff(initialNode, sanitizedNode,
 		cmpopts.IgnoreFields(metav1.ObjectMeta{}, "Name", "Labels", "UID"),
 		cmpopts.IgnoreFields(apiv1.NodeSpec{}, "Taints"),
 	); diff != "" {
 		return fmt.Errorf("sanitized Node unexpected diff (-want +got): %s", diff)
 	}
 
-	oldPods := initialNodeInfo.Pods()
-	newPods := sanitizedNodeInfo.Pods()
-	if len(oldPods) != len(newPods) {
-		return fmt.Errorf("want %d pods in sanitized NodeInfo, got %d", len(oldPods), len(newPods))
-	}
-	for i, newPod := range newPods {
-		oldPod := oldPods[i]
+	return nil
+}
 
-		if newPod.Name == oldPod.Name || !strings.HasSuffix(newPod.Name, nameSuffix) {
-			return fmt.Errorf("sanitized Pod name unexpected: want (different than %q, ending in %q), got %q", oldPod.Name, nameSuffix, newPod.Name)
+func verifySanitizedPods(initialPods, sanitizedPods []*framework.PodInfo, wantNodeName, nameSuffix string) error {
+	if len(initialPods) != len(sanitizedPods) {
+		return fmt.Errorf("want %d pods in sanitized NodeInfo, got %d", len(initialPods), len(sanitizedPods))
+	}
+
+	for i, sanitizedPod := range sanitizedPods {
+		initialPod := initialPods[i]
+
+		if sanitizedPod.Name == initialPod.Name || !strings.HasSuffix(sanitizedPod.Name, nameSuffix) {
+			return fmt.Errorf("sanitized Pod name unexpected: want (different than %q, ending in %q), got %q", initialPod.Name, nameSuffix, sanitizedPod.Name)
 		}
-		if gotUid, oldUid := newPod.UID, oldPod.UID; gotUid == "" || gotUid == oldUid {
+		if gotUid, oldUid := sanitizedPod.UID, initialPod.UID; gotUid == "" || gotUid == oldUid {
 			return fmt.Errorf("sanitized Pod UID wasn't randomized - got %q, old UID was %q", gotUid, oldUid)
 		}
-		if gotNodeName := newPod.Spec.NodeName; gotNodeName != wantNodeName {
+
+		if gotNodeName := sanitizedPod.Spec.NodeName; gotNodeName != wantNodeName {
 			return fmt.Errorf("want sanitized Pod.Spec.NodeName %q, got %q", wantNodeName, gotNodeName)
 		}
-		if diff := cmp.Diff(oldPod, newPod,
+
+		if err := verifySanitizedPodResourceClaimStatuses(initialPod.Status.ResourceClaimStatuses, sanitizedPod.Status.ResourceClaimStatuses, nameSuffix); err != nil {
+			return fmt.Errorf("verifying Pod.Status.ResourceClaimStatuses in sanitized NodeInfo failed for pod %s: %v", sanitizedPod.Name, err)
+		}
+
+		if diff := cmp.Diff(initialPod.Pod, sanitizedPod.Pod,
 			cmpopts.IgnoreFields(metav1.ObjectMeta{}, "Name", "UID"),
 			cmpopts.IgnoreFields(apiv1.PodSpec{}, "NodeName"),
+			cmpopts.IgnoreFields(apiv1.PodStatus{}, "ResourceClaimStatuses"),
 		); diff != "" {
 			return fmt.Errorf("sanitized Pod unexpected diff (-want +got): %s", diff)
+		}
+
+		if err := verifySanitizedPodResourceClaims(initialPod.NeededResourceClaims, sanitizedPod.NeededResourceClaims, nameSuffix); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func verifySanitizedNodeResourceSlices(initialSlices, sanitizedSlices []*resourceapi.ResourceSlice, nameSuffix string) error {
+	if len(initialSlices) != len(sanitizedSlices) {
+		return fmt.Errorf("want %d LocalResourceSlices in sanitized NodeInfo, got %d", len(initialSlices), len(sanitizedSlices))
+	}
+
+	for i, newSlice := range sanitizedSlices {
+		oldSlice := initialSlices[i]
+
+		if newSlice.Name == oldSlice.Name || !strings.HasSuffix(newSlice.Name, nameSuffix) {
+			return fmt.Errorf("sanitized ResourceSlice name unexpected: want (different than %q, ending in %q), got %q", oldSlice.Name, nameSuffix, newSlice.Name)
+		}
+		if gotUid, oldUid := newSlice.UID, oldSlice.UID; gotUid == "" || gotUid == oldUid {
+			return fmt.Errorf("sanitized ResourceSlice UID wasn't randomized - got %q, old UID was %q", gotUid, oldUid)
+		}
+
+		// Don't verify ResourceSlice sanitization in detail, there are separate unit tests for that. Just assert that the Spec changed to confirm that it was sanitized.
+		if cmp.Equal(oldSlice.Spec, newSlice.Spec) {
+			return fmt.Errorf("sanitized ResourceSlice Spec is identical to original Spec: %v", newSlice.Spec)
+		}
+	}
+
+	return nil
+}
+
+func verifySanitizedPodResourceClaims(initialClaims, sanitizedClaims []*resourceapi.ResourceClaim, nameSuffix string) error {
+	if len(initialClaims) != len(sanitizedClaims) {
+		return fmt.Errorf("want %d NeededResourceClaims in sanitized NodeInfo, got %d", len(initialClaims), len(sanitizedClaims))
+	}
+
+	for i, sanitizedClaim := range sanitizedClaims {
+		initialClaim := initialClaims[i]
+
+		// Pod-owned claims should be sanitized, other claims shouldn't.
+		if owningPod, _ := drautils.ClaimOwningPod(initialClaim); owningPod != "" {
+			// Pod-owned claim, verify that it was sanitized.
+			if sanitizedClaim.Name == initialClaim.Name || !strings.HasSuffix(sanitizedClaim.Name, nameSuffix) {
+				return fmt.Errorf("sanitized ResourceClaim name unexpected: want (different than %q, ending in %q), got %q", initialClaim.Name, nameSuffix, sanitizedClaim.Name)
+			}
+			if gotUid, oldUid := sanitizedClaim.UID, initialClaim.UID; gotUid == "" || gotUid == oldUid {
+				return fmt.Errorf("sanitized ResourceClaim UID wasn't randomized - got %q, old UID was %q", gotUid, oldUid)
+			}
+
+			// Don't verify ResourceClaim sanitization in detail, there are separate unit tests for that. Just assert that the Status changed to confirm that it was sanitized.
+			if cmp.Equal(initialClaim.Status, sanitizedClaim.Status) {
+				return fmt.Errorf("sanitized ResourceClaim Status is identical to original Status: %v", sanitizedClaim.Status)
+			}
+		} else {
+			// Shared claim, verify that it wasn't sanitized.
+			if diff := cmp.Diff(initialClaim, sanitizedClaim); diff != "" {
+				return fmt.Errorf("shared ResourceClaim unexpectedly sanitized: diff from original (-want +got): %s", diff)
+			}
+		}
+	}
+
+	return nil
+}
+
+func verifySanitizedPodResourceClaimStatuses(initialStatuses, sanitizedStatuses []apiv1.PodResourceClaimStatus, nameSuffix string) error {
+	if len(initialStatuses) != len(sanitizedStatuses) {
+		return fmt.Errorf("want %d Pod.Status.ResourceClaimStatuses in sanitized NodeInfo, got %d", len(initialStatuses), len(sanitizedStatuses))
+	}
+
+	for i, sanitizedStatus := range sanitizedStatuses {
+		initialStatus := initialStatuses[i]
+
+		if initialStatus.Name != sanitizedStatus.Name {
+			return fmt.Errorf("sanitized ResourceClaimStatus name unexpected: want %q, got %q", initialStatus.Name, sanitizedStatus.Name)
+		}
+
+		if initialStatus.ResourceClaimName != nil {
+			if sanitizedStatus.ResourceClaimName == nil {
+				return fmt.Errorf("sanitized ResourceClaimStatus %q: ResourceClaimName unexpectedly nil", initialStatus.Name)
+			}
+			initialClaimName := *initialStatus.ResourceClaimName
+			sanitizedClaimName := *sanitizedStatus.ResourceClaimName
+
+			if sanitizedClaimName == initialClaimName || !strings.HasSuffix(sanitizedClaimName, nameSuffix) {
+				return fmt.Errorf("sanitized ResourceClaimStatus %q: ResourceClaimName unexpected: want (different than %q, ending in %q), got %q", initialStatus.Name, initialClaimName, nameSuffix, sanitizedClaimName)
+			}
 		}
 	}
 	return nil

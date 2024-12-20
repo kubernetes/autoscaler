@@ -20,7 +20,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -79,7 +83,7 @@ func TestCalculate(t *testing.T) {
 	nodeInfo := framework.NewTestNodeInfo(node, pod, pod, pod2)
 
 	gpuConfig := getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err := Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	utilInfo, err := Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 	assert.Equal(t, 0.1, utilInfo.CpuUtil)
@@ -88,7 +92,7 @@ func TestCalculate(t *testing.T) {
 	nodeInfo = framework.NewTestNodeInfo(node2, pod, pod, pod2)
 
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	_, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	_, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.Error(t, err)
 
 	node3 := BuildTestNode("node3", 2000, 2000000)
@@ -96,7 +100,7 @@ func TestCalculate(t *testing.T) {
 	nodeInfo = framework.NewTestNodeInfo(node3, pod, podWithInitContainers, podWithLargeNonRestartableInitContainers)
 
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 50.25, utilInfo.Utilization, 0.01)
 	assert.InEpsilon(t, 25.125, utilInfo.CpuUtil, 0.005)
@@ -110,13 +114,13 @@ func TestCalculate(t *testing.T) {
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod, pod2, daemonSetPod3, daemonSetPod4)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, true, false, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, true, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.5/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod2, daemonSetPod3)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
@@ -124,7 +128,7 @@ func TestCalculate(t *testing.T) {
 	terminatedPod.DeletionTimestamp = &metav1.Time{Time: testTime.Add(-10 * time.Minute)}
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod, pod2, terminatedPod)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
@@ -135,19 +139,19 @@ func TestCalculate(t *testing.T) {
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod, pod2, mirrorPod)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, false, true, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, false, true, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/9.0, utilInfo.Utilization, 0.01)
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod2, mirrorPod)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, mirrorPod, daemonSetPod3)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, true, true, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, true, true, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1.0/8.0, utilInfo.Utilization, 0.01)
 
@@ -158,7 +162,7 @@ func TestCalculate(t *testing.T) {
 	TolerateGpuForPod(gpuPod)
 	nodeInfo = framework.NewTestNodeInfo(gpuNode, pod, pod, gpuPod)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1/1, utilInfo.Utilization, 0.01)
 
@@ -167,9 +171,198 @@ func TestCalculate(t *testing.T) {
 	AddGpuLabelToNode(gpuNode)
 	nodeInfo = framework.NewTestNodeInfo(gpuNode, pod, pod)
 	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
-	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.Zero(t, utilInfo.Utilization)
+}
+
+func TestCalculateWithDynamicResources(t *testing.T) {
+	now := time.Date(2024, 12, 4, 0, 0, 0, 0, time.UTC)
+	node := BuildTestNode("node", 1000, 1000)
+	gpuNode := BuildTestNode("gpuNode", 1000, 1000)
+	AddGpusToNode(gpuNode, 1)
+	AddGpuLabelToNode(gpuNode)
+	gpuConfig := getGpuConfigFromNode(gpuNode)
+	pod1 := BuildTestPod("pod1", 250, 0, WithNodeName("node"))
+	pod2 := BuildTestPod("pod2", 250, 0, WithNodeName("node"))
+	resourceSlice1 := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{Name: "node-slice1", UID: "node-slice1"},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver: "driver.foo.com",
+			Pool: resourceapi.ResourcePool{
+				Name:               "node-pool1",
+				ResourceSliceCount: 1,
+			},
+			Devices: []resourceapi.Device{
+				{Name: "dev1"},
+				{Name: "dev2"},
+				{Name: "dev3"},
+				{Name: "dev4"},
+				{Name: "dev5"},
+			},
+		},
+	}
+	resourceSlice2 := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{Name: "node-slice2", UID: "node-slice2"},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver: "driver.bar.com",
+			Pool: resourceapi.ResourcePool{
+				Name:               "node-pool2",
+				ResourceSliceCount: 1,
+			},
+			Devices: []resourceapi.Device{
+				{Name: "dev1"},
+				{Name: "dev2"},
+				{Name: "dev3"},
+				{Name: "dev4"},
+				{Name: "dev5"},
+			},
+		},
+	}
+	incompleteResourceSlice := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{Name: "incompleteResourceSlice", UID: "incompleteResourceSlice"},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver: "driver.foo.com",
+			Pool: resourceapi.ResourcePool{
+				Name:               "node-pool3",
+				ResourceSliceCount: 999,
+			},
+			Devices: []resourceapi.Device{
+				{Name: "dev1"},
+				{Name: "dev2"},
+				{Name: "dev3"},
+			},
+		},
+	}
+	pod1Claim1 := &resourceapi.ResourceClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "pod1-claim1", UID: "pod1-claim1"},
+		Status: resourceapi.ResourceClaimStatus{
+			Allocation: &resourceapi.AllocationResult{
+				Devices: resourceapi.DeviceAllocationResult{
+					Results: []resourceapi.DeviceRequestAllocationResult{
+						{Request: "req1", Driver: "driver.foo.com", Pool: "node-pool1", Device: "dev1"},
+						{Request: "req2", Driver: "driver.foo.com", Pool: "node-pool1", Device: "dev2"},
+						{Request: "req3", Driver: "driver.foo.com", Pool: "node-pool1", Device: "dev3"},
+					},
+				},
+			},
+		},
+	}
+	pod1Claim2 := &resourceapi.ResourceClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "pod1-claim2", UID: "pod1-claim2"},
+		Status: resourceapi.ResourceClaimStatus{
+			Allocation: &resourceapi.AllocationResult{
+				Devices: resourceapi.DeviceAllocationResult{
+					Results: []resourceapi.DeviceRequestAllocationResult{
+						{Request: "req4", Driver: "driver.bar.com", Pool: "node-pool2", Device: "dev1"},
+					},
+				},
+			},
+		},
+	}
+	pod2Claim := &resourceapi.ResourceClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "pod2-claim", UID: "pod2-claim"},
+		Status: resourceapi.ResourceClaimStatus{
+			Allocation: &resourceapi.AllocationResult{
+				Devices: resourceapi.DeviceAllocationResult{
+					Results: []resourceapi.DeviceRequestAllocationResult{
+						{Request: "req1", Driver: "driver.foo.com", Pool: "node-pool1", Device: "dev4"},
+						{Request: "req2", Driver: "driver.bar.com", Pool: "node-pool2", Device: "dev2"},
+						{Request: "req3", Driver: "driver.bar.com", Pool: "node-pool2", Device: "dev3"},
+					},
+				},
+			},
+		},
+	}
+	nodeInfoNoDra := framework.NewTestNodeInfo(node, pod1, pod2)
+	nodeInfoSlicesNoClaims := framework.NewNodeInfo(node, []*resourceapi.ResourceSlice{resourceSlice1}, framework.NewPodInfo(pod1, nil), framework.NewPodInfo(pod2, nil))
+	nodeInfoSlicesAndClaimsPool1Higher := framework.NewNodeInfo(node, []*resourceapi.ResourceSlice{resourceSlice1, resourceSlice2},
+		framework.NewPodInfo(pod1, []*resourceapi.ResourceClaim{pod1Claim1, pod1Claim2}),
+		framework.NewPodInfo(pod2, []*resourceapi.ResourceClaim{pod2Claim}))
+	nodeInfoSlicesAndClaimsPool2Higher := framework.NewNodeInfo(node, []*resourceapi.ResourceSlice{resourceSlice1, resourceSlice2},
+		framework.NewPodInfo(pod2, []*resourceapi.ResourceClaim{pod2Claim}))
+	nodeInfoIncompleteSlices := framework.NewNodeInfo(node, []*resourceapi.ResourceSlice{resourceSlice1, resourceSlice2, incompleteResourceSlice},
+		framework.NewPodInfo(pod1, []*resourceapi.ResourceClaim{pod1Claim1, pod1Claim2}),
+		framework.NewPodInfo(pod2, []*resourceapi.ResourceClaim{pod2Claim}))
+	nodeInfoGpuAndDra := framework.NewNodeInfo(gpuNode, []*resourceapi.ResourceSlice{resourceSlice1, resourceSlice2},
+		framework.NewPodInfo(pod1, []*resourceapi.ResourceClaim{pod1Claim1, pod1Claim2}),
+		framework.NewPodInfo(pod2, []*resourceapi.ResourceClaim{pod2Claim}))
+
+	for _, tc := range []struct {
+		testName     string
+		draEnabled   bool
+		nodeInfo     *framework.NodeInfo
+		gpuConfig    *cloudprovider.GpuConfig
+		wantUtilInfo Info
+		wantErr      error
+	}{
+		{
+			testName:     "no DRA resources, DRA disabled -> normal resource util returned",
+			nodeInfo:     nodeInfoNoDra,
+			draEnabled:   false,
+			wantUtilInfo: Info{CpuUtil: 0.5, Utilization: 0.5, ResourceName: apiv1.ResourceCPU},
+		},
+		{
+			testName:     "DRA slices present, but no claims, DRA disabled -> normal resource util returned",
+			nodeInfo:     nodeInfoSlicesNoClaims,
+			draEnabled:   false,
+			wantUtilInfo: Info{CpuUtil: 0.5, Utilization: 0.5, ResourceName: apiv1.ResourceCPU},
+		},
+		{
+			testName:     "DRA slices and claims present, DRA disabled -> normal resource util returned",
+			nodeInfo:     nodeInfoSlicesAndClaimsPool1Higher,
+			draEnabled:   false,
+			wantUtilInfo: Info{CpuUtil: 0.5, Utilization: 0.5, ResourceName: apiv1.ResourceCPU},
+		},
+		{
+			testName:     "no DRA resources, DRA enabled -> normal resource util returned",
+			nodeInfo:     nodeInfoNoDra,
+			draEnabled:   true,
+			wantUtilInfo: Info{CpuUtil: 0.5, Utilization: 0.5, ResourceName: apiv1.ResourceCPU},
+		},
+		{
+			testName:     "DRA slices present, but no claims, DRA enabled -> DRA util returned despite being lower than CPU",
+			nodeInfo:     nodeInfoSlicesNoClaims,
+			draEnabled:   true,
+			wantUtilInfo: Info{DynamicResourceUtil: 0, Utilization: 0, ResourceName: apiv1.ResourceName("driver.foo.com/node-pool1")},
+		},
+		{
+			testName:     "DRA slices and claims present, DRA enabled -> DRA util returned despite being lower than CPU",
+			nodeInfo:     nodeInfoSlicesAndClaimsPool2Higher,
+			draEnabled:   true,
+			wantUtilInfo: Info{DynamicResourceUtil: 0.4, Utilization: 0.4, ResourceName: apiv1.ResourceName("driver.bar.com/node-pool2")},
+		},
+		{
+			testName:     "DRA slices and claims present, DRA enabled -> DRA util returned",
+			nodeInfo:     nodeInfoSlicesAndClaimsPool1Higher,
+			draEnabled:   true,
+			wantUtilInfo: Info{DynamicResourceUtil: 0.8, Utilization: 0.8, ResourceName: apiv1.ResourceName("driver.foo.com/node-pool1")},
+		},
+		{
+			testName:     "DRA slices and claims present, DRA enabled, GPU config passed -> GPU util returned",
+			nodeInfo:     nodeInfoGpuAndDra,
+			gpuConfig:    gpuConfig,
+			draEnabled:   true,
+			wantUtilInfo: Info{Utilization: 0, ResourceName: gpuConfig.ResourceName},
+		},
+		{
+			testName:     "DRA slices and claims present, DRA enabled, error while calculating DRA util -> error returned",
+			nodeInfo:     nodeInfoIncompleteSlices,
+			draEnabled:   true,
+			wantUtilInfo: Info{},
+			wantErr:      cmpopts.AnyError,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			utilInfo, err := Calculate(tc.nodeInfo, false, false, tc.draEnabled, tc.gpuConfig, now)
+			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
+				t.Errorf("Calculate(): unexpected error (-want +got): %s", diff)
+			}
+			if diff := cmp.Diff(tc.wantUtilInfo, utilInfo); diff != "" {
+				t.Errorf("Calculate(): unexpected output (-want +got): %s", diff)
+			}
+		})
+	}
 }
 
 func getGpuConfigFromNode(node *apiv1.Node) *cloudprovider.GpuConfig {
