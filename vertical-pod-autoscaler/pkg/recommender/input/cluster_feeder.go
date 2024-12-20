@@ -279,7 +279,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 
 	allVpaResources, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
-		klog.Errorf("Cannot list VPAs. Reason: %+v", err)
+		klog.ErrorS(err, "Cannot list VPAs")
 		return
 	}
 	for _, vpa := range allVpaResources {
