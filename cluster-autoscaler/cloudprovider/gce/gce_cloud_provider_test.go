@@ -405,6 +405,14 @@ func TestMig(t *testing.T) {
 	assert.Equal(t, "min size reached, nodes will not be deleted", err.Error())
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
+	// Test ForceDeleteNodes - ignore the min size constraint.
+	gceManagerMock.On("GetMigForInstance", n1ref).Return(mig1, nil).Once()
+	gceManagerMock.On("GetMigForInstance", n2ref).Return(mig1, nil).Once()
+	gceManagerMock.On("DeleteInstances", []GceRef{n1ref, n2ref}).Return(nil).Once()
+	err = mig1.ForceDeleteNodes([]*apiv1.Node{n1, n2})
+	assert.NoError(t, err)
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+
 	// Test Nodes.
 	gceManagerMock.On("GetMigNodes", mock.AnythingOfType("*gce.gceMig")).Return(
 		[]GceInstance{

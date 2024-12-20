@@ -25,10 +25,16 @@ import (
 )
 
 var (
-	safetyMarginFraction = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
-	podMinCPUMillicores  = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
-	podMinMemoryMb       = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
-	targetCPUPercentile  = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
+	safetyMarginFraction       = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
+	podMinCPUMillicores        = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
+	podMinMemoryMb             = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
+	targetCPUPercentile        = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
+	lowerBoundCPUPercentile    = flag.Float64("recommendation-lower-bound-cpu-percentile", 0.5, `CPU usage percentile that will be used for the lower bound on CPU recommendation.`)
+	upperBoundCPUPercentile    = flag.Float64("recommendation-upper-bound-cpu-percentile", 0.95, `CPU usage percentile that will be used for the upper bound on CPU recommendation.`)
+	targetMemoryPercentile     = flag.Float64("target-memory-percentile", 0.9, "Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.")
+	lowerBoundMemoryPercentile = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
+	upperBoundMemoryPercentile = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
+	humanizeMemory             = flag.Bool("humanize-memory", false, "Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability.")
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -51,9 +57,12 @@ type RecommendedContainerResources struct {
 }
 
 type podResourceRecommender struct {
-	targetEstimator     ResourceEstimator
-	lowerBoundEstimator ResourceEstimator
-	upperBoundEstimator ResourceEstimator
+	targetCPU        CPUEstimator
+	targetMemory     MemoryEstimator
+	lowerBoundCPU    CPUEstimator
+	lowerBoundMemory MemoryEstimator
+	upperBoundCPU    CPUEstimator
+	upperBoundMemory MemoryEstimator
 }
 
 func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources {
@@ -63,15 +72,16 @@ func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggre
 	}
 
 	fraction := 1.0 / float64(len(containerNameToAggregateStateMap))
-	minResources := model.Resources{
-		model.ResourceCPU:    model.ScaleResource(model.CPUAmountFromCores(*podMinCPUMillicores*0.001), fraction),
-		model.ResourceMemory: model.ScaleResource(model.MemoryAmountFromBytes(*podMinMemoryMb*1024*1024), fraction),
-	}
+	minCPU := model.ScaleResource(model.CPUAmountFromCores(*podMinCPUMillicores*0.001), fraction)
+	minMemory := model.ScaleResource(model.MemoryAmountFromBytes(*podMinMemoryMb*1024*1024), fraction)
 
 	recommender := &podResourceRecommender{
-		WithMinResources(minResources, r.targetEstimator),
-		WithMinResources(minResources, r.lowerBoundEstimator),
-		WithMinResources(minResources, r.upperBoundEstimator),
+		WithCPUMinResource(minCPU, r.targetCPU),
+		WithMemoryMinResource(minMemory, r.targetMemory),
+		WithCPUMinResource(minCPU, r.lowerBoundCPU),
+		WithMemoryMinResource(minMemory, r.lowerBoundMemory),
+		WithCPUMinResource(minCPU, r.upperBoundCPU),
+		WithMemoryMinResource(minMemory, r.upperBoundMemory),
 	}
 
 	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
@@ -82,10 +92,14 @@ func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggre
 
 // Takes AggregateContainerState and returns a container recommendation.
 func (r *podResourceRecommender) estimateContainerResources(s *model.AggregateContainerState) RecommendedContainerResources {
+	resources := s.GetControlledResources()
+	target := model.Resources{model.ResourceCPU: r.targetCPU.GetCPUEstimation(s), model.ResourceMemory: r.targetMemory.GetMemoryEstimation(s)}
+	lowerBound := model.Resources{model.ResourceCPU: r.lowerBoundCPU.GetCPUEstimation(s), model.ResourceMemory: r.lowerBoundMemory.GetMemoryEstimation(s)}
+	upperBound := model.Resources{model.ResourceCPU: r.upperBoundCPU.GetCPUEstimation(s), model.ResourceMemory: r.upperBoundMemory.GetMemoryEstimation(s)}
 	return RecommendedContainerResources{
-		FilterControlledResources(r.targetEstimator.GetResourceEstimation(s), s.GetControlledResources()),
-		FilterControlledResources(r.lowerBoundEstimator.GetResourceEstimation(s), s.GetControlledResources()),
-		FilterControlledResources(r.upperBoundEstimator.GetResourceEstimation(s), s.GetControlledResources()),
+		FilterControlledResources(target, resources),
+		FilterControlledResources(lowerBound, resources),
+		FilterControlledResources(upperBound, resources),
 	}
 }
 
@@ -102,20 +116,23 @@ func FilterControlledResources(estimation model.Resources, controlledResources [
 
 // CreatePodResourceRecommender returns the primary recommender.
 func CreatePodResourceRecommender() PodResourceRecommender {
-	lowerBoundCPUPercentile := 0.5
-	upperBoundCPUPercentile := 0.95
+	targetCPU := NewPercentileCPUEstimator(*targetCPUPercentile)
+	lowerBoundCPU := NewPercentileCPUEstimator(*lowerBoundCPUPercentile)
+	upperBoundCPU := NewPercentileCPUEstimator(*upperBoundCPUPercentile)
 
-	targetMemoryPeaksPercentile := 0.9
-	lowerBoundMemoryPeaksPercentile := 0.5
-	upperBoundMemoryPeaksPercentile := 0.95
+	// Create base memory estimators
+	targetMemory := NewPercentileMemoryEstimator(*targetMemoryPercentile)
+	lowerBoundMemory := NewPercentileMemoryEstimator(*lowerBoundMemoryPercentile)
+	upperBoundMemory := NewPercentileMemoryEstimator(*upperBoundMemoryPercentile)
 
-	targetEstimator := NewPercentileEstimator(*targetCPUPercentile, targetMemoryPeaksPercentile)
-	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
-	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
+	// Apply safety margins
+	targetCPU = WithCPUMargin(*safetyMarginFraction, targetCPU)
+	lowerBoundCPU = WithCPUMargin(*safetyMarginFraction, lowerBoundCPU)
+	upperBoundCPU = WithCPUMargin(*safetyMarginFraction, upperBoundCPU)
 
-	targetEstimator = WithMargin(*safetyMarginFraction, targetEstimator)
-	lowerBoundEstimator = WithMargin(*safetyMarginFraction, lowerBoundEstimator)
-	upperBoundEstimator = WithMargin(*safetyMarginFraction, upperBoundEstimator)
+	targetMemory = WithMemoryMargin(*safetyMarginFraction, targetMemory)
+	lowerBoundMemory = WithMemoryMargin(*safetyMarginFraction, lowerBoundMemory)
+	upperBoundMemory = WithMemoryMargin(*safetyMarginFraction, upperBoundMemory)
 
 	// Apply confidence multiplier to the upper bound estimator. This means
 	// that the updater will be less eager to evict pods with short history
@@ -128,7 +145,9 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	// 12h history    : *3    (force pod eviction if the request is > 3 * upper bound)
 	// 24h history    : *2
 	// 1 week history : *1.14
-	upperBoundEstimator = WithConfidenceMultiplier(1.0, 1.0, upperBoundEstimator)
+
+	upperBoundCPU = WithCPUConfidenceMultiplier(1.0, 1.0, upperBoundCPU)
+	upperBoundMemory = WithMemoryConfidenceMultiplier(1.0, 1.0, upperBoundMemory)
 
 	// Apply confidence multiplier to the lower bound estimator. This means
 	// that the updater will be less eager to evict pods with short history
@@ -142,12 +161,16 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	// 5m history   : *0.6 (force pod eviction if the request is < 0.6 * lower bound)
 	// 30m history  : *0.9
 	// 60m history  : *0.95
-	lowerBoundEstimator = WithConfidenceMultiplier(0.001, -2.0, lowerBoundEstimator)
-
+	lowerBoundCPU = WithCPUConfidenceMultiplier(0.001, -2.0, lowerBoundCPU)
+	lowerBoundMemory = WithMemoryConfidenceMultiplier(0.001, -2.0, lowerBoundMemory)
 	return &podResourceRecommender{
-		targetEstimator,
-		lowerBoundEstimator,
-		upperBoundEstimator}
+		targetCPU,
+		targetMemory,
+		lowerBoundCPU,
+		lowerBoundMemory,
+		upperBoundCPU,
+		upperBoundMemory,
+	}
 }
 
 // MapToListOfRecommendedContainerResources converts the map of RecommendedContainerResources into a stable sorted list
@@ -166,10 +189,10 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources)
 	for _, name := range containerNames {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
 			ContainerName:  name,
-			Target:         model.ResourcesAsResourceList(resources[name].Target),
-			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound),
-			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound),
-			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target),
+			Target:         model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory),
+			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound, *humanizeMemory),
+			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound, *humanizeMemory),
+			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory),
 		})
 	}
 	recommendation := &vpa_types.RecommendedPodResources{

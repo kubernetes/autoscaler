@@ -3,12 +3,16 @@ approvers:
 - kgolab
 - jbartosik
 - krzysied
+- voelzmo
+- raywainman
 reviewers:
 - kwiesmueller
 - kgolab
 - jbartosik
 - krzysied
 - voelzmo
+- raywainman
+- adrianmoisey
 emeritus_approvers:
 - schylek # 2022-09-30
 labels:

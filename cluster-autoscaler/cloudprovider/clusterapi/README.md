@@ -275,6 +275,27 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
 ```
 
+#### Per-NodeGroup autoscaling options
+
+Custom autoscaling options per node group (MachineDeployment/MachinePool/MachineSet) can be specified as annoations with a common prefix:
+
+```yaml
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  annotations:
+    # overrides --scale-down-utilization-threshold global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-scaledownutilizationthreshold: "0.5"
+    # overrides --scale-down-gpu-utilization-threshold global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-scaledowngpuutilizationthreshold: "0.5"
+    # overrides --scale-down-unneeded-time global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-scaledownunneededtime: "10m0s"
+    # overrides --scale-down-unready-time global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-scaledownunreadytime: "20m0s"
+    # overrides --max-node-provision-time global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-maxnodeprovisiontime: "20m0s"
+```
+
 #### CPU Architecture awareness for single-arch clusters 
 
 Users of single-arch non-amd64 clusters who are using scale from zero 

@@ -96,7 +96,7 @@ func TestPriorityEvictor(t *testing.T) {
 		fullDsEviction: true,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3})
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	_, err = evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)

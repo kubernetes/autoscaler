@@ -21,6 +21,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/leastnodes"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/price"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/priority"
@@ -57,10 +58,10 @@ func (f *Factory) Build(names []string) (expander.Strategy, errors.AutoscalerErr
 	strategySeen := false
 	for i, name := range names {
 		if _, ok := seenExpanders[name]; ok {
-			return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s was specified multiple times, each expander must not be specified more than once", name)
+			return nil, errors.NewAutoscalerErrorf(errors.InternalError, "Expander %s was specified multiple times, each expander must not be specified more than once", name)
 		}
 		if strategySeen {
-			return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s came after an expander %s that will always return only one result, this is not allowed since %s will never be used", name, names[i-1], name)
+			return nil, errors.NewAutoscalerErrorf(errors.InternalError, "Expander %s came after an expander %s that will always return only one result, this is not allowed since %s will never be used", name, names[i-1], name)
 		}
 		seenExpanders[name] = struct{}{}
 
@@ -68,7 +69,7 @@ func (f *Factory) Build(names []string) (expander.Strategy, errors.AutoscalerErr
 		if known {
 			filters = append(filters, create())
 		} else {
-			return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s not supported", name)
+			return nil, errors.NewAutoscalerErrorf(errors.InternalError, "Expander %s not supported", name)
 		}
 		if _, ok := filters[len(filters)-1].(expander.Strategy); ok {
 			strategySeen = true
@@ -82,6 +83,7 @@ func (f *Factory) RegisterDefaultExpanders(cloudProvider cloudprovider.CloudProv
 	f.RegisterFilter(expander.RandomExpanderName, random.NewFilter)
 	f.RegisterFilter(expander.MostPodsExpanderName, mostpods.NewFilter)
 	f.RegisterFilter(expander.LeastWasteExpanderName, waste.NewFilter)
+	f.RegisterFilter(expander.LeastNodesExpanderName, leastnodes.NewFilter)
 	f.RegisterFilter(expander.PriceBasedExpanderName, func() expander.Filter {
 		if _, err := cloudProvider.Pricing(); err != nil {
 			klog.Fatalf("Couldn't access cloud provider pricing for %s expander: %v", expander.PriceBasedExpanderName, err)

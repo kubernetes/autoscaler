@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -21,17 +21,17 @@ import (
 	"strings"
 )
 
-// Byoipv6CidrDetails The list of one or more BYOIPv6 CIDR blocks for the VCN that meets the following criteria:
-// - The CIDR must from a BYOIPv6 range.
-// - The IPv6 CIDR blocks must be valid.
-// - Multiple CIDR blocks must not overlap each other or the on-premises network CIDR block.
-// - The number of CIDR blocks must not exceed the limit of IPv6 CIDR blocks allowed to a VCN.
+// Byoipv6CidrDetails The list of one or more BYOIPv6 prefixes for the VCN that meets the following criteria:
+// - The prefix must be from a BYOIPv6 range.
+// - The IPv6 prefixes must be valid.
+// - Multiple prefix must not overlap each other or the on-premises network prefix.
+// - The number of prefixes must not exceed the limit of IPv6 prefixes allowed to a VCN.
 type Byoipv6CidrDetails struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the `ByoipRange` resource to which the CIDR block belongs.
 	Byoipv6RangeId *string `mandatory:"true" json:"byoipv6RangeId"`
 
-	// An IPv6 CIDR block required to create a VCN with a BYOIP prefix. It could be the whole CIDR block identified in `byoipv6RangeId`, or a subrange.
+	// An IPv6 prefix required to create a VCN with a BYOIP prefix. It could be the whole prefix identified in `byoipv6RangeId`, or a subrange.
 	// Example: `2001:0db8:0123::/48`
 	Ipv6CidrBlock *string `mandatory:"true" json:"ipv6CidrBlock"`
 }

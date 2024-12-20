@@ -156,8 +156,8 @@ func waitForDaemonSets(c clientset.Interface, ns string, allowedNotReadyNodes in
 	framework.Logf("Waiting up to %v for all daemonsets in namespace '%s' to start",
 		timeout, ns)
 
-	return wait.PollImmediate(framework.Poll, timeout, func() (bool, error) {
-		dsList, err := c.AppsV1().DaemonSets(ns).List(context.TODO(), metav1.ListOptions{})
+	return wait.PollUntilContextTimeout(context.Background(), framework.Poll, timeout, true, func(ctx context.Context) (done bool, err error) {
+		dsList, err := c.AppsV1().DaemonSets(ns).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			framework.Logf("Error getting daemonsets in namespace: '%s': %v", ns, err)
 			return false, err
@@ -208,7 +208,7 @@ func setupSuite() {
 		if err != nil {
 			framework.Failf("Error deleting orphaned namespaces: %v", err)
 		}
-		klog.Infof("Waiting for deletion of the following namespaces: %v", deleted)
+		framework.Logf("Waiting for deletion of the following namespaces: %v", deleted)
 		if err := framework.WaitForNamespacesDeleted(context.TODO(), c, deleted, namespaceCleanupTimeout); err != nil {
 			framework.Failf("Failed to delete orphaned namespaces %v: %v", deleted, err)
 		}
@@ -236,7 +236,7 @@ func setupSuite() {
 	// #41007. To avoid those pods preventing the whole test runs (and just
 	// wasting the whole run), we allow for some not-ready pods (with the
 	// number equal to the number of allowed not-ready nodes).
-	if err := e2epod.WaitForPodsRunningReady(context.TODO(), c, metav1.NamespaceSystem, int32(framework.TestContext.MinStartupPods), int32(framework.TestContext.AllowedNotReadyNodes), podStartupTimeout); err != nil {
+	if err := e2epod.WaitForPodsRunningReady(context.TODO(), c, metav1.NamespaceSystem, framework.TestContext.MinStartupPods, podStartupTimeout); err != nil {
 		e2edebug.DumpAllNamespaceInfo(context.TODO(), c, metav1.NamespaceSystem)
 		e2ekubectl.LogFailedContainers(context.TODO(), c, metav1.NamespaceSystem, framework.Logf)
 		runKubernetesServiceTestContainer(c, metav1.NamespaceDefault)

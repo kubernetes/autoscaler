@@ -396,19 +396,19 @@ func TestTemplateNodeInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if nodeInfo.Allocatable.MilliCPU != ng.resources.Cpu().MilliValue() {
+	if nodeInfo.ToScheduler().Allocatable.MilliCPU != ng.resources.Cpu().MilliValue() {
 		t.Fatalf("expected nodeInfo to have %v MilliCPU, got %v",
-			ng.resources.Cpu().MilliValue(), nodeInfo.Allocatable.MilliCPU)
+			ng.resources.Cpu().MilliValue(), nodeInfo.ToScheduler().Allocatable.MilliCPU)
 	}
 
-	if nodeInfo.Allocatable.Memory != ng.resources.Memory().Value() {
+	if nodeInfo.ToScheduler().Allocatable.Memory != ng.resources.Memory().Value() {
 		t.Fatalf("expected nodeInfo to have %v Memory, got %v",
-			ng.resources.Memory().Value(), nodeInfo.Allocatable.Memory)
+			ng.resources.Memory().Value(), nodeInfo.ToScheduler().Allocatable.Memory)
 	}
 
-	if nodeInfo.Allocatable.EphemeralStorage != ng.resources.StorageEphemeral().Value() {
+	if nodeInfo.ToScheduler().Allocatable.EphemeralStorage != ng.resources.StorageEphemeral().Value() {
 		t.Fatalf("expected nodeInfo to have %v ephemeral storage, got %v",
-			ng.resources.StorageEphemeral().Value(), nodeInfo.Allocatable.EphemeralStorage)
+			ng.resources.StorageEphemeral().Value(), nodeInfo.ToScheduler().Allocatable.EphemeralStorage)
 	}
 }
 

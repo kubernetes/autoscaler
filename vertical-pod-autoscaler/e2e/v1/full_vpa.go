@@ -316,12 +316,11 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 })
 
 func waitForPodsMatch(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, matcher func(pod apiv1.Pod) bool) error {
-	return wait.PollImmediate(pollInterval, timeout, func() (bool, error) {
-
+	return wait.PollUntilContextTimeout(context.Background(), pollInterval, timeout, true, func(ctx context.Context) (done bool, err error) {
 		ns := f.Namespace.Name
 		c := f.ClientSet
 
-		podList, err := c.CoreV1().Pods(ns).List(context.TODO(), listOptions)
+		podList, err := c.CoreV1().Pods(ns).List(ctx, listOptions)
 		if err != nil {
 			return false, err
 		}

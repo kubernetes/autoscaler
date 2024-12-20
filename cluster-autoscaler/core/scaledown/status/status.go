@@ -87,9 +87,7 @@ type ScaleDownResult int
 const (
 	// ScaleDownError - scale down finished with error.
 	ScaleDownError ScaleDownResult = iota
-	// ScaleDownNoUnneeded - no unneeded nodes and no errors.
-	ScaleDownNoUnneeded
-	// ScaleDownNoNodeDeleted - unneeded nodes present but not available for deletion.
+	// ScaleDownNoNodeDeleted - no new node deletions started.
 	ScaleDownNoNodeDeleted
 	// ScaleDownNodeDeleteStarted - a node deletion process was started.
 	ScaleDownNodeDeleteStarted

@@ -19,6 +19,8 @@ package autoscaling
 import (
 	"context"
 	"fmt"
+	"io"
+	"strings"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -27,7 +29,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 	podsecurity "k8s.io/pod-security-admission/api"
@@ -155,7 +156,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
 		}
-		klog.Infof("d: %+v", d)
+		framework.Logf("Created hamster deployment %v", d)
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
@@ -284,7 +285,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceCPU:    ParseQuantityOrDie("400m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("600Mi"),
 		}
-		klog.Infof("d: %+v", d)
+		framework.Logf("Created hamster deployment %v", d)
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
@@ -850,6 +851,60 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		err2 := InstallRawVPA(f, invalidVPA)
 		gomega.Expect(err2).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
 		gomega.Expect(err2.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`))
+	})
+
+	ginkgo.It("reloads the webhook certificate", func(ctx ginkgo.SpecContext) {
+		ginkgo.By("Retrieving alternative certificate")
+		c := f.ClientSet
+		e2eCertsSecret, err := c.CoreV1().Secrets(metav1.NamespaceSystem).Get(ctx, "vpa-e2e-certs", metav1.GetOptions{})
+		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-e2e-certs secret")
+		actualCertsSecret, err := c.CoreV1().Secrets(metav1.NamespaceSystem).Get(ctx, "vpa-tls-certs", metav1.GetOptions{})
+		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-tls-certs secret")
+		actualCertsSecret.Data["serverKey.pem"] = e2eCertsSecret.Data["e2eKey.pem"]
+		actualCertsSecret.Data["serverCert.pem"] = e2eCertsSecret.Data["e2eCert.pem"]
+		_, err = c.CoreV1().Secrets(metav1.NamespaceSystem).Update(ctx, actualCertsSecret, metav1.UpdateOptions{})
+		gomega.Expect(err).To(gomega.Succeed(), "Failed to update vpa-tls-certs secret with e2e rotation certs")
+
+		ginkgo.By("Waiting for certificate reload")
+		pods, err := c.CoreV1().Pods(metav1.NamespaceSystem).List(ctx, metav1.ListOptions{})
+		gomega.Expect(err).To(gomega.Succeed())
+
+		var admissionController apiv1.Pod
+		for _, p := range pods.Items {
+			if strings.HasPrefix(p.Name, "vpa-admission-controller") {
+				admissionController = p
+			}
+		}
+		gomega.Expect(admissionController.Name).ToNot(gomega.BeEmpty())
+
+		gomega.Eventually(func(g gomega.Gomega) string {
+			reader, err := c.CoreV1().Pods(metav1.NamespaceSystem).GetLogs(admissionController.Name, &apiv1.PodLogOptions{}).Stream(ctx)
+			g.Expect(err).To(gomega.Succeed())
+			logs, err := io.ReadAll(reader)
+			g.Expect(err).To(gomega.Succeed())
+			return string(logs)
+		}).Should(gomega.ContainSubstring("New certificate found, reloading"))
+
+		ginkgo.By("Setting up invalid VPA object")
+		// there is an invalid "requests" field.
+		invalidVPA := []byte(`{
+			"kind": "VerticalPodAutoscaler",
+			"apiVersion": "autoscaling.k8s.io/v1",
+			"metadata": {"name": "cert-vpa-invalid"},
+			"spec": {
+				"targetRef": {
+					"apiVersion": "apps/v1",
+					"kind": "Deployment",
+					"name":"hamster"
+				},
+		   	"resourcePolicy": {
+		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"requests":{"cpu":"50m"}}}]
+		  	}
+		  }
+		}`)
+		err = InstallRawVPA(f, invalidVPA)
+		gomega.Expect(err).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
+		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
 	})
 
 })

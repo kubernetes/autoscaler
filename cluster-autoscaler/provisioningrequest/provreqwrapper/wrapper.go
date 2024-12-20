@@ -22,12 +22,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 // ProvisioningRequest wrapper representation of the ProvisioningRequest
 type ProvisioningRequest struct {
-	*v1beta1.ProvisioningRequest
+	*v1.ProvisioningRequest
 	PodTemplates []*apiv1.PodTemplate
 }
 
@@ -39,8 +39,8 @@ type PodSet struct {
 	PodTemplate apiv1.PodTemplateSpec
 }
 
-// NewProvisioningRequest creates new ProvisioningRequest based on v1beta1 CR.
-func NewProvisioningRequest(pr *v1beta1.ProvisioningRequest, podTemplates []*apiv1.PodTemplate) *ProvisioningRequest {
+// NewProvisioningRequest creates new ProvisioningRequest based on v1 CR.
+func NewProvisioningRequest(pr *v1.ProvisioningRequest, podTemplates []*apiv1.PodTemplate) *ProvisioningRequest {
 	return &ProvisioningRequest{
 		ProvisioningRequest: pr,
 		PodTemplates:        podTemplates,
@@ -50,7 +50,6 @@ func NewProvisioningRequest(pr *v1beta1.ProvisioningRequest, podTemplates []*api
 // SetConditions of the Provisioning Request.
 func (pr *ProvisioningRequest) SetConditions(conditions []metav1.Condition) {
 	pr.Status.Conditions = conditions
-	return
 }
 
 // PodSets of the Provisioning Request.
@@ -69,7 +68,7 @@ func (pr *ProvisioningRequest) PodSets() ([]PodSet, error) {
 }
 
 // errMissingPodTemplates creates error that is passed when there are missing pod templates.
-func errMissingPodTemplates(podSets []v1beta1.PodSet, podTemplates []*apiv1.PodTemplate) error {
+func errMissingPodTemplates(podSets []v1.PodSet, podTemplates []*apiv1.PodTemplate) error {
 	foundPodTemplates := map[string]struct{}{}
 	for _, pt := range podTemplates {
 		foundPodTemplates[pt.Name] = struct{}{}

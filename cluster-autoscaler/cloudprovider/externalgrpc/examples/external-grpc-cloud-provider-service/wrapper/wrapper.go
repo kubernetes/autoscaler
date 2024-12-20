@@ -19,6 +19,7 @@ package wrapper
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -99,7 +100,8 @@ func (w *Wrapper) NodeGroupForNode(_ context.Context, req *protos.NodeGroupForNo
 	if err != nil {
 		return nil, err
 	}
-	if ng == nil {
+	// Checks if ng is nil interface or contains nil value
+	if ng == nil || reflect.ValueOf(ng).IsNil() {
 		return &protos.NodeGroupForNodeResponse{
 			NodeGroup: &protos.NodeGroup{}, //NodeGroup with id = "", meaning the node should not be processed by cluster autoscaler
 		}, nil

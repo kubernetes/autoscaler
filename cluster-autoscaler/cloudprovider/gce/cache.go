@@ -73,6 +73,7 @@ type GceCache struct {
 	machinesCache                    map[MachineTypeKey]MachineType
 	migTargetSizeCache               map[GceRef]int64
 	migBaseNameCache                 map[GceRef]string
+	migInstancesStateCountCache      map[GceRef]map[cloudprovider.InstanceState]int64
 	listManagedInstancesResultsCache map[GceRef]string
 	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
 	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
@@ -91,6 +92,7 @@ func NewGceCache() *GceCache {
 		machinesCache:                    map[MachineTypeKey]MachineType{},
 		migTargetSizeCache:               map[GceRef]int64{},
 		migBaseNameCache:                 map[GceRef]string{},
+		migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
 		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
@@ -240,6 +242,16 @@ func (gc *GceCache) InvalidateAllMigInstances() {
 	klog.V(5).Infof("Mig instances cache invalidated")
 	gc.instances = make(map[GceRef][]GceInstance)
 	gc.instancesUpdateTime = make(map[GceRef]time.Time)
+}
+
+// InvalidateMigInstances clears the mig instances cache for a given Mig
+func (gc *GceCache) InvalidateMigInstances(migRef GceRef) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("Mig instances cache invalidated for %v", migRef.Name)
+	delete(gc.instances, migRef)
+	delete(gc.instancesUpdateTime, migRef)
 }
 
 // InvalidateInstancesToMig clears the instance to mig mapping for a GceRef
@@ -545,4 +557,26 @@ func (gc *GceCache) InvalidateAllListManagedInstancesResults() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	gc.listManagedInstancesResultsCache = make(map[GceRef]string)
+}
+
+// GetMigInstancesStateCount returns counts of instances in different states for the given mig from cache.
+func (gc *GceCache) GetMigInstancesStateCount(migRef GceRef) (instanceState map[cloudprovider.InstanceState]int64, found bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	instanceState, found = gc.migInstancesStateCountCache[migRef]
+	return
+}
+
+// SetMigInstancesStateCount sets the counts of instances in different states for a given mig in cache.
+func (gc *GceCache) SetMigInstancesStateCount(migRef GceRef, instanceState map[cloudprovider.InstanceState]int64) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.migInstancesStateCountCache[migRef] = instanceState
+}
+
+// InvalidateMigInstancesStateCount invalidates all migInstancesStateCountCache entries.
+func (gc *GceCache) InvalidateMigInstancesStateCount() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.migInstancesStateCountCache = make(map[GceRef]map[cloudprovider.InstanceState]int64)
 }

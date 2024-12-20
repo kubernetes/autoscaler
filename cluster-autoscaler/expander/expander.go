@@ -19,7 +19,7 @@ package expander
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 var (
@@ -31,6 +31,8 @@ var (
 	MostPodsExpanderName = "most-pods"
 	// LeastWasteExpanderName selects a node group that leaves the least fraction of CPU and Memory
 	LeastWasteExpanderName = "least-waste"
+	// LeastNodesExpanderName selects a node group that uses the least number of nodes
+	LeastNodesExpanderName = "least-nodes"
 	// PriceBasedExpanderName selects a node group that is the most cost-effective and consistent with
 	// the preferred node size for the cluster
 	PriceBasedExpanderName = "price"
@@ -51,10 +53,10 @@ type Option struct {
 
 // Strategy describes an interface for selecting the best option when scaling up
 type Strategy interface {
-	BestOption(options []Option, nodeInfo map[string]*schedulerframework.NodeInfo) *Option
+	BestOption(options []Option, nodeInfo map[string]*framework.NodeInfo) *Option
 }
 
 // Filter describes an interface for filtering to equally good options according to some criteria
 type Filter interface {
-	BestOptions(options []Option, nodeInfo map[string]*schedulerframework.NodeInfo) []Option
+	BestOptions(options []Option, nodeInfo map[string]*framework.NodeInfo) []Option
 }

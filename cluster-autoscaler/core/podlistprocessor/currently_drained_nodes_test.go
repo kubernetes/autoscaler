@@ -21,11 +21,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -67,6 +69,20 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 			wantPods: []*apiv1.Pod{
 				BuildTestPod("p1", 100, 1),
 				BuildTestPod("p2", 200, 1),
+			},
+		},
+		{
+			name:         "single node undergoing deletion, pods with deletion timestamp set",
+			drainedNodes: []string{"n"},
+			nodes: []*apiv1.Node{
+				BuildTestNode("n", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				BuildScheduledTestPod("p1", 100, 1, "n"),
+				BuildTestPod("p2", 200, 1, WithNodeName("n"), WithDeletionTimestamp(time.Now())),
+			},
+			wantPods: []*apiv1.Pod{
+				BuildTestPod("p1", 100, 1),
 			},
 		},
 		{
@@ -253,7 +269,7 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.AutoscalingContext{
 				ScaleDownActuator: &mockActuator{&mockActuationStatus{tc.drainedNodes}},
-				ClusterSnapshot:   clustersnapshot.NewBasicClusterSnapshot(),
+				ClusterSnapshot:   testsnapshot.NewTestSnapshotOrDie(t),
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, tc.nodes, tc.pods)
 

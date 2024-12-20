@@ -37,7 +37,7 @@ ifndef TAG
 	ERR = $(error TAG is undefined)
 	$(ERR)
 endif
-	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} --build-arg ARCH=$* -f ./Dockerfile ../../
+	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} -f ./Dockerfile ../../
 
 .PHONY: docker-push
 docker-push: $(addprefix do-push-,$(ALL_ARCHITECTURES)) push-multi-arch;
@@ -90,3 +90,7 @@ format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
 
 .PHONY: all build test-unit clean format release
+
+.PHONY: document-flags
+document-flags:
+	go run ../../hack/vpa-generate-flags.go . ../../docs/vpa-recommender-flags.md

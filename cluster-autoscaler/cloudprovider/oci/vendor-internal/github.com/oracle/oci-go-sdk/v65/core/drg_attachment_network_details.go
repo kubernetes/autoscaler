@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -31,7 +31,7 @@ type DrgAttachmentNetworkDetails interface {
 
 type drgattachmentnetworkdetails struct {
 	JsonData []byte
-	Id       *string `mandatory:"true" json:"id"`
+	Id       *string `mandatory:"false" json:"id"`
 	Type     string  `json:"type"`
 }
 
@@ -65,6 +65,10 @@ func (m *drgattachmentnetworkdetails) UnmarshalPolymorphicJSON(data []byte) (int
 		mm := VcnDrgAttachmentNetworkDetails{}
 		err = json.Unmarshal(data, &mm)
 		return mm, err
+	case "LOOPBACK":
+		mm := LoopBackDrgAttachmentNetworkDetails{}
+		err = json.Unmarshal(data, &mm)
+		return mm, err
 	case "IPSEC_TUNNEL":
 		mm := IpsecTunnelDrgAttachmentNetworkDetails{}
 		err = json.Unmarshal(data, &mm)
@@ -78,6 +82,7 @@ func (m *drgattachmentnetworkdetails) UnmarshalPolymorphicJSON(data []byte) (int
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for DrgAttachmentNetworkDetails: %s.", m.Type)
 		return *m, nil
 	}
 }

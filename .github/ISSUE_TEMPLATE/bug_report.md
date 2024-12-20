@@ -15,6 +15,13 @@ Please answer these questions before submitting your bug report. Thanks!
 
 <!--
 Which autoscaling component hosted in this repository (cluster-autoscaler, vertical-pod-autoscaler, addon-resizer, helm charts) is the bug in?
+
+Add one of the following areas:
+/area addon-resizer
+/area balancer
+/area cluster-autoscaler
+/area helm-charts
+/area vertical-pod-autoscaler
 -->
 
 **What version of the component are you using?**:

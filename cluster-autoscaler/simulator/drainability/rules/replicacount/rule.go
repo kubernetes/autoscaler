@@ -23,6 +23,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
@@ -45,7 +46,7 @@ func (r *Rule) Name() string {
 }
 
 // Drainable decides what to do with replicated pods on node drain.
-func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, _ *framework.NodeInfo) drainability.Status {
 	if drainCtx.Listers == nil {
 		return drainability.NewUndefinedStatus()
 	}

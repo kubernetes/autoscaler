@@ -2,6 +2,7 @@
 # Frequently Asked Questions
 
 # Older versions
+
 The answers in this FAQ apply to the newest (HEAD) version of Cluster Autoscaler. If
 you're using an older version of CA please refer to corresponding version of
 this document:
@@ -9,7 +10,7 @@ this document:
 * [Cluster Autoscaler 0.5.X](https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-release-0.5/cluster-autoscaler/FAQ.md)
 * [Cluster Autoscaler 0.6.X](https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-release-0.6/cluster-autoscaler/FAQ.md)
 
-# Table of Contents:
+# Table of Contents
 <!--- TOC BEGIN -->
 * [Basics](#basics)
   * [What is Cluster Autoscaler?](#what-is-cluster-autoscaler)
@@ -40,6 +41,7 @@ this document:
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
   * [How can I enable Cluster Autoscaler to scale up when Node's max volume count is exceeded (CSI migration enabled)?](#how-can-i-enable-cluster-autoscaler-to-scale-up-when-nodes-max-volume-count-is-exceeded-csi-migration-enabled)
+  * [How can I use ProvisioningRequest to run batch workloads?](#how-can-i-use-provisioningrequest-to-run-batch-workloads)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale-up work?](#how-does-scale-up-work)
@@ -78,6 +80,7 @@ Cluster Autoscaler is a standalone program that adjusts the size of a Kubernetes
 ### When does Cluster Autoscaler change the size of a cluster?
 
 Cluster Autoscaler increases the size of the cluster when:
+
 * there are pods that failed to schedule on any of the current nodes due to insufficient resources.
 * adding a node similar to the nodes currently present in the cluster would help.
 
@@ -91,10 +94,12 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
   * don't have a [pod disruption budget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#how-disruption-budgets-work) set or their PDB is too restrictive (since CA 0.6).
 * Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc). *
 * Pods with local storage **. *
-    - unless the pod has the following annotation set:
+  * unless the pod has the following annotation set:
+
       ```
       "cluster-autoscaler.kubernetes.io/safe-to-evict-local-volumes": "volume-1,volume-2,.."
       ```
+
       and all of the pod's local volumes are listed in the annotation value.
 * Pods that cannot be moved elsewhere due to scheduling constraints. CA simulates kube-scheduler behavior, and if there's no other node where a given pod can schedule, the pod's node won't be scaled down.
   * This can be particularly visible if a given workloads' pods are configured to only fit one pod per node on some subset of nodes. Such pods will always block CA from scaling down their nodes, because all
@@ -104,11 +109,13 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
     * No other node has available ports to satisfy a pod's `hostPort` configuration.
     * No other node with enough resources has the labels required by a pod's node selector
 * Pods that have the following annotation set:
+
 ```
 "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
 ```
 
 <sup>*</sup>Unless the pod has the following annotation (supported in CA 1.0.3 or later):
+
 ```
 "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
 ```
@@ -118,7 +125,7 @@ __Or__ you have overridden this behaviour with one of the relevant flags. [See b
 <sup>**</sup>Local storage in this case considers a Volume configured with properties making it a local Volume, such as the following examples:
 
 * [`hostPath`](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath)
-* [`emptyDir`](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) which does **not** use "Memory" for its `emptyDir.medium` field
+* [`emptyDir`](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) which does __not__ use "Memory" for its `emptyDir.medium` field
 
 ConfigMaps, Secrets, Projected volumes and emptyDir with `medium=Memory` are not considered local storage.
 
@@ -130,20 +137,20 @@ See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/
 
 Since version 1.0.0 we consider CA as GA. It means that:
 
- * We have enough confidence that it does what it is expected to do. Each commit goes through a big suite of unit tests
+* We have enough confidence that it does what it is expected to do. Each commit goes through a big suite of unit tests
    with more than 75% coverage (on average). We have a series of e2e tests that validate that CA works well on
    [GCE](https://testgrid.k8s.io/sig-autoscaling#gce-autoscaling)
    and [GKE](https://testgrid.k8s.io/sig-autoscaling#gke-autoscaling).
    Due to the missing testing infrastructure, AWS (or any other cloud provider) compatibility
    tests are not the part of the standard development or release procedure.
    However there is a number of AWS users who run CA in their production environment and submit new code, patches and bug reports.
- * It was tested that CA scales well. CA should handle up to 1000 nodes running 30 pods each. Our testing procedure is described
+* It was tested that CA scales well. CA should handle up to 1000 nodes running 30 pods each. Our testing procedure is described
    [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/scalability_tests.md).
- * Most of the pain-points reported by the users (like too short graceful termination support) were fixed, however
+* Most of the pain-points reported by the users (like too short graceful termination support) were fixed, however
    some of the less critical feature requests are yet to be implemented.
- * CA has decent monitoring, logging and eventing.
- * CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc). The cases handled can however vary from cloudprovider to cloudprovider.
- * CA developers are committed to maintaining and supporting CA in the foreseeable future.
+* CA has decent monitoring, logging and eventing.
+* CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc). The cases handled can however vary from cloudprovider to cloudprovider.
+* CA developers are committed to maintaining and supporting CA in the foreseeable future.
 
 All of the previous versions (earlier than 1.0.0) are considered beta.
 
@@ -220,7 +227,6 @@ No. CPU-based (or any metric-based) cluster/node group autoscalers, like
 [GCE Instance Group Autoscaler](https://cloud.google.com/compute/docs/autoscaler/), are NOT compatible with CA.
 They are also not particularly suited to use with Kubernetes in general.
 
-
 ### How does Cluster Autoscaler work with Pod Priority and Preemption?
 
 Since version 1.1 (to be shipped with Kubernetes 1.9), CA takes pod priorities into account.
@@ -232,6 +238,7 @@ actions, but only run when there are spare resources available, we introduced pr
 Cluster Autoscaler.
 
 Pods with priority lower than this cutoff:
+
 * don't trigger scale-ups - no new node is added in order to run them,
 * don't prevent scale-downs - nodes running such pods can be terminated.
 
@@ -245,9 +252,10 @@ priority pod preemption.
 Older versions of CA won't take priorities into account.
 
 More about Pod Priority and Preemption:
- * [Priority in Kubernetes API](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-priority-api.md),
- * [Pod Preemption in Kubernetes](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-preemption.md),
- * [Pod Priority and Preemption tutorial](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/).
+
+* [Priority in Kubernetes API](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-priority-api.md),
+* [Pod Preemption in Kubernetes](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-preemption.md),
+* [Pod Priority and Preemption tutorial](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/).
 
 ### How does Cluster Autoscaler remove nodes?
 
@@ -258,45 +266,54 @@ It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/archi
 ### How does Cluster Autoscaler treat nodes with status/startup/ignore taints?
 
 ### Startup taints
+
 Startup taints are meant to be used when there is an operation that has to complete before any pods can run on the node, e.g. drivers installation.
 
 Cluster Autoscaler treats nodes tainted with `startup taints` as unready, but taken into account during scale up logic, assuming they will become ready shortly.
 
-**However, if the substantial number of nodes are tainted with `startup taints` (and therefore unready) for an extended period of time the Cluster Autoscaler
-might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).**
+__However, if the substantial number of nodes are tainted with `startup taints` (and therefore unready) for an extended period of time the Cluster Autoscaler
+might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).__
 
 Startup taints are defined as:
-- all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
-- all taints defined using `--startup-taint` flag.
+
+* all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
+* all taints defined using `--startup-taint` flag.
 
 ### Status taints
+
 Status taints are meant to be used when a given node should not be used to run pods for the time being.
 
 Cluster Autoscaler internally treats nodes tainted with `status taints` as ready, but filtered out during scale up logic.
 
-This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur. 
+This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur.
 
 Status taints are defined as:
-- all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
-- all taints defined using `--status-taint` flag.
+
+* all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
+* all taints defined using `--status-taint` flag.
 
 ### Ignore taints
+
 Ignore taints are now deprecated and treated as startup taints.
 
 Ignore taints are defined as:
-- all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
-- all taints defined using `--ignore-taint` flag.
+
+* all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
+* all taints defined using `--ignore-taint` flag.
+
 ****************
 
 # How to?
 
 ### I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?
+
 CA 0.6 introduced `--balance-similar-node-groups` flag to support this use case. If you set the flag to true,
 CA will automatically identify node groups with the same instance type and
 the same set of labels (except for automatically added zone label) and try to
 keep the sizes of those node groups balanced.
 
 This does not guarantee similar node groups will have exactly the same sizes:
+
 * Currently the balancing is only done at scale-up. Cluster Autoscaler will
   still scale down underutilized nodes regardless of the relative sizes of underlying
   node groups. We plan to take balancing into account in scale-down in the future.
@@ -312,6 +329,7 @@ You can opt-out a node group from being automatically balanced with other node
 groups using the same instance type by giving it any custom label.
 
 ### How can I monitor Cluster Autoscaler?
+
 Cluster Autoscaler provides metrics and livenessProbe endpoints. By
 default they're available on port 8085 (configurable with `--address` flag),
 respectively under `/metrics` and `/health-check`.
@@ -422,6 +440,7 @@ Configuration of dynamic overprovisioning:
 
 For GCE, it can be done by exporting following env
 variables before executing kube-up (more details [here](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/)):
+
 ```sh
 export KUBE_RUNTIME_CONFIG=scheduling.k8s.io/v1alpha1=true
 export ENABLE_POD_PRIORITY=true
@@ -522,7 +541,6 @@ the following annotation.
 
 It is also possible to disable DaemonSet pods eviction expicitly:
 
-
 ```
 "cluster-autoscaler.kubernetes.io/enable-ds-eviction": "false"
 ```
@@ -538,11 +556,191 @@ This annotation has no effect on pods that are not a part of any DaemonSet.
 Kubernetes scheduler will fail to schedule a Pod to a Node if the Node's max volume count is exceeded. In such case to enable Cluster Autoscaler to scale up in a Kubernetes cluster with [CSI migration](https://github.com/kubernetes/enhancements/blob/master/keps/sig-storage/625-csi-migration/README.md) enabled, the appropriate CSI related feature gates have to be specified for the Cluster Autoscaler (if the corresponding feature gates are not enabled by default).
 
 For example:
+
 ```
 --feature-gates=CSIMigration=true,CSIMigration{Provdider}=true,InTreePlugin{Provider}Unregister=true
 ```
 
 For a complete list of the feature gates and their default values per Kubernetes versions, refer to the [Feature Gates documentation](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/).
+
+### How can I use ProvisioningRequest to run batch workloads
+
+Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that aims to allow users to ask CA for capacity for groups of pods.
+For a detailed explanation of the ProvisioningRequest API, please refer to the
+[original proposal](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/provisioning-request.md).
+
+#### Enabling ProvisioningRequest Support
+
+1. __Cluster Autoscaler Version__: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
+
+2. __Feature Flag__: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
+`--enable-provisioning-requests=true`.
+
+3. __Content Type__: Set [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) to application/json in your Cluster Autoscaler configuration: `--kube-api-content-type application/json`.
+
+4. __RBAC permissions__: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-autoscaler-provisioning
+rules:
+  - apiGroups:
+    - "autoscaling.x-k8s.io"
+    resources:
+    - provisioningrequests
+    - provisioningrequests/status
+    verbs: ["watch", "list", "get", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["podtemplates"]
+    verbs: ["watch", "list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-autoscaler-provisioning-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-autoscaler-provisioning
+subjects:
+- kind: ServiceAccount
+  name: cluster-autoscaler
+  namespace: kube-system
+```
+
+5. Deploy the [ProvisioningRequest CRD](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/apis/config/crd/autoscaling.x-k8s.io_provisioningrequests.yaml)
+
+#### Supported ProvisioningClasses
+
+Currently, ClusterAutoscaler supports following ProvisioningClasses:
+
+* `check-capacity.autoscaling.x-k8s.io`.
+When using this class, Cluster Autoscaler performs following actions:
+
+  * __Capacity Check__: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
+
+  * __Reservation from other ProvReqs__ (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes,
+  preventing other ProvReqs from using it.
+
+  * __Condition Updates__:
+  Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler and ClusterAutoscaler will check capacity for this ProvReq.
+  Adds a Provisioned=True condition to the ProvReq if capacity is available.
+  Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+* `best-effort-atomic-scale-up.autoscaling.x-k8s.io` (supported from Cluster Autoscaler version 1.30.2 or later).
+When using this class, Cluster Autoscaler performs following actions:
+
+  * __Capacity Check__: Check which pods could be scheduled on existing capacity.
+
+  * __ScaleUp Request__: Evaluates if scaling up a node group could fulfill all remaining
+  requirements of the ProvisioningRequest. The scale-up request will use the  AtomicIncreaseSize method
+  if a given cloud provider supports it. Note that the ScaleUp result depends on the cloud provider's
+  implementation of the AtomicIncreaseSize method. If the method is not implemented, the scale-up
+  request will try to increase the node group atomically but doesn't guarantee atomicity.
+
+  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes,
+  preventing other ProvReqs from using it.
+
+  * __Condition Updates__:
+    * Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler.
+    * Adds a Provisioned=True condition to the ProvReq if the node group scale up request is successful.
+    * Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+  Note: make sure you setup --max-nodes-per-scaleup flag correctly. By default --max-nodes-per-scaleup=1000, so any scale up that
+  require more than 1000 nodes will be rejected.
+
+#### Example Usage
+
+Deploy the first 2 resources, observe the request being Approved and Provisioned,
+then deploy the Deployment and observe the Deployment using up the Request.
+
+```yaml
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: template
+template:
+  spec:
+    containers:
+    - image: ubuntu
+      name: default
+      resources:
+        requests:
+          cpu: "1"
+          memory: 600Mi
+
+---
+apiVersion: autoscaling.x-k8s.io/v1
+kind: ProvisioningRequest
+metadata:
+  name: provider
+spec:
+  provisioningClassName: "best-effort-atomic-scale-up.autoscaling.x-k8s.io"
+  podSets:
+  - podTemplateRef:
+      name: cluster-autoscaler
+    count: 10
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  annotations:
+    autoscaling.x-k8s.io/consume-provisioning-request: provider
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: default
+        image: ubuntu
+        resources:
+          requests:
+            cpu: "1"
+            memory: 600Mi
+        args: ["sleep"]
+```
+
+### How can I tune Cluster Autoscaler's performance for processing ProvisioningRequests?
+
+Cluster Autoscaler can be run in batch processing mode for CheckCapacity
+ProvisioningRequests. In this mode, Cluster Autoscaler processes multiple
+CheckCapacity ProvisioningRequests in a single iteration. This mode is useful for
+scenarios where a large number of CheckCapacity ProvisioningRequests
+need to be processed.
+
+However, enabling batch processing for CheckCapacity ProvisioningRequests can adversely
+affect the performance of processing other types of ProvisioningRequests and incoming pods
+since iterations where CheckCapacity ProvisioningRequests are processed will take longer
+and scale-ups for other types of ProvisioningRequests and incoming pods will not be processed
+during that time.
+
+#### Enabling Batch Processing
+
+1. **Cluster Autoscaler Version**: Ensure you are using Cluster Autoscaler version 1.32.0 or later.
+
+2. **Feature Flag**: Batch processing is disabled by default, it can be enabled by
+setting the following flag in your Cluster Autoscaler configuration:
+`--check-capacity-batch-processing=true`.
+
+3. **Batch Size**: Set the maximum number of CheckCapacity ProvisioningRequests
+to process in a single iteration by setting the following flag in your Cluster
+Autoscaler configuration:
+`--max-batch-size=<batch-size>`. The default value is 10.
+
+4. **Batch Timebox**: Set the maximum time in seconds that Cluster Autoscaler will
+spend processing CheckCapacity ProvisioningRequests in a single iteration by
+setting the following flag in your Cluster Autoscaler configuration:
+`--batch-timebox=<timebox>`. The default value is 10s.
 
 ****************
 
@@ -577,14 +775,14 @@ different strategies can be selected for choosing which node group is increased.
 
 It may take some time before the created nodes appear in Kubernetes. It almost entirely
 depends on the cloud provider and the speed of node provisioning, including the
-[TLS bootstrapping process](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/).
+[TLS bootstrapping process](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/).
 Cluster Autoscaler expects requested nodes to appear within 15 minutes
 (configured by `--max-node-provision-time` flag.) After this time, if they are
 still unregistered, it stops considering them in simulations and may attempt to scale up a
 different group if the pods are still pending. It will also attempt to remove
 any nodes left unregistered after this time.
 
-> Note: Cluster Autoscaler is **not** responsible for behaviour and registration
+> Note: Cluster Autoscaler is __not__ responsible for behaviour and registration
 > to the cluster of the new nodes it creates. The responsibility of registering the new nodes
 > into your cluster lies with the cluster provisioning tooling you use.
 > Example: If you use kubeadm to provision your cluster, it is up to you to automatically
@@ -593,7 +791,7 @@ any nodes left unregistered after this time.
 ### How does scale-down work?
 
 Every 10 seconds (configurable by `--scan-interval` flag), if no scale-up is
-needed, Cluster Autoscaler checks which nodes are unneeded. A node is considered for removal when **all** below conditions hold:
+needed, Cluster Autoscaler checks which nodes are unneeded. A node is considered for removal when __all__ below conditions hold:
 
 * The sum of cpu requests and sum of memory requests of all pods running on this node ([DaemonSet pods](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) and [Mirror pods](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/) are included by default but this is configurable with `--ignore-daemonsets-utilization` and `--ignore-mirror-pods-utilization` flags) are smaller
   than 50% of the node's allocatable. (Before 1.1.0, node capacity was used
@@ -737,6 +935,8 @@ smaller nodes at once.
 * `least-waste` - selects the node group that will have the least idle CPU (if tied, unused memory)
 after scale-up. This is useful when you have different classes of nodes, for example, high CPU or high memory nodes, and only want to expand those when there are pending pods that need a lot of those resources.
 
+* `least-nodes` - selects the node group that will use the least number of nodes after scale-up. This is useful when you want to minimize the number of nodes in the cluster and instead opt for fewer larger nodes. Useful when chained with the `most-pods` expander before it to ensure that the node group selected can fit the most pods on the fewest nodes.
+
 * `price` - select the node group that will cost the least and, at the same time, whose machines
 would match the cluster size. This expander is described in more details
 [HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE, GKE and Equinix Metal (patches welcome.)
@@ -775,7 +975,8 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3 minutes
 | `scale-down-unneeded-time` | How long a node should be unneeded before it is eligible for scale down | 10 minutes
 | `scale-down-unready-time` | How long an unready node should be unneeded before it is eligible for scale down | 20 minutes
-| `scale-down-utilization-threshold` | The maximum value between the sum of cpu requests and sum of memory requests of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down. This value is a floating point number that can range between zero and one. | 0.5
+| `scale-down-utilization-threshold`       | The ratio of requested/allocatable resources below which a node can be scale down. Ratio is calculated from the maximum of sum of cpu requests and sum of memory requests of all pods running on the node, divided by node's corresponding allocatable resource. For GPU see scale-down-gpu-utilization-threshold (nodes labeled via GPULabel, see cloudprovider/*/README.md). This value is a floating point number that can range between zero and one. | 0.5
+| `scale-down-gpu-utilization-threshold`   | Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down. Utilization calculation only cares about gpu resource for accelerator node, cpu and memory utilization will be ignored. | 0.5
 | `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers." | 30
 | `scale-down-candidates-pool-ratio` | A ratio of nodes that are considered as additional non empty candidates for<br>scale down when some candidates from previous iteration are no longer valid<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.  | 0.1
 | `scale-down-candidates-pool-min-count` | Minimum number of nodes that are considered as additional non empty candidates<br>for scale down when some candidates from previous iteration are no longer valid.<br>When calculating the pool size for additional candidates we take<br>`max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count)` | 50
@@ -791,7 +992,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `ok-total-unready-count` | Number of allowed unready nodes, irrespective of max-total-unready-percentage  | 3
 | `max-node-provision-time` | Maximum time CA waits for node to be provisioned | 15 minutes
 | `nodes` | sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: \<min>:\<max>:<other...> | ""
-| `node-group-auto-discovery` | One or more definition(s) of node group auto-discovery.<br>A definition is expressed `<name of discoverer>:[<key>[=<value>]]`<br>The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`<br>GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10`<br> Azure matches by tags on VMSS, e.g. `label:foo=bar`, and will auto-detect `min` and `max` tags on the VMSS to set scaling limits.<br>Can be used multiple times | ""
+| `node-group-auto-discovery` | One or more definition(s) of node group auto-discovery.<br>A definition is expressed `<name of discoverer>:[<key>[=<value>]]`<br>The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`<br>GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10`<br> Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size for VMSSs, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`.<br>Can be used multiple times | ""
 | `emit-per-nodegroup-metrics` | If true, emit per node group metrics. | false
 | `estimator` | Type of resource estimator to be used in scale up | binpacking
 | `expander` | Type of node group expander to be used in scale up.  | random
@@ -826,8 +1027,9 @@ The following startup parameters are supported for cluster autoscaler:
 | `record-duplicated-events` | Enable the autoscaler to print duplicated events within a 5 minute window. | false
 | `debugging-snapshot-enabled` | Whether the debugging snapshot of cluster autoscaler feature is enabled. | false
 | `node-delete-delay-after-taint` | How long to wait before deleting a node after tainting it. | 5 seconds
+| `enable-provisioning-requests` | Whether the clusterautoscaler will be handling the ProvisioningRequest CRs. | false
 
-# Troubleshooting:
+# Troubleshooting
 
 ### I have a couple of nodes with low utilization, but they are not scaled down. Why?
 
@@ -865,6 +1067,7 @@ Here's how to do it for some common pods:
 the case. For 1.6 and earlier, edit kube-dns-autoscaler config map as described
 [here](https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/#tuning-autoscaling-parameters),
 adding preventSinglePointFailure parameter. For example:
+
 ```
 linear:'{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}'
 ```
@@ -939,10 +1142,10 @@ There are three options:
   To see it, run `kubectl get configmap cluster-autoscaler-status -n kube-system
   -o yaml`.
 * Events:
-    * on pods (particularly those that cannot be scheduled, or on underutilized
+  * on pods (particularly those that cannot be scheduled, or on underutilized
       nodes),
-    * on nodes,
-    * on kube-system/cluster-autoscaler-status config map.
+  * on nodes,
+  * on kube-system/cluster-autoscaler-status config map.
 
 ### How can I increase the information that the CA is logging?
 
@@ -963,14 +1166,16 @@ an increased amount of logs, prepare your deployments and storage accordingly.
 
 ### How Can I change the log format that the CA outputs?
 
-There are 2 log format options, `text` and `json`. By default (`text`), the Cluster Autoscaler will output 
+There are 2 log format options, `text` and `json`. By default (`text`), the Cluster Autoscaler will output
 logs in the [klog native format](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/#klog-output).
+
 ```
 I0823 17:15:11.472183   29944 main.go:569] Cluster Autoscaler 1.28.0-beta.0
 ```
 
-Alternatively, adding the flag `--logging-format=json` changes the 
+Alternatively, adding the flag `--logging-format=json` changes the
 [log output to json](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/#klog-output).
+
 ```
 {"ts":1692825334994.433,"caller":"cluster-autoscaler/main.go:569","msg":"Cluster Autoscaler 1.28.0-beta.0\n","v":1}
 ```
@@ -983,26 +1188,27 @@ errors. Below is the non-exhaustive list of events emitted by CA (new events may
 be added in future):
 
 * on kube-system/cluster-autoscaler-status config map:
-    * ScaledUpGroup - CA increased the size of node group, gives
+  * ScaledUpGroup - CA increased the size of node group, gives
       both old and new group size.
-    * ScaleDownEmpty - CA removed a node with no pods running on it (except
+  * ScaleDownEmpty - CA removed a node with no pods running on it (except
       system pods found on all nodes).
-    * ScaleDown - CA decided to remove a node with some pods running on it.
+  * ScaleDown - CA decided to remove a node with some pods running on it.
       Event includes names of all pods that will be rescheduled to drain the
       node.
 * on nodes:
-    * ScaleDown - CA is scaling down the node. Multiple ScaleDown events may be
+  * ScaleDown - CA is scaling down the node. Multiple ScaleDown events may be
       recorded on the node, describing status of scale-down operation.
-    * ScaleDownFailed - CA tried to remove the node, but failed. The event
+  * ScaleDownFailed - CA tried to remove the node, but failed. The event
       includes error message.
 * on pods:
-    * TriggeredScaleUp - CA decided to scale up cluster to make place for this
+  * TriggeredScaleUp - CA decided to scale up cluster to make place for this
       pod.
-    * NotTriggerScaleUp - CA couldn't find node group that can be scaled up to
+  * NotTriggerScaleUp - CA couldn't find node group that can be scaled up to
       make this pod schedulable.
-    * ScaleDown - CA will try to evict this pod as part of draining the node.
+  * ScaleDown - CA will try to evict this pod as part of draining the node.
 
 Example event:
+
 ```sh
 $ kubectl describe pods memory-reservation-73rl0 --namespace e2e-tests-autoscaling-kncnx
 Name:   memory-reservation-73rl0
@@ -1014,14 +1220,16 @@ Events:
   ---------	--------	-----	----			-------------	--------	------			-------
   1m		1m		1	cluster-autoscaler			Normal		TriggeredScaleUp	pod triggered scale-up, group: https://content.googleapis.com/compute/v1/projects/maciekpytel-dev-playground/zones/us-central1-b/instanceGroups/e2e-test-maciekpytel-minion-group, sizes (current/new): 3/4
 ```
+
 ### My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?
 
 Cluster Autoscaler will not scale the cluster beyond these limits, but some other external factors could make this happen. Here are some common scenarios.
+
 * Existing nodes were deleted from K8s and the cloud provider, which could cause the cluster fell below the minimum number of nodes.
 * New nodes were added directly to the cloud provider, which could cause the cluster exceeded the maximum number of nodes.
 * Cluster Autoscaler was turned on in the middle of the cluster lifecycle, and the initial number of nodes might beyond these limits.
 
-By default, Cluster Autoscaler does not enforce the node group size. If your cluster is below the minimum number of nodes configured for CA, it will be scaled up *only* in presence of unschedulable pods. On the other hand, if your cluster is above the minimum number of nodes configured for CA, it will be scaled down *only* if it has unneeded nodes.
+By default, Cluster Autoscaler does not enforce the node group size. If your cluster is below the minimum number of nodes configured for CA, it will be scaled up _only_ in presence of unschedulable pods. On the other hand, if your cluster is above the maximum number of nodes configured for CA, it will be scaled down _only_ if it has unneeded nodes.
 
 Starting with CA 1.26.0, a new flag `--enforce-node-group-min-size` was introduced to enforce the node group minimum size. For node groups with fewer nodes than the configuration, CA will scale them up to the minimum number of nodes. To enable this feature, please set it to `true` in the command.
 
@@ -1033,7 +1241,7 @@ move back to the previous size until the quota arrives or the scale-up-triggerin
 From version 0.6.2, Cluster Autoscaler backs off from scaling up a node group after failure.
 Depending on how long scale-ups have been failing, it may wait up to 30 minutes before next attempt.
 
-# Developer:
+# Developer
 
 ### What go version should be used to compile CA?
 
@@ -1054,24 +1262,29 @@ and CA no longer compile using go 1.16).
 
 1. Set up environment and build e2e.go as described in the [Kubernetes docs](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/e2e-tests.md#building-and-running-the-tests).
 2. Set up the following env variables:
+
     ```sh
     export KUBE_AUTOSCALER_MIN_NODES=3
     export KUBE_AUTOSCALER_MAX_NODES=6
     export KUBE_ENABLE_CLUSTER_AUTOSCALER=true
     export KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
     ```
+
     This is the minimum number of nodes required for all e2e tests to pass. The tests should also pass if you set higher maximum nodes limit.
 3. Run `go run hack/e2e.go -- --verbose-commands --up` to bring up your cluster.
 4. SSH to the control plane (previously referred to as master) node and edit `/etc/kubernetes/manifests/cluster-autoscaler.manifest` (you will need sudo for this).
     * If you want to test your custom changes set `image` to point at your own CA image.
     * Make sure `--scale-down-enabled` parameter in `command` is set to `true`.
 5. Run CA tests with:
+
     ```sh
     go run hack/e2e.go -- --verbose-commands --test --test_args="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling"
     ```
+
     It will take >1 hour to run the full suite. You may want to redirect output to file, as there will be plenty of it.
 
     Test runner may be missing default credentials. On GCE they can be provided with:
+
     ```sh
     gcloud beta auth application-default login
     ```
@@ -1092,6 +1305,7 @@ whole process for trivial bugfixes or minor changes that don't affect main loop.
 use common sense to decide what is and what isn't required for your change.
 
 To test your PR:
+
 1. Run Cluster Autoscaler e2e tests if you can. We are running our e2e tests on GCE and we
    can't guarantee the tests are passing on every cloud provider.
 2. If you can't run e2e we ask you to do a following manual test at the
@@ -1107,7 +1321,7 @@ configuration required to activate them:
    sense to decide what needs to be tested.
 4. Describe your testing in PR description or in a separate comment on your PR
    (example:
-   https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
+   <https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795>).
 
 We are aware that this process is tedious and we will work to improve it.
 
@@ -1123,11 +1337,15 @@ sub-library. It can be used with custom kubernetes fork, by default it uses
 `git@github.com:kubernetes/kubernetes.git`.
 
 Example execution looks like this:
+
 ```
-./hack/update-vendor.sh 1.20.0-alpha.1 git@github.com:kubernetes/kubernetes.git
+./hack/update-deps.sh v1.30.2 v1.30.2 git@github.com:kubernetes/kubernetes.git
 ```
 
+The first of two versions denotes k8s dependency of Cluster Autoscaler, the second one refers to the apis/ submodule.
+
 If you need to update vendor to an unreleased commit of Kubernetes, you can use the breakglass script:
+
 ```
 ./hack/submodule-k8s.sh <k8s commit sha> git@github.com:kubernetes/kubernetes.git
 ```

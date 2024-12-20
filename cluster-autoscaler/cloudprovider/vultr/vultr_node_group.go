@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vultr/govultr"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 const (
@@ -129,6 +129,11 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
@@ -193,14 +198,14 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 
 }
 
-// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
+// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a node group was expanded. The
 // returned NodeInfo is expected to have a fully populated Node object, with
 // all of the labels, capacity and allocatable information as well as all pods
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
-func (n *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

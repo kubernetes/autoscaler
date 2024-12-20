@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -25,11 +25,11 @@ import (
 // InstanceSourceViaImageDetails The representation of InstanceSourceViaImageDetails
 type InstanceSourceViaImageDetails struct {
 
-	// The OCID of the image used to boot the instance.
-	ImageId *string `mandatory:"true" json:"imageId"`
-
 	// The size of the boot volume in GBs. Minimum value is 50 GB and maximum value is 32,768 GB (32 TB).
 	BootVolumeSizeInGBs *int64 `mandatory:"false" json:"bootVolumeSizeInGBs"`
+
+	// The OCID of the image used to boot the instance.
+	ImageId *string `mandatory:"false" json:"imageId"`
 
 	// The OCID of the Vault service key to assign as the master encryption key for the boot volume.
 	KmsKeyId *string `mandatory:"false" json:"kmsKeyId"`
@@ -43,6 +43,8 @@ type InstanceSourceViaImageDetails struct {
 	//   * `30`-`120`: Represents the Ultra High Performance option.
 	// For volumes with the auto-tuned performance feature enabled, this is set to the default (minimum) VPUs/GB.
 	BootVolumeVpusPerGB *int64 `mandatory:"false" json:"bootVolumeVpusPerGB"`
+
+	InstanceSourceImageFilterDetails *InstanceSourceImageFilterDetails `mandatory:"false" json:"instanceSourceImageFilterDetails"`
 }
 
 func (m InstanceSourceViaImageDetails) String() string {

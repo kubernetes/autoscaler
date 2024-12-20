@@ -46,6 +46,10 @@ spec:
       {{- if .Values.hostNetwork }}
       hostNetwork: {{ .Values.hostNetwork }}
       {{- end }}
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ template "cluster-autoscaler.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

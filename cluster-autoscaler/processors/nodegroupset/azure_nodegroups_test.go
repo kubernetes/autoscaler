@@ -23,8 +23,8 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -67,9 +67,26 @@ func TestIsAzureNodeInfoSimilar(t *testing.T) {
 	n1.ObjectMeta.Labels["agentpool"] = "foo"
 	n2.ObjectMeta.Labels["agentpool"] = "bar"
 	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Different creationSource
+	n1.ObjectMeta.Labels["creationSource"] = "aks-aks-nodepool2-vmss"
+	n2.ObjectMeta.Labels["creationSource"] = "aks-aks-nodepool3-vmss"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Different node image version
+	n1.ObjectMeta.Labels["kubernetes.azure.com/node-image-version"] = "AKSUbuntu-1804gen2-2021.01.28"
+	n2.ObjectMeta.Labels["kubernetes.azure.com/node-image-version"] = "AKSUbuntu-1804gen2-2022.01.30"
+	checkNodesSimilar(t, n1, n2, comparator, true)
 	// Custom label
 	n1.ObjectMeta.Labels["example.com/ready"] = "true"
 	n2.ObjectMeta.Labels["example.com/ready"] = "false"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// One node with aksConsolidatedAdditionalProperties label
+	n1.ObjectMeta.Labels[aksConsolidatedAdditionalProperties] = "foo"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Same aksConsolidatedAdditionalProperties
+	n2.ObjectMeta.Labels[aksConsolidatedAdditionalProperties] = "foo"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Different aksConsolidatedAdditionalProperties label
+	n2.ObjectMeta.Labels[aksConsolidatedAdditionalProperties] = "bar"
 	checkNodesSimilar(t, n1, n2, comparator, true)
 }
 
@@ -93,12 +110,10 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	ni1 := schedulerframework.NewNodeInfo()
-	ni1.SetNode(n1)
-	ni2 := schedulerframework.NewNodeInfo()
-	ni2.SetNode(n2)
+	ni1 := framework.NewTestNodeInfo(n1)
+	ni2 := framework.NewTestNodeInfo(n2)
 
-	nodeInfosForGroups := map[string]*schedulerframework.NodeInfo{
+	nodeInfosForGroups := map[string]*framework.NodeInfo{
 		"ng1": ni1, "ng2": ni2,
 	}
 
@@ -124,8 +139,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n3 := BuildTestNode("n1", 1000, 1000)
 	provider.AddNodeGroup("ng3", 1, 10, 1)
 	provider.AddNode("ng3", n3)
-	ni3 := schedulerframework.NewNodeInfo()
-	ni3.SetNode(n3)
+	ni3 := framework.NewTestNodeInfo(n3)
 	nodeInfosForGroups["ng3"] = ni3
 	ng3, _ := provider.NodeGroupForNode(n3)
 

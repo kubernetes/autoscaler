@@ -24,8 +24,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // How long to sleep after deleting nodes, to ensure that multiple requests arrive in order.
@@ -139,6 +139,11 @@ func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *magnumNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the cluster node_count in magnum.
 func (ng *magnumNodeGroup) DecreaseTargetSize(delta int) error {
 	ng.clusterUpdateLock.Lock()
@@ -206,7 +211,7 @@ func (ng *magnumNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *magnumNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *magnumNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

@@ -37,8 +37,12 @@ import (
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
 // It's backed by a very simple object tracker that processes creates, updates and deletions as-is,
-// without applying any validations and/or defaults. It shouldn't be considered a replacement
+// without applying any field management, validations and/or defaults. It shouldn't be considered a replacement
 // for a real clientset and is mostly useful in simple unit tests.
+//
+// DEPRECATED: NewClientset replaces this with support for field management, which significantly improves
+// server side apply testing. NewClientset is only available when apply configurations are generated (e.g.
+// via --with-applyconfig).
 func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 	o := testing.NewObjectTracker(scheme, codecs.UniversalDecoder())
 	for _, obj := range objects {
@@ -80,21 +84,24 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 	return c.tracker
 }
 
-var _ clientset.Interface = &Clientset{}
+var (
+	_ clientset.Interface = &Clientset{}
+	_ testing.FakeClient  = &Clientset{}
+)
 
 // AutoscalingV1 retrieves the AutoscalingV1Client
 func (c *Clientset) AutoscalingV1() autoscalingv1.AutoscalingV1Interface {
 	return &fakeautoscalingv1.FakeAutoscalingV1{Fake: &c.Fake}
 }
 
-// AutoscalingV1beta2 retrieves the AutoscalingV1beta2Client
-func (c *Clientset) AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface {
-	return &fakeautoscalingv1beta2.FakeAutoscalingV1beta2{Fake: &c.Fake}
-}
-
 // AutoscalingV1beta1 retrieves the AutoscalingV1beta1Client
 func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface {
 	return &fakeautoscalingv1beta1.FakeAutoscalingV1beta1{Fake: &c.Fake}
+}
+
+// AutoscalingV1beta2 retrieves the AutoscalingV1beta2Client
+func (c *Clientset) AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface {
+	return &fakeautoscalingv1beta2.FakeAutoscalingV1beta2{Fake: &c.Fake}
 }
 
 // PocV1alpha1 retrieves the PocV1alpha1Client

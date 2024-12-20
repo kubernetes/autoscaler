@@ -24,6 +24,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
@@ -42,6 +43,8 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -443,6 +446,10 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) 
 					{toBeDeletedTaint},
 					{},
 				},
+				"test-node-3": {
+					{toBeDeletedTaint},
+					{},
+				},
 			},
 			wantErr: cmpopts.AnyError,
 		},
@@ -466,6 +473,10 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) 
 					{},
 				},
 				"atomic-4-node-1": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-3": {
 					{toBeDeletedTaint},
 					{},
 				},
@@ -1043,7 +1054,7 @@ func TestStartDeletion(t *testing.T) {
 					nodeName string
 					taints   []apiv1.Taint
 				}
-				taintUpdates := make(chan nodeTaints, 10)
+				taintUpdates := make(chan nodeTaints, 20)
 				deletedNodes := make(chan string, 10)
 				deletedPods := make(chan string, 10)
 
@@ -1152,10 +1163,10 @@ func TestStartDeletion(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Couldn't set up autoscaling context: %v", err)
 				}
-				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 				for _, bucket := range emptyNodeGroupViews {
 					for _, node := range bucket.Nodes {
-						err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
+						err := ctx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods[node.Name]...))
 						if err != nil {
 							t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
 						}
@@ -1167,7 +1178,7 @@ func TestStartDeletion(t *testing.T) {
 						if !found {
 							t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
 						}
-						err := ctx.ClusterSnapshot.AddNodeWithPods(node, pods)
+						err := ctx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pods...))
 						if err != nil {
 							t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
 						}
@@ -1425,7 +1436,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 			scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
 			scaleStateNotifier.Register(csr)
 			ndt := deletiontracker.NewNodeDeletionTracker(0)

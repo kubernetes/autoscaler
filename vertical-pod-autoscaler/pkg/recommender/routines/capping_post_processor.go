@@ -34,7 +34,7 @@ func (c CappingPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, reco
 	// TODO: maybe rename the vpa_utils.ApplyVPAPolicy to something that mention that it is doing capping only
 	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, vpa.Spec.ResourcePolicy)
 	if err != nil {
-		klog.Errorf("Failed to apply policy for VPA %v/%v: %v", vpa.GetNamespace(), vpa.GetName(), err)
+		klog.ErrorS(err, "Failed to apply policy for VPA", "vpa", klog.KObj(vpa))
 		return recommendation
 	}
 	return cappedRecommendation

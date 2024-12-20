@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // TcRef contains a reference to some entity in Tencentcloud/TKE world.
@@ -231,6 +231,11 @@ func (asg *tcAsg) DeleteNodes(nodes []*apiv1.Node) error {
 	return asg.tencentcloudManager.DeleteInstances(refs)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (asg *tcAsg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns asg id.
 func (asg *tcAsg) Id() string {
 	return asg.tencentcloudRef.ID
@@ -247,15 +252,14 @@ func (asg *tcAsg) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (asg *tcAsg) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (asg *tcAsg) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node, err := asg.tencentcloudManager.GetAsgTemplateNode(asg)
 	if err != nil {
 		return nil, err
 	}
 	klog.V(4).Infof("Generate tencentcloud template: labels=%v taints=%v allocatable=%v", node.Labels, node.Spec.Taints, node.Status.Allocatable)
 
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
+	nodeInfo := framework.NewNodeInfo(node, nil)
 	return nodeInfo, nil
 }
 

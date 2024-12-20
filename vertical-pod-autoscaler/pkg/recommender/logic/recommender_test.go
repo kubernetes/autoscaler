@@ -17,20 +17,24 @@ limitations under the License.
 package logic
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"testing"
 )
 
 func TestMinResourcesApplied(t *testing.T) {
-	constEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.001),
-		model.ResourceMemory: model.MemoryAmountFromBytes(1e6),
-	})
+	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
+	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
+
 	recommender := podResourceRecommender{
-		constEstimator,
-		constEstimator,
-		constEstimator}
+		targetCPU:        constCPUEstimator,
+		targetMemory:     constMemoryEstimator,
+		lowerBoundCPU:    constCPUEstimator,
+		lowerBoundMemory: constMemoryEstimator,
+		upperBoundCPU:    constCPUEstimator,
+		upperBoundMemory: constMemoryEstimator,
+	}
 
 	containerNameToAggregateStateMap := model.ContainerNameToAggregateStateMap{
 		"container-1": &model.AggregateContainerState{},
@@ -42,14 +46,17 @@ func TestMinResourcesApplied(t *testing.T) {
 }
 
 func TestMinResourcesSplitAcrossContainers(t *testing.T) {
-	constEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.001),
-		model.ResourceMemory: model.MemoryAmountFromBytes(1e6),
-	})
+	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
+	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
+
 	recommender := podResourceRecommender{
-		constEstimator,
-		constEstimator,
-		constEstimator}
+		targetCPU:        constCPUEstimator,
+		targetMemory:     constMemoryEstimator,
+		lowerBoundCPU:    constCPUEstimator,
+		lowerBoundMemory: constMemoryEstimator,
+		upperBoundCPU:    constCPUEstimator,
+		upperBoundMemory: constMemoryEstimator,
+	}
 
 	containerNameToAggregateStateMap := model.ContainerNameToAggregateStateMap{
 		"container-1": &model.AggregateContainerState{},
@@ -64,14 +71,17 @@ func TestMinResourcesSplitAcrossContainers(t *testing.T) {
 }
 
 func TestControlledResourcesFiltered(t *testing.T) {
-	constEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.001),
-		model.ResourceMemory: model.MemoryAmountFromBytes(1e6),
-	})
+	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
+	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
+
 	recommender := podResourceRecommender{
-		constEstimator,
-		constEstimator,
-		constEstimator}
+		targetCPU:        constCPUEstimator,
+		targetMemory:     constMemoryEstimator,
+		lowerBoundCPU:    constCPUEstimator,
+		lowerBoundMemory: constMemoryEstimator,
+		upperBoundCPU:    constCPUEstimator,
+		upperBoundMemory: constMemoryEstimator,
+	}
 
 	containerName := "container-1"
 	containerNameToAggregateStateMap := model.ContainerNameToAggregateStateMap{
@@ -90,14 +100,17 @@ func TestControlledResourcesFiltered(t *testing.T) {
 }
 
 func TestControlledResourcesFilteredDefault(t *testing.T) {
-	constEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.001),
-		model.ResourceMemory: model.MemoryAmountFromBytes(1e6),
-	})
+	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
+	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
+
 	recommender := podResourceRecommender{
-		constEstimator,
-		constEstimator,
-		constEstimator}
+		targetCPU:        constCPUEstimator,
+		targetMemory:     constMemoryEstimator,
+		lowerBoundCPU:    constCPUEstimator,
+		lowerBoundMemory: constMemoryEstimator,
+		upperBoundCPU:    constCPUEstimator,
+		upperBoundMemory: constMemoryEstimator,
+	}
 
 	containerName := "container-1"
 	containerNameToAggregateStateMap := model.ContainerNameToAggregateStateMap{

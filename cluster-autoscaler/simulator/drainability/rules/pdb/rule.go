@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 )
 
@@ -38,7 +39,7 @@ func (r *Rule) Name() string {
 }
 
 // Drainable decides how to handle pods with pdbs on node drain.
-func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, _ *framework.NodeInfo) drainability.Status {
 	for _, pdb := range drainCtx.RemainingPdbTracker.MatchingPdbs(pod) {
 		if pdb.Status.DisruptionsAllowed < 1 {
 			return drainability.NewBlockedStatus(drain.NotEnoughPdb, fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name))

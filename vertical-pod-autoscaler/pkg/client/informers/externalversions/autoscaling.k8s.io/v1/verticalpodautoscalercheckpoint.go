@@ -19,16 +19,16 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	autoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	apisautoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	versioned "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions/internalinterfaces"
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	autoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -36,7 +36,7 @@ import (
 // VerticalPodAutoscalerCheckpoints.
 type VerticalPodAutoscalerCheckpointInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1.VerticalPodAutoscalerCheckpointLister
+	Lister() autoscalingk8siov1.VerticalPodAutoscalerCheckpointLister
 }
 
 type verticalPodAutoscalerCheckpointInformer struct {
@@ -71,7 +71,7 @@ func NewFilteredVerticalPodAutoscalerCheckpointInformer(client versioned.Interfa
 				return client.AutoscalingV1().VerticalPodAutoscalerCheckpoints(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&autoscalingk8siov1.VerticalPodAutoscalerCheckpoint{},
+		&apisautoscalingk8siov1.VerticalPodAutoscalerCheckpoint{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,9 +82,9 @@ func (f *verticalPodAutoscalerCheckpointInformer) defaultInformer(client version
 }
 
 func (f *verticalPodAutoscalerCheckpointInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&autoscalingk8siov1.VerticalPodAutoscalerCheckpoint{}, f.defaultInformer)
+	return f.factory.InformerFor(&apisautoscalingk8siov1.VerticalPodAutoscalerCheckpoint{}, f.defaultInformer)
 }
 
-func (f *verticalPodAutoscalerCheckpointInformer) Lister() v1.VerticalPodAutoscalerCheckpointLister {
-	return v1.NewVerticalPodAutoscalerCheckpointLister(f.Informer().GetIndexer())
+func (f *verticalPodAutoscalerCheckpointInformer) Lister() autoscalingk8siov1.VerticalPodAutoscalerCheckpointLister {
+	return autoscalingk8siov1.NewVerticalPodAutoscalerCheckpointLister(f.Informer().GetIndexer())
 }

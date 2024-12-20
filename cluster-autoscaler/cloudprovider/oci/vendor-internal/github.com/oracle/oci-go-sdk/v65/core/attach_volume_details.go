@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -25,10 +25,11 @@ import (
 // AttachVolumeDetails The representation of AttachVolumeDetails
 type AttachVolumeDetails interface {
 
-	// The OCID of the instance.
+	// The OCID of the instance. For AttachVolume operation, this is a required field for the request,
+	// see AttachVolume.
 	GetInstanceId() *string
 
-	// The OCID of the volume.
+	// The OCID of the volume. If CreateVolumeDetails is specified, this field must be omitted from the request.
 	GetVolumeId() *string
 
 	// The device name. To retrieve a list of devices for a given instance, see ListInstanceDevices.
@@ -50,12 +51,12 @@ type AttachVolumeDetails interface {
 
 type attachvolumedetails struct {
 	JsonData    []byte
-	InstanceId  *string `mandatory:"true" json:"instanceId"`
-	VolumeId    *string `mandatory:"true" json:"volumeId"`
 	Device      *string `mandatory:"false" json:"device"`
 	DisplayName *string `mandatory:"false" json:"displayName"`
 	IsReadOnly  *bool   `mandatory:"false" json:"isReadOnly"`
 	IsShareable *bool   `mandatory:"false" json:"isShareable"`
+	InstanceId  *string `mandatory:"true" json:"instanceId"`
+	VolumeId    *string `mandatory:"true" json:"volumeId"`
 	Type        string  `json:"type"`
 }
 
@@ -107,18 +108,9 @@ func (m *attachvolumedetails) UnmarshalPolymorphicJSON(data []byte) (interface{}
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for AttachVolumeDetails: %s.", m.Type)
 		return *m, nil
 	}
-}
-
-// GetInstanceId returns InstanceId
-func (m attachvolumedetails) GetInstanceId() *string {
-	return m.InstanceId
-}
-
-// GetVolumeId returns VolumeId
-func (m attachvolumedetails) GetVolumeId() *string {
-	return m.VolumeId
 }
 
 // GetDevice returns Device
@@ -139,6 +131,16 @@ func (m attachvolumedetails) GetIsReadOnly() *bool {
 // GetIsShareable returns IsShareable
 func (m attachvolumedetails) GetIsShareable() *bool {
 	return m.IsShareable
+}
+
+// GetInstanceId returns InstanceId
+func (m attachvolumedetails) GetInstanceId() *string {
+	return m.InstanceId
+}
+
+// GetVolumeId returns VolumeId
+func (m attachvolumedetails) GetVolumeId() *string {
+	return m.VolumeId
 }
 
 func (m attachvolumedetails) String() string {

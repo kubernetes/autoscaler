@@ -23,13 +23,42 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
+
+// TestProvReqOptions is a helper struct to make constructing test ProvisioningRequest object easier.
+type TestProvReqOptions struct {
+	Namespace         string
+	Name              string
+	CPU               string
+	Memory            string
+	GPU               string
+	PodCount          int32
+	AntiAffinity      bool
+	CreationTimestamp time.Time
+	Class             string
+}
+
+func applyDefaults(o TestProvReqOptions) TestProvReqOptions {
+	if o.Namespace == "" {
+		o.Namespace = "default"
+	}
+	if o.CreationTimestamp.IsZero() {
+		o.CreationTimestamp = time.Now()
+	}
+	return o
+}
+
+// BuildValidTestProvisioningRequestFromOptions fills in commonly omitted fields to generate a valid ProvisioningRequest object.
+// Simplifies test code.
+func BuildValidTestProvisioningRequestFromOptions(o TestProvReqOptions) *ProvisioningRequest {
+	o = applyDefaults(o)
+	return BuildTestProvisioningRequest(o.Namespace, o.Name, o.CPU, o.Memory, o.GPU, o.PodCount, o.AntiAffinity, o.CreationTimestamp, o.Class)
+}
 
 // BuildTestProvisioningRequest builds ProvisioningRequest wrapper.
 func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podCount int32,
-	antiAffinity bool, creationTimestamp time.Time, provisioningRequestClass string) *ProvisioningRequest {
+	antiAffinity bool, creationTimestamp time.Time, class string) *ProvisioningRequest {
 	gpuResource := resource.Quantity{}
 	tolerations := []apiv1.Toleration{}
 	if len(gpu) > 0 {
@@ -57,22 +86,22 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 		}
 	}
 	return NewProvisioningRequest(
-		&v1beta1.ProvisioningRequest{
+		&v1.ProvisioningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:              name,
 				Namespace:         namespace,
-				CreationTimestamp: v1.NewTime(creationTimestamp),
+				CreationTimestamp: metav1.NewTime(creationTimestamp),
 			},
-			Spec: v1beta1.ProvisioningRequestSpec{
-				ProvisioningClassName: provisioningRequestClass,
-				PodSets: []v1beta1.PodSet{
+			Spec: v1.ProvisioningRequestSpec{
+				ProvisioningClassName: class,
+				PodSets: []v1.PodSet{
 					{
-						PodTemplateRef: v1beta1.Reference{Name: fmt.Sprintf("%s-template-name", name)},
+						PodTemplateRef: v1.Reference{Name: fmt.Sprintf("%s-template-name", name)},
 						Count:          podCount,
 					},
 				},
 			},
-			Status: v1beta1.ProvisioningRequestStatus{
+			Status: v1.ProvisioningRequestStatus{
 				Conditions: []metav1.Condition{},
 			},
 		},
@@ -81,7 +110,7 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              fmt.Sprintf("%s-template-name", name),
 					Namespace:         namespace,
-					CreationTimestamp: v1.NewTime(creationTimestamp),
+					CreationTimestamp: metav1.NewTime(creationTimestamp),
 				},
 				Template: apiv1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
@@ -115,4 +144,30 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 				},
 			},
 		})
+}
+
+// BuildTestPods builds a list of pod objects for use as existing unschedulable pods in tests.
+func BuildTestPods(namespace, name string, podCount int) []*apiv1.Pod {
+	pods := make([]*apiv1.Pod, 0, podCount)
+	for i := 0; i < podCount; i++ {
+		pods = append(pods, &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%d", name, i),
+				Namespace: namespace,
+			},
+		})
+	}
+	return pods
+}
+
+// CopyWithParameters makes a deep copy of embedded ProvReq and sets its CopyWithParameters
+func (pr *ProvisioningRequest) CopyWithParameters(params map[string]v1.Parameter) *ProvisioningRequest {
+	prCopy := pr.DeepCopy()
+	if prCopy.Spec.Parameters == nil {
+		prCopy.Spec.Parameters = make(map[string]v1.Parameter, len(params))
+	}
+	for key, val := range params {
+		prCopy.Spec.Parameters[key] = val
+	}
+	return &ProvisioningRequest{prCopy, pr.PodTemplates}
 }

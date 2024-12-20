@@ -24,8 +24,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // equinixMetalNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
@@ -226,6 +226,11 @@ func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *equinixMetalNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the cluster node_count in Equinix Metal.
 func (ng *equinixMetalNodeGroup) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
@@ -260,7 +265,7 @@ func (ng *equinixMetalNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *equinixMetalNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *equinixMetalNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return ng.equinixMetalManager.templateNodeInfo(ng.id)
 }
 

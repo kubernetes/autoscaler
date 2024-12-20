@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/safetoevict"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/terminal"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/klog/v2"
 )
@@ -43,7 +44,7 @@ type Rule interface {
 	// the specific Rule.
 	//
 	// DrainContext cannot be nil.
-	Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status
+	Drainable(*drainability.DrainContext, *apiv1.Pod, *framework.NodeInfo) drainability.Status
 }
 
 // Default returns the default list of Rules.
@@ -81,7 +82,7 @@ type Rules []Rule
 
 // Drainable determines whether a given pod is drainable according to the
 // specified set of rules.
-func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, nodeInfo *framework.NodeInfo) drainability.Status {
 	if drainCtx == nil {
 		drainCtx = &drainability.DrainContext{}
 	}
@@ -92,7 +93,7 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) d
 	var candidates []overrideCandidate
 
 	for _, r := range rs {
-		status := r.Drainable(drainCtx, pod)
+		status := r.Drainable(drainCtx, pod, nodeInfo)
 		if len(status.Overrides) > 0 {
 			candidates = append(candidates, overrideCandidate{r.Name(), status})
 			continue

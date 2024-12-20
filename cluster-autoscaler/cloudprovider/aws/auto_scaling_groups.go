@@ -308,46 +308,78 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		}
 	}
 
-	for _, instance := range instances {
-		// check if the instance is a placeholder - a requested instance that was never created by the node group
-		// if it is, just decrease the size of the node group, as there's no specific instance we can remove
-		if m.isPlaceholderInstance(instance) {
-			klog.V(4).Infof("instance %s is detected as a placeholder, decreasing ASG requested size instead "+
-				"of deleting instance", instance.Name)
-			m.decreaseAsgSizeByOneNoLock(commonAsg)
-		} else {
-			// check if the instance is already terminating - if it is, don't bother terminating again
-			// as doing so causes unnecessary API calls and can cause the curSize cached value to decrement
-			// unnecessarily.
-			lifecycle, err := m.findInstanceLifecycle(*instance)
-			if err != nil {
-				return err
-			}
+	placeHolderInstancesCount := m.GetPlaceHolderInstancesCount(instances)
+	// Check if there are any placeholder instances in the list.
+	if placeHolderInstancesCount > 0 {
+		// Log the check for placeholders in the ASG.
+		klog.V(4).Infof("Detected %d placeholder instance(s) in ASG %s",
+			placeHolderInstancesCount, commonAsg.Name)
 
-			if lifecycle != nil &&
-				*lifecycle == autoscaling.LifecycleStateTerminated ||
-				*lifecycle == autoscaling.LifecycleStateTerminating ||
-				*lifecycle == autoscaling.LifecycleStateTerminatingWait ||
-				*lifecycle == autoscaling.LifecycleStateTerminatingProceed {
-				klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, *lifecycle)
-				continue
-			}
+		asgNames := []string{commonAsg.Name}
+		asgDetail, err := m.awsService.getAutoscalingGroupsByNames(asgNames)
 
-			params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-				InstanceId:                     aws.String(instance.Name),
-				ShouldDecrementDesiredCapacity: aws.Bool(true),
-			}
-			start := time.Now()
-			resp, err := m.awsService.TerminateInstanceInAutoScalingGroup(params)
-			observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, start)
-			if err != nil {
-				return err
-			}
-			klog.V(4).Infof(*resp.Activity.Description)
-
-			// Proactively decrement the size so autoscaler makes better decisions
-			commonAsg.curSize--
+		if err != nil {
+			klog.Errorf("Error retrieving ASG details %s: %v", commonAsg.Name, err)
+			return err
 		}
+
+		activeInstancesInAsg := len(asgDetail[0].Instances)
+		desiredCapacityInAsg := int(*asgDetail[0].DesiredCapacity)
+		klog.V(4).Infof("asg %s has placeholders instances with desired capacity = %d and active instances = %d. updating ASG to match active instances count",
+			commonAsg.Name, desiredCapacityInAsg, activeInstancesInAsg)
+
+		// If the difference between the active instances and the desired capacity is greater than 1,
+		// it means that the ASG is under-provisioned and the desired capacity is not being reached.
+		// In this case, we would reduce the size of ASG by the count of unprovisioned instances
+		// which is equal to the total count of active instances in ASG
+
+		err = m.setAsgSizeNoLock(commonAsg, activeInstancesInAsg)
+
+		if err != nil {
+			klog.Errorf("Error reducing ASG %s size to %d: %v", commonAsg.Name, activeInstancesInAsg, err)
+			return err
+		}
+	}
+
+	for _, instance := range instances {
+
+		if m.isPlaceholderInstance(instance) {
+			// skipping placeholder as placeholder instances don't exist
+			// and we have already reduced ASG size during placeholder check.
+			continue
+		}
+		// check if the instance is already terminating - if it is, don't bother terminating again
+		// as doing so causes unnecessary API calls and can cause the curSize cached value to decrement
+		// unnecessarily.
+		lifecycle, err := m.findInstanceLifecycle(*instance)
+		if err != nil {
+			return err
+		}
+
+		if lifecycle != nil &&
+			*lifecycle == autoscaling.LifecycleStateTerminated ||
+			*lifecycle == autoscaling.LifecycleStateTerminating ||
+			*lifecycle == autoscaling.LifecycleStateTerminatingWait ||
+			*lifecycle == autoscaling.LifecycleStateTerminatingProceed {
+			klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, *lifecycle)
+			continue
+		}
+
+		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     aws.String(instance.Name),
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
+		}
+		start := time.Now()
+		resp, err := m.awsService.TerminateInstanceInAutoScalingGroup(params)
+		observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, start)
+		if err != nil {
+			return err
+		}
+		klog.V(4).Infof(*resp.Activity.Description)
+
+		// Proactively decrement the size so autoscaler makes better decisions
+		commonAsg.curSize--
+
 	}
 	return nil
 }
@@ -577,11 +609,13 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 			instanceRequirementsOverrides: getInstanceTypeRequirements(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
 		}
 
-		instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(asg.MixedInstancesPolicy)
-		if err != nil {
-			return nil, fmt.Errorf("unable to retrieve instance requirements from mixed instance policy, err: %v", err)
+		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) == 0 {
+			instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(asg.MixedInstancesPolicy)
+			if err != nil {
+				return nil, fmt.Errorf("unable to retrieve instance requirements from mixed instance policy, err: %v", err)
+			}
+			asg.MixedInstancesPolicy.instanceRequirements = instanceRequirements
 		}
-		asg.MixedInstancesPolicy.instanceRequirements = instanceRequirements
 
 		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) != 0 && asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
 			return nil, fmt.Errorf("invalid setup of both instance type and instance requirements overrides configured")
@@ -623,4 +657,17 @@ func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsIn
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
 func (m *asgCache) Cleanup() {
 	close(m.interrupt)
+}
+
+// GetPlaceHolderInstancesCount returns count of placeholder instances in the cache
+func (m *asgCache) GetPlaceHolderInstancesCount(instances []*AwsInstanceRef) int {
+
+	placeholderInstancesCount := 0
+	for _, instance := range instances {
+		if strings.HasPrefix(instance.Name, placeholderInstanceNamePrefix) {
+			placeholderInstancesCount++
+
+		}
+	}
+	return placeholderInstancesCount
 }

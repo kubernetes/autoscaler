@@ -241,7 +241,7 @@ func NewTestCronJob(name, schedule string, replicas int32) *batchv1.CronJob {
 }
 
 func waitForActiveJobs(c clientset.Interface, ns, cronJobName string, active int) error {
-	return wait.Poll(framework.Poll, cronJobsWaitTimeout, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.Background(), framework.Poll, cronJobsWaitTimeout, true, func(ctx context.Context) (done bool, err error) {
 		curr, err := getCronJob(c, ns, cronJobName)
 		if err != nil {
 			return false, err
@@ -391,7 +391,7 @@ func MakePodSet(pods *apiv1.PodList) PodSet {
 func WaitForPodsRestarted(f *framework.Framework, podList *apiv1.PodList) error {
 	initialPodSet := MakePodSet(podList)
 
-	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
 		currentPodList, err := GetHamsterPods(f)
 		if err != nil {
 			return false, err
@@ -399,18 +399,13 @@ func WaitForPodsRestarted(f *framework.Framework, podList *apiv1.PodList) error 
 		currentPodSet := MakePodSet(currentPodList)
 		return WerePodsSuccessfullyRestarted(currentPodSet, initialPodSet), nil
 	})
-
-	if err != nil {
-		return fmt.Errorf("waiting for set of pods changed: %v", err)
-	}
-	return nil
 }
 
 // WaitForPodsEvicted waits until some pods from the list are evicted.
 func WaitForPodsEvicted(f *framework.Framework, podList *apiv1.PodList) error {
 	initialPodSet := MakePodSet(podList)
 
-	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
 		currentPodList, err := GetHamsterPods(f)
 		if err != nil {
 			return false, err
@@ -418,11 +413,6 @@ func WaitForPodsEvicted(f *framework.Framework, podList *apiv1.PodList) error {
 		currentPodSet := MakePodSet(currentPodList)
 		return GetEvictedPodsCount(currentPodSet, initialPodSet) > 0, nil
 	})
-
-	if err != nil {
-		return fmt.Errorf("waiting for set of pods changed: %v", err)
-	}
-	return nil
 }
 
 // WerePodsSuccessfullyRestarted returns true if some pods from initialPodSet have been
@@ -469,8 +459,7 @@ func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 // polled vpa object. On timeout returns error.
 func WaitForVPAMatch(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler, match func(vpa *vpa_types.VerticalPodAutoscaler) bool) (*vpa_types.VerticalPodAutoscaler, error) {
 	var polledVpa *vpa_types.VerticalPodAutoscaler
-	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
-		var err error
+	err := wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
 		polledVpa, err = c.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).Get(context.TODO(), vpa.Name, metav1.GetOptions{})
 		if err != nil {
 			return false, err

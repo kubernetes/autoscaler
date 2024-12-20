@@ -33,14 +33,10 @@ const (
 	webhookConfigName = "vpa-webhook-config"
 )
 
-func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls.Config {
+func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struct{}) *tls.Config {
 	var tlsVersion uint16
 	var ciphersuites []uint16
 	reverseCipherMap := make(map[string]uint16)
-	sCert, err := tls.X509KeyPair(serverCert, serverKey)
-	if err != nil {
-		klog.Fatal(err)
-	}
 
 	for _, c := range tls.CipherSuites() {
 		reverseCipherMap[c.Name] = c.ID
@@ -66,17 +62,36 @@ func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls
 		klog.Fatal(fmt.Errorf("Unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
 	}
 
-	return &tls.Config{
+	config := &tls.Config{
 		MinVersion:   tlsVersion,
-		Certificates: []tls.Certificate{sCert},
 		CipherSuites: ciphersuites,
 	}
+	if *cfg.reload {
+		cr := certReloader{
+			tlsCertPath: *cfg.tlsCertFile,
+			tlsKeyPath:  *cfg.tlsPrivateKey,
+		}
+		if err := cr.load(); err != nil {
+			klog.Fatal(err)
+		}
+		if err := cr.start(stop); err != nil {
+			klog.Fatal(err)
+		}
+		config.GetCertificate = cr.getCertificate
+	} else {
+		cert, err := tls.LoadX509KeyPair(*cfg.tlsCertFile, *cfg.tlsPrivateKey)
+		if err != nil {
+			klog.Fatal(err)
+		}
+		config.Certificates = []tls.Certificate{cert}
+	}
+	return config
 }
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
-	time.Sleep(10 * time.Second)
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string, webHookFailurePolicy bool, webHookLabels string) {
+	time.Sleep(webHookDelay)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err == nil {
@@ -94,11 +109,47 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 		RegisterClientConfig.URL = &url
 	}
 	sideEffects := admissionregistration.SideEffectClassNone
-	failurePolicy := admissionregistration.Ignore
+
+	var failurePolicy admissionregistration.FailurePolicyType
+	if webHookFailurePolicy {
+		failurePolicy = admissionregistration.Fail
+	} else {
+		failurePolicy = admissionregistration.Ignore
+	}
+
 	RegisterClientConfig.CABundle = caCert
+
+	var namespaceSelector metav1.LabelSelector
+	if len(ignoredNamespaces) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   ignoredNamespaces,
+				},
+			},
+		}
+	} else if len(selectedNamespace) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{selectedNamespace},
+				},
+			},
+		}
+	}
+	webhookLabelsMap, err := convertLabelsToMap(webHookLabels)
+	if err != nil {
+		klog.ErrorS(err, "Unable to parse webhook labels")
+		webhookLabelsMap = map[string]string{}
+	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: webhookConfigName,
+			Name:   webhookConfigName,
+			Labels: webhookLabelsMap,
 		},
 		Webhooks: []admissionregistration.MutatingWebhook{
 			{
@@ -122,10 +173,11 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 						},
 					},
 				},
-				FailurePolicy:  &failurePolicy,
-				ClientConfig:   RegisterClientConfig,
-				SideEffects:    &sideEffects,
-				TimeoutSeconds: &timeoutSeconds,
+				FailurePolicy:     &failurePolicy,
+				ClientConfig:      RegisterClientConfig,
+				SideEffects:       &sideEffects,
+				TimeoutSeconds:    &timeoutSeconds,
+				NamespaceSelector: &namespaceSelector,
 			},
 		},
 	}
@@ -134,4 +186,30 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 	} else {
 		klog.V(3).Info("Self registration as MutatingWebhook succeeded.")
 	}
+}
+
+// convertLabelsToMap convert the labels from string to map
+// the valid labels format is "key1:value1,key2:value2", which could be converted to
+// {"key1": "value1", "key2": "value2"}
+func convertLabelsToMap(labels string) (map[string]string, error) {
+	m := make(map[string]string)
+	if labels == "" {
+		return m, nil
+	}
+	labels = strings.Trim(labels, "\"")
+	s := strings.Split(labels, ",")
+	for _, tag := range s {
+		kv := strings.SplitN(tag, ":", 2)
+		if len(kv) != 2 {
+			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)
+		}
+		key := strings.TrimSpace(kv[0])
+		if key == "" {
+			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)
+		}
+		value := strings.TrimSpace(kv[1])
+		m[key] = value
+	}
+
+	return m, nil
 }

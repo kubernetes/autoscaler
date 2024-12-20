@@ -17,6 +17,7 @@ limitations under the License.
 package controllerfetcher
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -48,8 +49,10 @@ const (
 	testReplicationController = "test-rc"
 )
 
-var wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
-var trueVar = true
+var (
+	wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
+	trueVar              = true
+)
 
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
@@ -405,7 +408,7 @@ func TestControllerFetcher(t *testing.T) {
 			for _, obj := range tc.objects {
 				addController(t, f, obj)
 			}
-			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(tc.key)
+			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(context.Background(), tc.key)
 			if tc.expectedKey == nil {
 				assert.Nil(t, topMostWellKnownOrScalableController)
 			} else {

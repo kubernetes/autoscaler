@@ -18,6 +18,8 @@ package metrics
 
 import (
 	"context"
+	"time"
+
 	k8sapiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -28,7 +30,6 @@ import (
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 	"k8s.io/metrics/pkg/client/external_metrics"
-	"time"
 )
 
 // PodMetricsLister wraps both metrics-client and External Metrics
@@ -113,10 +114,10 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 					return nil, err
 				}
 				if m == nil || len(m.Items) == 0 {
-					klog.V(4).Infof("External Metrics Query for VPA %+v: resource %+v, metric %+v, No items,", vpa.ID, resourceName, metricName)
+					klog.V(4).InfoS("External Metrics Query for VPA: No items", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "resource", resourceName, "metric", metricName)
 					continue
 				}
-				klog.V(4).Infof("External Metrics Query for VPA %+v: resource %+v, metric %+v, %d items, item[0]: %+v", vpa.ID, resourceName, metricName, len(m.Items), m.Items[0])
+				klog.V(4).InfoS("External Metrics Query for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "resource", resourceName, "metric", metricName, "itemCount", len(m.Items), "firstItem", m.Items[0])
 				podMets.Timestamp = m.Items[0].Timestamp
 				if m.Items[0].WindowSeconds != nil {
 					podMets.Window = v1.Duration{Duration: time.Duration(*m.Items[0].WindowSeconds) * time.Second}

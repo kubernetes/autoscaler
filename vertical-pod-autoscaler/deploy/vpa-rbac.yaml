@@ -357,3 +357,79 @@ subjects:
   - kind: ServiceAccount
     name: vpa-updater
     namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: system:leader-locking-vpa-updater
+  namespace: kube-system
+rules:
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - create
+  - apiGroups:
+      - "coordination.k8s.io"
+    resourceNames:
+      - vpa-updater
+    resources:
+      - leases
+    verbs:
+      - get
+      - watch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: system:leader-locking-vpa-updater
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system:leader-locking-vpa-updater
+subjects:
+  - kind: ServiceAccount
+    name: vpa-updater
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: system:leader-locking-vpa-recommender
+  namespace: kube-system
+rules:
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - create
+  - apiGroups:
+      - "coordination.k8s.io"
+    resourceNames:
+      # TODO: Clean vpa-recommender up once vpa-recommender-lease is used everywhere. See https://github.com/kubernetes/autoscaler/issues/7461.
+      - vpa-recommender
+      - vpa-recommender-lease
+    resources:
+      - leases
+    verbs:
+      - get
+      - watch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: system:leader-locking-vpa-recommender
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system:leader-locking-vpa-recommender
+subjects:
+  - kind: ServiceAccount
+    name: vpa-recommender
+    namespace: kube-system

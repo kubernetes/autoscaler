@@ -82,15 +82,15 @@ func (m *mockPrometheusAPI) Flags(ctx context.Context) (prometheusv1.FlagsResult
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) LabelNames(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]string, prometheusv1.Warnings, error) {
+func (m *mockPrometheusAPI) LabelNames(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) ([]string, prometheusv1.Warnings, error) {
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) LabelValues(ctx context.Context, label string, matches []string, startTime time.Time, endTime time.Time) (prommodel.LabelValues, prometheusv1.Warnings, error) {
+func (m *mockPrometheusAPI) LabelValues(ctx context.Context, label string, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) (prommodel.LabelValues, prometheusv1.Warnings, error) {
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]prommodel.LabelSet, prometheusv1.Warnings, error) {
+func (m *mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) ([]prommodel.LabelSet, prometheusv1.Warnings, error) {
 	panic("not implemented")
 }
 
@@ -126,7 +126,7 @@ func (m *mockPrometheusAPI) Runtimeinfo(ctx context.Context) (prometheusv1.Runti
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) TSDB(ctx context.Context) (prometheusv1.TSDBResult, error) {
+func (m *mockPrometheusAPI) TSDB(ctx context.Context, opts ...prometheusv1.Option) (prometheusv1.TSDBResult, error) {
 	panic("not implemented")
 }
 

@@ -75,7 +75,7 @@ type ControllerKeyWithAPIVersion struct {
 // ControllerFetcher is responsible for finding the topmost well-known or scalable controller
 type ControllerFetcher interface {
 	// FindTopMostWellKnownOrScalable returns topmost well-known or scalable controller. Error is returned if controller cannot be found.
-	FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error)
+	FindTopMostWellKnownOrScalable(ctx context.Context, controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error)
 }
 
 type controllerFetcher struct {
@@ -92,12 +92,12 @@ func (f *controllerFetcher) periodicallyRefreshCache(ctx context.Context, period
 			return
 		case <-time.After(period):
 			keysToRefresh := f.scaleSubresourceCacheStorage.GetKeysToRefresh()
-			klog.V(5).Info("Starting to refresh entries in controllerFetchers scaleSubresourceCacheStorage")
+			klog.V(5).InfoS("Starting to refresh entries in controllerFetchers scaleSubresourceCacheStorage")
 			for _, item := range keysToRefresh {
 				scale, err := f.scaleNamespacer.Scales(item.namespace).Get(context.TODO(), item.groupResource, item.name, metav1.GetOptions{})
 				f.scaleSubresourceCacheStorage.Refresh(item.namespace, item.groupResource, item.name, scale, err)
 			}
-			klog.V(5).Infof("Finished refreshing %d entries in controllerFetchers scaleSubresourceCacheStorage", len(keysToRefresh))
+			klog.V(5).InfoS("Finished refreshing entries in controllerFetchers scaleSubresourceCacheStorage", "refreshed", len(keysToRefresh))
 			f.scaleSubresourceCacheStorage.RemoveExpired()
 		}
 	}
@@ -136,9 +136,9 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		go informer.Run(stopCh)
 		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
 		if !synced {
-			klog.Warningf("Could not sync cache for %s: %v", kind, err)
+			klog.V(0).InfoS("Initial sync failed", "kind", kind)
 		} else {
-			klog.Infof("Initial sync of %s completed", kind)
+			klog.InfoS("Initial sync completed", "kind", kind)
 		}
 	}
 
@@ -199,7 +199,7 @@ func getParentOfWellKnownController(informer cache.SharedIndexInformer, controll
 	return nil, fmt.Errorf("don't know how to read owner controller")
 }
 
-func (f *controllerFetcher) getParentOfController(controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (f *controllerFetcher) getParentOfController(ctx context.Context, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	kind := wellKnownController(controllerKey.Kind)
 	informer, exists := f.informersMap[kind]
 	if exists {
@@ -211,7 +211,7 @@ func (f *controllerFetcher) getParentOfController(controllerKey ControllerKeyWit
 		return nil, err
 	}
 
-	owner, err := f.getOwnerForScaleResource(groupKind, controllerKey.Namespace, controllerKey.Name)
+	owner, err := f.getOwnerForScaleResource(ctx, groupKind, controllerKey.Namespace, controllerKey.Name)
 	if apierrors.IsNotFound(err) {
 		return nil, nil
 	}
@@ -244,39 +244,40 @@ func (f *controllerFetcher) isWellKnown(key *ControllerKeyWithAPIVersion) bool {
 	return exists
 }
 
-func (f *controllerFetcher) getScaleForResource(namespace string, groupResource schema.GroupResource, name string) (controller *autoscalingapi.Scale, err error) {
+func (f *controllerFetcher) getScaleForResource(ctx context.Context, namespace string, groupResource schema.GroupResource, name string) (controller *autoscalingapi.Scale, err error) {
 	if ok, scale, err := f.scaleSubresourceCacheStorage.Get(namespace, groupResource, name); ok {
 		return scale, err
 	}
-	scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
+	scale, err := f.scaleNamespacer.Scales(namespace).Get(ctx, groupResource, name, metav1.GetOptions{})
 	f.scaleSubresourceCacheStorage.Insert(namespace, groupResource, name, scale, err)
 	return scale, err
 }
 
-func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersion) bool {
+func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *ControllerKeyWithAPIVersion) bool {
 	if f.isWellKnown(key) {
 		return true
-	}
-	if gk, err := key.groupKind(); err != nil && wellKnownController(gk.Kind) == node {
-		return false
 	}
 
 	//if not well known check if it supports scaling
 	groupKind, err := key.groupKind()
 	if err != nil {
-		klog.Errorf("Could not find groupKind for %s/%s: %v", key.Namespace, key.Name, err)
+		klog.ErrorS(err, "Could not find groupKind", "object", klog.KRef(key.Namespace, key.Name))
+		return false
+	}
+
+	if wellKnownController(groupKind.Kind) == node {
 		return false
 	}
 
 	mappings, err := f.mapper.RESTMappings(groupKind)
 	if err != nil {
-		klog.Errorf("Could not find mappings for %s: %v", groupKind, err)
+		klog.ErrorS(err, "Could not find mappings", "groupKind", groupKind, "object", klog.KRef(key.Namespace, key.Name))
 		return false
 	}
 
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.getScaleForResource(key.Namespace, groupResource, key.Name)
+		scale, err := f.getScaleForResource(ctx, key.Namespace, groupResource, key.Name)
 		if err == nil && scale != nil {
 			return true
 		}
@@ -284,9 +285,9 @@ func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersi
 	return false
 }
 
-func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind, namespace, name string) (*ControllerKeyWithAPIVersion, error) {
+func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupKind schema.GroupKind, namespace, name string) (*ControllerKeyWithAPIVersion, error) {
 	if wellKnownController(groupKind.Kind) == node {
-		// Some pods specify nods as their owners. This causes performance problems
+		// Some pods specify nodes as their owners. This causes performance problems
 		// in big clusters when VPA tries to get all nodes. We know nodes aren't
 		// valid controllers so we can skip trying to fetch them.
 		return nil, fmt.Errorf("node is not a valid owner")
@@ -298,7 +299,7 @@ func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind,
 	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.getScaleForResource(namespace, groupResource, name)
+		scale, err := f.getScaleForResource(ctx, namespace, groupResource, name)
 		if err == nil {
 			return getOwnerController(scale.OwnerReferences, namespace), nil
 		}
@@ -309,14 +310,14 @@ func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind,
 	return nil, lastError
 }
 
-func (f *controllerFetcher) FindTopMostWellKnownOrScalable(key *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (f *controllerFetcher) FindTopMostWellKnownOrScalable(ctx context.Context, key *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if key == nil {
 		return nil, nil
 	}
 
 	var topMostWellKnownOrScalable *ControllerKeyWithAPIVersion
 
-	wellKnownOrScalable := f.isWellKnownOrScalable(key)
+	wellKnownOrScalable := f.isWellKnownOrScalable(ctx, key)
 	if wellKnownOrScalable {
 		topMostWellKnownOrScalable = key
 	}
@@ -324,7 +325,7 @@ func (f *controllerFetcher) FindTopMostWellKnownOrScalable(key *ControllerKeyWit
 	visited := make(map[ControllerKeyWithAPIVersion]bool)
 	visited[*key] = true
 	for {
-		owner, err := f.getParentOfController(*key)
+		owner, err := f.getParentOfController(ctx, *key)
 		if err != nil {
 			return nil, err
 		}
@@ -333,7 +334,7 @@ func (f *controllerFetcher) FindTopMostWellKnownOrScalable(key *ControllerKeyWit
 			return topMostWellKnownOrScalable, nil
 		}
 
-		wellKnownOrScalable = f.isWellKnownOrScalable(owner)
+		wellKnownOrScalable = f.isWellKnownOrScalable(ctx, owner)
 		if wellKnownOrScalable {
 			topMostWellKnownOrScalable = owner
 		}

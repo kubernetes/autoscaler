@@ -19,18 +19,18 @@ limitations under the License.
 package v1beta1
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ProvisioningRequestStatusApplyConfiguration represents an declarative configuration of the ProvisioningRequestStatus type for use
+// ProvisioningRequestStatusApplyConfiguration represents a declarative configuration of the ProvisioningRequestStatus type for use
 // with apply.
 type ProvisioningRequestStatusApplyConfiguration struct {
-	Conditions               []v1.Condition            `json:"conditions,omitempty"`
-	ProvisioningClassDetails map[string]v1beta1.Detail `json:"provisioningClassDetails,omitempty"`
+	Conditions               []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
+	ProvisioningClassDetails map[string]v1beta1.Detail        `json:"provisioningClassDetails,omitempty"`
 }
 
-// ProvisioningRequestStatusApplyConfiguration constructs an declarative configuration of the ProvisioningRequestStatus type for use with
+// ProvisioningRequestStatusApplyConfiguration constructs a declarative configuration of the ProvisioningRequestStatus type for use with
 // apply.
 func ProvisioningRequestStatus() *ProvisioningRequestStatusApplyConfiguration {
 	return &ProvisioningRequestStatusApplyConfiguration{}
@@ -39,9 +39,12 @@ func ProvisioningRequestStatus() *ProvisioningRequestStatusApplyConfiguration {
 // WithConditions adds the given value to the Conditions field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Conditions field.
-func (b *ProvisioningRequestStatusApplyConfiguration) WithConditions(values ...v1.Condition) *ProvisioningRequestStatusApplyConfiguration {
+func (b *ProvisioningRequestStatusApplyConfiguration) WithConditions(values ...*v1.ConditionApplyConfiguration) *ProvisioningRequestStatusApplyConfiguration {
 	for i := range values {
-		b.Conditions = append(b.Conditions, values[i])
+		if values[i] == nil {
+			panic("nil value passed to WithConditions")
+		}
+		b.Conditions = append(b.Conditions, *values[i])
 	}
 	return b
 }

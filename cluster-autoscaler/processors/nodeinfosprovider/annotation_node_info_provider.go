@@ -22,26 +22,33 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // AnnotationNodeInfoProvider is a wrapper for MixedTemplateNodeInfoProvider.
 type AnnotationNodeInfoProvider struct {
-	mixedTemplateNodeInfoProvider *MixedTemplateNodeInfoProvider
+	templateNodeInfoProvider TemplateNodeInfoProvider
 }
 
-// NewAnnotationNodeInfoProvider returns AnnotationNodeInfoProvider.
+// NewAnnotationNodeInfoProvider returns AnnotationNodeInfoProvider wrapping MixedTemplateNodeInfoProvider.
 func NewAnnotationNodeInfoProvider(t *time.Duration, forceDaemonSets bool) *AnnotationNodeInfoProvider {
 	return &AnnotationNodeInfoProvider{
-		mixedTemplateNodeInfoProvider: NewMixedTemplateNodeInfoProvider(t, forceDaemonSets),
+		templateNodeInfoProvider: NewMixedTemplateNodeInfoProvider(t, forceDaemonSets),
+	}
+}
+
+// NewCustomAnnotationNodeInfoProvider returns AnnotationNodeInfoProvider wrapping TemplateNodeInfoProvider.
+func NewCustomAnnotationNodeInfoProvider(templateNodeInfoProvider TemplateNodeInfoProvider) *AnnotationNodeInfoProvider {
+	return &AnnotationNodeInfoProvider{
+		templateNodeInfoProvider: templateNodeInfoProvider,
 	}
 }
 
 // Process returns the nodeInfos set for this cluster.
-func (p *AnnotationNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
-	nodeInfos, err := p.mixedTemplateNodeInfoProvider.Process(ctx, nodes, daemonsets, taintConfig, currentTime)
+func (p *AnnotationNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
+	nodeInfos, err := p.templateNodeInfoProvider.Process(ctx, nodes, daemonsets, taintConfig, currentTime)
 	if err != nil {
 		return nil, err
 	}

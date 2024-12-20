@@ -54,7 +54,7 @@ cluster_autoscaler:list_mods() {
   k8s_version="${1:-${VERSION}}"
 
   if [ -z "${k8s_version}" ]; then
-    echo "Usage: hack/update-vendor.sh <k8s version> <k8s version for apis> <k8s fork:-git@github.com:kubernetes/kubernetes.git>"
+    echo "Usage: hack/update-deps.sh <k8s version> <k8s version for apis> <k8s fork:-git@github.com:kubernetes/kubernetes.git>"
     exit 1
   fi
   cluster_autoscaler:list_mods:init "${k8s_version}" > /dev/null
@@ -90,14 +90,14 @@ cluster_autoscaler:update_deps() {
       go mod edit "-replace=${mod}=${mod}@${mod_version}"
     else
       go get "${mod}@${mod_version}"
-      go mod tidy
     fi
   done
+
+  go mod tidy
 
   if [ "${pkg}" = "./cluster-autoscaler" ]; then
     go get "k8s.io/kubernetes@v${k8s_version}"
     go mod tidy
-    go mod vendor
     "${SED}" -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"${k8s_version}\"|" "version/version.go"
   fi
 

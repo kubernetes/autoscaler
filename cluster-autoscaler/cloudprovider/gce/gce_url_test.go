@@ -117,7 +117,7 @@ func TestParseIgmUrl(t *testing.T) {
 		{
 			name:    "incorrect domain",
 			url:     "https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroupManagers2/name1",
-			wantErr: fmt.Errorf("wrong url: expected format <url>/projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroupManagers2/name1"),
+			wantErr: fmt.Errorf("wrong url: expected format https://.*/projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroupManagers2/name1"),
 		},
 	}
 	for _, tt := range tests {
@@ -130,6 +130,49 @@ func TestParseIgmUrl(t *testing.T) {
 			assert.Equalf(t, tt.wantProject, gotProject, "ParseIgmUrl(%v)", tt.url)
 			assert.Equalf(t, tt.wantZone, gotZone, "ParseIgmUrl(%v)", tt.url)
 			assert.Equalf(t, tt.wantName, gotName, "ParseIgmUrl(%v)", tt.url)
+		})
+	}
+}
+
+func TestParseIgmUrlRef(t *testing.T) {
+	tests := []struct {
+		name    string
+		url     string
+		want    GceRef
+		wantErr error
+	}{
+		{
+			name: "default domain",
+			url:  "https://www.googleapis.com/compute/v1/projects/proj1/zones/us-central1-a/instanceGroupManagers/name1",
+			want: GceRef{
+				Project: "proj1",
+				Name:    "name1",
+				Zone:    "us-central1-a",
+			},
+		},
+		{
+			name: "custom domain",
+			url:  "https://www.googleapis.com/compute_test/v1/projects/proj1/zones/us-central1-a/instanceGroupManagers/name1",
+			want: GceRef{
+				Project: "proj1",
+				Name:    "name1",
+				Zone:    "us-central1-a",
+			},
+		},
+		{
+			name:    "incorrect domain",
+			url:     "https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroupManagers2/name1",
+			wantErr: fmt.Errorf("wrong url: expected format projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroupManagers2/name1"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseIgmUrlRef(tt.url)
+			assert.Equal(t, tt.wantErr, err)
+			if tt.wantErr != nil {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "ParseIgmUrlRef(%v)", tt.url)
 		})
 	}
 }
@@ -160,7 +203,7 @@ func TestParseInstanceUrl(t *testing.T) {
 		{
 			name:    "incorrect domain",
 			url:     "https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instances2/name1",
-			wantErr: fmt.Errorf("wrong url: expected format <url>/projects/<project-id>/zones/<zone>/instances/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instances2/name1"),
+			wantErr: fmt.Errorf("wrong url: expected format https://.*/projects/<project-id>/zones/<zone>/instances/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instances2/name1"),
 		},
 	}
 	for _, tt := range tests {
@@ -205,7 +248,7 @@ func TestParseInstanceUrlRef(t *testing.T) {
 		{
 			name:    "incorrect domain",
 			url:     "https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instances2/name1",
-			wantErr: fmt.Errorf("wrong url: expected format <url>/projects/<project-id>/zones/<zone>/instances/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instances2/name1"),
+			wantErr: fmt.Errorf("wrong url: expected format https://.*/projects/<project-id>/zones/<zone>/instances/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instances2/name1"),
 		},
 	}
 	for _, tt := range tests {
@@ -247,7 +290,7 @@ func TestParseMigUrl(t *testing.T) {
 		{
 			name:    "incorrect domain",
 			url:     "https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroups/name1",
-			wantErr: fmt.Errorf("wrong url: expected format <url>/projects/<project-id>/zones/<zone>/instanceGroups/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroups/name1"),
+			wantErr: fmt.Errorf("wrong url: expected format https://.*/projects/<project-id>/zones/<zone>/instanceGroups/<name>, got https://www.googleapis.com/compute_test/v1/projects2/proj1/zones/us-central1-a/instanceGroups/name1"),
 		},
 	}
 	for _, tt := range tests {
@@ -291,6 +334,42 @@ func TestIsInstanceTemplateRegional(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.expectRegional, regional)
+		})
+	}
+}
+
+func TestInstanceTemplateNameFromUrl(t *testing.T) {
+	tests := []struct {
+		name                       string
+		templateUrl                string
+		expectInstanceTemplateName InstanceTemplateName
+		wantErr                    error
+	}{
+		{
+			name:                       "Has regional instance url",
+			templateUrl:                "https://www.googleapis.com/compute/v1/projects/test-project/regions/us-central1/instanceTemplates/instance-template",
+			expectInstanceTemplateName: InstanceTemplateName{"instance-template", true},
+		},
+		{
+			name:                       "Has global instance url",
+			templateUrl:                "https://www.googleapis.com/compute/v1/projects/test-project/global/instanceTemplates/instance-template",
+			expectInstanceTemplateName: InstanceTemplateName{"instance-template", false},
+		},
+		{
+			name:                       "Empty url",
+			templateUrl:                "",
+			expectInstanceTemplateName: InstanceTemplateName{"", false},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			itName, err := InstanceTemplateNameFromUrl(tt.templateUrl)
+			assert.Equal(t, tt.wantErr, err)
+			if tt.wantErr != nil {
+				return
+			}
+			assert.Equal(t, tt.expectInstanceTemplateName, itName)
 		})
 	}
 }

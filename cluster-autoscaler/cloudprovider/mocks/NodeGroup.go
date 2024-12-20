@@ -20,7 +20,7 @@ import (
 	cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	config "k8s.io/autoscaler/cluster-autoscaler/config"
 
-	framework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -113,6 +113,20 @@ func (_m *NodeGroup) Delete() error {
 
 // DeleteNodes provides a mock function with given fields: _a0
 func (_m *NodeGroup) DeleteNodes(_a0 []*v1.Node) error {
+	ret := _m.Called(_a0)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]*v1.Node) error); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (_m *NodeGroup) ForceDeleteNodes(_a0 []*v1.Node) error {
 	ret := _m.Called(_a0)
 
 	var r0 error

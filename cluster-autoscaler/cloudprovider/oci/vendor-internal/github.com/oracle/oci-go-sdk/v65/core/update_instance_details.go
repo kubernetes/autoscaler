@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -16,6 +16,7 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	"strings"
@@ -33,6 +34,10 @@ type UpdateInstanceDetails struct {
 	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
+
+	// Security Attributes for this resource. This is unique to ZPR, and helps identify which resources are allowed to be accessed by what permission controls.
+	// Example: `{"Oracle-DataSecurity-ZPR": {"MaxEgressCount": {"value":"42","mode":"audit"}}}`
+	SecurityAttributes map[string]map[string]interface{} `mandatory:"false" json:"securityAttributes"`
 
 	// A user-friendly name. Does not have to be unique, and it's changeable.
 	// Avoid entering confidential information.
@@ -77,11 +82,16 @@ type UpdateInstanceDetails struct {
 	// The new shape must be compatible with the image that was used to launch the instance. You
 	// can enumerate all available shapes and determine image compatibility by calling
 	// ListShapes.
+	// To determine whether capacity is available for a specific shape before you change the shape of an instance,
+	// use the CreateComputeCapacityReport
+	// operation.
 	// If the instance is running when you change the shape, the instance is rebooted.
 	// Example: `VM.Standard2.1`
 	Shape *string `mandatory:"false" json:"shape"`
 
 	ShapeConfig *UpdateInstanceShapeConfigDetails `mandatory:"false" json:"shapeConfig"`
+
+	SourceDetails UpdateInstanceSourceDetails `mandatory:"false" json:"sourceDetails"`
 
 	// The parameter acts as a fail-safe to prevent unwanted downtime when updating a running instance.
 	// The default is ALLOW_DOWNTIME.
@@ -121,6 +131,14 @@ type UpdateInstanceDetails struct {
 	// Infrastructure Maintenance (https://docs.cloud.oracle.com/iaas/Content/Compute/References/infrastructure-maintenance.htm).
 	// Example: `2018-05-25T21:10:29.600Z`
 	TimeMaintenanceRebootDue *common.SDKTime `mandatory:"false" json:"timeMaintenanceRebootDue"`
+
+	// The OCID of the dedicated virtual machine host to place the instance on.
+	// Supported only if this VM instance was already placed on a dedicated virtual machine host
+	// - that is, you can't move an instance from on-demand capacity to dedicated capacity,
+	// nor can you move an instance from dedicated capacity to on-demand capacity.
+	DedicatedVmHostId *string `mandatory:"false" json:"dedicatedVmHostId"`
+
+	PlatformConfig UpdateInstancePlatformConfig `mandatory:"false" json:"platformConfig"`
 }
 
 func (m UpdateInstanceDetails) String() string {
@@ -140,6 +158,92 @@ func (m UpdateInstanceDetails) ValidateEnumValue() (bool, error) {
 		return true, fmt.Errorf(strings.Join(errMessage, "\n"))
 	}
 	return false, nil
+}
+
+// UnmarshalJSON unmarshals from json
+func (m *UpdateInstanceDetails) UnmarshalJSON(data []byte) (e error) {
+	model := struct {
+		CapacityReservationId     *string                                            `json:"capacityReservationId"`
+		DefinedTags               map[string]map[string]interface{}                  `json:"definedTags"`
+		SecurityAttributes        map[string]map[string]interface{}                  `json:"securityAttributes"`
+		DisplayName               *string                                            `json:"displayName"`
+		FreeformTags              map[string]string                                  `json:"freeformTags"`
+		AgentConfig               *UpdateInstanceAgentConfigDetails                  `json:"agentConfig"`
+		Metadata                  map[string]string                                  `json:"metadata"`
+		ExtendedMetadata          map[string]interface{}                             `json:"extendedMetadata"`
+		Shape                     *string                                            `json:"shape"`
+		ShapeConfig               *UpdateInstanceShapeConfigDetails                  `json:"shapeConfig"`
+		SourceDetails             updateinstancesourcedetails                        `json:"sourceDetails"`
+		UpdateOperationConstraint UpdateInstanceDetailsUpdateOperationConstraintEnum `json:"updateOperationConstraint"`
+		InstanceOptions           *InstanceOptions                                   `json:"instanceOptions"`
+		FaultDomain               *string                                            `json:"faultDomain"`
+		LaunchOptions             *UpdateLaunchOptions                               `json:"launchOptions"`
+		AvailabilityConfig        *UpdateInstanceAvailabilityConfigDetails           `json:"availabilityConfig"`
+		TimeMaintenanceRebootDue  *common.SDKTime                                    `json:"timeMaintenanceRebootDue"`
+		DedicatedVmHostId         *string                                            `json:"dedicatedVmHostId"`
+		PlatformConfig            updateinstanceplatformconfig                       `json:"platformConfig"`
+	}{}
+
+	e = json.Unmarshal(data, &model)
+	if e != nil {
+		return
+	}
+	var nn interface{}
+	m.CapacityReservationId = model.CapacityReservationId
+
+	m.DefinedTags = model.DefinedTags
+
+	m.SecurityAttributes = model.SecurityAttributes
+
+	m.DisplayName = model.DisplayName
+
+	m.FreeformTags = model.FreeformTags
+
+	m.AgentConfig = model.AgentConfig
+
+	m.Metadata = model.Metadata
+
+	m.ExtendedMetadata = model.ExtendedMetadata
+
+	m.Shape = model.Shape
+
+	m.ShapeConfig = model.ShapeConfig
+
+	nn, e = model.SourceDetails.UnmarshalPolymorphicJSON(model.SourceDetails.JsonData)
+	if e != nil {
+		return
+	}
+	if nn != nil {
+		m.SourceDetails = nn.(UpdateInstanceSourceDetails)
+	} else {
+		m.SourceDetails = nil
+	}
+
+	m.UpdateOperationConstraint = model.UpdateOperationConstraint
+
+	m.InstanceOptions = model.InstanceOptions
+
+	m.FaultDomain = model.FaultDomain
+
+	m.LaunchOptions = model.LaunchOptions
+
+	m.AvailabilityConfig = model.AvailabilityConfig
+
+	m.TimeMaintenanceRebootDue = model.TimeMaintenanceRebootDue
+
+	m.DedicatedVmHostId = model.DedicatedVmHostId
+
+	nn, e = model.PlatformConfig.UnmarshalPolymorphicJSON(model.PlatformConfig.JsonData)
+	if e != nil {
+		return
+	}
+	if nn != nil {
+		m.PlatformConfig = nn.(UpdateInstancePlatformConfig)
+	} else {
+		m.PlatformConfig = nil
+	}
+
+	return
 }
 
 // UpdateInstanceDetailsUpdateOperationConstraintEnum Enum with underlying type: string

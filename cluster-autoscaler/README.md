@@ -49,6 +49,8 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 | Kubernetes Version | CA Version               | Chart Version |
 |--------------------|--------------------------|---------------|
+| 1.31.x             | 1.31.x                   |9.38.0+|
+| 1.30.x             | 1.30.x                   |9.37.0+|
 | 1.29.X             | 1.29.X                   |9.35.0+|
 | 1.28.X             | 1.28.X                   |9.34.0+|
 | 1.27.X             | 1.27.X                   |9.29.0+|
@@ -89,12 +91,12 @@ target ETA and the actual releases.
 
 | Date       | Maintainer Preparing Release | Backup Maintainer | Type  |
 |------------|------------------------------|-------------------|-------|
-| 2024-01-17 | MaciekPytel                  | gjtempleton       | patch |
-| 2024-03-13 | gjtempleton                  | BigDarkClown      | patch |
-| 2024-04-17 | towca                        | BigDarkClown      | 1.30  |
-| 2024-05-22 | BigDarkClown                 | x13n              | patch |
-| 2024-07-24 | x13n                         | MaciekPytel       | patch |
+| 2024-07-18 | x13n                         | MaciekPytel       | patch |
 | 2024-08-21 | MaciekPytel                  | gjtempleton       | 1.31  |
+| 2024-09-18 | gjtempleton                  | towca             | patch |
+| 2024-11-20 | towca                        | BigDarkClown      | patch |
+| 2024-12-18 | BigDarkClown                 | x13n              | 1.32  |
+| 2025-01-22 | x13n                         | MaciekPytel       | patch |
 
 Additional patch releases may happen outside of the schedule in case of critical
 bugs or vulnerabilities.

@@ -33,7 +33,7 @@ autoDiscovery:
   labels: []
     # - color: green
     # - shape: circle
-# autoscalingGroups -- For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example:
+# autoscalingGroups -- For AWS, Azure AKS, Exoscale or Magnum. At least one element is required if not using `autoDiscovery`. For example:
 # <pre>
 # - name: asg1<br />
 #   maxSize: 2<br />
@@ -140,9 +140,11 @@ clusterAPIWorkloadKubeconfigPath: /etc/kubernetes/value
 
 # containerSecurityContext -- [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 containerSecurityContext: {}
+  # allowPrivilegeEscalation: false
   # capabilities:
   #   drop:
   #   - ALL
+  # readOnlyRootFilesystem: true
 
 deployment:
   # deployment.annotations -- Annotations to add to the Deployment object.
@@ -203,6 +205,22 @@ extraEnvConfigMaps: {}
 # extraEnvSecrets -- Additional container environment variables from Secrets.
 extraEnvSecrets: {}
 
+# extraObjects -- Extra K8s manifests to deploy
+extraObjects: []
+#  - apiVersion: v1
+#    kind: ConfigMap
+#    metadata:
+#      name: my-configmap
+#    data:
+#      key: "value"
+#  - apiVersion: scheduling.k8s.io/v1
+#    kind: PriorityClass
+#    metadata:
+#      name: high-priority
+#    value: 1000000
+#    globalDefault: false
+#    description: "This priority class should be used for XYZ service pods only."
+
 # extraVolumeMounts -- Additional volumes to mount.
 extraVolumeMounts: []
   # - name: ssl-certs
@@ -226,6 +244,9 @@ extraVolumeSecrets: {}
   #     - key: subkey
   #       path: mypath
 
+# initContainers -- Any additional init containers.
+initContainers: []
+
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 
@@ -236,7 +257,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.29.0
+  tag: v1.31.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -336,8 +357,10 @@ revisionHistoryLimit: 10
 # securityContext -- [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 securityContext: {}
   # runAsNonRoot: true
-  # runAsUser: 1001
-  # runAsGroup: 1001
+  # runAsUser: 65534
+  # runAsGroup: 65534
+  # seccompProfile:
+  #    type: RuntimeDefault
 
 service:
   # service.create -- If `true`, a Service will be created.
@@ -346,8 +369,11 @@ service:
   annotations: {}
   # service.labels -- Labels to add to service
   labels: {}
-  # service.externalIPs -- List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/user-guide/services/#external-ips.
+  # service.externalIPs -- List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips.
   externalIPs: []
+
+  # service.clusterIP -- IP address to assign to service
+  clusterIP: ""
 
   # service.loadBalancerIP -- IP address to assign to load balancer (if supported).
   loadBalancerIP: ""
@@ -377,6 +403,9 @@ serviceMonitor:
   path: /metrics
   # serviceMonitor.annotations -- Annotations to add to service monitor
   annotations: {}
+  ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
+  # serviceMonitor.relabelings -- RelabelConfigs to apply to metrics before scraping.
+  relabelings: {}
   ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
   # serviceMonitor.metricRelabelings -- MetricRelabelConfigs to apply to samples before ingestion.
   metricRelabelings: {}

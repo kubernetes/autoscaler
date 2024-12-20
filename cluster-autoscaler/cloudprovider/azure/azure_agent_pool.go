@@ -34,8 +34,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -82,10 +82,10 @@ func (as *AgentPool) initialize() error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	template, err := as.manager.azClient.deploymentsClient.ExportTemplate(ctx, as.manager.config.ResourceGroup, as.manager.config.Deployment)
+	template, err := as.manager.azClient.deploymentClient.ExportTemplate(ctx, as.manager.config.ResourceGroup, as.manager.config.Deployment)
 	if err != nil {
-		klog.Errorf("deploymentsClient.ExportTemplate(%s, %s) failed: %v", as.manager.config.ResourceGroup, as.manager.config.Deployment, err)
-		return err
+		klog.Errorf("deploymentClient.ExportTemplate(%s, %s) failed: %v", as.manager.config.ResourceGroup, as.manager.config.Deployment, err)
+		return err.Error()
 	}
 
 	as.template = template.Template.(map[string]interface{})
@@ -163,7 +163,7 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 		}
 
 		indexes = append(indexes, index)
-		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		resourceID, err := convertResourceGroupNameToLower(azurePrefix + *instance.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -211,18 +211,27 @@ func (as *AgentPool) TargetSize() (int, error) {
 	return int(size), nil
 }
 
-func (as *AgentPool) getAllSucceededAndFailedDeployments() (succeededAndFailedDeployments []resources.DeploymentExtended, err error) {
+func (as *AgentPool) getAllSucceededAndFailedDeployments() ([]resources.DeploymentExtended, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	deploymentsFilter := "provisioningState eq 'Succeeded' or provisioningState eq 'Failed'"
-	succeededAndFailedDeployments, err = as.manager.azClient.deploymentsClient.List(ctx, as.manager.config.ResourceGroup, deploymentsFilter, nil)
-	if err != nil {
-		klog.Errorf("getAllSucceededAndFailedDeployments: failed to list succeeded or failed deployments with error: %v", err)
-		return nil, err
+	allDeployments, rerr := as.manager.azClient.deploymentClient.List(ctx, as.manager.config.ResourceGroup)
+	if rerr != nil {
+		klog.Errorf("getAllSucceededAndFailedDeployments: failed to list deployments with error: %v", rerr.Error())
+		return nil, rerr.Error()
 	}
 
-	return succeededAndFailedDeployments, err
+	result := make([]resources.DeploymentExtended, 0)
+	for _, deployment := range allDeployments {
+		if deployment.Properties == nil || deployment.Properties.ProvisioningState == nil {
+			continue
+		}
+		if *deployment.Properties.ProvisioningState == "Succeeded" || *deployment.Properties.ProvisioningState == "Failed" {
+			result = append(result, deployment)
+		}
+	}
+
+	return result, rerr.Error()
 }
 
 // deleteOutdatedDeployments keeps the newest deployments in the resource group and delete others,
@@ -258,9 +267,9 @@ func (as *AgentPool) deleteOutdatedDeployments() (err error) {
 	errList := make([]error, 0)
 	for _, deployment := range toBeDeleted {
 		klog.V(4).Infof("deleteOutdatedDeployments: starts deleting outdated deployment (%s)", *deployment.Name)
-		_, err := as.manager.azClient.deploymentsClient.Delete(ctx, as.manager.config.ResourceGroup, *deployment.Name)
-		if err != nil {
-			errList = append(errList, err)
+		rerr := as.manager.azClient.deploymentClient.Delete(ctx, as.manager.config.ResourceGroup, *deployment.Name)
+		if rerr != nil {
+			errList = append(errList, rerr.Error())
 		}
 	}
 
@@ -317,22 +326,20 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	}
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	klog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s, %v)", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
-	resp, err := as.manager.azClient.deploymentsClient.CreateOrUpdate(ctx, as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
-	isSuccess, realError := isSuccessHTTPResponse(resp, err)
-	if isSuccess {
-		klog.V(3).Infof("deploymentsClient.CreateOrUpdate(%s, %s, %v) success", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
-
-		// Update cache after scale success.
-		as.curSize = int64(expectedSize)
-		as.lastRefresh = time.Now()
-		klog.V(6).Info("IncreaseSize: invalidating cache")
-		as.manager.invalidateCache()
-		return nil
+	klog.V(3).Infof("Waiting for deploymentClient.CreateOrUpdate(%s, %s, %v)", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
+	rerr := as.manager.azClient.deploymentClient.CreateOrUpdate(ctx, as.manager.config.ResourceGroup, newDeploymentName, newDeployment, "")
+	if rerr != nil {
+		klog.Errorf("deploymentClient.CreateOrUpdate for deployment %q failed: %v", newDeploymentName, rerr.Error())
+		return rerr.Error()
 	}
+	klog.V(3).Infof("deploymentClient.CreateOrUpdate(%s, %s, %v) success", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
 
-	klog.Errorf("deploymentsClient.CreateOrUpdate for deployment %q failed: %v", newDeploymentName, realError)
-	return realError
+	// Update cache after scale success.
+	as.curSize = int64(expectedSize)
+	as.lastRefresh = time.Now()
+	klog.V(6).Info("IncreaseSize: invalidating cache")
+	as.manager.invalidateCache()
+	return nil
 }
 
 // AtomicIncreaseSize is not implemented.
@@ -464,13 +471,18 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 	return as.DeleteInstances(refs)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Debug returns a debug string for the agent pool.
 func (as *AgentPool) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", as.Name, as.MinSize(), as.MaxSize())
 }
 
 // TemplateNodeInfo returns a node template for this agent pool.
-func (as *AgentPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (as *AgentPool) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -489,7 +501,7 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 
 		// To keep consistent with providerID from kubernetes cloud provider, convert
 		// resourceGroupName in the ID to lower case.
-		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		resourceID, err := convertResourceGroupNameToLower(azurePrefix + *instance.ID)
 		if err != nil {
 			return nil, err
 		}

@@ -18,17 +18,17 @@ package podlistprocessor
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list
 // processor, which wraps and sequentially runs other sub-processors.
-func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) *pods.CombinedPodListProcessor {
+func NewDefaultPodListProcessor(nodeFilter func(*framework.NodeInfo) bool) *pods.CombinedPodListProcessor {
 	return pods.NewCombinedPodListProcessor([]pods.PodListProcessor{
 		NewClearTPURequestsPodListProcessor(),
 		NewFilterOutExpendablePodListProcessor(),
 		NewCurrentlyDrainedNodesPodListProcessor(),
-		NewFilterOutSchedulablePodListProcessor(predicateChecker),
+		NewFilterOutSchedulablePodListProcessor(nodeFilter),
 		NewFilterOutDaemonSetPodListProcessor(),
 	})
 }

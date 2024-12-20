@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -56,6 +56,9 @@ type ListCaptureFiltersRequest struct {
 	// The state value is case-insensitive.
 	LifecycleState CaptureFilterLifecycleStateEnum `mandatory:"false" contributesTo:"query" name:"lifecycleState" omitEmpty:"true"`
 
+	// A filter to only return resources that match the given capture `filterType`. The `filterType` value is the string representation of enum - `VTAP`, `FLOWLOG`.
+	FilterType CaptureFilterFilterTypeEnum `mandatory:"false" contributesTo:"query" name:"filterType" omitEmpty:"true"`
+
 	// Metadata about the request. This information will not be transmitted to the service, but
 	// represents information that the SDK will consume to drive retry behavior.
 	RequestMetadata common.RequestMetadata
@@ -100,6 +103,9 @@ func (request ListCaptureFiltersRequest) ValidateEnumValue() (bool, error) {
 	}
 	if _, ok := GetMappingCaptureFilterLifecycleStateEnum(string(request.LifecycleState)); !ok && request.LifecycleState != "" {
 		errMessage = append(errMessage, fmt.Sprintf("unsupported enum value for LifecycleState: %s. Supported values are: %s.", request.LifecycleState, strings.Join(GetCaptureFilterLifecycleStateEnumStringValues(), ",")))
+	}
+	if _, ok := GetMappingCaptureFilterFilterTypeEnum(string(request.FilterType)); !ok && request.FilterType != "" {
+		errMessage = append(errMessage, fmt.Sprintf("unsupported enum value for FilterType: %s. Supported values are: %s.", request.FilterType, strings.Join(GetCaptureFilterFilterTypeEnumStringValues(), ",")))
 	}
 	if len(errMessage) > 0 {
 		return true, fmt.Errorf(strings.Join(errMessage, "\n"))

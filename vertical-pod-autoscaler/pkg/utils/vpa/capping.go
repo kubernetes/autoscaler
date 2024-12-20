@@ -52,11 +52,19 @@ type cappingRecommendationProcessor struct {
 
 // Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
 func (c *cappingRecommendationProcessor) Apply(
-	podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	vpa *vpa_types.VerticalPodAutoscaler,
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	// TODO: Annotate if request enforced by maintaining proportion with limit and allowed limit range is in conflict with policy.
+
+	if vpa == nil {
+		return nil, nil, fmt.Errorf("cannot process nil vpa")
+	}
+	if pod == nil {
+		return nil, nil, fmt.Errorf("cannot process nil pod")
+	}
+
+	policy := vpa.Spec.ResourcePolicy
+	podRecommendation := vpa.Status.Recommendation
 
 	if podRecommendation == nil && policy == nil {
 		// If there is no recommendation and no policies have been defined then no recommendation can be computed.
@@ -76,13 +84,13 @@ func (c *cappingRecommendationProcessor) Apply(
 		container := getContainer(containerRecommendation.ContainerName, pod)
 
 		if container == nil {
-			klog.V(2).Infof("no matching Container found for recommendation %s", containerRecommendation.ContainerName)
+			klog.V(2).InfoS("No matching Container found for recommendation", "containerName", containerRecommendation.ContainerName, "vpa", klog.KObj(vpa))
 			continue
 		}
 
 		containerLimitRange, err := c.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 		if err != nil {
-			klog.Warningf("failed to fetch LimitRange for %v namespace", pod.Namespace)
+			klog.V(0).InfoS("Failed to fetch LimitRange for namespace", "namespace", pod.Namespace)
 		}
 		updatedContainerResources, containerAnnotations, err := getCappedRecommendationForContainer(
 			*container, &containerRecommendation, policy, containerLimitRange)
@@ -116,7 +124,6 @@ func getCappedRecommendationForContainer(
 	cappingAnnotations := make([]string, 0)
 
 	process := func(recommendation apiv1.ResourceList, genAnnotations bool) {
-		// TODO: Add annotation if limitRange is conflicting with VPA policy.
 		limitAnnotations := applyContainerLimitRange(recommendation, container, limitRange)
 		annotations := applyVPAPolicy(recommendation, containerPolicy)
 		if genAnnotations {
