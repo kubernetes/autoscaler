@@ -18,6 +18,7 @@ package controllerfetcher
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -58,6 +59,9 @@ const (
 const (
 	discoveryResetPeriod time.Duration = 5 * time.Minute
 )
+
+// ErrNodeInvalidOwner is thrown when a Pod is owned by a Node.
+var ErrNodeInvalidOwner = errors.New("node is not a valid owner")
 
 // ControllerKey identifies a controller.
 type ControllerKey struct {
@@ -290,7 +294,7 @@ func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupK
 		// Some pods specify nodes as their owners. This causes performance problems
 		// in big clusters when VPA tries to get all nodes. We know nodes aren't
 		// valid controllers so we can skip trying to fetch them.
-		return nil, fmt.Errorf("node is not a valid owner")
+		return nil, ErrNodeInvalidOwner
 	}
 	mappings, err := f.mapper.RESTMappings(groupKind)
 	if err != nil {
