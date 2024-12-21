@@ -402,4 +402,24 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 
 		assert.Equal(tt, false, sdpea.Admit(pod, recommendation))
 	})
+
+	t.Run("it should not admit the Pod even if there is a container that doesn't have a Recommendation and the other one doesn't fulfill the EvictionRequirements", func(tt *testing.T) {
+		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+			pod: {
+				{
+					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
+					ChangeRequirement: v1.TargetHigherThanRequests,
+				},
+			},
+		}
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		recommendation := &v1.RecommendedPodResources{
+			ContainerRecommendations: []v1.RecommendedContainerResources{
+				test.Recommendation().WithContainer(container2Name).WithTarget("300m", "10Gi").GetContainerResources(),
+			},
+		}
+
+		assert.Equal(tt, false, sdpea.Admit(pod, recommendation))
+	})
 }

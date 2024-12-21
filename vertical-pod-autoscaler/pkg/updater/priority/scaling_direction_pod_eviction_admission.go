@@ -35,7 +35,6 @@ type scalingDirectionPodEvictionAdmission struct {
 
 // Admit admits a Pod for eviction in one of three cases
 // * no EvictionRequirement exists for this Pod
-// * no Recommendation exists for at least one Container in this Pod
 // * no Resource requests are set for at least one Container in this Pod
 // * all EvictionRequirements are evaluated to 'true' for at least one Container in this Pod
 func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *vpa_types.RecommendedPodResources) bool {
@@ -45,8 +44,10 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *
 	}
 	for _, container := range pod.Spec.Containers {
 		recommendedResources := vpa_utils.GetRecommendationForContainer(container.Name, resources)
+		// if a container doesn't have a recommendation, the VPA has set `.containerPolicy.mode: off` for this container,
+		// so we can skip this container
 		if recommendedResources == nil {
-			return true
+			continue
 		}
 		if s.admitContainer(container, recommendedResources, podEvictionRequirements) {
 			return true
