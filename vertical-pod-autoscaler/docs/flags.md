@@ -1,6 +1,6 @@
 # What are the parameters to VPA admission controller?
 This document is auto-generated from the flag definitions in the VPA admission controller code.
-Last updated: 2024-12-17 13:09:20 UTC
+Last updated: 2024-12-21 10:48:13 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
@@ -23,31 +23,31 @@ Last updated: 2024-12-17 13:09:20 UTC
 
 # What are the parameters to VPA recommender?
 This document is auto-generated from the flag definitions in the VPA recommender code.
-Last updated: 2024-12-17 13:09:18 UTC
+Last updated: 2024-12-21 10:48:12 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | --address | String | :8942 | The address to expose Prometheus metrics. |
 | --checkpoints-gc-interval | Duration | 10Minute | `How often orphaned checkpoints should be garbage collected` |
-| --checkpoints-timeout | Duration | 0 | `Timeout for writing checkpoints since the start of the recommender's main loop` |
+| --checkpoints-timeout | Duration | time.Minute | `Timeout for writing checkpoints since the start of the recommender's main loop` |
 | --container-name-label | String | name | `Label name to look for container names` |
 | --container-namespace-label | String | namespace | `Label name to look for container namespaces` |
 | --container-pod-name-label | String | pod_name | `Label name to look for container pod names` |
-| --cpu-histogram-decay-half-life | Duration | 0 | `The amount of time it takes a historical CPU usage sample to lose half of its weight.` |
+| --cpu-histogram-decay-half-life | Duration | model.DefaultCPUHistogramDecayHalfLife | `The amount of time it takes a historical CPU usage sample to lose half of its weight.` |
 | --cpu-integer-post-processor-enabled | Bool | false | Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
 | --external-metrics-cpu-metric | String |  | ALPHA.  Metric to use with external metrics provider for CPU usage. |
 | --external-metrics-memory-metric | String |  | ALPHA.  Metric to use with external metrics provider for memory usage. |
 | --history-length | String | 8d | `How much time back prometheus have to be queried to get historical metrics` |
 | --history-resolution | String | 1h | `Resolution at which Prometheus is queried for historical metrics` |
 | --humanize-memory | Bool | false | Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
-| --memory-aggregation-interval | Duration | 0 | `The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval)` |
-| --memory-aggregation-interval-count | Int64 | 0 | `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count.` |
-| --memory-histogram-decay-half-life | Duration | 0 | `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.` |
+| --memory-aggregation-interval | Duration | model.DefaultMemoryAggregationInterval | `The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval)` |
+| --memory-aggregation-interval-count | Int64 | model.DefaultMemoryAggregationIntervalCount | `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count.` |
+| --memory-histogram-decay-half-life | Duration | model.DefaultMemoryHistogramDecayHalfLife | `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.` |
 | --memory-saver | Bool | false | `If true, only track pods which have an associated VPA` |
 | --metric-for-pod-labels | String | up{job=\"kubernetes-pods\"} | `Which metric to look for pod labels in metrics` |
 | --min-checkpoints | Int | 10 | Minimum number of checkpoints to write per recommender's main loop |
-| --oom-bump-up-ratio | Float64 | 0 | `The memory bump up ratio when OOM occurred, default is 1.2.` |
-| --oom-min-bump-up-bytes | Float64 | 0 | `The minimal increase of memory when OOM occurred in bytes, default is 100 * 1024 * 1024` |
+| --oom-bump-up-ratio | Float64 | model.DefaultOOMBumpUpRatio | `The memory bump up ratio when OOM occurred, default is 1.2.` |
+| --oom-min-bump-up-bytes | Float64 | model.DefaultOOMMinBumpUp | `The minimal increase of memory when OOM occurred in bytes, default is 100 * 1024 * 1024` |
 | --password | String |  | The password used in the prometheus server basic auth |
 | --pod-label-prefix | String | pod_label_ | `Which prefix to look for pod labels in metrics` |
 | --pod-name-label | String | kubernetes_pod_name | `Label name to look for pod names` |
@@ -63,7 +63,7 @@ Last updated: 2024-12-17 13:09:18 UTC
 | --recommendation-upper-bound-cpu-percentile | Float64 | 0.95 | `CPU usage percentile that will be used for the upper bound on CPU recommendation.` |
 | --recommendation-upper-bound-memory-percentile | Float64 | 0.95 | `Memory usage percentile that will be used for the upper bound on memory recommendation.` |
 | --recommender-interval | Duration | 1Minute | `How often metrics should be fetched` |
-| --recommender-name | String | 0 | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
+| --recommender-name | String | input.DefaultRecommenderName | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
 | --storage | String |  | `Specifies storage mode. Supported values: prometheus, checkpoint (default)` |
 | --target-cpu-percentile | Float64 | 0.9 | CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
 | --target-memory-percentile | Float64 | 0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
@@ -72,7 +72,7 @@ Last updated: 2024-12-17 13:09:18 UTC
 
 # What are the parameters to VPA updater?
 This document is auto-generated from the flag definitions in the VPA updater code.
-Last updated: 2024-12-17 13:09:20 UTC
+Last updated: 2024-12-21 10:48:13 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|

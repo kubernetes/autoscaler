@@ -142,8 +142,14 @@ func extractFlagFromCall(call *ast.CallExpr, sourcePath string) *flagInfo {
 		}
 	case *ast.Ident:
 		defaultValue = v.Name
+	case *ast.SelectorExpr:
+		// Handle references to constants like "model.DefaultMemoryAggregationInterval"
+		if x, ok := v.X.(*ast.Ident); ok {
+			defaultValue = fmt.Sprintf("%s.%s", x.Name, v.Sel.Name)
+		}
 	default:
-		defaultValue = "0"
+		// Instead of defaulting to "0", make it clear this is a reference
+		defaultValue = fmt.Sprintf("${%T}", v)
 	}
 
 	// Extract description
