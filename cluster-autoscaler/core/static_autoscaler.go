@@ -149,6 +149,8 @@ func NewStaticAutoscaler(
 	drainabilityRules rules.Rules,
 	draProvider *draprovider.Provider) *StaticAutoscaler {
 
+	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
+
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
