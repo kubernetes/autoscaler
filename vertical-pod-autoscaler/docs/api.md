@@ -8,8 +8,6 @@
 
 Package v1 contains definitions of Vertical Pod Autoscaler related objects.
 
-Package v1 contains definitions of Vertical Pod Autoscaler related objects.
-
 
 
 #### ContainerControlledValues

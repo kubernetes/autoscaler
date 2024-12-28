@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1 contains definitions of Vertical Pod Autoscaler related objects.
 package v1
 
 import (
