@@ -38,6 +38,7 @@ else
     CONTROLLER_GEN=$(which crd-ref-docs)
 fi
 
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 crd-ref-docs \
     --source-path=pkg/apis/ \
     --config=./hack/api-docs/config.yaml \
