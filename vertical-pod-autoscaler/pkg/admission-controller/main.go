@@ -153,7 +153,7 @@ func main() {
 	}()
 
 	if err = server.ListenAndServeTLS("", ""); err != nil {
-		klog.ErrorS(err, "Failed to start server")
+		klog.ErrorS(err, "Failed to start HTTPS server")
 		os.Exit(255)
 	}
 }
