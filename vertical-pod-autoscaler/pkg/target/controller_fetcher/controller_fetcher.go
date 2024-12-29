@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -115,7 +116,8 @@ func (f *controllerFetcher) Start(ctx context.Context, loopPeriod time.Duration)
 func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, betweenRefreshes, lifeTime time.Duration, jitterFactor float64) *controllerFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
-		klog.Fatalf("Could not create discoveryClient: %v", err)
+		klog.ErrorS(err, "Could not create discoveryClient")
+		os.Exit(255)
 	}
 	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
 	restClient := kubeClient.CoreV1().RESTClient()

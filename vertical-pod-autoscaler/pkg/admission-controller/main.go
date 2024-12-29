@@ -85,7 +85,8 @@ func main() {
 	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
-		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		os.Exit(255)
 	}
 
 	healthCheck := metrics.NewHealthCheck(time.Minute)
@@ -113,7 +114,8 @@ func main() {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		klog.Fatalf("Unable to get hostname: %v", err)
+		klog.ErrorS(err, "Unable to get hostname")
+		os.Exit(255)
 	}
 
 	statusNamespace := status.AdmissionControllerStatusNamespace
@@ -151,6 +153,7 @@ func main() {
 	}()
 
 	if err = server.ListenAndServeTLS("", ""); err != nil {
-		klog.Fatalf("HTTPS Error: %s", err)
+		klog.ErrorS(err, "Failed to start server")
+		os.Exit(255)
 	}
 }
