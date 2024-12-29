@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -91,6 +92,7 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	go controller.Run(stopChannel)
 	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
 		klog.ErrorS(nil, "Failed to sync VPA cache during initialization")
+		os.Exit(255)
 	} else {
 		klog.InfoS("Initial VPA synced successfully")
 	}
