@@ -132,6 +132,9 @@ spec:
             - --{{ $key | mustRegexFind "^[^_]+" }}
             {{- end }}
           {{- end }}
+          {{- range .Values.customArgs }}
+            - {{ . }}
+          {{- end }}
           env:
             - name: POD_NAMESPACE
               valueFrom:
