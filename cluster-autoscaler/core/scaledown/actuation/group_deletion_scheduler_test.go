@@ -173,7 +173,7 @@ func TestScheduleDeletion(t *testing.T) {
 				for _, bucket := range ti.toAbort {
 					for _, node := range bucket.Nodes {
 						nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError}
-						scheduler.AbortNodeDeletion(node, bucket.Group.Id(), false, "simulated abort", nodeDeleteResult)
+						scheduler.AbortNodeDeletionDueToError(node, bucket.Group.Id(), false, "simulated abort", nodeDeleteResult)
 					}
 				}
 				if err := scheduleAll(ti.toScheduleAfterAbort, scheduler); err != nil {
