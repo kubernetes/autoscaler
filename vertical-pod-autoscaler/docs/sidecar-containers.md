@@ -1,6 +1,8 @@
 # VPA Sidecar Container Management
 
-The Vertical Pod Autoscaler (VPA) has specific behavior when dealing with sidecar containers that are injected into pods via admission webhooks. This document explains the default behavior and how to customize it for your needs.
+In this document, "sidecar container" refers to any additional container that isn't the main application container in a pod. This is distinct from the formal [Kubernetes sidecar pattern](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which describes a specific design pattern where a container enhances or extends the main container's functionality. Our usage here applies to all additional containers, regardless of their architectural pattern or purpose.
+
+The Vertical Pod Autoscaler (VPA) has specific behavior when dealing with these additional containers that are injected into pods via admission webhooks.
 
 ## Understanding VPA and Container Policies
 
