@@ -17,12 +17,31 @@ limitations under the License.
 package provisioningrequest
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	"strings"
+
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 // SupportedProvisioningClasses is a set of ProvisioningRequest classes
 // supported by Cluster Autoscaler.
+// This map is exported for testing purposes.
+// Checking the support should be done using SupportedProvisioningClass.
 var SupportedProvisioningClasses = map[string]bool{
 	v1.ProvisioningClassCheckCapacity:           true,
 	v1.ProvisioningClassBestEffortAtomicScaleUp: true,
+}
+
+// SupportedProvisioningClass verifies if the provisioningClassName with the given checkCapacityProvisioningClassPrefix is supported.
+func SupportedProvisioningClass(provisioningClassName string, checkCapacityProvisioningClassPrefix string) bool {
+	if checkCapacityProvisioningClassPrefix == "" {
+		return SupportedProvisioningClasses[provisioningClassName]
+	}
+	if SupportedProvisioningClasses[provisioningClassName] {
+		// Ignore direct ProvisioningClassCheckCapacity when checkCapacityProvisioningClassPrefix is set.
+		return provisioningClassName != v1.ProvisioningClassCheckCapacity
+	}
+	if !strings.HasPrefix(provisioningClassName, checkCapacityProvisioningClassPrefix) {
+		return false
+	}
+	return SupportedProvisioningClasses[provisioningClassName[len(checkCapacityProvisioningClassPrefix):]]
 }
