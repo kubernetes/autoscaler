@@ -49,6 +49,8 @@ spec:
 VPA uses a special annotation to track which containers were present in the pod before any webhook injections:
 
 ```yaml
+apiVersion: v1
+kind: Pod
 metadata:
   annotations:
     vpaObservedContainers: "main-container,logging-sidecar"
