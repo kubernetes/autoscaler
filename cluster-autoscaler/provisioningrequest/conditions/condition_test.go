@@ -20,16 +20,17 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 )
 
 func TestBookCapacity(t *testing.T) {
 	tests := []struct {
-		name         string
-		prConditions []metav1.Condition
-		want         bool
+		name                    string
+		prConditions            []metav1.Condition
+		provisioningClassPrefix string
+		want                    bool
 	}{
 		{
 			name: "BookingExpired",
@@ -78,6 +79,21 @@ func TestBookCapacity(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "Capacity found and provisioned but prefix not matching",
+			prConditions: []metav1.Condition{
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+			},
+			provisioningClassPrefix: "test-",
+			want:                    false,
+		},
+		{
 			name: "Capacity is not found",
 			prConditions: []metav1.Condition{
 				{
@@ -100,7 +116,7 @@ func TestBookCapacity(t *testing.T) {
 							Conditions: test.prConditions,
 						},
 					}, nil)
-				got := ShouldCapacityBeBooked(pr)
+				got := ShouldCapacityBeBooked(pr, test.provisioningClassPrefix)
 				if got != test.want {
 					t.Errorf("Want: %v, got: %v", test.want, got)
 				}

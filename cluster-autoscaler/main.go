@@ -284,6 +284,7 @@ var (
 	forceDeleteLongUnregisteredNodes             = flag.Bool("force-delete-unregistered-nodes", false, "Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to.")
 	enableDynamicResourceAllocation              = flag.Bool("enable-dynamic-resource-allocation", false, "Whether logic for handling DRA (Dynamic Resource Allocation) objects is enabled.")
 	clusterSnapshotParallelism                   = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation.")
+	provisioningClassPrefix                      = flag.String("provisioning-class-prefix", "", "Prefix of provisioningClassName that will be filtered by processors. Only ProvisioningRequests with this prefix in their class will be processed by this CA.")
 )
 
 func isFlagPassed(name string) bool {
@@ -465,6 +466,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ForceDeleteLongUnregisteredNodes:             *forceDeleteLongUnregisteredNodes,
 		DynamicResourceAllocationEnabled:             *enableDynamicResourceAllocation,
 		ClusterSnapshotParallelism:                   *clusterSnapshotParallelism,
+		ProvisioningClassPrefix:                      *provisioningClassPrefix,
 	}
 }
 
@@ -540,7 +542,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 			return nil, nil, err
 		}
 
-		ProvisioningRequestInjector, err = provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize, opts.CheckCapacityBatchProcessing)
+		ProvisioningRequestInjector, err = provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize, opts.CheckCapacityBatchProcessing, opts.ProvisioningClassPrefix)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -559,7 +561,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 
 		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client)
+		provreqProcesor := provreq.NewProvReqProcessor(client, opts.ProvisioningClassPrefix)
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 		podListProcessor.AddProcessor(provreqProcesor)
