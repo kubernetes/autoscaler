@@ -41,7 +41,7 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 			context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
 				fmt.Sprintf("pod didn't trigger scale-up: %s",
-					ReasonsMessage(noScaleUpInfo, consideredNodeGroupsMap)))
+					ReasonsMessage(status.Result, noScaleUpInfo, consideredNodeGroupsMap)))
 		}
 	} else {
 		klog.V(4).Infof("Skipping event processing for unschedulable pods since there is a" +
@@ -60,7 +60,11 @@ func (p *EventingScaleUpStatusProcessor) CleanUp() {
 }
 
 // ReasonsMessage aggregates reasons from NoScaleUpInfos.
-func ReasonsMessage(noScaleUpInfo NoScaleUpInfo, consideredNodeGroups map[string]cloudprovider.NodeGroup) string {
+func ReasonsMessage(scaleUpStatus ScaleUpResult, noScaleUpInfo NoScaleUpInfo, consideredNodeGroups map[string]cloudprovider.NodeGroup) string {
+	if scaleUpStatus == ScaleUpLimitedByMaxNodesTotal {
+		return "max total nodes in cluster reached"
+	}
+
 	messages := []string{}
 	aggregated := map[string]int{}
 	for nodeGroupId, reasons := range noScaleUpInfo.RejectedNodeGroups {

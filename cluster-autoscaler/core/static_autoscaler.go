@@ -528,7 +528,18 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		scaleUpStatus.Result = status.ScaleUpLimitedByMaxNodesTotal
 		klog.Warningf("Max total nodes in cluster reached: %v. Current number of ready nodes: %v", a.MaxNodesTotal, len(readyNodes))
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached",
+			"Max total nodes in cluster reached: %v", autoscalingContext.MaxNodesTotal)
 		shouldScaleUp = false
+
+		noScaleUpInfoForPods := []status.NoScaleUpInfo{}
+		for _, pod := range unschedulablePodsToHelp {
+			noScaleUpInfo := status.NoScaleUpInfo{
+				Pod: pod,
+			}
+			noScaleUpInfoForPods = append(noScaleUpInfoForPods, noScaleUpInfo)
+		}
+		scaleUpStatus.PodsRemainUnschedulable = noScaleUpInfoForPods
 	} else if len(a.BypassedSchedulers) == 0 && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
