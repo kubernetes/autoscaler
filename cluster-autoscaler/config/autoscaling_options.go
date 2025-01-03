@@ -311,6 +311,8 @@ type AutoscalingOptions struct {
 	ForceDeleteLongUnregisteredNodes bool
 	// DynamicResourceAllocationEnabled configures whether logic for handling DRA objects is enabled.
 	DynamicResourceAllocationEnabled bool
+	// ClusterSnapshotParallelism is the maximum parallelism of cluster snapshot creation.
+	ClusterSnapshotParallelism int
 }
 
 // KubeClientOptions specify options for kube client

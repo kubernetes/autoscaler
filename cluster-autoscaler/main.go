@@ -283,6 +283,7 @@ var (
 	checkCapacityProvisioningRequestBatchTimebox = flag.Duration("check-capacity-provisioning-request-batch-timebox", 10*time.Second, "Maximum time to process a batch of provisioning requests.")
 	forceDeleteLongUnregisteredNodes             = flag.Bool("force-delete-unregistered-nodes", false, "Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to.")
 	enableDynamicResourceAllocation              = flag.Bool("enable-dynamic-resource-allocation", false, "Whether logic for handling DRA (Dynamic Resource Allocation) objects is enabled.")
+	clusterSnapshotParallelism                   = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation.")
 )
 
 func isFlagPassed(name string) bool {
@@ -463,6 +464,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CheckCapacityProvisioningRequestBatchTimebox: *checkCapacityProvisioningRequestBatchTimebox,
 		ForceDeleteLongUnregisteredNodes:             *forceDeleteLongUnregisteredNodes,
 		DynamicResourceAllocationEnabled:             *enableDynamicResourceAllocation,
+		ClusterSnapshotParallelism:                   *clusterSnapshotParallelism,
 	}
 }
 
@@ -505,7 +507,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
-	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore()
+	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
 	if autoscalingOptions.DynamicResourceAllocationEnabled {
 		// TODO(DRA): Remove this once DeltaSnapshotStore is integrated with DRA.
 		klog.Warningf("Using BasicSnapshotStore instead of DeltaSnapshotStore because DRA is enabled. Autoscaling performance/scalability might be decreased.")
