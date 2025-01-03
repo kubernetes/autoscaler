@@ -243,8 +243,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 			pod := prioritizedPod.Pod()
 
-			// somewhere we should check if inplace pods actually need scaling or not, and if they will be disruptionless
-			// according to AEP:
 			fallBackToEviction, err := u.AttemptInPlaceScalingIfPossible(ctx, vpaSize, vpa, pod, evictionLimiter, vpasWithInPlaceUpdatablePodsCounter, vpasWithInPlaceUpdatedPodsCounter)
 			if err != nil {
 				klog.Warningf("error attemptng to scale pod %v in-place: %v", pod.Name, err)

@@ -33,7 +33,7 @@ type inPlaceRecommendationProvider struct {
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 }
 
-// NewProvider constructs the recommendation provider that can be used to determine recommendations for pods.
+// NewInPlaceProvider constructs the recommendation provider that can be used to determine recommendations for pods.
 func NewInPlaceProvider(calculator limitrange.LimitRangeCalculator,
 	recommendationProcessor vpa_api_util.RecommendationProcessor) recommendation.Provider {
 	return &inPlaceRecommendationProvider{
@@ -43,6 +43,7 @@ func NewInPlaceProvider(calculator limitrange.LimitRangeCalculator,
 }
 
 // TODO(maxcao13): Strip down function to remove unnecessary stuff, or refactor so that it can be used in the admission controller as well
+
 // GetContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
 // If addAll is set to true, containers w/o a recommendation are also added to the list (and their non-recommended requests and limits will always be preserved if present),
 // otherwise they're skipped (default behaviour).

@@ -321,6 +321,7 @@ func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
 	return podReplicaCreator, nil
 }
 
+// GetPodID returns a string that uniquely identifies a pod by namespace and name
 func GetPodID(pod *apiv1.Pod) string {
 	if pod == nil {
 		return ""

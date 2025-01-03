@@ -25,8 +25,3 @@ const (
 func GetVpaInPlaceUpdatedValue() string {
 	return "vpaInPlaceUpdated"
 }
-
-// ParseVpaInPlaceUpdatedValue returns last in place update time
-// func ParseVpaInPlaceUpdatedValue() error {
-// 	return nil
-// }

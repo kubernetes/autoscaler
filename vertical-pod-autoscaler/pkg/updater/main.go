@@ -90,7 +90,7 @@ func main() {
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	kube_flag.InitFlags()
-	klog.V(1).InfoS("Vertical Pod Autoscaler Updater FOR INPALCE!!!!!!", "version", common.VerticalPodAutoscalerVersion)
+	klog.V(1).InfoS("Vertical Pod Autoscaler Updater", "version", common.VerticalPodAutoscalerVersion)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
@@ -187,7 +187,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	// TODO(maxcao13): figure out if we need to use NewInPlaceUpdatedCalculator; does it help the user to know if their pod was updated in-place as an annotation?
 	// TODO(maxcao13): also figure out if we should strip down the resourceUpdatesCalculator just for in-place updates into a new calculator
-	// The use of resourceUpdatesCalculator adds extra unneccessary annotations since it is duplicated in the admission controller
+	// The use of resourceUpdatesCalculator adds extra unnecessary annotations since it is duplicated in the admission controller
 
 	// calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(inPlaceRecommendationProvider), eviction.NewInPlaceUpdatedCalculator()}
 	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(inPlaceRecommendationProvider)}

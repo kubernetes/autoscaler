@@ -129,7 +129,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			return
 		}
 		// TODO(maxcao13): hopefully this doesn't break anything but we switch the order so that significant change is checked first before lifetime
-		// this way we don't in-place scale it for insignificant change, else we would will mark it disruptionless and still have an in-place update
+		// this way we don't in-place scale it for insignificant change, else we would mark it disruptionless and still have an in-place update
 		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
 			klog.V(4).InfoS("Not updating pod, resource diff too low", "pod", klog.KObj(pod), "updatePriority", updatePriority)
 			return

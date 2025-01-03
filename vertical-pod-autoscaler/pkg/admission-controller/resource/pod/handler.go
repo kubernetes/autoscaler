@@ -77,7 +77,6 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 		pod.Name = pod.GenerateName + "%"
 		pod.Namespace = namespace
 	}
-
 	klog.V(4).InfoS("Admitting pod", "pod", klog.KObj(&pod))
 	controllingVpa := h.vpaMatcher.GetMatchingVPA(ctx, &pod)
 	if controllingVpa == nil {
@@ -93,7 +92,6 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	if pod.Annotations == nil {
 		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
 	}
-
 	for _, c := range h.patchCalculators {
 		partialPatches, err := c.CalculatePatches(&pod, controllingVpa)
 		if err != nil {
