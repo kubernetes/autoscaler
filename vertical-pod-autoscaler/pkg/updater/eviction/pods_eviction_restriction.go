@@ -109,7 +109,7 @@ type podReplicaCreator struct {
 
 // CanEvict checks if pod can be safely evicted
 func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
-	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
+	cr, present := e.podToReplicaCreatorMap[GetPodID(pod)]
 	if present {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
 		if pod.Status.Phase == apiv1.PodPending {
@@ -123,7 +123,14 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 			// we need eviction to take the numbers into account so we don't violate our disruption dolerances.
 			// If we're already resizing this pod, don't do anything to it, unless we failed to resize it, then we want to evict it.
 			if IsInPlaceUpdating(pod) {
-				klog.V(4).Infof("pod %s disruption tolerance: %d config: %d tolerance: %d evicted: %d updating: %d", pod.Name, singleGroupStats.running, singleGroupStats.configured, singleGroupStats.evictionTolerance, singleGroupStats.evicted, singleGroupStats.inPlaceUpdating)
+				klog.V(4).InfoS("Pod disruption tolerance",
+					"pod", pod.Name,
+					"running", singleGroupStats.running,
+					"configured", singleGroupStats.configured,
+					"tolerance", singleGroupStats.evictionTolerance,
+					"evicted", singleGroupStats.evicted,
+					"updating", singleGroupStats.inPlaceUpdating)
+
 				if singleGroupStats.running-(singleGroupStats.evicted+(singleGroupStats.inPlaceUpdating-1)) > shouldBeAlive {
 					klog.V(4).Infof("Would be able to evict, but already resizing %s", pod.Name)
 
@@ -154,7 +161,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 // Evict sends eviction instruction to api client. Returns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
 func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
-	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
+	cr, present := e.podToReplicaCreatorMap[GetPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %s/%s: not in replicated pods map", podToEvict.Namespace, podToEvict.Name)
 	}
@@ -255,6 +262,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 
 	for creator, replicas := range livePods {
 		actual := len(replicas)
+		// TODO(maxcao13): Does minReplicas matter if the update is in-place? There should be no downtime if the update is disruptionless
 		if actual < required {
 			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
 			continue
@@ -277,7 +285,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 		singleGroup.configured = configured
 		singleGroup.evictionTolerance = int(float64(configured) * f.evictionToleranceFraction)
 		for _, pod := range replicas {
-			podToReplicaCreatorMap[getPodID(pod)] = creator
+			podToReplicaCreatorMap[GetPodID(pod)] = creator
 			if pod.Status.Phase == apiv1.PodPending {
 				singleGroup.pending = singleGroup.pending + 1
 			}
@@ -313,7 +321,7 @@ func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
 	return podReplicaCreator, nil
 }
 
-func getPodID(pod *apiv1.Pod) string {
+func GetPodID(pod *apiv1.Pod) string {
 	if pod == nil {
 		return ""
 	}
@@ -435,10 +443,11 @@ func setUpInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 // CanInPlaceUpdate performs the same checks
 func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 
-	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
+	cr, present := e.podToReplicaCreatorMap[GetPodID(pod)]
 	if present {
 
 		// If our QoS class is guaranteed, we can't change the resources without a restart
+		// TODO(maxcao13): kubelet already prevents a resize of a guaranteed pod, so should we still check this early?
 		if pod.Status.QOSClass == apiv1.PodQOSGuaranteed {
 			klog.Warningf("Can't resize %s in-place, pod QoS is %s", pod.Name, pod.Status.QOSClass)
 			return false
@@ -507,10 +516,11 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 	return false
 }
 
+// TODO(maxcao13): Maybe we want to move all this updating logic outisde of this method receiver or into a different package/file?
 // InPlaceUpdate sends calculates patches and sends resize request to api client. Returns error if pod cannot be in-place updated or if client returned error.
 // Does not check if pod was actually in-place updated after grace period.
 func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
-	cr, present := e.podToReplicaCreatorMap[getPodID(podToUpdate)]
+	cr, present := e.podToReplicaCreatorMap[GetPodID(podToUpdate)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToUpdate.Name)
 	}
@@ -521,13 +531,17 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 
 	// TODO(maxcao13): There's probably a more efficient way to do this, but this is what we have for now
 	// Don't reinvent the wheel, just use the resource updates patch calculator using by the admission controller
-	var patches []resource_updates.PatchRecord
+	// See the below TODO for refactoring this
+	patches := []resource_updates.PatchRecord{}
+	if podToUpdate.Annotations == nil {
+		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
+	}
 	for _, calculator := range e.patchCalculators {
 		p, err := calculator.CalculatePatches(podToUpdate, vpa)
 		if err != nil {
 			return fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", podToUpdate.Namespace, podToUpdate.Name, err)
 		}
-		klog.V(4).Infof("Calculated patches for pod %s/%s: %v", podToUpdate.Namespace, podToUpdate.Name, p)
+		klog.V(4).InfoS("Calculated patches for pod", "pod", klog.KObj(podToUpdate), "patches", p)
 		patches = append(patches, p...)
 	}
 
@@ -538,6 +552,9 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 			return err
 		}
 
+		// TODO(maxcao13): for now, this does not allow other patches to be applied since we are patching the resize subresource
+		// If we want other annotations to be patched in the pod using patchCalculators, we need to generalize this and refactor the
+		// NewResourceUpdatesCalculator and create a stripped down calculator just for calculating in-place resize patches
 		res, err := e.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{}, "resize")
 		if err != nil {
 			klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
@@ -573,20 +590,16 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 	return nil
 }
 
-// func UpdatePodResources(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, inPlaceRecommendationProvider inPlaceRecommendationProvider) ([]vpa_api_util.ContainerResources, error) {
-// 	return nil, nil
-// }
-
 // IsInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update
 func IsInPlaceUpdating(podToCheck *apiv1.Pod) (isUpdating bool) {
 	// If the pod is currently updating we need to tally that
 	if podToCheck.Status.Resize != "" {
-		klog.V(4).Infof("Resize of %s is in %s phase", podToCheck.Name, podToCheck.Status.Resize)
+		klog.V(4).InfoS("Pod is currently resizing", "pod", klog.KObj(podToCheck), "status", podToCheck.Status.Resize)
 		// Proposed -> Deferred -> InProgress, but what about Infeasible?
 		if podToCheck.Status.Resize == apiv1.PodResizeStatusInfeasible {
-			klog.V(4).Infof("Resource propopsal for %s is %v, we're probably stuck like this until we evict", podToCheck.Status.Resize)
+			klog.V(4).InfoS("Resource proposal for pod is Infeasible, we're probably stuck like this until we evict", "pod", klog.KObj(podToCheck))
 		} else if podToCheck.Status.Resize == apiv1.PodResizeStatusDeferred {
-			klog.V(4).Infof("Resource propopsal for %s is %v, our resize can't be satisfied by our Node right now", podToCheck.Status.Resize)
+			klog.V(4).InfoS("Resource proposal for pod is Deferred, we're probably stuck like this until we evict", "pod", klog.KObj(podToCheck))
 		}
 		return true
 	}
@@ -608,10 +621,3 @@ func IsInPlaceUpdating(podToCheck *apiv1.Pod) (isUpdating bool) {
 	return false
 
 }
-
-/*
-func BadResizeStatus(pod *apiv1.Pod) bool {
-	if pod.Status.Resize == apiv1.PodResizeStatusInfeasible{
-
-	}
-}*/

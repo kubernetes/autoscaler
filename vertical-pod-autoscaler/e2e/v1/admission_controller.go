@@ -907,6 +907,38 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
 	})
 
+	ginkgo.It("starts pods with new recommended request with InPlaceOrRecreate mode", func() {
+		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("250m", "200Mi").
+					WithLowerBound("250m", "200Mi").
+					WithUpperBound("250m", "200Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to recommended 250m CPU and 200Mi of memory.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+		}
+	})
 })
 
 func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) *apiv1.PodList {

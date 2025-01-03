@@ -183,9 +183,13 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
-	// in-place recommendation provider
 	inPlaceRecommendationProvider := eviction.NewInPlaceProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
-	// resource calculator which will generate patches
+
+	// TODO(maxcao13): figure out if we need to use NewInPlaceUpdatedCalculator; does it help the user to know if their pod was updated in-place as an annotation?
+	// TODO(maxcao13): also figure out if we should strip down the resourceUpdatesCalculator just for in-place updates into a new calculator
+	// The use of resourceUpdatesCalculator adds extra unneccessary annotations since it is duplicated in the admission controller
+
+	// calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(inPlaceRecommendationProvider), eviction.NewInPlaceUpdatedCalculator()}
 	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(inPlaceRecommendationProvider)}
 
 	// TODO: use SharedInformerFactory in updater

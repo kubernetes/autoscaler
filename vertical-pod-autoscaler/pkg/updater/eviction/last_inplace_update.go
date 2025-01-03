@@ -25,15 +25,15 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 )
 
-type observedContainers struct{}
+type inPlaceUpdate struct{}
 
-func (*observedContainers) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
-	vpaObservedContainersValue := annotations.GetVpaObservedContainersValue(pod)
-	return []resource_admission.PatchRecord{patch.GetAddAnnotationPatch(annotations.VpaObservedContainersLabel, vpaObservedContainersValue)}, nil
+func (*inPlaceUpdate) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+	vpaInPlaceUpdatedValue := annotations.GetVpaInPlaceUpdatedValue()
+	return []resource_admission.PatchRecord{patch.GetAddAnnotationPatch(annotations.VpaInPlaceUpdatedLabel, vpaInPlaceUpdatedValue)}, nil
 }
 
-// NewLastInPlaceUpdateCalculator returns calculator for
+// NewInPlaceUpdatedCalculator returns calculator for
 // observed containers patches.
-func NewLastInPlaceUpdateCalculator() patch.Calculator {
-	return &observedContainers{}
+func NewInPlaceUpdatedCalculator() patch.Calculator {
+	return &inPlaceUpdate{}
 }

@@ -74,8 +74,8 @@ echo "Deleting KIND cluster 'kind'."
 kind delete cluster -n kind -q
 
 echo "Creating KIND cluster 'kind'"
-KIND_VERSION="kindest/node:v1.26.3"
-kind create cluster --image=${KIND_VERSION} 
+KIND_VERSION="kindest/node:v1.32.0"
+kind create cluster --image=${KIND_VERSION} --config ${SCRIPT_ROOT}/hack/inplace-kind-config.yaml
 
 echo "Building metrics-pump image"
 docker build -t localhost:5001/write-metrics:dev -f ${SCRIPT_ROOT}/hack/e2e/Dockerfile.externalmetrics-writer ${SCRIPT_ROOT}/hack

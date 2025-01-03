@@ -28,6 +28,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
@@ -45,6 +46,17 @@ type podWithExpectations struct {
 func getBasicVpa() *vpa_types.VerticalPodAutoscaler {
 	return test.VerticalPodAutoscaler().WithContainer("any").Get()
 }
+
+func getNoopPatchCalculators() []patch.Calculator {
+	return []patch.Calculator{}
+}
+
+// func getPatchCalculators() []patch.Calculator {
+// 	return []patch.Calculator{
+// 		patch.NewResourceUpdatesCalculator(inPlaceRecommendationProvider),
+// 		eviction.NewLastInPlaceUpdateCalculator(),
+// 	}
+// }
 
 func TestEvictReplicatedByController(t *testing.T) {
 	rc := apiv1.ReplicationController{
@@ -72,6 +84,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 		replicas          int32
 		evictionTolerance float64
 		vpa               *vpa_types.VerticalPodAutoscaler
+		calculators       []patch.Calculator
 		pods              []podWithExpectations
 	}{
 		{
@@ -79,6 +92,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          3,
 			evictionTolerance: 0.5,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -102,6 +116,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          4,
 			evictionTolerance: 0.5,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 
@@ -131,6 +146,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          4,
 			evictionTolerance: 0.5,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -154,6 +170,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          3,
 			evictionTolerance: 0.1,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -177,6 +194,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          3,
 			evictionTolerance: 0.1,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -195,6 +213,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          3,
 			evictionTolerance: 0.5,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -218,6 +237,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          4,
 			evictionTolerance: 0.5,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -246,6 +266,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          1,
 			evictionTolerance: 0.5,
 			vpa:               getBasicVpa(),
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -259,6 +280,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			replicas:          1,
 			evictionTolerance: 0.5,
 			vpa:               vpaSingleReplica,
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -278,7 +300,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			pods = append(pods, p.pod)
 		}
 		factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance)
-		eviction := factory.NewPodsEvictionRestriction(pods, testCase.vpa)
+		eviction := factory.NewPodsEvictionRestriction(pods, testCase.vpa, testCase.calculators)
 		for i, p := range testCase.pods {
 			assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", testCase.name, i, p.pod)
 		}
@@ -317,7 +339,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, &rs, nil, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa, getNoopPatchCalculators())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -357,7 +379,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, nil, &ss, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa, getNoopPatchCalculators())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -396,7 +418,7 @@ func TestEvictReplicatedByDaemonSet(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, &ds, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa, getNoopPatchCalculators())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -432,7 +454,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa, getNoopPatchCalculators())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -472,7 +494,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 10, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa, getNoopPatchCalculators())
 
 	for _, pod := range pods {
 		assert.False(t, eviction.CanEvict(pod))
@@ -509,7 +531,7 @@ func TestEvictionTolerance(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance)
-	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa, getNoopPatchCalculators())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -550,7 +572,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2, tolerance)
-	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa, getNoopPatchCalculators())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -590,6 +612,7 @@ func TestEvictEmitEvent(t *testing.T) {
 		replicas          int32
 		evictionTolerance float64
 		vpa               *vpa_types.VerticalPodAutoscaler
+		calculators       []patch.Calculator
 		pods              []podWithExpectations
 		errorExpected     bool
 	}{
@@ -598,6 +621,7 @@ func TestEvictEmitEvent(t *testing.T) {
 			replicas:          4,
 			evictionTolerance: 0.5,
 			vpa:               basicVpa,
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
@@ -617,6 +641,7 @@ func TestEvictEmitEvent(t *testing.T) {
 			replicas:          4,
 			evictionTolerance: 0.5,
 			vpa:               basicVpa,
+			calculators:       getNoopPatchCalculators(),
 			pods: []podWithExpectations{
 
 				{
@@ -638,7 +663,7 @@ func TestEvictEmitEvent(t *testing.T) {
 			pods = append(pods, p.pod)
 		}
 		factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance)
-		eviction := factory.NewPodsEvictionRestriction(pods, testCase.vpa)
+		eviction := factory.NewPodsEvictionRestriction(pods, testCase.vpa, testCase.calculators)
 
 		for _, p := range testCase.pods {
 			mockRecorder := test.MockEventRecorder()
