@@ -16,5 +16,26 @@ limitations under the License.
 
 package common
 
+// gitCommit is the commit used to build the VPA binaries, if available.
+// It is injected at build time.
+var gitCommit = ""
+
 // VerticalPodAutoscalerVersion is the version of VPA.
-const VerticalPodAutoscalerVersion = "1.2.0"
+const versionCore = "1.2.0"
+
+func VerticalPodAutoscalerVersion() string {
+	v := versionCore
+	if gitCommit != "" {
+		// NOTE: use 14 character short hash, like Kubernetes
+		v += "+" + truncate(gitCommit, 14)
+	}
+
+	return v
+}
+
+func truncate(s string, maxLen int) string {
+	if len(s) < maxLen {
+		return s
+	}
+	return s[:maxLen]
+}
