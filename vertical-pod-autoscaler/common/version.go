@@ -20,9 +20,10 @@ package common
 // It is injected at build time.
 var gitCommit = ""
 
-// VerticalPodAutoscalerVersion is the version of VPA.
+// versionCore is the version of VPA.
 const versionCore = "1.2.0"
 
+// VerticalPodAutoscalerVersion returns the version of the VPA.
 func VerticalPodAutoscalerVersion() string {
 	v := versionCore
 	if gitCommit != "" {
