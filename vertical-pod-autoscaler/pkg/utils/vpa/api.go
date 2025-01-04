@@ -52,6 +52,7 @@ type patchRecord struct {
 	Value interface{} `json:"value"`
 }
 
+// VpaPruningGracePeriodAnnotation is the annotation key for the aggregate pruning grace period.
 const VpaPruningGracePeriodAnnotation = "vpaPruningGracePeriod"
 
 func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
