@@ -302,34 +302,36 @@ func TestParsePruningGracePeriodDuration(t *testing.T) {
 	testCases := []struct {
 		name        string
 		initialFlag string
-		policy      *vpa_types.ContainerResourcePolicy
+		gracePeriod *time.Duration
 		expected    *time.Duration
+		checkPanic  bool
 	}{
 		{
 			name:        "Explicit PruningGracePeriod",
 			initialFlag: "10m",
-			policy: &vpa_types.ContainerResourcePolicy{
-				PruningGracePeriod: &metav1.Duration{Duration: 10 * time.Minute},
-			},
-			expected: ptr.To(10 * time.Minute),
+			gracePeriod: ptr.To(10 * time.Minute),
+			expected:    ptr.To(10 * time.Minute),
+			checkPanic:  false,
 		}, {
 			name:        "No PruningGracePeriod specified - default to nil",
 			initialFlag: "",
-			policy:      &vpa_types.ContainerResourcePolicy{},
+			gracePeriod: nil,
 			expected:    nil,
+			checkPanic:  false,
 		}, {
-			name:        "Invalid policy - exit with error",
+			name:        "Invalid global PruningGracePeriod - exit with error",
 			initialFlag: "badDuration",
-			policy:      nil,
+			gracePeriod: nil,
 			expected:    nil,
+			checkPanic:  true,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			flag.Set("pruning-grace-period-duration", tc.initialFlag)
 			cs := NewAggregateContainerState()
-			cs.UpdateFromPolicy(tc.policy)
-			if tc.policy != nil {
+			cs.UpdatePruningGracePeriod(tc.gracePeriod)
+			if !tc.checkPanic {
 				assert.Equal(t, tc.expected, parsePruningGracePeriodDuration())
 			} else {
 				assert.Panics(t, func() { parsePruningGracePeriodDuration() })

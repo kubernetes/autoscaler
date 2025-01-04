@@ -29,6 +29,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
@@ -434,7 +435,9 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(hamsterTargetRef).
 			WithContainer("*").
-			WithPruningGracePeriod("*", 0).
+			WithAnnotations(map[string]string{
+				vpa_api_util.VpaPruningGracePeriodAnnotation: "0",
+			}).
 			Get()
 
 		InstallVPA(f, vpaCRD)
@@ -478,7 +481,9 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(hamsterTargetRef).
 			WithContainer("*").
-			WithPruningGracePeriod("*", 0).
+			WithAnnotations(map[string]string{
+				vpa_api_util.VpaPruningGracePeriodAnnotation: "0",
+			}).
 			Get()
 
 		InstallVPA(f, vpaCRD)
