@@ -318,10 +318,10 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	}
 }
 
-// UpdatePruningGracePeriod updates the an aggregate state with a containerPruningGracePeriod or the global pruning duration if nil.
-func (a *AggregateContainerState) UpdatePruningGracePeriod(containerPruningGracePeriod *metav1.Duration) {
+// UpdatePruningGracePeriod updates an AggregateContainerState with a containerPruningGracePeriod or the global pruning-grace-period-duration if nil.
+func (a *AggregateContainerState) UpdatePruningGracePeriod(containerPruningGracePeriod *time.Duration) {
 	if containerPruningGracePeriod != nil {
-		a.PruningGracePeriod = &containerPruningGracePeriod.Duration
+		a.PruningGracePeriod = containerPruningGracePeriod
 	} else {
 		a.PruningGracePeriod = parsedPruningGracePeriodDuration
 	}

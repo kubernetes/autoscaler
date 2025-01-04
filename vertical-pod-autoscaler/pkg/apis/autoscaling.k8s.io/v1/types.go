@@ -214,12 +214,6 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
-
-	// PruningGracePeriod is the duration to wait before pruning recommendations for containers that no longer exist.
-	// By default, recommendations for non-existent containers are never pruned until its top-most controller is deleted,
-	// after which the recommendations are subject to the VPA's recommendation garbage collector.
-	// +optional
-	PruningGracePeriod *metav1.Duration `json:"pruningGracePeriod,omitempty" protobuf:"bytes,4,opt,name=pruningGracePeriod"`
 }
 
 const (

@@ -311,16 +311,18 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 
 			vpaExists = false
 		} else {
-			// Update the pruningGracePeriod to ensure a potential new grace period is applied.
+			// Always update the pruningGracePeriod to ensure a potential new grace period is applied.
 			// This prevents an old, excessively long grace period from persisting and
 			// potentially causing the VPA to keep stale aggregates with an outdated grace period.
-			for key, containerState := range vpa.aggregateContainerStates {
-				containerState.UpdatePruningGracePeriod(vpa_utils.GetContainerPruningGracePeriod(key.ContainerName(), apiObject.Spec.ResourcePolicy))
+			vpa.PruningGracePeriod = vpa_utils.ParsePruningGracePeriodFromAnnotations(annotationsMap)
+			for _, containerState := range vpa.aggregateContainerStates {
+				containerState.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
 			}
 		}
 	}
 	if !vpaExists {
 		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
+		vpa.PruningGracePeriod = vpa_utils.ParsePruningGracePeriodFromAnnotations(annotationsMap)
 		cluster.vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
