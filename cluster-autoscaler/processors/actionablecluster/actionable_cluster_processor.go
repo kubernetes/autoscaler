@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog/v2"
@@ -34,7 +34,7 @@ const NodesNotReadyAfterStartTimeout = 10 * time.Minute
 // ActionableClusterProcessor defines interface for whether action can be taken on the cluster or not
 type ActionableClusterProcessor interface {
 	// ShouldAbort is the func that will return where the cluster is in an actionable state or not
-	ShouldAbort(context *context.AutoscalingContext, allNodes []*apiv1.Node, readyNodes []*apiv1.Node, currentTime time.Time) (abortLoop bool, err errors.AutoscalerError)
+	ShouldAbort(autoscalingContext *ca_context.AutoscalingContext, allNodes []*apiv1.Node, readyNodes []*apiv1.Node, currentTime time.Time) (abortLoop bool, err errors.AutoscalerError)
 	CleanUp()
 }
 
@@ -46,18 +46,18 @@ type EmptyClusterProcessor struct {
 }
 
 // ShouldAbort give the decision on whether CA can act on the cluster
-func (e *EmptyClusterProcessor) ShouldAbort(context *context.AutoscalingContext, allNodes []*apiv1.Node, readyNodes []*apiv1.Node, currentTime time.Time) (bool, errors.AutoscalerError) {
-	if context.AutoscalingOptions.ScaleUpFromZero {
+func (e *EmptyClusterProcessor) ShouldAbort(autoscalingContext *ca_context.AutoscalingContext, allNodes []*apiv1.Node, readyNodes []*apiv1.Node, currentTime time.Time) (bool, errors.AutoscalerError) {
+	if autoscalingContext.AutoscalingOptions.ScaleUpFromZero {
 		return false, nil
 	}
 	if len(allNodes) == 0 {
-		OnEmptyCluster(context, "Cluster has no nodes.", true)
+		OnEmptyCluster(autoscalingContext, "Cluster has no nodes.", true)
 		return true, nil
 	}
 	if len(readyNodes) == 0 {
 		// Cluster Autoscaler may start running before nodes are ready.
 		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
-		OnEmptyCluster(context, "Cluster has no ready nodes.", currentTime.After(e.startTime.Add(e.nodesNotReadyAfterStartTimeout)))
+		OnEmptyCluster(autoscalingContext, "Cluster has no ready nodes.", currentTime.After(e.startTime.Add(e.nodesNotReadyAfterStartTimeout)))
 		return true, nil
 	}
 	// the cluster is not empty
@@ -65,17 +65,17 @@ func (e *EmptyClusterProcessor) ShouldAbort(context *context.AutoscalingContext,
 }
 
 // OnEmptyCluster runs actions if the cluster is empty
-func OnEmptyCluster(context *context.AutoscalingContext, status string, emitEvent bool) {
+func OnEmptyCluster(autoscalingContext *ca_context.AutoscalingContext, status string, emitEvent bool) {
 	klog.Warning(status)
-	context.ProcessorCallbacks.ResetUnneededNodes()
+	autoscalingContext.ProcessorCallbacks.ResetUnneededNodes()
 	// updates metrics related to empty cluster's state.
 	metrics.UpdateClusterSafeToAutoscale(false)
 	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
-	if context.WriteStatusConfigMap {
-		utils.WriteStatusConfigMap(context.ClientSet, context.ConfigNamespace, api.ClusterAutoscalerStatus{AutoscalerStatus: api.ClusterAutoscalerInitializing, Message: status}, context.LogRecorder, context.StatusConfigMapName, time.Now())
+	if autoscalingContext.WriteStatusConfigMap {
+		utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, api.ClusterAutoscalerStatus{AutoscalerStatus: api.ClusterAutoscalerInitializing, Message: status}, autoscalingContext.LogRecorder, autoscalingContext.StatusConfigMapName, time.Now())
 	}
 	if emitEvent {
-		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
 	}
 }
 

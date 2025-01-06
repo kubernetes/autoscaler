@@ -200,12 +200,12 @@ func TestRemovableAt(t *testing.T) {
 			rsLister, err := kube_util.NewTestReplicaSetLister(nil)
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
-			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil)
+			autoscalingContext, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 
 			n := NewNodes(&fakeScaleDownTimeGetter{}, &resource.LimitsFinder{})
 			n.Update(removableNodes, time.Now())
-			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&ctx, nodeprocessors.ScaleDownContext{
+			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingContext, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
 				ResourcesLeft:       resource.Limits{},
 				ResourcesWithLimits: []string{},
