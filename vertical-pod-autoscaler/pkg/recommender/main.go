@@ -130,6 +130,11 @@ func main() {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 	}
 
+	err := model.ParseAndInitializePruningGracePeriodDuration()
+	if err != nil {
+		klog.Fatalf("Failed to parse --pruning-grace-period-duration: %v", err)
+	}
+
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
 	metrics_recommender.Register()
 	metrics_quality.Register()

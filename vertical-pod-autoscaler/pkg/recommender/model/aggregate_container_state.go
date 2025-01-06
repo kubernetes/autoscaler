@@ -49,18 +49,22 @@ import (
 
 var (
 	globalPruningGracePeriodDuration = flag.String("pruning-grace-period-duration", "", `The grace period for deleting stale aggregates and recommendations. An empty duration will disable the grace period for all containers by default.`)
-	parsedPruningGracePeriodDuration = parsePruningGracePeriodDuration()
+	parsedPruningGracePeriodDuration *time.Duration
 )
 
-func parsePruningGracePeriodDuration() *time.Duration {
+// ParseAndInitializePruningGracePeriod parses and sets the global pruning grace period duration.
+func ParseAndInitializePruningGracePeriodDuration() error {
 	if globalPruningGracePeriodDuration == nil || *globalPruningGracePeriodDuration == "" {
+		parsedPruningGracePeriodDuration = nil // in tests, global variable does not reset, so nil it explicitly
 		return nil
 	}
 	duration, err := time.ParseDuration(*globalPruningGracePeriodDuration)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to parse --pruning-grace-period-duration: %v", err))
+		parsedPruningGracePeriodDuration = nil
+		return err
 	}
-	return &duration
+	parsedPruningGracePeriodDuration = &duration
+	return nil
 }
 
 // ContainerNameToAggregateStateMap maps a container name to AggregateContainerState

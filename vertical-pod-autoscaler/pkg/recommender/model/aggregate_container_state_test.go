@@ -300,41 +300,49 @@ func TestUpdateFromPolicyControlledResources(t *testing.T) {
 func TestParsePruningGracePeriodDuration(t *testing.T) {
 
 	testCases := []struct {
-		name        string
-		initialFlag string
-		gracePeriod *time.Duration
-		expected    *time.Duration
-		checkPanic  bool
+		name                 string
+		initialFlag          string
+		aggregateGracePeriod *time.Duration
+		expected             *time.Duration
+		expectError          bool
 	}{
 		{
-			name:        "Explicit PruningGracePeriod",
-			initialFlag: "10m",
-			gracePeriod: ptr.To(10 * time.Minute),
-			expected:    ptr.To(10 * time.Minute),
-			checkPanic:  false,
+			name:                 "PruningGracePeriod set from aggregate container state - ignores global flag",
+			initialFlag:          "10m",
+			aggregateGracePeriod: ptr.To(20 * time.Minute),
+			expected:             ptr.To(20 * time.Minute),
+			expectError:          false,
 		}, {
-			name:        "No PruningGracePeriod specified - default to nil",
-			initialFlag: "",
-			gracePeriod: nil,
-			expected:    nil,
-			checkPanic:  false,
+			name:                 "PruningGracePeriod not set from aggregate container state - default to set global flag",
+			initialFlag:          "10m",
+			aggregateGracePeriod: nil,
+			expected:             ptr.To(10 * time.Minute),
+			expectError:          false,
 		}, {
-			name:        "Invalid global PruningGracePeriod - exit with error",
-			initialFlag: "badDuration",
-			gracePeriod: nil,
-			expected:    nil,
-			checkPanic:  true,
+			name:                 "PruningGracePeriod not set from aggregate container state - default to nil global flag",
+			initialFlag:          "",
+			aggregateGracePeriod: nil,
+			expected:             nil,
+			expectError:          false,
+		}, {
+			name:                 "Invalid global PruningGracePeriod flag - error",
+			initialFlag:          "badDuration",
+			aggregateGracePeriod: nil,
+			expected:             nil,
+			expectError:          true,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			flag.Set("pruning-grace-period-duration", tc.initialFlag)
+			err := ParseAndInitializePruningGracePeriodDuration()
 			cs := NewAggregateContainerState()
-			cs.UpdatePruningGracePeriod(tc.gracePeriod)
-			if !tc.checkPanic {
-				assert.Equal(t, tc.expected, parsePruningGracePeriodDuration())
+			cs.UpdatePruningGracePeriod(tc.aggregateGracePeriod)
+			assert.Equal(t, tc.expected, cs.PruningGracePeriod)
+			if tc.expectError {
+				assert.Error(t, err)
 			} else {
-				assert.Panics(t, func() { parsePruningGracePeriodDuration() })
+				assert.NoError(t, err)
 			}
 		})
 	}
