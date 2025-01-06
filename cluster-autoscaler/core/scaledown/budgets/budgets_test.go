@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 )
 
@@ -431,7 +431,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 				}
 			}
 
-			ctx := &context.AutoscalingContext{
+			autoscalingContext := &ca_context.AutoscalingContext{
 				AutoscalingOptions: config.AutoscalingOptions{
 					MaxScaleDownParallelism:     10,
 					MaxDrainParallelism:         5,
@@ -455,7 +455,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 				drainList = append(drainList, bucket.Nodes...)
 			}
 
-			budgeter := NewScaleDownBudgetProcessor(ctx)
+			budgeter := NewScaleDownBudgetProcessor(autoscalingContext)
 			gotEmpty, gotDrain := budgeter.CropNodes(ndt, emptyList, drainList)
 			if diff := cmp.Diff(tc.wantEmpty, gotEmpty, cmpopts.EquateEmpty(), transformNodeGroupView); diff != "" {
 				t.Errorf("cropNodesToBudgets empty nodes diff (-want +got):\n%s", diff)
