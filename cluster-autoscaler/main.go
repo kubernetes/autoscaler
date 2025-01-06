@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	ctx "context"
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -483,7 +483,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
+func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 
@@ -637,7 +637,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	stop := make(chan struct{})
 	informerFactory.Start(stop)
 
-	podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
+	podObserver := loop.StartPodObserver(ctx, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
 
 	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
 	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
@@ -649,10 +649,10 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
 	metrics.RegisterAll(*emitPerNodeGroupMetrics)
-	context, cancel := ctx.WithCancel(ctx.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	autoscaler, trigger, err := buildAutoscaler(context, debuggingSnapshotter)
+	autoscaler, trigger, err := buildAutoscaler(ctx, debuggingSnapshotter)
 	if err != nil {
 		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
@@ -750,7 +750,7 @@ func main() {
 		kubeClient := kube_util.CreateKubeClient(createAutoscalingOptions().KubeClientOpts)
 
 		// Validate that the client is ok.
-		_, err = kubeClient.CoreV1().Nodes().List(ctx.TODO(), metav1.ListOptions{})
+		_, err = kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			klog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
@@ -770,14 +770,14 @@ func main() {
 			klog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
-		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
+		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
 			Lock:            lock,
 			LeaseDuration:   leaderElection.LeaseDuration.Duration,
 			RenewDeadline:   leaderElection.RenewDeadline.Duration,
 			RetryPeriod:     leaderElection.RetryPeriod.Duration,
 			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
-				OnStartedLeading: func(_ ctx.Context) {
+				OnStartedLeading: func(_ context.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
 					run(healthCheck, debuggingSnapshotter)

@@ -31,7 +31,7 @@ import (
 	"k8s.io/klog/v2"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
-	acontext "k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -76,26 +76,26 @@ func NewEvictor(evictionRegister evictionRegister, shutdownGracePeriodByPodPrior
 
 // DrainNode groups pods in the node in to priority groups and, evicts pods in the ascending order of priorities.
 // If priority evictor is not enable, eviction of daemonSet pods is the best effort.
-func (e Evictor) DrainNode(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
+func (e Evictor) DrainNode(autoscalingContext *ca_context.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
 	node := nodeInfo.Node()
-	dsPods, pods := podsToEvict(nodeInfo, ctx.DaemonSetEvictionForOccupiedNodes)
+	dsPods, pods := podsToEvict(nodeInfo, autoscalingContext.DaemonSetEvictionForOccupiedNodes)
 	if e.fullDsEviction {
-		return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, append(pods, dsPods...), nil)
+		return e.drainNodeWithPodsBasedOnPodPriority(autoscalingContext, node, append(pods, dsPods...), nil)
 	}
-	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, pods, dsPods)
+	return e.drainNodeWithPodsBasedOnPodPriority(autoscalingContext, node, pods, dsPods)
 }
 
 // EvictDaemonSetPods creates eviction objects for all DaemonSet pods on the node.
 // Eviction of DaemonSet pods are best effort. Does not wait for evictions to finish.
-func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
+func (e Evictor) EvictDaemonSetPods(autoscalingContext *ca_context.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
 	node := nodeInfo.Node()
-	dsPods, _ := podsToEvict(nodeInfo, ctx.DaemonSetEvictionForEmptyNodes)
-	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, nil, dsPods)
+	dsPods, _ := podsToEvict(nodeInfo, autoscalingContext.DaemonSetEvictionForEmptyNodes)
+	return e.drainNodeWithPodsBasedOnPodPriority(autoscalingContext, node, nil, dsPods)
 }
 
 // drainNodeWithPodsBasedOnPodPriority performs drain logic on the node based on pod priorities.
 // Removes all pods, giving each pod group up to ShutdownGracePeriodSeconds to finish. The list of pods to evict has to be provided.
-func (e Evictor) drainNodeWithPodsBasedOnPodPriority(ctx *acontext.AutoscalingContext, node *apiv1.Node, fullEvictionPods, bestEffortEvictionPods []*apiv1.Pod) (map[string]status.PodEvictionResult, error) {
+func (e Evictor) drainNodeWithPodsBasedOnPodPriority(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, fullEvictionPods, bestEffortEvictionPods []*apiv1.Pod) (map[string]status.PodEvictionResult, error) {
 	evictionResults := make(map[string]status.PodEvictionResult)
 
 	groups := groupByPriority(e.shutdownGracePeriodByPodPriority, fullEvictionPods, bestEffortEvictionPods)
@@ -114,13 +114,13 @@ func (e Evictor) drainNodeWithPodsBasedOnPodPriority(ctx *acontext.AutoscalingCo
 		}
 
 		var err error
-		evictionResults, err = e.initiateEviction(ctx, node, group.FullEvictionPods, group.BestEffortEvictionPods, evictionResults, group.ShutdownGracePeriodSeconds)
+		evictionResults, err = e.initiateEviction(autoscalingContext, node, group.FullEvictionPods, group.BestEffortEvictionPods, evictionResults, group.ShutdownGracePeriodSeconds)
 		if err != nil {
 			return evictionResults, err
 		}
 
 		// Evictions created successfully, wait ShutdownGracePeriodSeconds + podEvictionHeadroom to see if fullEviction pods really disappeared.
-		evictionResults, err = e.waitPodsToDisappear(ctx, node, group.FullEvictionPods, evictionResults, group.ShutdownGracePeriodSeconds)
+		evictionResults, err = e.waitPodsToDisappear(autoscalingContext, node, group.FullEvictionPods, evictionResults, group.ShutdownGracePeriodSeconds)
 		if err != nil {
 			return evictionResults, err
 		}
@@ -129,13 +129,13 @@ func (e Evictor) drainNodeWithPodsBasedOnPodPriority(ctx *acontext.AutoscalingCo
 	return evictionResults, nil
 }
 
-func (e Evictor) waitPodsToDisappear(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod, evictionResults map[string]status.PodEvictionResult,
+func (e Evictor) waitPodsToDisappear(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod, evictionResults map[string]status.PodEvictionResult,
 	maxTermination int64) (map[string]status.PodEvictionResult, error) {
 	var allGone bool
 	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxTermination)*time.Second+e.PodEvictionHeadroom; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
-			podReturned, err := ctx.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
+			podReturned, err := autoscalingContext.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
 			if err == nil && (podReturned == nil || podReturned.Spec.NodeName == node.Name) {
 				klog.V(1).Infof("Not deleted yet %s/%s", pod.Namespace, pod.Name)
 				allGone = false
@@ -153,7 +153,7 @@ func (e Evictor) waitPodsToDisappear(ctx *acontext.AutoscalingContext, node *api
 	}
 
 	for _, pod := range pods {
-		podReturned, err := ctx.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
+		podReturned, err := autoscalingContext.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
 		if err == nil && (podReturned == nil || podReturned.Name == "" || podReturned.Spec.NodeName == node.Name) {
 			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		} else if err != nil && !kube_errors.IsNotFound(err) {
@@ -166,23 +166,23 @@ func (e Evictor) waitPodsToDisappear(ctx *acontext.AutoscalingContext, node *api
 	return evictionResults, errors.NewAutoscalerErrorf(errors.TransientError, "Failed to drain node %s/%s: pods remaining after timeout", node.Namespace, node.Name)
 }
 
-func (e Evictor) initiateEviction(ctx *acontext.AutoscalingContext, node *apiv1.Node, fullEvictionPods, bestEffortEvictionPods []*apiv1.Pod, evictionResults map[string]status.PodEvictionResult,
+func (e Evictor) initiateEviction(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, fullEvictionPods, bestEffortEvictionPods []*apiv1.Pod, evictionResults map[string]status.PodEvictionResult,
 	maxTermination int64) (map[string]status.PodEvictionResult, error) {
 
-	retryUntil := time.Now().Add(ctx.MaxPodEvictionTime)
+	retryUntil := time.Now().Add(autoscalingContext.MaxPodEvictionTime)
 	fullEvictionConfirmations := make(chan status.PodEvictionResult, len(fullEvictionPods))
 	bestEffortEvictionConfirmations := make(chan status.PodEvictionResult, len(bestEffortEvictionPods))
 
 	for _, pod := range fullEvictionPods {
 		evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		go func(pod *apiv1.Pod) {
-			fullEvictionConfirmations <- e.evictPod(ctx, pod, retryUntil, maxTermination, true)
+			fullEvictionConfirmations <- e.evictPod(autoscalingContext, pod, retryUntil, maxTermination, true)
 		}(pod)
 	}
 
 	for _, pod := range bestEffortEvictionPods {
 		go func(pod *apiv1.Pod) {
-			bestEffortEvictionConfirmations <- e.evictPod(ctx, pod, retryUntil, maxTermination, false)
+			bestEffortEvictionConfirmations <- e.evictPod(autoscalingContext, pod, retryUntil, maxTermination, false)
 		}(pod)
 	}
 
@@ -212,8 +212,8 @@ func (e Evictor) initiateEviction(ctx *acontext.AutoscalingContext, node *apiv1.
 	return evictionResults, nil
 }
 
-func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, retryUntil time.Time, maxTermination int64, fullEvictionPod bool) status.PodEvictionResult {
-	ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
+func (e Evictor) evictPod(autoscalingContext *ca_context.AutoscalingContext, podToEvict *apiv1.Pod, retryUntil time.Time, maxTermination int64, fullEvictionPod bool) status.PodEvictionResult {
+	autoscalingContext.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 
 	termination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
 	if podToEvict.Spec.TerminationGracePeriodSeconds != nil {
@@ -235,7 +235,7 @@ func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Po
 				GracePeriodSeconds: &termination,
 			},
 		}
-		lastError = ctx.ClientSet.CoreV1().Pods(podToEvict.Namespace).Evict(context.TODO(), eviction)
+		lastError = autoscalingContext.ClientSet.CoreV1().Pods(podToEvict.Namespace).Evict(context.TODO(), eviction)
 		if lastError == nil || kube_errors.IsNotFound(lastError) {
 			if e.evictionRegister != nil {
 				e.evictionRegister.RegisterEviction(podToEvict)
@@ -245,7 +245,7 @@ func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Po
 	}
 	if fullEvictionPod {
 		klog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
-		ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
+		autoscalingContext.Recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
 	}
 	return status.PodEvictionResult{Pod: podToEvict, TimedOut: true, Err: fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)}
 }
