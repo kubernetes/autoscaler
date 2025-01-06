@@ -19,6 +19,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -180,7 +181,16 @@ func FindParentControllerForPod(ctx context.Context, pod *core.Pod, ctrlFetcher 
 		},
 		ApiVersion: ownerRefrence.APIVersion,
 	}
-	return ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
+	controller, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
+
+	// ignore NodeInvalidOwner error when looking for the parent controller for a Pod. While this _is_ an error when
+	// validating the targetRef of a VPA, this is a valid scenario when iterating over all Pods and finding their owner.
+	// vpa updater and admission-controller don't care about these Pods, because they cannot have a valid VPA point to
+	// them, so it is safe to ignore this here.
+	if err != nil && !errors.Is(err, controllerfetcher.ErrNodeInvalidOwner) {
+		return nil, err
+	}
+	return controller, nil
 }
 
 // GetUpdateMode returns the updatePolicy.updateMode for a given VPA.

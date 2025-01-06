@@ -18,7 +18,7 @@ package framework
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1alpha3"
+	resourceapi "k8s.io/api/resource/v1beta1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -28,13 +28,15 @@ import (
 type PodInfo struct {
 	// This type embeds *apiv1.Pod to make the accesses easier - most of the code just needs to access the Pod.
 	*apiv1.Pod
-
-	// NeededResourceClaims contains ResourceClaim objects needed by the Pod.
-	NeededResourceClaims []*resourceapi.ResourceClaim
+	// PodExtraInfo is an embedded struct containing all additional information that CA needs to track about a Pod.
+	PodExtraInfo
 }
 
-type podExtraInfo struct {
-	neededResourceClaims []*resourceapi.ResourceClaim
+// PodExtraInfo contains all necessary information about a Pod that Cluster Autoscaler needs to track, apart from the Pod itself.
+// This is extracted from PodInfo so that it can be stored separately from the Pod.
+type PodExtraInfo struct {
+	// NeededResourceClaims contains ResourceClaim objects needed by the Pod.
+	NeededResourceClaims []*resourceapi.ResourceClaim
 }
 
 // NodeInfo contains all necessary information about a Node that Cluster Autoscaler needs to track.
@@ -43,7 +45,7 @@ type NodeInfo struct {
 	// schedNodeInfo is the part of information needed by the scheduler.
 	schedNodeInfo *schedulerframework.NodeInfo
 	// podsExtraInfo contains extra pod-level data needed only by CA.
-	podsExtraInfo map[types.UID]podExtraInfo
+	podsExtraInfo map[types.UID]PodExtraInfo
 
 	// Extra node-level data needed only by CA below.
 
@@ -66,7 +68,7 @@ func (n *NodeInfo) Pods() []*PodInfo {
 	var result []*PodInfo
 	for _, pod := range n.schedNodeInfo.Pods {
 		extraInfo := n.podsExtraInfo[pod.Pod.UID]
-		podInfo := &PodInfo{Pod: pod.Pod, NeededResourceClaims: extraInfo.neededResourceClaims}
+		podInfo := &PodInfo{Pod: pod.Pod, PodExtraInfo: extraInfo}
 		result = append(result, podInfo)
 	}
 	return result
@@ -75,7 +77,9 @@ func (n *NodeInfo) Pods() []*PodInfo {
 // AddPod adds the given Pod and associated data to the NodeInfo.
 func (n *NodeInfo) AddPod(pod *PodInfo) {
 	n.schedNodeInfo.AddPod(pod.Pod)
-	n.podsExtraInfo[pod.UID] = podExtraInfo{neededResourceClaims: pod.NeededResourceClaims}
+	if len(pod.PodExtraInfo.NeededResourceClaims) > 0 {
+		n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
+	}
 }
 
 // RemovePod removes the given pod and its associated data from the NodeInfo.
@@ -101,7 +105,7 @@ func (n *NodeInfo) DeepCopy() *NodeInfo {
 		for _, claim := range podInfo.NeededResourceClaims {
 			newClaims = append(newClaims, claim.DeepCopy())
 		}
-		newPods = append(newPods, &PodInfo{Pod: podInfo.Pod.DeepCopy(), NeededResourceClaims: newClaims})
+		newPods = append(newPods, &PodInfo{Pod: podInfo.Pod.DeepCopy(), PodExtraInfo: PodExtraInfo{NeededResourceClaims: newClaims}})
 	}
 	var newSlices []*resourceapi.ResourceSlice
 	for _, slice := range n.LocalResourceSlices {
@@ -111,11 +115,29 @@ func (n *NodeInfo) DeepCopy() *NodeInfo {
 	return NewNodeInfo(n.Node().DeepCopy(), newSlices, newPods...)
 }
 
+// ResourceClaims returns all ResourceClaims contained in the PodInfos in this NodeInfo. Shared claims
+// are taken into account, each claim should only be returned once.
+func (n *NodeInfo) ResourceClaims() []*resourceapi.ResourceClaim {
+	processedClaims := map[types.UID]bool{}
+	var result []*resourceapi.ResourceClaim
+	for _, pod := range n.Pods() {
+		for _, claim := range pod.NeededResourceClaims {
+			if processedClaims[claim.UID] {
+				// Shared claim, already grouped.
+				continue
+			}
+			result = append(result, claim)
+			processedClaims[claim.UID] = true
+		}
+	}
+	return result
+}
+
 // NewNodeInfo returns a new internal NodeInfo from the provided data.
 func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...*PodInfo) *NodeInfo {
 	result := &NodeInfo{
 		schedNodeInfo:       schedulerframework.NewNodeInfo(),
-		podsExtraInfo:       map[types.UID]podExtraInfo{},
+		podsExtraInfo:       map[types.UID]PodExtraInfo{},
 		LocalResourceSlices: slices,
 	}
 	if node != nil {
@@ -128,18 +150,18 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 }
 
 // WrapSchedulerNodeInfo wraps a *schedulerframework.NodeInfo into an internal *NodeInfo.
-func WrapSchedulerNodeInfo(schedNodeInfo *schedulerframework.NodeInfo) *NodeInfo {
+func WrapSchedulerNodeInfo(schedNodeInfo *schedulerframework.NodeInfo, slices []*resourceapi.ResourceSlice, podExtraInfos map[types.UID]PodExtraInfo) *NodeInfo {
+	if podExtraInfos == nil {
+		podExtraInfos = map[types.UID]PodExtraInfo{}
+	}
 	return &NodeInfo{
-		schedNodeInfo: schedNodeInfo,
-		podsExtraInfo: map[types.UID]podExtraInfo{},
+		schedNodeInfo:       schedNodeInfo,
+		podsExtraInfo:       podExtraInfos,
+		LocalResourceSlices: slices,
 	}
 }
 
-// WrapSchedulerNodeInfos wraps a list of *schedulerframework.NodeInfos into internal *NodeInfos.
-func WrapSchedulerNodeInfos(schedNodeInfos []*schedulerframework.NodeInfo) []*NodeInfo {
-	var result []*NodeInfo
-	for _, schedNodeInfo := range schedNodeInfos {
-		result = append(result, WrapSchedulerNodeInfo(schedNodeInfo))
-	}
-	return result
+// NewPodInfo is a convenience function for creating new PodInfos without typing out the "PodExtraInfo" part.
+func NewPodInfo(pod *apiv1.Pod, claims []*resourceapi.ResourceClaim) *PodInfo {
+	return &PodInfo{Pod: pod, PodExtraInfo: PodExtraInfo{NeededResourceClaims: claims}}
 }

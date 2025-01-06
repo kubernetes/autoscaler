@@ -640,13 +640,16 @@ When using this class, Cluster Autoscaler performs following actions:
   implementation of the AtomicIncreaseSize method. If the method is not implemented, the scale-up
   request will try to increase the node group atomically but doesn't guarantee atomicity.
 
-  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes, 
+  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes,
   preventing other ProvReqs from using it.
 
   * __Condition Updates__:
     * Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler.
     * Adds a Provisioned=True condition to the ProvReq if the node group scale up request is successful.
     * Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+  Note: make sure you setup --max-nodes-per-scaleup flag correctly. By default --max-nodes-per-scaleup=1000, so any scale up that
+  require more than 1000 nodes will be rejected.
 
 #### Example Usage
 
@@ -972,7 +975,8 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3 minutes
 | `scale-down-unneeded-time` | How long a node should be unneeded before it is eligible for scale down | 10 minutes
 | `scale-down-unready-time` | How long an unready node should be unneeded before it is eligible for scale down | 20 minutes
-| `scale-down-utilization-threshold` | The maximum value between the sum of cpu requests and sum of memory requests of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down. This value is a floating point number that can range between zero and one. | 0.5
+| `scale-down-utilization-threshold`       | The ratio of requested/allocatable resources below which a node can be scale down. Ratio is calculated from the maximum of sum of cpu requests and sum of memory requests of all pods running on the node, divided by node's corresponding allocatable resource. For GPU see scale-down-gpu-utilization-threshold (nodes labeled via GPULabel, see cloudprovider/*/README.md). This value is a floating point number that can range between zero and one. | 0.5
+| `scale-down-gpu-utilization-threshold`   | Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down. Utilization calculation only cares about gpu resource for accelerator node, cpu and memory utilization will be ignored. | 0.5
 | `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers." | 30
 | `scale-down-candidates-pool-ratio` | A ratio of nodes that are considered as additional non empty candidates for<br>scale down when some candidates from previous iteration are no longer valid<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.  | 0.1
 | `scale-down-candidates-pool-min-count` | Minimum number of nodes that are considered as additional non empty candidates<br>for scale down when some candidates from previous iteration are no longer valid.<br>When calculating the pool size for additional candidates we take<br>`max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count)` | 50

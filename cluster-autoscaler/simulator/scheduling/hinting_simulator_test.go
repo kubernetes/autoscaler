@@ -20,24 +20,22 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
-
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestTrySchedulePods(t *testing.T) {
-	schedulermetrics.Register()
-
 	testCases := []struct {
 		desc            string
 		nodes           []*apiv1.Node
 		pods            []*apiv1.Pod
 		newPods         []*apiv1.Pod
+		hints           map[*apiv1.Pod]string
 		acceptableNodes func(*framework.NodeInfo) bool
 		wantStatuses    []Status
 		wantErr         bool
@@ -55,6 +53,27 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p2", 800, 500000),
 				BuildTestPod("p3", 500, 500000),
 			},
+			acceptableNodes: ScheduleAnywhere,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
+				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
+			},
+		},
+
+		{
+			desc: "hinted Node no longer in the cluster doesn't cause an error",
+			nodes: []*apiv1.Node{
+				buildReadyNode("n1", 1000, 2000000),
+				buildReadyNode("n2", 1000, 2000000),
+			},
+			pods: []*apiv1.Pod{
+				buildScheduledPod("p1", 300, 500000, "n1"),
+			},
+			newPods: []*apiv1.Pod{
+				BuildTestPod("p2", 800, 500000),
+				BuildTestPod("p3", 500, 500000),
+			},
+			hints:           map[*apiv1.Pod]string{BuildTestPod("p2", 800, 500000): "non-existing-node"},
 			acceptableNodes: ScheduleAnywhere,
 			wantStatuses: []Status{
 				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
@@ -136,11 +155,14 @@ func TestTrySchedulePods(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
-			s := NewHintingSimulator(predicateChecker)
+			s := NewHintingSimulator()
+
+			for pod, nodeName := range tc.hints {
+				s.hints.Set(HintKeyFromPod(pod), nodeName)
+			}
+
 			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -213,16 +235,14 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			nodes := make([]*apiv1.Node, 0, len(tc.nodeNames))
 			for _, n := range tc.nodeNames {
 				nodes = append(nodes, buildReadyNode(n, 9999, 9999))
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, nodes, []*apiv1.Pod{})
 			pods := make([]*apiv1.Pod, 0, len(tc.podNodes))
-			s := NewHintingSimulator(predicateChecker)
+			s := NewHintingSimulator()
 			var expectedStatuses []Status
 			for p, n := range tc.podNodes {
 				pod := BuildTestPod(p, 1, 1)

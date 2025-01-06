@@ -473,6 +473,28 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	}
 }
 
+// InitMetrics initializes all metrics
+func InitMetrics() {
+	for _, errorType := range []errors.AutoscalerErrorType{errors.CloudProviderError, errors.ApiCallError, errors.InternalError, errors.TransientError, errors.ConfigurationError, errors.NodeGroupDoesNotExistError, errors.UnexpectedScaleDownStateError} {
+		errorsCount.WithLabelValues(string(errorType)).Add(0)
+	}
+
+	for _, reason := range []FailedScaleUpReason{CloudProviderError, APIError, Timeout} {
+		scaleDownCount.WithLabelValues(string(reason)).Add(0)
+		failedScaleUpCount.WithLabelValues(string(reason)).Add(0)
+	}
+
+	for _, result := range []PodEvictionResult{PodEvictionSucceed, PodEvictionFailed} {
+		evictionsCount.WithLabelValues(string(result)).Add(0)
+	}
+
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, CpuResourceLimit).Add(0)
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, MemoryResourceLimit).Add(0)
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, CpuResourceLimit).Add(0)
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, MemoryResourceLimit).Add(0)
+
+}
+
 // UpdateDurationFromStart records the duration of the step identified by the
 // label using start time
 func UpdateDurationFromStart(label FunctionLabel, start time.Time) {

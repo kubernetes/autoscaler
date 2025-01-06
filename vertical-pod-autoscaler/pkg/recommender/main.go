@@ -59,12 +59,15 @@ var (
 	recommenderName        = flag.String("recommender-name", input.DefaultRecommenderName, "Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster.")
 	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
 	checkpointsGCInterval  = flag.Duration("checkpoints-gc-interval", 10*time.Minute, `How often orphaned checkpoints should be garbage collected`)
-	prometheusAddress      = flag.String("prometheus-address", "http://prometheus.monitoring.svc", `Where to reach for Prometheus metrics`)
-	prometheusJobName      = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
+	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
+	memorySaver            = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+)
 
-	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
-	// prometheus history provider configs
+// Prometheus history provider flags
+var (
+	prometheusAddress   = flag.String("prometheus-address", "http://prometheus.monitoring.svc", `Where to reach for Prometheus metrics`)
+	prometheusJobName   = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
 	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
 	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
 	queryTimeout        = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
@@ -77,8 +80,10 @@ var (
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
 	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
-	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
-	// external metrics provider config
+)
+
+// External metrics provider flags
+var (
 	useExternalMetrics   = flag.Bool("use-external-metrics", false, "ALPHA.  Use an external metrics provider instead of metrics_server.")
 	externalCpuMetric    = flag.String("external-metrics-cpu-metric", "", "ALPHA.  Metric to use with external metrics provider for CPU usage.")
 	externalMemoryMetric = flag.String("external-metrics-memory-metric", "", "ALPHA.  Metric to use with external metrics provider for memory usage.")

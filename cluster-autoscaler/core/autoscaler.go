@@ -33,9 +33,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/client-go/informers"
@@ -49,7 +52,7 @@ type AutoscalerOptions struct {
 	InformerFactory        informers.SharedInformerFactory
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
-	PredicateChecker       predicatechecker.PredicateChecker
+	FrameworkHandle        *framework.Handle
 	ClusterSnapshot        clustersnapshot.ClusterSnapshot
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
@@ -61,6 +64,7 @@ type AutoscalerOptions struct {
 	ScaleUpOrchestrator    scaleup.Orchestrator
 	DeleteOptions          options.NodeDeleteOptions
 	DrainabilityRules      rules.Rules
+	DraProvider            *draprovider.Provider
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -86,7 +90,7 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 	}
 	return NewStaticAutoscaler(
 		opts.AutoscalingOptions,
-		opts.PredicateChecker,
+		opts.FrameworkHandle,
 		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,
 		opts.Processors,
@@ -100,6 +104,7 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 		opts.ScaleUpOrchestrator,
 		opts.DeleteOptions,
 		opts.DrainabilityRules,
+		opts.DraProvider,
 	), nil
 }
 
@@ -114,8 +119,15 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
+	if opts.FrameworkHandle == nil {
+		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled)
+		if err != nil {
+			return err
+		}
+		opts.FrameworkHandle = fwHandle
+	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
+		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled)
 	}
 	if opts.RemainingPdbTracker == nil {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
@@ -155,6 +167,9 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 	}
 	if opts.DrainabilityRules == nil {
 		opts.DrainabilityRules = rules.Default(opts.DeleteOptions)
+	}
+	if opts.DraProvider == nil && opts.DynamicResourceAllocationEnabled {
+		opts.DraProvider = draprovider.NewProviderFromInformers(informerFactory)
 	}
 
 	return nil

@@ -247,7 +247,7 @@ func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, 
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return 0, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+				return 0, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
 			}
 		}
 		return 0, err
@@ -262,7 +262,7 @@ func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, e
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Context(ctx).Do()
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok && err.Code == http.StatusNotFound {
-			return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+			return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
 		}
 		return "", err
 	}
@@ -277,7 +277,7 @@ func (client *autoscalingGceClientV1) FetchListManagedInstancesResults(migRef Gc
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+				return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
 			}
 		}
 		return "", err
@@ -785,7 +785,7 @@ func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (Insta
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return InstanceTemplateName{}, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+				return InstanceTemplateName{}, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
 			}
 		}
 		return InstanceTemplateName{}, err

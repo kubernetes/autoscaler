@@ -27,8 +27,8 @@ function print_help {
   echo " - recommender-externalmetrics"
   echo " - updater"
   echo " - admission-controller"
+  echo " - actuation"
   echo " - full-vpa"
-
 }
 
 if [ $# -eq 0 ]; then
@@ -84,7 +84,7 @@ kind load docker-image localhost:5001/write-metrics:dev
 
 
 case ${SUITE} in
-  recommender|recommender-externalmetrics|updater|admission-controller|full-vpa)
+  recommender|recommender-externalmetrics|updater|admission-controller|actuation|full-vpa)
     ${SCRIPT_ROOT}/hack/vpa-down.sh
     echo " ** Deploying for suite ${SUITE}"
     ${SCRIPT_ROOT}/hack/deploy-for-e2e-locally.sh ${SUITE}

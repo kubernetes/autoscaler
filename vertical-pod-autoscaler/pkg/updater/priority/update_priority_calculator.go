@@ -81,7 +81,7 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 
 // AddPod adds pod to the UpdatePriorityCalculator.
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
-	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa.Status.Recommendation, calc.vpa.Spec.ResourcePolicy, calc.vpa.Status.Conditions, pod)
+	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa, pod)
 	if err != nil {
 		klog.V(2).ErrorS(err, "Cannot process recommendation for pod", "pod", klog.KObj(pod))
 		return
@@ -188,7 +188,6 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
 			}
 		}
-		sb.WriteString("\n")
 	}
 	return sb.String()
 }

@@ -103,7 +103,7 @@ spec:
             - --cluster-name={{ tpl (.Values.magnumClusterName) . }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "clusterapi" }}
-            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels .Values.autoDiscovery.namepace }}
+            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels .Values.autoDiscovery.namespace }}
             - --node-group-auto-discovery=clusterapi:{{ template "cluster-autoscaler.capiAutodiscoveryConfig" . }}
             {{- end }}
             {{- if eq .Values.clusterAPIMode "incluster-kubeconfig"}}
@@ -131,6 +131,9 @@ spec:
             {{- else }}
             - --{{ $key | mustRegexFind "^[^_]+" }}
             {{- end }}
+          {{- end }}
+          {{- range .Values.customArgs }}
+            - {{ . }}
           {{- end }}
           env:
             - name: POD_NAMESPACE

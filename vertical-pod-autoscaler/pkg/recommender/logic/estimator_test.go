@@ -26,11 +26,7 @@ import (
 )
 
 var (
-	anyTime     = time.Unix(0, 0)
-	testRequest = model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
-		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
-	}
+	anyTime = time.Unix(0, 0)
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
@@ -50,9 +46,11 @@ func TestPercentileEstimator(t *testing.T) {
 	// Create an estimator.
 	CPUPercentile := 0.2
 	MemoryPercentile := 0.5
-	estimator := NewPercentileEstimator(CPUPercentile, MemoryPercentile)
+	cpuEstimator := NewPercentileCPUEstimator(CPUPercentile)
+	memoryEstimator := NewPercentileMemoryEstimator(MemoryPercentile)
+	combinedEstimator := NewCombinedEstimator(cpuEstimator, memoryEstimator)
 
-	resourceEstimation := estimator.GetResourceEstimation(
+	resourceEstimation := combinedEstimator.GetResourceEstimation(
 		&model.AggregateContainerState{
 			AggregateCPUUsage:    cpuHistogram,
 			AggregateMemoryPeaks: memoryPeaksHistogram,
@@ -67,47 +65,16 @@ func TestPercentileEstimator(t *testing.T) {
 // returned by the base estimator according to the formula, using the calculated
 // confidence.
 func TestConfidenceMultiplier(t *testing.T) {
-	baseEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
-		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
-	})
-	testedEstimator := &confidenceMultiplier{
-		multiplier:    0.1,
-		exponent:      2.0,
-		baseEstimator: baseEstimator,
-	}
+	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
+	baseMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(3.14e9))
+	testedCPU1 := WithCPUConfidenceMultiplier(1.0, 1.0, baseCPUEstimator)
+	testedMemory1 := WithMemoryConfidenceMultiplier(1.0, 1.0, baseMemoryEstimator)
+	testedEstimator1 := NewCombinedEstimator(testedCPU1, testedMemory1)
 
-	s := model.NewAggregateContainerState()
-	// Add 9 CPU samples at the frequency of 1/(2 mins).
-	timestamp := anyTime
-	for i := 1; i <= 9; i++ {
-		s.AddSample(&model.ContainerUsageSample{
-			MeasureStart: timestamp,
-			Usage:        model.CPUAmountFromCores(1.0),
-			Request:      testRequest[model.ResourceCPU],
-			Resource:     model.ResourceCPU,
-		})
-		timestamp = timestamp.Add(time.Minute * 2)
-	}
+	testedCPU2 := WithCPUConfidenceMultiplier(1.0, -1.0, baseCPUEstimator)
+	testedMemory2 := WithMemoryConfidenceMultiplier(1.0, -1.0, baseMemoryEstimator)
+	testedEstimator2 := NewCombinedEstimator(testedCPU2, testedMemory2)
 
-	// Expected confidence = 9/(60*24) = 0.00625.
-	assert.Equal(t, 0.00625, getConfidence(s))
-	// Expected CPU estimation = 3.14 * (1 + 1/confidence)^exponent =
-	// 3.14 * (1 + 0.1/0.00625)^2 = 907.46.
-	resourceEstimation := testedEstimator.GetResourceEstimation(s)
-	assert.Equal(t, 907.46, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
-}
-
-// Verifies that the confidenceMultiplier works for the case of no
-// history. This corresponds to the multiplier of +INF or 0 (depending on the
-// sign of the exponent).
-func TestConfidenceMultiplierNoHistory(t *testing.T) {
-	baseEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
-		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
-	})
-	testedEstimator1 := &confidenceMultiplier{1.0, 1.0, baseEstimator}
-	testedEstimator2 := &confidenceMultiplier{1.0, -1.0, baseEstimator}
 	s := model.NewAggregateContainerState()
 	// Expect testedEstimator1 to return the maximum possible resource amount.
 	assert.Equal(t, model.ResourceAmount(1e14),
@@ -117,19 +84,32 @@ func TestConfidenceMultiplierNoHistory(t *testing.T) {
 		testedEstimator2.GetResourceEstimation(s)[model.ResourceCPU])
 }
 
+// Verifies that the confidenceMultiplier works for the case of no
+// history. This corresponds to the multiplier of +INF or 0 (depending on the
+// sign of the exponent).
+func TestConfidenceMultiplierNoHistory(t *testing.T) {
+	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
+	baseMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(3.14e9))
+	testedCPU := WithCPUConfidenceMultiplier(0.1, 2.0, baseCPUEstimator)
+	testedMemory := WithMemoryConfidenceMultiplier(0.1, 2.0, baseMemoryEstimator)
+	testedEstimator := NewCombinedEstimator(testedCPU, testedMemory)
+	s := model.NewAggregateContainerState()
+	// Expect testedEstimator to return the maximum possible resource amount.
+	assert.Equal(t, model.ResourceAmount(1e14),
+		testedEstimator.GetResourceEstimation(s)[model.ResourceCPU])
+}
+
 // Verifies that the MarginEstimator adds margin to the originally
 // estimated resources.
 func TestMarginEstimator(t *testing.T) {
+
 	// Use 10% margin on top of the recommended resources.
 	marginFraction := 0.1
-	baseEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
-		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
-	})
-	testedEstimator := &marginEstimator{
-		marginFraction: marginFraction,
-		baseEstimator:  baseEstimator,
-	}
+	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
+	baseMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(3.14e9))
+	testedCPU := WithCPUMargin(marginFraction, baseCPUEstimator)
+	testedMemory := WithMemoryMargin(marginFraction, baseMemoryEstimator)
+	testedEstimator := NewCombinedEstimator(testedCPU, testedMemory)
 	s := model.NewAggregateContainerState()
 	resourceEstimation := testedEstimator.GetResourceEstimation(s)
 	assert.Equal(t, 3.14*1.1, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
@@ -138,24 +118,17 @@ func TestMarginEstimator(t *testing.T) {
 
 // Verifies that the MinResourcesEstimator returns at least MinResources.
 func TestMinResourcesEstimator(t *testing.T) {
-
-	minResources := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.2),
-		model.ResourceMemory: model.MemoryAmountFromBytes(4e8),
-	}
-	baseEstimator := NewConstEstimator(model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
-		model.ResourceMemory: model.MemoryAmountFromBytes(2e7),
-	})
-
-	testedEstimator := &minResourcesEstimator{
-		minResources:  minResources,
-		baseEstimator: baseEstimator,
-	}
+	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
+	minCPU := model.CPUAmountFromCores(0.2)
+	cpuEstimator := WithCPUMinResource(minCPU, constCPUEstimator)
 	s := model.NewAggregateContainerState()
-	resourceEstimation := testedEstimator.GetResourceEstimation(s)
-	// Original CPU is above min resources
-	assert.Equal(t, 3.14, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
-	// Original Memory is below min resources
-	assert.Equal(t, 4e8, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
+	cpuEstimation := cpuEstimator.GetCPUEstimation(s)
+	assert.Equal(t, 3.14, model.CoresFromCPUAmount(cpuEstimation))
+
+	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(4e8))
+	minMemory := model.MemoryAmountFromBytes(2e7)
+	memoryEstimator := WithMemoryMinResource(minMemory, constMemoryEstimator)
+	memoryEstimation := memoryEstimator.GetMemoryEstimation(s)
+	assert.Equal(t, 4e8, model.BytesFromMemoryAmount(memoryEstimation))
+
 }

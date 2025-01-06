@@ -219,9 +219,7 @@ type RecommendationProcessorMock struct {
 }
 
 // Apply is a mock implementation of RecommendationProcessor.Apply
-func (m *RecommendationProcessorMock) Apply(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+func (m *RecommendationProcessorMock) Apply(vpa *vpa_types.VerticalPodAutoscaler,
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
 	args := m.Called()
 	var returnArg *vpa_types.RecommendedPodResources
@@ -239,11 +237,9 @@ func (m *RecommendationProcessorMock) Apply(podRecommendation *vpa_types.Recomme
 type FakeRecommendationProcessor struct{}
 
 // Apply is a dummy implementation of RecommendationProcessor.Apply which returns provided podRecommendation
-func (f *FakeRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+func (f *FakeRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
-	return podRecommendation, nil, nil
+	return vpa.Status.Recommendation, nil, nil
 }
 
 // fakeEventRecorder is a dummy implementation of record.EventRecorder.
