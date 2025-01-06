@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
@@ -172,8 +172,8 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 
 	processor := NewDefaultCustomResourcesProcessor()
 	provider := testprovider.NewTestCloudProvider(nil, nil)
-	ctx := &context.AutoscalingContext{CloudProvider: provider}
-	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes)
+	autoscalingContext := &ca_context.AutoscalingContext{CloudProvider: provider}
+	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingContext, initialAllNodes, initialReadyNodes)
 
 	foundInReady := make(map[string]bool)
 	for _, node := range newReadyNodes {
