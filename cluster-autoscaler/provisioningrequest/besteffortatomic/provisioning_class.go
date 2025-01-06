@@ -21,12 +21,12 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -45,7 +45,7 @@ import (
 // ProvisioningRequest. It's "best effort" as it admits workload immediately
 // after successful request, without waiting to verify that resources started.
 type bestEffortAtomicProvClass struct {
-	context             *context.AutoscalingContext
+	autoscalingContext  *ca_context.AutoscalingContext
 	client              *provreqclient.ProvisioningRequestClient
 	injector            *scheduling.HintingSimulator
 	scaleUpOrchestrator scaleup.Orchestrator
@@ -59,14 +59,14 @@ func New(
 }
 
 func (o *bestEffortAtomicProvClass) Initialize(
-	autoscalingContext *context.AutoscalingContext,
+	autoscalingContext *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 	injector *scheduling.HintingSimulator,
 ) {
-	o.context = autoscalingContext
+	o.autoscalingContext = autoscalingContext
 	o.injector = injector
 	o.scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 }
@@ -89,8 +89,8 @@ func (o *bestEffortAtomicProvClass) Provision(
 	// Pick 1 ProvisioningRequest.
 	pr := prs[0]
 
-	o.context.ClusterSnapshot.Fork()
-	defer o.context.ClusterSnapshot.Revert()
+	o.autoscalingContext.ClusterSnapshot.Fork()
+	defer o.autoscalingContext.ClusterSnapshot.Revert()
 
 	// For provisioning requests, unschedulablePods are actually all injected pods. Some may even be schedulable!
 	actuallyUnschedulablePods, err := o.filterOutSchedulable(unschedulablePods)
@@ -135,7 +135,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 }
 
 func (o *bestEffortAtomicProvClass) filterOutSchedulable(pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	statuses, _, err := o.injector.TrySchedulePods(o.context.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, false)
+	statuses, _, err := o.injector.TrySchedulePods(o.autoscalingContext.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, false)
 	if err != nil {
 		return nil, err
 	}

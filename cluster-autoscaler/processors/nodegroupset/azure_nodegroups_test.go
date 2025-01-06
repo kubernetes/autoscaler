@@ -22,7 +22,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -91,15 +91,15 @@ func TestIsAzureNodeInfoSimilar(t *testing.T) {
 }
 
 func TestFindSimilarNodeGroupsAzureBasic(t *testing.T) {
-	context := &context.AutoscalingContext{}
-	ni1, ni2, ni3 := buildBasicNodeGroups(context)
+	autoscalingContext := &ca_context.AutoscalingContext{}
+	ni1, ni2, ni3 := buildBasicNodeGroups(autoscalingContext)
 	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
-	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
+	basicSimilarNodeGroupsTest(t, autoscalingContext, processor, ni1, ni2, ni3)
 }
 
 func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
-	context := &context.AutoscalingContext{}
+	autoscalingContext := &ca_context.AutoscalingContext{}
 
 	n1 := BuildTestNode("n1", 1000, 1000)
 	n2 := BuildTestNode("n2", 2000, 2000)
@@ -119,10 +119,10 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 
 	ng1, _ := provider.NodeGroupForNode(n1)
 	ng2, _ := provider.NodeGroupForNode(n2)
-	context.CloudProvider = provider
+	autoscalingContext.CloudProvider = provider
 
 	// Groups with different cpu and mem are not similar.
-	similar, err := processor.FindSimilarNodeGroups(context, ng1, nodeInfosForGroups)
+	similar, err := processor.FindSimilarNodeGroups(autoscalingContext, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{})
 
@@ -131,7 +131,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n2.ObjectMeta.Labels["agentpool"] = "foobar"
 	n1.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
 	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
-	similar, err = processor.FindSimilarNodeGroups(context, ng1, nodeInfosForGroups)
+	similar, err = processor.FindSimilarNodeGroups(autoscalingContext, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng2})
 
@@ -150,7 +150,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar2"
 	n3.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar3"
 
-	similar, err = processor.FindSimilarNodeGroups(context, ng1, nodeInfosForGroups)
+	similar, err = processor.FindSimilarNodeGroups(autoscalingContext, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng3})
 }

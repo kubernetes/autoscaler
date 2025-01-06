@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
@@ -186,13 +186,13 @@ func (n *Nodes) Drop(node string) {
 // RemovableAt returns all nodes that can be removed at a given time, divided
 // into empty and non-empty node lists, as well as a list of nodes that were
 // unneeded, but are not removable, annotated by reason.
-func (n *Nodes) RemovableAt(context *context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, ts time.Time) (empty, needDrain []simulator.NodeToBeRemoved, unremovable []simulator.UnremovableNode) {
-	nodeGroupSize := utils.GetNodeGroupSizeMap(context.CloudProvider)
+func (n *Nodes) RemovableAt(autoscalingContext *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, ts time.Time) (empty, needDrain []simulator.NodeToBeRemoved, unremovable []simulator.UnremovableNode) {
+	nodeGroupSize := utils.GetNodeGroupSizeMap(autoscalingContext.CloudProvider)
 	emptyNodes, drainNodes := n.splitEmptyAndNonEmptyNodes()
 
 	for nodeName, v := range emptyNodes {
 		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
-		if r := n.unremovableReason(context, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
+		if r := n.unremovableReason(autoscalingContext, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
 			unremovable = append(unremovable, simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
 		}
@@ -200,7 +200,7 @@ func (n *Nodes) RemovableAt(context *context.AutoscalingContext, scaleDownContex
 	}
 	for nodeName, v := range drainNodes {
 		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
-		if r := n.unremovableReason(context, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
+		if r := n.unremovableReason(autoscalingContext, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
 			unremovable = append(unremovable, simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
 		}
@@ -209,7 +209,7 @@ func (n *Nodes) RemovableAt(context *context.AutoscalingContext, scaleDownContex
 	return
 }
 
-func (n *Nodes) unremovableReason(context *context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
+func (n *Nodes) unremovableReason(autoscalingContext *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
 	node := v.ntbr.Node
 	// Check if node is marked with no scale down annotation.
 	if eligibility.HasNoScaleDownAnnotation(node) {
@@ -218,7 +218,7 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, scaleDown
 	}
 	ready, _, _ := kube_util.GetReadinessState(node)
 
-	nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
+	nodeGroup, err := autoscalingContext.CloudProvider.NodeGroupForNode(node)
 	if err != nil {
 		klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
 		return simulator.UnexpectedError
@@ -254,7 +254,7 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, scaleDown
 		return reason
 	}
 
-	resourceDelta, err := n.limitsFinder.DeltaForNode(context, node, nodeGroup, scaleDownContext.ResourcesWithLimits)
+	resourceDelta, err := n.limitsFinder.DeltaForNode(autoscalingContext, node, nodeGroup, scaleDownContext.ResourcesWithLimits)
 	if err != nil {
 		klog.Errorf("Error getting node resources: %v", err)
 		return simulator.UnexpectedError

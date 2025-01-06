@@ -24,7 +24,7 @@ import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	provreq_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
@@ -128,8 +128,8 @@ func (p *provReqProcessor) CleanUp() {}
 
 // Process implements PodListProcessor.Process() and inject fake pods to the cluster snapshoot for Provisioned ProvReqs in order to
 // reserve capacity from ScaleDown.
-func (p *provReqProcessor) Process(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	err := p.bookCapacity(context)
+func (p *provReqProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	err := p.bookCapacity(autoscalingContext)
 	if err != nil {
 		klog.Warningf("Failed to book capacity for ProvisioningRequests: %s", err)
 	}
@@ -138,7 +138,7 @@ func (p *provReqProcessor) Process(context *context.AutoscalingContext, unschedu
 
 // bookCapacity schedule fake pods for ProvisioningRequest that should have reserved capacity
 // in the cluster.
-func (p *provReqProcessor) bookCapacity(ctx *context.AutoscalingContext) error {
+func (p *provReqProcessor) bookCapacity(autoscalingContext *ca_context.AutoscalingContext) error {
 	provReqs, err := p.client.ProvisioningRequests()
 	if err != nil {
 		return fmt.Errorf("couldn't fetch ProvisioningRequests in the cluster: %v", err)
@@ -165,7 +165,7 @@ func (p *provReqProcessor) bookCapacity(ctx *context.AutoscalingContext) error {
 		return nil
 	}
 	// Scheduling the pods to reserve capacity for provisioning request.
-	if _, _, err = p.injector.TrySchedulePods(ctx.ClusterSnapshot, podsToCreate, scheduling.ScheduleAnywhere, false); err != nil {
+	if _, _, err = p.injector.TrySchedulePods(autoscalingContext.ClusterSnapshot, podsToCreate, scheduling.ScheduleAnywhere, false); err != nil {
 		return err
 	}
 	return nil

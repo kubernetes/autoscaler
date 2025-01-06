@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 )
@@ -39,8 +39,8 @@ type MetricsAutoscalingStatusProcessor struct {
 }
 
 // Process queries the health status and backoff situation of all node groups and updates metrics after each autoscaling iteration.
-func (p *MetricsAutoscalingStatusProcessor) Process(context *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
-	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
+func (p *MetricsAutoscalingStatusProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
+	for _, nodeGroup := range autoscalingContext.CloudProvider.NodeGroups() {
 		if !nodeGroup.Exist() {
 			continue
 		}

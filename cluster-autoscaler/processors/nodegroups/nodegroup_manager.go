@@ -20,7 +20,7 @@ import (
 	"reflect"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
@@ -29,13 +29,13 @@ type NodeGroupManager interface {
 	// CreateNodeGroup creates node group and returns all of the results.
 	// Creating a node group may result in multiple node group creations, as the behavior is
 	// cloud provider dependent.
-	CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError)
+	CreateNodeGroup(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError)
 
 	// CreateNodeGroupAsync similar to CreateNodeGroup method but creates node group asynchronously.
 	// Immediately returns upcoming node group that may be used for scale ups and scale up simulations.
-	CreateNodeGroupAsync(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer AsyncNodeGroupInitializer) (CreateNodeGroupResult, errors.AutoscalerError)
+	CreateNodeGroupAsync(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer AsyncNodeGroupInitializer) (CreateNodeGroupResult, errors.AutoscalerError)
 
-	RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error)
+	RemoveUnneededNodeGroups(autoscalingContext *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error)
 
 	CleanUp()
 }
@@ -95,17 +95,17 @@ func (r CreateNodeGroupResult) AllCreatedNodeGroups() []cloudprovider.NodeGroup 
 }
 
 // CreateNodeGroup always returns internal error. It must not be called on NoOpNodeGroupManager.
-func (*NoOpNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError) {
+func (*NoOpNodeGroupManager) CreateNodeGroup(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError) {
 	return CreateNodeGroupResult{}, errors.NewAutoscalerError(errors.InternalError, "not implemented")
 }
 
 // CreateNodeGroupAsync always returns internal error. It must not be called on NoOpNodeGroupManager.
-func (*NoOpNodeGroupManager) CreateNodeGroupAsync(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer AsyncNodeGroupInitializer) (CreateNodeGroupResult, errors.AutoscalerError) {
+func (*NoOpNodeGroupManager) CreateNodeGroupAsync(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer AsyncNodeGroupInitializer) (CreateNodeGroupResult, errors.AutoscalerError) {
 	return CreateNodeGroupResult{}, errors.NewAutoscalerError(errors.InternalError, "not implemented")
 }
 
 // RemoveUnneededNodeGroups does nothing in NoOpNodeGroupManager
-func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
+func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(autoscalingContext *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
 	return nil, nil
 }
 

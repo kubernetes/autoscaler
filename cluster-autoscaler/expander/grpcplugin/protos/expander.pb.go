@@ -17,7 +17,7 @@ limitations under the License.
 package protos
 
 import (
-	context "context"
+	"context"
 	reflect "reflect"
 	sync "sync"
 

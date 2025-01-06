@@ -24,7 +24,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/annotations"
@@ -41,13 +41,13 @@ type NodeGroupView struct {
 
 // ScaleDownBudgetProcessor is responsible for keeping the number of nodes deleted in parallel within defined limits.
 type ScaleDownBudgetProcessor struct {
-	ctx *context.AutoscalingContext
+	autoscalingContext *ca_context.AutoscalingContext
 }
 
 // NewScaleDownBudgetProcessor creates a ScaleDownBudgetProcessor instance.
-func NewScaleDownBudgetProcessor(ctx *context.AutoscalingContext) *ScaleDownBudgetProcessor {
+func NewScaleDownBudgetProcessor(autoscalingContext *ca_context.AutoscalingContext) *ScaleDownBudgetProcessor {
 	return &ScaleDownBudgetProcessor{
-		ctx: ctx,
+		autoscalingContext: autoscalingContext,
 	}
 }
 
@@ -62,14 +62,14 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 	drainAtomicMap := groupBuckets(drainAtomic)
 
 	emptyInProgress, drainInProgress := as.DeletionsInProgress()
-	parallelismBudget := bp.ctx.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
-	drainBudget := bp.ctx.MaxDrainParallelism - len(drainInProgress)
+	parallelismBudget := bp.autoscalingContext.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
+	drainBudget := bp.autoscalingContext.MaxDrainParallelism - len(drainInProgress)
 
 	var err error
 	canOverflow := true
 	emptyToDelete, drainToDelete = []*NodeGroupView{}, []*NodeGroupView{}
 
-	allNodes, err := allNodes(bp.ctx.ClusterSnapshot)
+	allNodes, err := allNodes(bp.autoscalingContext.ClusterSnapshot)
 	if err != nil {
 		klog.Errorf("failed to read all nodes from the cluster snapshot for nodes cropping, err: %s", err)
 	}
@@ -212,7 +212,7 @@ func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView 
 	groupMap := map[string]int{}
 	grouped := []*NodeGroupView{}
 	for _, node := range nodes {
-		nodeGroup, err := bp.ctx.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := bp.autoscalingContext.CloudProvider.NodeGroupForNode(node)
 		if err != nil || nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
 			continue
@@ -232,7 +232,7 @@ func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView 
 
 func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individual, atomic []*NodeGroupView) {
 	for _, view := range groups {
-		autoscalingOptions, err := view.Group.GetOptions(bp.ctx.NodeGroupDefaults)
+		autoscalingOptions, err := view.Group.GetOptions(bp.autoscalingContext.NodeGroupDefaults)
 		if err != nil && err != cloudprovider.ErrNotImplemented {
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", view.Group.Id(), err)
 			continue

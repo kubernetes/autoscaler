@@ -23,7 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -59,19 +59,19 @@ func NewManager(crp customresources.CustomResourcesProcessor) *Manager {
 }
 
 // DeltaForNode calculates the amount of resources that will be used from the cluster when creating a node.
-func (m *Manager) DeltaForNode(ctx *context.AutoscalingContext, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (Delta, errors.AutoscalerError) {
+func (m *Manager) DeltaForNode(autoscalingContext *ca_context.AutoscalingContext, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (Delta, errors.AutoscalerError) {
 	resultScaleUpDelta := make(Delta)
 	nodeCPU, nodeMemory := utils.GetNodeCoresAndMemory(nodeInfo.Node())
 	resultScaleUpDelta[cloudprovider.ResourceNameCores] = nodeCPU
 	resultScaleUpDelta[cloudprovider.ResourceNameMemory] = nodeMemory
 
-	resourceLimiter, err := ctx.CloudProvider.GetResourceLimiter()
+	resourceLimiter, err := autoscalingContext.CloudProvider.GetResourceLimiter()
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
 	if cloudprovider.ContainsCustomResources(resourceLimiter.GetResources()) {
-		resourceTargets, err := m.crp.GetNodeResourceTargets(ctx, nodeInfo.Node(), nodeGroup)
+		resourceTargets, err := m.crp.GetNodeResourceTargets(autoscalingContext, nodeInfo.Node(), nodeGroup)
 		if err != nil {
 			return Delta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get target custom resources for node group %v: ", nodeGroup.Id())
 		}
@@ -85,15 +85,15 @@ func (m *Manager) DeltaForNode(ctx *context.AutoscalingContext, nodeInfo *framew
 }
 
 // ResourcesLeft calculates the amount of resources left in the cluster.
-func (m *Manager) ResourcesLeft(ctx *context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodes []*corev1.Node) (Limits, errors.AutoscalerError) {
-	nodesFromNotAutoscaledGroups, err := utils.FilterOutNodesFromNotAutoscaledGroups(nodes, ctx.CloudProvider)
+func (m *Manager) ResourcesLeft(autoscalingContext *ca_context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodes []*corev1.Node) (Limits, errors.AutoscalerError) {
+	nodesFromNotAutoscaledGroups, err := utils.FilterOutNodesFromNotAutoscaledGroups(nodes, autoscalingContext.CloudProvider)
 	if err != nil {
 		return nil, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: ")
 	}
 
-	totalCores, totalMem, errCoresMem := m.coresMemoryTotal(ctx, nodeInfos, nodesFromNotAutoscaledGroups)
+	totalCores, totalMem, errCoresMem := m.coresMemoryTotal(autoscalingContext, nodeInfos, nodesFromNotAutoscaledGroups)
 
-	resourceLimiter, errgo := ctx.CloudProvider.GetResourceLimiter()
+	resourceLimiter, errgo := autoscalingContext.CloudProvider.GetResourceLimiter()
 	if errgo != nil {
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, errgo)
 	}
@@ -101,7 +101,7 @@ func (m *Manager) ResourcesLeft(ctx *context.AutoscalingContext, nodeInfos map[s
 	var totalResources map[string]int64
 	var totalResourcesErr error
 	if cloudprovider.ContainsCustomResources(resourceLimiter.GetResources()) {
-		totalResources, totalResourcesErr = m.customResourcesTotal(ctx, nodeInfos, nodesFromNotAutoscaledGroups)
+		totalResources, totalResourcesErr = m.customResourcesTotal(autoscalingContext, nodeInfos, nodesFromNotAutoscaledGroups)
 	}
 
 	resultScaleUpLimits := make(Limits)
@@ -143,8 +143,8 @@ func (m *Manager) ResourcesLeft(ctx *context.AutoscalingContext, nodeInfos map[s
 }
 
 // ApplyLimits calculates the new node count by applying the left resource limits of the cluster.
-func (m *Manager) ApplyLimits(ctx *context.AutoscalingContext, newCount int, resourceLeft Limits, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (int, errors.AutoscalerError) {
-	delta, err := m.DeltaForNode(ctx, nodeInfo, nodeGroup)
+func (m *Manager) ApplyLimits(autoscalingContext *ca_context.AutoscalingContext, newCount int, resourceLeft Limits, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (int, errors.AutoscalerError) {
+	delta, err := m.DeltaForNode(autoscalingContext, nodeInfo, nodeGroup)
 	if err != nil {
 		return 0, err
 	}
@@ -203,10 +203,10 @@ func LimitsNotExceeded() LimitsCheckResult {
 	return LimitsCheckResult{false, []string{}}
 }
 
-func (m *Manager) coresMemoryTotal(ctx *context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (int64, int64, errors.AutoscalerError) {
+func (m *Manager) coresMemoryTotal(autoscalingContext *ca_context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (int64, int64, errors.AutoscalerError) {
 	var coresTotal int64
 	var memoryTotal int64
-	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
+	for _, nodeGroup := range autoscalingContext.CloudProvider.NodeGroups() {
 		currentSize, err := nodeGroup.TargetSize()
 		if err != nil {
 			return 0, 0, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get node group size of %v: ", nodeGroup.Id())
@@ -233,9 +233,9 @@ func (m *Manager) coresMemoryTotal(ctx *context.AutoscalingContext, nodeInfos ma
 	return coresTotal, memoryTotal, nil
 }
 
-func (m *Manager) customResourcesTotal(ctx *context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (map[string]int64, errors.AutoscalerError) {
+func (m *Manager) customResourcesTotal(autoscalingContext *ca_context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (map[string]int64, errors.AutoscalerError) {
 	result := make(map[string]int64)
-	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
+	for _, nodeGroup := range autoscalingContext.CloudProvider.NodeGroups() {
 		currentSize, err := nodeGroup.TargetSize()
 		if err != nil {
 			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get node group size of %v: ", nodeGroup.Id())
@@ -247,7 +247,7 @@ func (m *Manager) customResourcesTotal(ctx *context.AutoscalingContext, nodeInfo
 		}
 
 		if currentSize > 0 {
-			resourceTargets, err := m.crp.GetNodeResourceTargets(ctx, nodeInfo.Node(), nodeGroup)
+			resourceTargets, err := m.crp.GetNodeResourceTargets(autoscalingContext, nodeInfo.Node(), nodeGroup)
 			if err != nil {
 				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get custom resource target for node group %v: ", nodeGroup.Id())
 			}
@@ -262,7 +262,7 @@ func (m *Manager) customResourcesTotal(ctx *context.AutoscalingContext, nodeInfo
 	}
 
 	for _, node := range nodesFromNotAutoscaledGroups {
-		resourceTargets, err := m.crp.GetNodeResourceTargets(ctx, node, nil)
+		resourceTargets, err := m.crp.GetNodeResourceTargets(autoscalingContext, node, nil)
 		if err != nil {
 			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get custom resource target for node %v: ", node.Name)
 		}

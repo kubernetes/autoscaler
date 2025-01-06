@@ -19,13 +19,13 @@ package podinjection
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/klog/v2"
 )
 
-func createReplicaSetControllers(ctx *context.AutoscalingContext) []controller {
+func createReplicaSetControllers(autoscalingContext *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	replicaSets, err := ctx.ListerRegistry.ReplicaSetLister().List(labels.Everything())
+	replicaSets, err := autoscalingContext.ListerRegistry.ReplicaSetLister().List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Failed to list replicaSets: %v", err)
 		return controllers

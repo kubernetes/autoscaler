@@ -25,7 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 )
 
 // EventingScaleUpStatusProcessor processes the state of the cluster after
@@ -35,11 +35,11 @@ type EventingScaleUpStatusProcessor struct{}
 
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
-func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
+func (p *EventingScaleUpStatusProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, status *ScaleUpStatus) {
 	consideredNodeGroupsMap := nodeGroupListToMapById(status.ConsideredNodeGroups)
 	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
-			context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
+			autoscalingContext.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
 				fmt.Sprintf("pod didn't trigger scale-up: %s",
 					ReasonsMessage(status.Result, noScaleUpInfo, consideredNodeGroupsMap)))
 		}
@@ -49,7 +49,7 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 	}
 	if len(status.ScaleUpInfos) > 0 {
 		for _, pod := range status.PodsTriggeredScaleUp {
-			context.Recorder.Eventf(pod, apiv1.EventTypeNormal, "TriggeredScaleUp",
+			autoscalingContext.Recorder.Eventf(pod, apiv1.EventTypeNormal, "TriggeredScaleUp",
 				"pod triggered scale-up: %v", status.ScaleUpInfos)
 		}
 	}

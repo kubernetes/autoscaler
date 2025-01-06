@@ -19,13 +19,13 @@ package podinjection
 import (
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/klog/v2"
 )
 
-func createJobControllers(ctx *context.AutoscalingContext) []controller {
+func createJobControllers(autoscalingContext *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	jobs, err := ctx.ListerRegistry.JobLister().List(labels.Everything())
+	jobs, err := autoscalingContext.ListerRegistry.JobLister().List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Failed to list jobs: %v", err)
 	}

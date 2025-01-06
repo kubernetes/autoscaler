@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 )
 
 func TestGetScaleDownCandidates(t *testing.T) {
@@ -48,7 +48,7 @@ func TestGetScaleDownCandidates(t *testing.T) {
 		},
 	}
 
-	ctx := context.AutoscalingContext{
+	autoscalingContext := ca_context.AutoscalingContext{
 		AutoscalingOptions: config.AutoscalingOptions{
 			ScaleDownDelayAfterAdd:     time.Minute * 10,
 			ScaleDownDelayAfterDelete:  time.Minute * 10,
@@ -58,21 +58,21 @@ func TestGetScaleDownCandidates(t *testing.T) {
 	}
 
 	testCases := map[string]struct {
-		autoscalingContext context.AutoscalingContext
+		autoscalingContext ca_context.AutoscalingContext
 		candidates         []*v1.Node
 		expected           []*v1.Node
 		setupProcessor     func(p *ScaleDownCandidatesDelayProcessor) *ScaleDownCandidatesDelayProcessor
 	}{
 		// Expectation: no nodegroups should be filtered out
 		"no scale ups - no scale downs - no scale down failures": {
-			autoscalingContext: ctx,
+			autoscalingContext: autoscalingContext,
 			candidates:         []*v1.Node{n1, n2, n3},
 			expected:           []*v1.Node{n1, n2, n3},
 			setupProcessor:     nil,
 		},
 		// Expectation: only nodegroups in cool-down should be filtered out
 		"no scale ups - 2 scale downs - no scale down failures": {
-			autoscalingContext: ctx,
+			autoscalingContext: autoscalingContext,
 			candidates:         []*v1.Node{n1, n2, n3},
 			expected:           []*v1.Node{n1, n3},
 			setupProcessor: func(p *ScaleDownCandidatesDelayProcessor) *ScaleDownCandidatesDelayProcessor {
@@ -89,7 +89,7 @@ func TestGetScaleDownCandidates(t *testing.T) {
 		},
 		// Expectation: only nodegroups in cool-down should be filtered out
 		"1 scale up - no scale down - no scale down failures": {
-			autoscalingContext: ctx,
+			autoscalingContext: autoscalingContext,
 			candidates:         []*v1.Node{n1, n2, n3},
 			expected:           []*v1.Node{n1, n3},
 			setupProcessor: func(p *ScaleDownCandidatesDelayProcessor) *ScaleDownCandidatesDelayProcessor {
@@ -106,7 +106,7 @@ func TestGetScaleDownCandidates(t *testing.T) {
 		},
 		// Expectation: only nodegroups in cool-down should be filtered out
 		"no scale up - no scale down - 1 scale down failure": {
-			autoscalingContext: ctx,
+			autoscalingContext: autoscalingContext,
 			candidates:         []*v1.Node{n1, n2, n3},
 			expected:           []*v1.Node{n1, n3},
 			setupProcessor: func(p *ScaleDownCandidatesDelayProcessor) *ScaleDownCandidatesDelayProcessor {
