@@ -152,7 +152,7 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 }
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
-func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string) v1lister.PodLister {
+func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string, stopCh <-chan struct{}) v1lister.PodLister {
 	// We are interested in pods which are Running or Unknown (in case the pod is
 	// running but there are some transient errors we don't want to delete it from
 	// our model).
@@ -162,23 +162,31 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	// don't necessarily want to immediately delete them.
 	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
-	indexer, controller := cache.NewIndexerInformer(
-		podListWatch,
-		&apiv1.Pod{},
-		time.Hour,
-		resourceEventHandler,
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+
+	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{
+		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+	})
+
+	_, controller := cache.NewInformerWithOptions(
+		cache.InformerOptions{
+			ListerWatcher: podListWatch,
+			ObjectType:    &apiv1.Pod{},
+			ResyncPeriod:  time.Hour,
+			Handler:       resourceEventHandler,
+			Indexers:      indexer.GetIndexers(),
+		},
 	)
-	podLister := v1lister.NewPodLister(indexer)
-	stopCh := make(chan struct{})
 	go controller.Run(stopCh)
-	return podLister
+	if !cache.WaitForCacheSync(stopCh, controller.HasSynced) {
+		klog.ErrorS(nil, "Failed to sync Pod cache during initialization")
+	}
+	return v1lister.NewPodLister(indexer)
 }
 
 // NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
-func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string) (v1lister.PodLister, oom.Observer) {
+func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) (v1lister.PodLister, oom.Observer) {
 	oomObserver := oom.NewObserver()
-	podLister := newPodClients(kubeClient, oomObserver, namespace)
+	podLister := newPodClients(kubeClient, oomObserver, namespace, stopCh)
 	WatchEvictionEventsWithRetries(kubeClient, oomObserver, namespace)
 	return podLister, oomObserver
 }

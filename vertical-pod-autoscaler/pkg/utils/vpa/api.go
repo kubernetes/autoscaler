@@ -82,19 +82,23 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 // The method blocks until vpaLister is initially populated.
 func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerLister {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalers", namespace, fields.Everything())
-	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
-		&vpa_types.VerticalPodAutoscaler{},
-		1*time.Hour,
-		&cache.ResourceEventHandlerFuncs{},
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
+	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{
+		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+	})
+	_, controller := cache.NewInformerWithOptions(cache.InformerOptions{
+		ListerWatcher: vpaListWatch,
+		ObjectType:    &vpa_types.VerticalPodAutoscaler{},
+		ResyncPeriod:  1 * time.Hour,
+		Handler:       &cache.ResourceEventHandlerFuncs{},
+		Indexers:      indexer.GetIndexers(),
+	})
 	go controller.Run(stopChannel)
-	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
+	if !cache.WaitForCacheSync(stopChannel, controller.HasSynced) {
 		klog.ErrorS(nil, "Failed to sync VPA cache during initialization")
 	} else {
 		klog.InfoS("Initial VPA synced successfully")
 	}
-	return vpaLister
+	return vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 }
 
 // PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
