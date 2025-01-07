@@ -10,8 +10,8 @@
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
 - [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
 - [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
-- [Special requirements when running in AKS?](#special-requirements-when-running-in-aks)
-- [Special requirements when running in EKS with Cilium?](#special-requirements-when-running-in-eks-with-cilium)
+- [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
+- [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
@@ -298,15 +298,15 @@ Common use cases:
 * Use controlledResources: ["cpu"] when you want to automate CPU resource allocation
 * Useful when memory requirements are stable but CPU usage varies
 
-### Special requirements when running in AKS?
+### How can I have Pods in the kube-system namespace under VPA control in AKS?
 
 When running a webhook in AKS, it blocks webhook requests for the kube-system namespace in order to protect the system.
 See the [AKS FAQ page](https://learn.microsoft.com/en-us/azure/aks/faq#can-admission-controller-webhooks-impact-kube-system-and-internal-aks-namespaces-) for more info.
 
-The `--webhook-labels` paramater for the VPA admission-controller can be used to bypass this behaviour, if required by the user.
+The `--webhook-labels` parameter for the VPA admission-controller can be used to bypass this behaviour, if required by the user.
 
-### Special requirements when running in EKS with Cilium?
+### How can I configure VPA when running in EKS with Cilium?
 
-When running in EKS with Cilium, the EKS API server cannot route traffic to the overlap network. The VPA admission-controller
+When running in EKS with Cilium, the EKS API server cannot route traffic to the overlay network. The VPA admission-controller
 Pods either need to use host networking or be exposed through a service or ingress.
 See the [Cilium Helm installation page](https://docs.cilium.io/en/stable/installation/k8s-install-helm/) for more info.
