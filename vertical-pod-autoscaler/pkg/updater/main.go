@@ -92,7 +92,8 @@ func main() {
 	klog.V(1).InfoS("Vertical Pod Autoscaler Updater", "version", common.VerticalPodAutoscalerVersion)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
-		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		os.Exit(255)
 	}
 
 	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
@@ -105,7 +106,8 @@ func main() {
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
-			klog.Fatalf("Unable to get hostname: %v", err)
+			klog.ErrorS(err, "Unable to get hostname")
+			os.Exit(255)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -123,7 +125,8 @@ func main() {
 			},
 		)
 		if err != nil {
-			klog.Fatalf("Unable to create leader election lock: %v", err)
+			klog.ErrorS(err, "Unable to create leader election lock")
+			os.Exit(255)
 		}
 
 		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
@@ -201,7 +204,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		ignoredNamespaces,
 	)
 	if err != nil {
-		klog.Fatalf("Failed to create updater: %v", err)
+		klog.ErrorS(err, "Failed to create updater")
+		os.Exit(255)
 	}
 
 	// Start updating health check endpoint.

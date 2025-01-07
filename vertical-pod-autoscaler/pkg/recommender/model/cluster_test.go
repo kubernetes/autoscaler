@@ -19,6 +19,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -354,7 +355,8 @@ func addVpaObject(cluster *ClusterState, id VpaID, vpa *vpa_types.VerticalPodAut
 	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	err := cluster.AddOrUpdateVpa(vpa, parsedSelector)
 	if err != nil {
-		klog.Fatalf("AddOrUpdateVpa() failed: %v", err)
+		klog.ErrorS(err, "AddOrUpdateVpa() failed")
+		os.Exit(255)
 	}
 	return cluster.Vpas[id]
 }

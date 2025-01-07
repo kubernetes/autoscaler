@@ -127,7 +127,8 @@ func main() {
 	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion, "recommenderName", *recommenderName)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
-		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		os.Exit(255)
 	}
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
@@ -140,7 +141,8 @@ func main() {
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
-			klog.Fatalf("Unable to get hostname: %v", err)
+			klog.ErrorS(err, "Unable to get hostname")
+			os.Exit(255)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -158,7 +160,8 @@ func main() {
 			},
 		)
 		if err != nil {
-			klog.Fatalf("Unable to create leader election lock: %v", err)
+			klog.ErrorS(err, "Unable to create leader election lock")
+			os.Exit(255)
 		}
 
 		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
@@ -266,7 +269,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
-		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
+		klog.ErrorS(err, "Could not parse --prometheus-query-timeout as a time.Duration")
+		os.Exit(255)
 	}
 
 	if useCheckpoints {
@@ -293,7 +297,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
-			klog.Fatalf("Could not initialize history provider: %v", err)
+			klog.ErrorS(err, "Could not initialize history provider")
+			os.Exit(255)
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
