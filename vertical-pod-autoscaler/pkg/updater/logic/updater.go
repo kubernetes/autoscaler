@@ -415,7 +415,6 @@ func (u *updater) AttemptInPlaceScalingIfPossible(ctx context.Context, vpaSize i
 				return
 			}
 
-			// get lastInPlaceUpdateTime annotation, if doesn't exist, set it to now
 			lastUpdateTime, exists := u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)]
 			if !exists {
 				klog.V(4).Infof("In-place update in progress for %s/%s, but no lastInPlaceUpdateTime found, setting it to now", pod.Namespace, pod.Name)

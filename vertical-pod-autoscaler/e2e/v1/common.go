@@ -455,6 +455,8 @@ func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 	gomega.Expect(restarted).To(gomega.Equal(0), "there should be no pod evictions")
 }
 
+// CheckNoContainersRestarted waits for long enough period for VPA to start
+// updating containers in-place and checks that no containers were restarted.
 func CheckNoContainersRestarted(f *framework.Framework) {
 	var foundContainerRestarts int32
 	time.Sleep(VpaEvictionTimeout)

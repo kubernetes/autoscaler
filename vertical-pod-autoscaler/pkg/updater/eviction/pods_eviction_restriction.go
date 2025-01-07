@@ -291,12 +291,9 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 			}
 			if IsInPlaceUpdating(pod) {
 				singleGroup.inPlaceUpdating = singleGroup.inPlaceUpdating + 1
-
 			}
 		}
 		singleGroup.running = len(replicas) - singleGroup.pending
-
-		// This has to happen last, singlegroup never gets returned, only this does
 		creatorToSingleGroupStatsMap[creator] = singleGroup
 
 	}
@@ -460,8 +457,6 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 			return false
 		}
 
-		// TODO(jkyros): is there a pod-level thing we can use?
-		// Go through each container, and check to see if this is going to cause a disruption or not
 		noRestartPoliciesPopulated := true
 
 		for _, container := range pod.Spec.Containers {
@@ -498,18 +493,31 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 			return false
 		}
 		// This second "present" check is against the creator-to-group-stats map, not the pod-to-replica map
+		// TODO(maxcao13): Not sure, but do we need disruption tolerance for in-place updates? I guess we do since they are not guaranteed to be disruptionless...
+		// TODO(maxcao13): If this is okay, I may have to rename evictionTolerance to disruption tolerance
 		if present {
-			klog.V(4).Infof("pod %s disruption tolerance run: %d config: %d tolerance: %d evicted: %d updating: %d", pod.Name, singleGroupStats.running, singleGroupStats.configured, singleGroupStats.evictionTolerance, singleGroupStats.evicted, singleGroupStats.inPlaceUpdating)
+			klog.V(4).InfoS("Checking pod disruption tolerance",
+				"podName", pod.Name,
+				"configuredPods", singleGroupStats.configured,
+				"runningPods", singleGroupStats.running,
+				"evictedPods", singleGroupStats.evicted,
+				"inPlaceUpdatingPods", singleGroupStats.inPlaceUpdating,
+				"evictionTolerance", singleGroupStats.evictionTolerance,
+			)
+			// minimum number of pods that should be running to tolerate disruptions
 			shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
-			if singleGroupStats.running-(singleGroupStats.evicted+singleGroupStats.inPlaceUpdating) > shouldBeAlive {
-				klog.V(4).Infof("Should be alive: %d, Actually alive: %d", shouldBeAlive, singleGroupStats.running-(singleGroupStats.evicted+singleGroupStats.inPlaceUpdating))
+			// number of pods that are actually running
+			actuallyAlive := singleGroupStats.running - (singleGroupStats.evicted + singleGroupStats.inPlaceUpdating)
+			if actuallyAlive > shouldBeAlive {
+				klog.V(4).InfoS("Pod can be resized in-place; more pods are running than required", "podName", pod.Name, "shouldBeAlive", shouldBeAlive, "actuallyAlive", actuallyAlive)
 				return true
 			}
-			// If all pods are running and eviction tolerance is small update 1 pod.
+
+			// If all pods are running, no pods are being evicted or updated, and eviction tolerance is small, we can resize in-place
 			if singleGroupStats.running == singleGroupStats.configured &&
 				singleGroupStats.evictionTolerance == 0 &&
 				singleGroupStats.evicted == 0 && singleGroupStats.inPlaceUpdating == 0 {
-				klog.V(4).Infof("--> we are in good shape on %s, it is tolerant", pod.Name)
+				klog.V(4).InfoS("Pod can be resized in-place; all pods are running and eviction tolerance is 0", "podName", pod.Name)
 				return true
 			}
 		}
@@ -526,36 +534,40 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToUpdate.Name)
 	}
 
-	if !e.CanInPlaceUpdate(podToUpdate) {
-		return fmt.Errorf("cannot update pod %v in place : number of in-flight updates exceeded", podToUpdate.Name)
-	}
+	// TODO(maxcao13): Not sure if we need to check again here, but commenting it out for now in case we do
+	// if !e.CanInPlaceUpdate(podToUpdate) {
+	// 	return fmt.Errorf("cannot update pod %v in place : number of in-flight updates exceeded", podToUpdate.Name)
+	// }
 
-	// TODO(maxcao13): There's probably a more efficient way to do this, but this is what we have for now
-	// Don't reinvent the wheel, just use the resource updates patch calculator using by the admission controller
-	// See the below TODO for refactoring this
-	patches := []resource_updates.PatchRecord{}
+	// TODO(maxcao13): There's maybe a more efficient way to do this, but this is what we have for now
+
+	// separate patches since we have to patch resize and spec separately
+	resourcePatches := []resource_updates.PatchRecord{}
+	annotationPatches := []resource_updates.PatchRecord{}
 	if podToUpdate.Annotations == nil {
-		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
+		annotationPatches = append(annotationPatches, patch.GetAddEmptyAnnotationsPatch())
 	}
-	for _, calculator := range e.patchCalculators {
+	for i, calculator := range e.patchCalculators {
 		p, err := calculator.CalculatePatches(podToUpdate, vpa)
 		if err != nil {
 			return fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", podToUpdate.Namespace, podToUpdate.Name, err)
 		}
 		klog.V(4).InfoS("Calculated patches for pod", "pod", klog.KObj(podToUpdate), "patches", p)
-		patches = append(patches, p...)
+		// TODO(maxcao13): change how this works later, this is gross and depends on the resource calculator being first in the slice
+		// we may not even want the updater to patch pod annotations at all
+		if i == 0 {
+			resourcePatches = append(resourcePatches, p...)
+		} else {
+			annotationPatches = append(annotationPatches, p...)
+		}
 	}
-
-	if len(patches) > 0 {
-		patch, err := json.Marshal(patches)
+	if len(resourcePatches) > 0 {
+		patch, err := json.Marshal(resourcePatches)
 		if err != nil {
-			klog.Errorf("Cannot marshal the patch %v: %v", patches, err)
+			klog.Errorf("Cannot marshal the patch %v: %v", resourcePatches, err)
 			return err
 		}
 
-		// TODO(maxcao13): for now, this does not allow other patches to be applied since we are patching the resize subresource
-		// If we want other annotations to be patched in the pod using patchCalculators, we need to generalize this and refactor the
-		// NewResourceUpdatesCalculator and create a stripped down calculator just for calculating in-place resize patches
 		res, err := e.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{}, "resize")
 		if err != nil {
 			klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
@@ -563,6 +575,20 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 		}
 		klog.V(4).InfoS("In-place patched pod /resize subresource using patches ", "pod", klog.KObj(res), "patches", string(patch))
 
+		// TODO(maxcao13): whether or not we apply annotation patches should depend on resource patches?
+		if len(annotationPatches) > 0 {
+			patch, err := json.Marshal(annotationPatches)
+			if err != nil {
+				klog.Errorf("Cannot marshal the patch %v: %v", annotationPatches, err)
+				return err
+			}
+			res, err = e.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
+			if err != nil {
+				klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
+				return err
+			}
+			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+		}
 	} else {
 		err := fmt.Errorf("no patches to apply to %s", podToUpdate.Name)
 		klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
@@ -571,8 +597,8 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 
 	// TODO(maxcao13): If this keeps getting called on the same object with the same reason, it is considered a patch request.
 	// And we fail to have the corresponding rbac for it. So figure out if we need this later.
-	eventRecorder.Event(podToUpdate, apiv1.EventTypeNormal, "InPlaceResizedByVPA",
-		"Pod was resized in place by VPA Updater.")
+	// TODO(maxcao13): Do we even need to emit an event? The api server might reject the resize request. Should we rename this to InPlaceResizeAttempted?
+	// eventRecorder.Event(podToUpdate, apiv1.EventTypeNormal, "InPlaceResizedByVPA", "Pod was resized in place by VPA Updater.")
 
 	// TODO(jkyros): You need to do this regardless once you update the pod, if it changes phases here as a result, you still
 	// need to catalog what you did
@@ -604,21 +630,5 @@ func IsInPlaceUpdating(podToCheck *apiv1.Pod) (isUpdating bool) {
 		}
 		return true
 	}
-
-	// If any of the container resources don't match their spec, it's...updating but the lifecycle hasn't kicked in yet? So we
-	// also need to mark that?
-	/*
-		for num, container := range podToCheck.Spec.Containers {
-			// TODO(jkyros): supported resources only?
-			// Resources can be nil, especially if the feature gate isn't on
-			if podToCheck.Status.ContainerStatuses[num].Resources != nil {
-
-				if !reflect.DeepEqual(container.Resources, *podToCheck.Status.ContainerStatuses[num].Resources) {
-					klog.V(4).Infof("Resize must be in progress for %s, resources for container %s don't match", podToCheck.Name, container.Name)
-					return true
-				}
-			}
-		}*/
 	return false
-
 }

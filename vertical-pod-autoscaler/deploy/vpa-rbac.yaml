@@ -129,6 +129,7 @@ rules:
       - ""
     resources:
       - pods/resize
+      - pods
     verbs:
       - patch
 ---

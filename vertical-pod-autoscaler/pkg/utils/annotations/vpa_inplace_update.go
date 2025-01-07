@@ -16,8 +16,10 @@ limitations under the License.
 
 package annotations
 
+// TODO(maxcao13): This annotation currently doesn't do anything. Do we want an annotation to show vpa inplace resized only for cosmetic reasons?
+
 const (
-	// VpaInPlaceUpdatedLabel is a label used by the vpa last in place update annotation.
+	// VpaInPlaceUpdatedLabel is a label used by the vpa inplace updated annotation.
 	VpaInPlaceUpdatedLabel = "vpaInPlaceUpdated"
 )
 
