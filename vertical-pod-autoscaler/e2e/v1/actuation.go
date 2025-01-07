@@ -167,6 +167,346 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		gomega.Expect(foundUpdated).To(gomega.Equal(1))
 	})
 
+	ginkgo.It("still applies recommendations on restart when update mode is InPlaceOrRecreate", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podSet := MakePodSet(podList)
+
+		ginkgo.By("Setting up a VPA CRD in mode InPlaceOrRecreate")
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			WithContainer(containerName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("200m", "").
+					WithLowerBound("200m", "").
+					WithUpperBound("200m", "").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+		updatedCPURequest := ParseQuantityOrDie("200m")
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
+		ginkgo.By("Forcefully killing one pod")
+		killPod(f, podList)
+
+		ginkgo.By("Checking that request was modified after forceful restart")
+		updatedPodList, _ := GetHamsterPods(f)
+		var foundUpdated int32
+		for _, pod := range updatedPodList.Items {
+			podRequest := getCPURequest(pod.Spec)
+			framework.Logf("podReq: %v", podRequest)
+			if podRequest.Cmp(updatedCPURequest) == 0 {
+				foundUpdated += 1
+			}
+		}
+		gomega.Expect(foundUpdated).To(gomega.Equal(defaultHamsterReplicas))
+	})
+
+	// TODO(maxcao13): disruptionless means no container/pod restart; however NotRequired policy does not guarantee this...
+	ginkgo.It("applies disruptionless in-place updates to all containers where request is within bounds when update mode is InPlaceOrRecreate", func() {
+		ginkgo.By("Setting up a hamster deployment with all containers with NotRequired resize policies")
+		replicas := int32(2)
+		expectedContainerRestarts := int32(0)
+		SetupHamsterDeployment(f, "100m", "100Mi", replicas)
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podSet := MakePodSet(podList)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := GetHamsterContainerNameByIndex(0)
+		updatedCPU := "250m"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget(updatedCPU, "200Mi").
+					WithLowerBound("100m", "100Mi").
+					WithUpperBound("300m", "250Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
+
+		ginkgo.By("Checking that request was modified after a while due to in-place update, and was disruptionless")
+		updatedPodList, _ := GetHamsterPods(f)
+		var foundUpdated, foundContainerRestarts int32 = 0, 0
+		for _, pod := range updatedPodList.Items {
+			podRequest := getCPURequest(pod.Spec)
+			containerRestarts := getContainerRestarts(pod.Status)
+			framework.Logf("podReq: %v, containerRestarts: %v", podRequest, getContainerRestarts(pod.Status))
+			if podRequest.Cmp(ParseQuantityOrDie(updatedCPU)) == 0 {
+				foundUpdated += 1
+			}
+			foundContainerRestarts += containerRestarts
+		}
+		gomega.Expect(foundUpdated).To(gomega.Equal(replicas))
+		gomega.Expect(foundContainerRestarts).To(gomega.Equal(expectedContainerRestarts))
+	})
+
+	ginkgo.It("applies partial disruptionless in-place updates to a pod when request is within bounds when update mode is InPlaceOrRecreate", func() {
+		ginkgo.By("Setting up a hamster deployment with first container using RestartContainer resize policies")
+		cpuQuantity := ParseQuantityOrDie("100m")
+		memoryQuantity := ParseQuantityOrDie("100Mi")
+		replicas := int32(2)
+		containers := 2
+		expectedContainerRestarts := int32(1) * replicas // 1 container restart per pod
+		d := NewNHamstersDeployment(f, containers)
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    cpuQuantity,
+			apiv1.ResourceMemory: memoryQuantity,
+		}
+		d.Spec.Replicas = &replicas
+		d.Spec.Template.Spec.Containers[0].ResizePolicy = []apiv1.ContainerResizePolicy{
+			{
+				ResourceName:  apiv1.ResourceCPU,
+				RestartPolicy: apiv1.RestartContainer,
+			},
+			{
+				ResourceName:  apiv1.ResourceMemory,
+				RestartPolicy: apiv1.RestartContainer,
+			},
+		}
+		d, err := f.ClientSet.AppsV1().Deployments(f.Namespace.Name).Create(context.TODO(), d, metav1.CreateOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when starting deployment creation")
+		err = framework_deployment.WaitForDeploymentComplete(f.ClientSet, d)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error waiting for deployment creation to finish")
+
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podSet := MakePodSet(podList)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := GetHamsterContainerNameByIndex(0)
+		updatedCPU := "250m"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget(updatedCPU, "200Mi").
+					WithLowerBound("100m", "100Mi").
+					WithUpperBound("300m", "250Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
+
+		ginkgo.By("Checking that request was modified after a while due to in-place update, and was partially disruptionless")
+		updatedPodList, _ := GetHamsterPods(f)
+		var foundUpdated, foundContainerRestarts int32 = 0, 0
+		for _, pod := range updatedPodList.Items {
+			podRequest := getCPURequest(pod.Spec)
+			containerRestarts := getContainerRestarts(pod.Status)
+			framework.Logf("podReq: %v, containerRestarts: %v", podRequest, getContainerRestarts(pod.Status))
+			if podRequest.Cmp(ParseQuantityOrDie(updatedCPU)) == 0 {
+				foundUpdated += 1
+			}
+			foundContainerRestarts += containerRestarts
+		}
+		gomega.Expect(foundUpdated).To(gomega.Equal(replicas))
+		gomega.Expect(foundContainerRestarts).To(gomega.Equal(expectedContainerRestarts))
+	})
+
+	// TODO(maxcao13): To me how this test fits in the test plan does not make sense. Whether the container is
+	// able to be disrupted is not determined by the VPA but is by the kubelet, so why would we force the container
+	// to restart if the request is out of the recommendation bounds? I must be missing something...
+	ginkgo.It("applies disruptive in-place updates to a container in all pods when request out of bounds when update mode is InPlaceOrRecreate", func() {
+		ginkgo.Skip("This test should be re-enabled once we have a better understanding of how to test this scenario")
+
+		ginkgo.By("Setting up a hamster deployment with a container using NotRequired resize policies")
+		replicas := int32(2)
+		expectedContainerRestarts := int32(1) * replicas // 1 container restart per pod
+		SetupHamsterDeployment(f, "1", "1Gi", replicas)  // outside recommendation range
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podSet := MakePodSet(podList)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := GetHamsterContainerNameByIndex(0)
+		updatedCPU := "250m"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget(updatedCPU, "200Mi").
+					WithLowerBound("150m", "150Mi").
+					WithUpperBound("300m", "250Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
+
+		ginkgo.By("Checking that request was modified after a while due to in-place update, and was disruptionless")
+		updatedPodList, _ := GetHamsterPods(f)
+		var foundUpdated, foundContainerRestarts int32 = 0, 0
+		for _, pod := range updatedPodList.Items {
+			podRequest := getCPURequest(pod.Spec)
+			containerRestarts := getContainerRestarts(pod.Status)
+			framework.Logf("podReq: %v, containerRestarts: %v", podRequest, getContainerRestarts(pod.Status))
+			if podRequest.Cmp(ParseQuantityOrDie(updatedCPU)) == 0 {
+				foundUpdated += 1
+			}
+			foundContainerRestarts += containerRestarts
+		}
+		gomega.Expect(foundUpdated).To(gomega.Equal(replicas))
+		gomega.Expect(foundContainerRestarts).To(gomega.Equal(expectedContainerRestarts))
+	})
+
+	// TODO(maxcao13): disruptive in-place fails and we have to evict (InPlaceOrRecreate)
+	// This particular test checks if we fallback after a resize infeasible, particularly from the node not having enough resources (as specified in the AEP)
+	// Should we check other conditions that result in eviction fallback?
+	ginkgo.It("falls back to evicting pods when in-place update is Infeasible when update mode is InPlaceOrRecreate", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		replicas := int32(2)
+		SetupHamsterDeployment(f, "100m", "100Mi", replicas)
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := GetHamsterContainerNameByIndex(0)
+		updatedCPU := "999" // infeasible target
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget(updatedCPU, "200Mi").
+					WithLowerBound("150m", "150Mi").
+					WithUpperBound("300m", "250Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoContainersRestarted(f)
+
+		ginkgo.By("Waiting for pods to be evicted")
+		err = WaitForPodsEvicted(f, podList)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("falls back to evicting pods when pod QoS class changes when update mode is InPlaceOrRecreate", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		replicas := int32(2)
+
+		d := NewHamsterDeploymentWithGuaranteedResources(f, ParseQuantityOrDie("300m"), ParseQuantityOrDie("400Mi"))
+		d.Spec.Replicas = &replicas
+		d, err := f.ClientSet.AppsV1().Deployments(f.Namespace.Name).Create(context.TODO(), d, metav1.CreateOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when starting deployment creation")
+		err = framework_deployment.WaitForDeploymentComplete(f.ClientSet, d)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error waiting for deployment creation to finish")
+
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := GetHamsterContainerNameByIndex(0)
+		updatedCPU := "200m"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget(updatedCPU, "200Mi").
+					WithLowerBound("150m", "150Mi").
+					WithUpperBound("300m", "250Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoContainersRestarted(f)
+
+		ginkgo.By("Waiting for pods to be evicted")
+		err = WaitForPodsEvicted(f, podList)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("falls back to evicting pods when resize is Deferred and more than 1 minute has elapsed since last in-place update when update mode is InPlaceOrRecreate", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		replicas := int32(2)
+		SetupHamsterDeployment(f, "100m", "100Mi", replicas)
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := GetHamsterContainerNameByIndex(0)
+
+		// get node name
+		nodeName := podList.Items[0].Spec.NodeName
+		node, err := f.ClientSet.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		allocatableCPU := node.Status.Allocatable[apiv1.ResourceCPU]
+		updatedCPU := allocatableCPU.String()
+
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget(updatedCPU, "200Mi").
+					WithLowerBound("150m", "150Mi").
+					WithUpperBound("300m", "250Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoContainersRestarted(f)
+
+		ginkgo.By("Waiting for pods to be evicted")
+		err = WaitForPodsEvicted(f, podList)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
 	perControllerTests := []struct {
 		apiVersion string
 		kind       string
@@ -517,6 +857,14 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 func getCPURequest(podSpec apiv1.PodSpec) resource.Quantity {
 	return podSpec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
+}
+
+// getContainerRestarts returns the sum of container restartCounts for all containers in the pod
+func getContainerRestarts(podStatus apiv1.PodStatus) (restarts int32) {
+	for _, containerStatus := range podStatus.ContainerStatuses {
+		restarts += containerStatus.RestartCount
+	}
+	return
 }
 
 func killPod(f *framework.Framework, podList *apiv1.PodList) {

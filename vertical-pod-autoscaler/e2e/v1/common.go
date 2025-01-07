@@ -165,15 +165,6 @@ func NewHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memo
 		apiv1.ResourceCPU:    cpuQuantity,
 		apiv1.ResourceMemory: memoryQuantity,
 	}
-	// TODO(jkyros): It seems to behave differently if we have limits?
-	/*
-		cpuQuantity.Add(resource.MustParse("100m"))
-		memoryQuantity.Add(resource.MustParse("100Mi"))
-
-		d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
-			apiv1.ResourceCPU:    cpuQuantity,
-			apiv1.ResourceMemory: memoryQuantity,
-		}*/
 	return d
 }
 
@@ -462,6 +453,20 @@ func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when listing hamster pods to check number of pod evictions")
 	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
 	gomega.Expect(restarted).To(gomega.Equal(0), "there should be no pod evictions")
+}
+
+// CheckNoContainersRestarted waits for long enough period for VPA to start
+// updating containers in-place and checks that no containers were restarted.
+func CheckNoContainersRestarted(f *framework.Framework) {
+	var foundContainerRestarts int32
+	time.Sleep(VpaEvictionTimeout)
+	podList, err := GetHamsterPods(f)
+	for _, pod := range podList.Items {
+		containerRestarts := getContainerRestarts(pod.Status)
+		foundContainerRestarts += containerRestarts
+	}
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when listing hamster pods to check number of container restarts")
+	gomega.Expect(foundContainerRestarts).To(gomega.Equal(int32(0)), "there should be no container restarts")
 }
 
 // WaitForVPAMatch pools VPA object until match function returns true. Returns
