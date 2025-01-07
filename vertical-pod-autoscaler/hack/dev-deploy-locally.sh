@@ -66,5 +66,5 @@ ${SCRIPT_ROOT}/hack/deploy-for-e2e-locally.sh full-vpa
 
 echo " ** Restarting all VPA components"
 for i in admission-controller updater recommender; do
-  kubectl -n kube-system rollout status deployment/vpa-$i
+  kubectl -n kube-system rollout restart deployment/vpa-$i
 done
