@@ -54,6 +54,10 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 		return nil, err
 	}
 
+	// self-managed-nodes aren't expected to be managed by cluster-autoscaler
+	if ociRef.IsNodeSelfManaged {
+		return nil, nil
+	}
 	ng, err := ocp.manager.GetNodePoolForInstance(ociRef)
 
 	// this instance may be part of a node pool that the autoscaler does not handle
@@ -70,8 +74,28 @@ func (ocp *OciCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.G
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (ocp *OciCloudProvider) HasInstance(n *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	instance, err := ocicommon.NodeToOciRef(node)
+	if err != nil {
+		return true, err
+	}
+	if instance.IsNodeSelfManaged {
+		return false, nil
+	}
+	np, err := ocp.manager.GetNodePoolForInstance(instance)
+	if err != nil {
+		return true, err
+	}
+	nodes, err := ocp.manager.GetNodePoolNodes(np)
+	if err != nil {
+		return true, err
+	}
+	for _, n := range nodes {
+		if n.Id == instance.InstanceID {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
