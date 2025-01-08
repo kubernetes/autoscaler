@@ -154,7 +154,7 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 	}
 
 	newlabelSetKey := cluster.getLabelSetKey(newLabels)
-	if pod.labelSetKey != newlabelSetKey {
+	if !podExists || pod.labelSetKey != newlabelSetKey {
 		if podExists {
 			// This Pod is already counted in the old VPA, remove the link.
 			cluster.removePodFromItsVpa(pod)
@@ -165,22 +165,20 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
-		cluster.setVPAContainersPerPod(pod, true)
-	} else if !podExists {
-		cluster.setVPAContainersPerPod(pod, true)
+		cluster.SetVPAContainersPerPod(pod, true)
 	} else if len(pod.Containers) > 1 {
 		// Tally the number of containers for later when we're averaging the recommendations if there's more than one container
-		cluster.setVPAContainersPerPod(pod, false)
+		cluster.SetVPAContainersPerPod(pod, false)
 	}
 	pod.Phase = phase
 }
 
-// setVPAContainersPerPod sets the number of containers per pod seen for pods connected to this VPA
+// SetVPAContainersPerPod sets the number of containers per pod seen for pods connected to this VPA
 // so that later when we're splitting the minimum recommendations over containers,  we're splitting them over
 // the correct number and not just the number of aggregates that have *ever* been present. (We don't want minimum resources
 // to erroneously shrink, either)
 // If addPodToItsVpa is true, it also increments the pod count for the VPA.
-func (cluster *clusterState) setVPAContainersPerPod(pod *PodState, addPodToItsVpa bool) {
+func (cluster *clusterState) SetVPAContainersPerPod(pod *PodState, addPodToItsVpa bool) {
 	for _, vpa := range cluster.vpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
 			// We want the "high water mark" of the most containers in the pod in the event
@@ -238,6 +236,13 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	aggregateState := cluster.findOrCreateAggregateContainerState(containerID)
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		// TODO(maxcao13): Find a better way to link these...
+		// if aggregateContainerState existed already and wasn't created (found), but the container doesn't exist for this pod,
+		// that means the aggregate that was found is being reused from an old pod's previous container for this new pod.
+		// Does that mean we should link the old aggregate with the new container? That's what this code does.
+		for _, vpa := range cluster.vpas {
+			vpa.UseAggregationIfMatching(cluster.aggregateStateKeyForContainerID(containerID), aggregateState)
+		}
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
