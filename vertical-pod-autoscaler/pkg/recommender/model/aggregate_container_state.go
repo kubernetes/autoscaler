@@ -52,7 +52,7 @@ var (
 	parsedPruningGracePeriodDuration *time.Duration
 )
 
-// ParseAndInitializePruningGracePeriod parses and sets the global pruning grace period duration.
+// ParseAndInitializePruningGracePeriodDuration parses and sets the global pruning grace period duration.
 func ParseAndInitializePruningGracePeriodDuration() error {
 	if globalPruningGracePeriodDuration == nil || *globalPruningGracePeriodDuration == "" {
 		parsedPruningGracePeriodDuration = nil // in tests, global variable does not reset, so nil it explicitly
@@ -197,17 +197,24 @@ func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerS
 		a.LastSampleStart = other.LastSampleStart
 	}
 	a.TotalSamplesCount += other.TotalSamplesCount
+	// if at least one aggregateContainerState is underVPA, then the aggregated state will contribute to a recommendation
+	if other.IsUnderVPA {
+		a.IsUnderVPA = true
+	}
+	// The merged state should use the pruningGracePeriod of the aggregate with the latest updateTime
+	if other.LastUpdateTime.After(a.LastUpdateTime) {
+		a.PruningGracePeriod = other.PruningGracePeriod
+		a.LastUpdateTime = other.LastUpdateTime
+	}
 }
 
 // NewAggregateContainerState returns a new, empty AggregateContainerState.
 func NewAggregateContainerState() *AggregateContainerState {
 	config := GetAggregationsConfig()
-	now := time.Now()
 	return &AggregateContainerState{
 		AggregateCPUUsage:    util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife),
 		AggregateMemoryPeaks: util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife),
-		CreationTime:         now,
-		LastUpdateTime:       now,
+		CreationTime:         time.Now(),
 	}
 }
 

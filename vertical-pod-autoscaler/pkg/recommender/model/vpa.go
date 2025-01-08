@@ -92,7 +92,6 @@ type Vpa struct {
 	// Most recently computed recommendation. Can be nil.
 	Recommendation *vpa_types.RecommendedPodResources
 	// All container aggregations that contribute to this VPA.
-	// TODO: Garbage collect old AggregateContainerStates.
 	aggregateContainerStates aggregateContainerStatesMap
 	// Pod Resource Policy provided in the VPA API object. Can be nil.
 	ResourcePolicy *vpa_types.PodResourcePolicy

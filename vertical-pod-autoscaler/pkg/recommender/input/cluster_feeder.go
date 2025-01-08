@@ -231,6 +231,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	}
 	for podID, podHistory := range clusterHistory {
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
+		_, existedBefore := feeder.clusterState.Pods()[podID]
 		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, apiv1.PodUnknown)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
@@ -249,6 +250,14 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 					}); err != nil {
 					klog.V(0).InfoS("Failed to add sample", "sample", sample, "error", err)
 				}
+			}
+		}
+		// If the pod never existed before, we did not set VPAContainersPerPod in AddOrUpdatePod because podState.Containers
+		// has not initialized yet from AddOrUpdateContainer. So we explicitly set it here the first time we see the pod.
+		if !existedBefore {
+			podState, podExists := feeder.clusterState.Pods()[podID]
+			if podExists && len(podHistory.Samples) > 1 {
+				feeder.clusterState.SetVPAContainersPerPod(podState, false)
 			}
 		}
 	}
@@ -482,6 +491,8 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 // MarkAggregates marks all aggregates IsUnderVPA=false, so when we go
 // through LoadPods(), the valid ones will get marked back to true, and
 // we can garbage collect the false ones from the VPAs' aggregate lists.
+// TODO: The MarkAggregates + SweepAggregates flow should be deprecated in favour
+// of implementing something like https://github.com/kubernetes/autoscaler/pull/6745#discussion_r1588280084
 func (feeder *clusterStateFeeder) MarkAggregates() {
 	for _, vpa := range feeder.clusterState.VPAs() {
 		for _, container := range vpa.AggregateContainerStates() {
@@ -500,15 +511,11 @@ func (feeder *clusterStateFeeder) SweepAggregates() {
 	var aggregatesPruned int
 	var initialAggregatesPruned int
 
-	// TODO(jkyros): This only removes the container state from the VPA's aggregate states, there
-	// is still a reference to them in feeder.clusterState.aggregateStateMap, and those get
-	// garbage collected eventually by the rate limited aggregate garbage collector later.
-	// Maybe we should clean those up here too since we know which ones are stale?
 	now := time.Now()
 	for _, vpa := range feeder.clusterState.VPAs() {
 		for containerKey, container := range vpa.AggregateContainerStates() {
 			if !container.IsUnderVPA && container.IsAggregateStale(now) {
-				klog.V(4).InfoS("Deleting Aggregate for VPA: container no longer present",
+				klog.V(4).InfoS("Deleting stale aggregateContainerState for VPA: container and it's pod are no longer present",
 					"namespace", vpa.ID.Namespace,
 					"vpaName", vpa.ID.VpaName,
 					"containerName", containerKey.ContainerName())
@@ -518,7 +525,7 @@ func (feeder *clusterStateFeeder) SweepAggregates() {
 		}
 		for containerKey, container := range vpa.ContainersInitialAggregateState {
 			if !container.IsUnderVPA && container.IsAggregateStale(now) {
-				klog.V(4).InfoS("Deleting Initial Aggregate for VPA: container no longer present",
+				klog.V(4).InfoS("Deleting stale initial aggregateContainerState for VPA: container and it's pod are no longer present",
 					"namespace", vpa.ID.Namespace,
 					"vpaName", vpa.ID.VpaName,
 					"containerName", containerKey)
@@ -552,6 +559,8 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		if feeder.memorySaveMode && !feeder.matchesVPA(pod) {
 			continue
 		}
+		_, existedBefore := feeder.clusterState.Pods()[pod.ID]
+
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
 			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request); err != nil {
@@ -563,14 +572,13 @@ func (feeder *clusterStateFeeder) LoadPods() {
 			feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
 		}
 
-		// TODO(maxcao13): if the pod doesn't exist, we never set VPAContainersPerPod in AddOrUpdatePod, because containers
-		// have not been added yet by AddOrUpdateContainer
-		// this is very inefficient, come back later and figure out how to make this whole containersPerPod process better
-		podState, podExists := feeder.clusterState.Pods()[pod.ID]
-		if podExists && len(pod.Containers) > 1 {
-			feeder.clusterState.SetVPAContainersPerPod(podState, true)
-		} else if !podExists {
-			panic("This shouldn't happen because AddOrUpdatePod should've placed this pod in the clusterState")
+		// If the pod never existed before, we did not set VPAContainersPerPod in AddOrUpdatePod because podState.Containers
+		// has not initialized yet from AddOrUpdateContainer. So we explicitly set it here the first time we see the pod.
+		if !existedBefore {
+			podState, podExists := feeder.clusterState.Pods()[pod.ID]
+			if podExists && len(pod.Containers) > 1 {
+				feeder.clusterState.SetVPAContainersPerPod(podState, false)
+			}
 		}
 	}
 }

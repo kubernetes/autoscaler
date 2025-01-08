@@ -77,7 +77,7 @@ func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggre
 	}
 
 	fraction := 1.0 / float64(containersPerPod)
-	klog.V(4).Infof("Spreading recommendation across %d containers (fraction %f)", containersPerPod, fraction)
+	klog.V(5).InfoS("Spreading recommendation across containers", "containerCount", containersPerPod, "fraction", fraction)
 	minCPU := model.ScaleResource(model.CPUAmountFromCores(*podMinCPUMillicores*0.001), fraction)
 	minMemory := model.ScaleResource(model.MemoryAmountFromBytes(*podMinMemoryMb*1024*1024), fraction)
 

@@ -60,6 +60,7 @@ type ClusterState interface {
 	SetObservedVPAs([]*vpa_types.VerticalPodAutoscaler)
 	ObservedVPAs() []*vpa_types.VerticalPodAutoscaler
 	Pods() map[PodID]*PodState
+	SetVPAContainersPerPod(pod *PodState, addPodToItsVpa bool)
 }
 
 type clusterState struct {
@@ -179,6 +180,9 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 // to erroneously shrink, either)
 // If addPodToItsVpa is true, it also increments the pod count for the VPA.
 func (cluster *clusterState) SetVPAContainersPerPod(pod *PodState, addPodToItsVpa bool) {
+	if !addPodToItsVpa && len(pod.Containers) <= 1 {
+		return
+	}
 	for _, vpa := range cluster.vpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
 			// We want the "high water mark" of the most containers in the pod in the event
@@ -236,10 +240,8 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	aggregateState := cluster.findOrCreateAggregateContainerState(containerID)
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
-		// TODO(maxcao13): Find a better way to link these...
-		// if aggregateContainerState existed already and wasn't created (found), but the container doesn't exist for this pod,
-		// that means the aggregate that was found is being reused from an old pod's previous container for this new pod.
-		// Does that mean we should link the old aggregate with the new container? That's what this code does.
+		// if aggregateState existed already, but the container doesn't exist for this pod, that means the aggregate that was
+		// found from an old pod's container and should be re-used for this new pod that somehow shares the same name. Link them.
 		for _, vpa := range cluster.vpas {
 			vpa.UseAggregationIfMatching(cluster.aggregateStateKeyForContainerID(containerID), aggregateState)
 		}
@@ -313,14 +315,16 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 			if err := cluster.DeleteVpa(vpaID); err != nil {
 				return err
 			}
-
 			vpaExists = false
 		} else {
 			// Always update the pruningGracePeriod to ensure a potential new grace period is applied.
 			// This prevents an old, excessively long grace period from persisting and
 			// potentially causing the VPA to keep stale aggregates with an outdated grace period.
 			vpa.PruningGracePeriod = vpa_utils.ParsePruningGracePeriodFromAnnotations(annotationsMap)
-			for _, containerState := range vpa.aggregateContainerStates {
+			for _, containerState := range vpa.AggregateContainerStates() {
+				containerState.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
+			}
+			for _, containerState := range vpa.ContainersInitialAggregateState {
 				containerState.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
 			}
 		}
@@ -333,11 +337,11 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
 		}
 		vpa.PodCount = len(cluster.GetMatchingPods(vpa))
+		klog.V(3).InfoS("Created a new VPA in the cluster state", "vpa", vpaID)
 	}
 
-	// Default this to the minimum, we will tally the true number when we load the pods later
-	// TODO(jkyros): This is gross, it depends on the order I know it currently loads things in, but
-	// that might not be the case someday
+	// Default this to the minimum, we will tally the true number when we load the pods later.
+	// Note; this depends on the order the updater currently loads things in, but that might not be the case someday.
 	vpa.ContainersPerPod = 1
 	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Annotations = annotationsMap
