@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -34,6 +35,11 @@ import (
 const (
 	maxAddTaintRetries    = 5
 	maxGetNodepoolRetries = 3
+	clusterId             = "clusterId"
+	compartmentId         = "compartmentId"
+	nodepoolTags          = "nodepoolTags"
+	min                   = "min"
+	max                   = "max"
 )
 
 var (
@@ -75,10 +81,11 @@ type okeClient interface {
 	GetNodePool(context.Context, oke.GetNodePoolRequest) (oke.GetNodePoolResponse, error)
 	UpdateNodePool(context.Context, oke.UpdateNodePoolRequest) (oke.UpdateNodePoolResponse, error)
 	DeleteNode(context.Context, oke.DeleteNodeRequest) (oke.DeleteNodeResponse, error)
+	ListNodePools(ctx context.Context, request oke.ListNodePoolsRequest) (oke.ListNodePoolsResponse, error)
 }
 
 // CreateNodePoolManager creates an NodePoolManager that can manage autoscaling node pools
-func CreateNodePoolManager(cloudConfigPath string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, kubeClient kubernetes.Interface) (NodePoolManager, error) {
+func CreateNodePoolManager(cloudConfigPath string, nodeGroupAutoDiscoveryList []string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, kubeClient kubernetes.Interface) (NodePoolManager, error) {
 
 	var err error
 	var configProvider common.ConfigurationProvider
@@ -151,6 +158,20 @@ func CreateNodePoolManager(cloudConfigPath string, discoveryOpts cloudprovider.N
 		nodePoolCache:          newNodePoolCache(&okeClient),
 	}
 
+	// auto discover nodepools from compartments with nodeGroupAutoDiscovery parameter
+	klog.Infof("checking node groups for autodiscovery ... ")
+	for _, arg := range nodeGroupAutoDiscoveryList {
+		nodeGroup, err := nodeGroupFromArg(arg)
+		if err != nil {
+			return nil, fmt.Errorf("unable to construct node group auto discovery from argument: %v", err)
+		}
+		nodeGroup.manager = manager
+		nodeGroup.kubeClient = kubeClient
+
+		manager.nodeGroups = append(manager.nodeGroups, *nodeGroup)
+		autoDiscoverNodeGroups(manager, manager.okeClient, *nodeGroup)
+	}
+
 	// Contains all the specs from the args that give us the pools.
 	for _, arg := range discoveryOpts.NodeGroupSpecs {
 		np, err := nodePoolFromArg(arg)
@@ -180,6 +201,48 @@ func CreateNodePoolManager(cloudConfigPath string, discoveryOpts cloudprovider.N
 	return manager, nil
 }
 
+func autoDiscoverNodeGroups(m *ociManagerImpl, okeClient okeClient, nodeGroup nodeGroupAutoDiscovery) (bool, error) {
+	var resp, reqErr = okeClient.ListNodePools(context.Background(), oke.ListNodePoolsRequest{
+		ClusterId:     common.String(nodeGroup.clusterId),
+		CompartmentId: common.String(nodeGroup.compartmentId),
+	})
+	if reqErr != nil {
+		klog.Errorf("failed to fetch the nodepool list with clusterId: %s, compartmentId: %s. Error: %v", nodeGroup.clusterId, nodeGroup.compartmentId, reqErr)
+		return false, reqErr
+	}
+	for _, nodePoolSummary := range resp.Items {
+		if validateNodepoolTags(nodeGroup.tags, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags) {
+			nodepool := &nodePool{}
+			nodepool.id = *nodePoolSummary.Id
+			nodepool.minSize = nodeGroup.minSize
+			nodepool.maxSize = nodeGroup.maxSize
+
+			nodepool.manager = nodeGroup.manager
+			nodepool.kubeClient = nodeGroup.kubeClient
+
+			m.staticNodePools[nodepool.id] = nodepool
+			klog.V(5).Infof("auto discovered nodepool in compartment : %s , nodepoolid: %s", nodeGroup.compartmentId, nodepool.id)
+		} else {
+			klog.Warningf("nodepool ignored as the tags do not satisfy the requirement : %s , %v, %v", *nodePoolSummary.Id, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags)
+		}
+	}
+	return true, nil
+}
+
+func validateNodepoolTags(nodeGroupTags map[string]string, freeFormTags map[string]string, definedTags map[string]map[string]interface{}) bool {
+	if nodeGroupTags != nil {
+		for tagKey, tagValue := range nodeGroupTags {
+			namespacedTagKey := strings.Split(tagKey, ".")
+			if len(namespacedTagKey) == 2 && tagValue != definedTags[namespacedTagKey[0]][namespacedTagKey[1]] {
+				return false
+			} else if len(namespacedTagKey) != 2 && tagValue != freeFormTags[tagKey] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // nodePoolFromArg parses a node group spec represented in the form of `<minSize>:<maxSize>:<ocid>` and produces a node group spec object
 func nodePoolFromArg(value string) (*nodePool, error) {
 	tokens := strings.SplitN(value, ":", 3)
@@ -207,6 +270,81 @@ func nodePoolFromArg(value string) (*nodePool, error) {
 	return spec, nil
 }
 
+// nodeGroupFromArg parses a node group spec represented in the form of
+// `clusterId:<clusterId>,compartmentId:<compartmentId>,nodepoolTags:<tagKey1>=<tagValue1>&<tagKey2>=<tagValue2>,min:<min>,max:<max>`
+// and produces a node group auto discovery object
+func nodeGroupFromArg(value string) (*nodeGroupAutoDiscovery, error) {
+	// this regex will find the key-value pairs in any given order if separated with a colon
+	regexPattern := `(?:` + compartmentId + `:(?P<` + compartmentId + `>[^,]+)`
+	regexPattern = regexPattern + `|` + nodepoolTags + `:(?P<` + nodepoolTags + `>[^,]+)`
+	regexPattern = regexPattern + `|` + max + `:(?P<` + max + `>[^,]+)`
+	regexPattern = regexPattern + `|` + min + `:(?P<` + min + `>[^,]+)`
+	regexPattern = regexPattern + `|` + clusterId + `:(?P<` + clusterId + `>[^,]+)`
+	regexPattern = regexPattern + `)(?:,|$)`
+
+	re := regexp.MustCompile(regexPattern)
+
+	parametersMap := make(map[string]string)
+
+	// push key-value pairs into a map
+	for _, match := range re.FindAllStringSubmatch(value, -1) {
+		for i, name := range re.SubexpNames() {
+			if i != 0 && match[i] != "" {
+				parametersMap[name] = match[i]
+			}
+		}
+	}
+
+	spec := &nodeGroupAutoDiscovery{}
+
+	if parametersMap[clusterId] != "" {
+		spec.clusterId = parametersMap[clusterId]
+	} else {
+		return nil, fmt.Errorf("failed to set %s, it is missing in node-group-auto-discovery parameter", clusterId)
+	}
+
+	if parametersMap[compartmentId] != "" {
+		spec.compartmentId = parametersMap[compartmentId]
+	} else {
+		return nil, fmt.Errorf("failed to set %s, it is missing in node-group-auto-discovery parameter", compartmentId)
+	}
+
+	if size, err := strconv.Atoi(parametersMap[min]); err == nil {
+		spec.minSize = size
+	} else {
+		return nil, fmt.Errorf("failed to set %s size: %s, expected integer", min, parametersMap[min])
+	}
+
+	if size, err := strconv.Atoi(parametersMap[max]); err == nil {
+		spec.maxSize = size
+	} else {
+		return nil, fmt.Errorf("failed to set %s size: %s, expected integer", max, parametersMap[max])
+	}
+
+	if parametersMap[nodepoolTags] != "" {
+		nodepoolTags := parametersMap[nodepoolTags]
+
+		spec.tags = make(map[string]string)
+
+		pairs := strings.Split(nodepoolTags, "&")
+
+		for _, pair := range pairs {
+			parts := strings.Split(pair, "=")
+			if len(parts) == 2 {
+				spec.tags[parts[0]] = parts[1]
+			} else {
+				return nil, fmt.Errorf("nodepoolTags should be given in tagKey=tagValue format, this is not valid: %s", pair)
+			}
+		}
+	} else {
+		return nil, fmt.Errorf("failed to set %s, it is missing in node-group-auto-discovery parameter", nodepoolTags)
+	}
+
+	klog.Infof("node group auto discovery spec constructed: %+v", spec)
+
+	return spec, nil
+}
+
 type ociManagerImpl struct {
 	cfg                    *ocicommon.CloudConfig
 	okeClient              okeClient
@@ -215,6 +353,7 @@ type ociManagerImpl struct {
 	ociTagsGetter          ocicommon.TagsGetter
 	registeredTaintsGetter RegisteredTaintsGetter
 	staticNodePools        map[string]NodePool
+	nodeGroups             []nodeGroupAutoDiscovery
 
 	lastRefresh time.Time
 
@@ -253,15 +392,20 @@ func (m *ociManagerImpl) TaintToPreventFurtherSchedulingOnRestart(nodes []*apiv1
 }
 
 func (m *ociManagerImpl) forceRefresh() error {
-	httpStatusCode, err := m.nodePoolCache.rebuild(m.staticNodePools, maxGetNodepoolRetries)
-	if err != nil {
-		if httpStatusCode == 404 {
-			m.lastRefresh = time.Now()
-			klog.Errorf("Failed to fetch the nodepools. Retrying after %v", m.lastRefresh.Add(m.cfg.Global.RefreshInterval))
-			return err
+	// auto discover node groups
+	if m.nodeGroups != nil {
+		// empty previous nodepool map to do an auto discovery
+		m.staticNodePools = make(map[string]NodePool)
+		for _, nodeGroup := range m.nodeGroups {
+			autoDiscoverNodeGroups(m, m.okeClient, nodeGroup)
 		}
+	}
+	// rebuild nodepool cache
+	err := m.nodePoolCache.rebuild(m.staticNodePools, maxGetNodepoolRetries)
+	if err != nil {
 		return err
 	}
+
 	m.lastRefresh = time.Now()
 	klog.Infof("Refreshed NodePool list, next refresh after %v", m.lastRefresh.Add(m.cfg.Global.RefreshInterval))
 	return nil
@@ -276,7 +420,10 @@ func (m *ociManagerImpl) Cleanup() error {
 func (m *ociManagerImpl) GetNodePools() []NodePool {
 	var nodePools []NodePool
 	for _, np := range m.staticNodePools {
-		nodePools = append(nodePools, np)
+		nodePoolInCache := m.nodePoolCache.cache[np.Id()]
+		if nodePoolInCache != nil {
+			nodePools = append(nodePools, np)
+		}
 	}
 	return nodePools
 }
@@ -497,7 +644,7 @@ func (m *ociManagerImpl) SetNodePoolSize(np NodePool, size int) error {
 func (m *ociManagerImpl) DeleteInstances(np NodePool, instances []ocicommon.OciRef) error {
 	klog.Infof("DeleteInstances called")
 	for _, instance := range instances {
-		err := m.nodePoolCache.removeInstance(np.Id(), instance.InstanceID)
+		err := m.nodePoolCache.removeInstance(np.Id(), instance.InstanceID, instance.Name)
 		if err != nil {
 			return err
 		}

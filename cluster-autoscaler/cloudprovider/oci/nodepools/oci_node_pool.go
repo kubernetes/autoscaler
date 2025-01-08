@@ -46,6 +46,17 @@ type nodePool struct {
 	maxSize int
 }
 
+type nodeGroupAutoDiscovery struct {
+	manager    NodePoolManager
+	kubeClient kubernetes.Interface
+
+	clusterId     string
+	compartmentId string
+	tags          map[string]string
+	minSize       int
+	maxSize       int
+}
+
 // MaxSize returns maximum size of the node group.
 func (np *nodePool) MaxSize() int {
 	return np.maxSize

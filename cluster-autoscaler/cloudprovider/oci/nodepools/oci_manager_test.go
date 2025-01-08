@@ -336,6 +336,10 @@ func (c mockOKEClient) DeleteNode(context.Context, oke.DeleteNodeRequest) (oke.D
 	}, nil
 }
 
+func (c mockOKEClient) ListNodePools(context.Context, oke.ListNodePoolsRequest) (oke.ListNodePoolsResponse, error) {
+	return oke.ListNodePoolsResponse{}, nil
+}
+
 func TestRemoveInstance(t *testing.T) {
 	instanceId1 := "instance1"
 	instanceId2 := "instance2"
@@ -360,16 +364,20 @@ func TestRemoveInstance(t *testing.T) {
 		},
 	}
 
-	if err := nodePoolCache.removeInstance(nodePoolId, instanceId1); err != nil {
+	if err := nodePoolCache.removeInstance(nodePoolId, instanceId1, instanceId1); err != nil {
 		t.Errorf("Remove instance #{instanceId1} incorrectly")
 	}
 
-	if err := nodePoolCache.removeInstance(nodePoolId, instanceId2); err != nil {
+	if err := nodePoolCache.removeInstance(nodePoolId, instanceId2, instanceId2); err != nil {
 		t.Errorf("Remove instance #{instanceId2} incorrectly")
 	}
 
-	if err := nodePoolCache.removeInstance(nodePoolId, instanceId3); err != nil {
+	if err := nodePoolCache.removeInstance(nodePoolId, instanceId3, instanceId3); err != nil {
 		t.Errorf("Fail to remove instance #{instanceId3}")
+	}
+
+	if err := nodePoolCache.removeInstance(nodePoolId, "", "badNode"); err == nil {
+		t.Errorf("Bad node should not have been deleted.")
 	}
 
 	if len(nodePoolCache.cache[nodePoolId].Nodes) != 3 {
@@ -382,5 +390,98 @@ func TestRemoveInstance(t *testing.T) {
 				t.Errorf("Cannot find the instance %q from node pool cache and it shouldn't be deleted", *node.Id)
 			}
 		}
+	}
+}
+
+func TestNodeGroupFromArg(t *testing.T) {
+	var nodeGroupArg = "clusterId:ocid1.cluster.oc1.test-region.test,compartmentId:ocid1.compartment.oc1.test-region.test,nodepoolTags:ca-managed=true&namespace.foo=bar,min:1,max:5"
+	nodeGroupAutoDiscovery, err := nodeGroupFromArg(nodeGroupArg)
+	if err != nil {
+		t.Errorf("Error: #{err}")
+	}
+	if nodeGroupAutoDiscovery.clusterId != "ocid1.cluster.oc1.test-region.test" {
+		t.Errorf("Error: clusterId should be ocid1.cluster.oc1.test-region.test")
+	}
+	if nodeGroupAutoDiscovery.compartmentId != "ocid1.compartment.oc1.test-region.test" {
+		t.Errorf("Error: compartmentId should be ocid1.compartment.oc1.test-region.test")
+	}
+	if nodeGroupAutoDiscovery.minSize != 1 {
+		t.Errorf("Error: minSize should be 1")
+	}
+	if nodeGroupAutoDiscovery.maxSize != 5 {
+		t.Errorf("Error: maxSize should be 5")
+	}
+	if nodeGroupAutoDiscovery.tags["ca-managed"] != "true" {
+		t.Errorf("Error: ca-managed:true is missing in tags.")
+	}
+	if nodeGroupAutoDiscovery.tags["namespace.foo"] != "bar" {
+		t.Errorf("Error: namespace.foo:bar is missing in tags.")
+	}
+}
+
+func TestValidateNodePoolTags(t *testing.T) {
+
+	testCases := map[string]struct {
+		nodeGroupTags  map[string]string
+		freeFormTags   map[string]string
+		definedTags    map[string]map[string]interface{}
+		expectedResult bool
+	}{
+		"no-tags": {
+			nodeGroupTags:  nil,
+			freeFormTags:   nil,
+			definedTags:    nil,
+			expectedResult: true,
+		},
+		"node-group tags provided but no tags on nodepool": {
+			nodeGroupTags: map[string]string{
+				"testTag": "testTagValue",
+			},
+			freeFormTags:   nil,
+			definedTags:    nil,
+			expectedResult: false,
+		},
+		"node-group tags and free-form tags do not match": {
+			nodeGroupTags: map[string]string{
+				"testTag": "testTagValue",
+			},
+			freeFormTags: map[string]string{
+				"foo": "bar",
+			},
+			definedTags:    nil,
+			expectedResult: false,
+		},
+		"free-form tags have required node-group tags": {
+			nodeGroupTags: map[string]string{
+				"testTag": "testTagValue",
+			},
+			freeFormTags: map[string]string{
+				"foo":     "bar",
+				"testTag": "testTagValue",
+			},
+			definedTags:    nil,
+			expectedResult: true,
+		},
+		"defined tags have required node-group tags": {
+			nodeGroupTags: map[string]string{
+				"ns.testTag": "testTagValue",
+			},
+			freeFormTags: nil,
+			definedTags: map[string]map[string]interface{}{
+				"ns": {
+					"testTag": "testTagValue",
+				},
+			},
+			expectedResult: true,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result := validateNodepoolTags(tc.nodeGroupTags, tc.freeFormTags, tc.definedTags)
+			if result != tc.expectedResult {
+				t.Errorf("Testcase '%s' failed: got %t ; expected %t", name, result, tc.expectedResult)
+			}
+		})
 	}
 }
