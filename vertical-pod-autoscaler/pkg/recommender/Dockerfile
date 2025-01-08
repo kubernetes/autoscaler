@@ -26,8 +26,9 @@ COPY common common
 COPY pkg pkg
 
 ARG TARGETOS TARGETARCH
+ARG BUILD_LD_FLAGS="-s"
 
-RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/recommender -o recommender-$TARGETARCH
+RUN CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/recommender -ldflags="${BUILD_LD_FLAGS}" -o recommender-$TARGETARCH
 
 FROM gcr.io/distroless/static:nonroot
 
