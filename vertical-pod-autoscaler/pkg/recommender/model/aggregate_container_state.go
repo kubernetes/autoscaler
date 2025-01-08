@@ -52,7 +52,7 @@ var (
 	parsedPruningGracePeriodDuration *time.Duration
 )
 
-// ParseAndInitializePruningGracePeriod parses and sets the global pruning grace period duration.
+// ParseAndInitializePruningGracePeriodDuration parses and sets the global pruning grace period duration.
 func ParseAndInitializePruningGracePeriodDuration() error {
 	if globalPruningGracePeriodDuration == nil || *globalPruningGracePeriodDuration == "" {
 		parsedPruningGracePeriodDuration = nil // in tests, global variable does not reset, so nil it explicitly
