@@ -91,13 +91,35 @@ func (r *recommender) UpdateVPAs() {
 		if !found {
 			continue
 		}
-		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa), vpa.ContainersPerPod)
+		vpaContainerNameToAggregateStateMap := GetContainerNameToAggregateStateMap(vpa)
+		klog.V(5).InfoS("Calculating recommendation pod resources...", "vpa", vpa.ID.VpaName, "namespace", vpa.ID.Namespace, "targetRef", vpa.TargetRef)
+		resources := r.podResourceRecommender.GetRecommendedPodResources(vpaContainerNameToAggregateStateMap, vpa.ContainersPerPod)
 		had := vpa.HasRecommendation()
 
 		listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
 
 		for _, postProcessor := range r.recommendationPostProcessor {
 			listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
+		}
+
+		if had {
+			totalTrackedContainerNames := len(vpaContainerNameToAggregateStateMap)
+			if totalTrackedContainerNames != vpa.ContainersPerPod {
+				// this means that there are some tracked containers that are stale, but haven't been pruned yet (or won't be pruned be at all) according to vpa pruningGracePeriod
+				// figure out which containers are stale, and just replace the calculated recommendation with the previous one in the previous vpa.Status
+				// TODO: We can save computation by checking staleness early and don't calculate a recommendation
+				now := time.Now()
+				for i, resources := range observedVpa.Status.Recommendation.ContainerRecommendations {
+					containerName := resources.ContainerName
+					containerAggregateState := vpaContainerNameToAggregateStateMap[containerName]
+					if containerAggregateState != nil && !containerAggregateState.IsUnderVPA && !containerAggregateState.IsAggregateStale(now) {
+						klog.V(5).InfoS("Container no longer exists, but is not stale. Keeping container recommendation at previous state.", "vpa", vpa.ID.VpaName, "container", containerName)
+						previousContainerRecommendation := vpa.AsStatus().Recommendation.ContainerRecommendations[i]
+						// Maybe we should add a "stale=true" field to persist in the vpa.Status.ContainerRecommendation[i] as well?
+						listOfResourceRecommendation.ContainerRecommendations[i] = previousContainerRecommendation
+					}
+				}
+			}
 		}
 
 		vpa.UpdateRecommendation(listOfResourceRecommendation)
