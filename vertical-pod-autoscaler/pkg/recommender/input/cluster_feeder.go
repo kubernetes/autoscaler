@@ -513,6 +513,15 @@ func (feeder *clusterStateFeeder) LoadPods() {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
 			}
 		}
+		// TODO(maxcao13): if the pod doesn't exist, we never set VPAContainersPerPod in AddOrUpdatePod, because containers
+		// have not been added yet by AddOrUpdateContainer
+		// this is very inefficient, come back later and figure out how to make this whole containersPerPod process better
+		podState, podExists := feeder.clusterState.Pods[pod.ID]
+		if podExists && len(pod.Containers) > 1 {
+			feeder.clusterState.SetVPAContainersPerPod(podState, true)
+		} else if !podExists {
+			panic("This shouldn't happen because AddOrUpdatePod should've placed this pod in the clusterState")
+		}
 	}
 }
 
