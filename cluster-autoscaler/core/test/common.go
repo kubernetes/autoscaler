@@ -19,6 +19,7 @@ package test
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"testing"
 	"time"
 
@@ -343,19 +344,21 @@ type expanderResults struct {
 
 // MockReportingStrategy implements expander.Strategy
 type MockReportingStrategy struct {
-	defaultStrategy expander.Strategy
-	optionToChoose  *GroupSizeChange
-	t               *testing.T
-	results         *expanderResults
+	defaultStrategy           expander.Strategy
+	optionToChoose            *GroupSizeChange
+	similarNodeGroupsToChoose *[]string
+	t                         *testing.T
+	results                   *expanderResults
 }
 
-// NewMockRepotingStrategy creates an expander strategy with reporting and mocking capabilities.
-func NewMockRepotingStrategy(t *testing.T, optionToChoose *GroupSizeChange) *MockReportingStrategy {
+// NewMockReportingStrategy creates an expander strategy with reporting and mocking capabilities.
+func NewMockReportingStrategy(t *testing.T, optionToChoose *GroupSizeChange, similarNodeGroupsToChoose *[]string) *MockReportingStrategy {
 	return &MockReportingStrategy{
-		defaultStrategy: random.NewStrategy(),
-		results:         &expanderResults{},
-		optionToChoose:  optionToChoose,
-		t:               t,
+		defaultStrategy:           random.NewStrategy(),
+		results:                   &expanderResults{},
+		optionToChoose:            optionToChoose,
+		similarNodeGroupsToChoose: similarNodeGroupsToChoose,
+		t:                         t,
 	}
 }
 
@@ -375,7 +378,16 @@ func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo m
 	for _, option := range options {
 		groupSizeChange := expanderOptionToGroupSizeChange(option)
 		if groupSizeChange == *r.optionToChoose {
-			return &option
+			bestOption := option
+			if r.similarNodeGroupsToChoose != nil {
+				bestOption.SimilarNodeGroups = []cloudprovider.NodeGroup{}
+				for _, nodeGroup := range options {
+					if slices.Contains(*r.similarNodeGroupsToChoose, nodeGroup.NodeGroup.Id()) {
+						bestOption.SimilarNodeGroups = append(bestOption.SimilarNodeGroups, nodeGroup.NodeGroup)
+					}
+				}
+			}
+			return &bestOption
 		}
 	}
 	assert.Fail(r.t, "did not find expansionOptionToChoose %+v", r.optionToChoose)
