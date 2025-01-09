@@ -563,6 +563,8 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 		podListProcessor.AddProcessor(provreqProcesor)
+
+		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
 	}
 
 	if *proactiveScaleupEnabled {
