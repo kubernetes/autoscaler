@@ -95,8 +95,9 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUM
 				roundedValues, err := RoundUpToScale(resourceAmount, roundCPUMillicores)
 				if err != nil {
 					klog.V(4).InfoS("Error rounding CPU value; leaving unchanged", "rawValue", resourceAmount, "scale", roundCPUMillicores, "error", err)
+				} else {
+					klog.V(4).InfoS("Successfully rounded CPU value", "rawValue", resourceAmount, "roundedValue", roundedValues)
 				}
-				klog.V(4).InfoS("Successfully rounded CPU value", "rawValue", resourceAmount, "roundedValue", roundedValues)
 				quantity = QuantityFromCPUAmount(roundedValues)
 			}
 		case ResourceMemory:
