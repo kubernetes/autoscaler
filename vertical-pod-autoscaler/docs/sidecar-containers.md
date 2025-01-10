@@ -79,7 +79,7 @@ webhooks:
 Without proper handling of sidecar containers, the following problematic sequence could occur:
 
 1. VPA admission controller sets resources for all containers
-2. Sidecar webhook injects a new container with its own resource requirements
+2. Sidecar webhook reconciles the injected sidecar container to the original resource requirements
 3. The pod starts with mismatched resources
 4. VPA detects the mismatch and evicts the pod
 5. The process repeats, creating an endless loop
