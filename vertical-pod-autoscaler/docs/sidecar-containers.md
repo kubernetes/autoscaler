@@ -88,7 +88,7 @@ Without proper handling of sidecar containers, the following problematic sequenc
 
 ### Option 1: Webhook Ordering
 
-To have VPA manage sidecar resources, ensure your webhook names follow this pattern:
+If you know that you only use sidecar injecting webhooks which _don't_ reconcile Container resources, you can choose to have VPA manage sidecar resources. Ensure your webhook names follow this pattern, resulting in the VPA admission-controller webhook to be executed last:
 
 ```yaml
 webhooks:
