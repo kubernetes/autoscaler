@@ -20,6 +20,7 @@ package server
 import (
 	"net/http"
 	"net/http/pprof"
+	"os"
 
 	"k8s.io/klog/v2"
 
@@ -46,6 +47,7 @@ func Initialize(enableProfiling *bool, healthCheck *metrics.HealthCheck, address
 		}
 
 		err := http.ListenAndServe(*address, mux)
-		klog.Fatalf("Failed to start metrics: %v", err)
+		klog.ErrorS(err, "Failed to start metrics")
+		os.Exit(255)
 	}()
 }

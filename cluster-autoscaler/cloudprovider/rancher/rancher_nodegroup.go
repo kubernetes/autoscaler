@@ -31,8 +31,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	provisioningv1 "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher/provisioning.cattle.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	"k8s.io/utils/pointer"
 )
 
@@ -134,6 +134,11 @@ func (ng *nodeGroup) DeleteNodes(toDelete []*corev1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *nodeGroup) ForceDeleteNodes(nodes []*corev1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 func (ng *nodeGroup) findNodeByProviderID(providerID string) (*node, error) {
 	nodes, err := ng.nodes()
 	if err != nil {
@@ -196,7 +201,7 @@ func (ng *nodeGroup) DecreaseTargetSize(delta int) error {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *nodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *nodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   fmt.Sprintf("%s-%s-%d", ng.provider.config.ClusterName, ng.Id(), rand.Int63()),
@@ -216,9 +221,7 @@ func (ng *nodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	node.Status.Allocatable = node.Status.Capacity
 
 	// Setup node info template
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.Id()))
-	nodeInfo.SetNode(node)
-
+	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
 	return nodeInfo, nil
 }
 

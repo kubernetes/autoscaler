@@ -24,7 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // VMsPool is single instance VM pool
@@ -120,6 +120,11 @@ func (agentPool *VMsPool) DeleteNodes(nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (agentPool *VMsPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group.
 func (agentPool *VMsPool) DecreaseTargetSize(delta int) error {
 	// TODO(wenxuan): Implement this method
@@ -169,7 +174,7 @@ func (agentPool *VMsPool) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo is not implemented.
-func (agentPool *VMsPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (agentPool *VMsPool) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

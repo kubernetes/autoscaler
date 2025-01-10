@@ -22,28 +22,28 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 func TestFilterOutSchedulable(t *testing.T) {
-	schedulermetrics.Register()
-
 	node := buildReadyTestNode("node", 2000, 100)
-	matchesAllNodes := func(*schedulerframework.NodeInfo) bool { return true }
-	matchesNoNodes := func(*schedulerframework.NodeInfo) bool { return false }
+	matchesAllNodes := func(*framework.NodeInfo) bool { return true }
+	matchesNoNodes := func(*framework.NodeInfo) bool { return false }
 
 	testCases := map[string]struct {
 		nodesWithPods           map[*apiv1.Node][]*apiv1.Pod
 		unschedulableCandidates []*apiv1.Pod
 		expectedScheduledPods   []*apiv1.Pod
 		expectedUnscheduledPods []*apiv1.Pod
-		nodeFilter              func(*schedulerframework.NodeInfo) bool
+		nodeFilter              func(*framework.NodeInfo) bool
 	}{
 		"single empty node, no pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
@@ -175,39 +175,33 @@ func TestFilterOutSchedulable(t *testing.T) {
 
 	for tn, tc := range testCases {
 		t.Run(tn, func(t *testing.T) {
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 
 			var allExpectedScheduledPods []*apiv1.Pod
 			allExpectedScheduledPods = append(allExpectedScheduledPods, tc.expectedScheduledPods...)
 
 			for node, pods := range tc.nodesWithPods {
-				err := clusterSnapshot.AddNode(node)
-				assert.NoError(t, err)
-
 				for _, pod := range pods {
 					pod.Spec.NodeName = node.Name
-					err = clusterSnapshot.AddPod(pod, node.Name)
-					assert.NoError(t, err)
-
 					allExpectedScheduledPods = append(allExpectedScheduledPods, pod)
 				}
+				err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pods...))
+				assert.NoError(t, err)
 			}
 
 			clusterSnapshot.Fork()
 
-			processor := NewFilterOutSchedulablePodListProcessor(predicateChecker, tc.nodeFilter)
+			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter)
 			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, unschedulablePods, tc.expectedUnscheduledPods, "unschedulable pods differ")
 
-			nodeInfos, err := clusterSnapshot.NodeInfos().List()
+			nodeInfos, err := clusterSnapshot.ListNodeInfos()
 			assert.NoError(t, err)
 			var scheduledPods []*apiv1.Pod
 			for _, nodeInfo := range nodeInfos {
-				for _, podInfo := range nodeInfo.Pods {
+				for _, podInfo := range nodeInfo.Pods() {
 					scheduledPods = append(scheduledPods, podInfo.Pod)
 				}
 			}
@@ -256,8 +250,12 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 		},
 	}
 	snapshots := map[string]func() clustersnapshot.ClusterSnapshot{
-		"basic": func() clustersnapshot.ClusterSnapshot { return clustersnapshot.NewBasicClusterSnapshot() },
-		"delta": func() clustersnapshot.ClusterSnapshot { return clustersnapshot.NewDeltaClusterSnapshot() },
+		"basic": func() clustersnapshot.ClusterSnapshot {
+			return testsnapshot.NewCustomTestSnapshotOrDie(b, store.NewBasicSnapshotStore())
+		},
+		"delta": func() clustersnapshot.ClusterSnapshot {
+			return testsnapshot.NewCustomTestSnapshotOrDie(b, store.NewDeltaSnapshotStore(16))
+		},
 	}
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range tests {
@@ -282,23 +280,15 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 					}
 				}
 
-				predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-				assert.NoError(b, err)
-
 				clusterSnapshot := snapshotFactory()
-				if err := clusterSnapshot.AddNodes(nodes); err != nil {
+				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, drasnapshot.Snapshot{}); err != nil {
 					assert.NoError(b, err)
 				}
 
-				for _, pod := range scheduledPods {
-					if err := clusterSnapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-						assert.NoError(b, err)
-					}
-				}
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {
-					processor := NewFilterOutSchedulablePodListProcessor(predicateChecker, scheduling.ScheduleAnywhere)
+					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere)
 					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {

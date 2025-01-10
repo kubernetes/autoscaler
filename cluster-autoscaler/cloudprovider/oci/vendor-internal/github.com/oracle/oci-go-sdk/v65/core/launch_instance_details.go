@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -33,11 +33,6 @@ type LaunchInstanceDetails struct {
 	// The OCID of the compartment.
 	CompartmentId *string `mandatory:"true" json:"compartmentId"`
 
-	// The shape of an instance. The shape determines the number of CPUs, amount of memory,
-	// and other resources allocated to the instance.
-	// You can enumerate all available shapes by calling ListShapes.
-	Shape *string `mandatory:"true" json:"shape"`
-
 	// The OCID of the compute capacity reservation this instance is launched under.
 	// You can opt out of all default reservations by specifying an empty string as input for this field.
 	// For more information, see Capacity Reservations (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/reserve-capacity.htm#default).
@@ -52,6 +47,10 @@ type LaunchInstanceDetails struct {
 	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
+
+	// Security Attributes for this resource. This is unique to ZPR, and helps identify which resources are allowed to be accessed by what permission controls.
+	// Example: `{"Oracle-DataSecurity-ZPR": {"MaxEgressCount": {"value":"42","mode":"audit"}}}`
+	SecurityAttributes map[string]map[string]interface{} `mandatory:"false" json:"securityAttributes"`
 
 	// A user-friendly name. Does not have to be unique, and it's changeable.
 	// Avoid entering confidential information.
@@ -78,12 +77,16 @@ type LaunchInstanceDetails struct {
 	// Example: `FAULT-DOMAIN-1`
 	FaultDomain *string `mandatory:"false" json:"faultDomain"`
 
+	// The OCID of the cluster placement group of the instance.
+	ClusterPlacementGroupId *string `mandatory:"false" json:"clusterPlacementGroupId"`
+
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
 	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) that the instance will be created in.
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the
+	// compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) that the instance will be created in.
 	ComputeClusterId *string `mandatory:"false" json:"computeClusterId"`
 
 	// Deprecated. Instead use `hostnameLabel` in
@@ -110,9 +113,9 @@ type LaunchInstanceDetails struct {
 	// over iSCSI the same way as the default iPXE script, use the
 	// following iSCSI IP address: 169.254.0.2, and boot volume IQN:
 	// iqn.2015-02.oracle.boot.
-	// If your instance boot volume type is paravirtualized,
+	// If your instance boot volume attachment type is paravirtualized,
 	// the boot volume is attached to the instance through virtio-scsi and no iPXE script is used.
-	// If your instance boot volume type is paravirtualized
+	// If your instance boot volume attachment type is paravirtualized
 	// and you use custom iPXE to network boot into your instance,
 	// the primary boot volume is attached as a data volume through virtio-scsi drive.
 	// For more information about the Bring Your Own Image feature of
@@ -168,6 +171,11 @@ type LaunchInstanceDetails struct {
 
 	AgentConfig *LaunchInstanceAgentConfigDetails `mandatory:"false" json:"agentConfig"`
 
+	// The shape of an instance. The shape determines the number of CPUs, amount of memory,
+	// and other resources allocated to the instance.
+	// You can enumerate all available shapes by calling ListShapes.
+	Shape *string `mandatory:"false" json:"shape"`
+
 	ShapeConfig *LaunchInstanceShapeConfigDetails `mandatory:"false" json:"shapeConfig"`
 
 	SourceDetails InstanceSourceDetails `mandatory:"false" json:"sourceDetails"`
@@ -177,10 +185,16 @@ type LaunchInstanceDetails struct {
 	// At least one of them is required; if you provide both, the values must match.
 	SubnetId *string `mandatory:"false" json:"subnetId"`
 
+	// Volume attachments to create as part of the launch instance operation.
+	LaunchVolumeAttachments []LaunchAttachVolumeDetails `mandatory:"false" json:"launchVolumeAttachments"`
+
 	// Whether to enable in-transit encryption for the data volume's paravirtualized attachment. This field applies to both block volumes and boot volumes. The default value is false.
 	IsPvEncryptionInTransitEnabled *bool `mandatory:"false" json:"isPvEncryptionInTransitEnabled"`
 
 	PlatformConfig LaunchInstancePlatformConfig `mandatory:"false" json:"platformConfig"`
+
+	// The OCID of the Instance Configuration containing instance launch details. Any other fields supplied in this instance launch request will override the details stored in the Instance Configuration for this instance launch.
+	InstanceConfigurationId *string `mandatory:"false" json:"instanceConfigurationId"`
 }
 
 func (m LaunchInstanceDetails) String() string {
@@ -206,9 +220,11 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 		CreateVnicDetails              *CreateVnicDetails                       `json:"createVnicDetails"`
 		DedicatedVmHostId              *string                                  `json:"dedicatedVmHostId"`
 		DefinedTags                    map[string]map[string]interface{}        `json:"definedTags"`
+		SecurityAttributes             map[string]map[string]interface{}        `json:"securityAttributes"`
 		DisplayName                    *string                                  `json:"displayName"`
 		ExtendedMetadata               map[string]interface{}                   `json:"extendedMetadata"`
 		FaultDomain                    *string                                  `json:"faultDomain"`
+		ClusterPlacementGroupId        *string                                  `json:"clusterPlacementGroupId"`
 		FreeformTags                   map[string]string                        `json:"freeformTags"`
 		ComputeClusterId               *string                                  `json:"computeClusterId"`
 		HostnameLabel                  *string                                  `json:"hostnameLabel"`
@@ -220,14 +236,16 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 		PreemptibleInstanceConfig      *PreemptibleInstanceConfigDetails        `json:"preemptibleInstanceConfig"`
 		Metadata                       map[string]string                        `json:"metadata"`
 		AgentConfig                    *LaunchInstanceAgentConfigDetails        `json:"agentConfig"`
+		Shape                          *string                                  `json:"shape"`
 		ShapeConfig                    *LaunchInstanceShapeConfigDetails        `json:"shapeConfig"`
 		SourceDetails                  instancesourcedetails                    `json:"sourceDetails"`
 		SubnetId                       *string                                  `json:"subnetId"`
+		LaunchVolumeAttachments        []launchattachvolumedetails              `json:"launchVolumeAttachments"`
 		IsPvEncryptionInTransitEnabled *bool                                    `json:"isPvEncryptionInTransitEnabled"`
 		PlatformConfig                 launchinstanceplatformconfig             `json:"platformConfig"`
+		InstanceConfigurationId        *string                                  `json:"instanceConfigurationId"`
 		AvailabilityDomain             *string                                  `json:"availabilityDomain"`
 		CompartmentId                  *string                                  `json:"compartmentId"`
-		Shape                          *string                                  `json:"shape"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -243,11 +261,15 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 
 	m.DefinedTags = model.DefinedTags
 
+	m.SecurityAttributes = model.SecurityAttributes
+
 	m.DisplayName = model.DisplayName
 
 	m.ExtendedMetadata = model.ExtendedMetadata
 
 	m.FaultDomain = model.FaultDomain
+
+	m.ClusterPlacementGroupId = model.ClusterPlacementGroupId
 
 	m.FreeformTags = model.FreeformTags
 
@@ -271,6 +293,8 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 
 	m.AgentConfig = model.AgentConfig
 
+	m.Shape = model.Shape
+
 	m.ShapeConfig = model.ShapeConfig
 
 	nn, e = model.SourceDetails.UnmarshalPolymorphicJSON(model.SourceDetails.JsonData)
@@ -285,6 +309,18 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 
 	m.SubnetId = model.SubnetId
 
+	m.LaunchVolumeAttachments = make([]LaunchAttachVolumeDetails, len(model.LaunchVolumeAttachments))
+	for i, n := range model.LaunchVolumeAttachments {
+		nn, e = n.UnmarshalPolymorphicJSON(n.JsonData)
+		if e != nil {
+			return e
+		}
+		if nn != nil {
+			m.LaunchVolumeAttachments[i] = nn.(LaunchAttachVolumeDetails)
+		} else {
+			m.LaunchVolumeAttachments[i] = nil
+		}
+	}
 	m.IsPvEncryptionInTransitEnabled = model.IsPvEncryptionInTransitEnabled
 
 	nn, e = model.PlatformConfig.UnmarshalPolymorphicJSON(model.PlatformConfig.JsonData)
@@ -297,11 +333,11 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 		m.PlatformConfig = nil
 	}
 
+	m.InstanceConfigurationId = model.InstanceConfigurationId
+
 	m.AvailabilityDomain = model.AvailabilityDomain
 
 	m.CompartmentId = model.CompartmentId
-
-	m.Shape = model.Shape
 
 	return
 }

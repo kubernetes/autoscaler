@@ -23,8 +23,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -195,6 +195,12 @@ type NodeGroup interface {
 	// should wait until node group size is updated. Implementation required.
 	DeleteNodes([]*apiv1.Node) error
 
+	// ForceDeleteNodes deletes nodes from this node group, without checking for
+	// constraints like minimal size validation etc. Error is returned either on
+	// failure or if the given node doesn't belong to this node group. This function
+	// should wait until node group size is updated.
+	ForceDeleteNodes([]*apiv1.Node) error
+
 	// DecreaseTargetSize decreases the target size of the node group. This function
 	// doesn't permit to delete any existing node and can be used only to reduce the
 	// request for new nodes that have not been yet fulfilled. Delta should be negative.
@@ -214,13 +220,13 @@ type NodeGroup interface {
 	// This list should include also instances that might have not become a kubernetes node yet.
 	Nodes() ([]Instance, error)
 
-	// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
+	// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 	// (as if just started) node. This will be used in scale-up simulations to
 	// predict what would a new node look like if a node group was expanded. The returned
 	// NodeInfo is expected to have a fully populated Node object, with all of the labels,
 	// capacity and allocatable information as well as all pods that are started on
 	// the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-	TemplateNodeInfo() (*schedulerframework.NodeInfo, error)
+	TemplateNodeInfo() (*framework.NodeInfo, error)
 
 	// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 	// theoretical node group from the real one. Implementation required.

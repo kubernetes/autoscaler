@@ -22,9 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 const (
@@ -54,11 +52,11 @@ func (p *PodEquivalenceGroup) Exemplar() *apiv1.Pod {
 // to schedule on those nodes.
 type Estimator interface {
 	// Estimate estimates how many nodes are needed to provision pods coming from the given equivalence groups.
-	Estimate([]PodEquivalenceGroup, *schedulerframework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
+	Estimate([]PodEquivalenceGroup, *framework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
 }
 
 // EstimatorBuilder creates a new estimator object.
-type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
+type EstimatorBuilder func(clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
 
 // EstimationAnalyserFunc to be run at the end of the estimation logic.
 type EstimationAnalyserFunc func(clustersnapshot.ClusterSnapshot, cloudprovider.NodeGroup, map[string]bool)
@@ -68,10 +66,9 @@ func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer Estimat
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
-			predicateChecker predicatechecker.PredicateChecker,
 			clusterSnapshot clustersnapshot.ClusterSnapshot,
 			context EstimationContext) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
+			return NewBinpackingNodeEstimator(clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)

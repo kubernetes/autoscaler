@@ -19,6 +19,7 @@ package logic
 import (
 	"context"
 	"fmt"
+	"os"
 	"slices"
 	"time"
 
@@ -29,7 +30,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/kubernetes/scheme"
+
+	corescheme "k8s.io/client-go/kubernetes/scheme"
 	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -38,6 +40,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -133,7 +136,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
-		klog.Fatalf("failed get VPA list: %v", err)
+		klog.ErrorS(err, "Failed to get VPA list")
+		os.Exit(255)
 	}
 	timer.ObserveStep("ListVPAs")
 
@@ -225,7 +229,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				return
 			}
 			klog.V(2).InfoS("Evicting pod", "pod", klog.KObj(pod))
-			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
+			evictErr := evictionLimiter.Evict(pod, vpa, u.eventRecorder)
 			if evictErr != nil {
 				klog.V(0).InfoS("Eviction failed", "error", evictErr, "pod", klog.KObj(pod))
 			} else {
@@ -307,9 +311,18 @@ func newPodLister(kubeClient kube_client.Interface, namespace string) v1lister.P
 
 func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	eventBroadcaster := record.NewBroadcaster()
-	eventBroadcaster.StartLogging(klog.V(4).InfoS)
+	eventBroadcaster.StartStructuredLogging(4)
 	if _, isFake := kubeClient.(*fake.Clientset); !isFake {
 		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: clientv1.New(kubeClient.CoreV1().RESTClient()).Events("")})
+	} else {
+		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: kubeClient.CoreV1().Events("")})
 	}
-	return eventBroadcaster.NewRecorder(scheme.Scheme, apiv1.EventSource{Component: "vpa-updater"})
+
+	vpascheme := scheme.Scheme
+	if err := corescheme.AddToScheme(vpascheme); err != nil {
+		klog.ErrorS(err, "Error adding core scheme")
+		os.Exit(255)
+	}
+
+	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
 }

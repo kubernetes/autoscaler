@@ -19,12 +19,20 @@ set -o nounset
 set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+BASE_NAME=$(basename $0)
+source "${SCRIPT_ROOT}/hack/lib/util.sh"
+
+ARCH=$(kube::util::host_arch)
 
 function print_help {
-  echo "ERROR! Usage: deploy-for-e2e-locally.sh [suite]*"
+  echo "ERROR! Usage: $BASE_NAME [suite]*"
   echo "<suite> should be one of:"
   echo " - recommender"
   echo " - recommender-externalmetrics"
+  echo " - updater"
+  echo " - admission-controller"
+  echo " - actuation"
+  echo " - full-vpa"
 }
 
 if [ $# -eq 0 ]; then
@@ -40,8 +48,14 @@ fi
 SUITE=$1
 
 case ${SUITE} in
-  recommender|recommender-externalmetrics)
+  recommender|recommender-externalmetrics|updater|admission-controller)
     COMPONENTS="${SUITE}"
+    ;;
+  full-vpa)
+    COMPONENTS="recommender updater admission-controller"
+    ;;
+  actuation)
+    COMPONENTS="updater admission-controller"
     ;;
   *)
     print_help
@@ -49,7 +63,7 @@ case ${SUITE} in
     ;;
 esac
 
-# Local KIND-hosted registry
+# Local KIND images
 export REGISTRY=${REGISTRY:-localhost:5001}
 export TAG=${TAG:-latest}
 
@@ -64,8 +78,12 @@ for i in ${COMPONENTS}; do
   if [ $i == recommender-externalmetrics ] ; then
     i=recommender
   fi
-  ALL_ARCHITECTURES=amd64 make --directory ${SCRIPT_ROOT}/pkg/${i} release REGISTRY=${REGISTRY} TAG=${TAG}
-  kind load docker-image ${REGISTRY}/vpa-${i}-amd64:${TAG}
+  if [ $i == admission-controller ] ; then
+    (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh e2e || true)
+  fi
+  ALL_ARCHITECTURES=${ARCH} make --directory ${SCRIPT_ROOT}/pkg/${i} docker-build REGISTRY=${REGISTRY} TAG=${TAG}
+  docker tag ${REGISTRY}/vpa-${i}-${ARCH}:${TAG} ${REGISTRY}/vpa-${i}:${TAG}
+  kind load docker-image ${REGISTRY}/vpa-${i}:${TAG}
 done
 
 

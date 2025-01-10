@@ -89,8 +89,8 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 		context:               context,
 		unremovableNodes:      unremovable.NewNodes(),
 		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
-		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, deleteOptions, drainabilityRules, true),
-		actuationInjector:     scheduling.NewHintingSimulator(context.PredicateChecker),
+		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, deleteOptions, drainabilityRules, true),
+		actuationInjector:     scheduling.NewHintingSimulator(),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
 		nodeUtilizationMap:    make(map[string]utilization.Info),
 		resourceLimitsFinder:  resourceLimitsFinder,
@@ -176,7 +176,7 @@ func (p *Planner) addUnremovableNodes(unremovableNodes []simulator.UnremovableNo
 }
 
 func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {
-	nodeInfos, err := s.NodeInfos().List()
+	nodeInfos, err := s.ListNodeInfos()
 	if err != nil {
 		// This should never happen, List() returns err only because scheduler interface requires it.
 		return nil, err
@@ -264,7 +264,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
 	atomicScaleDownNodesCount := 0
-	p.unremovableNodes.Update(p.context.ClusterSnapshot.NodeInfos(), p.latestUpdate)
+	p.unremovableNodes.Update(p.context.ClusterSnapshot, p.latestUpdate)
 	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.context, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
 	for _, n := range ineligible {
 		p.unremovableNodes.Add(n)

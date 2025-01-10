@@ -30,13 +30,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -775,7 +775,8 @@ func TestGetPodsToMove(t *testing.T) {
 			rules := append(tc.rules, rules.Default(deleteOptions)...)
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(tc.pdbs)
-			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, rules, registry, tracker, testTime)
+			ni := framework.NewTestNodeInfo(nil, tc.pods...)
+			p, d, b, err := GetPodsToMove(ni, deleteOptions, rules, registry, tracker, testTime)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -794,7 +795,7 @@ func (a alwaysDrain) Name() string {
 	return "AlwaysDrain"
 }
 
-func (a alwaysDrain) Drainable(*drainability.DrainContext, *apiv1.Pod, *schedulerframework.NodeInfo) drainability.Status {
+func (a alwaysDrain) Drainable(*drainability.DrainContext, *apiv1.Pod, *framework.NodeInfo) drainability.Status {
 	return drainability.NewDrainableStatus()
 }
 
@@ -804,7 +805,7 @@ func (n neverDrain) Name() string {
 	return "NeverDrain"
 }
 
-func (n neverDrain) Drainable(*drainability.DrainContext, *apiv1.Pod, *schedulerframework.NodeInfo) drainability.Status {
+func (n neverDrain) Drainable(*drainability.DrainContext, *apiv1.Pod, *framework.NodeInfo) drainability.Status {
 	return drainability.NewBlockedStatus(drain.UnexpectedError, fmt.Errorf("nope"))
 }
 
@@ -814,6 +815,6 @@ func (c cantDecide) Name() string {
 	return "CantDecide"
 }
 
-func (c cantDecide) Drainable(*drainability.DrainContext, *apiv1.Pod, *schedulerframework.NodeInfo) drainability.Status {
+func (c cantDecide) Drainable(*drainability.DrainContext, *apiv1.Pod, *framework.NodeInfo) drainability.Status {
 	return drainability.NewUndefinedStatus()
 }

@@ -9,6 +9,7 @@ GOOS?=linux
 COMPONENT=admission-controller
 FULL_COMPONENT=vpa-${COMPONENT}
 
+BUILD_LD_FLAGS?=-s
 ALL_ARCHITECTURES?=amd64 arm arm64 ppc64le s390x
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
@@ -35,7 +36,7 @@ ifndef TAG
 	ERR = $(error TAG is undefined)
 	$(ERR)
 endif
-	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} -f ./Dockerfile ../../
+	docker buildx build --pull --load --platform linux/$* --build-arg BUILD_LD_FLAGS="${BUILD_LD_FLAGS}" -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} -f ./Dockerfile ../../
 
 .PHONY: docker-push
 docker-push: $(addprefix do-push-,$(ALL_ARCHITECTURES)) push-multi-arch;
@@ -88,3 +89,7 @@ format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
 
 .PHONY: all build test-unit clean format release
+
+.PHONY: document-flags
+document-flags:
+	go run ../../hack/vpa-generate-flags.go . ../../docs/vpa-admission-flags.md

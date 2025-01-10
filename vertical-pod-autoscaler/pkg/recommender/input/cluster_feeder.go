@@ -152,7 +152,7 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 }
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
-func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string) v1lister.PodLister {
+func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string, stopCh <-chan struct{}) v1lister.PodLister {
 	// We are interested in pods which are Running or Unknown (in case the pod is
 	// running but there are some transient errors we don't want to delete it from
 	// our model).
@@ -170,15 +170,17 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
 	podLister := v1lister.NewPodLister(indexer)
-	stopCh := make(chan struct{})
 	go controller.Run(stopCh)
+	if !cache.WaitForCacheSync(stopCh, controller.HasSynced) {
+		klog.ErrorS(nil, "Failed to sync Pod cache during initialization")
+	}
 	return podLister
 }
 
 // NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
-func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string) (v1lister.PodLister, oom.Observer) {
+func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) (v1lister.PodLister, oom.Observer) {
 	oomObserver := oom.NewObserver()
-	podLister := newPodClients(kubeClient, oomObserver, namespace)
+	podLister := newPodClients(kubeClient, oomObserver, namespace, stopCh)
 	WatchEvictionEventsWithRetries(kubeClient, oomObserver, namespace)
 	return podLister, oomObserver
 }
@@ -262,7 +264,7 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 		}
 		for _, checkpoint := range checkpointList.Items {
 
-			klog.V(3).InfoS("Loading checkpoint for VPA", klog.KRef(checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
+			klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
 			err = feeder.setVpaCheckpoint(&checkpoint)
 			if err != nil {
 				klog.ErrorS(err, "Error while loading checkpoint")
@@ -294,9 +296,9 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
 				if err == nil {
-					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", klog.KRef(namespace, checkpoint.Name))
+					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
 				} else {
-					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", klog.KRef(namespace, checkpoint.Name))
+					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
 				}
 			}
 		}

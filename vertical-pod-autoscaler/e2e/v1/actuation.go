@@ -530,9 +530,8 @@ func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Depl
 
 	pendingPods := make(map[string]time.Time)
 
-	err := wait.PollImmediate(pollInterval, pollTimeout+pendingDuration, func() (bool, error) {
-		var err error
-		currentPodList, err := framework_deployment.GetPodsForDeployment(context.TODO(), c, deployment)
+	err := wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
+		currentPodList, err := framework_deployment.GetPodsForDeployment(ctx, c, deployment)
 		if err != nil {
 			return false, err
 		}
@@ -708,7 +707,7 @@ func setupHamsterReplicationController(f *framework.Framework, cpu, memory strin
 }
 
 func waitForRCPodsRunning(f *framework.Framework, rc *apiv1.ReplicationController) error {
-	return wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
 		podList, err := GetHamsterPods(f)
 		if err != nil {
 			framework.Logf("Error listing pods, retrying: %v", err)
@@ -731,7 +730,7 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 	for label, value := range hamsterLabels {
 		job.Spec.Template.Labels[label] = value
 	}
-	err := testutils.CreateJobWithRetries(f.ClientSet, f.Namespace.Name, job)
+	_, err := framework_job.CreateJob(context.TODO(), f.ClientSet, f.Namespace.Name, job)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = framework_job.WaitForJobPodsRunning(context.TODO(), f.ClientSet, f.Namespace.Name, job.Name, replicas)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())

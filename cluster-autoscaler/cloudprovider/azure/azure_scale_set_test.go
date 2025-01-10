@@ -43,10 +43,11 @@ func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager:           manager,
-		minSize:           1,
-		maxSize:           5,
-		enableForceDelete: manager.config.EnableForceDelete,
+		manager:                              manager,
+		minSize:                              1,
+		maxSize:                              5,
+		enableForceDelete:                    manager.config.EnableForceDelete,
+		enableFastDeleteOnFailedProvisioning: true,
 	}
 }
 
@@ -55,10 +56,11 @@ func newTestScaleSetMinSizeZero(manager *AzureManager, name string) *ScaleSet {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager:           manager,
-		minSize:           0,
-		maxSize:           5,
-		enableForceDelete: manager.config.EnableForceDelete,
+		manager:                              manager,
+		minSize:                              0,
+		maxSize:                              5,
+		enableForceDelete:                    manager.config.EnableForceDelete,
+		enableFastDeleteOnFailedProvisioning: true,
 	}
 }
 
@@ -1120,7 +1122,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		nodeInfo, err := asg.TemplateNodeInfo()
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
-		assert.NotEmpty(t, nodeInfo.Pods)
+		assert.NotEmpty(t, nodeInfo.Pods())
 	})
 
 	// Properly testing dynamic SKU list through skewer is not possible,
@@ -1143,7 +1145,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Memory(), *resource.NewQuantity(3*1024*1024, resource.DecimalSI))
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
-		assert.NotEmpty(t, nodeInfo.Pods)
+		assert.NotEmpty(t, nodeInfo.Pods())
 	})
 
 	t.Run("Checking static workflow if dynamic fails", func(t *testing.T) {
@@ -1164,7 +1166,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Memory(), *resource.NewQuantity(3*1024*1024, resource.DecimalSI))
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
-		assert.NotEmpty(t, nodeInfo.Pods)
+		assert.NotEmpty(t, nodeInfo.Pods())
 	})
 
 	t.Run("Fails to find vmss instance information using static and dynamic workflow, instance not supported", func(t *testing.T) {
@@ -1198,7 +1200,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Memory(), *resource.NewQuantity(3*1024*1024, resource.DecimalSI))
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
-		assert.NotEmpty(t, nodeInfo.Pods)
+		assert.NotEmpty(t, nodeInfo.Pods())
 	})
 
 	t.Run("Checking static-only workflow with built-in SKU list", func(t *testing.T) {
@@ -1207,7 +1209,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		nodeInfo, err := asg.TemplateNodeInfo()
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
-		assert.NotEmpty(t, nodeInfo.Pods)
+		assert.NotEmpty(t, nodeInfo.Pods())
 	})
 
 }

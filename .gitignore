@@ -31,3 +31,6 @@ Session.vim
 
 # Binary files
 bin/
+
+# vertical pod autoscaler test output
+vertical-pod-autoscaler/e2e/v1*/workspace/

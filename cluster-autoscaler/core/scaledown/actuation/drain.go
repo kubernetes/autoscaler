@@ -27,6 +27,7 @@ import (
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
@@ -35,7 +36,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -102,7 +102,7 @@ func (e Evictor) drainNodeWithPodsBasedOnPodPriority(ctx *acontext.AutoscalingCo
 	for _, group := range groups {
 		for _, pod := range group.FullEvictionPods {
 			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: false,
-				Err: errors.NewAutoscalerError(errors.UnexpectedScaleDownStateError, "Eviction did not attempted for the pod %s because some of the previous evictions failed", pod.Name)}
+				Err: errors.NewAutoscalerErrorf(errors.UnexpectedScaleDownStateError, "Eviction did not attempted for the pod %s because some of the previous evictions failed", pod.Name)}
 		}
 	}
 
@@ -163,7 +163,7 @@ func (e Evictor) waitPodsToDisappear(ctx *acontext.AutoscalingContext, node *api
 		}
 	}
 
-	return evictionResults, errors.NewAutoscalerError(errors.TransientError, "Failed to drain node %s/%s: pods remaining after timeout", node.Namespace, node.Name)
+	return evictionResults, errors.NewAutoscalerErrorf(errors.TransientError, "Failed to drain node %s/%s: pods remaining after timeout", node.Namespace, node.Name)
 }
 
 func (e Evictor) initiateEviction(ctx *acontext.AutoscalingContext, node *apiv1.Node, fullEvictionPods, bestEffortEvictionPods []*apiv1.Pod, evictionResults map[string]status.PodEvictionResult,
@@ -207,7 +207,7 @@ func (e Evictor) initiateEviction(ctx *acontext.AutoscalingContext, node *apiv1.
 		}
 	}
 	if len(evictionErrs) != 0 {
-		return evictionResults, errors.NewAutoscalerError(errors.ApiCallError, "Failed to drain node %s/%s, due to following errors: %v", node.Namespace, node.Name, evictionErrs)
+		return evictionResults, errors.NewAutoscalerErrorf(errors.ApiCallError, "Failed to drain node %s/%s, due to following errors: %v", node.Namespace, node.Name, evictionErrs)
 	}
 	return evictionResults, nil
 }
@@ -251,7 +251,7 @@ func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Po
 }
 
 func podsToEvict(nodeInfo *framework.NodeInfo, evictDsByDefault bool) (dsPods, nonDsPods []*apiv1.Pod) {
-	for _, podInfo := range nodeInfo.Pods {
+	for _, podInfo := range nodeInfo.Pods() {
 		if pod_util.IsMirrorPod(podInfo.Pod) {
 			continue
 		} else if pod_util.IsDaemonSetPod(podInfo.Pod) {

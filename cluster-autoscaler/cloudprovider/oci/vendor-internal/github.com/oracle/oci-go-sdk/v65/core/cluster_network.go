@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -21,9 +21,14 @@ import (
 	"strings"
 )
 
-// ClusterNetwork A cluster network is a group of high performance computing (HPC) bare metal instances that are connected
-// with an ultra low latency network. For more information about cluster networks, see
-// Managing Cluster Networks (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
+// ClusterNetwork A cluster network is a group of high performance computing (HPC), GPU, or optimized bare metal
+// instances that are connected with an ultra low-latency remote direct memory access (RDMA)
+// network. Cluster networks with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm)
+// use instance pools to manage groups of identical instances.
+// Use cluster networks with instance pools when you want predictable capacity for a specific number of identical
+// instances that are managed as a group.
+// If you want to manage instances in the RDMA network independently of each other or use different types of instances
+// in the network group, use compute clusters instead. For details, see ComputeCluster.
 type ClusterNetwork struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the cluster network.
@@ -43,7 +48,7 @@ type ClusterNetwork struct {
 	// Example: `2016-08-25T21:10:29.600Z`
 	TimeUpdated *common.SDKTime `mandatory:"true" json:"timeUpdated"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the hpc island used by the cluster network.
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the HPC island used by the cluster network.
 	HpcIslandId *string `mandatory:"false" json:"hpcIslandId"`
 
 	// The list of network block OCIDs of the HPC island.

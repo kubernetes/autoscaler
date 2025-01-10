@@ -19,6 +19,7 @@ package test
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"testing"
 	"time"
 
@@ -36,19 +37,19 @@ import (
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // NodeConfig is a node config used in tests
@@ -100,7 +101,7 @@ type NodeGroupConfig struct {
 // NodeTemplateConfig is a structure to provide node info in tests
 type NodeTemplateConfig struct {
 	MachineType   string
-	NodeInfo      *schedulerframework.NodeInfo
+	NodeInfo      *framework.NodeInfo
 	NodeGroupName string
 }
 
@@ -175,15 +176,14 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	if err != nil {
-		return context.AutoscalingContext{}, err
-	}
 	remainingPdbTracker := pdb.NewBasicRemainingPdbTracker()
 	if debuggingSnapshotter == nil {
 		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
 	}
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+	clusterSnapshot, fwHandle, err := testsnapshot.NewTestSnapshotAndHandle()
+	if err != nil {
+		return context.AutoscalingContext{}, err
+	}
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
@@ -193,8 +193,8 @@ func NewScaleTestAutoscalingContext(
 			ListerRegistry: listers,
 		},
 		CloudProvider:        provider,
-		PredicateChecker:     predicateChecker,
 		ClusterSnapshot:      clusterSnapshot,
+		FrameworkHandle:      fwHandle,
 		ExpanderStrategy:     random.NewStrategy(),
 		ProcessorCallbacks:   processorCallbacks,
 		DebuggingSnapshotter: debuggingSnapshotter,
@@ -284,9 +284,9 @@ type MockAutoprovisioningNodeGroupListProcessor struct {
 }
 
 // Process extends the list of node groups
-func (p *MockAutoprovisioningNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulerframework.NodeInfo,
+func (p *MockAutoprovisioningNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*framework.NodeInfo,
 	unschedulablePods []*apiv1.Pod,
-) ([]cloudprovider.NodeGroup, map[string]*schedulerframework.NodeInfo, error) {
+) ([]cloudprovider.NodeGroup, map[string]*framework.NodeInfo, error) {
 	machines, err := context.CloudProvider.GetAvailableMachineTypes()
 	assert.NoError(p.T, err)
 
@@ -344,19 +344,21 @@ type expanderResults struct {
 
 // MockReportingStrategy implements expander.Strategy
 type MockReportingStrategy struct {
-	defaultStrategy expander.Strategy
-	optionToChoose  *GroupSizeChange
-	t               *testing.T
-	results         *expanderResults
+	defaultStrategy           expander.Strategy
+	optionToChoose            *GroupSizeChange
+	similarNodeGroupsToChoose *[]string
+	t                         *testing.T
+	results                   *expanderResults
 }
 
-// NewMockRepotingStrategy creates an expander strategy with reporting and mocking capabilities.
-func NewMockRepotingStrategy(t *testing.T, optionToChoose *GroupSizeChange) *MockReportingStrategy {
+// NewMockReportingStrategy creates an expander strategy with reporting and mocking capabilities.
+func NewMockReportingStrategy(t *testing.T, optionToChoose *GroupSizeChange, similarNodeGroupsToChoose *[]string) *MockReportingStrategy {
 	return &MockReportingStrategy{
-		defaultStrategy: random.NewStrategy(),
-		results:         &expanderResults{},
-		optionToChoose:  optionToChoose,
-		t:               t,
+		defaultStrategy:           random.NewStrategy(),
+		results:                   &expanderResults{},
+		optionToChoose:            optionToChoose,
+		similarNodeGroupsToChoose: similarNodeGroupsToChoose,
+		t:                         t,
 	}
 }
 
@@ -368,7 +370,7 @@ func (r *MockReportingStrategy) LastInputOptions() []GroupSizeChange {
 // BestOption satisfies the Strategy interface. Picks the best option from those passed as an argument.
 // When parameter optionToChoose is defined, it's picked as the best one.
 // Otherwise, random option is used.
-func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) *expander.Option {
+func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
 	r.results.inputOptions = expanderOptionsToGroupSizeChanges(options)
 	if r.optionToChoose == nil {
 		return r.defaultStrategy.BestOption(options, nodeInfo)
@@ -376,7 +378,16 @@ func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo m
 	for _, option := range options {
 		groupSizeChange := expanderOptionToGroupSizeChange(option)
 		if groupSizeChange == *r.optionToChoose {
-			return &option
+			bestOption := option
+			if r.similarNodeGroupsToChoose != nil {
+				bestOption.SimilarNodeGroups = []cloudprovider.NodeGroup{}
+				for _, nodeGroup := range options {
+					if slices.Contains(*r.similarNodeGroupsToChoose, nodeGroup.NodeGroup.Id()) {
+						bestOption.SimilarNodeGroups = append(bestOption.SimilarNodeGroups, nodeGroup.NodeGroup)
+					}
+				}
+			}
+			return &bestOption
 		}
 	}
 	assert.Fail(r.t, "did not find expansionOptionToChoose %+v", r.optionToChoose)

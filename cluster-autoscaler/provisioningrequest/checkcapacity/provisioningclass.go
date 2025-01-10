@@ -20,12 +20,13 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -34,14 +35,21 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/klog/v2"
 
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+)
+
+const (
+	// NoRetryParameterKey is a a key for ProvReq's Parameters that describes
+	// if ProvisioningRequest should be retried in case CA cannot provision it.
+	// Supported values are "true" and "false" - by default ProvisioningRequests are always retried.
+	// Currently supported only for checkcapacity class.
+	NoRetryParameterKey = "noRetry"
 )
 
 type checkCapacityProvClass struct {
@@ -84,124 +92,136 @@ func (o *checkCapacityProvClass) Provision(
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	combinedStatus := NewCombinedStatusSet()
-	provisioningRequestsProcessed := make(map[string]bool)
 	startTime := time.Now()
 
 	o.context.ClusterSnapshot.Fork()
 	defer o.context.ClusterSnapshot.Revert()
 
-	prPods := unschedulablePods
-
-	for len(prPods) > 0 {
-		prs := provreqclient.ProvisioningRequestsForPods(o.client, prPods)
-		prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity)
-		if len(prs) == 0 {
-			break
-		}
-
-		// Pick 1 ProvisioningRequest.
-		pr := prs[0]
-
-		scaleUpIsSuccessful, err := o.checkcapacity(prPods, pr)
-		if err != nil {
-			scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "error during ScaleUp: %s", err.Error()))
-			combinedStatus.Add(scaleUpStatus)
-		} else if scaleUpIsSuccessful {
-			combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpSuccessful})
-		} else {
-			combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable})
-		}
-
-		provisioningRequestsProcessed[pr.Name] = true
-		if stopBatch := o.shouldStopBatchProcessing(len(provisioningRequestsProcessed), startTime); stopBatch {
-			break
-		}
-
-		// For batch processing, the next ProvisioningRequest's pods are fetched using the provisioningRequest pods injector.
-		// TODO: Refactor such that injector injects pods for multiple ProvisioningRequests at once. Pods should be segregated by ProvisioningRequest before being processed.
-		prPods, err = o.getNextPrPods(provisioningRequestsProcessed)
-		// Error might be returned here if the pod-template for current ProvisioningRequest is not found in cluster. We continue with the next ProvisioningRequest as it might have a valid pod-template and may be processed successfully.
-		if err != nil {
-			st, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "error during ScaleUp: %s", err.Error()))
-			combinedStatus.Add(st)
-		}
+	// Gather ProvisioningRequests.
+	prs, err := o.getProvisioningRequestsAndPods(unschedulablePods)
+	if err != nil {
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "Error fetching provisioning requests and associated pods: %s", err.Error()))
+	} else if len(prs) == 0 {
+		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
+
+	if o.provreqInjector != nil {
+		// for more frequent iterations.
+		// See https://github.com/kubernetes/autoscaler/pull/7271
+		o.provreqInjector.UpdateLastProcessTime()
+	}
+
+	// Add accepted condition to ProvisioningRequests.
+	for _, pr := range prs {
+		conditions.AddOrUpdateCondition(pr.PrWrapper, v1.Accepted, metav1.ConditionTrue, conditions.AcceptedReason, conditions.AcceptedMsg, metav1.Now())
+	}
+
+	// Check Capacity. Add Provisioned or Failed conditions.
+	processedPrs := o.checkCapacityBatch(prs, &combinedStatus, startTime)
+
+	// Use client to update ProvisioningRequests conditions.
+	updateRequests(o.client, processedPrs, &combinedStatus)
 
 	return combinedStatus.Export()
 }
 
-// checkcapacity checks if there is capacity in the cluster for pods from a ProvisioningRequest. It persists the scheduling in cluster snapshot whenever all pods can be scheduled, and doesn't change the snapshot otherwise.
-func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest) (bool, error) {
-	var capacityAvailable bool
-	err, cleanupErr := clustersnapshot.WithForkedSnapshot(o.context.ClusterSnapshot, func() (bool, error) {
-		st, _, err := o.schedulingSimulator.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
-		if len(st) < len(unschedulablePods) || err != nil {
-			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
-			capacityAvailable = false
-		} else {
-			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
-			capacityAvailable = true
+func (o *checkCapacityProvClass) getProvisioningRequestsAndPods(unschedulablePods []*apiv1.Pod) ([]provreq.ProvisioningRequestWithPods, error) {
+	if !o.isBatchEnabled() {
+		klog.Info("Processing single provisioning request (non-batch)")
+		prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
+		prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity)
+		if len(prs) == 0 {
+			return nil, nil
 		}
-
-		_, updErr := o.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
-		if updErr != nil {
-			return false, fmt.Errorf("failed to update Provisioned condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
-		}
-
-		return capacityAvailable, nil
-	})
-
-	if cleanupErr != nil {
-		return false, cleanupErr
+		return []provreq.ProvisioningRequestWithPods{{PrWrapper: prs[0], Pods: unschedulablePods}}, nil
 	}
 
+	batch, err := o.provreqInjector.GetCheckCapacityBatch(o.checkCapacityProvisioningRequestMaxBatchSize)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-
-	return capacityAvailable, nil
+	klog.Infof("Processing provisioning requests as batch of size %d", len(batch))
+	return batch, nil
 }
 
-// shouldStopBatchProcessing returns true if the batch processing should be stopped when:
-// - Batch processing is misconfigured
-// - Upper limits of batch processing parameters are reached
-func (o *checkCapacityProvClass) shouldStopBatchProcessing(prsProcessed int, startTime time.Time) bool {
-	if prsProcessed >= o.checkCapacityProvisioningRequestMaxBatchSize {
-		return true
-	}
-
-	if o.provreqInjector == nil {
-		klog.Errorf("ProvisioningRequestPodsInjector is not set, falling back to non-batch processing")
-		return true
-	}
-
-	if o.checkCapacityProvisioningRequestMaxBatchSize <= 1 {
-		klog.Errorf("MaxBatchSize is set to %d, falling back to non-batch processing", o.checkCapacityProvisioningRequestMaxBatchSize)
-		return true
-	}
-
-	if time.Since(startTime) > o.checkCapacityProvisioningRequestBatchTimebox {
-		klog.Infof("Batch timebox exceeded, processed %d check capacity provisioning requests this iteration", prsProcessed)
-		return true
-	}
-
-	return false
+func (o *checkCapacityProvClass) isBatchEnabled() bool {
+	return o.provreqInjector != nil && o.checkCapacityProvisioningRequestMaxBatchSize > 1
 }
 
-// getNextPrPods retreives pods from the next CheckCapacity ProvisioningRequest.
-func (o *checkCapacityProvClass) getNextPrPods(provisioningRequestsProcessed map[string]bool) ([]*apiv1.Pod, error) {
-	return o.provreqInjector.GetPodsFromNextRequest(func(pr *provreqwrapper.ProvisioningRequest) bool {
-		if pr.Spec.ProvisioningClassName != v1.ProvisioningClassCheckCapacity {
-			return false
+func (o *checkCapacityProvClass) checkCapacityBatch(reqs []provreq.ProvisioningRequestWithPods, combinedStatus *combinedStatusSet, startTime time.Time) []*provreqwrapper.ProvisioningRequest {
+	updates := make([]*provreqwrapper.ProvisioningRequest, 0, len(reqs))
+	for _, req := range reqs {
+		if err := o.checkCapacity(req.Pods, req.PrWrapper, combinedStatus); err != nil {
+			klog.Errorf("error checking capacity %v", err)
+			continue
 		}
-		if _, found := provisioningRequestsProcessed[pr.Name]; found {
-			return false
+
+		updates = append(updates, req.PrWrapper)
+
+		// timebox checkCapacity when batch processing.
+		if o.isBatchEnabled() && time.Since(startTime) > o.checkCapacityProvisioningRequestBatchTimebox {
+			klog.Infof("Batch timebox exceeded, processed %d check capacity provisioning requests this iteration", len(updates))
+			break
 		}
-		return true
-	})
+	}
+	return updates
+}
+
+// checkCapacity checks if there is capacity, updates combinedStatus and Conditions. If capacity is found, it commits to the clusterSnapshot.
+func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) error {
+	o.context.ClusterSnapshot.Fork()
+
+	// Case 1: Capacity fits.
+	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
+	if err == nil && len(scheduled) == len(unschedulablePods) {
+		commitError := o.context.ClusterSnapshot.Commit()
+		if commitError != nil {
+			o.context.ClusterSnapshot.Revert()
+			return commitError
+		}
+		combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpSuccessful})
+		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
+		return nil
+	}
+	// Case 2: Capacity doesn't fit.
+	o.context.ClusterSnapshot.Revert()
+	combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable})
+	if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry == "true" {
+		// Failed=true condition triggers retry in Kueue. Otherwise ProvisioningRequest with Provisioned=Failed
+		// condition block capacity in Kueue even if it's in the middle of backoff waiting time.
+		conditions.AddOrUpdateCondition(provReq, v1.Failed, metav1.ConditionTrue, conditions.CapacityIsNotFoundReason, "CA could not find requested capacity", metav1.Now())
+	} else {
+		if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry != "false" {
+			klog.Errorf("Ignoring Parameter %v with invalid value: %v in ProvisioningRequest: %v. Supported values are: \"true\", \"false\"", NoRetryParameterKey, noRetry, provReq.Name)
+		}
+		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
+	}
+	return err
+}
+
+// updateRequests calls the client to update ProvisioningRequests, in parallel.
+func updateRequests(client *provreqclient.ProvisioningRequestClient, prWrappers []*provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) {
+	wg := sync.WaitGroup{}
+	wg.Add(len(prWrappers))
+	lock := sync.Mutex{}
+	for _, wrapper := range prWrappers {
+		go func() {
+			provReq := wrapper.ProvisioningRequest
+			_, updErr := client.UpdateProvisioningRequest(provReq)
+			if updErr != nil {
+				err := fmt.Errorf("failed to update ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+				scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))
+				lock.Lock()
+				combinedStatus.Add(scaleUpStatus)
+				lock.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }
 
 // combinedStatusSet is a helper struct to combine multiple ScaleUpStatuses into one. It keeps track of the best result and all errors that occurred during the ScaleUp process.

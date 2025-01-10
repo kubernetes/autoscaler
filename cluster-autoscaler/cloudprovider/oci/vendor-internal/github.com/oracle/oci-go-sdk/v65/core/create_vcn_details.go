@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -38,10 +38,10 @@ type CreateVcnDetails struct {
 	// **Important:** Do *not* specify a value for `cidrBlock`. Use this parameter instead.
 	CidrBlocks []string `mandatory:"false" json:"cidrBlocks"`
 
-	// The list of one or more ULA or Private IPv6 CIDR blocks for the vcn that meets the following criteria:
+	// The list of one or more ULA or Private IPv6 prefixes for the VCN that meets the following criteria:
 	// - The CIDR blocks must be valid.
-	// - Multiple CIDR blocks must not overlap each other or the on-premises network CIDR block.
-	// - The number of CIDR blocks must not exceed the limit of IPv6 CIDR blocks allowed to a vcn.
+	// - Multiple CIDR blocks must not overlap each other or the on-premises network prefix.
+	// - The number of CIDR blocks must not exceed the limit of IPv6 prefixes allowed to a VCN.
 	// **Important:** Do *not* specify a value for `ipv6CidrBlock`. Use this parameter instead.
 	Ipv6PrivateCidrBlocks []string `mandatory:"false" json:"ipv6PrivateCidrBlocks"`
 
@@ -49,7 +49,7 @@ type CreateVcnDetails struct {
 	// size for an IPv6 enabled VCN.
 	IsOracleGuaAllocationEnabled *bool `mandatory:"false" json:"isOracleGuaAllocationEnabled"`
 
-	// The list of BYOIPv6 OCIDs and BYOIPv6 CIDR blocks required to create a VCN that uses BYOIPv6 ranges.
+	// The list of BYOIPv6 OCIDs and BYOIPv6 prefixes required to create a VCN that uses BYOIPv6 address ranges.
 	Byoipv6CidrDetails []Byoipv6CidrDetails `mandatory:"false" json:"byoipv6CidrDetails"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
@@ -79,6 +79,10 @@ type CreateVcnDetails struct {
 	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
+
+	// Security Attributes for this resource. This is unique to ZPR, and helps identify which resources are allowed to be accessed by what permission controls.
+	// Example: `{"Oracle-DataSecurity-ZPR": {"MaxEgressCount": {"value":"42","mode":"audit"}}}`
+	SecurityAttributes map[string]map[string]interface{} `mandatory:"false" json:"securityAttributes"`
 
 	// Whether IPv6 is enabled for the VCN. Default is `false`.
 	// If enabled, Oracle will assign the VCN a IPv6 /56 CIDR block.

@@ -43,19 +43,15 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	clocktesting "k8s.io/utils/clock/testing"
-
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 func TestScaleUp(t *testing.T) {
-	schedulermetrics.Register()
-
 	// Set up a cluster with 200 nodes:
 	// - 100 nodes with high cpu, low memory in autoscaled group with max 150
 	// - 100 nodes with high memory, low cpu not in autoscaled group
@@ -206,6 +202,7 @@ func TestScaleUp(t *testing.T) {
 		batchTimebox        time.Duration
 		numProvisionedTrue  int
 		numProvisionedFalse int
+		numFailedTrue       int
 	}{
 		{
 			name:          "no ProvisioningRequests",
@@ -241,6 +238,15 @@ func TestScaleUp(t *testing.T) {
 			provReqs:         []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, bookedCapacityProvReq, atomicScaleUpProvReq},
 			provReqToScaleUp: newCheckCapacityCpuProvReq,
 			scaleUpResult:    status.ScaleUpSuccessful,
+		},
+		{
+			name: "impossible check-capacity, with noRetry parameter",
+			provReqs: []*provreqwrapper.ProvisioningRequest{
+				impossibleCheckCapacityReq.CopyWithParameters(map[string]v1.Parameter{"noRetry": "true"}),
+			},
+			provReqToScaleUp: impossibleCheckCapacityReq,
+			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
+			numFailedTrue:    1,
 		},
 		{
 			name:             "some capacity is pre-booked, atomic scale-up not needed",
@@ -368,11 +374,11 @@ func TestScaleUp(t *testing.T) {
 			name:               "process atomic scale-up requests where batch processing of check capacity requests is enabled and check capacity requests are present in cluster",
 			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, newCheckCapacityCpuProvReq, atomicScaleUpProvReq},
 			provReqToScaleUp:   atomicScaleUpProvReq,
-			scaleUpResult:      status.ScaleUpNotNeeded,
+			scaleUpResult:      status.ScaleUpSuccessful,
 			batchProcessing:    true,
 			maxBatchSize:       3,
 			batchTimebox:       5 * time.Minute,
-			numProvisionedTrue: 1,
+			numProvisionedTrue: 2,
 		},
 		{
 			name:                "batch processing of check capacity requests where some requests' capacity is not available",
@@ -438,6 +444,7 @@ func TestScaleUp(t *testing.T) {
 				provReqsAfterScaleUp, err := client.ProvisioningRequestsNoCache()
 				assert.NoError(t, err)
 				assert.Equal(t, len(tc.provReqs), len(provReqsAfterScaleUp))
+				assert.Equal(t, tc.numFailedTrue, NumProvisioningRequestsWithCondition(provReqsAfterScaleUp, v1.Failed, metav1.ConditionTrue))
 
 				if tc.batchProcessing {
 					// Since batch processing returns aggregated result, we need to check the number of provisioned requests which have the provisioned condition.
@@ -451,7 +458,7 @@ func TestScaleUp(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, nodes []*apiv1.Node, onScaleUpFunc func(string, int) error, autoprovisioning bool, batchProcessing bool, maxBatchSize int, batchTimebox time.Duration) (*provReqOrchestrator, map[string]*schedulerframework.NodeInfo) {
+func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, nodes []*apiv1.Node, onScaleUpFunc func(string, int) error, autoprovisioning bool, batchProcessing bool, maxBatchSize int, batchTimebox time.Duration) (*provReqOrchestrator, map[string]*framework.NodeInfo) {
 	provider := testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
 	clock := clocktesting.NewFakePassiveClock(time.Now())
 	now := clock.Now()
@@ -459,9 +466,8 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		machineTypes := []string{"large-machine"}
 		template := BuildTestNode("large-node-template", 100, 100)
 		SetNodeReadyState(template, true, now)
-		nodeInfoTemplate := schedulerframework.NewNodeInfo()
-		nodeInfoTemplate.SetNode(template)
-		machineTemplates := map[string]*schedulerframework.NodeInfo{
+		nodeInfoTemplate := framework.NewTestNodeInfo(template)
+		machineTemplates := map[string]*framework.NodeInfo{
 			"large-machine": nodeInfoTemplate,
 		}
 		onNodeGroupCreateFunc := func(name string) error { return nil }

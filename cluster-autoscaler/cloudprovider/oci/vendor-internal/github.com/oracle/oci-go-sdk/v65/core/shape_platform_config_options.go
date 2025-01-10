@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -76,6 +76,7 @@ const (
 	ShapePlatformConfigOptionsTypeAmdMilanBmGpu  ShapePlatformConfigOptionsTypeEnum = "AMD_MILAN_BM_GPU"
 	ShapePlatformConfigOptionsTypeAmdRomeBm      ShapePlatformConfigOptionsTypeEnum = "AMD_ROME_BM"
 	ShapePlatformConfigOptionsTypeAmdRomeBmGpu   ShapePlatformConfigOptionsTypeEnum = "AMD_ROME_BM_GPU"
+	ShapePlatformConfigOptionsTypeGenericBm      ShapePlatformConfigOptionsTypeEnum = "GENERIC_BM"
 	ShapePlatformConfigOptionsTypeIntelIcelakeBm ShapePlatformConfigOptionsTypeEnum = "INTEL_ICELAKE_BM"
 	ShapePlatformConfigOptionsTypeIntelSkylakeBm ShapePlatformConfigOptionsTypeEnum = "INTEL_SKYLAKE_BM"
 	ShapePlatformConfigOptionsTypeAmdVm          ShapePlatformConfigOptionsTypeEnum = "AMD_VM"
@@ -87,6 +88,7 @@ var mappingShapePlatformConfigOptionsTypeEnum = map[string]ShapePlatformConfigOp
 	"AMD_MILAN_BM_GPU": ShapePlatformConfigOptionsTypeAmdMilanBmGpu,
 	"AMD_ROME_BM":      ShapePlatformConfigOptionsTypeAmdRomeBm,
 	"AMD_ROME_BM_GPU":  ShapePlatformConfigOptionsTypeAmdRomeBmGpu,
+	"GENERIC_BM":       ShapePlatformConfigOptionsTypeGenericBm,
 	"INTEL_ICELAKE_BM": ShapePlatformConfigOptionsTypeIntelIcelakeBm,
 	"INTEL_SKYLAKE_BM": ShapePlatformConfigOptionsTypeIntelSkylakeBm,
 	"AMD_VM":           ShapePlatformConfigOptionsTypeAmdVm,
@@ -98,6 +100,7 @@ var mappingShapePlatformConfigOptionsTypeEnumLowerCase = map[string]ShapePlatfor
 	"amd_milan_bm_gpu": ShapePlatformConfigOptionsTypeAmdMilanBmGpu,
 	"amd_rome_bm":      ShapePlatformConfigOptionsTypeAmdRomeBm,
 	"amd_rome_bm_gpu":  ShapePlatformConfigOptionsTypeAmdRomeBmGpu,
+	"generic_bm":       ShapePlatformConfigOptionsTypeGenericBm,
 	"intel_icelake_bm": ShapePlatformConfigOptionsTypeIntelIcelakeBm,
 	"intel_skylake_bm": ShapePlatformConfigOptionsTypeIntelSkylakeBm,
 	"amd_vm":           ShapePlatformConfigOptionsTypeAmdVm,
@@ -120,6 +123,7 @@ func GetShapePlatformConfigOptionsTypeEnumStringValues() []string {
 		"AMD_MILAN_BM_GPU",
 		"AMD_ROME_BM",
 		"AMD_ROME_BM_GPU",
+		"GENERIC_BM",
 		"INTEL_ICELAKE_BM",
 		"INTEL_SKYLAKE_BM",
 		"AMD_VM",

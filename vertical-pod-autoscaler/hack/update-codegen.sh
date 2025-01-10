@@ -18,19 +18,29 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
-CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${SCRIPT_ROOT}; ls -d -1 ./vendor/k8s.io/code-generator 2>/dev/null || echo ../../code-generator)}
+GO_CMD=${1:-go}
+CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+CODEGEN_PKG=$($GO_CMD list -m -mod=readonly -f "{{.Dir}}" k8s.io/code-generator)
+cd "${CURRENT_DIR}/.."
 
+# shellcheck source=/dev/null
 source "${CODEGEN_PKG}/kube_codegen.sh"
 
 kube::codegen::gen_helpers \
-  --input-pkg-root k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis \
-  --output-base "$(dirname ${BASH_SOURCE})/../../../.." \
-  --boilerplate "${SCRIPT_ROOT}"/hack/boilerplate.go.txt
+    "$(dirname ${BASH_SOURCE})/../pkg/apis" \
+    --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt"
+
+echo "Ran gen helpers, moving on to generating client code..."
 
 kube::codegen::gen_client \
-  --input-pkg-root k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis \
-  --output-pkg-root k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client \
-  --output-base "$(dirname ${BASH_SOURCE})/../../../.." \
-  --boilerplate "${SCRIPT_ROOT}"/hack/boilerplate.go.txt \
+  "$(dirname ${BASH_SOURCE})/../pkg/apis" \
+  --output-pkg k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client \
+  --output-dir "$(dirname ${BASH_SOURCE})/../pkg/client" \
+  --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
   --with-watch
+
+echo "Generated client code, running `go mod tidy`..."
+
+# We need to clean up the go.mod file since code-generator adds temporary library to the go.mod file.
+"${GO_CMD}" mod tidy

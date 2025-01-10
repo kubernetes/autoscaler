@@ -307,6 +307,12 @@ type AutoscalingOptions struct {
 	CheckCapacityProvisioningRequestMaxBatchSize int
 	// CheckCapacityProvisioningRequestBatchTimebox is the maximum time to spend processing a batch of provisioning requests
 	CheckCapacityProvisioningRequestBatchTimebox time.Duration
+	// ForceDeleteLongUnregisteredNodes is used to enable/disable ignoring min size constraints during removal of long unregistered nodes
+	ForceDeleteLongUnregisteredNodes bool
+	// DynamicResourceAllocationEnabled configures whether logic for handling DRA objects is enabled.
+	DynamicResourceAllocationEnabled bool
+	// ClusterSnapshotParallelism is the maximum parallelism of cluster snapshot creation.
+	ClusterSnapshotParallelism int
 }
 
 // KubeClientOptions specify options for kube client

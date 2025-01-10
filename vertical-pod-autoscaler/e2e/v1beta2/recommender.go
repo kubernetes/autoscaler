@@ -139,7 +139,18 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 		_, err := vpaClientSet.AutoscalingV1beta2().VerticalPodAutoscalerCheckpoints(ns).Create(context.TODO(), &checkpoint, metav1.CreateOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		time.Sleep(15 * time.Minute)
+		klog.InfoS("Sleeping for up to 15 minutes...")
+
+		maxRetries := 90
+		retryDelay := 10 * time.Second
+		for i := 0; i < maxRetries; i++ {
+			list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
+			if err == nil && len(list.Items) == 0 {
+				break
+			}
+			klog.InfoS("Still waiting...")
+			time.Sleep(retryDelay)
+		}
 
 		list, err := vpaClientSet.AutoscalingV1beta2().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -186,7 +197,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		_ = SetupHamsterDeployment(
 			f,       /* framework */
 			"100m",  /* cpu */
-			"100Mi", /* memeory */
+			"100Mi", /* memory */
 			1,       /* number of replicas */
 		)
 
@@ -222,7 +233,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		}
 		ginkgo.By("Deleting recommender")
 		gomega.Expect(deleteRecommender(f.ClientSet)).To(gomega.BeNil())
-		ginkgo.By("Accumulating diffs after restart")
+		ginkgo.By("Accumulating diffs after restart, sleeping for 5 minutes...")
 		time.Sleep(5 * time.Minute)
 		changeDetected := false
 	finish:
@@ -256,7 +267,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		_ = SetupHamsterDeployment(
 			f,       /* framework */
 			"100m",  /* cpu */
-			"100Mi", /* memeory */
+			"100Mi", /* memory */
 			1,       /* number of replicas */
 		)
 

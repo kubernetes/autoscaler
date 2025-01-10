@@ -4,8 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.9.2
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.16.5
   name: verticalpodautoscalercheckpoints.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -21,23 +20,31 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: VerticalPodAutoscalerCheckpoint is the checkpoint of the internal
-          state of VPA that is used for recovery after recommender's restart.
+        description: |-
+          VerticalPodAutoscalerCheckpoint is the checkpoint of the internal state of VPA that
+          is used for recovery after recommender's restart.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
           spec:
-            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
+            description: |-
+              Specification of the checkpoint.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
             properties:
               containerName:
                 description: Name of the checkpointed container.
@@ -114,23 +121,31 @@ spec:
   - name: v1beta2
     schema:
       openAPIV3Schema:
-        description: VerticalPodAutoscalerCheckpoint is the checkpoint of the internal
-          state of VPA that is used for recovery after recommender's restart.
+        description: |-
+          VerticalPodAutoscalerCheckpoint is the checkpoint of the internal state of VPA that
+          is used for recovery after recommender's restart.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
           spec:
-            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
+            description: |-
+              Specification of the checkpoint.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
             properties:
               containerName:
                 description: Name of the checkpointed container.
@@ -210,8 +225,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.9.2
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.16.5
   name: verticalpodautoscalers.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -243,34 +257,42 @@ spec:
     name: v1
     schema:
       openAPIV3Schema:
-        description: VerticalPodAutoscaler is the configuration for a vertical pod
-          autoscaler, which automatically manages pod resources based on historical
-          and real time resource utilization.
+        description: |-
+          VerticalPodAutoscaler is the configuration for a vertical pod
+          autoscaler, which automatically manages pod resources based on historical and
+          real time resource utilization.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
           spec:
-            description: 'Specification of the behavior of the autoscaler. More info:
-              https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
+            description: |-
+              Specification of the behavior of the autoscaler.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
             properties:
               recommenders:
-                description: Recommender responsible for generating recommendation
-                  for this object. List should be empty (then the default recommender
-                  will generate the recommendation) or contain exactly one recommender.
+                description: |-
+                  Recommender responsible for generating recommendation for this object.
+                  List should be empty (then the default recommender will generate the
+                  recommendation) or contain exactly one recommender.
                 items:
-                  description: VerticalPodAutoscalerRecommenderSelector points to
-                    a specific Vertical Pod Autoscaler recommender. In the future
-                    it might pass parameters to the recommender.
+                  description: |-
+                    VerticalPodAutoscalerRecommenderSelector points to a specific Vertical Pod Autoscaler recommender.
+                    In the future it might pass parameters to the recommender.
                   properties:
                     name:
                       description: Name of the recommender responsible for generating
@@ -281,37 +303,41 @@ spec:
                   type: object
                 type: array
               resourcePolicy:
-                description: Controls how the autoscaler computes recommended resources.
+                description: |-
+                  Controls how the autoscaler computes recommended resources.
                   The resource policy may be used to set constraints on the recommendations
-                  for individual containers. If any individual containers need to
-                  be excluded from getting the VPA recommendations, then it must be
-                  disabled explicitly by setting mode to "Off" under containerPolicies.
-                  If not specified, the autoscaler computes recommended resources
-                  for all containers in the pod, without additional constraints.
+                  for individual containers.
+                  If any individual containers need to be excluded from getting the VPA recommendations, then
+                  it must be disabled explicitly by setting mode to "Off" under containerPolicies.
+                  If not specified, the autoscaler computes recommended resources for all containers in the pod,
+                  without additional constraints.
                 properties:
                   containerPolicies:
                     description: Per-container resource policies.
                     items:
-                      description: ContainerResourcePolicy controls how autoscaler
-                        computes the recommended resources for a specific container.
+                      description: |-
+                        ContainerResourcePolicy controls how autoscaler computes the recommended
+                        resources for a specific container.
                       properties:
                         containerName:
-                          description: Name of the container or DefaultContainerResourcePolicy,
-                            in which case the policy is used by the containers that
-                            don't have their own policy specified.
+                          description: |-
+                            Name of the container or DefaultContainerResourcePolicy, in which
+                            case the policy is used by the containers that don't have their own
+                            policy specified.
                           type: string
                         controlledResources:
-                          description: Specifies the type of recommendations that
-                            will be computed (and possibly applied) by VPA. If not
-                            specified, the default of [ResourceCPU, ResourceMemory]
-                            will be used.
+                          description: |-
+                            Specifies the type of recommendations that will be computed
+                            (and possibly applied) by VPA.
+                            If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
                           items:
                             description: ResourceName is the name identifying various
                               resources in a ResourceList.
                             type: string
                           type: array
                         controlledValues:
-                          description: Specifies which resource values should be controlled.
+                          description: |-
+                            Specifies which resource values should be controlled.
                             The default is "RequestsAndLimits".
                           enum:
                           - RequestsAndLimits
@@ -324,9 +350,9 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Specifies the maximum amount of resources that
-                            will be recommended for the container. The default is
-                            no maximum.
+                          description: |-
+                            Specifies the maximum amount of resources that will be recommended
+                            for the container. The default is no maximum.
                           type: object
                         minAllowed:
                           additionalProperties:
@@ -335,9 +361,9 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Specifies the minimal amount of resources that
-                            will be recommended for the container. The default is
-                            no minimum.
+                          description: |-
+                            Specifies the minimal amount of resources that will be recommended
+                            for the container. The default is no minimum.
                           type: object
                         mode:
                           description: Whether autoscaler is enabled for the container.
@@ -350,26 +376,27 @@ spec:
                     type: array
                 type: object
               targetRef:
-                description: TargetRef points to the controller managing the set of
-                  pods for the autoscaler to control - e.g. Deployment, StatefulSet.
-                  VerticalPodAutoscaler can be targeted at controller implementing
-                  scale subresource (the pod set is retrieved from the controller's
-                  ScaleStatus) or some well known controllers (e.g. for DaemonSet
-                  the pod set is read from the controller's spec). If VerticalPodAutoscaler
-                  cannot use specified target it will report ConfigUnsupported condition.
+                description: |-
+                  TargetRef points to the controller managing the set of pods for the
+                  autoscaler to control - e.g. Deployment, StatefulSet. VerticalPodAutoscaler
+                  can be targeted at controller implementing scale subresource (the pod set is
+                  retrieved from the controller's ScaleStatus) or some well known controllers
+                  (e.g. for DaemonSet the pod set is read from the controller's spec).
+                  If VerticalPodAutoscaler cannot use specified target it will report
+                  ConfigUnsupported condition.
                   Note that VerticalPodAutoscaler does not require full implementation
-                  of scale subresource - it will not use it to modify the replica
-                  count. The only thing retrieved is a label selector matching pods
-                  grouped by the target resource.
+                  of scale subresource - it will not use it to modify the replica count.
+                  The only thing retrieved is a label selector matching pods grouped by
+                  the target resource.
                 properties:
                   apiVersion:
-                    description: API version of the referent
+                    description: apiVersion is the API version of the referent
                     type: string
                   kind:
-                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    description: 'kind is the kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                     type: string
                   name:
-                    description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                    description: 'name is the name of the referent; More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                     type: string
                 required:
                 - kind
@@ -377,18 +404,20 @@ spec:
                 type: object
                 x-kubernetes-map-type: atomic
               updatePolicy:
-                description: Describes the rules on how changes are applied to the
-                  pods. If not specified, all fields in the `PodUpdatePolicy` are
-                  set to their default values.
+                description: |-
+                  Describes the rules on how changes are applied to the pods.
+                  If not specified, all fields in the `PodUpdatePolicy` are set to their
+                  default values.
                 properties:
                   evictionRequirements:
-                    description: EvictionRequirements is a list of EvictionRequirements
-                      that need to evaluate to true in order for a Pod to be evicted.
-                      If more than one EvictionRequirement is specified, all of them
-                      need to be fulfilled to allow eviction.
+                    description: |-
+                      EvictionRequirements is a list of EvictionRequirements that need to
+                      evaluate to true in order for a Pod to be evicted. If more than one
+                      EvictionRequirement is specified, all of them need to be fulfilled to allow eviction.
                     items:
-                      description: EvictionRequirement defines a single condition
-                        which needs to be true in order to evict a Pod
+                      description: |-
+                        EvictionRequirement defines a single condition which needs to be true in
+                        order to evict a Pod
                       properties:
                         changeRequirement:
                           description: EvictionChangeRequirement refers to the relationship
@@ -400,10 +429,10 @@ spec:
                           - TargetLowerThanRequests
                           type: string
                         resources:
-                          description: Resources is a list of one or more resources
-                            that the condition applies to. If more than one resource
-                            is given, the EvictionRequirement is fulfilled if at least
-                            one resource meets `changeRequirement`.
+                          description: |-
+                            Resources is a list of one or more resources that the condition applies
+                            to. If more than one resource is given, the EvictionRequirement is fulfilled
+                            if at least one resource meets `changeRequirement`.
                           items:
                             description: ResourceName is the name identifying various
                               resources in a ResourceList.
@@ -415,15 +444,16 @@ spec:
                       type: object
                     type: array
                   minReplicas:
-                    description: Minimal number of replicas which need to be alive
-                      for Updater to attempt pod eviction (pending other checks like
-                      PDB). Only positive values are allowed. Overrides global '--min-replicas'
-                      flag.
+                    description: |-
+                      Minimal number of replicas which need to be alive for Updater to attempt
+                      pod eviction (pending other checks like PDB). Only positive values are
+                      allowed. Overrides global '--min-replicas' flag.
                     format: int32
                     type: integer
                   updateMode:
-                    description: Controls when autoscaler applies changes to the pod
-                      resources. The default is 'Auto'.
+                    description: |-
+                      Controls when autoscaler applies changes to the pod resources.
+                      The default is 'Auto'.
                     enum:
                     - "Off"
                     - Initial
@@ -438,21 +468,24 @@ spec:
             description: Current information about the autoscaler.
             properties:
               conditions:
-                description: Conditions is the set of conditions required for this
-                  autoscaler to scale its target, and indicates whether or not those
-                  conditions are met.
+                description: |-
+                  Conditions is the set of conditions required for this autoscaler to scale its target,
+                  and indicates whether or not those conditions are met.
                 items:
-                  description: VerticalPodAutoscalerCondition describes the state
-                    of a VerticalPodAutoscaler at a certain point.
+                  description: |-
+                    VerticalPodAutoscalerCondition describes the state of
+                    a VerticalPodAutoscaler at a certain point.
                   properties:
                     lastTransitionTime:
-                      description: lastTransitionTime is the last time the condition
-                        transitioned from one status to another
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from
+                        one status to another
                       format: date-time
                       type: string
                     message:
-                      description: message is a human-readable explanation containing
-                        details about the transition
+                      description: |-
+                        message is a human-readable explanation containing details about
+                        the transition
                       type: string
                     reason:
                       description: reason is the reason for the condition's last transition.
@@ -470,18 +503,19 @@ spec:
                   type: object
                 type: array
               recommendation:
-                description: The most recently computed amount of resources recommended
-                  by the autoscaler for the controlled pods.
+                description: |-
+                  The most recently computed amount of resources recommended by the
+                  autoscaler for the controlled pods.
                 properties:
                   containerRecommendations:
                     description: Resources recommended by the autoscaler for each
                       container.
                     items:
-                      description: RecommendedContainerResources is the recommendation
-                        of resources computed by autoscaler for a specific container.
-                        Respects the container resource policy if present in the spec.
-                        In particular the recommendation is not produced for containers
-                        with `ContainerScalingMode` set to 'Off'.
+                      description: |-
+                        RecommendedContainerResources is the recommendation of resources computed by
+                        autoscaler for a specific container. Respects the container resource policy
+                        if present in the spec. In particular the recommendation is not produced for
+                        containers with `ContainerScalingMode` set to 'Off'.
                       properties:
                         containerName:
                           description: Name of the container.
@@ -493,11 +527,10 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Minimum recommended amount of resources. Observes
-                            ContainerResourcePolicy. This amount is not guaranteed
-                            to be sufficient for the application to operate in a stable
-                            way, however running with less resources is likely to
-                            have significant impact on performance/availability.
+                          description: |-
+                            Minimum recommended amount of resources. Observes ContainerResourcePolicy.
+                            This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
+                            running with less resources is likely to have significant impact on performance/availability.
                           type: object
                         target:
                           additionalProperties:
@@ -515,14 +548,14 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: The most recent recommended resources target
-                            computed by the autoscaler for the controlled pods, based
-                            only on actual resource usage, not taking into account
-                            the ContainerResourcePolicy. May differ from the Recommendation
-                            if the actual resource usage causes the target to violate
-                            the ContainerResourcePolicy (lower than MinAllowed or
-                            higher that MaxAllowed). Used only as status indication,
-                            will not affect actual resource assignment.
+                          description: |-
+                            The most recent recommended resources target computed by the autoscaler
+                            for the controlled pods, based only on actual resource usage, not taking
+                            into account the ContainerResourcePolicy.
+                            May differ from the Recommendation if the actual resource usage causes
+                            the target to violate the ContainerResourcePolicy (lower than MinAllowed
+                            or higher that MaxAllowed).
+                            Used only as status indication, will not affect actual resource assignment.
                           type: object
                         upperBound:
                           additionalProperties:
@@ -531,11 +564,10 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Maximum recommended amount of resources. Observes
-                            ContainerResourcePolicy. Any resources allocated beyond
-                            this value are likely wasted. This value may be larger
-                            than the maximum amount of application is actually capable
-                            of consuming.
+                          description: |-
+                            Maximum recommended amount of resources. Observes ContainerResourcePolicy.
+                            Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
+                            amount of application is actually capable of consuming.
                           type: object
                       required:
                       - target
@@ -555,43 +587,52 @@ spec:
     name: v1beta2
     schema:
       openAPIV3Schema:
-        description: VerticalPodAutoscaler is the configuration for a vertical pod
-          autoscaler, which automatically manages pod resources based on historical
-          and real time resource utilization.
+        description: |-
+          VerticalPodAutoscaler is the configuration for a vertical pod
+          autoscaler, which automatically manages pod resources based on historical and
+          real time resource utilization.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
           spec:
-            description: 'Specification of the behavior of the autoscaler. More info:
-              https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
+            description: |-
+              Specification of the behavior of the autoscaler.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
             properties:
               resourcePolicy:
-                description: Controls how the autoscaler computes recommended resources.
+                description: |-
+                  Controls how the autoscaler computes recommended resources.
                   The resource policy may be used to set constraints on the recommendations
-                  for individual containers. If not specified, the autoscaler computes
-                  recommended resources for all containers in the pod, without additional
-                  constraints.
+                  for individual containers. If not specified, the autoscaler computes recommended
+                  resources for all containers in the pod, without additional constraints.
                 properties:
                   containerPolicies:
                     description: Per-container resource policies.
                     items:
-                      description: ContainerResourcePolicy controls how autoscaler
-                        computes the recommended resources for a specific container.
+                      description: |-
+                        ContainerResourcePolicy controls how autoscaler computes the recommended
+                        resources for a specific container.
                       properties:
                         containerName:
-                          description: Name of the container or DefaultContainerResourcePolicy,
-                            in which case the policy is used by the containers that
-                            don't have their own policy specified.
+                          description: |-
+                            Name of the container or DefaultContainerResourcePolicy, in which
+                            case the policy is used by the containers that don't have their own
+                            policy specified.
                           type: string
                         maxAllowed:
                           additionalProperties:
@@ -600,9 +641,9 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Specifies the maximum amount of resources that
-                            will be recommended for the container. The default is
-                            no maximum.
+                          description: |-
+                            Specifies the maximum amount of resources that will be recommended
+                            for the container. The default is no maximum.
                           type: object
                         minAllowed:
                           additionalProperties:
@@ -611,9 +652,9 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Specifies the minimal amount of resources that
-                            will be recommended for the container. The default is
-                            no minimum.
+                          description: |-
+                            Specifies the minimal amount of resources that will be recommended
+                            for the container. The default is no minimum.
                           type: object
                         mode:
                           description: Whether autoscaler is enabled for the container.
@@ -626,26 +667,27 @@ spec:
                     type: array
                 type: object
               targetRef:
-                description: TargetRef points to the controller managing the set of
-                  pods for the autoscaler to control - e.g. Deployment, StatefulSet.
-                  VerticalPodAutoscaler can be targeted at controller implementing
-                  scale subresource (the pod set is retrieved from the controller's
-                  ScaleStatus) or some well known controllers (e.g. for DaemonSet
-                  the pod set is read from the controller's spec). If VerticalPodAutoscaler
-                  cannot use specified target it will report ConfigUnsupported condition.
+                description: |-
+                  TargetRef points to the controller managing the set of pods for the
+                  autoscaler to control - e.g. Deployment, StatefulSet. VerticalPodAutoscaler
+                  can be targeted at controller implementing scale subresource (the pod set is
+                  retrieved from the controller's ScaleStatus) or some well known controllers
+                  (e.g. for DaemonSet the pod set is read from the controller's spec).
+                  If VerticalPodAutoscaler cannot use specified target it will report
+                  ConfigUnsupported condition.
                   Note that VerticalPodAutoscaler does not require full implementation
-                  of scale subresource - it will not use it to modify the replica
-                  count. The only thing retrieved is a label selector matching pods
-                  grouped by the target resource.
+                  of scale subresource - it will not use it to modify the replica count.
+                  The only thing retrieved is a label selector matching pods grouped by
+                  the target resource.
                 properties:
                   apiVersion:
-                    description: API version of the referent
+                    description: apiVersion is the API version of the referent
                     type: string
                   kind:
-                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    description: 'kind is the kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                     type: string
                   name:
-                    description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                    description: 'name is the name of the referent; More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                     type: string
                 required:
                 - kind
@@ -653,13 +695,15 @@ spec:
                 type: object
                 x-kubernetes-map-type: atomic
               updatePolicy:
-                description: Describes the rules on how changes are applied to the
-                  pods. If not specified, all fields in the `PodUpdatePolicy` are
-                  set to their default values.
+                description: |-
+                  Describes the rules on how changes are applied to the pods.
+                  If not specified, all fields in the `PodUpdatePolicy` are set to their
+                  default values.
                 properties:
                   updateMode:
-                    description: Controls when autoscaler applies changes to the pod
-                      resources. The default is 'Auto'.
+                    description: |-
+                      Controls when autoscaler applies changes to the pod resources.
+                      The default is 'Auto'.
                     enum:
                     - "Off"
                     - Initial
@@ -674,21 +718,24 @@ spec:
             description: Current information about the autoscaler.
             properties:
               conditions:
-                description: Conditions is the set of conditions required for this
-                  autoscaler to scale its target, and indicates whether or not those
-                  conditions are met.
+                description: |-
+                  Conditions is the set of conditions required for this autoscaler to scale its target,
+                  and indicates whether or not those conditions are met.
                 items:
-                  description: VerticalPodAutoscalerCondition describes the state
-                    of a VerticalPodAutoscaler at a certain point.
+                  description: |-
+                    VerticalPodAutoscalerCondition describes the state of
+                    a VerticalPodAutoscaler at a certain point.
                   properties:
                     lastTransitionTime:
-                      description: lastTransitionTime is the last time the condition
-                        transitioned from one status to another
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from
+                        one status to another
                       format: date-time
                       type: string
                     message:
-                      description: message is a human-readable explanation containing
-                        details about the transition
+                      description: |-
+                        message is a human-readable explanation containing details about
+                        the transition
                       type: string
                     reason:
                       description: reason is the reason for the condition's last transition.
@@ -706,18 +753,19 @@ spec:
                   type: object
                 type: array
               recommendation:
-                description: The most recently computed amount of resources recommended
-                  by the autoscaler for the controlled pods.
+                description: |-
+                  The most recently computed amount of resources recommended by the
+                  autoscaler for the controlled pods.
                 properties:
                   containerRecommendations:
                     description: Resources recommended by the autoscaler for each
                       container.
                     items:
-                      description: RecommendedContainerResources is the recommendation
-                        of resources computed by autoscaler for a specific container.
-                        Respects the container resource policy if present in the spec.
-                        In particular the recommendation is not produced for containers
-                        with `ContainerScalingMode` set to 'Off'.
+                      description: |-
+                        RecommendedContainerResources is the recommendation of resources computed by
+                        autoscaler for a specific container. Respects the container resource policy
+                        if present in the spec. In particular the recommendation is not produced for
+                        containers with `ContainerScalingMode` set to 'Off'.
                       properties:
                         containerName:
                           description: Name of the container.
@@ -729,11 +777,10 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Minimum recommended amount of resources. Observes
-                            ContainerResourcePolicy. This amount is not guaranteed
-                            to be sufficient for the application to operate in a stable
-                            way, however running with less resources is likely to
-                            have significant impact on performance/availability.
+                          description: |-
+                            Minimum recommended amount of resources. Observes ContainerResourcePolicy.
+                            This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
+                            running with less resources is likely to have significant impact on performance/availability.
                           type: object
                         target:
                           additionalProperties:
@@ -751,14 +798,14 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: The most recent recommended resources target
-                            computed by the autoscaler for the controlled pods, based
-                            only on actual resource usage, not taking into account
-                            the ContainerResourcePolicy. May differ from the Recommendation
-                            if the actual resource usage causes the target to violate
-                            the ContainerResourcePolicy (lower than MinAllowed or
-                            higher that MaxAllowed). Used only as status indication,
-                            will not affect actual resource assignment.
+                          description: |-
+                            The most recent recommended resources target computed by the autoscaler
+                            for the controlled pods, based only on actual resource usage, not taking
+                            into account the ContainerResourcePolicy.
+                            May differ from the Recommendation if the actual resource usage causes
+                            the target to violate the ContainerResourcePolicy (lower than MinAllowed
+                            or higher that MaxAllowed).
+                            Used only as status indication, will not affect actual resource assignment.
                           type: object
                         upperBound:
                           additionalProperties:
@@ -767,11 +814,10 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: Maximum recommended amount of resources. Observes
-                            ContainerResourcePolicy. Any resources allocated beyond
-                            this value are likely wasted. This value may be larger
-                            than the maximum amount of application is actually capable
-                            of consuming.
+                          description: |-
+                            Maximum recommended amount of resources. Observes ContainerResourcePolicy.
+                            Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
+                            amount of application is actually capable of consuming.
                           type: object
                       required:
                       - target

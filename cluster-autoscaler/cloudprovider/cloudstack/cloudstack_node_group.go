@@ -26,8 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // asg implements NodeGroup interface.
@@ -123,6 +123,11 @@ func (asg *asg) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (asg *asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns cluster id.
 func (asg *asg) Id() string {
 	return asg.cluster.ID
@@ -168,7 +173,7 @@ func (asg *asg) Delete() error {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (asg *asg) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (asg *asg) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

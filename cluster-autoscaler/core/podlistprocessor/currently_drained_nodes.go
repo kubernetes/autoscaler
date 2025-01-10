@@ -45,12 +45,12 @@ func currentlyDrainedPods(context *context.AutoscalingContext) []*apiv1.Pod {
 	var pods []*apiv1.Pod
 	_, nodeNames := context.ScaleDownActuator.CheckStatus().DeletionsInProgress()
 	for _, nodeName := range nodeNames {
-		nodeInfo, err := context.ClusterSnapshot.NodeInfos().Get(nodeName)
+		nodeInfo, err := context.ClusterSnapshot.GetNodeInfo(nodeName)
 		if err != nil {
 			klog.Warningf("Couldn't get node %v info, assuming the node got deleted already: %v", nodeName, err)
 			continue
 		}
-		for _, podInfo := range nodeInfo.Pods {
+		for _, podInfo := range nodeInfo.Pods() {
 			// Filter out pods that has deletion timestamp set
 			if podInfo.Pod.DeletionTimestamp != nil {
 				klog.Infof("Pod %v has deletion timestamp set, skipping injection to unschedulable pods list", podInfo.Pod.Name)

@@ -17,6 +17,8 @@ limitations under the License.
 package hetzner
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -27,8 +29,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	autoscalerErrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 )
@@ -44,6 +47,7 @@ const (
 	serverCreateTimeoutDefault = 5 * time.Minute
 	serverRegisterTimeout      = 10 * time.Minute
 	defaultPodAmountsLimit     = 110
+	maxPlacementGroupSize      = 10
 )
 
 // HetznerCloudProvider implements CloudProvider interface.
@@ -106,7 +110,7 @@ func (d *HetznerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, autoscalerErrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -196,6 +200,7 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 
 	validNodePoolName := regexp.MustCompile(`^[a-z0-9A-Z]+[a-z0-9A-Z\-\.\_]*[a-z0-9A-Z]+$|^[a-z0-9A-Z]{1}$`)
 	clusterUpdateLock := sync.Mutex{}
+	placementGroupTotals := make(map[string]int)
 	for _, nodegroupSpec := range do.NodeGroupSpecs {
 		spec, err := createNodePoolSpec(nodegroupSpec)
 		if err != nil {
@@ -208,10 +213,24 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 			klog.Fatalf("Failed to get servers for for node pool %s error: %v", nodegroupSpec, err)
 		}
 
+		var placementGroup *hcloud.PlacementGroup
 		if manager.clusterConfig.IsUsingNewFormat {
 			_, ok := manager.clusterConfig.NodeConfigs[spec.name]
 			if !ok {
 				klog.Fatalf("No node config present for node group id `%s` error: %v", spec.name, err)
+			}
+
+			placementGroupRef := manager.clusterConfig.NodeConfigs[spec.name].PlacementGroup
+
+			if placementGroupRef != "" {
+				placementGroup, err = getPlacementGroup(manager, placementGroupRef)
+				if err != nil {
+					klog.Fatalf("Encountered error while fetching placement group: %v", err)
+				}
+				if placementGroup == nil {
+					klog.Fatalf("The requested placement group `%s` does not appear to exist.", placementGroupRef)
+				}
+				placementGroupTotals[placementGroup.Name] += spec.maxSize
 			}
 		}
 
@@ -224,10 +243,40 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 			region:             strings.ToLower(spec.region),
 			targetSize:         len(servers),
 			clusterUpdateMutex: &clusterUpdateLock,
+			placementGroup:     placementGroup,
+		}
+	}
+
+	// Check if placement groups spanned over multiple node groups exceeds max placement group size
+	for pgName, totalMaxSize := range placementGroupTotals {
+		if totalMaxSize > maxPlacementGroupSize {
+			klog.Fatalf(
+				"Placement group %s exceeds max placement group size of %d, size %d",
+				pgName,
+				maxPlacementGroupSize,
+				totalMaxSize,
+			)
 		}
 	}
 
 	return provider
+}
+
+func getPlacementGroup(manager *hetznerManager, placementGroupRef string) (*hcloud.PlacementGroup, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	placementGroup, _, err := manager.client.PlacementGroup.Get(ctx, placementGroupRef)
+
+	// Check if an error occurred
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, fmt.Errorf("Timed out checking if placement group `%s` exists.", placementGroupRef)
+		}
+		return nil, fmt.Errorf("Failed to verify if placement group `%s` exists. Error: %w", placementGroupRef, err)
+	}
+
+	return placementGroup, nil
 }
 
 func createNodePoolSpec(groupSpec string) (*hetznerNodeGroupSpec, error) {

@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"context"
+	"os"
 	"time"
 
 	k8sapiv1 "k8s.io/api/core/v1"
@@ -70,7 +71,8 @@ type ExternalClientOptions struct {
 func NewExternalClient(c *rest.Config, clusterState *model.ClusterState, options ExternalClientOptions) PodMetricsLister {
 	extClient, err := external_metrics.NewForConfig(c)
 	if err != nil {
-		klog.Fatalf("Failed initializing external metrics client: %v", err)
+		klog.ErrorS(err, "Failed initializing external metrics client")
+		os.Exit(255)
 	}
 	return &externalMetricsClient{
 		externalClient: extClient,

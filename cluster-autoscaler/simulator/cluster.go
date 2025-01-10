@@ -20,20 +20,18 @@ import (
 	"fmt"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
-	apiv1 "k8s.io/api/core/v1"
-
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // NodeToBeRemoved contain information about a node that can be removed.
@@ -106,15 +104,14 @@ type RemovalSimulator struct {
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, predicateChecker predicatechecker.PredicateChecker,
-	deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:             listers,
 		clusterSnapshot:     clusterSnapshot,
 		canPersist:          persistSuccessfulSimulations,
 		deleteOptions:       deleteOptions,
 		drainabilityRules:   drainabilityRules,
-		schedulingSimulator: scheduling.NewHintingSimulator(predicateChecker),
+		schedulingSimulator: scheduling.NewHintingSimulator(),
 	}
 }
 
@@ -151,7 +148,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	timestamp time.Time,
 	remainingPdbTracker pdb.RemainingPdbTracker,
 ) (*NodeToBeRemoved, *UnremovableNode) {
-	nodeInfo, err := r.clusterSnapshot.NodeInfos().Get(nodeName)
+	nodeInfo, err := r.clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
 	}
@@ -159,7 +156,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 
 	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
-		klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)
+		klog.V(2).Infof("Node %s cannot be removed: %v", nodeName, err)
 		if blockingPod != nil {
 			return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: blockingPod}
 		}
@@ -170,10 +167,10 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		return r.findPlaceFor(nodeName, podsToRemove, destinationMap, timestamp)
 	})
 	if err != nil {
-		klog.V(2).Infof("node %s is not suitable for removal: %v", nodeName, err)
+		klog.V(2).Infof("Node %s is not suitable for removal: %v", nodeName, err)
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: NoPlaceToMovePods}
 	}
-	klog.V(2).Infof("node %s may be removed", nodeName)
+	klog.V(2).Infof("Node %s may be removed", nodeName)
 	return &NodeToBeRemoved{
 		Node:             nodeInfo.Node(),
 		PodsToReschedule: podsToRemove,
@@ -185,7 +182,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp time.Time) []string {
 	result := make([]string, 0)
 	for _, node := range candidates {
-		nodeInfo, err := r.clusterSnapshot.NodeInfos().Get(node)
+		nodeInfo, err := r.clusterSnapshot.GetNodeInfo(node)
 		if err != nil {
 			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", node, err)
 			continue
@@ -216,15 +213,15 @@ func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
 }
 
 func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool, timestamp time.Time) error {
-	isCandidateNode := func(nodeInfo *schedulerframework.NodeInfo) bool {
+	isCandidateNode := func(nodeInfo *framework.NodeInfo) bool {
 		return nodeInfo.Node().Name != removedNode && nodes[nodeInfo.Node().Name]
 	}
 
 	pods = tpu.ClearTPURequests(pods)
 
-	// remove pods from clusterSnapshot first
+	// Unschedule the pods from the Node in the snapshot first, so that they can be scheduled elsewhere by TrySchedulePods().
 	for _, pod := range pods {
-		if err := r.clusterSnapshot.RemovePod(pod.Namespace, pod.Name, removedNode); err != nil {
+		if err := r.clusterSnapshot.UnschedulePod(pod.Namespace, pod.Name, removedNode); err != nil {
 			// just log error
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}

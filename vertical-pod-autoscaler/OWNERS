@@ -4,6 +4,7 @@ approvers:
 - jbartosik
 - krzysied
 - voelzmo
+- raywainman
 reviewers:
 - kwiesmueller
 - kgolab
@@ -11,6 +12,8 @@ reviewers:
 - krzysied
 - voelzmo
 - raywainman
+- adrianmoisey
+- omerap12
 emeritus_approvers:
 - schylek # 2022-09-30
 labels:

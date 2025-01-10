@@ -23,12 +23,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kube_types "k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -86,6 +88,28 @@ func MarkUnschedulable() func(*apiv1.Pod) {
 func AddSchedulerName(schedulerName string) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		pod.Spec.SchedulerName = schedulerName
+	}
+}
+
+// WithResourceClaim adds a reference to the given resource claim/claim template to a pod.
+func WithResourceClaim(refName, claimName, templateName string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		claimRef := apiv1.PodResourceClaim{
+			Name: refName,
+		}
+		claimStatus := apiv1.PodResourceClaimStatus{
+			Name: refName,
+		}
+
+		if templateName != "" {
+			claimRef.ResourceClaimTemplateName = &templateName
+			claimStatus.ResourceClaimName = &claimName
+		} else {
+			claimRef.ResourceClaimName = &claimName
+		}
+
+		pod.Spec.ResourceClaims = append(pod.Spec.ResourceClaims, claimRef)
+		pod.Status.ResourceClaimStatuses = append(pod.Status.ResourceClaimStatuses, claimStatus)
 	}
 }
 
@@ -338,20 +362,6 @@ func GetGPULabel() string {
 	return gpuLabel
 }
 
-// GetGpuConfigFromNode returns the GPU of the node if it has one. This is only used in unit tests.
-func GetGpuConfigFromNode(node *apiv1.Node) *cloudprovider.GpuConfig {
-	gpuType, hasGpuLabel := node.Labels[gpuLabel]
-	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[resourceNvidiaGPU]
-	if hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero()) {
-		return &cloudprovider.GpuConfig{
-			Label:        gpuLabel,
-			Type:         gpuType,
-			ResourceName: resourceNvidiaGPU,
-		}
-	}
-	return nil
-}
-
 // SetNodeReadyState sets node ready state to either ConditionTrue or ConditionFalse.
 func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
 	if ready {
@@ -517,4 +527,12 @@ func (l *HttpServerMock) handle(req *http.Request, w http.ResponseWriter, server
 		}
 	}
 	return response
+}
+
+// IgnoreObjectOrder returns a cmp.Option that ignores the order of elements when comparing slices of K8s objects of type T,
+// depending on their GetName() function for sorting.
+func IgnoreObjectOrder[T interface{ GetName() string }]() cmp.Option {
+	return cmpopts.SortSlices(func(c1, c2 T) bool {
+		return c1.GetName() < c2.GetName()
+	})
 }

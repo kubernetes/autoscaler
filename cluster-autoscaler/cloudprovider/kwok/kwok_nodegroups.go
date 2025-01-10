@@ -25,8 +25,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 var (
@@ -120,6 +120,11 @@ func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (nodeGroup *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
@@ -186,10 +191,8 @@ func (nodeGroup *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (nodeGroup *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(nodeGroup.Id()))
-	nodeInfo.SetNode(nodeGroup.nodeTemplate)
-
+func (nodeGroup *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+	nodeInfo := framework.NewNodeInfo(nodeGroup.nodeTemplate, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(nodeGroup.Id())})
 	return nodeInfo, nil
 }
 
