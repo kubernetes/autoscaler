@@ -296,7 +296,10 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 			// This prevents an old, excessively long grace period from persisting and
 			// potentially causing the VPA to keep stale aggregates with an outdated grace period.
 			vpa.PruningGracePeriod = vpa_utils.ParsePruningGracePeriodFromAnnotations(annotationsMap)
-			for _, containerState := range vpa.aggregateContainerStates {
+			for _, containerState := range vpa.AggregateContainerStates() {
+				containerState.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
+			}
+			for _, containerState := range vpa.ContainersInitialAggregateState {
 				containerState.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
 			}
 		}
