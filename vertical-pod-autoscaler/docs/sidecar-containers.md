@@ -19,7 +19,7 @@ When you create a VPA resource for a pod, it automatically attempts to manage AL
 This default "manage everything" approach can cause problems with sidecars because:
 - Sidecar containers often have their own resource requirements set by their injection webhooks
 - VPA's automatic management may conflict with these requirements
-- Without proper handling, this can lead to resource conflicts and pod instability
+- Without proper handling, this can lead to problems like endless eviction loops
 
 Example of a VPA resource that explicitly configures one container but affects all:
 
