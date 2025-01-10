@@ -38,7 +38,7 @@ To enable this feature, set the `--humanize-memory` flag to true when running th
 
 ## CPU Recommendation Rounding
 
-VPA can now provide CPU recommendations rounded to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-cpu-millicores` flag in the recommender component.
+VPA can provide CPU recommendations rounded to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-cpu-millicores` flag in the recommender component.
 
 When enabled, CPU recommendations will be:
 - Rounded to the nearest multiple of the specified millicore value
