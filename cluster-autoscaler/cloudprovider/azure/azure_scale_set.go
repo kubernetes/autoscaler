@@ -591,43 +591,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	if int(size) <= scaleSet.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
-
-	// Distinguish between unregistered node deletion and normal node deletion
-	refs := make([]*azureRef, 0, len(nodes))
-	hasUnregisteredNodes := false
-	unregisteredRefs := make([]*azureRef, 0, len(nodes))
-
-	for _, node := range nodes {
-		belongs, err := scaleSet.Belongs(node)
-		if err != nil {
-			return err
-		}
-
-		if belongs != true {
-			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, scaleSet.Id())
-		}
-
-		if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
-			hasUnregisteredNodes = true
-		}
-		ref := &azureRef{
-			Name: node.Spec.ProviderID,
-		}
-
-		if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
-			klog.V(5).Infof("Node: %s type is unregistered..Appending to the unregistered list", node.Name)
-			unregisteredRefs = append(unregisteredRefs, ref)
-		} else {
-			refs = append(refs, ref)
-		}
-	}
-
-	if len(unregisteredRefs) > 0 {
-		klog.V(3).Infof("Removing unregisteredNodes: %v", unregisteredRefs)
-		return scaleSet.DeleteInstances(unregisteredRefs, true)
-	}
-
-	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
+	return scaleSet.ForceDeleteNodes(nodes)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.

@@ -446,34 +446,11 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
-	refs := make([]*azureRef, 0, len(nodes))
-	for _, node := range nodes {
-		belongs, err := as.Belongs(node)
-		if err != nil {
-			return err
-		}
-
-		if belongs != true {
-			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, as.Name)
-		}
-
-		ref := &azureRef{
-			Name: node.Spec.ProviderID,
-		}
-		refs = append(refs, ref)
-	}
-
-	err = as.deleteOutdatedDeployments()
-	if err != nil {
-		klog.Warningf("DeleteNodes: failed to cleanup outdated deployments with err: %v.", err)
-	}
-
-	return as.DeleteInstances(refs)
+	return as.ForceDeleteNodes(nodes)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
 func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(6).Infof("Delete nodes requested: %v\n", nodes)
 	refs := make([]*azureRef, 0, len(nodes))
 	for _, node := range nodes {
 		belongs, err := as.Belongs(node)
