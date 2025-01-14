@@ -301,6 +301,7 @@ spec:
                   required:
                   - name
                   type: object
+                maxItems: 1
                 type: array
               resourcePolicy:
                 description: |-
@@ -324,7 +325,11 @@ spec:
                             Name of the container or DefaultContainerResourcePolicy, in which
                             case the policy is used by the containers that don't have their own
                             policy specified.
+                          pattern: ^[a-zA-Z0-9-_]+$
                           type: string
+                          x-kubernetes-validations:
+                          - message: ContainerName cannot be empty
+                            rule: size(self) > 0
                         controlledResources:
                           description: |-
                             Specifies the type of recommendations that will be computed
@@ -366,6 +371,7 @@ spec:
                             for the container. The default is no minimum.
                           type: object
                         mode:
+                          default: Auto
                           description: Whether autoscaler is enabled for the container.
                             The default is "Auto".
                           enum:
@@ -373,6 +379,12 @@ spec:
                           - "Off"
                           type: string
                       type: object
+                      x-kubernetes-validations:
+                      - message: ControlledValues shouldn't be specified if container
+                          scaling mode is off
+                        rule: '!has(self.mode) || !has(self.controlledValues) || self.mode
+                          != ''Off'' || self.controlledValues != ''RequestsAndLimits'''
+                    maxItems: 100
                     type: array
                 type: object
               targetRef:
@@ -449,6 +461,7 @@ spec:
                       pod eviction (pending other checks like PDB). Only positive values are
                       allowed. Overrides global '--min-replicas' flag.
                     format: int32
+                    minimum: 1
                     type: integer
                   updateMode:
                     description: |-

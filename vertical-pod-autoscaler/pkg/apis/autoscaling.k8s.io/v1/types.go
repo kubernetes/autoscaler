@@ -105,6 +105,7 @@ type VerticalPodAutoscalerSpec struct {
 	// Recommender responsible for generating recommendation for this object.
 	// List should be empty (then the default recommender will generate the
 	// recommendation) or contain exactly one recommender.
+	// +kubebuilder:validation:MaxItems=1
 	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
 }
@@ -141,6 +142,7 @@ type PodUpdatePolicy struct {
 	// pod eviction (pending other checks like PDB). Only positive values are
 	// allowed. Overrides global '--min-replicas' flag.
 	// +optional
+	// +kubebuilder:validation:Minimum=1
 	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
 
 	// EvictionRequirements is a list of EvictionRequirements that need to
@@ -182,18 +184,23 @@ type PodResourcePolicy struct {
 	// +optional
 	// +patchMergeKey=containerName
 	// +patchStrategy=merge
+	// +kubebuilder:validation:MaxItems=100
 	ContainerPolicies []ContainerResourcePolicy `json:"containerPolicies,omitempty" patchStrategy:"merge" patchMergeKey:"containerName" protobuf:"bytes,1,rep,name=containerPolicies"`
 }
 
 // ContainerResourcePolicy controls how autoscaler computes the recommended
 // resources for a specific container.
+// +kubebuilder:validation:XValidation:rule="!has(self.mode) || !has(self.controlledValues) || self.mode != 'Off' || self.controlledValues != 'RequestsAndLimits'",message="ControlledValues shouldn't be specified if container scaling mode is off"
 type ContainerResourcePolicy struct {
 	// Name of the container or DefaultContainerResourcePolicy, in which
 	// case the policy is used by the containers that don't have their own
 	// policy specified.
+	// +kubebuilder:validation:Pattern=`^[a-zA-Z0-9-_]+$`
+	// +kubebuilder:validation:XValidation:rule="size(self) > 0",message="ContainerName cannot be empty"
 	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
 	// Whether autoscaler is enabled for the container. The default is "Auto".
 	// +optional
+	// +kubebuilder:default="Auto"
 	Mode *ContainerScalingMode `json:"mode,omitempty" protobuf:"bytes,2,opt,name=mode"`
 	// Specifies the minimal amount of resources that will be recommended
 	// for the container. The default is no minimum.
