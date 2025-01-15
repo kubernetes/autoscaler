@@ -445,7 +445,6 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 	if present {
 
 		// If our QoS class is guaranteed, we can't change the resources without a restart
-		// TODO(maxcao13): kubelet already prevents a resize of a guaranteed pod, so should we still check this early?
 		if pod.Status.QOSClass == apiv1.PodQOSGuaranteed {
 			klog.V(4).InfoS("Can't resize pod in-place", "pod", klog.KObj(pod), "qosClass", pod.Status.QOSClass)
 			return false
@@ -458,6 +457,7 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 		}
 
 		noRestartPoliciesPopulated := true
+		isPodRestartPolicyNever := pod.Spec.RestartPolicy == apiv1.RestartPolicyNever
 
 		for _, container := range pod.Spec.Containers {
 			// If some of these are populated, we know it at least understands resizing
@@ -465,16 +465,18 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 				noRestartPoliciesPopulated = false
 			}
 
-			// TODO(maxcao13): Do we have to check the policy resource too? i.e. if only memory is getting scaled, then only check the memory resize policy?
+			// TODO: We should check the containerResizePolicy resource and compare it with the requested update resources.
+			// For example, if we are only updating CPU, and the CPU container resize policy is NotRequired, but the memory
+			// resize policy is RestartContainer, then it's not going to accept an in-place disruptionless update, even though it should.
+			// For now this function, cannot actually see the resource(s) to be updated,
 			for _, policy := range container.ResizePolicy {
 				if policy.RestartPolicy != apiv1.NotRequired {
-					klog.InfoS("in-place resize of pod will cause container disruption, because of container resize policy", "pod", klog.KObj(pod), "container", container.Name, "restartPolicy", policy.RestartPolicy)
+					klog.V(4).InfoS("in-place resize of pod will cause container disruption, because of container resize policy", "pod", klog.KObj(pod), "container", container.Name, "containerResizeRestartPolicy", policy.RestartPolicy)
 					// TODO(jkyros): is there something that prevents this from happening elsewhere in the API?
-					if pod.Spec.RestartPolicy == apiv1.RestartPolicyNever {
-						klog.Warningf("in-place resize of %s not possible, container %s resize policy is %v but pod restartPolicy is %v", pod.Name, container.Name, policy.RestartPolicy, pod.Spec.RestartPolicy)
+					if isPodRestartPolicyNever {
+						klog.InfoS("in-place resize of pod not possible, container resize policy and pod restartPolicy conflict", "pod", klog.KObj(pod), "container", container.Name, "containerResizeRestartPolicy", policy.RestartPolicy, "podRestartPolicy", pod.Spec.RestartPolicy)
 						return false
 					}
-
 				}
 			}
 		}
@@ -591,7 +593,7 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
 		}
 	} else {
-		err := fmt.Errorf("no patches to apply to %s", podToUpdate.Name)
+		err := fmt.Errorf("no resource patches were calculated to apply")
 		klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
 		return err
 	}
@@ -606,7 +608,7 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 	if podToUpdate.Status.Phase == apiv1.PodRunning {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
 		if !present {
-			klog.Errorf("Internal error - cannot find stats for replication group %v", cr)
+			klog.InfoS("Internal error - cannot find stats for replication group", "pod", klog.KObj(podToUpdate), "podReplicaCreator", cr)
 		} else {
 			singleGroupStats.inPlaceUpdating = singleGroupStats.inPlaceUpdating + 1
 			e.creatorToSingleGroupStatsMap[cr] = singleGroupStats
