@@ -123,20 +123,19 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 			// they might cause disruption. We assume pods will not be both in-place updated and evicted in the same pass, but
 			// we need eviction to take the numbers into account so we don't violate our disruption dolerances.
 			// If we're already resizing this pod, don't do anything to it, unless we failed to resize it, then we want to evict it.
+			klog.V(4).InfoS("Pod disruption tolerance",
+				"pod", klog.KObj(pod),
+				"running", singleGroupStats.running,
+				"configured", singleGroupStats.configured,
+				"tolerance", singleGroupStats.evictionTolerance,
+				"evicted", singleGroupStats.evicted,
+				"updating", singleGroupStats.inPlaceUpdating)
 			if IsInPlaceUpdating(pod) {
-				klog.V(4).InfoS("Pod disruption tolerance",
-					"pod", pod.Name,
-					"running", singleGroupStats.running,
-					"configured", singleGroupStats.configured,
-					"tolerance", singleGroupStats.evictionTolerance,
-					"evicted", singleGroupStats.evicted,
-					"updating", singleGroupStats.inPlaceUpdating)
-
 				if singleGroupStats.running-(singleGroupStats.evicted+(singleGroupStats.inPlaceUpdating-1)) > shouldBeAlive {
-					klog.V(4).Infof("Would be able to evict, but already resizing %s", pod.Name)
+					klog.V(4).InfoS("Would be able to evict, but already resizing", "pod", klog.KObj(pod))
 
 					if pod.Status.Resize == apiv1.PodResizeStatusInfeasible || pod.Status.Resize == apiv1.PodResizeStatusDeferred {
-						klog.Warningf("Attempted in-place resize of %s impossible, should now evict", pod.Name)
+						klog.InfoS("Attempted in-place resize was impossible, should now evict", "pod", klog.KObj(pod), "resizePolicy", pod.Status.Resize)
 						return true
 					}
 				}
@@ -441,24 +440,19 @@ func setUpInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 
 // CanInPlaceUpdate performs the same checks
 func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
-
 	cr, present := e.podToReplicaCreatorMap[GetPodID(pod)]
 	if present {
-
 		// If our QoS class is guaranteed, we can't change the resources without a restart
-		// TODO(maxcao13): kubelet already prevents a resize of a guaranteed pod, so should we still check this early?
 		if pod.Status.QOSClass == apiv1.PodQOSGuaranteed {
-			klog.Warningf("Can't resize %s in-place, pod QoS is %s", pod.Name, pod.Status.QOSClass)
 			return false
 		}
 
-		// If we're already resizing this pod, don't do it again
 		if IsInPlaceUpdating(pod) {
-			klog.Warningf("Not resizing %s, already resizing it", pod.Name)
 			return false
 		}
 
 		noRestartPoliciesPopulated := true
+		isPodRestartPolicyNever := pod.Spec.RestartPolicy == apiv1.RestartPolicyNever
 
 		for _, container := range pod.Spec.Containers {
 			// If some of these are populated, we know it at least understands resizing
@@ -466,23 +460,21 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 				noRestartPoliciesPopulated = false
 			}
 
-			// TODO(maxcao13): Do we have to check the policy resource too? i.e. if only memory is getting scaled, then only check the memory resize policy?
 			for _, policy := range container.ResizePolicy {
 				if policy.RestartPolicy != apiv1.NotRequired {
-					klog.Warningf("in-place resize of %s will cause container disruption, container %s restart policy is %v", pod.Name, container.Name, policy.RestartPolicy)
+					klog.V(4).InfoS("in-place resize of pod will cause container disruption, because of container resize policy", "pod", klog.KObj(pod), "container", container.Name, "containerResizeRestartPolicy", policy.RestartPolicy)
 					// TODO(jkyros): is there something that prevents this from happening elsewhere in the API?
-					if pod.Spec.RestartPolicy == apiv1.RestartPolicyNever {
-						klog.Warningf("in-place resize of %s not possible, container %s resize policy is %v but pod restartPolicy is %v", pod.Name, container.Name, policy.RestartPolicy, pod.Spec.RestartPolicy)
+					if isPodRestartPolicyNever {
+						klog.InfoS("in-place resize of pod not possible, container resize policy and pod restartPolicy conflict", "pod", klog.KObj(pod), "container", container.Name, "containerResizeRestartPolicy", policy.RestartPolicy, "podRestartPolicy", pod.Spec.RestartPolicy)
 						return false
 					}
-
 				}
 			}
 		}
 
 		// If none of the policies are populated, our feature is probably not enabled, so we can't in-place regardless
 		if noRestartPoliciesPopulated {
-			klog.Warningf("impossible to resize %s in-place, container resize policies are not populated", pod.Name)
+			klog.InfoS("impossible to resize pod in-place, container resize policies are not populated", "pod", klog.KObj(pod))
 		}
 
 		//TODO(jkyros): Come back and handle sidecar containers at some point since they're weird?
@@ -490,13 +482,15 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 		// If we're pending, we can't in-place resize
 		// TODO(jkyros): are we sure we can't? Should I just set this to "if running"?
 		if pod.Status.Phase == apiv1.PodPending {
-			klog.V(4).Infof("Can't resize pending pod %s", pod.Name)
+			klog.V(4).InfoS("Can't resize pending pod", "pod", klog.KObj(pod))
 			return false
 		}
-		// This second "present" check is against the creator-to-group-stats map, not the pod-to-replica map
-		// TODO(maxcao13): Not sure, but do we need disruption tolerance for in-place updates? I guess we do since they are not guaranteed to be disruptionless...
-		// TODO(maxcao13): If this is okay, I may have to rename evictionTolerance to disruption tolerance
+		// TODO(maxcao13): May need to rename evictionTolerance to disruptionTolerance
 		if present {
+			// minimum number of pods that should be running to tolerate disruptions
+			shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
+			// number of pods that are actually running
+			actuallyAlive := singleGroupStats.running - (singleGroupStats.evicted + singleGroupStats.inPlaceUpdating)
 			klog.V(4).InfoS("Checking pod disruption tolerance",
 				"podName", pod.Name,
 				"configuredPods", singleGroupStats.configured,
@@ -504,11 +498,9 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 				"evictedPods", singleGroupStats.evicted,
 				"inPlaceUpdatingPods", singleGroupStats.inPlaceUpdating,
 				"evictionTolerance", singleGroupStats.evictionTolerance,
+				"shouldBeAlive", shouldBeAlive,
+				"actuallyAlive", actuallyAlive,
 			)
-			// minimum number of pods that should be running to tolerate disruptions
-			shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
-			// number of pods that are actually running
-			actuallyAlive := singleGroupStats.running - (singleGroupStats.evicted + singleGroupStats.inPlaceUpdating)
 			if actuallyAlive > shouldBeAlive {
 				klog.V(4).InfoS("Pod can be resized in-place; more pods are running than required", "podName", pod.Name, "shouldBeAlive", shouldBeAlive, "actuallyAlive", actuallyAlive)
 				return true
@@ -532,16 +524,10 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
 	cr, present := e.podToReplicaCreatorMap[GetPodID(podToUpdate)]
 	if !present {
-		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToUpdate.Name)
+		return fmt.Errorf("pod not suitable for eviction %v: not in replicated pods map", podToUpdate.Name)
 	}
 
-	// TODO(maxcao13): Not sure if we need to check again here, but commenting it out for now in case we do
-	// if !e.CanInPlaceUpdate(podToUpdate) {
-	// 	return fmt.Errorf("cannot update pod %v in place : number of in-flight updates exceeded", podToUpdate.Name)
-	// }
-
 	// TODO(maxcao13): There's maybe a more efficient way to do this, but this is what we have for now
-
 	// separate patches since we have to patch resize and spec separately
 	resourcePatches := []resource_updates.PatchRecord{}
 	annotationPatches := []resource_updates.PatchRecord{}
@@ -551,7 +537,7 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 	for i, calculator := range e.patchCalculators {
 		p, err := calculator.CalculatePatches(podToUpdate, vpa)
 		if err != nil {
-			return fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", podToUpdate.Namespace, podToUpdate.Name, err)
+			return err
 		}
 		klog.V(4).InfoS("Calculated patches for pod", "pod", klog.KObj(podToUpdate), "patches", p)
 		// TODO(maxcao13): change how this works later, this is gross and depends on the resource calculator being first in the slice
@@ -565,35 +551,28 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 	if len(resourcePatches) > 0 {
 		patch, err := json.Marshal(resourcePatches)
 		if err != nil {
-			klog.Errorf("Cannot marshal the patch %v: %v", resourcePatches, err)
 			return err
 		}
 
 		res, err := e.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{}, "resize")
 		if err != nil {
-			klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
 			return err
 		}
 		klog.V(4).InfoS("In-place patched pod /resize subresource using patches ", "pod", klog.KObj(res), "patches", string(patch))
 
-		// TODO(maxcao13): whether or not we apply annotation patches should depend on resource patches?
 		if len(annotationPatches) > 0 {
 			patch, err := json.Marshal(annotationPatches)
 			if err != nil {
-				klog.Errorf("Cannot marshal the patch %v: %v", annotationPatches, err)
 				return err
 			}
 			res, err = e.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
 			if err != nil {
-				klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
 				return err
 			}
 			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
 		}
 	} else {
-		err := fmt.Errorf("no patches to apply to %s", podToUpdate.Name)
-		klog.ErrorS(err, "Failed to patch pod", "pod", klog.KObj(podToUpdate))
-		return err
+		return fmt.Errorf("no resource patches were calculated to apply")
 	}
 
 	// TODO(maxcao13): If this keeps getting called on the same object with the same reason, it is considered a patch request.
@@ -606,13 +585,13 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 	if podToUpdate.Status.Phase == apiv1.PodRunning {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
 		if !present {
-			klog.Errorf("Internal error - cannot find stats for replication group %v", cr)
+			klog.InfoS("Internal error - cannot find stats for replication group", "pod", klog.KObj(podToUpdate), "podReplicaCreator", cr)
 		} else {
 			singleGroupStats.inPlaceUpdating = singleGroupStats.inPlaceUpdating + 1
 			e.creatorToSingleGroupStatsMap[cr] = singleGroupStats
 		}
 	} else {
-		klog.Warningf("I updated, but my pod phase was %s", podToUpdate.Status.Phase)
+		klog.InfoS("Attempted to in-place update, but pod was not running", "pod", klog.KObj(podToUpdate), "phase", podToUpdate.Status.Phase)
 	}
 
 	return nil
@@ -620,16 +599,33 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 
 // IsInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update
 func IsInPlaceUpdating(podToCheck *apiv1.Pod) (isUpdating bool) {
-	// If the pod is currently updating we need to tally that
-	if podToCheck.Status.Resize != "" {
-		klog.V(4).InfoS("Pod is currently resizing", "pod", klog.KObj(podToCheck), "status", podToCheck.Status.Resize)
-		// Proposed -> Deferred -> InProgress, but what about Infeasible?
-		if podToCheck.Status.Resize == apiv1.PodResizeStatusInfeasible {
-			klog.V(4).InfoS("Resource proposal for pod is Infeasible, we're probably stuck like this until we evict", "pod", klog.KObj(podToCheck))
-		} else if podToCheck.Status.Resize == apiv1.PodResizeStatusDeferred {
-			klog.V(4).InfoS("Resource proposal for pod is Deferred, we're probably stuck like this until we evict", "pod", klog.KObj(podToCheck))
-		}
-		return true
+	return podToCheck.Status.Resize != ""
+}
+
+// UpdatablePod is a Pod wrapper that record helpful attributes of a Pod
+// to be used when attempting to evict or in-place update.
+type UpdatablePod struct {
+	pod            *apiv1.Pod
+	disruptionless bool
+}
+
+// Pod returns the underlying pod
+func (p *UpdatablePod) Pod() *apiv1.Pod {
+	return p.pod
+}
+
+// IsDisruptionless returns the disruptionless status of the updatablePod
+func (p *UpdatablePod) IsDisruptionless() bool {
+	return p.disruptionless
+}
+
+// SetDisruptionless sets the disruptionless status of the updatablePod to true
+func (p *UpdatablePod) SetDisruptionless() {
+	p.disruptionless = true
+}
+
+func NewUpdatablePod(pod *apiv1.Pod) *UpdatablePod {
+	return &UpdatablePod{
+		pod: pod,
 	}
-	return false
 }
