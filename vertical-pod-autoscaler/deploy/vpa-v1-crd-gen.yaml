@@ -464,6 +464,7 @@ spec:
                     minimum: 1
                     type: integer
                   updateMode:
+                    default: Auto
                     description: |-
                       Controls when autoscaler applies changes to the pod resources.
                       The default is 'Auto'.
