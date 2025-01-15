@@ -155,11 +155,14 @@ func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 	c.cache.InvalidateAllMigInstances()
 	c.cache.InvalidateAllInstancesToMig()
 
+	migs := c.migLister.GetMigs()
+	c.cache.InvalidateMigInstanceTemplatesNotFor(migs)
+	c.cache.InvalidateMigInstanceTemplateNamesNotFor(migs)
+
 	if c.bulkGceMigInstancesListingEnabled {
 		return c.bulkListMigInstances()
 	}
 
-	migs := c.migLister.GetMigs()
 	errors := make([]error, len(migs))
 	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(migs), func(piece int) {
 		errors[piece] = c.fillMigInstances(migs[piece].GceRef())

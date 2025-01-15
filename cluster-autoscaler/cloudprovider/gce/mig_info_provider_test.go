@@ -563,6 +563,8 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 		expectedErr                       error
 		expectedMigInstances              map[GceRef][]GceInstance
 		expectedInstancesToMig            map[GceRef]GceRef
+		expectedInstanceTemplates         map[GceRef]*gce.InstanceTemplate
+		expectedInstanceTemplateNames     map[GceRef]InstanceTemplateName
 	}{
 		{
 			name: "fill empty cache for one mig",
@@ -698,6 +700,9 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				mig1InstancesRefs[0]: mig1.GceRef(),
 				mig1InstancesRefs[1]: mig1.GceRef(),
 			},
+			expectedInstanceTemplateNames: map[GceRef]InstanceTemplateName{
+				mig1.GceRef(): InstanceTemplateName{Name: "", Regional: false},
+			},
 		},
 		{
 			name: "bulkGceMigInstancesListingEnabled - fill empty cache for one mig - number of instances are inconsistent in bulk listing result",
@@ -724,6 +729,9 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				mig2InstancesRefs[0]: mig2.GceRef(),
 				mig2InstancesRefs[1]: mig2.GceRef(),
 			},
+			expectedInstanceTemplateNames: map[GceRef]InstanceTemplateName{
+				mig2.GceRef(): InstanceTemplateName{Name: "", Regional: false},
+			},
 		},
 		{
 			name: "bulkGceMigInstancesListingEnabled - fill empty cache for one mig - all instances in running state",
@@ -748,6 +756,99 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				mig2InstancesRefs[0]: mig2.GceRef(),
 				mig2InstancesRefs[1]: mig2.GceRef(),
 			},
+			expectedInstanceTemplateNames: map[GceRef]InstanceTemplateName{
+				mig2.GceRef(): InstanceTemplateName{Name: "", Regional: false},
+			},
+		},
+		{
+			name: "clear instance template cache for untracked MIG",
+			cache: &GceCache{
+				migs: map[GceRef]Mig{
+					mig.GceRef(): mig,
+				},
+				instances: map[GceRef][]GceInstance{
+					mig.GceRef(): instances,
+				},
+				instancesToMig: map[GceRef]GceRef{
+					instancesRefs[0]: mig.GceRef(),
+					instancesRefs[1]: mig.GceRef(),
+				},
+				instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{
+					mig.GceRef():      {Name: "", Description: "mig instance template"},
+					otherMig.GceRef(): {Name: "", Description: "other mig instance template"},
+				},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{
+					mig.GceRef():      {Name: "", Regional: false},
+					otherMig.GceRef(): {Name: "", Regional: false},
+				},
+			},
+			fetchMigInstances: fetchMigInstancesMapping(map[GceRef][]GceInstance{
+				mig.GceRef():      instances,
+				otherMig.GceRef(): otherInstances,
+			}),
+			projectId: mig.GceRef().Project,
+			expectedMigInstances: map[GceRef][]GceInstance{
+				mig.GceRef(): instances,
+			},
+			expectedInstancesToMig: map[GceRef]GceRef{
+				instancesRefs[0]: mig.GceRef(),
+				instancesRefs[1]: mig.GceRef(),
+			},
+			expectedInstanceTemplates: map[GceRef]*gce.InstanceTemplate{
+				mig.GceRef(): {Name: "", Description: "mig instance template"},
+			},
+			expectedInstanceTemplateNames: map[GceRef]InstanceTemplateName{
+				mig.GceRef(): {Name: "", Regional: false},
+			},
+		},
+		{
+			name: "bulkGceMigInstancesListingEnabled - clear instance template cache for untracked MIG",
+			cache: &GceCache{
+				migs: map[GceRef]Mig{
+					mig1.GceRef(): mig1,
+				},
+				instances: map[GceRef][]GceInstance{
+					mig1.GceRef(): mig1Instances,
+				},
+				instancesToMig: map[GceRef]GceRef{
+					mig1InstancesRefs[0]: mig1.GceRef(),
+					mig1InstancesRefs[1]: mig1.GceRef(),
+				},
+				instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{
+					mig1.GceRef(): {Name: "", Description: "mig instance template"},
+					mig2.GceRef(): {Name: "", Description: "other mig instance template"},
+				},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{
+					mig1.GceRef(): {Name: "", Regional: false},
+					mig2.GceRef(): {Name: "", Regional: false},
+				},
+			},
+			bulkGceMigInstancesListingEnabled: true,
+			fetchMigs:                         fetchMigsConst([]*gce.InstanceGroupManager{mig1Igm}),
+			fetchMigInstances: fetchMigInstancesMapping(map[GceRef][]GceInstance{
+				mig1.GceRef(): mig1Instances,
+				mig2.GceRef(): mig2Instances,
+			}),
+			fetchAllInstances: fetchAllInstancesInZone(
+				map[string][]GceInstance{
+					mig1.GceRef().Zone: mig1Instances,
+					mig2.GceRef().Zone: mig2Instances,
+				},
+			),
+			projectId: mig.GceRef().Project,
+			expectedMigInstances: map[GceRef][]GceInstance{
+				mig1.GceRef(): mig1Instances,
+			},
+			expectedInstancesToMig: map[GceRef]GceRef{
+				mig1InstancesRefs[0]: mig1.GceRef(),
+				mig1InstancesRefs[1]: mig1.GceRef(),
+			},
+			expectedInstanceTemplates: map[GceRef]*gce.InstanceTemplate{
+				mig1.GceRef(): {Name: "", Description: "mig instance template"},
+			},
+			expectedInstanceTemplateNames: map[GceRef]InstanceTemplateName{
+				mig1.GceRef(): {Name: "", Regional: false},
+			},
 		},
 	}
 
@@ -766,6 +867,8 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 			if tc.expectedErr == nil {
 				assert.Equal(t, tc.expectedMigInstances, tc.cache.instances)
 				assert.Equal(t, tc.expectedInstancesToMig, tc.cache.instancesToMig)
+				assert.Equal(t, tc.expectedInstanceTemplates, tc.cache.instanceTemplatesCache)
+				assert.Equal(t, tc.expectedInstanceTemplateNames, tc.cache.instanceTemplateNameCache)
 			}
 		})
 	}
