@@ -136,6 +136,7 @@ type PodUpdatePolicy struct {
 	// Controls when autoscaler applies changes to the pod resources.
 	// The default is 'Auto'.
 	// +optional
+	// +kubebuilder:default="Auto"
 	UpdateMode *UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
 
 	// Minimal number of replicas which need to be alive for Updater to attempt
