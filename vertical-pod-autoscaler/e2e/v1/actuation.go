@@ -415,7 +415,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 		InstallVPA(f, vpaCRD)
 
-		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaInPlaceTimeout.String()))
 		CheckNoContainersRestarted(f)
 
 		ginkgo.By("Waiting for pods to be evicted")
@@ -457,7 +457,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 		InstallVPA(f, vpaCRD)
 
-		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaInPlaceTimeout.String()))
 		CheckNoContainersRestarted(f)
 
 		ginkgo.By("Waiting for pods to be evicted")
@@ -499,7 +499,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 		InstallVPA(f, vpaCRD)
 
-		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		ginkgo.By(fmt.Sprintf("Waiting for in-place update, hoping it won't happen, sleep for %s", VpaInPlaceTimeout.String()))
 		CheckNoContainersRestarted(f)
 
 		ginkgo.By("Waiting for pods to be evicted")

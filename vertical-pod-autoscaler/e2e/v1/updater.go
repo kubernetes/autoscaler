@@ -81,6 +81,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By("Waiting for pods to be in-place updated")
 
 		//gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		// TODO(maxcao13): I don't think we need this much complexity for checking inplace, but I won't remove it for now
 		err := WaitForPodsUpdatedWithoutEviction(f, initialPods, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
@@ -118,6 +119,45 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By("Waiting for pods to be in-place downscaled")
 		err := WaitForPodsUpdatedWithoutEviction(f, initialPods, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("does not in-place update pods when there is no recommendation", func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			status.AdmissionControllerStatusNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForUpscalingWithoutRecommendation(f)
+		if len(podList.Items[0].Spec.Containers[0].ResizePolicy) <= 0 {
+			// Feature is probably not working here
+			ginkgo.Skip("Skipping test, InPlacePodVerticalScaling not available")
+		}
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be in-place updated, hoping it won't happen, sleep for %s", VpaInPlaceTimeout.String()))
+		CheckNoContainersRestarted(f)
+
+		updatedPodList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		for _, pod := range updatedPodList.Items {
+			gomega.Expect(getCPURequest(pod.Spec)).To(gomega.Equal(ParseQuantityOrDie("100m")))
+		}
 	})
 
 	ginkgo.It("evicts pods when Admission Controller status available", func() {
@@ -265,14 +305,18 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 }
 
 func setupPodsForUpscalingInPlace(f *framework.Framework) *apiv1.PodList {
-	return setupPodsForInPlace(f, "100m", "100Mi", nil)
+	return setupPodsForInPlace(f, "100m", "100Mi", nil, true)
 }
 
 func setupPodsForDownscalingInPlace(f *framework.Framework, er []*vpa_types.EvictionRequirement) *apiv1.PodList {
-	return setupPodsForInPlace(f, "500m", "500Mi", er)
+	return setupPodsForInPlace(f, "500m", "500Mi", er, true)
 }
 
-func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory string, er []*vpa_types.EvictionRequirement) *apiv1.PodList {
+func setupPodsForUpscalingWithoutRecommendation(f *framework.Framework) *apiv1.PodList {
+	return setupPodsForInPlace(f, "100m", "100Mi", nil, false)
+}
+
+func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory string, er []*vpa_types.EvictionRequirement, withRecommendation bool) *apiv1.PodList {
 	controller := &autoscaling.CrossVersionObjectReference{
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -285,22 +329,25 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 
 	ginkgo.By("Setting up a VPA CRD")
 	containerName := GetHamsterContainerNameByIndex(0)
-	vpaCRD := test.VerticalPodAutoscaler().
+	vpaBuilder := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
 		WithTargetRef(controller).
 		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 		WithEvictionRequirements(er).
-		WithContainer(containerName).
-		AppendRecommendation(
+		WithContainer(containerName)
+
+	if withRecommendation {
+		vpaBuilder = vpaBuilder.AppendRecommendation(
 			test.Recommendation().
 				WithContainer(containerName).
 				WithTarget(containerName, "200m").
 				WithLowerBound(containerName, "200m").
 				WithUpperBound(containerName, "200m").
-				GetContainerResources()).
-		Get()
+				GetContainerResources())
+	}
 
+	vpaCRD := vpaBuilder.Get()
 	InstallVPA(f, vpaCRD)
 
 	return podList

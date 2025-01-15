@@ -139,15 +139,19 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			// TODO(jkyros): do we need an in-place update threshold arg ?
 			// If our recommendations are disruptionless, we can bypass the threshold limit
 			if len(disruptionlessRecommendation.ContainerRecommendations) > 0 {
-				klog.V(2).Infof("Short-lived, but pod still accepted for DISRUPTIONLESS (%d/%d) in-place update %v/%v with priority %v", len(disruptionlessRecommendation.ContainerRecommendations), len(processedRecommendation.ContainerRecommendations), pod.Namespace, pod.Name, updatePriority.ResourceDiff)
+				klog.V(2).InfoS("Short-lived, but pod still accepted for disruptionless in-place update",
+					"pod", klog.KObj(pod),
+					"numContainers", len(pod.Spec.Containers),
+					"resourceDiff", updatePriority.ResourceDiff,
+					"fractionOfDisruptionlessRecommendations", len(disruptionlessRecommendation.ContainerRecommendations)/len(processedRecommendation.ContainerRecommendations),
+				)
 				updatePriority.Disruptionless = true
 				calc.pods = append(calc.pods, PrioritizedPod{
 					pod:            pod,
 					priority:       updatePriority,
 					recommendation: disruptionlessRecommendation})
 			} else {
-				// if it's not disruptionless, we fallback to the Recreate conditions which already failed
-				// (quick oom, outside recommended range, long-lived + significant change), so don't update this pod
+				// we cannot perform this update disruption-free, so do not update this pod's resources
 				klog.V(4).InfoS("Not updating a short-lived pod, request within recommended range", "pod", klog.KObj(pod))
 			}
 			return
@@ -177,7 +181,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPrioritizedPods(admission PodEvic
 		if admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, &calc.pods[num])
 		} else {
-			klog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
+			klog.V(2).InfoS("Pod removed from update queue by PodEvictionAdmission", "pod", klog.KObj(podPrio.Pod()))
 		}
 	}
 

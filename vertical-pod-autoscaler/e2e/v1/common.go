@@ -53,6 +53,9 @@ const (
 	// VpaEvictionTimeout is a timeout for VPA to restart a pod if there are no
 	// mechanisms blocking it (for example PDB).
 	VpaEvictionTimeout = 3 * time.Minute
+	// VpaInPlaceTimeout is a timeout for the VPA to finish in-place resizing a
+	// pod (time for vpa to request inplace -> InProgress -> done)
+	VpaInPlaceTimeout = 2 * time.Minute
 
 	defaultHamsterReplicas     = int32(3)
 	defaultHamsterBackoffLimit = int32(10)
@@ -459,7 +462,7 @@ func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 // updating containers in-place and checks that no containers were restarted.
 func CheckNoContainersRestarted(f *framework.Framework) {
 	var foundContainerRestarts int32
-	time.Sleep(VpaEvictionTimeout)
+	time.Sleep(VpaInPlaceTimeout)
 	podList, err := GetHamsterPods(f)
 	for _, pod := range podList.Items {
 		containerRestarts := getContainerRestarts(pod.Status)
