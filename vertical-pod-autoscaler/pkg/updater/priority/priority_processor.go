@@ -89,9 +89,9 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 							// It's okay if we're actually still resizing, but if we can't now or we're stuck, make sure the pod
 							// is still in the list so we can evict it to go live on a fatter node or something
 							if pod.Status.Resize == apiv1.PodResizeStatusDeferred || pod.Status.Resize == apiv1.PodResizeStatusInfeasible {
-								klog.V(4).Infof("Pod %s looks like it's stuck scaling up (%v state), leaving it in for eviction", pod.Name, pod.Status.Resize)
+								klog.V(4).InfoS("Pod looks like it's stuck scaling up, leaving it in for eviction", "pod", klog.KObj(pod), "resizeStatus", pod.Status.Resize)
 							} else {
-								klog.V(4).Infof("Pod %s is in the process of scaling up (%v state), leaving it in so we can see if it's taking too long", pod.Name, pod.Status.Resize)
+								klog.V(4).InfoS("Pod is in the process of scaling up, leaving it in so we can see if it's taking too long", "pod", klog.KObj(pod), "resizeStatus", pod.Status.Resize)
 							}
 						}
 						// I guess if it's not outside of compliance, it's probably okay it's stuck here?
