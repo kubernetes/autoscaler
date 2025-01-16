@@ -325,7 +325,7 @@ spec:
                             Name of the container or DefaultContainerResourcePolicy, in which
                             case the policy is used by the containers that don't have their own
                             policy specified.
-                          pattern: ^[a-zA-Z0-9-_]+$
+                          pattern: (^[a-zA-Z0-9-_]+$)|(^\*$)
                           type: string
                           x-kubernetes-validations:
                           - message: ContainerName cannot be empty
