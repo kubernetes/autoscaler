@@ -104,6 +104,7 @@ func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annot
 	return patches, annotations
 }
 
+// GetAddResourceRequirementValuePatch returns a patch record to add resource requirements to a container.
 func GetAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
@@ -111,6 +112,7 @@ func GetAddResourceRequirementValuePatch(i int, kind string, resource core.Resou
 		Value: quantity.String()}
 }
 
+// GetPatchInitializingEmptyResources returns a patch record to initialize an empty resources object for a container.
 func GetPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
@@ -119,6 +121,8 @@ func GetPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
 	}
 }
 
+// GetPatchInitializingEmptyResourcesSubfield returns a patch record to initialize an empty subfield
+// (e.g., "requests" or "limits") within a container's resources object.
 func GetPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
