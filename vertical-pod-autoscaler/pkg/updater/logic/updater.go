@@ -53,7 +53,12 @@ import (
 )
 
 const (
-	DeferredResizeUpdateTimeout   = 1 * time.Minute
+	// DeferredResizeUpdateTimeout defines the duration during which an in-place resize request
+	// is considered deferred. If the resize is not completed within this time, it falls back to eviction.
+	DeferredResizeUpdateTimeout = 1 * time.Minute
+
+	// InProgressResizeUpdateTimeout defines the duration during which an in-place resize request
+	// is considered in progress. If the resize is not completed within this time, it falls back to eviction.
 	InProgressResizeUpdateTimeout = 1 * time.Hour
 )
 
