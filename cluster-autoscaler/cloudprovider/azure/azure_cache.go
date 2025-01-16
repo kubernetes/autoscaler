@@ -170,7 +170,7 @@ func (m *azureCache) regenerate() error {
 		if err != nil {
 			return err
 		}
-		klog.V(4).Infof("regenerate: found nodes for node group %s: %+v", ng.Id(), instances)
+		klog.V(4).Infof("regenerate: found %d nodes for node group %s: %+v", ng.Id(), len(instances), instances)
 
 		for _, instance := range instances {
 			ref := azureRef{Name: instance.Id}
