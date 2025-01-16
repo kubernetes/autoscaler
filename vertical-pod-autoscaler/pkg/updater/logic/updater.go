@@ -260,7 +260,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 					klog.V(4).InfoS("Falling back to eviction for pod", "pod", klog.KObj(pod))
 				}
 			} else {
-				klog.InfoS("Not falling back to eviction, because we don't have a recommendation yet?", "pod", klog.KObj(pod))
 				continue
 			}
 
