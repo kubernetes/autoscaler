@@ -30,8 +30,21 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/compute/v2/flavors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
 )
+
+func (m *magnumManagerMock) getFlavorById(flavorId string) (*flavors.Flavor, error) {
+	flavor := flavors.Flavor{}
+	flavor.VCPUs = 2
+	flavor.RAM = 2048
+	flavor.Disk = 25
+	flavor.Name = "s1.small"
+	flavor.ID = "s1.small"
+	flavor.IsPublic = true
+
+	return &flavor, nil
+}
 
 // magnumManagerDiscoveryMock overrides magnumManagerMock's autoDiscoverNodeGroups
 // to return a random set of node groups each time, so that refreshNodeGroups
@@ -190,6 +203,83 @@ func TestRefreshNodeGroupsAdd(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 2, len(provider.nodeGroups), "wrong number of node groups after refresh")
 	assert.ElementsMatch(t, []string{"test-ng-1-ece653dd", "test-ng-2-946ffca0"}, []string{provider.nodeGroups[0].Id(), provider.nodeGroups[1].Id()}, "didn't find both node groups")
+}
+func TestNodeInf(t *testing.T) {
+	manager := &magnumManagerMock{}
+	provider := magnumCloudProvider{
+		magnumManager:        manager,
+		usingAutoDiscovery:   true,
+		autoDiscoveryConfigs: nil,
+		nodeGroupsLock:       &sync.Mutex{},
+		clusterUpdateLock:    &sync.Mutex{},
+	}
+
+	autoDiscoverySpec, err := parseMagnumAutoDiscoverySpec("magnum:role=autoscaling")
+	require.NoError(t, err, "error parsing auto discovery spec")
+	provider.autoDiscoveryConfigs = []magnumAutoDiscoveryConfig{autoDiscoverySpec}
+
+	three := 3
+	labels := make(map[string]string)
+	labels["Label1"] = "Label1"
+	labels["Label2"] = "Label2"
+
+	nodeGroupWithLabels := []*nodegroups.NodeGroup{
+		{
+			UUID:         "1ce653dd-2544-4f2e-b553-3c136af0ffa6",
+			Name:         "ng-with-labels",
+			Role:         "autoscaling",
+			NodeCount:    0,
+			MinNodeCount: 1,
+			MaxNodeCount: &three,
+			FlavorID:     "s1.small",
+			Labels:       labels,
+		},
+	}
+
+	nodeGroupWithoutLabels := []*nodegroups.NodeGroup{
+		{
+			UUID:         "2ce653dd-2544-4f2e-b553-3c136af0ffa6",
+			Name:         "ng-without-labels",
+			Role:         "autoscaling",
+			NodeCount:    0,
+			MinNodeCount: 1,
+			MaxNodeCount: &three,
+			FlavorID:     "s1.small",
+		},
+	}
+
+	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(nodeGroupWithLabels, nil).Once()
+	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(nodeGroupWithoutLabels, nil).Once()
+
+	manager.On("", mock.AnythingOfType("string")).Return(manager.getFlavorById("s1.small"))
+	manager.On("getFlavorById", mock.AnythingOfType("string")).Return(manager.getFlavorById("s1.small"))
+	manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+
+	err = provider.refreshNodeGroups()
+	require.NoError(t, err)
+	require.Equal(t, 1, len(provider.nodeGroups), "wrong number of initial node groups")
+
+	nodeInfo, err := provider.nodeGroups[0].TemplateNodeInfo()
+	assert.NoError(t, err)
+	assert.Equal(t, len(nodeInfo.Pods()), 1, "should have one template pod")
+	assert.Equal(t, nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), int64(2000), "should match cpu capacity ")
+	assert.Equal(t, nodeInfo.Node().Status.Capacity.Memory().ToDec().Value(), int64(2048*1024*1024), "should match memory capacity")
+	assert.Equal(t, 3, len(nodeInfo.Node().Labels), "We should have 3 labels")
+	assert.Equal(t, nodeInfo.Node().Labels["magnum.openstack.org/nodegroup"], "ng-with-labels", "Magnum nodegroup label should be")
+	assert.Equal(t, nodeInfo.Node().Labels["Label1"], "Label1")
+	assert.Equal(t, nodeInfo.Node().Labels["Label2"], "Label2")
+
+	err = provider.refreshNodeGroups()
+	require.NoError(t, err)
+	require.Equal(t, 1, len(provider.nodeGroups), "wrong number of initial node groups")
+
+	nodeInfo, err = provider.nodeGroups[0].TemplateNodeInfo()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(nodeInfo.Pods()), "should have one template pod")
+	assert.Equal(t, int64(2000), nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), "should match cpu capacity ")
+	assert.Equal(t, int64(2048*1024*1024), nodeInfo.Node().Status.Capacity.Memory().ToDec().Value(), "should match memory capacity")
+	assert.Equal(t, 1, len(nodeInfo.Node().Labels), "We should have 1 labels")
+	assert.Equal(t, "ng-without-labels", nodeInfo.Node().Labels["magnum.openstack.org/nodegroup"], "Magnum nodegroup label should be")
 }
 
 // TestRefreshNodeGroupsRemove checks that refreshNodeGroups correctly
