@@ -196,7 +196,7 @@ type ContainerResourcePolicy struct {
 	// Name of the container or DefaultContainerResourcePolicy, in which
 	// case the policy is used by the containers that don't have their own
 	// policy specified.
-	// +kubebuilder:validation:Pattern=`^[a-zA-Z0-9-_]+$`
+	// +kubebuilder:validation:Pattern=`(^[a-zA-Z0-9-_]+$)|(^\*$)`
 	// +kubebuilder:validation:XValidation:rule="size(self) > 0",message="ContainerName cannot be empty"
 	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
 	// Whether autoscaler is enabled for the container. The default is "Auto".
