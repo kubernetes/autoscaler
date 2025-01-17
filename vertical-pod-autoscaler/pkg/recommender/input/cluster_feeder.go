@@ -304,7 +304,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		}
 		for _, checkpoint := range checkpointList.Items {
 			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-			_, exists := allVPAKeys[vpaID]
+			exists := allVPAKeys[vpaID]
 
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})

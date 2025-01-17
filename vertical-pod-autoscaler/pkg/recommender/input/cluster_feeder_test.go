@@ -22,22 +22,19 @@ import (
 	"testing"
 	"time"
 
-	core "k8s.io/client-go/testing"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-
+	core "k8s.io/client-go/testing"
+	
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
-
 	"k8s.io/client-go/kubernetes/fake"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -711,13 +708,9 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 
 	feeder.GarbageCollectCheckpoints()
 
-	if !assert.Contains(t, deletedCheckpoints, "nonExistentVPA") {
-		return
-	}
+	assert.Contains(t, deletedCheckpoints, "nonExistentVPA")
 
 	for _, vpa := range vpas {
-		if !assert.NotContains(t, deletedCheckpoints, vpa.Name) {
-			return
-		}
+		assert.NotContains(t, deletedCheckpoints, vpa.Name)
 	}
 }
