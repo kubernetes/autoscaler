@@ -5,6 +5,13 @@ metadata:
   name: system:metrics-reader
 rules:
   - apiGroups:
+      - "external.metrics.k8s.io"
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+  - apiGroups:
       - "metrics.k8s.io"
     resources:
       - pods
