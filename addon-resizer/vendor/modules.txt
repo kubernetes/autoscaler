@@ -649,7 +649,7 @@ k8s.io/client-go/util/homedir
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/watchlist
 k8s.io/client-go/util/workqueue
-# k8s.io/component-base v0.32.0
+# k8s.io/component-base v0.32.1
 ## explicit; go 1.23.0
 k8s.io/component-base/metrics
 k8s.io/component-base/metrics/legacyregistry
