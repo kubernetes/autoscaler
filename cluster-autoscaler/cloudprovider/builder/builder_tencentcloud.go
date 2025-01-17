@@ -31,8 +31,8 @@ var AvailableCloudProviders = []string{
 	cloudprovider.TencentcloudProviderName,
 }
 
-// DefaultCloudProvider is TKE.
-const DefaultCloudProvider = cloudprovider.TkeProviderName
+// DefaultCloudProvider for Tencent-only build is Tencent.
+const DefaultCloudProvider = cloudprovider.TencentcloudProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {

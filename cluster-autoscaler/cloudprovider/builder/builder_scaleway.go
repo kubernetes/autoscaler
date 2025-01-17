@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.ScalewayProviderName,
 }
 
-// DefaultCloudProvider for do-only build is Scaleway.
+// DefaultCloudProvider for Scaleway-only build is Scaleway.
 const DefaultCloudProvider = cloudprovider.ScalewayProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {

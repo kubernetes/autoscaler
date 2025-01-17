@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.GceProviderName,
 }
 
-// DefaultCloudProvider is GCE.
+// DefaultCloudProvider for GCE-only build is GCE.
 const DefaultCloudProvider = cloudprovider.GceProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
