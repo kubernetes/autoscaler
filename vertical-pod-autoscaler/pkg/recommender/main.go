@@ -124,10 +124,11 @@ func main() {
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	kube_flag.InitFlags()
-	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion, "recommenderName", *recommenderName)
+	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion(), "recommenderName", *recommenderName)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
-		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		os.Exit(255)
 	}
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
@@ -140,7 +141,8 @@ func main() {
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
-			klog.Fatalf("Unable to get hostname: %v", err)
+			klog.ErrorS(err, "Unable to get hostname")
+			os.Exit(255)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -158,7 +160,8 @@ func main() {
 			},
 		)
 		if err != nil {
-			klog.Fatalf("Unable to create leader election lock: %v", err)
+			klog.ErrorS(err, "Unable to create leader election lock")
+			os.Exit(255)
 		}
 
 		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
@@ -199,12 +202,15 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 }
 
 func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+	// Create a stop channel that will be used to signal shutdown
+	stopCh := make(chan struct{})
+	defer close(stopCh)
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
-	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.IgnoredVpaObjectNamespaces))
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
-	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, commonFlag.IgnoredVpaObjectNamespaces)
+	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
@@ -266,7 +272,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
-		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
+		klog.ErrorS(err, "Could not parse --prometheus-query-timeout as a time.Duration")
+		os.Exit(255)
 	}
 
 	if useCheckpoints {
@@ -293,7 +300,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
-			klog.Fatalf("Could not initialize history provider: %v", err)
+			klog.ErrorS(err, "Could not initialize history provider")
+			os.Exit(255)
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}

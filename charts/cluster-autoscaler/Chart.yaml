@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 1.31.0
+appVersion: 1.32.0
 description: Scales Kubernetes worker nodes within autoscaling groups.
 engine: gotpl
 home: https://github.com/kubernetes/autoscaler
@@ -11,4 +11,4 @@ name: cluster-autoscaler
 sources:
   - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
 type: application
-version: 9.43.2
+version: 9.45.0

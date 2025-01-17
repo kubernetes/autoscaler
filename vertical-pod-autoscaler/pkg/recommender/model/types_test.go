@@ -609,66 +609,6 @@ func TestResourceNamesApiToModel(t *testing.T) {
 	}
 }
 
-type RoundResourceAmountsTestCase struct {
-	name      string
-	resources Resources
-	want      Resources
-}
-
-func TestRoundResourceAmounts(t *testing.T) {
-	tc := []RoundResourceAmountsTestCase{
-		{
-			name: "should round down CPU and memory",
-			resources: Resources{
-				ResourceCPU:    ResourceAmount(4500), // 4.5 CPU cores
-				ResourceMemory: ResourceAmount(7168), // 7168MB memory
-			},
-			want: Resources{
-				ResourceCPU:    ResourceAmount(4000), // Round down to 4.0 CPU cores
-				ResourceMemory: ResourceAmount(7000), // Round down to 7000MB
-			},
-		},
-		{
-			name: "exact multiples should remain unchanged",
-			resources: Resources{
-				ResourceCPU:    ResourceAmount(2000), // 2.0 CPU cores
-				ResourceMemory: ResourceAmount(4000), // 4000MB memory
-			},
-			want: Resources{
-				ResourceCPU:    ResourceAmount(2000), // Should remain 2.0
-				ResourceMemory: ResourceAmount(4000), // Should remain 4000
-			},
-		},
-		{
-			name: "small values should round to zero",
-			resources: Resources{
-				ResourceCPU:    ResourceAmount(499), // 0.499 CPU cores
-				ResourceMemory: ResourceAmount(999), // 999MB memory
-			},
-			want: Resources{
-				ResourceCPU:    ResourceAmount(0), // Round down to 0
-				ResourceMemory: ResourceAmount(0), // Round down to 0
-			},
-		},
-		{
-			name:      "empty resources should remain empty",
-			resources: Resources{},
-			want:      Resources{},
-		},
-	}
-
-	for _, tc := range tc {
-		t.Run(tc.name, func(t *testing.T) {
-			result := tc.resources
-			for resource, amount := range result {
-				// Assuming unit of 1000 for both CPU and Memory
-				result[resource] = RoundResourceAmount(amount, 1000)
-			}
-			assert.Equal(t, tc.want, result)
-		})
-	}
-}
-
 type ResourceAmountFromFloatTestCase struct {
 	name   string
 	amount float64

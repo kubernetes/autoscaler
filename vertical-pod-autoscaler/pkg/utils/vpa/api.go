@@ -19,7 +19,9 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -88,8 +90,9 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
-	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
+	if !cache.WaitForCacheSync(stopChannel, controller.HasSynced) {
 		klog.ErrorS(nil, "Failed to sync VPA cache during initialization")
+		os.Exit(255)
 	} else {
 		klog.InfoS("Initial VPA synced successfully")
 	}
@@ -180,7 +183,16 @@ func FindParentControllerForPod(ctx context.Context, pod *core.Pod, ctrlFetcher 
 		},
 		ApiVersion: ownerRefrence.APIVersion,
 	}
-	return ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
+	controller, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
+
+	// ignore NodeInvalidOwner error when looking for the parent controller for a Pod. While this _is_ an error when
+	// validating the targetRef of a VPA, this is a valid scenario when iterating over all Pods and finding their owner.
+	// vpa updater and admission-controller don't care about these Pods, because they cannot have a valid VPA point to
+	// them, so it is safe to ignore this here.
+	if err != nil && !errors.Is(err, controllerfetcher.ErrNodeInvalidOwner) {
+		return nil, err
+	}
+	return controller, nil
 }
 
 // GetUpdateMode returns the updatePolicy.updateMode for a given VPA.

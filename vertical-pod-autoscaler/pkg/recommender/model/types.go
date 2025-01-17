@@ -125,12 +125,6 @@ func ResourceNamesApiToModel(resources []apiv1.ResourceName) *[]ResourceName {
 	return &result
 }
 
-// RoundResourceAmount returns the given resource amount rounded down to the
-// whole multiple of another resource amount (unit).
-func RoundResourceAmount(amount, unit ResourceAmount) ResourceAmount {
-	return ResourceAmount(int64(amount) - int64(amount)%int64(unit))
-}
-
 // ResourceAmountMax returns the larger of two resource amounts.
 func ResourceAmountMax(amount1, amount2 ResourceAmount) ResourceAmount {
 	if amount1 > amount2 {
@@ -149,7 +143,7 @@ func resourceAmountFromFloat(amount float64) ResourceAmount {
 	}
 }
 
-// HumanizeMemoryQuantity converts raw bytes to human-readable string using binary units (KiB, MiB, GiB, TiB) with no decimal places.
+// HumanizeMemoryQuantity converts raw bytes to human-readable string using binary units (KiB, MiB, GiB, TiB) with two decimal places.
 func HumanizeMemoryQuantity(bytes int64) string {
 	const (
 		KiB = 1024
