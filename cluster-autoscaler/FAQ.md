@@ -1091,6 +1091,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `skip-nodes-with-custom-controller-pods` | If true cluster autoscaler will never delete nodes with pods owned by custom controllers | true |
 | `skip-nodes-with-local-storage` | If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true |
 | `skip-nodes-with-system-pods` | If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet or mirror pods) | true |
+| `skip-similar-node-group-recomputation` | if true, skips similar NodeGroup recomputation for the best option returned by the expander during scaleups. You must enable `balance-similar-node-groups` for this to work. | false |
 | `startup-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint) | [] |
 | `status-config-map-name` | Status configmap name | "cluster-autoscaler-status" |
 | `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
