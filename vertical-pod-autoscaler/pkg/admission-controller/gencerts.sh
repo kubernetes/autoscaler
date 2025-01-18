@@ -58,11 +58,13 @@ echo "Uploading certs to the cluster."
 kubectl create secret --namespace=kube-system generic vpa-tls-certs --from-file=${TMP_DIR}/caKey.pem --from-file=${TMP_DIR}/caCert.pem --from-file=${TMP_DIR}/serverKey.pem --from-file=${TMP_DIR}/serverCert.pem
 
 if [ "${1:-unset}" = "e2e" ]; then
+  openssl genrsa -out ${TMP_DIR}/e2eCaKey.pem 2048
+  openssl req -x509 -new -nodes -key ${TMP_DIR}/e2eCaKey.pem -days 100000 -out ${TMP_DIR}/e2eCaCert.pem -subj "/CN=${CN_BASE}_e2e_ca" -addext "subjectAltName = DNS:${CN_BASE}_e2e_ca"
   openssl genrsa -out ${TMP_DIR}/e2eKey.pem 2048
   openssl req -new -key ${TMP_DIR}/e2eKey.pem -out ${TMP_DIR}/e2e.csr -subj "/CN=vpa-webhook.kube-system.svc" -config ${TMP_DIR}/server.conf
-  openssl x509 -req -in ${TMP_DIR}/e2e.csr -CA ${TMP_DIR}/caCert.pem -CAkey ${TMP_DIR}/caKey.pem -CAcreateserial -out ${TMP_DIR}/e2eCert.pem -days 100000 -extensions SAN -extensions v3_req -extfile ${TMP_DIR}/server.conf
+  openssl x509 -req -in ${TMP_DIR}/e2e.csr -CA ${TMP_DIR}/e2eCaCert.pem -CAkey ${TMP_DIR}/e2eCaKey.pem -CAcreateserial -out ${TMP_DIR}/e2eCert.pem -days 100000 -extensions SAN -extensions v3_req -extfile ${TMP_DIR}/server.conf
   echo "Uploading rotation e2e test certs to the cluster."
-  kubectl create secret --namespace=kube-system generic vpa-e2e-certs --from-file=${TMP_DIR}/e2eKey.pem --from-file=${TMP_DIR}/e2eCert.pem
+  kubectl create secret --namespace=kube-system generic vpa-e2e-certs --from-file=${TMP_DIR}/e2eCaKey.pem --from-file=${TMP_DIR}/e2eCaCert.pem --from-file=${TMP_DIR}/e2eKey.pem --from-file=${TMP_DIR}/e2eCert.pem 
 fi
 
 # Clean up after we're done.
