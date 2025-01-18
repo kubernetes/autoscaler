@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"math"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -81,7 +82,7 @@ func ScaleResource(amount ResourceAmount, factor float64) ResourceAmount {
 }
 
 // ResourcesAsResourceList converts internal Resources representation to ResourcesList.
-func ResourcesAsResourceList(resources Resources, humanizeMemory bool) apiv1.ResourceList {
+func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUMillicores int) apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
 	for key, resourceAmount := range resources {
 		var newKey apiv1.ResourceName
@@ -90,6 +91,15 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool) apiv1.Res
 		case ResourceCPU:
 			newKey = apiv1.ResourceCPU
 			quantity = QuantityFromCPUAmount(resourceAmount)
+			if roundCPUMillicores != 1 && !quantity.IsZero() {
+				roundedValues, err := RoundUpToScale(resourceAmount, roundCPUMillicores)
+				if err != nil {
+					klog.V(4).InfoS("Error rounding CPU value; leaving unchanged", "rawValue", resourceAmount, "scale", roundCPUMillicores, "error", err)
+				} else {
+					klog.V(4).InfoS("Successfully rounded CPU value", "rawValue", resourceAmount, "roundedValue", roundedValues)
+				}
+				quantity = QuantityFromCPUAmount(roundedValues)
+			}
 		case ResourceMemory:
 			newKey = apiv1.ResourceMemory
 			quantity = QuantityFromMemoryAmount(resourceAmount)
@@ -164,6 +174,16 @@ func HumanizeMemoryQuantity(bytes int64) string {
 	default:
 		return fmt.Sprintf("%d", bytes)
 	}
+}
+
+// RoundUpToScale rounds the value to the nearest multiple of scale, rounding up
+func RoundUpToScale(value ResourceAmount, scale int) (ResourceAmount, error) {
+	if scale <= 0 {
+		return value, fmt.Errorf("scale must be greater than zero")
+	}
+	scale64 := int64(scale)
+	roundedValue := int64(math.Ceil(float64(value)/float64(scale64))) * scale64
+	return ResourceAmount(roundedValue), nil
 }
 
 // PodID contains information needed to identify a Pod within a cluster.
