@@ -44,7 +44,7 @@ type ContainerMetricsSnapshot struct {
 type MetricsClient interface {
 	// GetContainersMetrics returns an array of ContainerMetricsSnapshots,
 	// representing resource usage for every running container in the cluster
-	GetContainersMetrics() ([]*ContainerMetricsSnapshot, error)
+	GetContainersMetrics(map[model.PodID]bool, bool) ([]*ContainerMetricsSnapshot, error)
 }
 
 type metricsClient struct {
@@ -63,7 +63,7 @@ func NewMetricsClient(source PodMetricsLister, namespace, clientName string) Met
 	}
 }
 
-func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, error) {
+func (c *metricsClient) GetContainersMetrics(podList map[model.PodID]bool, memorySaveMode bool) ([]*ContainerMetricsSnapshot, error) {
 	var metricsSnapshots []*ContainerMetricsSnapshot
 
 	podMetricsList, err := c.source.List(context.TODO(), c.namespace, metav1.ListOptions{})
@@ -73,8 +73,21 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 	}
 	klog.V(3).InfoS("podMetrics retrieved for all namespaces", "podMetrics", len(podMetricsList.Items))
 	for _, podMetrics := range podMetricsList.Items {
-		metricsSnapshotsForPod := createContainerMetricsSnapshots(podMetrics)
-		metricsSnapshots = append(metricsSnapshots, metricsSnapshotsForPod...)
+		if !memorySaveMode {
+			metricsSnapshotsForPod := createContainerMetricsSnapshots(podMetrics)
+			metricsSnapshots = append(metricsSnapshots, metricsSnapshotsForPod...)
+			continue
+		}
+
+		// only snapshot metrics for pod that has VPA enabled.
+		podID := model.PodID{
+			PodName:   podMetrics.ObjectMeta.Name,
+			Namespace: podMetrics.ObjectMeta.Namespace,
+		}
+		if _, ok := podList[podID]; ok {
+			metricsSnapshotsForPod := createContainerMetricsSnapshots(podMetrics)
+			metricsSnapshots = append(metricsSnapshots, metricsSnapshotsForPod...)
+		}
 	}
 	return metricsSnapshots, nil
 }
