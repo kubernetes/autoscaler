@@ -75,6 +75,7 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [Cluster API](#cluster-api)
 - [Exoscale](#exoscale)
 - [Hetzner Cloud](#hetzner-cloud)
+- [Civo](#civo)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -281,6 +282,23 @@ The following parameters are required:
 Each autoscaling group requires an additional `instanceType` and `region` key to be set.
 
 Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
+
+### Civo
+
+The following parameters are required:
+
+- `cloudProvider=civo`
+- `autoscalingGroups=...`
+
+When installing the helm chart to the namespace `kube-system`, you can set `secretKeyRefNameOverride` to `civo-api-access`.
+Otherwise specify the following parameters:
+
+- `civoApiUrl=https://api.civo.com`
+- `civoApiKey=...`
+- `civoClusterID=...`
+- `civoRegion=...`
+
+Read [cluster-autoscaler/cloudprovider/civo/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/civo/README.md) for further information on the setup without helm.
 
 ## Uninstalling the Chart
 
