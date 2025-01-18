@@ -50,7 +50,8 @@ type AsyncNodeGroupInitializer struct {
 	atomicScaleUp          bool
 }
 
-func newAsyncNodeGroupInitializer(
+// NewAsyncNodeGroupInitializer creates a new AsyncNodeGroupInitializer instance.
+func NewAsyncNodeGroupInitializer(
 	nodeGroup cloudprovider.NodeGroup,
 	nodeInfo *framework.NodeInfo,
 	scaleUpExecutor *scaleUpExecutor,
