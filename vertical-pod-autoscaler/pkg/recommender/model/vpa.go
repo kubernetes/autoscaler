@@ -110,6 +110,15 @@ type Vpa struct {
 	TargetRef *autoscaling.CrossVersionObjectReference
 	// PodCount contains number of live Pods matching a given VPA object.
 	PodCount int
+	// ContainersPerPod contains the "high water mark" of the number of containers
+	// per pod to average the recommendation across. Used to make sure we aren't
+	// "fractionalizing" minResources erroneously during a redeploy when when a pod's
+	// container is removed or renamed
+	ContainersPerPod int
+	// PruningGracePeriod is the duration to wait before pruning recommendations for containers that no longer exist under a VPA.
+	// By default, recommendations for non-existent containers are never pruned until its top-most controller is deleted,
+	// after which the recommendations are subject to the VPA's recommendation garbage collector.
+	PruningGracePeriod *time.Duration
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
@@ -155,6 +164,7 @@ func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggre
 		vpa.aggregateContainerStates[aggregationKey] = aggregation
 		aggregation.IsUnderVPA = true
 		aggregation.UpdateMode = vpa.UpdateMode
+		aggregation.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
 		aggregation.UpdateFromPolicy(vpa_api_util.GetContainerResourcePolicy(aggregationKey.ContainerName(), vpa.ResourcePolicy))
 	}
 }
@@ -207,6 +217,11 @@ func (vpa *Vpa) AggregateStateByContainerName() ContainerNameToAggregateStateMap
 	containerNameToAggregateStateMap := AggregateStateByContainerName(vpa.aggregateContainerStates)
 	vpa.MergeCheckpointedState(containerNameToAggregateStateMap)
 	return containerNameToAggregateStateMap
+}
+
+// AggregateContainerStates returns the underlying internal aggregate state map.
+func (vpa *Vpa) AggregateContainerStates() aggregateContainerStatesMap {
+	return vpa.aggregateContainerStates
 }
 
 // HasRecommendation returns if the VPA object contains any recommendation

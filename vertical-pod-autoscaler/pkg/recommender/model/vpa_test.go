@@ -31,6 +31,7 @@ import (
 
 var (
 	anyTime = time.Unix(0, 0)
+	// TODO(maxcao13): write tests for the pruningGracePeriod field
 )
 
 func TestMergeAggregateContainerState(t *testing.T) {
