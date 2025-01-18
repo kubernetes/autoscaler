@@ -392,6 +392,25 @@ func (gc *GceCache) InvalidateAllMigInstanceTemplateNames() {
 	gc.instanceTemplateNameCache = map[GceRef]InstanceTemplateName{}
 }
 
+// InvalidateMigInstanceTemplateNamesNotFor clears the instance template
+// name cache intended not for given MIGs
+func (gc *GceCache) InvalidateMigInstanceTemplateNamesNotFor(migs []Mig) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	requiredKeys := make(map[GceRef]struct{}, len(migs))
+	for _, mig := range migs {
+		requiredKeys[mig.GceRef()] = struct{}{}
+	}
+
+	klog.V(5).Infof("Instance template names cache partially invalidated")
+	for key := range gc.instanceTemplateNameCache {
+		if _, exists := requiredKeys[key]; !exists {
+			delete(gc.instanceTemplateNameCache, key)
+		}
+	}
+}
+
 // GetMigInstanceTemplate returns the cached gce.InstanceTemplate for a mig GceRef
 func (gc *GceCache) GetMigInstanceTemplate(ref GceRef) (*gce.InstanceTemplate, bool) {
 	gc.cacheMutex.Lock()
@@ -430,6 +449,25 @@ func (gc *GceCache) InvalidateAllMigInstanceTemplates() {
 
 	klog.V(5).Infof("Instance template cache invalidated")
 	gc.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{}
+}
+
+// InvalidateMigInstanceTemplatesNotFor clears the instance template
+// cache intended not for given MIGs
+func (gc *GceCache) InvalidateMigInstanceTemplatesNotFor(migs []Mig) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	requiredKeys := make(map[GceRef]struct{}, len(migs))
+	for _, mig := range migs {
+		requiredKeys[mig.GceRef()] = struct{}{}
+	}
+
+	klog.V(5).Infof("Instance template cache partially invalidated")
+	for key := range gc.instanceTemplatesCache {
+		if _, exists := requiredKeys[key]; !exists {
+			delete(gc.instanceTemplatesCache, key)
+		}
+	}
 }
 
 // GetMigKubeEnv returns the cached KubeEnv for a mig GceRef
