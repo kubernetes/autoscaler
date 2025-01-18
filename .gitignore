@@ -16,6 +16,7 @@
 # VSCode project files
 **/.vscode
 *.code-workspace
+__debug_bin*
 
 # Emacs save files
 *~
