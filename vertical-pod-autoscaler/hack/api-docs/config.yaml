@@ -1,0 +1,8 @@
+processor:
+   ignoreGroupVersions:
+   - "poc.autoscaling.k8s.io/v1alpha1"
+   - "autoscaling.k8s.io/v1beta1"
+   - "autoscaling.k8s.io/v1beta2"
+
+render:
+  kubernetesVersion: 1.32
