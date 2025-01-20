@@ -162,13 +162,16 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	// don't necessarily want to immediately delete them.
 	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
-	indexer, controller := cache.NewIndexerInformer(
-		podListWatch,
-		&apiv1.Pod{},
-		time.Hour,
-		resourceEventHandler,
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-	)
+	informerOptions := cache.InformerOptions{
+		ObjectType:    &apiv1.Pod{},
+		ListerWatcher: podListWatch,
+		Handler:       resourceEventHandler,
+		ResyncPeriod:  time.Hour,
+		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	}
+
+	_, controller := cache.NewInformerWithOptions(informerOptions)
+	indexer := cache.NewIndexer(cache.DeletionHandlingMetaNamespaceKeyFunc, informerOptions.Indexers)
 	podLister := v1lister.NewPodLister(indexer)
 	go controller.Run(stopCh)
 	if !cache.WaitForCacheSync(stopCh, controller.HasSynced) {
