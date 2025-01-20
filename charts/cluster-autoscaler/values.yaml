@@ -192,6 +192,8 @@ extraArgs:
   # scale-down-delay-after-delete: 0s
   # scale-down-delay-after-failure: 3m
   # scale-down-unneeded-time: 10m
+  # node-deletion-delay-timeout: 2m
+  # node-deletion-batcher-interval: 0s
   # skip-nodes-with-system-pods: true
   # balancing-ignore-label_1: first-label-to-ignore
   # balancing-ignore-label_2: second-label-to-ignore
