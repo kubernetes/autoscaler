@@ -625,7 +625,7 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 			assert.False(t, result.ScaleUpStatus.WasSuccessful())
 			assert.Equal(t, errors.CloudProviderError, result.ScaleUpError.Type())
 			assert.Equal(t, tc.expectedTotalTargetSizes, result.GroupTargetSizes["ng1"]+result.GroupTargetSizes["ng2"])
-			assert.Equal(t, tc.expectConcurrentErrors, strings.Contains(result.ScaleUpError.Error(), "...and other concurrent errors"))
+			assert.Equal(t, tc.expectConcurrentErrors, strings.Contains(result.ScaleUpError.Error(), "...and other errors"))
 		})
 	}
 }
