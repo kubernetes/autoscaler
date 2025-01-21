@@ -328,7 +328,7 @@ func (feeder *clusterStateFeeder) shouldCleanupNamespace(namespace string) bool 
 	return feeder.vpaObjectNamespace == "" && len(feeder.ignoredNamespaces) == 0
 }
 
-func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(namespace string, allVPAKeys map[model.VpaID]bool{}) {
+func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(namespace string, allVPAKeys map[model.VpaID]bool) {
 	checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		klog.ErrorS(err, "Cannot list VPA checkpoints", "namespace", namespace)
