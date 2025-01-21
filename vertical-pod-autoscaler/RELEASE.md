@@ -53,7 +53,7 @@ branch. This makes sure you have no local changes while building the images.
 For example:
 ```sh
 git clone git@github.com:kubernetes/autoscaler.git
-git switch vpa-release-1.0
+git switch vpa-release-1.${minor}
 ```
 
 Once in the freshly cloned repo, build and stage the images.
