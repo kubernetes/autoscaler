@@ -53,14 +53,14 @@ branch. This makes sure you have no local changes while building the images.
 For example:
 ```sh
 git clone git@github.com:kubernetes/autoscaler.git
-git switch vpa-release-1.0
+git switch vpa-release-1.${minor}
 ```
 
 Once in the freshly cloned repo, build and stage the images.
 
 ```sh
 cd vertical-pod-autoscaler/
-for component in recommender updater admission-controller ; do TAG=`grep 'const VerticalPodAutoscalerVersion = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
+for component in recommender updater admission-controller ; do TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
 ```
 
 ## Test the release
