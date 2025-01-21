@@ -18,6 +18,8 @@ package errors
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 )
 
 // AutoscalerErrorType describes a high-level category of a given error
@@ -130,4 +132,64 @@ func (e autoscalerErrorImpl) Type() AutoscalerErrorType {
 // }
 func (e autoscalerErrorImpl) AddPrefix(msg string, args ...interface{}) AutoscalerError {
 	return autoscalerErrorImpl{errorType: e.errorType, wrappedErr: e, msg: fmt.Sprintf(msg, args...)}
+}
+
+// Combine returns combined error to report from multiple errors.
+func Combine(errs []AutoscalerError) AutoscalerError {
+	if len(errs) == 0 {
+		return nil
+	}
+	if len(errs) == 1 {
+		return errs[0]
+	}
+	uniqueMessages := make(map[string]bool)
+	uniqueTypes := make(map[AutoscalerErrorType]bool)
+	for _, err := range errs {
+		uniqueTypes[err.Type()] = true
+		uniqueMessages[err.Error()] = true
+	}
+	if len(uniqueTypes) == 1 && len(uniqueMessages) == 1 {
+		return errs[0]
+	}
+	// sort to stabilize the results and easier log aggregation
+	sort.Slice(errs, func(i, j int) bool {
+		errA := errs[i]
+		errB := errs[j]
+		if errA.Type() == errB.Type() {
+			return errs[i].Error() < errs[j].Error()
+		}
+		return errA.Type() < errB.Type()
+	})
+	firstErr := errs[0]
+	printErrorTypes := len(uniqueTypes) > 1
+	message := formatMessageFromErrors(errs, printErrorTypes)
+	return NewAutoscalerError(firstErr.Type(), message)
+}
+
+func formatMessageFromErrors(errs []AutoscalerError, printErrorTypes bool) string {
+	firstErr := errs[0]
+	var builder strings.Builder
+	builder.WriteString(firstErr.Error())
+	builder.WriteString(" ...and other errors: [")
+	formattedErrs := map[AutoscalerError]bool{
+		firstErr: true,
+	}
+	for _, err := range errs {
+		if _, has := formattedErrs[err]; has {
+			continue
+		}
+		formattedErrs[err] = true
+		var message string
+		if printErrorTypes {
+			message = fmt.Sprintf("[%s] %s", err.Type(), err.Error())
+		} else {
+			message = err.Error()
+		}
+		if len(formattedErrs) > 2 {
+			builder.WriteString(", ")
+		}
+		builder.WriteString(fmt.Sprintf("%q", message))
+	}
+	builder.WriteString("]")
+	return builder.String()
 }
