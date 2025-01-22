@@ -809,6 +809,7 @@ func addVMToCache(instances *[]cloudprovider.Instance, id, provisioningState *st
 
 // instanceStatusFromProvisioningStateAndPowerState converts the VM provisioning state to cloudprovider.InstanceStatus
 // instanceStatusFromProvisioningStateAndPowerState used by orchestrationMode == compute.Flexible
+// Suggestion: reunify this with scaleSet.instanceStatusFromVM()
 func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisioningState *string, powerState string, enableFastDeleteOnFailedProvisioning bool) *cloudprovider.InstanceStatus {
 	if provisioningState == nil {
 		return nil
@@ -823,6 +824,8 @@ func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisi
 	case provisioningStateCreating:
 		status.State = cloudprovider.InstanceCreating
 	case provisioningStateFailed:
+		status.State = cloudprovider.InstanceRunning
+
 		if enableFastDeleteOnFailedProvisioning {
 			// Provisioning can fail both during instance creation or after the instance is running.
 			// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
