@@ -1116,6 +1116,10 @@ func TestTemplateNodeInfo(t *testing.T) {
 	}
 	asg.Name = "test-asg"
 
+	// The dynamic SKU list ("cache") in the test provider is empty
+	// (initialized with cfg.EnableDynamicInstanceList = false).
+	assert.False(t, provider.azureManager.azureCache.HasVMSKUs())
+
 	t.Run("Checking fallback to static because dynamic list is empty", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
