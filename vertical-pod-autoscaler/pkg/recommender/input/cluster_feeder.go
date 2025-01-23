@@ -152,7 +152,7 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 }
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
-func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string) v1lister.PodLister {
+func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string, stopCh <-chan struct{}) v1lister.PodLister {
 	// We are interested in pods which are Running or Unknown (in case the pod is
 	// running but there are some transient errors we don't want to delete it from
 	// our model).
@@ -170,15 +170,17 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
 	podLister := v1lister.NewPodLister(indexer)
-	stopCh := make(chan struct{})
 	go controller.Run(stopCh)
+	if !cache.WaitForCacheSync(stopCh, controller.HasSynced) {
+		klog.ErrorS(nil, "Failed to sync Pod cache during initialization")
+	}
 	return podLister
 }
 
 // NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
-func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string) (v1lister.PodLister, oom.Observer) {
+func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) (v1lister.PodLister, oom.Observer) {
 	oomObserver := oom.NewObserver()
-	podLister := newPodClients(kubeClient, oomObserver, namespace)
+	podLister := newPodClients(kubeClient, oomObserver, namespace, stopCh)
 	WatchEvictionEventsWithRetries(kubeClient, oomObserver, namespace)
 	return podLister, oomObserver
 }
@@ -274,7 +276,21 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 
 func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).InfoS("Starting garbage collection of checkpoints")
-	feeder.LoadVPAs(context.TODO())
+
+	allVPAKeys := map[model.VpaID]bool{}
+
+	allVpaResources, err := feeder.vpaLister.List(labels.Everything())
+	if err != nil {
+		klog.ErrorS(err, "Cannot list VPAs")
+		return
+	}
+	for _, vpa := range allVpaResources {
+		vpaID := model.VpaID{
+			Namespace: vpa.Namespace,
+			VpaName:   vpa.Name,
+		}
+		allVPAKeys[vpaID] = true
+	}
 
 	namespaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -290,7 +306,8 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		}
 		for _, checkpoint := range checkpointList.Items {
 			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-			_, exists := feeder.clusterState.Vpas[vpaID]
+			exists := allVPAKeys[vpaID]
+
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
 				if err == nil {

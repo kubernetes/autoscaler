@@ -18,10 +18,13 @@ package magnum
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -59,6 +62,16 @@ type magnumNodeGroup struct {
 	// to try to repeatedly delete it.
 	// Maps provider ID -> time of deletion request.
 	deletedNodes map[string]time.Time
+	nodeTemplate *MagnumNodeTemplate
+	// getOptions   *autoscaler.NodeGroupAutoscalingOptions
+}
+
+// MagnumNodeTemplate reference to implements TemplateNodeInfo
+type MagnumNodeTemplate struct {
+	CPUCores      int               `json:"cpu_cores,omitempty"`
+	RAMMegabytes  int               `json:"ram_mb,omitempty"`
+	DiskGigabytes int               `json:"disk_gb,omitempty"`
+	Labels        map[string]string `json:"labels,omitempty"`
 }
 
 // IncreaseSize increases the number of nodes by replacing the cluster's node_count.
@@ -212,7 +225,14 @@ func (ng *magnumNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (ng *magnumNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	node, err := ng.buildNodeFromTemplate(ng.Id(), ng.nodeTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build node from template")
+	}
+	klog.V(5).Infof("TemplateNodeInfo: built template for nodegroup: %s", ng.Id())
+	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
+
+	return nodeInfo, nil
 }
 
 // Exist returns if this node group exists.
@@ -255,4 +275,44 @@ func (ng *magnumNodeGroup) MinSize() int {
 // TargetSize returns the target size of the node group.
 func (ng *magnumNodeGroup) TargetSize() (int, error) {
 	return ng.targetSize, nil
+}
+
+// buildNodeFromTemplate returns a Node object from the given template
+func (ng *magnumNodeGroup) buildNodeFromTemplate(name string, template *MagnumNodeTemplate) (*apiv1.Node, error) {
+	node := &apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-nodegroup-%d", name, rand.Int63())
+
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(template.CPUCores*1000), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(template.RAMMegabytes*1024*1024), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.DiskGigabytes*1024*1024*1024), resource.DecimalSI)
+
+	node.Status.Allocatable = node.Status.Capacity
+
+	// GenericLabels and NodeLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildLabels(template, nodeName))
+
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+
+	return node, nil
+}
+
+func buildLabels(template *MagnumNodeTemplate, nodeName string) map[string]string {
+	result := make(map[string]string)
+
+	// NodeLabels
+	for key, value := range template.Labels {
+		result[key] = value
+	}
+
+	return result
 }

@@ -9,6 +9,7 @@ GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
 REGISTRY?=staging-k8s.gcr.io
 DOCKER_NETWORK?=default
+SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/builder/ | grep -e '^builder_.*\.go' | sed 's/builder_\(.*\)\.go/\1/')
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
   PROVIDER=-${BUILD_TAGS}
@@ -41,6 +42,16 @@ build:
 
 build-arch-%: clean-arch-%
 	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
+
+test-build-tags:
+	@if [ -z "$(SUPPORTED_BUILD_TAGS)" ]; then \
+		echo "No supported build tags found"; \
+		exit 1; \
+	fi
+	@for tag in $(SUPPORTED_BUILD_TAGS); do \
+		echo "Testing build with tag $$tag"; \
+		BUILD_TAGS=$$tag $(MAKE) build || exit 1; \
+	done
 
 test-unit: clean build
 	go test --test.short -race ./... ${TAGS_FLAG}

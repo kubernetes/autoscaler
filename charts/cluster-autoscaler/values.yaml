@@ -110,13 +110,30 @@ azureVMType: "vmss"
 # azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
 azureEnableForceDelete: false
 
+# civoApiUrl -- URL for the Civo API.
+# Required if `cloudProvider=civo`
+civoApiUrl: "https://api.civo.com"
+
+# civoApiKey -- API key for the Civo API.
+# Required if `cloudProvider=civo`
+civoApiKey: ""
+
+# civoClusterID -- Cluster ID for the Civo cluster.
+# Required if `cloudProvider=civo`
+civoClusterID: ""
+
+# civoRegion -- Region for the Civo cluster.
+# Required if `cloudProvider=civo`
+civoRegion: ""
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
-# Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported.
+# Currently only `gce`, `aws`, `azure`, `magnum`, `clusterapi` and `civo` are supported.
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
 # `magnum` for OpenStack Magnum, `clusterapi` for Cluster API.
+# `civo` for Civo Cloud.
 cloudProvider: aws
 
 # clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
@@ -192,6 +209,8 @@ extraArgs:
   # scale-down-delay-after-delete: 0s
   # scale-down-delay-after-failure: 3m
   # scale-down-unneeded-time: 10m
+  # node-deletion-delay-timeout: 2m
+  # node-deletion-batcher-interval: 0s
   # skip-nodes-with-system-pods: true
   # balancing-ignore-label_1: first-label-to-ignore
   # balancing-ignore-label_2: second-label-to-ignore
@@ -444,5 +463,5 @@ vpa:
   # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
   containerPolicy: {}
 
-# secretKeyRefNameOverride -- Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables
+# secretKeyRefNameOverride -- Overrides the name of the Secret to use when loading the secretKeyRef for AWS, Azure and Civo env variables
 secretKeyRefNameOverride: ""

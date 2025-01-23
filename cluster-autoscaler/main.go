@@ -114,7 +114,6 @@ func multiStringFlag(name string, usage string) *MultiStringFlag {
 }
 
 var (
-	leaseResourceName       = flag.String("lease-resource-name", "cluster-autoscaler", "The lease resource to use in leader election.")
 	clusterName             = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -563,6 +562,8 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 		podListProcessor.AddProcessor(provreqProcesor)
+
+		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
 	}
 
 	if *proactiveScaleupEnabled {
@@ -670,10 +671,13 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 
 	// Autoscale ad infinitum.
 	if *frequentLoopsEnabled {
+		// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
+		// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
 		lastRun := time.Now()
+		previousRun := time.Now()
 		for {
-			trigger.Wait(lastRun)
-			lastRun = time.Now()
+			trigger.Wait(previousRun)
+			previousRun, lastRun = lastRun, time.Now()
 			loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
 		}
 	} else {
@@ -694,10 +698,6 @@ func main() {
 		klog.Fatalf("Failed to add logging feature flags: %v", err)
 	}
 
-	leaderElection := defaultLeaderElectionConfiguration()
-	leaderElection.LeaderElect = true
-	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
-
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
@@ -710,6 +710,9 @@ func main() {
 			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
 		}
 	}
+
+	leaderElection := leaderElectionConfiguration()
+	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	logs.InitLogs()
 	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
@@ -790,14 +793,14 @@ func main() {
 	}
 }
 
-func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+func leaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
 	return componentbaseconfig.LeaderElectionConfiguration{
-		LeaderElect:   false,
+		LeaderElect:   true,
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.LeasesResourceLock,
-		ResourceName:  *leaseResourceName,
+		ResourceName:  "cluster-autoscaler",
 	}
 }
 
