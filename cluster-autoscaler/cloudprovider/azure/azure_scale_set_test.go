@@ -373,6 +373,95 @@ func TestIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 		expectErrorInfoPopulated bool
 	}{
 		"out of resources when no power state exists": {
+			expectErrorInfoPopulated: false,
+		},
+		"out of resources when VM is stopped": {
+			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateStopped)}},
+			expectErrorInfoPopulated: false,
+		},
+		"out of resources when VM reports invalid power state": {
+			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr("PowerState/invalid")}},
+			expectErrorInfoPopulated: false,
+		},
+		"instance running when power state is running": {
+			expectInstanceRunning:    true,
+			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateRunning)}},
+			expectErrorInfoPopulated: false,
+		},
+		"instance running if instance view cannot be retrieved": {
+			expectInstanceRunning:    true,
+			isMissingInstanceView:    true,
+			expectErrorInfoPopulated: false,
+		},
+	}
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			manager := newTestAzureManager(t)
+			vmssName := "vmss-failed-upscale"
+
+			expectedScaleSets := newTestVMSSList(3, "vmss-failed-upscale", "eastus", compute.Uniform)
+			expectedVMSSVMs := newTestVMSSVMList(3)
+			// The failed state is important line of code here
+			expectedVMs := newTestVMList(3)
+			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(provisioningStateFailed)
+			if !testCase.isMissingInstanceView {
+				expectedVMSSVMs[2].InstanceView = &compute.VirtualMachineScaleSetVMInstanceView{Statuses: &testCase.statuses}
+			}
+
+			mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+			mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil)
+			mockVMSSClient.EXPECT().CreateOrUpdateAsync(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(nil, nil)
+			mockVMSSClient.EXPECT().WaitForCreateOrUpdateResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).Return(&http.Response{StatusCode: http.StatusOK}, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "vmss-failed-upscale", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+			mockVMClient := mockvmclient.NewMockInterface(ctrl)
+			mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+			manager.azClient.virtualMachinesClient = mockVMClient
+
+			manager.explicitlyConfigured["vmss-failed-upscale"] = true
+			registered := manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
+			assert.True(t, registered)
+			manager.Refresh()
+
+			provider, err := BuildAzureCloudProvider(manager, nil)
+			assert.NoError(t, err)
+
+			scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+			assert.True(t, ok)
+
+			// Increase size by one, but the new node fails provisioning
+			err = scaleSet.IncreaseSize(1)
+			assert.NoError(t, err)
+
+			nodes, err := scaleSet.Nodes()
+			assert.NoError(t, err)
+
+			assert.Equal(t, 3, len(nodes))
+
+			assert.Equal(t, testCase.expectErrorInfoPopulated, nodes[2].Status.ErrorInfo != nil)
+			if testCase.expectErrorInfoPopulated {
+				assert.Equal(t, cloudprovider.InstanceCreating, nodes[2].Status.State)
+			} else {
+				assert.Equal(t, cloudprovider.InstanceRunning, nodes[2].Status.State)
+			}
+		})
+	}
+}
+
+func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
+	testCases := map[string]struct {
+		expectInstanceRunning    bool
+		isMissingInstanceView    bool
+		statuses                 []compute.InstanceViewStatus
+		expectErrorInfoPopulated bool
+	}{
+		"out of resources when no power state exists": {
 			expectErrorInfoPopulated: true,
 		},
 		"out of resources when VM is stopped": {
@@ -425,7 +514,7 @@ func TestIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 			manager.azClient.virtualMachinesClient = mockVMClient
 
 			manager.explicitlyConfigured["vmss-failed-upscale"] = true
-			registered := manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
+			registered := manager.RegisterNodeGroup(newTestScaleSetWithFastDelete(manager, vmssName))
 			assert.True(t, registered)
 			manager.Refresh()
 
