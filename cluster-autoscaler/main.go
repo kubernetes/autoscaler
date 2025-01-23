@@ -670,10 +670,13 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 
 	// Autoscale ad infinitum.
 	if *frequentLoopsEnabled {
+		// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
+		// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
 		lastRun := time.Now()
+		previousRun := time.Now()
 		for {
-			trigger.Wait(lastRun)
-			lastRun = time.Now()
+			trigger.Wait(previousRun)
+			previousRun, lastRun = lastRun, time.Now()
 			loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
 		}
 	} else {
