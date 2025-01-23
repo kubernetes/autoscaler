@@ -114,7 +114,6 @@ func multiStringFlag(name string, usage string) *MultiStringFlag {
 }
 
 var (
-	leaseResourceName       = flag.String("lease-resource-name", "cluster-autoscaler", "The lease resource to use in leader election.")
 	clusterName             = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -712,8 +711,7 @@ func main() {
 		}
 	}
 
-	leaderElection := defaultLeaderElectionConfiguration()
-	leaderElection.LeaderElect = true
+	leaderElection := leaderElectionConfiguration()
 	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	logs.InitLogs()
@@ -795,14 +793,14 @@ func main() {
 	}
 }
 
-func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+func leaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
 	return componentbaseconfig.LeaderElectionConfiguration{
-		LeaderElect:   false,
+		LeaderElect:   true,
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.LeasesResourceLock,
-		ResourceName:  *leaseResourceName,
+		ResourceName:  "cluster-autoscaler",
 	}
 }
 
