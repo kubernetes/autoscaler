@@ -198,6 +198,7 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 }
 
 // instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus.
+// Suggestion: reunify this with instanceStatusFromProvisioningStateAndPowerState() in azure_scale_set.go
 func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSetVM) *cloudprovider.InstanceStatus {
 	// Prefer the proactive cache view of the instance state if we aren't in a terminal state
 	// This is because the power state may be taking longer to update and we don't want
@@ -224,6 +225,8 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 	case string(compute.GalleryProvisioningStateCreating):
 		status.State = cloudprovider.InstanceCreating
 	case string(compute.GalleryProvisioningStateFailed):
+		status.State = cloudprovider.InstanceRunning
+
 		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", to.String(vm.ID), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
 		if scaleSet.enableFastDeleteOnFailedProvisioning {
 			// Provisioning can fail both during instance creation or after the instance is running.
