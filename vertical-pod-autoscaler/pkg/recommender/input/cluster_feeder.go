@@ -19,6 +19,7 @@ package input
 import (
 	"context"
 	"fmt"
+	"os"
 	"slices"
 	"time"
 
@@ -170,8 +171,12 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	}
 
-	_, controller := cache.NewInformerWithOptions(informerOptions)
-	indexer := cache.NewIndexer(cache.DeletionHandlingMetaNamespaceKeyFunc, informerOptions.Indexers)
+	store, controller := cache.NewInformerWithOptions(informerOptions)
+	indexer, ok := store.(cache.Indexer)
+	if !ok {
+		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
+		os.Exit(255)
+	}
 	podLister := v1lister.NewPodLister(indexer)
 	go controller.Run(stopCh)
 	if !cache.WaitForCacheSync(stopCh, controller.HasSynced) {
