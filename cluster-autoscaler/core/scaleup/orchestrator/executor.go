@@ -22,11 +22,11 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
@@ -37,14 +37,14 @@ import (
 
 // ScaleUpExecutor scales up node groups.
 type scaleUpExecutor struct {
-	autoscalingContext         *context.AutoscalingContext
+	autoscalingContext         *ca_context.AutoscalingContext
 	scaleStateNotifier         nodegroupchange.NodeGroupChangeObserver
 	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker
 }
 
 // New returns new instance of scale up executor.
 func newScaleUpExecutor(
-	autoscalingContext *context.AutoscalingContext,
+	autoscalingContext *ca_context.AutoscalingContext,
 	scaleStateNotifier nodegroupchange.NodeGroupChangeObserver,
 	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker,
 ) *scaleUpExecutor {

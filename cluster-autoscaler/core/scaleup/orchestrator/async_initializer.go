@@ -24,7 +24,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -46,7 +46,7 @@ type AsyncNodeGroupInitializer struct {
 	taintConfig            taints.TaintConfig
 	daemonSets             []*appsv1.DaemonSet
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor
-	context                *context.AutoscalingContext
+	autoscalingContext     *ca_context.AutoscalingContext
 	atomicScaleUp          bool
 }
 
@@ -58,7 +58,7 @@ func NewAsyncNodeGroupInitializer(
 	taintConfig taints.TaintConfig,
 	daemonSets []*appsv1.DaemonSet,
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor,
-	context *context.AutoscalingContext,
+	autoscalingContext *ca_context.AutoscalingContext,
 	atomicScaleUp bool,
 ) *AsyncNodeGroupInitializer {
 	return &AsyncNodeGroupInitializer{
@@ -69,7 +69,7 @@ func NewAsyncNodeGroupInitializer(
 		taintConfig:            taintConfig,
 		daemonSets:             daemonSets,
 		scaleUpStatusProcessor: scaleUpStatusProcessor,
-		context:                context,
+		autoscalingContext:     autoscalingContext,
 		atomicScaleUp:          atomicScaleUp,
 	}
 }
@@ -105,7 +105,7 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	if result.Error != nil {
 		klog.Errorf("Async node group creation failed. Async scale-up is cancelled. %v", result.Error)
 		scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, result.Error))
-		s.scaleUpStatusProcessor.Process(s.context, scaleUpStatus)
+		s.scaleUpStatusProcessor.Process(s.autoscalingContext, scaleUpStatus)
 		return
 	}
 	mainCreatedNodeGroup := result.CreationResult.MainCreatedNodeGroup
