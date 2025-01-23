@@ -698,6 +698,9 @@ func main() {
 		klog.Fatalf("Failed to add logging feature flags: %v", err)
 	}
 
+	leaderElection := leaderElectionConfiguration()
+	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
@@ -710,9 +713,6 @@ func main() {
 			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
 		}
 	}
-
-	leaderElection := leaderElectionConfiguration()
-	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	logs.InitLogs()
 	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
