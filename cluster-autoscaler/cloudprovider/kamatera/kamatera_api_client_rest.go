@@ -267,5 +267,5 @@ func kamateraServerName(namePrefix string) string {
 	if len(namePrefix) > 0 {
 		namePrefix = fmt.Sprintf("%s-", namePrefix)
 	}
-	return fmt.Sprintf("%s%s", namePrefix, strings.ReplaceAll(uuid.New().String(), "-", ""))
+	return fmt.Sprintf("%s%s", namePrefix, strings.ReplaceAll(uuid.New().String()[:12], "-", ""))
 }
