@@ -692,6 +692,7 @@ func main() {
 	}
 
 	leaderElection := leaderElectionConfiguration()
+	// Must be called before kube_flag.InitFlags() to ensure leader election flags are parsed and available.
 	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
