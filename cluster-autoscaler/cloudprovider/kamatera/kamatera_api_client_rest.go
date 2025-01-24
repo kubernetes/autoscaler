@@ -82,7 +82,7 @@ type KamateraApiClientRest struct {
 }
 
 // ListServers returns a list of all servers in the relevant account and fetches their tags
-func (c *KamateraApiClientRest) ListServers(ctx context.Context, instances map[string]*Instance) ([]Server, error) {
+func (c *KamateraApiClientRest) ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string) ([]Server, error) {
 	res, err := request(
 		ctx,
 		ProviderConfig{ApiUrl: c.url, ApiClientID: c.clientId, ApiSecret: c.secret},
@@ -97,16 +97,18 @@ func (c *KamateraApiClientRest) ListServers(ctx context.Context, instances map[s
 	for _, server := range res.([]interface{}) {
 		server := server.(map[string]interface{})
 		serverName := server["name"].(string)
-		serverPowerOn := server["power"].(string) == "on"
-		serverTags, err := c.getServerTags(ctx, serverName, instances)
-		if err != nil {
-			return nil, err
+		if len(namePrefix) == 0 || strings.HasPrefix(serverName, namePrefix) {
+			serverPowerOn := server["power"].(string) == "on"
+			serverTags, err := c.getServerTags(ctx, serverName, instances)
+			if err != nil {
+				return nil, err
+			}
+			servers = append(servers, Server{
+				Name:    serverName,
+				Tags:    serverTags,
+				PowerOn: serverPowerOn,
+			})
 		}
-		servers = append(servers, Server{
-			Name:    serverName,
-			Tags:    serverTags,
-			PowerOn: serverPowerOn,
-		})
 	}
 	return servers, nil
 }
@@ -235,7 +237,7 @@ func (c *KamateraApiClientRest) getServerTags(ctx context.Context, serverName st
 		if err != nil {
 			return nil, err
 		}
-		var tags []string
+		tags := make([]string, 0)
 		for _, row := range res.([]interface{}) {
 			row := row.(map[string]interface{})
 			tags = append(tags, row["tag name"].(string))

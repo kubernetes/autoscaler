@@ -52,13 +52,14 @@ type nodeGroupConfig struct {
 
 // kamateraConfig holds the configuration for the Kamatera provider.
 type kamateraConfig struct {
-	apiClientId    string
-	apiSecret      string
-	apiUrl         string
-	clusterName    string
-	defaultMinSize int
-	defaultMaxSize int
-	nodeGroupCfg   map[string]*nodeGroupConfig // key is the node group name
+	apiClientId      string
+	apiSecret        string
+	apiUrl           string
+	clusterName      string
+	filterNamePrefix string
+	defaultMinSize   int
+	defaultMaxSize   int
+	nodeGroupCfg     map[string]*nodeGroupConfig // key is the node group name
 }
 
 // GcfgGlobalConfig is the gcfg representation of the global section in the cloud config file for Kamatera.
@@ -67,6 +68,7 @@ type GcfgGlobalConfig struct {
 	KamateraApiSecret     string   `gcfg:"kamatera-api-secret"`
 	KamateraApiUrl        string   `gcfg:"kamatera-api-url"`
 	ClusterName           string   `gcfg:"cluster-name"`
+	FilterNamePrefix      string   `gcfg:"filter-name-prefix"`
 	DefaultMinSize        string   `gcfg:"default-min-size"`
 	DefaultMaxSize        string   `gcfg:"default-max-size"`
 	DefaultNamePrefix     string   `gcfg:"default-name-prefix"`
@@ -142,6 +144,8 @@ func buildCloudConfig(config io.Reader) (*kamateraConfig, error) {
 	if len(clusterName) > 15 {
 		return nil, fmt.Errorf("cluster name must be at most 15 characters long")
 	}
+
+	filterNamePrefix := gcfgCloudConfig.Global.FilterNamePrefix
 
 	// get the default min and max size as defined in the global section of the config file
 	defaultMinSize, defaultMaxSize, err := getSizeLimits(
@@ -242,13 +246,14 @@ func buildCloudConfig(config io.Reader) (*kamateraConfig, error) {
 	}
 
 	return &kamateraConfig{
-		clusterName:    clusterName,
-		apiClientId:    apiClientId,
-		apiSecret:      apiSecret,
-		apiUrl:         apiUrl,
-		defaultMinSize: defaultMinSize,
-		defaultMaxSize: defaultMaxSize,
-		nodeGroupCfg:   nodeGroupCfg,
+		clusterName:      clusterName,
+		apiClientId:      apiClientId,
+		apiSecret:        apiSecret,
+		apiUrl:           apiUrl,
+		filterNamePrefix: filterNamePrefix,
+		defaultMinSize:   defaultMinSize,
+		defaultMaxSize:   defaultMaxSize,
+		nodeGroupCfg:     nodeGroupCfg,
 	}, nil
 }
 
