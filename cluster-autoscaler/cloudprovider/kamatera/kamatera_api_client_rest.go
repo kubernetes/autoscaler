@@ -258,7 +258,7 @@ func (c *KamateraApiClientRest) getServerTags(ctx context.Context, serverName st
 		tags := make([]string, 0)
 		for _, row := range res.([]interface{}) {
 			row := row.(map[string]interface{})
-			tags = append(tags, row["tag name"].(string))
+			tags = append(tags, row["tagName"].(string))
 		}
 		return tags, nil
 	}

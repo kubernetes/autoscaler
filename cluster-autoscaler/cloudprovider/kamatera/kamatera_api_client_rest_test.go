@@ -76,7 +76,7 @@ func TestApiClientRest_ListServers(t *testing.T) {
 ]`, newServerName1, cachedServerName2, cachedServerName3, cachedServerName4),
 	).On("handle", "/server/tags").Return(
 		"application/json",
-		`[{"tag name": "test-tag"}, {"tag name": "other-test-tag"}]`,
+		`[{"tagName": "test-tag"}, {"tagName": "other-test-tag"}]`,
 	)
 	servers, err := client.ListServers(ctx, map[string]*Instance{
 		cachedServerName2: {
@@ -140,7 +140,7 @@ func TestApiClientRest_ListServersNamePrefix(t *testing.T) {
 ]`, newServerName1, newServerName2),
 	).On("handle", "/server/tags").Return(
 		"application/json",
-		`[{"tag name": "test-tag"}, {"tag name": "other-test-tag"}]`,
+		`[{"tagName": "test-tag"}, {"tagName": "other-test-tag"}]`,
 	)
 	servers, err := client.ListServers(ctx, map[string]*Instance{}, "prefixb")
 	assert.NoError(t, err)
