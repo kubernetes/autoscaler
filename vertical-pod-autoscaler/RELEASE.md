@@ -79,7 +79,7 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
 
 1.  [ ] Deploy VPA:
     ```shell
-    REGISTRY=gcr.io/k8s-staging-autoscaling TAG=`grep 'const VerticalPodAutoscalerVersion = ' common/version.go | cut -d '"' -f 2` ./hack/vpa-up.sh
+    REGISTRY=gcr.io/k8s-staging-autoscaling TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` ./hack/vpa-up.sh
     ```
 
 1.  [ ] [Run](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-tests.sh)
