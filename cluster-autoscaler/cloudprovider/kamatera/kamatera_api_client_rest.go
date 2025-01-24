@@ -32,10 +32,12 @@ const (
 // NewKamateraApiClientRest factory to create new Rest API Client struct
 func NewKamateraApiClientRest(clientId string, secret string, url string) (client KamateraApiClientRest) {
 	return KamateraApiClientRest{
-		userAgent: userAgent,
-		clientId:  clientId,
-		secret:    secret,
-		url:       url,
+		userAgent:                userAgent,
+		clientId:                 clientId,
+		secret:                   secret,
+		url:                      url,
+		maxRetries:               5,
+		expSecondsBetweenRetries: 1,
 	}
 }
 
@@ -75,10 +77,12 @@ type KamateraServerCreatePostRequest struct {
 
 // KamateraApiClientRest is the struct to perform API calls
 type KamateraApiClientRest struct {
-	userAgent string
-	clientId  string
-	secret    string
-	url       string
+	userAgent                string
+	clientId                 string
+	secret                   string
+	url                      string
+	maxRetries               int
+	expSecondsBetweenRetries int
 }
 
 // ListServers returns a list of all servers in the relevant account and fetches their tags
@@ -89,6 +93,8 @@ func (c *KamateraApiClientRest) ListServers(ctx context.Context, instances map[s
 		"GET",
 		"/service/servers",
 		nil,
+		c.maxRetries,
+		c.expSecondsBetweenRetries,
 	)
 	if err != nil {
 		return nil, err
@@ -121,6 +127,8 @@ func (c *KamateraApiClientRest) DeleteServer(ctx context.Context, name string) e
 		"POST",
 		"/service/server/poweroff",
 		KamateraServerPostRequest{ServerName: name},
+		c.maxRetries,
+		c.expSecondsBetweenRetries,
 	)
 	if err == nil {
 		commandId := res.([]interface{})[0].(string)
@@ -128,9 +136,11 @@ func (c *KamateraApiClientRest) DeleteServer(ctx context.Context, name string) e
 			ctx,
 			ProviderConfig{ApiUrl: c.url, ApiClientID: c.clientId, ApiSecret: c.secret},
 			commandId,
+			c.maxRetries,
+			c.expSecondsBetweenRetries,
 		)
 		if err != nil {
-			return err
+			klog.V(1).Infof("Failed to validate server power off but will attempt to terminate anyway %s: %v", name, err)
 		}
 	} else {
 		klog.V(1).Infof("Failed to power off server but will attempt to terminate anyway %s: %v", name, err)
@@ -141,6 +151,8 @@ func (c *KamateraApiClientRest) DeleteServer(ctx context.Context, name string) e
 		"POST",
 		"/service/server/terminate",
 		KamateraServerTerminatePostRequest{ServerName: name, Force: true},
+		c.maxRetries,
+		c.expSecondsBetweenRetries,
 	)
 	if err != nil {
 		return err
@@ -195,6 +207,8 @@ func (c *KamateraApiClientRest) CreateServers(ctx context.Context, count int, co
 				UserdataFile:       config.UserdataFile,
 				Tag:                Tag,
 			},
+			1,
+			0,
 		)
 		if err != nil {
 			return nil, err
@@ -211,6 +225,8 @@ func (c *KamateraApiClientRest) CreateServers(ctx context.Context, count int, co
 		ctx,
 		ProviderConfig{ApiUrl: c.url, ApiClientID: c.clientId, ApiSecret: c.secret},
 		serverNameCommandIds,
+		c.maxRetries,
+		c.expSecondsBetweenRetries,
 	)
 	if err != nil {
 		return nil, err
@@ -233,6 +249,8 @@ func (c *KamateraApiClientRest) getServerTags(ctx context.Context, serverName st
 			"POST",
 			"/server/tags",
 			KamateraServerPostRequest{ServerName: serverName},
+			c.maxRetries,
+			c.expSecondsBetweenRetries,
 		)
 		if err != nil {
 			return nil, err
