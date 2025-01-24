@@ -28,6 +28,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/klog/v2"
 )
 
 // Map from VPA annotation key to value.
@@ -208,6 +209,27 @@ func (vpa *Vpa) MergeCheckpointedState(aggregateContainerStateMap ContainerNameT
 			aggregateContainerStateMap[containerName] = aggregateContainerState
 		}
 		aggregateContainerState.MergeContainerState(aggregation)
+	}
+}
+
+// DeleteAllAggregatesByContainerName deletes all aggregates by container name.
+func (vpa *Vpa) DeleteAllAggregatesByContainerName(containerName string) {
+	var aggregatesPruned int
+	var initialAggregatesPruned int
+	for key := range vpa.aggregateContainerStates {
+		if key.ContainerName() == containerName {
+			vpa.DeleteAggregation(key)
+			aggregatesPruned++
+		}
+	}
+	for key := range vpa.ContainersInitialAggregateState {
+		if key == containerName {
+			delete(vpa.ContainersInitialAggregateState, key)
+			initialAggregatesPruned++
+		}
+	}
+	if aggregatesPruned > 0 || initialAggregatesPruned > 0 {
+		klog.V(4).InfoS("Deleted all aggregates by container name", "containerName", containerName, "aggregatesPruned", aggregatesPruned, "initialAggregatesPruned", initialAggregatesPruned)
 	}
 }
 

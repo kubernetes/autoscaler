@@ -491,8 +491,6 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 // MarkAggregates marks all aggregates IsUnderVPA=false, so when we go
 // through LoadPods(), the valid ones will get marked back to true, and
 // we can garbage collect the false ones from the VPAs' aggregate lists.
-// TODO: The MarkAggregates + SweepAggregates flow should be deprecated in favour
-// of implementing something like https://github.com/kubernetes/autoscaler/pull/6745#discussion_r1588280084
 func (feeder *clusterStateFeeder) MarkAggregates() {
 	for _, vpa := range feeder.clusterState.VPAs() {
 		for _, container := range vpa.AggregateContainerStates() {
@@ -504,38 +502,21 @@ func (feeder *clusterStateFeeder) MarkAggregates() {
 	}
 }
 
-// SweepAggregates garbage collects all aggregates/initial aggregates from the VPA where the
-// aggregate's container no longer exists.
+// SweepAggregates prunes all aggregates/initial aggregates from the VPA where the
+// all containers related to an initial or aggregate state are no longer present.
 func (feeder *clusterStateFeeder) SweepAggregates() {
-
-	var aggregatesPruned int
-	var initialAggregatesPruned int
-
 	now := time.Now()
 	for _, vpa := range feeder.clusterState.VPAs() {
-		for containerKey, container := range vpa.AggregateContainerStates() {
+		// use merged aggregate state to check both initial and aggregates
+		for containerName, container := range vpa.AggregateStateByContainerName() {
 			if !container.IsUnderVPA && container.IsAggregateStale(now) {
-				klog.V(4).InfoS("Deleting stale aggregateContainerState for VPA: container and it's pod are no longer present",
+				klog.V(4).InfoS("Deleting stale aggregate container states; container no longer present",
 					"namespace", vpa.ID.Namespace,
 					"vpaName", vpa.ID.VpaName,
-					"containerName", containerKey.ContainerName())
-				vpa.DeleteAggregation(containerKey)
-				aggregatesPruned = aggregatesPruned + 1
+					"containerName", containerName)
+				vpa.DeleteAllAggregatesByContainerName(containerName)
 			}
 		}
-		for containerKey, container := range vpa.ContainersInitialAggregateState {
-			if !container.IsUnderVPA && container.IsAggregateStale(now) {
-				klog.V(4).InfoS("Deleting stale initial aggregateContainerState for VPA: container and it's pod are no longer present",
-					"namespace", vpa.ID.Namespace,
-					"vpaName", vpa.ID.VpaName,
-					"containerName", containerKey)
-				delete(vpa.ContainersInitialAggregateState, containerKey)
-				initialAggregatesPruned = initialAggregatesPruned + 1
-			}
-		}
-	}
-	if initialAggregatesPruned > 0 || aggregatesPruned > 0 {
-		klog.InfoS("Pruned aggregate and initial aggregate containers", "aggregatesPruned", aggregatesPruned, "initialAggregatesPruned", initialAggregatesPruned)
 	}
 }
 
