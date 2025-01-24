@@ -691,6 +691,9 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 func main() {
 	klog.InitFlags(nil)
 
+	leaderElection := leaderElectionConfiguration()
+	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	featureGate := utilfeature.DefaultMutableFeatureGate
 	loggingConfig := logsapi.NewLoggingConfiguration()
 
@@ -710,9 +713,6 @@ func main() {
 			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
 		}
 	}
-
-	leaderElection := leaderElectionConfiguration()
-	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	logs.InitLogs()
 	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
