@@ -154,6 +154,8 @@ func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 // the correct number and not just the number of aggregates that have *ever* been present. (We don't want minimum resources
 // to erroneously shrink, either)
 // If addPodToItsVpa is true, it also increments the pod count for the VPA.
+// TODO: Instead of looping over all VPAs, we should implement a VPA to pod map and manage the state and trade memory for time.
+// This would help speed up other functions as well such as removePodFromItsVpa, GetMatchingPods, etc.
 func (cluster *ClusterState) SetVPAContainersPerPod(pod *PodState, addPodToItsVpa bool) {
 	if !addPodToItsVpa && len(pod.Containers) <= 1 {
 		return
@@ -215,17 +217,12 @@ func (cluster *ClusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	aggregateState := cluster.findOrCreateAggregateContainerState(containerID)
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
-		// if aggregateState existed already, but the container doesn't exist for this pod, that means the aggregate that was
-		// found from an old pod's container and should be re-used for this new pod that somehow shares the same name. Link them.
-		for _, vpa := range cluster.Vpas {
-			vpa.UseAggregationIfMatching(cluster.aggregateStateKeyForContainerID(containerID), aggregateState)
-		}
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
-		// Mark this container as still managed so the aggregates don't get garbage collected
+		// Mark this container as still managed so the aggregates don't get pruned
 		aggregateState.IsUnderVPA = true
-		// Update the last update time so we potentially don't garbage collect it too soon
+		// Update the last update time so we potentially don't prune it too soon
 		aggregateState.LastUpdateTime = time.Now()
 	}
 	return nil
