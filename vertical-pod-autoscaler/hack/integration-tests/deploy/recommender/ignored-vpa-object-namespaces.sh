@@ -24,24 +24,15 @@ export REGISTRY=${REGISTRY:-localhost:5001}
 export TAG=${TAG:-latest}
 
 
-REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/e2e/deploy/recommender/ignored-vpa-object-namespaces.yaml | kubectl apply -f -
+REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/integration-tests/deploy/recommender/ignored-vpa-object-namespaces.yaml | kubectl apply -f -
 
 CHECK_CYCLES=15
 CHECK_SLEEP=15
 
-DEPLOYED=0
-
-for i in $(seq 1 $CHECK_CYCLES); do
-    if [[ $(kubectl get deployments vpa-recommender -n kube-system -o jsonpath='{.status.unavailableReplicas}') -eq 0 ]]; then
-        echo "Verified vpa-recommender pod was scheduled and started!"
-        DEPLOYED=1
-        break
-    fi
-    echo "Assertion Loop $i/$CHECK_CYCLES, sleeping for $CHECK_SLEEP seconds"
-    sleep $CHECK_SLEEP
-done
-
-if [[ $DEPLOYED -eq 0 ]]; then
+if kubectl wait --for=condition=Available --timeout=120s deployment/vpa-recommender -n kube-system; then
+    echo "Verified vpa-recommender pod was scheduled and started!"
+else
+    echo "vpa-recommender pod did not start within the expected time."
     exit 1
 fi
 
@@ -78,4 +69,4 @@ fi
 
 echo "Verified ignored namespaces are still not tracked after wait time!"
 
-REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/e2e/deploy/recommender/ignored-vpa-object-namespaces.yaml | kubectl delete -f -
+REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/integration-tests/deploy/recommender/ignored-vpa-object-namespaces.yaml | kubectl delete -f -

@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 BASE_NAME=$(basename $0)
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/../..
 source "${SCRIPT_ROOT}/hack/lib/util.sh"
 
 ARCH=$(kube::util::host_arch)
@@ -113,7 +113,7 @@ case ${SUITE} in
 
     echo " ** Running suite ${SUITE}"
 
-    ASSERTION_SCRIPTS=$(find "${SCRIPT_ROOT}/hack/e2e/deploy/${SUITE}" -name "*.sh" -type f | sort)
+    ASSERTION_SCRIPTS=$(find "${SCRIPT_ROOT}/hack/integration-tests/deploy/${SUITE}" -name "*.sh" -type f | sort)
     for assert_script in $ASSERTION_SCRIPTS; do
       echo "======================================================================================================"
       echo "Running assertion script $(basename "$assert_script")"
