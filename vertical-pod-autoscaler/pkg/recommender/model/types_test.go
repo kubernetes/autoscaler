@@ -32,6 +32,7 @@ type ResourcesAsResourceListTestCase struct {
 }
 
 func TestResourcesAsResourceList(t *testing.T) {
+	memory, _ := resource.ParseQuantity("2.66")
 	testCases := []ResourcesAsResourceListTestCase{
 		{
 			name: "basic resources without humanize",
@@ -100,9 +101,10 @@ func TestResourcesAsResourceList(t *testing.T) {
 				ResourceMemory: 2852574758, // 2.66Gi
 			},
 			humanize: true,
+
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
-				apiv1.ResourceMemory: resource.MustParse("2.66Gi"),
+				apiv1.ResourceMemory: memory,
 			},
 		},
 	}
