@@ -18,13 +18,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/../../../..
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/../../..
 
 export REGISTRY=${REGISTRY:-localhost:5001}
 export TAG=${TAG:-latest}
 
 
-REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/integration-tests/deploy/recommender/vpa-object-namespace.yaml | kubectl apply -f -
+REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/integration-tests/recommender/deploy/vpa-object-namespace.yaml | kubectl apply -f -
 
 CHECK_CYCLES=15
 CHECK_SLEEP=15
@@ -69,4 +69,4 @@ fi
 
 echo "Verified ignored namespaces are still not tracked after wait time!"
 
-REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/integration-tests/deploy/recommender/vpa-object-namespace.yaml | kubectl delete -f -
+REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/hack/integration-tests/recommender/deploy/vpa-object-namespace.yaml | kubectl delete -f -

@@ -113,7 +113,7 @@ case ${SUITE} in
 
     echo " ** Running suite ${SUITE}"
 
-    ASSERTION_SCRIPTS=$(find "${SCRIPT_ROOT}/hack/integration-tests/deploy/${SUITE}" -name "*.sh" -type f | sort)
+    ASSERTION_SCRIPTS=$(find "${SCRIPT_ROOT}/hack/integration-tests/${SUITE}" -name "*.sh" -type f | sort)
     for assert_script in $ASSERTION_SCRIPTS; do
       echo "======================================================================================================"
       echo "Running assertion script $(basename "$assert_script")"
