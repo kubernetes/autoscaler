@@ -93,6 +93,18 @@ func TestResourcesAsResourceList(t *testing.T) {
 				apiv1.ResourceMemory: *resource.NewQuantity(839500000, resource.DecimalSI),
 			},
 		},
+		{
+			name: "zero values without humanize",
+			resources: Resources{
+				ResourceCPU:    1000,
+				ResourceMemory: 2852574758, // 2.66Gi
+			},
+			humanize: true,
+			resourceList: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
+				apiv1.ResourceMemory: resource.MustParse("2.66Gi"),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
