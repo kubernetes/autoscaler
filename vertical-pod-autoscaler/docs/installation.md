@@ -10,7 +10,7 @@
   - [Install command](#install-command)
   - [Tear down](#tear-down)
 
-The current default version is Vertical Pod Autoscaler 1.2.2
+The current default version is Vertical Pod Autoscaler 1.3.0
 
 ## Compatibility
 
