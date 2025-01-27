@@ -294,7 +294,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
 
-	// Update cluster resource usage metrics
 	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
 	metrics.UpdateClusterCPUCurrentCores(coresTotal)
 	metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
