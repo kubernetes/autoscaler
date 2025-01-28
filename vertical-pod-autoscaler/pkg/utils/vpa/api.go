@@ -83,11 +83,20 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 // The method blocks until vpaLister is initially populated.
 func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerLister {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalers", namespace, fields.Everything())
-	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
-		&vpa_types.VerticalPodAutoscaler{},
-		1*time.Hour,
-		&cache.ResourceEventHandlerFuncs{},
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	informerOptions := cache.InformerOptions{
+		ObjectType:    &vpa_types.VerticalPodAutoscaler{},
+		ListerWatcher: vpaListWatch,
+		Handler:       &cache.ResourceEventHandlerFuncs{},
+		ResyncPeriod:  1 * time.Hour,
+		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	}
+
+	store, controller := cache.NewInformerWithOptions(informerOptions)
+	indexer, ok := store.(cache.Indexer)
+	if !ok {
+		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
+		os.Exit(255)
+	}
 	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
 	if !cache.WaitForCacheSync(stopChannel, controller.HasSynced) {
