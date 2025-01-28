@@ -71,7 +71,12 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 	if err != nil {
 		return nil, err
 	}
-	klog.V(3).InfoS("podMetrics retrieved for all namespaces", "podMetrics", len(podMetricsList.Items))
+	if c.namespace == k8sapiv1.NamespaceAll {
+		klog.V(3).InfoS("podMetrics retrieved for all namespaces", "podMetrics", len(podMetricsList.Items))
+	} else {
+		klog.V(3).InfoS("podMetrics retrieved", "namespace", c.namespace, "podMetrics", len(podMetricsList.Items))
+	}
+
 	for _, podMetrics := range podMetricsList.Items {
 		metricsSnapshotsForPod := createContainerMetricsSnapshots(podMetrics)
 		metricsSnapshots = append(metricsSnapshots, metricsSnapshotsForPod...)
