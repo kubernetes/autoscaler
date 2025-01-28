@@ -22,7 +22,7 @@ import (
 
 // kamateraAPIClient is the interface used to call kamatera API
 type kamateraAPIClient interface {
-	ListServers(ctx context.Context, instances map[string]*Instance) ([]Server, error)
+	ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string) ([]Server, error)
 	DeleteServer(ctx context.Context, name string) error
 	CreateServers(ctx context.Context, count int, config ServerConfig) ([]Server, error)
 }
