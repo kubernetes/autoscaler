@@ -629,6 +629,11 @@ When using this class, Cluster Autoscaler performs following actions:
   Adds a Provisioned=True condition to the ProvReq if capacity is available.
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
 
+  Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler 
+  to process only those check capacity ProvisioningRequests, that have a prefix matching the `--check-capacity-provisioning-class-prefix=<prefix>` flag.
+  This allows to run two Cluster Autoscalers in the cluster, but instance with the configured prefix
+  **should only** handle check capacity ProvisioningRequests and not overlap node groups with the main instance.
+
 * `best-effort-atomic-scale-up.autoscaling.x-k8s.io` (supported from Cluster Autoscaler version 1.30.2 or later).
 When using this class, Cluster Autoscaler performs following actions:
 
@@ -735,12 +740,12 @@ setting the following flag in your Cluster Autoscaler configuration:
 3. **Batch Size**: Set the maximum number of CheckCapacity ProvisioningRequests
 to process in a single iteration by setting the following flag in your Cluster
 Autoscaler configuration:
-`--max-batch-size=<batch-size>`. The default value is 10.
+`--check-capacity-provisioning-request-max-batch-size=<batch-size>`. The default value is 10.
 
 4. **Batch Timebox**: Set the maximum time in seconds that Cluster Autoscaler will
 spend processing CheckCapacity ProvisioningRequests in a single iteration by
 setting the following flag in your Cluster Autoscaler configuration:
-`--batch-timebox=<timebox>`. The default value is 10s.
+`--check-capacity-provisioning-request-batch-timebox=<timebox>`. The default value is 10s.
 
 ****************
 
@@ -973,6 +978,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `bulk-mig-instances-listing-enabled` | Fetch GCE mig instances in bulk instead of per mig |  |
 | `bypassed-scheduler-names` | Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up. |  |
 | `check-capacity-batch-processing` | Whether to enable batch processing for check capacity requests. |  |
+| `check-capacity-provisioning-class-prefix` | Prefix of provisioningClassName that will be filtered by processors. Only ProvisioningRequests with this prefix in their class will be processed by this CA. It refers only to check capacity ProvisioningRequests. |  |
 | `check-capacity-provisioning-request-batch-timebox` | Maximum time to process a batch of provisioning requests. | 10s |
 | `check-capacity-provisioning-request-max-batch-size` | Maximum number of provisioning requests to process in a single batch. | 10 |
 | `cloud-config` | The path to the cloud provider configuration file. Empty string for no configuration file. |  |
@@ -980,6 +986,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `cloud-provider-gce-l7lb-src-cidrs` | CIDRs opened in GCE firewall for L7 LB traffic proxy & health checks | 130.211.0.0/22,35.191.0.0/16 |
 | `cloud-provider-gce-lb-src-cidrs` | CIDRs opened in GCE firewall for L4 LB traffic proxy & health checks | 130.211.0.0/22,209.85.152.0/22,209.85.204.0/22,35.191.0.0/16 |
 | `cluster-name` | Autoscaled cluster name, if available |  |
+| `cluster-snapshot-parallelism` | Maximum parallelism of cluster snapshot creation. | 16 |
 | `clusterapi-cloud-config-authoritative` | Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only |  |
 | `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process |  |
 | `cores-total` | Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | "0:320000" |
