@@ -1,6 +1,6 @@
 # What are the parameters to VPA admission controller?
 This document is auto-generated from the flag definitions in the VPA admission controller code.
-Last updated: 2024-12-17 13:09:20 UTC
+Last updated: 2025-01-31 18:07:15 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
@@ -23,7 +23,7 @@ Last updated: 2024-12-17 13:09:20 UTC
 
 # What are the parameters to VPA recommender?
 This document is auto-generated from the flag definitions in the VPA recommender code.
-Last updated: 2024-12-17 13:09:18 UTC
+Last updated: 2025-01-31 18:07:14 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
@@ -64,6 +64,7 @@ Last updated: 2024-12-17 13:09:18 UTC
 | --recommendation-upper-bound-memory-percentile | Float64 | 0.95 | `Memory usage percentile that will be used for the upper bound on memory recommendation.` |
 | --recommender-interval | Duration | 1Minute | `How often metrics should be fetched` |
 | --recommender-name | String | 0 | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
+| --round-cpu-millicores | Int | 1 | `CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.` |
 | --storage | String |  | `Specifies storage mode. Supported values: prometheus, checkpoint (default)` |
 | --target-cpu-percentile | Float64 | 0.9 | CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
 | --target-memory-percentile | Float64 | 0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
@@ -72,7 +73,7 @@ Last updated: 2024-12-17 13:09:18 UTC
 
 # What are the parameters to VPA updater?
 This document is auto-generated from the flag definitions in the VPA updater code.
-Last updated: 2024-12-17 13:09:20 UTC
+Last updated: 2025-01-31 18:07:14 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
