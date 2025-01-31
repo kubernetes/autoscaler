@@ -38,13 +38,13 @@ To enable this feature, set the `--humanize-memory` flag to true when running th
 
 ## CPU Recommendation Rounding
 
-VPA can provide CPU recommendations rounded to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-cpu-millicores` flag in the recommender component.
+VPA can provide CPU recommendations rounded up to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-cpu-millicores` flag in the recommender component.
 
 When enabled, CPU recommendations will be:
-- Rounded to the nearest multiple of the specified millicore value
+- Rounded up to the nearest multiple of the specified millicore value
 - Applied to target, lower bound, and upper bound recommendations
 
-For example, with `--round-cpu-millicores=50`, a CPU recommendation of `79m` would be rounded to `100m`, and a recommendation of `34m` would be rounded to `50m`.
+For example, with `--round-cpu-millicores=50`, a CPU recommendation of `79m` would be rounded up to `100m`, and a recommendation of `34m` would be rounded up to `50m`.
 
 To enable this feature, set the --round-cpu-millicores flag when running the VPA recommender:
 
