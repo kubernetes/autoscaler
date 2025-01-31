@@ -391,12 +391,10 @@ func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
 
 // Fetch automatically discovered ASGs. These ASGs should be unregistered if
 // they no longer exist in AWS.
-func (m *asgCache) buildAsgTags() map[string]string {
-	groupTags := map[string]string{}
+func (m *asgCache) buildAsgTags() []map[string]string {
+	groupTags := []map[string]string{}
 	for _, spec := range m.asgAutoDiscoverySpecs {
-		for k, v := range spec.Tags {
-			groupTags[k] = v
-		}
+		groupTags = append(groupTags, spec.Tags)
 	}
 
 	return groupTags
@@ -433,9 +431,13 @@ func (m *asgCache) regenerate() error {
 
 	refreshTags := m.buildAsgTags()
 	klog.V(4).Infof("Regenerating instance to ASG map for ASG tags: %v", refreshTags)
-	taggedGroups, err := m.awsService.getAutoscalingGroupsByTags(refreshTags)
-	if err != nil {
-		return err
+	taggedGroups := []*autoscaling.Group{}
+	for _, tags := range refreshTags {
+		groups, err := m.awsService.getAutoscalingGroupsByTags(tags)
+		if err != nil {
+			return err
+		}
+		taggedGroups = append(taggedGroups, groups...)
 	}
 
 	groups := append(namedGroups, taggedGroups...)
