@@ -307,25 +307,24 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		// 1. `vpaObjectNamespace` is set and matches the current namespace.
 		// 2. `ignoredNamespaces` is set, but the current namespace is not in the list.
 		// 3. Neither `vpaObjectNamespace` nor `ignoredNamespaces` is set, so all namespaces are included.
-		if feeder.shouldCleanupNamespace(namespace) {
-			feeder.cleanupCheckpointsForNamespace(namespace, allVPAKeys)
-		} else {
+		if !feeder.shouldCleanupNamespace(namespace) {
 			klog.V(3).InfoS("Skipping namespace; it does not meet cleanup criteria", "namespace", namespace, "vpaObjectNamespace", feeder.vpaObjectNamespace, "ignoredNamespaces", feeder.ignoredNamespaces)
+			continue
 		}
+		feeder.cleanupCheckpointsForNamespace(namespace, allVPAKeys)
 	}
 }
 
 func (feeder *clusterStateFeeder) shouldCleanupNamespace(namespace string) bool {
-	// Case 1: Specific namespace explicitly set.
-	if feeder.vpaObjectNamespace == namespace {
-		return true
+	// 1. `vpaObjectNamespace` is set but doesn't match the current namespace.
+	if feeder.vpaObjectNamespace != "" && namespace != feeder.vpaObjectNamespace {
+		return false
 	}
-	// Case 2: Ignored namespaces are defined, and this namespace is not ignored.
-	if len(feeder.ignoredNamespaces) > 0 {
-		return !slices.Contains(feeder.ignoredNamespaces, namespace)
+	// 2. `ignoredNamespaces` is set, and the current namespace is in the list.
+	if len(feeder.ignoredNamespaces) > 0 && slices.Contains(feeder.ignoredNamespaces, namespace) {
+		return false
 	}
-	// Case 3: Default to including all namespaces if no filters are defined.
-	return feeder.vpaObjectNamespace == "" && len(feeder.ignoredNamespaces) == 0
+	return true
 }
 
 func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(namespace string, allVPAKeys map[model.VpaID]bool) {
