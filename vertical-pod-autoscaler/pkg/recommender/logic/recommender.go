@@ -35,7 +35,7 @@ var (
 	lowerBoundMemoryPercentile = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
 	upperBoundMemoryPercentile = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
 	humanizeMemory             = flag.Bool("humanize-memory", false, "Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability.")
-	roundCPUMillicores         = flag.Int("round-cpu-millicores", 1, `CPU recommendation rounding factor in millicores. The CPU value will be rounded to the nearest multiple of this factor.`)
+	roundCPUMillicores         = flag.Int("round-cpu-millicores", 1, `CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
