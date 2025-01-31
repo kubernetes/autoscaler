@@ -255,6 +255,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,
 		IgnoredNamespaces:   ignoredNamespaces,
+		VpaObjectNamespace:  commonFlag.VpaObjectNamespace,
 	}.Make()
 	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
 
