@@ -22,6 +22,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -311,7 +312,10 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 			klog.V(3).InfoS("Skipping namespace; it does not meet cleanup criteria", "namespace", namespace, "vpaObjectNamespace", feeder.vpaObjectNamespace, "ignoredNamespaces", feeder.ignoredNamespaces)
 			continue
 		}
-		feeder.cleanupCheckpointsForNamespace(namespace, allVPAKeys)
+		err := feeder.cleanupCheckpointsForNamespace(namespace, allVPAKeys)
+		if err != nil {
+			klog.ErrorS(err, "error cleanining checkpoints")
+		}
 	}
 }
 
@@ -327,24 +331,23 @@ func (feeder *clusterStateFeeder) shouldCleanupNamespace(namespace string) bool 
 	return true
 }
 
-func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(namespace string, allVPAKeys map[model.VpaID]bool) {
+func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(namespace string, allVPAKeys map[model.VpaID]bool) error {
+	var err error
 	checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		klog.ErrorS(err, "Cannot list VPA checkpoints", "namespace", namespace)
-		return
+		return err
 	}
 	for _, checkpoint := range checkpointList.Items {
 		vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-		exists := allVPAKeys[vpaID]
-		if !exists {
-			err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
-			if err == nil {
-				klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
-			} else {
-				klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
+		if !allVPAKeys[vpaID] {
+			if errFeeder := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{}); errFeeder != nil {
+				err = errors.Wrapf(err, "failed to delete orphaned checkpoint %s", klog.KRef(namespace, checkpoint.Name))
+				continue
 			}
+			klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
 		}
 	}
+	return err
 }
 
 func implicitDefaultRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderSelector) bool {
