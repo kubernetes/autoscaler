@@ -29,6 +29,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
@@ -141,21 +142,9 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		klog.InfoS("Sleeping for up to 15 minutes...")
-
-		maxRetries := 90
-		retryDelay := 10 * time.Second
-		for i := 0; i < maxRetries; i++ {
-			list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
-			if err == nil && len(list.Items) == 0 {
-				break
-			}
-			klog.InfoS("Still waiting...")
-			time.Sleep(retryDelay)
-		}
-
-		list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
+		checkpoints, err := WaitForNumberOfCheckpoints(vpaClientSet, ns, 0)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(list.Items).To(gomega.BeEmpty())
+		gomega.Expect(checkpoints.Items).To(gomega.BeEmpty())
 	})
 })
 
@@ -409,6 +398,167 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(GetHamsterContainerNameByIndex(1)), errMsg)
 	})
+})
+
+const recommendationLoopInterval = 1 * time.Minute
+
+var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	var vpaClientSet vpa_clientset.Interface
+
+	ginkgo.BeforeEach(func() {
+		vpaClientSet = getVpaClientSet(f)
+	})
+
+	ginkgo.It("only provides recommendation to containers that exist when renaming a container", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := NewNHamstersDeployment(f, 1 /*number of containers*/)
+		_ = startDeploymentPods(f, d)
+
+		ginkgo.By("Setting up VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer("*").
+			WithAnnotations(map[string]string{
+				vpa_api_util.VpaPruningGracePeriodAnnotation: "0",
+			}).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for the container")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(GetHamsterContainerNameByIndex(0)))
+
+		ginkgo.By("Renaming the container")
+		newContainerName := "renamed-container"
+		patchRecord := &patchRecord{
+			Op:    "replace",
+			Path:  "/spec/template/spec/containers/0/name",
+			Value: newContainerName,
+		}
+		PatchDeployment(f, d, patchRecord)
+
+		ginkgo.By("Waiting for recommendation to be filled for the renamed container and only the renamed container")
+		time.Sleep(recommendationLoopInterval)
+		vpa, err = WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		errMsg := fmt.Sprintf("%s is the only container in the VPA CR. There should not be any recommendations for %s",
+			newContainerName,
+			GetHamsterContainerNameByIndex(0))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(newContainerName), errMsg)
+	})
+
+	ginkgo.It("only provides recommendation to containers that exist when removing a container + deletes stale checkpoint", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
+		_ = startDeploymentPods(f, d)
+		vpaName := "hamster-vpa"
+
+		ginkgo.By("Setting up VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName(vpaName).
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer("*").
+			WithAnnotations(map[string]string{
+				vpa_api_util.VpaPruningGracePeriodAnnotation: "0",
+			}).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for both containers")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(2))
+
+		ginkgo.By("Waiting for VPA checkpoints for each container (2 checkpoints), sleeping for up to 15 minutes...")
+		checkpoints, err := WaitForNumberOfCheckpoints(vpaClientSet, f.Namespace.Name, 2)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(checkpoints.Items).To(gomega.HaveLen(2))
+
+		ginkgo.By("Removing the second container")
+		patchRecord := &patchRecord{
+			Op:   "remove",
+			Path: "/spec/template/spec/containers/1",
+		}
+		PatchDeployment(f, d, patchRecord)
+
+		ginkgo.By("Waiting for recommendation to be filled for just one container")
+		time.Sleep(recommendationLoopInterval)
+		vpa, err = WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		errMsg := fmt.Sprintf("%s is now the only container in the VPA CR. There should not be any recommendations for %s",
+			GetHamsterContainerNameByIndex(0),
+			GetHamsterContainerNameByIndex(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(GetHamsterContainerNameByIndex(0)), errMsg)
+
+		ginkgo.By("Waiting for the garbage collection of the stale checkpoint, sleeping for up to 15 minutes...")
+		checkpoints, err = WaitForNumberOfCheckpoints(vpaClientSet, f.Namespace.Name, 1)
+		expectedCheckpointName := fmt.Sprintf("%s-%s", vpaName, GetHamsterContainerNameByIndex(0))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(checkpoints.Items).To(gomega.HaveLen(1))
+		gomega.Expect(checkpoints.Items[0].Name).To(gomega.Equal(expectedCheckpointName),
+			fmt.Sprintf("Expected checkpoint name to be %s, got %s", expectedCheckpointName, checkpoints.Items[0].Name))
+	})
+
+	ginkgo.It("only removes a recommendation until after the pruning grace period", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
+		_ = startDeploymentPods(f, d)
+
+		ginkgo.By("Setting up VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer("*").
+			WithAnnotations(map[string]string{
+				vpa_api_util.VpaPruningGracePeriodAnnotation: "3m",
+			}).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for the container")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(2))
+
+		ginkgo.By("Removing the second container")
+		patchRecord := &patchRecord{
+			Op:   "remove",
+			Path: "/spec/template/spec/containers/1",
+		}
+		PatchDeployment(f, d, patchRecord)
+
+		ginkgo.By("Waiting the duration of the grace period, hoping the recommendation is still there, sleeping for 3 minutes...")
+		vpa, err = WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(2))
+
+		ginkgo.By("Waiting for recommendation to be filled for just one container")
+		vpa, err = WaitForVPAMatch(vpaClientSet, vpaCRD, func(thisVpa *vpa_types.VerticalPodAutoscaler) bool {
+			return thisVpa.Status.Recommendation != nil && len(thisVpa.Status.Recommendation.ContainerRecommendations) == 1
+		})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		errMsg := fmt.Sprintf("%s is now the only container in the VPA CR. There should not be any recommendations for %s",
+			GetHamsterContainerNameByIndex(0),
+			GetHamsterContainerNameByIndex(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(GetHamsterContainerNameByIndex(0)), errMsg)
+	})
+
 })
 
 func deleteRecommender(c clientset.Interface) error {
