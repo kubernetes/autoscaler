@@ -11,6 +11,7 @@
   - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
   - [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
   - [Setting the webhook failurePolicy](#setting-the-webhook-failurepolicy)
+  - [Specifying global maximum allowed resources to prevent pods from being unschedulable](#specifying-global-maximum-allowed-resources-to-prevent-pods-from-being-unschedulable)
 
 ## Keeping limit proportional to request
 
@@ -108,3 +109,16 @@ These options cannot be used together and are mutually exclusive.
 It is possible to set the failurePolicy of the webhook to `Fail` by passing `--webhook-failure-policy-fail=true` to the VPA admission controller.
 Please use this option with caution as it may be possible to break Pod creation if there is a failure with the VPA.
 Using it in conjunction with `--ignored-vpa-object-namespaces=kube-system` or `--vpa-object-namespace` to reduce risk.
+
+### Specifying global maximum allowed resources to prevent pods from being unschedulable
+
+The [Known limitations dcoument](./known-limitations.md) outlines that VPA (vpa-recommender in particular) is not aware of the cluster's maximum allocatable and can recommend resources which will not fit even the largest node in the cluster. This issue occurs even when the cluster uses the [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics). The vpa-recommender's resource recommendation can exceed the allocatable of the largest node in the cluster. Hence, pod's will be unschedulable (in `Pending` state) and the pod wouldn't fit the cluster even if a new node is added by the Cluster Autoscaler.
+It is possible to mitigate this issue by specifying the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` flags of the vpa-recommender. These flags represent the global maximum amount of cpu/memory that will be recommended **for a container**. If the VerticalPodAutoscaler already defines a max allowed (`.spec.resourcePolicy.containerPolicies.maxAllowed`) then it takes precedence over the global max allowed. The global max allowed is merged to the VerticalPodAutoscaler's max allowed if VerticalPodAutoscaler's max allowed is specified only for cpu or memory. If the VerticalPodAutoscaler does not specify a max allowed and a global max allowed is specified, then the global max allowed is being used.
+
+The recommendation for computing the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` values for your cluster is to use the largest node's allocatable (`.status.allocatable` field of a node) minus the DaemonSet pods resource requests minus a safety margin:
+```
+<max allowed> = <largest node's allocatable> - <resource requests of DaemonSet pods> - <safety margin>
+```
+
+> [!WARNING]
+> Pay attention that `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` are **container-level** flags. A pod enabling autoscaling for more than one container can theoretically still get unschedulable if the sum of the resource recommendations of the containers exceeds the largest Node's allocatable. In practice, it is not very likely to hit such case as usually a single container in a pod is the main one, the others are sidecars that either do not need autoscaling or do not consume high resource requests.
