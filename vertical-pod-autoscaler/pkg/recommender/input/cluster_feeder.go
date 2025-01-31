@@ -19,6 +19,7 @@ package input
 import (
 	"context"
 	"fmt"
+	"os"
 	"slices"
 	"time"
 
@@ -162,13 +163,20 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	// don't necessarily want to immediately delete them.
 	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
-	indexer, controller := cache.NewIndexerInformer(
-		podListWatch,
-		&apiv1.Pod{},
-		time.Hour,
-		resourceEventHandler,
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-	)
+	informerOptions := cache.InformerOptions{
+		ObjectType:    &apiv1.Pod{},
+		ListerWatcher: podListWatch,
+		Handler:       resourceEventHandler,
+		ResyncPeriod:  time.Hour,
+		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	}
+
+	store, controller := cache.NewInformerWithOptions(informerOptions)
+	indexer, ok := store.(cache.Indexer)
+	if !ok {
+		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
+		os.Exit(255)
+	}
 	podLister := v1lister.NewPodLister(indexer)
 	go controller.Run(stopCh)
 	if !cache.WaitForCacheSync(stopCh, controller.HasSynced) {
