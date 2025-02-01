@@ -1,0 +1,7 @@
+linters:
+  enable:
+    - goimports
+
+linters-settings:
+  goimports:
+    local-prefixes: "k8s.io/autoscaler/vertical-pod-autoscaler"
