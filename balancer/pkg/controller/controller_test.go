@@ -37,10 +37,10 @@ import (
 )
 
 type testContext struct {
-	statusInfo      *BalancerStatusInfo
-	balancerError   *BalancerError
-	input           []balancerapi.Balancer
-	core            *fakeCore
+	statusInfo    *BalancerStatusInfo
+	balancerError *BalancerError
+	input         []balancerapi.Balancer
+	// core            *fakeCore
 	controller      *Controller
 	stop            chan struct{}
 	balancerUpdates chan balancerapi.Balancer
@@ -211,6 +211,7 @@ func TestController(t *testing.T) {
 				tc.err,
 				!tc.updateFailed,
 			)
+			//nolint:errcheck
 			go testContext.controller.Run(1, testContext.stop)
 
 			if !tc.updateFailed {

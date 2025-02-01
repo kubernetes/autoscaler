@@ -49,9 +49,9 @@ type BalancerStatusInfo struct {
 	updated          bool
 }
 
-func newBalancerStatusInfo(replicas int32, updated bool) BalancerStatusInfo {
-	return BalancerStatusInfo{replicasObserved: replicas, updated: updated}
-}
+// func newBalancerStatusInfo(replicas int32, updated bool) BalancerStatusInfo {
+// 	return BalancerStatusInfo{replicasObserved: replicas, updated: updated}
+// }
 
 // core is CoreInferface implementation.
 type core struct {
