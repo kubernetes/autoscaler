@@ -41,7 +41,7 @@ type ProviderConfig struct {
 	ApiSecret   string
 }
 
-func request(ctx context.Context, provider ProviderConfig, method string, path string, body interface{}) (interface{}, error) {
+func request(ctx context.Context, provider ProviderConfig, method string, path string, body interface{}, numRetries int, secondsBetweenRetries int) (interface{}, error) {
 	buf := new(bytes.Buffer)
 	if body != nil {
 		if err := json.NewEncoder(buf).Encode(body); err != nil {
@@ -50,36 +50,48 @@ func request(ctx context.Context, provider ProviderConfig, method string, path s
 	}
 	path = strings.TrimPrefix(path, "/")
 	url := fmt.Sprintf("%s/%s", provider.ApiUrl, path)
-	klog.V(2).Infof("kamatera request: %s %s %s", method, url, buf.String())
-	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s/%s", provider.ApiUrl, path), buf)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("AuthClientId", provider.ApiClientID)
-	req.Header.Add("AuthSecret", provider.ApiSecret)
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
 	var result interface{}
-	err = json.NewDecoder(res.Body).Decode(&result)
-	if err != nil {
-		if res.StatusCode != 200 {
-			return nil, fmt.Errorf("bad status code from Kamatera API: %d", res.StatusCode)
+	var err error
+	for attempt := 0; attempt < numRetries; attempt++ {
+		klog.V(2).Infof("kamatera request: %s %s %s", method, url, buf.String())
+		if attempt > 0 {
+			klog.V(2).Infof("kamatera request retry %d", attempt)
+			time.Sleep(time.Duration(secondsBetweenRetries<<attempt) * time.Second)
 		}
-		return nil, fmt.Errorf("invalid response from Kamatera API: %+v", result)
+		req, e := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s/%s", provider.ApiUrl, path), buf)
+		if e != nil {
+			err = e
+			continue
+		}
+		req.Header.Add("AuthClientId", provider.ApiClientID)
+		req.Header.Add("AuthSecret", provider.ApiSecret)
+		req.Header.Add("Accept", "application/json")
+		req.Header.Add("Content-Type", "application/json")
+		res, e := http.DefaultClient.Do(req)
+		if e != nil {
+			err = e
+			continue
+		}
+		defer res.Body.Close()
+		e = json.NewDecoder(res.Body).Decode(&result)
+		if e != nil {
+			if res.StatusCode != 200 {
+				err = fmt.Errorf("bad status code from Kamatera API: %d", res.StatusCode)
+			} else {
+				err = fmt.Errorf("invalid response from Kamatera API: %+v", result)
+			}
+			continue
+		}
+		if res.StatusCode != 200 {
+			err = fmt.Errorf("error response from Kamatera API (%d): %+v", res.StatusCode, result)
+			continue
+		}
+		break
 	}
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("error response from Kamatera API (%d): %+v", res.StatusCode, result)
-	}
-	return result, nil
+	return result, err
 }
 
-func waitCommand(ctx context.Context, provider ProviderConfig, commandID string) (map[string]interface{}, error) {
+func waitCommand(ctx context.Context, provider ProviderConfig, commandID string, numRetries int, secondsBetweenRetries int) (map[string]interface{}, error) {
 	startTime := time.Now()
 	time.Sleep(2 * time.Second)
 
@@ -90,7 +102,7 @@ func waitCommand(ctx context.Context, provider ProviderConfig, commandID string)
 
 		time.Sleep(2 * time.Second)
 
-		result, e := request(ctx, provider, "GET", fmt.Sprintf("/service/queue?id=%s", commandID), nil)
+		result, e := request(ctx, provider, "GET", fmt.Sprintf("/service/queue?id=%s", commandID), nil, numRetries, secondsBetweenRetries)
 		if e != nil {
 			return nil, e
 		}
@@ -117,7 +129,7 @@ func waitCommand(ctx context.Context, provider ProviderConfig, commandID string)
 	}
 }
 
-func waitCommands(ctx context.Context, provider ProviderConfig, commandIds map[string]string) (map[string]interface{}, error) {
+func waitCommands(ctx context.Context, provider ProviderConfig, commandIds map[string]string, numRetries int, secondsBetweenRetries int) (map[string]interface{}, error) {
 	startTime := time.Now()
 	time.Sleep(2 * time.Second)
 
@@ -136,7 +148,7 @@ func waitCommands(ctx context.Context, provider ProviderConfig, commandIds map[s
 		for id, result := range commandIdsResults {
 			if result == nil {
 				commandId := commandIds[id]
-				result, e := request(ctx, provider, "GET", fmt.Sprintf("/service/queue?id=%s", commandId), nil)
+				result, e := request(ctx, provider, "GET", fmt.Sprintf("/service/queue?id=%s", commandId), nil, numRetries, secondsBetweenRetries)
 				if e != nil {
 					return nil, e
 				}
