@@ -241,67 +241,6 @@ func TestClaimInUse(t *testing.T) {
 	}
 }
 
-func TestClaimReservedForPod(t *testing.T) {
-	pod := &apiv1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "chosenPod", UID: "chosenPodUid"}}
-
-	for _, tc := range []struct {
-		testName     string
-		claim        *resourceapi.ResourceClaim
-		wantReserved bool
-	}{
-		{
-			testName: "claim with no reservations",
-			claim: &resourceapi.ResourceClaim{
-				ObjectMeta: metav1.ObjectMeta{Name: "claim", UID: "claimUid", Namespace: "default"},
-				Status:     resourceapi.ResourceClaimStatus{},
-			},
-			wantReserved: false,
-		},
-		{
-			testName: "claim with some reservations, but none match the pod",
-			claim: &resourceapi.ResourceClaim{
-				ObjectMeta: metav1.ObjectMeta{Name: "claim", UID: "claimUid", Namespace: "default"},
-				Status: resourceapi.ResourceClaimStatus{
-					ReservedFor: []resourceapi.ResourceClaimConsumerReference{
-						{Resource: "pods", Name: "pod1", UID: "pod1Uid"},
-						{Resource: "pods", Name: "pod2", UID: "pod2Uid"},
-						{Resource: "somethingelses", Name: "somethingelse", UID: "somethingelseUid"},
-						{Resource: "pods", Name: "chosenPod", UID: "badUid"},
-						{Resource: "pods", Name: "badName", UID: "chosenPodUid"},
-						{Resource: "badResource", Name: "chosenPod", UID: "chosenPodUid"},
-					},
-				},
-			},
-			wantReserved: false,
-		},
-		{
-			testName: "claim with some reservations, one matches the pod",
-			claim: &resourceapi.ResourceClaim{
-				ObjectMeta: metav1.ObjectMeta{Name: "claim", UID: "claimUid", Namespace: "default"},
-				Status: resourceapi.ResourceClaimStatus{
-					ReservedFor: []resourceapi.ResourceClaimConsumerReference{
-						{Resource: "pods", Name: "pod1", UID: "pod1Uid"},
-						{Resource: "pods", Name: "pod2", UID: "pod2Uid"},
-						{Resource: "somethingelses", Name: "somethingelse", UID: "somethingelseUid"},
-						{Resource: "pods", Name: "chosenPod", UID: "badUid"},
-						{Resource: "pods", Name: "badName", UID: "chosenPodUid"},
-						{Resource: "badResource", Name: "chosenPod", UID: "chosenPodUid"},
-						{Resource: "pods", Name: "chosenPod", UID: "chosenPodUid"},
-					},
-				},
-			},
-			wantReserved: true,
-		},
-	} {
-		t.Run(tc.testName, func(t *testing.T) {
-			reserved := ClaimReservedForPod(tc.claim, pod)
-			if tc.wantReserved != reserved {
-				t.Errorf("ClaimReservedForPod(): unexpected result: want %v, got %v", tc.wantReserved, reserved)
-			}
-		})
-	}
-}
-
 func TestClaimFullyReserved(t *testing.T) {
 	for _, tc := range []struct {
 		testName          string
