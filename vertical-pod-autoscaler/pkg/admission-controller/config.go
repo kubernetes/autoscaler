@@ -26,14 +26,17 @@ import (
 	admissionregistration "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	"k8s.io/klog/v2"
 )
 
 const (
 	webhookConfigName = "vpa-webhook-config"
+	webhookName       = "vpa.k8s.io"
 )
 
-func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struct{}) *tls.Config {
+// MutatingWebhookConfigurationInterface
+func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struct{}, mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface) *tls.Config {
 	var tlsVersion uint16
 	var ciphersuites []uint16
 	reverseCipherMap := make(map[string]uint16)
@@ -68,8 +71,10 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 	}
 	if *cfg.reload {
 		cr := certReloader{
-			tlsCertPath: *cfg.tlsCertFile,
-			tlsKeyPath:  *cfg.tlsPrivateKey,
+			tlsCertPath:           *cfg.tlsCertFile,
+			tlsKeyPath:            *cfg.tlsPrivateKey,
+			clientCaPath:          *cfg.clientCaFile,
+			mutatingWebhookClient: mutatingWebhookClient,
 		}
 		if err := cr.load(); err != nil {
 			klog.Fatal(err)
@@ -153,7 +158,7 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 		},
 		Webhooks: []admissionregistration.MutatingWebhook{
 			{
-				Name:                    "vpa.k8s.io",
+				Name:                    webhookName,
 				AdmissionReviewVersions: []string{"v1"},
 				Rules: []admissionregistration.RuleWithOperations{
 					{
