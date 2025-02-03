@@ -22,9 +22,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )

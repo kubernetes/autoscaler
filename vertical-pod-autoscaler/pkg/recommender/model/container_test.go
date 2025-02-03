@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
