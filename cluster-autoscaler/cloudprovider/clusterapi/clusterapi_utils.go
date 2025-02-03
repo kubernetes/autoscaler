@@ -40,6 +40,7 @@ const (
 	maxPodsKey      = "capacity.cluster-autoscaler.kubernetes.io/maxPods"
 	taintsKey       = "capacity.cluster-autoscaler.kubernetes.io/taints"
 	labelsKey       = "capacity.cluster-autoscaler.kubernetes.io/labels"
+	draDriverKey    = "capacity.cluster-autoscaler.kubernetes.io/dra-driver"
 	// UnknownArch is used if the Architecture is Unknown
 	UnknownArch SystemArchitecture = ""
 	// Amd64 is used if the Architecture is x86_64
@@ -54,6 +55,8 @@ const (
 	DefaultArch = Amd64
 	// scaleUpFromZeroDefaultEnvVar is the name of the env var for the default architecture
 	scaleUpFromZeroDefaultArchEnvVar = "CAPI_SCALE_ZERO_DEFAULT_ARCH"
+	// GpuDeviceType is used if DRA device is GPU
+	GpuDeviceType = "gpu"
 )
 
 var (
@@ -280,6 +283,13 @@ func parseGPUType(annotations map[string]string) string {
 
 func parseMaxPodsCapacity(annotations map[string]string) (resource.Quantity, error) {
 	return parseIntKey(annotations, maxPodsKey)
+}
+
+func parseDRADriver(annotations map[string]string) string {
+	if val, found := annotations[draDriverKey]; found {
+		return val
+	}
+	return ""
 }
 
 func clusterNameFromResource(r *unstructured.Unstructured) string {

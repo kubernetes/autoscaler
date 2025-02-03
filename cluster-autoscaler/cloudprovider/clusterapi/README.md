@@ -223,14 +223,20 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
     capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
     capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk: "100Gi"
-    capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
-    capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
     capacity.cluster-autoscaler.kubernetes.io/maxPods: "200"
+    // Device Plugin
+    capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
+    // Dynamic Resource Allocation (DRA)
+    capacity.cluster-autoscaler.kubernetes.io/dra-driver: "gpu.nvidia.com"
+    // Common in Device Plugin and DRA
+    capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
 ```
 
 *Note* the `maxPods` annotation will default to `110` if it is not supplied.
 This value is inspired by the Kubernetes best practices
 [Considerations for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
+
+*Note* User should select the annotation for GPU either `gpu-type` or `dra-driver` depends on whether using Device Plugin or Dynamic Resource Allocation(DRA). `gpu-count` is a common parameter in both.
 
 #### RBAC changes for scaling from zero
 
