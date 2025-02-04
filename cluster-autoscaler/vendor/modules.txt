@@ -252,6 +252,7 @@ github.com/gardener/machine-controller-manager/pkg/client/informers/externalvers
 github.com/gardener/machine-controller-manager/pkg/client/listers/machine/v1alpha1
 github.com/gardener/machine-controller-manager/pkg/util/provider/cache
 github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes
+github.com/gardener/machine-controller-manager/pkg/util/provider/machineutils
 # github.com/gardener/machine-controller-manager-provider-aws v0.20.0
 ## explicit; go 1.21
 github.com/gardener/machine-controller-manager-provider-aws/pkg/aws/apis

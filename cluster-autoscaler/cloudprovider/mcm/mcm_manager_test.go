@@ -19,6 +19,8 @@ package mcm
 import (
 	"errors"
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machineutils"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/utils/ptr"
 	"maps"
@@ -220,6 +222,87 @@ func TestFilterExtendedResources(t *testing.T) {
 	extendedResources := filterExtendedResources(allResources)
 	t.Logf("TestFilterExtendedResources obtained: %+v", extendedResources)
 	assert.Equal(t, customResources, extendedResources)
+}
+
+func TestComputeScaledownData(t *testing.T) {
+	t.Run("simple", func(t *testing.T) {
+		initialReplicas := int32(2)
+		md := newMachineDeployments(1, initialReplicas, nil, nil, nil)[0]
+		md.Annotations = map[string]string{}
+
+		machineNamesForDeletion := []string{"n1"}
+		data := computeScaleDownData(md, machineNamesForDeletion)
+		assert.Equal(t, createMachinesTriggeredForDeletionAnnotValue(machineNamesForDeletion), data.RevisedMachineDeployment.Annotations[machineutils.TriggerDeletionByMCM])
+		assert.Equal(t, len(machineNamesForDeletion), data.RevisedScaledownAmount)
+		assert.Equal(t, int32(2-len(machineNamesForDeletion)), data.RevisedMachineDeployment.Spec.Replicas)
+	})
+
+	t.Run("single-duplicate", func(t *testing.T) {
+		initialReplicas := 2
+		md := newMachineDeployments(1, int32(initialReplicas), nil, nil, nil)[0]
+		md.Annotations = map[string]string{}
+
+		machineNamesForDeletion := []string{"n1"}
+		data := computeScaleDownData(md, machineNamesForDeletion)
+		assert.Equal(t, createMachinesTriggeredForDeletionAnnotValue(machineNamesForDeletion), data.RevisedMachineDeployment.Annotations[machineutils.TriggerDeletionByMCM])
+		assert.Equal(t, len(machineNamesForDeletion), data.RevisedScaledownAmount)
+
+		expectedReplicas := int32(initialReplicas - len(machineNamesForDeletion))
+		assert.Equal(t, expectedReplicas, data.RevisedMachineDeployment.Spec.Replicas)
+
+		md = data.RevisedMachineDeployment
+		// repeating computeScaleDownData for same machineNamesForDeletion should have 0 RevisedScaledownAmount, empty RevisedToBeDeletedMachineNames, and nil RevisedMachineDeployment
+		data = computeScaleDownData(md, machineNamesForDeletion)
+		assert.Equal(t, 0, data.RevisedScaledownAmount)
+		assert.Empty(t, data.RevisedToBeDeletedMachineNames)
+		assert.Nil(t, data.RevisedMachineDeployment)
+
+	})
+
+	t.Run("multi-duplicates", func(t *testing.T) {
+		initialReplicas := 3
+		md := newMachineDeployments(1, int32(initialReplicas), nil, nil, nil)[0]
+		md.Annotations = map[string]string{}
+
+		machineNamesForDeletion := []string{"n1", "n2"}
+		data := computeScaleDownData(md, machineNamesForDeletion)
+		assert.Equal(t, createMachinesTriggeredForDeletionAnnotValue(machineNamesForDeletion), data.RevisedMachineDeployment.Annotations[machineutils.TriggerDeletionByMCM])
+		assert.Equal(t, len(machineNamesForDeletion), data.RevisedScaledownAmount)
+		expectedReplicas := int32(initialReplicas - len(machineNamesForDeletion))
+		assert.Equal(t, expectedReplicas, data.RevisedMachineDeployment.Spec.Replicas)
+
+		md = data.RevisedMachineDeployment
+		// repeating computeScaleDownData for same machineNamesForDeletion should have 0 RevisedScaledownAmount, empty RevisedToBeDeletedMachineNames, and nil RevisedMachineDeployment
+		data = computeScaleDownData(md, machineNamesForDeletion)
+		assert.Equal(t, 0, data.RevisedScaledownAmount)
+		assert.Empty(t, data.RevisedToBeDeletedMachineNames)
+		assert.Nil(t, data.RevisedMachineDeployment)
+
+	})
+
+	t.Run("overlapping", func(t *testing.T) {
+		initialReplicas := 5
+		md := newMachineDeployments(1, int32(initialReplicas), nil, nil, nil)[0]
+		md.Annotations = map[string]string{}
+
+		machineNamesForDeletion := sets.New("n1", "n2")
+		data := computeScaleDownData(md, machineNamesForDeletion.UnsortedList())
+		assert.Equal(t, createMachinesTriggeredForDeletionAnnotValue(machineNamesForDeletion.UnsortedList()), data.RevisedMachineDeployment.Annotations[machineutils.TriggerDeletionByMCM])
+		assert.Equal(t, len(machineNamesForDeletion), data.RevisedScaledownAmount)
+		expectedReplicas := int32(initialReplicas - len(machineNamesForDeletion))
+		assert.Equal(t, expectedReplicas, data.RevisedMachineDeployment.Spec.Replicas)
+
+		newMachineNamesForDeletion := sets.New("n2", "n3", "n4")
+		md = data.RevisedMachineDeployment
+		data = computeScaleDownData(md, newMachineNamesForDeletion.UnsortedList())
+		assert.NotNil(t, data.RevisedMachineDeployment)
+		uniqueMachinesNamesForDeletion := newMachineNamesForDeletion.Difference(machineNamesForDeletion)
+		assert.Equal(t, uniqueMachinesNamesForDeletion.Len(), data.RevisedScaledownAmount)
+		assert.Equal(t, uniqueMachinesNamesForDeletion, data.RevisedToBeDeletedMachineNames)
+		expectedReplicas = int32(initialReplicas - machineNamesForDeletion.Union(newMachineNamesForDeletion).Len())
+		assert.Equal(t, expectedReplicas, data.RevisedMachineDeployment.Spec.Replicas)
+
+	})
 }
 
 func createSampleInstanceType(instanceTypeName string, customResourceName apiv1.ResourceName, customResourceQuantity resource.Quantity) *instanceType {

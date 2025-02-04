@@ -7,6 +7,7 @@ package mcm
 import (
 	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
+	types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	"testing"
 	"time"
@@ -24,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	customfake "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mcm/fakeclient"
-	deletetaint "k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	appsv1informers "k8s.io/client-go/informers"
 	coreinformers "k8s.io/client-go/informers"
 )
@@ -42,7 +42,7 @@ func newMachineDeployments(
 	labels map[string]string,
 ) []*v1alpha1.MachineDeployment {
 	machineDeployments := make([]*v1alpha1.MachineDeployment, machineDeploymentCount)
-	for i := range machineDeployments {
+	for i := 0; i < machineDeploymentCount; i++ {
 		machineDeployment := &v1alpha1.MachineDeployment{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "machine.sapcloud.io",
@@ -74,7 +74,7 @@ func newMachineSets(
 ) []*v1alpha1.MachineSet {
 
 	machineSets := make([]*v1alpha1.MachineSet, machineSetCount)
-	for i := range machineSets {
+	for i := 0; i < machineSetCount; i++ {
 		ms := &v1alpha1.MachineSet{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "machine.sapcloud.io",
@@ -97,10 +97,9 @@ func newMachine(
 	statusTemplate *v1alpha1.MachineStatus,
 	mdName, msName string,
 	priorityAnnotationValue string,
-	setDeletionTimeStamp,
 	setNodeLabel bool,
 ) *v1alpha1.Machine {
-	m := newMachines(1, providerId, statusTemplate, mdName, msName, []string{priorityAnnotationValue}, []bool{setDeletionTimeStamp})[0]
+	m := newMachines(1, providerId, statusTemplate, mdName, msName, []string{priorityAnnotationValue})[0]
 	m.Name = name
 	m.Spec.ProviderID = providerId
 	if !setNodeLabel {
@@ -109,32 +108,39 @@ func newMachine(
 	return m
 }
 
+func generateNames(prefix string, count int) []string {
+	names := make([]string, count)
+	for i := 0; i < count; i++ {
+		names[i] = fmt.Sprintf("%s-%d", prefix, i+1)
+	}
+	return names
+}
+
 func newMachines(
 	machineCount int,
 	providerIdGenerateName string,
 	statusTemplate *v1alpha1.MachineStatus,
 	mdName, msName string,
 	priorityAnnotationValues []string,
-	setDeletionTimeStamp []bool,
 ) []*v1alpha1.Machine {
 	machines := make([]*v1alpha1.Machine, machineCount)
-
+	machineNames := generateNames("machine", machineCount)
+	nodeNames := generateNames("node", machineCount)
 	currentTime := metav1.Now()
 
-	for i := range machines {
+	for i := 0; i < machineCount; i++ {
 		m := &v1alpha1.Machine{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "machine.sapcloud.io",
 				Kind:       "Machine",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("machine-%d", i+1),
+				Name:      machineNames[i],
 				Namespace: testNamespace,
 				OwnerReferences: []metav1.OwnerReference{
 					{Name: msName},
 				},
 				Labels:            map[string]string{machineDeploymentNameLabel: mdName},
-				Annotations:       map[string]string{machinePriorityAnnotation: priorityAnnotationValues[i]},
 				CreationTimestamp: metav1.Now(),
 			},
 		}
@@ -143,12 +149,12 @@ func newMachines(
 			m.Spec = v1alpha1.MachineSpec{ProviderID: fmt.Sprintf("%s/i%d", providerIdGenerateName, i+1)}
 		}
 
-		m.Labels["node"] = fmt.Sprintf("node-%d", i+1)
-		if setDeletionTimeStamp[i] {
-			m.ObjectMeta.DeletionTimestamp = &currentTime
-		}
+		m.Labels["node"] = nodeNames[i]
 		if statusTemplate != nil {
 			m.Status = *newMachineStatus(statusTemplate)
+			if m.Status.CurrentStatus.Phase == v1alpha1.MachineTerminating {
+				m.DeletionTimestamp = &currentTime
+			}
 		}
 		machines[i] = m
 	}
@@ -158,9 +164,8 @@ func newMachines(
 func newNode(
 	nodeName,
 	providerId string,
-	addToBeDeletedTaint bool,
 ) *corev1.Node {
-	node := newNodes(1, providerId, []bool{addToBeDeletedTaint})[0]
+	node := newNodes(1, providerId)[0]
 	clone := node.DeepCopy()
 	clone.Name = nodeName
 	clone.Spec.ProviderID = providerId
@@ -170,30 +175,20 @@ func newNode(
 func newNodes(
 	nodeCount int,
 	providerIdGenerateName string,
-	addToBeDeletedTaint []bool,
 ) []*corev1.Node {
-
 	nodes := make([]*corev1.Node, nodeCount)
-	for i := range nodes {
-		var taints []corev1.Taint
-		if addToBeDeletedTaint[i] {
-			taints = append(taints, corev1.Taint{
-				Key:    deletetaint.ToBeDeletedTaint,
-				Value:  testTaintValue,
-				Effect: corev1.TaintEffectNoSchedule,
-			})
-		}
+	nodeNames := generateNames("node", nodeCount)
+	for i := 0; i < nodeCount; i++ {
 		node := &corev1.Node{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "appsv1",
 				Kind:       "Node",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name: fmt.Sprintf("node-%d", i+1),
+				Name: nodeNames[i],
 			},
 			Spec: corev1.NodeSpec{
 				ProviderID: fmt.Sprintf("%s/i%d", providerIdGenerateName, i+1),
-				Taints:     taints,
 			},
 		}
 
@@ -287,6 +282,7 @@ func createMcmManager(
 		discoveryOpts: cloudprovider.NodeGroupDiscoveryOptions{
 			NodeGroupSpecs: nodeGroups,
 		},
+		nodeGroups:              make(map[types.NamespacedName]*nodeGroup),
 		deploymentLister:        appsControlSharedInformers.Deployments().Lister(),
 		machineClient:           fakeTypedMachineClient,
 		machineDeploymentLister: machineDeployments.Lister(),
@@ -294,10 +290,11 @@ func createMcmManager(
 		machineLister:           machines.Lister(),
 		machineClassLister:      machineClasses.Lister(),
 		nodeLister:              nodes.Lister(),
+		nodeInterface:           fakeTargetCoreClient.CoreV1().Nodes(),
 		maxRetryTimeout:         5 * time.Second,
 		retryInterval:           1 * time.Second,
 	}
-
+	g.Expect(mcmManager.generateMachineDeploymentMap()).To(gomega.Succeed())
 	hasSyncedCachesFns := []cache.InformerSynced{
 		nodes.Informer().HasSynced,
 		machines.Informer().HasSynced,

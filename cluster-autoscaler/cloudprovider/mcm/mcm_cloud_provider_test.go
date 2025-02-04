@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machineutils"
 	"math"
 	"strings"
 	"testing"
@@ -85,10 +86,11 @@ func TestDeleteNodes(t *testing.T) {
 		node *corev1.Node
 	}
 	type expect struct {
-		machines   []*v1alpha1.Machine
-		mdName     string
-		mdReplicas int32
-		err        error
+		prio1Machines                          []*v1alpha1.Machine
+		mdName                                 string
+		mdReplicas                             int32
+		machinesTriggerDeletionAnnotationValue string
+		err                                    error
 	}
 	type data struct {
 		name   string
@@ -100,42 +102,44 @@ func TestDeleteNodes(t *testing.T) {
 		{
 			"should scale down machine deployment to remove a node",
 			setup{
-				nodes:              newNodes(2, "fakeID", []bool{true, false}),
-				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				nodes:              newNodes(2, "fakeID"),
+				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup1},
 			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				mdName:     "machinedeployment-1",
-				mdReplicas: 1,
-				err:        nil,
+				prio1Machines:                          newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}),
+				mdName:                                 "machinedeployment-1",
+				machinesTriggerDeletionAnnotationValue: createMachinesTriggeredForDeletionAnnotValue(generateNames("machine", 1)),
+				mdReplicas:                             1,
+				err:                                    nil,
 			},
 		},
 		{
 			"should scale down machine deployment to remove a placeholder node",
 			setup{
 				nodes:              nil,
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
+				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup2},
 			},
-			action{node: newNode("node-1", "requested://machine-1", true)},
+			action{node: newNode("node-1", "requested://machine-1")},
 			expect{
-				machines:   newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				mdName:     "machinedeployment-1",
-				mdReplicas: 0,
-				err:        nil,
+				prio1Machines:                          newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}),
+				machinesTriggerDeletionAnnotationValue: createMachinesTriggeredForDeletionAnnotValue(generateNames("machine", 1)),
+				mdName:                                 "machinedeployment-1",
+				mdReplicas:                             0,
+				err:                                    nil,
 			},
 		},
 		{
 			"should not scale down a machine deployment when it is under rolling update",
 			setup{
-				nodes:       newNodes(2, "fakeID", []bool{true, false}),
-				machines:    newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				nodes:       newNodes(2, "fakeID"),
+				machines:    newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}),
 				machineSets: newMachineSets(2, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 2, &v1alpha1.MachineDeploymentStatus{
 					Conditions: []v1alpha1.MachineDeploymentCondition{
@@ -144,19 +148,19 @@ func TestDeleteNodes(t *testing.T) {
 				}, nil, nil),
 				nodeGroups: []string{nodeGroup1},
 			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   nil,
-				mdName:     "machinedeployment-1",
-				mdReplicas: 2,
-				err:        fmt.Errorf("MachineDeployment machinedeployment-1 is under rolling update , cannot reduce replica count"),
+				prio1Machines: nil,
+				mdName:        "machinedeployment-1",
+				mdReplicas:    2,
+				err:           fmt.Errorf("MachineDeployment machinedeployment-1 is under rolling update , cannot reduce replica count"),
 			},
 		},
 		{
-			"should not scale down when machine deployment update call times out and should reset priority of the corresponding machine",
+			"should not scale down when machine deployment update call times out",
 			setup{
-				nodes:              newNodes(2, "fakeID", []bool{true, false}),
-				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				nodes:              newNodes(2, "fakeID"),
+				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup1},
@@ -166,19 +170,18 @@ func TestDeleteNodes(t *testing.T) {
 					},
 				},
 			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
 				mdName:     "machinedeployment-1",
 				mdReplicas: 2,
-				err:        errors.Join(nil, fmt.Errorf("unable to scale in machine deployment machinedeployment-1, Error: %w", errors.New(mdUpdateErrorMsg))),
+				err:        fmt.Errorf("for NodeGroup %q, cannot scale down due to: %w", "machinedeployment-1", errors.New(mdUpdateErrorMsg)),
 			},
 		},
 		{
 			"should scale down when machine deployment update call fails but passes within the timeout period",
 			setup{
-				nodes:              newNodes(2, "fakeID", []bool{true, false}),
-				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				nodes:              newNodes(2, "fakeID"),
+				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup1},
@@ -188,26 +191,26 @@ func TestDeleteNodes(t *testing.T) {
 					},
 				},
 			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				mdName:     "machinedeployment-1",
-				mdReplicas: 1,
-				err:        nil,
+				prio1Machines:                          newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}),
+				machinesTriggerDeletionAnnotationValue: createMachinesTriggeredForDeletionAnnotValue(generateNames("machine", 1)),
+				mdName:                                 "machinedeployment-1",
+				mdReplicas:                             1,
+				err:                                    nil,
 			},
 		},
 		{
 			"should not scale down a machine deployment when the corresponding machine is already in terminating state",
 			setup{
-				nodes:              newNodes(2, "fakeID", []bool{true, false}),
-				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{true, false}),
+				nodes:              newNodes(2, "fakeID"),
+				machines:           newMachines(2, "fakeID", &v1alpha1.MachineStatus{CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineTerminating}}, "machinedeployment-1", "machineset-1", []string{"3", "3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup1},
 			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{true}),
 				mdName:     "machinedeployment-1",
 				mdReplicas: 2,
 				err:        nil,
@@ -216,15 +219,14 @@ func TestDeleteNodes(t *testing.T) {
 		{
 			"should not scale down a machine deployment when the corresponding machine is already in failed state",
 			setup{
-				nodes:              newNodes(2, "fakeID", []bool{true, false}),
-				machines:           newMachines(2, "fakeID", &v1alpha1.MachineStatus{CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed}}, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				nodes:              newNodes(2, "fakeID"),
+				machines:           newMachines(2, "fakeID", &v1alpha1.MachineStatus{CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed}}, "machinedeployment-1", "machineset-1", []string{"3", "3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup1},
 			},
-			action{node: newNodes(1, "fakeID", []bool{false})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   newMachines(2, "fakeID", &v1alpha1.MachineStatus{CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed}}, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
 				mdName:     "machinedeployment-1",
 				mdReplicas: 2,
 				err:        nil,
@@ -233,57 +235,35 @@ func TestDeleteNodes(t *testing.T) {
 		{
 			"should not scale down a machine deployment below the minimum",
 			setup{
-				nodes:              newNodes(1, "fakeID", []bool{true}),
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
+				nodes:              newNodes(1, "fakeID"),
+				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-1"),
 				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup1},
 			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   nil,
-				mdName:     "machinedeployment-1",
-				mdReplicas: 1,
-				err:        fmt.Errorf("min size reached, nodes will not be deleted"),
-			},
-		},
-		{
-			"no scale down of machine deployment if priority of the targeted machine cannot be updated to 1",
-			setup{
-				nodes:              newNodes(2, "fakeID", []bool{true, false}),
-				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
-				machineSets:        newMachineSets(1, "machinedeployment-1"),
-				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
-				nodeGroups:         []string{nodeGroup1},
-				controlMachineFakeResourceActions: &customfake.ResourceActions{
-					Machine: customfake.Actions{
-						Update: customfake.CreateFakeResponse(math.MaxInt32, mcUpdateErrorMsg, 0),
-					},
-				},
-			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
-			expect{
-				machines:   nil,
-				mdName:     "machinedeployment-1",
-				mdReplicas: 2,
-				err:        fmt.Errorf("could not prioritize machine machine-1 for deletion, aborting scale in of machine deployment, Error: %s", mcUpdateErrorMsg),
+				prio1Machines: nil,
+				mdName:        "machinedeployment-1",
+				mdReplicas:    1,
+				err:           fmt.Errorf("min size reached, nodes will not be deleted"),
 			},
 		},
 		{
 			"should not scale down machine deployment if the node belongs to another machine deployment",
 			setup{
-				nodes:              newNodes(2, "fakeID", []bool{true, false}),
-				machines:           newMachines(2, "fakeID", nil, "machinedeployment-2", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				nodes:              newNodes(2, "fakeID"),
+				machines:           newMachines(2, "fakeID", nil, "machinedeployment-2", "machineset-1", []string{"3", "3"}),
 				machineSets:        newMachineSets(1, "machinedeployment-2"),
 				machineDeployments: newMachineDeployments(2, 2, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup2, nodeGroup3},
 			},
-			action{node: newNodes(1, "fakeID", []bool{true})[0]},
+			action{node: newNodes(1, "fakeID")[0]},
 			expect{
-				machines:   nil,
-				mdName:     "machinedeployment-2",
-				mdReplicas: 2,
-				err:        fmt.Errorf("node-1 belongs to a different machinedeployment than machinedeployment-1"),
+				prio1Machines: nil,
+				mdName:        "machinedeployment-2",
+				mdReplicas:    2,
+				err:           fmt.Errorf("node-1 belongs to a different MachineDeployment than %q", "machinedeployment-1"),
 			},
 		},
 	}
@@ -296,7 +276,7 @@ func TestDeleteNodes(t *testing.T) {
 			stop := make(chan struct{})
 			defer close(stop)
 			controlMachineObjects, targetCoreObjects, _ := setupEnv(&entry.setup)
-			m, trackers, hasSyncedCacheFns := createMcmManager(t, stop, testNamespace, nil, controlMachineObjects, targetCoreObjects, nil)
+			m, trackers, hasSyncedCacheFns := createMcmManager(t, stop, testNamespace, entry.setup.nodeGroups, controlMachineObjects, targetCoreObjects, nil)
 			defer trackers.Stop()
 			waitForCacheSync(t, stop, hasSyncedCacheFns)
 
@@ -307,7 +287,7 @@ func TestDeleteNodes(t *testing.T) {
 				trackers.ControlMachine.SetFailAtFakeResourceActions(entry.setup.controlMachineFakeResourceActions)
 			}
 
-			md, err := buildMachineDeploymentFromSpec(entry.setup.nodeGroups[0], m)
+			md, err := buildNodeGroupFromSpec(entry.setup.nodeGroups[0], m)
 			g.Expect(err).To(BeNil())
 
 			err = md.DeleteNodes([]*corev1.Node{entry.action.node})
@@ -321,34 +301,46 @@ func TestDeleteNodes(t *testing.T) {
 			machineDeployment, err := m.machineClient.MachineDeployments(m.namespace).Get(context.TODO(), entry.expect.mdName, metav1.GetOptions{})
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(machineDeployment.Spec.Replicas).To(BeNumerically("==", entry.expect.mdReplicas))
+			g.Expect(machineDeployment.Annotations[machineutils.TriggerDeletionByMCM]).To(Equal(entry.expect.machinesTriggerDeletionAnnotationValue))
 
-			machines, err := m.machineClient.Machines(m.namespace).List(context.TODO(), metav1.ListOptions{
-				LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
-					MatchLabels: map[string]string{"name": md.Name},
-				}),
-			})
-
-			for _, machine := range machines.Items {
-				flag := false
-				for _, entryMachineItem := range entry.expect.machines {
-					if entryMachineItem.Name == machine.Name {
-						g.Expect(machine.Annotations[machinePriorityAnnotation]).To(Equal(entryMachineItem.Annotations[machinePriorityAnnotation]))
-						flag = true
-						break
-					}
-				}
-				if !flag {
-					g.Expect(machine.Annotations[machinePriorityAnnotation]).To(Equal("3"))
-				}
-			}
 		})
 	}
 }
 
+func TestIdempotencyOfDeleteNodes(t *testing.T) {
+	setupObj := setup{
+		nodes:              newNodes(3, "fakeID"),
+		machines:           newMachines(3, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3", "3"}),
+		machineSets:        newMachineSets(1, "machinedeployment-1"),
+		machineDeployments: newMachineDeployments(1, 3, nil, nil, nil),
+		nodeGroups:         []string{nodeGroup1},
+	}
+	g := NewWithT(t)
+	stop := make(chan struct{})
+	defer close(stop)
+	controlMachineObjects, targetCoreObjects, _ := setupEnv(&setupObj)
+	m, trackers, hasSyncedCacheFns := createMcmManager(t, stop, testNamespace, setupObj.nodeGroups, controlMachineObjects, targetCoreObjects, nil)
+	defer trackers.Stop()
+	waitForCacheSync(t, stop, hasSyncedCacheFns)
+	md, err := buildNodeGroupFromSpec(setupObj.nodeGroups[0], m)
+	g.Expect(err).To(BeNil())
+
+	err = md.DeleteNodes(newNodes(1, "fakeID"))
+	g.Expect(err).To(BeNil())
+	err = md.DeleteNodes(newNodes(1, "fakeID"))
+	g.Expect(err).To(BeNil())
+
+	machineDeployment, err := m.machineClient.MachineDeployments(m.namespace).Get(context.TODO(), setupObj.machineDeployments[0].Name, metav1.GetOptions{})
+	g.Expect(err).ToNot(HaveOccurred())
+	g.Expect(machineDeployment.Spec.Replicas).To(BeNumerically("==", 2))
+	g.Expect(machineDeployment.Annotations[machineutils.TriggerDeletionByMCM]).To(Equal(createMachinesTriggeredForDeletionAnnotValue(generateNames("machine", 1))))
+}
+
 func TestRefresh(t *testing.T) {
 	type expect struct {
-		machines []*v1alpha1.Machine
-		err      error
+		prio3Machines                          []string
+		machinesTriggerDeletionAnnotationValue string
+		err                                    error
 	}
 	type data struct {
 		name   string
@@ -359,8 +351,8 @@ func TestRefresh(t *testing.T) {
 		{
 			"should return an error if MCM has zero available replicas",
 			setup{
-				nodes:              newNodes(1, "fakeID", []bool{false}),
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				nodes:              newNodes(1, "fakeID"),
+				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}),
 				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup2},
 				mcmDeployment:      newMCMDeployment(0),
@@ -372,8 +364,8 @@ func TestRefresh(t *testing.T) {
 		{
 			"should return an error if MCM deployment is not found",
 			setup{
-				nodes:              newNodes(1, "fakeID", []bool{false}),
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				nodes:              newNodes(1, "fakeID"),
+				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}),
 				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup2},
 			},
@@ -382,100 +374,31 @@ func TestRefresh(t *testing.T) {
 			},
 		},
 		{
-			"should reset priority of a machine to 3 if machine deployment is not scaled in",
+			"should reset priority of a machine if it is not present in trigger deletion annotation on machine deployment",
 			setup{
-				nodes:              newNodes(1, "fakeID", []bool{false}),
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				nodes:              newNodes(1, "fakeID"),
+				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}),
 				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup2},
 				mcmDeployment:      newMCMDeployment(1),
 			},
 			expect{
-				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
-				err:      nil,
+				prio3Machines: generateNames("machine", 1),
+				err:           nil,
 			},
 		},
 		{
-			"should reset priority of a machine to 3 if machine deployment is not scaled in even if ToBeDeletedTaint is present on the corresponding node",
+			"should update the trigger deletion annotation and remove non-existing machines",
 			setup{
-				nodes:              newNodes(1, "fakeID", []bool{true}),
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
+				nodes:              newNodes(1, "fakeID"),
+				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}),
+				machineDeployments: newMachineDeployments(1, 0, nil, map[string]string{machineutils.TriggerDeletionByMCM: "machine-1,machine-2"}, nil),
 				nodeGroups:         []string{nodeGroup2},
 				mcmDeployment:      newMCMDeployment(1),
 			},
 			expect{
-				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
-				err:      nil,
-			},
-		},
-		{
-			"should NOT skip paused machine deployment",
-			setup{
-				nodes:    newNodes(1, "fakeID", []bool{false}),
-				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				machineDeployments: newMachineDeployments(1, 1, &v1alpha1.MachineDeploymentStatus{
-					Conditions: []v1alpha1.MachineDeploymentCondition{
-						{Type: v1alpha1.MachineDeploymentProgressing, Status: v1alpha1.ConditionUnknown, Reason: machineDeploymentPausedReason},
-					},
-				}, nil, nil),
-				nodeGroups:    []string{nodeGroup2},
-				mcmDeployment: newMCMDeployment(1),
-			},
-			expect{
-				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
-				err:      nil,
-			},
-		},
-		{
-			"should ignore terminating/failed machines in checking if number of annotated machines is more than desired",
-			setup{
-				nodes: newNodes(1, "fakeID", []bool{true}),
-				machines: newMachines(1, "fakeID", &v1alpha1.MachineStatus{
-					CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed},
-				}, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
-				nodeGroups:         []string{nodeGroup2},
-				mcmDeployment:      newMCMDeployment(1),
-			},
-			expect{
-				machines: newMachines(1, "fakeID", &v1alpha1.MachineStatus{
-					CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed},
-				}, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				err: nil,
-			},
-		},
-		{
-			"should not reset priority of a machine to 3 if machine deployment is scaled in",
-			setup{
-				nodes:              newNodes(1, "fakeID", []bool{true}),
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				machineDeployments: newMachineDeployments(1, 0, nil, nil, nil),
-				nodeGroups:         []string{nodeGroup2},
-				mcmDeployment:      newMCMDeployment(1),
-			},
-			expect{
-				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				err:      nil,
-			},
-		},
-		{
-			"priority reset of machine fails",
-			setup{
-				nodes:              newNodes(1, "fakeID", []bool{false}),
-				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
-				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
-				controlMachineFakeResourceActions: &customfake.ResourceActions{
-					Machine: customfake.Actions{
-						Update: customfake.CreateFakeResponse(math.MaxInt32, mcUpdateErrorMsg, 0),
-					},
-				},
-				nodeGroups:    []string{nodeGroup2},
-				mcmDeployment: newMCMDeployment(1),
-			},
-			expect{
-				machines: []*v1alpha1.Machine{newMachine("machine-1", "fakeID-1", nil, "machinedeployment-1", "machineset-1", "1", false, true)},
-				err:      errors.Join(nil, errors.Join(fmt.Errorf("could not reset priority annotation on machine machine-1, Error: %v", mcUpdateErrorMsg))),
+				machinesTriggerDeletionAnnotationValue: createMachinesTriggeredForDeletionAnnotValue(generateNames("machine", 1)),
+				err:                                    nil,
 			},
 		},
 	}
@@ -504,11 +427,6 @@ func TestRefresh(t *testing.T) {
 				g.Expect(err).To(Equal(entry.expect.err))
 			} else {
 				g.Expect(err).To(BeNil())
-			}
-			for _, mc := range entry.expect.machines {
-				machine, err := m.machineClient.Machines(m.namespace).Get(context.TODO(), mc.Name, metav1.GetOptions{})
-				g.Expect(err).To(BeNil())
-				g.Expect(mc.Annotations[machinePriorityAnnotation]).To(Equal(machine.Annotations[machinePriorityAnnotation]))
 			}
 		})
 	}
@@ -554,14 +472,14 @@ func TestNodes(t *testing.T) {
 		{
 			"Correct instances should be returned for machine objects under the machinedeployment",
 			setup{
-				nodes: []*corev1.Node{newNode("node-1", "fakeID-1", false)},
+				nodes: []*corev1.Node{newNode("node-1", "fakeID-1")},
 				machines: func() []*v1alpha1.Machine {
 					allMachines := make([]*v1alpha1.Machine, 0, 5)
-					allMachines = append(allMachines, newMachine("machine-with-registered-node", "fakeID-1", nil, "machinedeployment-1", "", "", false, true))
-					allMachines = append(allMachines, newMachine("machine-with-vm-but-no-node", "fakeID-2", nil, "machinedeployment-1", "", "", false, false))
-					allMachines = append(allMachines, newMachine("machine-with-vm-creating", "", nil, "machinedeployment-1", "", "", false, false))
-					allMachines = append(allMachines, newMachine("machine-with-vm-create-error-out-of-quota", "", &v1alpha1.MachineStatus{LastOperation: v1alpha1.LastOperation{Type: v1alpha1.MachineOperationCreate, State: v1alpha1.MachineStateFailed, ErrorCode: machinecodes.ResourceExhausted.String(), Description: outOfQuotaMachineStatusErrorDescription}}, "machinedeployment-1", "", "", false, false))
-					allMachines = append(allMachines, newMachine("machine-with-vm-create-error-invalid-credentials", "", &v1alpha1.MachineStatus{LastOperation: v1alpha1.LastOperation{Type: v1alpha1.MachineOperationCreate, State: v1alpha1.MachineStateFailed, ErrorCode: machinecodes.Internal.String(), Description: invalidCredentialsMachineStatusErrorDescription}}, "machinedeployment-1", "", "", false, false))
+					allMachines = append(allMachines, newMachine("machine-with-registered-node", "fakeID-1", nil, "machinedeployment-1", "", "", true))
+					allMachines = append(allMachines, newMachine("machine-with-vm-but-no-node", "fakeID-2", nil, "machinedeployment-1", "", "", false))
+					allMachines = append(allMachines, newMachine("machine-with-vm-creating", "", nil, "machinedeployment-1", "", "", false))
+					allMachines = append(allMachines, newMachine("machine-with-vm-create-error-out-of-quota", "", &v1alpha1.MachineStatus{LastOperation: v1alpha1.LastOperation{Type: v1alpha1.MachineOperationCreate, State: v1alpha1.MachineStateFailed, ErrorCode: machinecodes.ResourceExhausted.String(), Description: outOfQuotaMachineStatusErrorDescription}}, "machinedeployment-1", "", "", false))
+					allMachines = append(allMachines, newMachine("machine-with-vm-create-error-invalid-credentials", "", &v1alpha1.MachineStatus{LastOperation: v1alpha1.LastOperation{Type: v1alpha1.MachineOperationCreate, State: v1alpha1.MachineStateFailed, ErrorCode: machinecodes.Internal.String(), Description: invalidCredentialsMachineStatusErrorDescription}}, "machinedeployment-1", "", "", false))
 					return allMachines
 				}(),
 				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
@@ -599,7 +517,7 @@ func TestNodes(t *testing.T) {
 				trackers.ControlMachine.SetFailAtFakeResourceActions(entry.setup.controlMachineFakeResourceActions)
 			}
 
-			md, err := buildMachineDeploymentFromSpec(entry.setup.nodeGroups[0], m)
+			md, err := buildNodeGroupFromSpec(entry.setup.nodeGroups[0], m)
 			g.Expect(err).To(BeNil())
 
 			returnedInstances, err := md.Nodes()
@@ -663,7 +581,7 @@ func TestGetOptions(t *testing.T) {
 				nodeGroups: []string{nodeGroup1},
 			},
 			expect{
-				err: fmt.Errorf("unable to fetch MachineDeployment object machinedeployment-1, Error: machinedeployment.machine.sapcloud.io \"machinedeployment-1\" not found"),
+				err: fmt.Errorf("unable to fetch MachineDeployment object \"machinedeployment-1\", Error: machinedeployment.machine.sapcloud.io \"machinedeployment-1\" not found"),
 			},
 		},
 		{
@@ -751,7 +669,7 @@ func TestGetOptions(t *testing.T) {
 			defer trackers.Stop()
 			waitForCacheSync(t, stop, hasSyncedCacheFns)
 
-			md, err := buildMachineDeploymentFromSpec(entry.setup.nodeGroups[0], m)
+			md, err := buildNodeGroupFromSpec(entry.setup.nodeGroups[0], m)
 			g.Expect(err).To(BeNil())
 
 			options, err := md.GetOptions(ngAutoScalingOpDefaults)
