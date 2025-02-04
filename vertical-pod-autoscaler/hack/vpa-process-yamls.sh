@@ -74,6 +74,10 @@ for i in $COMPONENTS; do
   if [[ ${ACTION} == print ]]; then
     ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh $(script_path $i)
   else
-    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh $(script_path $i) | kubectl ${ACTION} -f - || true
+    EXTRA_FLAGS=""
+    if [[ ${ACTION} == delete ]]; then
+      EXTRA_FLAGS+=" --ignore-not-found"
+    fi
+    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh $(script_path $i) | kubectl ${ACTION} ${EXTRA_FLAGS} -f - || true
   fi
 done
