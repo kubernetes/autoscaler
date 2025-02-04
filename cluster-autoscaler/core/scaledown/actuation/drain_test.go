@@ -437,6 +437,8 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	p4 := BuildTestPod("p4", 100, 0, WithNodeName(n1.Name))
 	e2 := fmt.Errorf("eviction_error: p2")
 	e4 := fmt.Errorf("eviction_error: p4")
+	d4 := fmt.Errorf("deletion_error: p4")
+
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -456,6 +458,22 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 			return true, nil, e4
 		}
 		return true, nil, nil
+	})
+
+	fakeClient.Fake.AddReactor("delete", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		deleteAction := action.(core.DeleteAction)
+		if deleteAction == nil {
+			return false, nil, nil
+		}
+		if deleteAction.GetName() == "p2" {
+			// Simulate successful forceful deletion
+			return true, nil, nil
+		}
+		if deleteAction.GetName() == "p4" {
+			// Simulate forceful deletion error
+			return true, nil, d4
+		}
+		return false, nil, fmt.Errorf("unexpected pod deletion: %s", deleteAction.GetName())
 	})
 
 	options := config.AutoscalingOptions{
@@ -483,18 +501,18 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	assert.Equal(t, *p3, *evictionResults["p3"].Pod)
 	assert.Equal(t, *p4, *evictionResults["p4"].Pod)
 	assert.NoError(t, evictionResults["p1"].Err)
-	assert.Contains(t, evictionResults["p2"].Err.Error(), e2.Error())
+	assert.NoError(t, evictionResults["p2"].Err)
 	assert.NoError(t, evictionResults["p3"].Err)
-	assert.Contains(t, evictionResults["p4"].Err.Error(), e4.Error())
+	assert.Contains(t, evictionResults["p4"].Err.Error(), d4.Error())
 	assert.False(t, evictionResults["p1"].TimedOut)
-	assert.True(t, evictionResults["p2"].TimedOut)
+	assert.False(t, evictionResults["p2"].TimedOut)
 	assert.False(t, evictionResults["p3"].TimedOut)
-	assert.True(t, evictionResults["p4"].TimedOut)
+	assert.False(t, evictionResults["p4"].TimedOut)
 	assert.True(t, evictionResults["p1"].WasEvictionSuccessful())
-	assert.False(t, evictionResults["p2"].WasEvictionSuccessful())
+	assert.True(t, evictionResults["p2"].WasEvictionSuccessful())
 	assert.True(t, evictionResults["p3"].WasEvictionSuccessful())
 	assert.False(t, evictionResults["p4"].WasEvictionSuccessful())
-	assert.Contains(t, r.pods, p1, p3)
+	assert.Contains(t, r.pods, p1, p2, p3)
 }
 
 func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
