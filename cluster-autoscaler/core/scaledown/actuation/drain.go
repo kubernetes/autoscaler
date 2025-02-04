@@ -245,7 +245,11 @@ func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Po
 	}
 	if fullEvictionPod {
 		klog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
-		ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
+		// If eviction failed, forcefully delete the pod
+		if err := forceDeletePod(ctx, podToEvict); err != nil {
+			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: err}
+		}
+		return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
 	}
 	return status.PodEvictionResult{Pod: podToEvict, TimedOut: true, Err: fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)}
 }
@@ -262,6 +266,16 @@ func podsToEvict(nodeInfo *framework.NodeInfo, evictDsByDefault bool) (dsPods, n
 	}
 	dsPodsToEvict := daemonset.PodsToEvict(dsPods, evictDsByDefault)
 	return dsPodsToEvict, nonDsPods
+}
+
+func forceDeletePod(ctx *acontext.AutoscalingContext, pod *apiv1.Pod) error {
+	klog.Infof("Starting force deletion of pod %s", pod.Name)
+	if err := ctx.ClientSet.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{}); err != nil {
+		klog.Errorf("Failed to forcefully delete pod %s, error: %v", pod.Name, err)
+		ctx.Recorder.Eventf(pod, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to forcefully delete pod for ScaleDown")
+		return fmt.Errorf("failed to forcefully delete unevicted pod %s/%s (last error: %v)", pod.Namespace, pod.Name, err)
+	}
+	return nil
 }
 
 type podEvictionGroup struct {
