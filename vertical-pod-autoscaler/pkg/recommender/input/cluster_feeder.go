@@ -308,7 +308,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		// 1. `vpaObjectNamespace` is set and matches the current namespace.
 		// 2. `ignoredNamespaces` is set, but the current namespace is not in the list.
 		// 3. Neither `vpaObjectNamespace` nor `ignoredNamespaces` is set, so all namespaces are included.
-		if !feeder.shouldCleanupNamespace(namespace) {
+		if feeder.shouldIgnoreNamespace(namespace) {
 			klog.V(3).InfoS("Skipping namespace; it does not meet cleanup criteria", "namespace", namespace, "vpaObjectNamespace", feeder.vpaObjectNamespace, "ignoredNamespaces", feeder.ignoredNamespaces)
 			continue
 		}
@@ -319,16 +319,16 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	}
 }
 
-func (feeder *clusterStateFeeder) shouldCleanupNamespace(namespace string) bool {
+func (feeder *clusterStateFeeder) shouldIgnoreNamespace(namespace string) bool {
 	// 1. `vpaObjectNamespace` is set but doesn't match the current namespace.
 	if feeder.vpaObjectNamespace != "" && namespace != feeder.vpaObjectNamespace {
-		return false
+		return true
 	}
 	// 2. `ignoredNamespaces` is set, and the current namespace is in the list.
 	if len(feeder.ignoredNamespaces) > 0 && slices.Contains(feeder.ignoredNamespaces, namespace) {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(namespace string, allVPAKeys map[model.VpaID]bool) error {
@@ -384,7 +384,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 			}
 		}
 
-		if !feeder.shouldCleanupNamespace(vpaCRD.ObjectMeta.Namespace) {
+		if feeder.shouldIgnoreNamespace(vpaCRD.ObjectMeta.Namespace) {
 			klog.V(6).InfoS("Ignoring vpaCRD as this namespace is ignored", "vpaCRD", klog.KObj(vpaCRD))
 			continue
 		}
