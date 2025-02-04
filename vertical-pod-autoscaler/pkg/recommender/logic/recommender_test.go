@@ -41,7 +41,7 @@ func TestMinResourcesApplied(t *testing.T) {
 		"container-1": &model.AggregateContainerState{},
 	}
 
-	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap)
+	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap, len(containerNameToAggregateStateMap))
 	assert.Equal(t, model.CPUAmountFromCores(*podMinCPUMillicores/1000), recommendedResources["container-1"].Target[model.ResourceCPU])
 	assert.Equal(t, model.MemoryAmountFromBytes(*podMinMemoryMb*1024*1024), recommendedResources["container-1"].Target[model.ResourceMemory])
 }
@@ -64,7 +64,7 @@ func TestMinResourcesSplitAcrossContainers(t *testing.T) {
 		"container-2": &model.AggregateContainerState{},
 	}
 
-	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap)
+	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap, len(containerNameToAggregateStateMap))
 	assert.Equal(t, model.CPUAmountFromCores((*podMinCPUMillicores/1000)/2), recommendedResources["container-1"].Target[model.ResourceCPU])
 	assert.Equal(t, model.CPUAmountFromCores((*podMinCPUMillicores/1000)/2), recommendedResources["container-2"].Target[model.ResourceCPU])
 	assert.Equal(t, model.MemoryAmountFromBytes((*podMinMemoryMb*1024*1024)/2), recommendedResources["container-1"].Target[model.ResourceMemory])
@@ -91,7 +91,7 @@ func TestControlledResourcesFiltered(t *testing.T) {
 		},
 	}
 
-	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap)
+	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap, len(containerNameToAggregateStateMap))
 	assert.Contains(t, recommendedResources[containerName].Target, model.ResourceMemory)
 	assert.Contains(t, recommendedResources[containerName].LowerBound, model.ResourceMemory)
 	assert.Contains(t, recommendedResources[containerName].UpperBound, model.ResourceMemory)
@@ -120,7 +120,7 @@ func TestControlledResourcesFilteredDefault(t *testing.T) {
 		},
 	}
 
-	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap)
+	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap, len(containerNameToAggregateStateMap))
 	assert.Contains(t, recommendedResources[containerName].Target, model.ResourceMemory)
 	assert.Contains(t, recommendedResources[containerName].LowerBound, model.ResourceMemory)
 	assert.Contains(t, recommendedResources[containerName].UpperBound, model.ResourceMemory)
