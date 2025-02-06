@@ -519,15 +519,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return false, nil
 	}
 
-	forceScaleUp := a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp)
+	shouldScaleUp := true
 
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		klog.V(1).Info("No unschedulable pods")
-	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal && !forceScaleUp {
-		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
-		klog.V(1).Infof("Max total nodes in cluster reached: %v. Current number of ready nodes: %v", a.MaxNodesTotal, len(readyNodes))
-	} else if len(a.BypassedSchedulers) == 0 && !forceScaleUp && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
+		shouldScaleUp = false
+	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
+		scaleUpStatus.Result = status.ScaleUpLimitedByMaxNodesTotal
+		klog.Warningf("Max total nodes in cluster reached: %v. Current number of ready nodes: %v", a.MaxNodesTotal, len(readyNodes))
+		shouldScaleUp = false
+	} else if len(a.BypassedSchedulers) == 0 && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
@@ -537,7 +539,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		a.processorCallbacks.DisableScaleDownForLoop()
 		scaleUpStatus.Result = status.ScaleUpInCooldown
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
-	} else {
+		shouldScaleUp = false
+	}
+
+	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
 		scaleUpStart := preScaleUp()
 		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, false)
 		if exit, err := postScaleUp(scaleUpStart); exit {
