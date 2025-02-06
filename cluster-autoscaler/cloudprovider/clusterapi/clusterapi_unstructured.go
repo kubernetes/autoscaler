@@ -20,18 +20,21 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation"
 	klog "k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 )
 
 type unstructuredScalableResource struct {
@@ -297,6 +300,46 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	return capacity, nil
 }
 
+func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([]*resourceapi.ResourceSlice, error) {
+	driver := r.InstanceDRADriver()
+	gpuCount, err := r.InstanceGPUCapacityAnnotation()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*resourceapi.ResourceSlice
+	if driver != "" && !gpuCount.IsZero() {
+		resourceslice := &resourceapi.ResourceSlice{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: nodeName + "-" + driver,
+			},
+			Spec: resourceapi.ResourceSliceSpec{
+				Driver:   driver,
+				NodeName: nodeName,
+				Pool: resourceapi.ResourcePool{
+					Name: nodeName,
+				},
+			},
+		}
+		for i := 0; i < int(gpuCount.Value()); i++ {
+			device := resourceapi.Device{
+				Name: "gpu-" + strconv.Itoa(i),
+				Basic: &resourceapi.BasicDevice{
+					Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
+						"type": {
+							StringValue: ptr.To(GpuDeviceType),
+						},
+					},
+				},
+			}
+			resourceslice.Spec.Devices = append(resourceslice.Spec.Devices, device)
+		}
+		result = append(result, resourceslice)
+		return result, nil
+	}
+	return nil, nil
+}
+
 func (r unstructuredScalableResource) InstanceEphemeralDiskCapacityAnnotation() (resource.Quantity, error) {
 	return parseEphemeralDiskCapacity(r.unstructured.GetAnnotations())
 }
@@ -319,6 +362,10 @@ func (r unstructuredScalableResource) InstanceGPUTypeAnnotation() string {
 
 func (r unstructuredScalableResource) InstanceMaxPodsCapacityAnnotation() (resource.Quantity, error) {
 	return parseMaxPodsCapacity(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceDRADriver() string {
+	return parseDRADriver(r.unstructured.GetAnnotations())
 }
 
 func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
