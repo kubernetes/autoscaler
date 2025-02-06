@@ -89,8 +89,17 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 
 	nodeDeleteResult := ds.prepareNodeForDeletion(nodeInfo, drain)
 	if nodeDeleteResult.Err != nil {
-		ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult)
-		return
+		if nodeDeleteResult.ResultType == status.NodeDeleteErrorFailedToEvictPods {
+			klog.Infof("Starting force deletion of node %s", nodeInfo.Node().Name)
+			if err := nodeGroup.ForceDeleteNodes([]*apiv1.Node{nodeInfo.Node()}); err != nil {
+				focrefulNodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
+				ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "forceful node deletion failed", focrefulNodeDeleteResult)
+				return
+			}
+		} else {
+			ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult)
+			return
+		}
 	}
 
 	ds.addToBatcher(nodeInfo, nodeGroup, batchSize, drain, opts.ZeroOrMaxNodeScaling)

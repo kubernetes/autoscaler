@@ -621,7 +621,7 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) 
 					},
 				},
 			},
-			wantDeletedNodes: []string{"test-node-1", "test-node-3"},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1", "test-node-2", "test-node-3"},
 			wantDeletedPods: []string{
 				"test-node-0-pod-2",
 				"test-node-1-pod-0", "test-node-1-pod-1", "test-node-1-pod-2",
@@ -631,39 +631,21 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) 
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"test-node-0": {
 					{toBeDeletedTaint},
-					{},
 				},
 				"test-node-1": {
 					{toBeDeletedTaint},
 				},
 				"test-node-2": {
 					{toBeDeletedTaint},
-					{},
 				},
 				"test-node-3": {
 					{toBeDeletedTaint},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"test-node-0": {
-					ResultType: status.NodeDeleteErrorFailedToEvictPods,
-					Err:        cmpopts.AnyError,
-					PodEvictionResults: map[string]status.PodEvictionResult{
-						"test-node-0-pod-0": {Pod: removablePod("test-node-0-pod-0", "test-node-0"), Err: cmpopts.AnyError, TimedOut: true},
-						"test-node-0-pod-1": {Pod: removablePod("test-node-0-pod-1", "test-node-0"), Err: cmpopts.AnyError, TimedOut: true},
-						"test-node-0-pod-2": {Pod: removablePod("test-node-0-pod-2", "test-node-0")},
-					},
-				},
+				"test-node-0": {ResultType: status.NodeDeleteOk},
 				"test-node-1": {ResultType: status.NodeDeleteOk},
-				"test-node-2": {
-					ResultType: status.NodeDeleteErrorFailedToEvictPods,
-					Err:        cmpopts.AnyError,
-					PodEvictionResults: map[string]status.PodEvictionResult{
-						"test-node-2-pod-0": {Pod: removablePod("test-node-2-pod-0", "test-node-2")},
-						"test-node-2-pod-1": {Pod: removablePod("test-node-2-pod-1", "test-node-2"), Err: cmpopts.AnyError, TimedOut: true},
-						"test-node-2-pod-2": {Pod: removablePod("test-node-2-pod-2", "test-node-2")},
-					},
-				},
+				"test-node-2": {ResultType: status.NodeDeleteOk},
 				"test-node-3": {ResultType: status.NodeDeleteOk},
 			},
 		},
