@@ -32,7 +32,7 @@ func setConditionsBasedOnError(balancer *v1alpha1.Balancer, err *BalancerError, 
 	} else {
 		balancer.Status.Conditions = setConditionInList(balancer.Status.Conditions,
 			now, v1alpha1.BalancerConditionRunning, metav1.ConditionFalse,
-			string(err.phase), err.Error())
+			string(err.phase), "%s", err.Error())
 	}
 }
 

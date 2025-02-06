@@ -19,8 +19,9 @@ package main
 import (
 	"context"
 	"flag"
-	"k8s.io/klog/v2"
 	"time"
+
+	"k8s.io/klog/v2"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	balancerclientset "k8s.io/autoscaler/balancer/pkg/client/clientset/versioned"
@@ -91,6 +92,9 @@ func main() {
 
 	scaleKindResolver := scaleclient.NewDiscoveryScaleKindResolver(kubeClient.Discovery())
 	scaleClient, err := scaleclient.NewForConfig(cfg, restMapper, dynamic.LegacyAPIPathResolverFunc, scaleKindResolver)
+	if err != nil {
+		klog.Fatalf("Error creaing ScalesGetter: %s", err.Error())
+	}
 
 	podInformer := kubeInformerFactory.Core().V1().Pods()
 	core := controller.NewCore(controller.NewScaleClient(context.TODO(), scaleClient, restMapper), podInformer)
@@ -105,5 +109,8 @@ func main() {
 	kubeInformerFactory.Start(stopCh)
 	balancerInformerFactory.Start(stopCh)
 
-	controller.Run(concurrency, stopCh)
+	err = controller.Run(concurrency, stopCh)
+	if err != nil {
+		klog.Fatalf("Error: ", err.Error())
+	}
 }
