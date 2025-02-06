@@ -63,6 +63,7 @@ func (m *manager) refresh() error {
 	servers, err := m.client.ListServers(
 		context.Background(),
 		m.instances,
+		m.config.filterNamePrefix,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to get list of Kamatera servers from Kamatera API: %v", err)
