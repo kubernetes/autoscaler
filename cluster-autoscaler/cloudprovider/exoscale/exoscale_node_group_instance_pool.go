@@ -217,9 +217,9 @@ func (n *instancePoolNodeGroup) GetOptions(_ config.NodeGroupAutoscalingOptions)
 
 func (n *instancePoolNodeGroup) waitUntilRunning(ctx context.Context) error {
 	return pollCmd(ctx, func() (bool, error) {
-		instancePool, err := n.m.client.GetInstancePool(ctx, n.m.zone, n.Id())
+		instancePool, err := n.m.client.GetInstancePool(ctx, n.m.zone, *n.instancePool.ID)
 		if err != nil {
-			errorf("unable to retrieve Instance Pool %s: %s", n.Id(), err)
+			errorf("unable to retrieve Instance Pool %s: %s", *n.instancePool.ID, err)
 			return false, err
 		}
 
