@@ -1,10 +1,9 @@
 # Vertical Pod Autoscaler Flags
 This document contains the flags for all VPA components.
 
-Extracting flags for admission-controller...
 # What are the parameters to VPA admission-controller?
 This document is auto-generated from the flag definitions in the VPA admission-controller code.
-Last updated: 2025-02-06 15:48:22 UTC
+Last updated: 2025-02-06 15:56:04 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
@@ -44,10 +43,9 @@ Last updated: 2025-02-06 15:48:22 UTC
 | --webhook-service | string | "vpa-webhook" |                 Kubernetes service under which webhook is registered. Used when registerByURL is set to false. |
 | --webhook-timeout-seconds | int | 30 |            Timeout in seconds that the API server should wait for this webhook to respond before failing. |
 
-Extracting flags for recommender...
 # What are the parameters to VPA recommender?
 This document is auto-generated from the flag definitions in the VPA recommender code.
-Last updated: 2025-02-06 15:48:22 UTC
+Last updated: 2025-02-06 15:56:04 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
@@ -121,10 +119,9 @@ Last updated: 2025-02-06 15:48:22 UTC
 | --vmodule | moduleSpec |  |                                   comma-separated list of pattern=N settings for file-filtered logging |
 | --vpa-object-namespace | string |  |                          Namespace to search for VPA objects. Empty means all namespaces will be used. |
 
-Extracting flags for updater...
 # What are the parameters to VPA updater?
 This document is auto-generated from the flag definitions in the VPA updater code.
-Last updated: 2025-02-06 15:48:23 UTC
+Last updated: 2025-02-06 15:56:05 UTC
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|

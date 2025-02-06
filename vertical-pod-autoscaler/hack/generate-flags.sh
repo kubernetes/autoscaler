@@ -13,8 +13,6 @@ extract_flags() {
     local binary=$1
     local component=$2
     
-    echo "Extracting flags for ${component}..."
-    
     if [ ! -f "$binary" ]; then
         echo "Error: Binary not found for ${component} at ${binary}"
         return 1
@@ -39,7 +37,6 @@ extract_flags() {
 }
 
 # Build components
-echo "Building components..."
 pushd "${SCRIPT_ROOT}" >/dev/null
 for component in "${COMPONENTS[@]}"; do
     echo "Building ${component}..."
