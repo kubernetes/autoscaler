@@ -50,15 +50,16 @@ type injector interface {
 }
 
 type provReqProcessor struct {
-	now        func() time.Time
-	maxUpdated int
-	client     *provreqclient.ProvisioningRequestClient
-	injector   injector
+	now                                  func() time.Time
+	maxUpdated                           int
+	client                               *provreqclient.ProvisioningRequestClient
+	injector                             injector
+	checkCapacityProvisioningClassPrefix string
 }
 
 // NewProvReqProcessor return ProvisioningRequestProcessor.
-func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient) *provReqProcessor {
-	return &provReqProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client, injector: scheduling.NewHintingSimulator()}
+func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient, checkCapacityProvisioningClassPrefix string) *provReqProcessor {
+	return &provReqProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client, injector: scheduling.NewHintingSimulator(), checkCapacityProvisioningClassPrefix: checkCapacityProvisioningClassPrefix}
 }
 
 // Refresh implements loop.Observer interface and will be run at the start
@@ -84,7 +85,7 @@ func (p *provReqProcessor) refresh(provReqs []*provreqwrapper.ProvisioningReques
 		if len(expiredProvReq) >= p.maxUpdated {
 			break
 		}
-		if ok, found := provisioningrequest.SupportedProvisioningClasses[provReq.Spec.ProvisioningClassName]; !ok || !found {
+		if !provisioningrequest.SupportedProvisioningClass(provReq.Spec.ProvisioningClassName, p.checkCapacityProvisioningClassPrefix) {
 			continue
 		}
 		conditions := provReq.Status.Conditions
@@ -144,7 +145,7 @@ func (p *provReqProcessor) bookCapacity(ctx *context.AutoscalingContext) error {
 	}
 	podsToCreate := []*apiv1.Pod{}
 	for _, provReq := range provReqs {
-		if !conditions.ShouldCapacityBeBooked(provReq) {
+		if !conditions.ShouldCapacityBeBooked(provReq, p.checkCapacityProvisioningClassPrefix) {
 			continue
 		}
 		pods, err := provreq_pods.PodsForProvisioningRequest(provReq)
