@@ -424,6 +424,20 @@ func TestGetContainersResources(t *testing.T) {
 			addAll:           true,
 		},
 		{
+			name: "CPU only recommendation, only CPU request and limit set, ContainerControlledValuesRequestOnly",
+			container: test.Container().WithName("container").
+				WithCPURequest(resource.MustParse("1")).
+				WithCPULimit(resource.MustParse("10")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().WithContainer("container").
+				WithControlledValues("container", vpa_types.ContainerControlledValuesRequestsOnly).
+				WithTargetResource(apiv1.ResourceCPU, "2").
+				Get(),
+			expectedCPU:      mustParseResourcePointer("2"),
+			expectedCPULimit: mustParseResourcePointer("10"),
+			addAll:           true,
+		},
+		{
 			name:             "Memory only recommendation, request and limits set",
 			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).WithCPULimit(resource.MustParse("10")).WithMemLimit(resource.MustParse("10M")).Get(),
 			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
@@ -454,6 +468,20 @@ func TestGetContainersResources(t *testing.T) {
 			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
 			expectedMem:      mustParseResourcePointer("2M"),
 			expectedMemLimit: mustParseResourcePointer("20M"),
+			addAll:           true,
+		},
+		{
+			name: "Memory only recommendation, only memory request and limit set, ContainerControlledValuesRequestOnly",
+			container: test.Container().WithName("container").
+				WithMemRequest(resource.MustParse("1M")).
+				WithMemLimit(resource.MustParse("10M")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().WithContainer("container").
+				WithControlledValues("container", vpa_types.ContainerControlledValuesRequestsOnly).
+				WithTargetResource(apiv1.ResourceMemory, "2M").
+				Get(),
+			expectedMem:      mustParseResourcePointer("2M"),
+			expectedMemLimit: mustParseResourcePointer("10M"),
 			addAll:           true,
 		},
 		{

@@ -81,6 +81,13 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		// If the recommendation only contains CPU or Memory (if the VPA was configured this way), we need to make sure we "backfill" the other.
 		// Only do this when the addAll flag is true.
 		if addAll {
+			if resources[i].Requests == nil {
+				resources[i].Requests = core.ResourceList{}
+			}
+			if resources[i].Limits == nil {
+				resources[i].Limits = core.ResourceList{}
+			}
+
 			cpuRequest, hasCpuRequest := container.Resources.Requests[core.ResourceCPU]
 			if _, ok := resources[i].Requests[core.ResourceCPU]; !ok && hasCpuRequest {
 				resources[i].Requests[core.ResourceCPU] = cpuRequest
