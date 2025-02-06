@@ -38,6 +38,11 @@ var (
 	roundCPUMillicores         = flag.Int("round-cpu-millicores", 1, `CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.`)
 )
 
+// GetHumanizeMemory returns the value of the HumanizeMemory flag.
+func GetHumanizeMemory() bool {
+	return *humanizeMemory
+}
+
 // PodResourceRecommender computes resource recommendation for a Vpa object.
 type PodResourceRecommender interface {
 	GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources
