@@ -41,11 +41,10 @@ extract_flags() {
 
     $binary --help 2>&1 | grep -E '^\s*-' | while read -r line; do
         flag=$(echo "$line" | awk '{print $1}' | sed 's/^-*//;s/=.*$//')
-        type=$(echo "$line" | awk '{print $2}' | sed 's/[()]//g')
         default=$(echo "$line" | sed -n 's/.*default \([^)]*\).*/\1/p')
         description=$(echo "$line" | sed -E 's/^\s*-[^[:space:]]+ [^[:space:]]+ //;s/ \(default.*\)//')
         
-        echo "| --${flag} | ${type} | ${default} | ${description} |"
+        echo "| --${flag} | ${default} | ${description} |"
     done
     echo
 }
