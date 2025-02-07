@@ -36,8 +36,8 @@ extract_flags() {
     echo "This document is auto-generated from the flag definitions in the VPA ${component} code."
     echo "Last updated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
     echo
-    echo "| Flag | Type | Default | Description |"
-    echo "|------|------|---------|-------------|"
+    echo "| Flag | Default | Description |"
+    echo "|------|---------|-------------|"
 
     $binary --help 2>&1 | grep -E '^\s*-' | while read -r line; do
         flag=$(echo "$line" | awk '{print $1}' | sed 's/^-*//;s/=.*$//')

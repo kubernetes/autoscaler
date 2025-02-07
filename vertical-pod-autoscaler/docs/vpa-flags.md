@@ -3,10 +3,10 @@ This document contains the flags for all VPA components.
 
 # What are the parameters to VPA admission-controller?
 This document is auto-generated from the flag definitions in the VPA admission-controller code.
-Last updated: 2025-02-07 10:08:11 UTC
+Last updated: 2025-02-07 10:10:38 UTC
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
+| Flag | Default | Description |
+|------|---------|-------------|
 | --add-dir-header |  | --add-dir-header                         If true, adds the file directory to the header of the log messages |
 | --address | ":8944" |                         The address to expose Prometheus metrics. |
 | --alsologtostderr |  | --alsologtostderr                        log to standard error as well as files (no effect when -logtostderr=true) |
@@ -45,10 +45,10 @@ Last updated: 2025-02-07 10:08:11 UTC
 
 # What are the parameters to VPA recommender?
 This document is auto-generated from the flag definitions in the VPA recommender code.
-Last updated: 2025-02-07 10:08:11 UTC
+Last updated: 2025-02-07 10:10:38 UTC
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
+| Flag | Default | Description |
+|------|---------|-------------|
 | --add-dir-header |  | --add-dir-header                                       If true, adds the file directory to the header of the log messages |
 | --address | ":8942" |                                       The address to expose Prometheus metrics. |
 | --alsologtostderr |  | --alsologtostderr                                      log to standard error as well as files (no effect when -logtostderr=true) |
@@ -121,10 +121,10 @@ Last updated: 2025-02-07 10:08:11 UTC
 
 # What are the parameters to VPA updater?
 This document is auto-generated from the flag definitions in the VPA updater code.
-Last updated: 2025-02-07 10:08:12 UTC
+Last updated: 2025-02-07 10:10:38 UTC
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
+| Flag | Default | Description |
+|------|---------|-------------|
 | --add-dir-header |  | --add-dir-header                                                  If true, adds the file directory to the header of the log messages |
 | --address | ":8943" |                                                  The address to expose Prometheus metrics. |
 | --alsologtostderr |  | --alsologtostderr                                                 log to standard error as well as files (no effect when -logtostderr=true) |
