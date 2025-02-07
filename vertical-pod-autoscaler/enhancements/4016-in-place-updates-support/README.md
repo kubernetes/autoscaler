@@ -17,80 +17,125 @@
 
 ## Summary
 
-
 VPA applies its recommendations with a mutating webhook, during pod creation. It can also evict
-pods expecting that it will apply the recommendation when the pod is recreated. This is a
-disruptive process so VPA has some mechanism to avoid too frequent disruptive updates. 
+pods expecting that it will apply the recommendation when the pod is recreated. Today, this process
+is very disruptive as any changes in recommendations requires a pod to be recreated.
 
-This proposal allows VPA to apply its recommendations more frequently, with less disruption by
-using the
-[in-place update feature] which is an alpha feature [available in Kubernetes 1.27.] This proposal enables only core uses
-of in place updates in VPA with intention of gathering more feedback. Any more advanced uses of in place updates in VPA
-(like applying different recommendations during pod initialization) will be introduced as separate enhancement
-proposals.
+We can instead reduce the amount of disruption by leveraging the [in-place update feature] which is
+currently an [alpha feature since 1.27] and graduating to [beta in 1.33].
+
+This proposal enables only core uses of in place updates in VPA with intention of providing the
+foundational pieces. Further advanced uses of in place updates in VPA (like applying different
+recommendations during pod initialization or providing more frequent smaller updates) will be
+introduced as separate enhancement proposals.
 
 [in-place update feature]: https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
-[available in Kubernetes 1.27.]: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#api-change-3
+[alpha feature since 1.27]: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#api-change-3
+[beta in 1.33]: https://github.com/orgs/kubernetes/projects/178/views/1
+
+### A Note On Disruptions {#disruptions}
+
+It is important to note that **VPA cannot guarantee NO disruptions**. This is because the
+underlying container runtime is responsible for actuating the resize operation and there are no
+guarantees provided (see [this thread]for more information).
+
+This proposal therefore focuses on *reducing* disruptions while still harnessing the benefits of
+VPA.
+
+[this thread]: https://github.com/kubernetes/autoscaler/issues/7722#issue-2796215055
 
 ### Goals
 
-* Allow VPA to actuate without disruption,
-* Allow VPA to actuate more frequently, when it can actuate without disruption,
-* Allow VPA to actuate in situations where actuation by eviction doesn't work.
+* Allow VPA to actuate with reduced disruption.
+* Allow VPA to actuate more frequently.
+* Allow VPA to actuate in situations where actuation by eviction is not desirable.
 
 ### Non-Goals
 
+* Allow VPA to operate with NO disruptions, see the [note above](#disruptions).
 * Improved handling of injected sidecars
   * Separate AEP will improve VPAs handling of injected sidecars.
 
 ## Proposal
 
-Add new supported values of [`UpdateMode`]:
+Add a new supported value of [`UpdateMode`]:
 
-* `InPlaceOnly` and
-* `InPlaceOrRecreate`.
+* `InPlaceOrRecreate`
+
+Here we specify `OrRecreate` to make sure the user explicitly knows that the container may be
+restarted.
 
 [`UpdateMode`]: https://github.com/kubernetes/autoscaler/blob/71b489f5aec3899157b37472cdf36a1de223d011/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124
 
 ## Context
 
-[In-place update of pod resources KEP] is available in alpha in [Kubernetes 1.27]. The feature allows changing container
-resources while the container is running. It also adds [`ResizePolicy`] field to Container. This field indicates for an
-individual resource if a container needs to be restarted by kubelet when the resource is changed. For example it may be
-the case that a Container automatically adapts to a change in CPU, but needs to be restarted for a change in Memory to
-take effect.
+[In-place update of pod resources KEP] is available in alpha in 1.27 and graduating to beta in
+1.33. The feature allows changing container resources while the container is running. It adds
+two key features:
+
+* A [`/resize` subresource] that can be used to mutate the `Pod.Spec.Containers[i].Resources`
+  field.
+* A [`ResizePolicy`] field to Container. This field allows to the user to specify the behavior when
+  modifying a resource value. Currently it has two modes:
+  - `NotRequired` (default) which indicates to the container runtime that it should try to resize
+    the container without restarting. However, it does not guarantee that a restart will not
+    happen.
+  - `RestartContainer` which indicates that any mutation to the resource requires a restart (for
+    example, this is important for Java apps using the `-xmxN` which are unable to resize memory
+    without restarting).
+
+Note that resize operations will NOT change the pod's quality of service (QoS) class.
 
 [In-place update of pod resources KEP]: https://github.com/kubernetes/enhancements/issues/1287
-[Kubernetes 1.27]: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#api-change-3
-[`ResizePolicy`]: https://github.com/kubernetes/api/blob/8360d82aecbc72aa039281a394ebed2eaf0c0ccc/core/v1/types.go#L2448
+[`/resize` subresource]:https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources#api-changes
+[`ResizePolicy`]: https://github.com/kubernetes/api/blob/4dccc5e86b957cea946a63c4f052ee7dec3946ce/core/v1/types.go#L2636
 
 ## Design Details
 
-In the update modes existing before (`Initial` and `Recreate`) only admission controller was changing pod spec (updater
-was responsible for evicting pods so that admission controller could change them during admission).
+Today, only the VPA admission controller is responsible for changing the pod spec.
 
-In the newly added `InPlaceOnly` and `InPlaceOrRecreate` modes VPA Updater will execute in-place updates (which change
-pod spec without involving admission controller).
+The VPA updater is responsible for evicting pods so that the admission controller can change them
+during admission.
 
-### Applying Updates During Pod Admission
+In the newly added `InPlaceOrRecreate` mode, the VPA Updater will attempt to execute in-plac
+updates FIRST. In certain situations, if it is unable to process an in-place update in time, it
+will evict the pod to force a change.
 
-For VPAs in `InPlaceOnly` and `InPlaceOrRecreate` modes VPA Admission Controller will apply updates to starting pods,
-like it does for VPAs in `Initial`, `Auto`, and `Recreate` modes.
+We classify three types of updates in the context of this new mode:
 
-### Applying Disruption-free Updates
+1. Updates on pod admission
+2. Disruption-free updates
+3. Disruptive updates
 
-When an update only changes resources for which a container indicates that it doesn't require a restart, then VPA can
-attempt to actuate the change without disrupting the pod. VPA Updater will:
+**NOTE:** Here "disruptive" is from the perspective of VPA. As mentioned above, the container
+runtime MAY choose to restart a container or pod as needed.
+
+More on these two types of changes below.
+
+### 1. Applying Updates During Pod Admission
+
+For VPAs using the new `InPlaceOrRecreate` mode, the VPA Admission Controller will apply updates to
+starting pods just as it does for VPAs in `Initial`, `Auto`, and `Recreate` modes.
+
+### 2. Applying Disruption-free Updates (**NEW**)
+
+In the `InPlaceOrRecreate` mode when an update only changes resources for which a container
+indicates that it doesn't require a restart, then VPA can attempt to actuate the change without
+disrupting the pod. VPA Updater will:
 * attempt to actuate such updates in place,
 * attempt to actuate them if difference between recommendation and request is at least 10%
   * even if pod has been running for less than 12h,
 * if necessary execute only partial updates (if some changes would require a restart).
 
-### Applying Disruptive Updates
+If VPA updater fails to update the size of a container, we ignore the failure and try again. We
+will not intentionally evict the pod unless the conditions call for a disruptive update (see
+below).
 
-In both `InPlaceOnly` and `InPlaceOrRecreate` modes VPA updater will attempt to apply updates that require container
-restart in place. It will update them under conditions that would trigger update with `Recreate` mode. That is it will
-apply disruptive updates if:
+### 3. Applying Disruptive Updates
+
+In the `InPlaceOrRecreate` modes VPA updater will attempt to apply updates that require container
+restart in place. It will update them under the same conditions that would trigger update with
+`Recreate` mode. That is it will apply disruptive updates if:
 
 * Any container has a request below the corresponding `LowerBound` or
 * Any container has a request above the corresponding `UpperBound` or
@@ -98,7 +143,7 @@ apply disruptive updates if:
   running undisrupted for at least 12h.
   * Successful disruptive update counts as disruption here (and prevents further disruptive updates to the pod for 12h).
 
-In `InPlaceOrRecreate` mode (but not in `InPlaceOnly` mode) VPA updater will evict pod to actuate a recommendation if it
+For disruptive updates, the VPA updater will evict a pod to actuate a recommendation if it
 attempted to apply the recommendation in place and failed.
 
 VPA updater will consider that the update failed if:
@@ -107,13 +152,7 @@ VPA updater will consider that the update failed if:
 * The pod has `.status.resize: InProgress` and more than 1 hour elapsed since the update:
   * There seems to be a bug where containers that say they need to be restarted get stuck in update, hopefully it gets
     fixed and we don't have to worry about this by beta.
-* Patch attempt will return an error.
-  * If the attempt fails because it would change pods QoS:
-    * `InPlaceOrRecreate` will treat it as any other failure and consider evicting the pod.
-    * `InPlaceOnly` will consider applying request slightly lower than the limit.
-
-Those failure modes shouldn't disrupt pod operations, only update. If there are problems that can disrupt pod operation
-we should consider not implementing the `InPlaceOnly` mode.
+* Patch attempt returns an error.
 
 ### Comparison of `UpdateMode`s
 
@@ -133,7 +172,7 @@ VPA updater considers the following conditions when deciding if it should apply 
     recommendation or
   - At least one container has at least one resource request higher than the upper bound of the corresponding
     recommendation.
-- Disruption-free update - doesn't change any resources for which the relevant container specifies
+- **NEW** Disruption-free update - doesn't change any resources for which the relevant container specifies
   `RestartPolicy: RestartContainer`.
 
 `Auto` / `Recreate` evicts pod if:
@@ -142,18 +181,18 @@ VPA updater considers the following conditions when deciding if it should apply 
    * Outside recommended range,
    * Long-lived pod with significant change.
  
-`InPlaceOnly` and `InPlaceOrRecreate` will attempt to apply a disruption-free update in place if it meets at least one
+`InPlaceOrRecreate` will attempt to apply a disruption-free update in place if it meets at least one
 of the following conditions:
 * Quick OOM,
 * Outside recommended range,
 * Significant change.
 
-`InPlaceOnly` and `InPlaceOrRecreate` when considering a disruption-free update in place ignore some conditions that
+`InPlaceOrRecreate` when considering a disruption-free update in place ignore some conditions that
 influence eviction decission in the `Recreate` mode:
 * [`CanEvict`] won't be checked and
 * Pods with significant change can be updated even if they are not long-lived.
 
-`InPlaceOnly` and `InPlaceOrRecreate` will attempt to apply updates that are **not** disruption-free in place under
+`InPlaceOrRecreate` will attempt to apply updates that are **not** disruption-free in place under
 the same conditions that apply to updates in the `Recreate` mode.
 
 `InPlaceOrRecreate` will attempt to apply updates that by eviction when:
@@ -169,40 +208,18 @@ the same conditions that apply to updates in the `Recreate` mode.
 
 ### Test Plan
 
-The following test scenarios will be added to e2e tests. Both `InPlaceOnly` and `InPlaceOrRecreate` modes will be tested
-and they should behave the same:
+The following test scenarios will be added to e2e tests. The `InPlaceOrRecreate` mode will be
+tested in the following scenarios:
 
 * Admission controller applies recommendation to pod controlled by VPA. 
 * Disruption-free in-place update applied to all containers of a pod (request in recommendation bounds).
 * Partial disruption-free update applied to some containers of a pod, some disruptive changes skipped (request in
   recommendation bounds).
 * Disruptive in-place update applied to all containers of a pod (request out ouf recommendation bounds). 
-
-There will be also scenarios testing differences between `InPlaceOnly` and `InPlaceOrRecreate` modesL
-* Disruptive in-place update will fail. In `InPlaceOnly` pod should not be evicted, in the `InPlaceOrRecreate` pod
-  should be evicted and the recommendation applied.
-* VPA attempts an update that would change Pods QoS (`RequestsOnly` scaling, request initially < limit, recommendation
-  equal to limit). In `InPlaceOnly` pod should not be evicted, request slightly lower than the recommendation will be
-  applied. In the `InPlaceOrRecreate` pod should be evicted and the recommendation applied.
+* Disruptive in-place update will fail. Pod should be evicted and the recommendation applied.
+* Disruption free in-place updates fail, pod should not be evicted.
 
 ### Details still to consider
-
-#### Ensure in-place resize request doesn't cause restarts
-
-Currently the container [resize policy](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/#container-resize-policies)
-can be either `NotRequired` or `RestartContainer`. With `NotRequired` in-place update could still end up
-restarting the container if in-place update is not possible, depending on kubelet and container
-runtime implementation. However in the proposed design it should be VPA's decision whether to fall back
-to restarts or not.
-
-Extending or changing the existing API for in-place updates is possible, e.g. adding a new
-`MustNotRestart` container resize policy.
-
-#### Should `InPlaceOnly` mode be dropped
-
-The use case for `InPlaceOnly` is not understood yet. Unless we have a strong signal it solves real
-needs we should not implement it. Also VPA cannot ensure no restart would happen unless
-*Ensure in-place resize request doesn't cause restarts* (see above) is solved.
 
 #### Careful with memory scale down
 
@@ -212,3 +229,4 @@ Needs more research on how to scale down on memory safely.
 ## Implementation History
 
 - 2023-05-10: initial version
+- 2025-02-07: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
