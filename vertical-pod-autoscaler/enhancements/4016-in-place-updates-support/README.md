@@ -37,7 +37,9 @@ introduced as separate enhancement proposals.
 
 It is important to note that **VPA cannot guarantee NO disruptions**. This is because the
 underlying container runtime is responsible for actuating the resize operation and there are no
-guarantees provided (see [this thread]for more information).
+guarantees provided (see [this thread]for more information). However, in practice if the
+underlying container runtime supports it, we expect these disruptions to be minimal and that MOST
+of the time the updates will be done in-place.
 
 This proposal therefore focuses on *reducing* disruptions while still harnessing the benefits of
 VPA.
@@ -62,7 +64,7 @@ Add a new supported value of [`UpdateMode`]:
 
 * `InPlaceOrRecreate`
 
-Here we specify `OrRecreate` to make sure the user explicitly knows that the container may be
+Here we specify `OrRecreate` to make sure the user explicitly knows that the pod may be
 restarted.
 
 [`UpdateMode`]: https://github.com/kubernetes/autoscaler/blob/71b489f5aec3899157b37472cdf36a1de223d011/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124
@@ -77,7 +79,7 @@ two key features:
   field.
 * A [`ResizePolicy`] field to Container. This field allows to the user to specify the behavior when
   modifying a resource value. Currently it has two modes:
-  - `NotRequired` (default) which indicates to the container runtime that it should try to resize
+  - `PreferNoRestart` (default) which indicates to the container runtime that it should try to resize
     the container without restarting. However, it does not guarantee that a restart will not
     happen.
   - `RestartContainer` which indicates that any mutation to the resource requires a restart (for
