@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 SCRIPT_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}"))/..
-TARGET_FILE="${SCRIPT_ROOT}/docs/vpa-flags.md"
+TARGET_FILE="${SCRIPT_ROOT}/docs/flags.md"
 COMPONENTS=("admission-controller" "recommender" "updater")
 
 # Function to extract flags from a binary
@@ -43,6 +43,7 @@ extract_flags() {
         flag=$(echo "$line" | awk '{print $1}' | sed 's/^-*//;s/=.*$//')
         default=$(echo "$line" | sed -n 's/.*default \([^)]*\).*/\1/p')
         description=$(echo "$line" | sed -E 's/^\s*-[^[:space:]]+ [^[:space:]]+ //;s/ \(default.*\)//')
+        description=$(echo "$description" | sed -E "s/^--?${flag}[[:space:]]?//")
         
         echo "| --${flag} | ${default} | ${description} |"
     done
