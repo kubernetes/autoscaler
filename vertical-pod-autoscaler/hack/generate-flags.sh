@@ -45,7 +45,7 @@ extract_flags() {
         description=$(echo "$line" | sed -E 's/^\s*-[^[:space:]]+ [^[:space:]]+ //;s/ \(default.*\)//')
         description=$(echo "$description" | sed -E "s/^--?${flag}[[:space:]]?//")
         
-        echo "| --${flag} | ${default} | ${description} |"
+	echo "| \`--${flag}\` | ${default} | ${description} |"
     done
     echo
 }
