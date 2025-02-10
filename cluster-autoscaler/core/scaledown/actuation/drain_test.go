@@ -437,6 +437,76 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	p4 := BuildTestPod("p4", 100, 0, WithNodeName(n1.Name))
 	e2 := fmt.Errorf("eviction_error: p2")
 	e4 := fmt.Errorf("eviction_error: p4")
+	SetNodeReadyState(n1, true, time.Time{})
+
+	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		createAction := action.(core.CreateAction)
+		if createAction == nil {
+			return false, nil, nil
+		}
+		eviction := createAction.GetObject().(*policyv1beta1.Eviction)
+		if eviction == nil {
+			return false, nil, nil
+		}
+
+		if eviction.Name == "p2" {
+			return true, nil, e2
+		}
+		if eviction.Name == "p4" {
+			return true, nil, e4
+		}
+		return true, nil, nil
+	})
+
+	options := config.AutoscalingOptions{
+		MaxGracefulTerminationSec: 20,
+		MaxPodEvictionTime:        0 * time.Second,
+	}
+	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	assert.NoError(t, err)
+	r := evRegister{}
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	evictor := Evictor{
+		EvictionRetryTime:                0,
+		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
+		evictionRegister:                 &r,
+		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+	}
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
+	assert.NoError(t, err)
+	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
+	assert.Error(t, err)
+	assert.Equal(t, 4, len(evictionResults))
+	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
+	assert.Equal(t, *p2, *evictionResults["p2"].Pod)
+	assert.Equal(t, *p3, *evictionResults["p3"].Pod)
+	assert.Equal(t, *p4, *evictionResults["p4"].Pod)
+	assert.NoError(t, evictionResults["p1"].Err)
+	assert.Contains(t, evictionResults["p2"].Err.Error(), e2.Error())
+	assert.NoError(t, evictionResults["p3"].Err)
+	assert.Contains(t, evictionResults["p4"].Err.Error(), e4.Error())
+	assert.False(t, evictionResults["p1"].TimedOut)
+	assert.True(t, evictionResults["p2"].TimedOut)
+	assert.False(t, evictionResults["p3"].TimedOut)
+	assert.True(t, evictionResults["p4"].TimedOut)
+	assert.True(t, evictionResults["p1"].WasEvictionSuccessful())
+	assert.False(t, evictionResults["p2"].WasEvictionSuccessful())
+	assert.True(t, evictionResults["p3"].WasEvictionSuccessful())
+	assert.False(t, evictionResults["p4"].WasEvictionSuccessful())
+	assert.Contains(t, r.pods, p1, p3)
+}
+
+func TestDrainForceNodeWithPodsEvictionFailure(t *testing.T) {
+	fakeClient := &fake.Clientset{}
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
+	p2 := BuildTestPod("p2", 100, 0, WithNodeName(n1.Name))
+	p3 := BuildTestPod("p3", 100, 0, WithNodeName(n1.Name))
+	p4 := BuildTestPod("p4", 100, 0, WithNodeName(n1.Name))
+	e2 := fmt.Errorf("eviction_error: p2")
+	e4 := fmt.Errorf("eviction_error: p4")
 	d4 := fmt.Errorf("deletion_error: p4")
 
 	SetNodeReadyState(n1, true, time.Time{})
@@ -489,11 +559,12 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
 		evictionRegister:                 &r,
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+		fullDsEviction:                   true,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
 	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
+	evictionResults, err := evictor.drainNodeForce(&ctx, nodeInfo)
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
 	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
