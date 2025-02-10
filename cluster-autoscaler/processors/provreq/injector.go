@@ -37,14 +37,14 @@ import (
 
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
-	initialRetryTime                     time.Duration
-	maxBackoffTime                       time.Duration
-	backoffDuration                      *lru.Cache
-	clock                                clock.PassiveClock
-	client                               *provreqclient.ProvisioningRequestClient
-	lastProvisioningRequestProcessTime   time.Time
-	checkCapacityBatchProcessing         bool
-	checkCapacityProvisioningClassPrefix string
+	initialRetryTime                   time.Duration
+	maxBackoffTime                     time.Duration
+	backoffDuration                    *lru.Cache
+	clock                              clock.PassiveClock
+	client                             *provreqclient.ProvisioningRequestClient
+	lastProvisioningRequestProcessTime time.Time
+	checkCapacityBatchProcessing       bool
+	checkCapacityProcessorInstance     string
 }
 
 // IsAvailableForProvisioning checks if the provisioning request is the correct state for processing and provisioning has not been attempted recently.
@@ -95,13 +95,17 @@ func (p *ProvisioningRequestPodsInjector) MarkAsFailed(pr *provreqwrapper.Provis
 }
 
 func (p *ProvisioningRequestPodsInjector) isSupportedClass(pr *provreqwrapper.ProvisioningRequest) bool {
-	return provisioningrequest.SupportedProvisioningClass(pr.Spec.ProvisioningClassName, p.checkCapacityProvisioningClassPrefix)
+	return provisioningrequest.SupportedProvisioningClass(pr.ProvisioningRequest, p.checkCapacityProcessorInstance)
+}
+
+func (p *ProvisioningRequestPodsInjector) isSupportedCheckCapacityClass(pr *provreqwrapper.ProvisioningRequest) bool {
+	return provisioningrequest.SupportedCheckCapacityClass(pr.ProvisioningRequest, p.checkCapacityProcessorInstance)
 }
 
 func (p *ProvisioningRequestPodsInjector) shouldMarkAsAccepted(pr *provreqwrapper.ProvisioningRequest) bool {
 	// Don't mark as accepted the check capacity ProvReq when batch processing is enabled.
 	// It will be marked later, in parallel, during processing the requests.
-	return !p.checkCapacityBatchProcessing || !p.matchesCheckCapacityClass(pr.Spec.ProvisioningClassName)
+	return !p.checkCapacityBatchProcessing || !p.isSupportedCheckCapacityClass(pr)
 }
 
 // GetPodsFromNextRequest picks one ProvisioningRequest meeting the condition passed using isSupportedClass function, marks it as accepted and returns pods from it.
@@ -145,10 +149,6 @@ type ProvisioningRequestWithPods struct {
 	Pods      []*apiv1.Pod
 }
 
-func (p *ProvisioningRequestPodsInjector) matchesCheckCapacityClass(provisioningClassName string) bool {
-	return provisioningClassName == p.checkCapacityProvisioningClassPrefix+v1.ProvisioningClassCheckCapacity
-}
-
 // GetCheckCapacityBatch returns up to the requested number of ProvisioningRequestWithPods.
 // We do not mark the PRs as accepted here.
 // If we fail to get the pods for a PR, we mark the PR as failed and issue an update.
@@ -162,7 +162,7 @@ func (p *ProvisioningRequestPodsInjector) GetCheckCapacityBatch(maxPrs int) ([]P
 		if len(prsWithPods) >= maxPrs {
 			break
 		}
-		if !p.matchesCheckCapacityClass(pr.Spec.ProvisioningClassName) {
+		if !p.isSupportedCheckCapacityClass(pr) {
 			continue
 		}
 		if !p.IsAvailableForProvisioning(pr) {
@@ -197,20 +197,20 @@ func (p *ProvisioningRequestPodsInjector) Process(
 func (p *ProvisioningRequestPodsInjector) CleanUp() {}
 
 // NewProvisioningRequestPodsInjector creates a ProvisioningRequest filter processor.
-func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int, checkCapacityBatchProcessing bool, checkCapacityProvisioningClassPrefix string) (*ProvisioningRequestPodsInjector, error) {
+func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int, checkCapacityBatchProcessing bool, checkCapacityProcessorInstance string) (*ProvisioningRequestPodsInjector, error) {
 	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
 	return &ProvisioningRequestPodsInjector{
-		initialRetryTime:                     initialBackoffTime,
-		maxBackoffTime:                       maxBackoffTime,
-		backoffDuration:                      lru.New(maxCacheSize),
-		client:                               client,
-		clock:                                clock.RealClock{},
-		lastProvisioningRequestProcessTime:   time.Now(),
-		checkCapacityBatchProcessing:         checkCapacityBatchProcessing,
-		checkCapacityProvisioningClassPrefix: checkCapacityProvisioningClassPrefix,
+		initialRetryTime:                   initialBackoffTime,
+		maxBackoffTime:                     maxBackoffTime,
+		backoffDuration:                    lru.New(maxCacheSize),
+		client:                             client,
+		clock:                              clock.RealClock{},
+		lastProvisioningRequestProcessTime: time.Now(),
+		checkCapacityBatchProcessing:       checkCapacityBatchProcessing,
+		checkCapacityProcessorInstance:     checkCapacityProcessorInstance,
 	}, nil
 }
 
