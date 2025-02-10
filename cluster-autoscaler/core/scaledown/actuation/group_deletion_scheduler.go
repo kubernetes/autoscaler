@@ -77,6 +77,17 @@ func (ds *GroupDeletionScheduler) ResetAndReportMetrics() {
 // ScheduleDeletion schedules deletion of the node. Nodes that should be deleted in groups are queued until whole group is scheduled for deletion,
 // other nodes are passed over to NodeDeletionBatcher immediately.
 func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool) {
+	ds.scheduleDeletion(nodeInfo, nodeGroup, batchSize, drain, false)
+}
+
+// scheduleForceDeletion schedules forced node deletion, similar to ScheduleDeletion but bypassing eviction errors and PDB checks.
+func (ds *GroupDeletionScheduler) scheduleForceDeletion(nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool) {
+	ds.scheduleDeletion(nodeInfo, nodeGroup, batchSize, drain, true)
+}
+
+// scheduleDeletion handles the common logic for scheduling node deletion, supporting
+// both normal and forced deletion based on the 'force' parameter.
+func (ds *GroupDeletionScheduler) scheduleDeletion(nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool, force bool) {
 	opts, err := nodeGroup.GetOptions(ds.ctx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "GetOptions returned error %v", err)}
@@ -87,9 +98,9 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 		opts = &config.NodeGroupAutoscalingOptions{}
 	}
 
-	nodeDeleteResult := ds.prepareNodeForDeletion(nodeInfo, drain)
+	nodeDeleteResult := ds.prepareNodeForDeletion(nodeInfo, drain, force)
 	if nodeDeleteResult.Err != nil {
-		if nodeDeleteResult.ResultType == status.NodeDeleteErrorFailedToEvictPods {
+		if force {
 			klog.Infof("Starting force deletion of node %s", nodeInfo.Node().Name)
 			if err := nodeGroup.ForceDeleteNodes([]*apiv1.Node{nodeInfo.Node()}); err != nil {
 				focrefulNodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
@@ -106,10 +117,17 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 }
 
 // prepareNodeForDeletion is a long-running operation, so it needs to avoid locking the AtomicDeletionScheduler object
-func (ds *GroupDeletionScheduler) prepareNodeForDeletion(nodeInfo *framework.NodeInfo, drain bool) status.NodeDeleteResult {
+func (ds *GroupDeletionScheduler) prepareNodeForDeletion(nodeInfo *framework.NodeInfo, drain bool, force bool) status.NodeDeleteResult {
 	node := nodeInfo.Node()
 	if drain {
-		if evictionResults, err := ds.evictor.DrainNode(ds.ctx, nodeInfo); err != nil {
+		var evictionResults map[string]status.PodEvictionResult
+		var err error
+		if force {
+			evictionResults, err = ds.evictor.drainNodeForce(ds.ctx, nodeInfo)
+		} else {
+			evictionResults, err = ds.evictor.DrainNode(ds.ctx, nodeInfo)
+		}
+		if err != nil {
 			return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
 		}
 	} else {
