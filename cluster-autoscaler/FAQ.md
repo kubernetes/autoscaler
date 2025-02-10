@@ -630,9 +630,17 @@ When using this class, Cluster Autoscaler performs following actions:
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
 
   Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler 
-  to process only those check capacity ProvisioningRequests, that have a prefix matching the `--check-capacity-provisioning-class-prefix=<prefix>` flag.
-  This allows to run two Cluster Autoscalers in the cluster, but instance with the configured prefix
+  to process only subset of check capacity ProvisioningRequests and ignore the rest.
+  It should be done with caution by specifying `--check-capacity-processor-instance=<name>` flag.
+  Then, ProvReq Parameters map should contain a key "processorInstance" with a value equal to the configured instance name.
+
+  This allows to run two Cluster Autoscalers in the cluster, but the second instance (likely this with configured instance name)
   **should only** handle check capacity ProvisioningRequests and not overlap node groups with the main instance.
+  It is responsibility of the user to ensure the capacity checks are not overlapping.
+  Best-effort atomic ProvisioningRequests processing is disabled in the instance that has this flag set.
+
+  For backwards compatibility, it is possible to differentiate the ProvReqs by prefixing provisioningClassName with the instance name,
+  but it is **not recommended** and will be removed in CA 1.35.
 
 * `best-effort-atomic-scale-up.autoscaling.x-k8s.io` (supported from Cluster Autoscaler version 1.30.2 or later).
 When using this class, Cluster Autoscaler performs following actions:
@@ -978,7 +986,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `bulk-mig-instances-listing-enabled` | Fetch GCE mig instances in bulk instead of per mig |  |
 | `bypassed-scheduler-names` | Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up. |  |
 | `check-capacity-batch-processing` | Whether to enable batch processing for check capacity requests. |  |
-| `check-capacity-provisioning-class-prefix` | Prefix of provisioningClassName that will be filtered by processors. Only ProvisioningRequests with this prefix in their class will be processed by this CA. It refers only to check capacity ProvisioningRequests. |  |
+| `check-capacity-processor-instance` | Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key "processorInstance" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed. |  |
 | `check-capacity-provisioning-request-batch-timebox` | Maximum time to process a batch of provisioning requests. | 10s |
 | `check-capacity-provisioning-request-max-batch-size` | Maximum number of provisioning requests to process in a single batch. | 10 |
 | `cloud-config` | The path to the cloud provider configuration file. Empty string for no configuration file. |  |
@@ -1022,7 +1030,13 @@ The following startup parameters are supported for cluster autoscaler:
 | `kube-client-qps` | QPS value for kubernetes client. | 5 |
 | `kubeconfig` | Path to kubeconfig file with authorization and master location information. |  |
 | `kubernetes` | Kubernetes master location. Leave blank for default |  |
-| `lease-resource-name` | The lease resource to use in leader election. | "cluster-autoscaler" |
+| `leader-elect` | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. | true |
+| `leader-elect-lease-duration` | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. | 15s |
+| `leader-elect-renew-deadline` | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. | 10s |
+| `leader-elect-resource-lock` | The type of resource object that is used for locking during leader election. Supported options are 'leases'. | "leases" |
+| `leader-elect-resource-name` | The name of resource object that is used for locking during leader election. | "cluster-autoscaler" |
+| `leader-elect-resource-namespace` | The namespace of resource object that is used for locking during leader election. |  |
+| `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s |
 | `log-backtrace-at` | when logging hits line file:N, emit a stack trace | :0 |
 | `log-dir` | If non-empty, write log files in this directory (no effect when -logtostderr=true) |  |
 | `log-file` | If non-empty, use this log file (no effect when -logtostderr=true) |  |

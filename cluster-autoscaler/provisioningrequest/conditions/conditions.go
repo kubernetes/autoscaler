@@ -59,8 +59,8 @@ const (
 )
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.
-func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest, checkCapacityProvisioningClassPrefix string) bool {
-	if !provisioningrequest.SupportedProvisioningClass(pr.Spec.ProvisioningClassName, checkCapacityProvisioningClassPrefix) {
+func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+	if !provisioningrequest.SupportedProvisioningClass(pr.ProvisioningRequest, checkCapacityProcessorInstance) {
 		return false
 	}
 	conditions := pr.Status.Conditions

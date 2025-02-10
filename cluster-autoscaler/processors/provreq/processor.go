@@ -50,16 +50,16 @@ type injector interface {
 }
 
 type provReqProcessor struct {
-	now                                  func() time.Time
-	maxUpdated                           int
-	client                               *provreqclient.ProvisioningRequestClient
-	injector                             injector
-	checkCapacityProvisioningClassPrefix string
+	now                            func() time.Time
+	maxUpdated                     int
+	client                         *provreqclient.ProvisioningRequestClient
+	injector                       injector
+	checkCapacityProcessorInstance string
 }
 
 // NewProvReqProcessor return ProvisioningRequestProcessor.
-func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient, checkCapacityProvisioningClassPrefix string) *provReqProcessor {
-	return &provReqProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client, injector: scheduling.NewHintingSimulator(), checkCapacityProvisioningClassPrefix: checkCapacityProvisioningClassPrefix}
+func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient, checkCapacityProcessorInstance string) *provReqProcessor {
+	return &provReqProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client, injector: scheduling.NewHintingSimulator(), checkCapacityProcessorInstance: checkCapacityProcessorInstance}
 }
 
 // Refresh implements loop.Observer interface and will be run at the start
@@ -85,7 +85,7 @@ func (p *provReqProcessor) refresh(provReqs []*provreqwrapper.ProvisioningReques
 		if len(expiredProvReq) >= p.maxUpdated {
 			break
 		}
-		if !provisioningrequest.SupportedProvisioningClass(provReq.Spec.ProvisioningClassName, p.checkCapacityProvisioningClassPrefix) {
+		if !provisioningrequest.SupportedProvisioningClass(provReq.ProvisioningRequest, p.checkCapacityProcessorInstance) {
 			continue
 		}
 		conditions := provReq.Status.Conditions
@@ -145,7 +145,7 @@ func (p *provReqProcessor) bookCapacity(ctx *context.AutoscalingContext) error {
 	}
 	podsToCreate := []*apiv1.Pod{}
 	for _, provReq := range provReqs {
-		if !conditions.ShouldCapacityBeBooked(provReq, p.checkCapacityProvisioningClassPrefix) {
+		if !conditions.ShouldCapacityBeBooked(provReq, p.checkCapacityProcessorInstance) {
 			continue
 		}
 		pods, err := provreq_pods.PodsForProvisioningRequest(provReq)
