@@ -19,11 +19,11 @@ require (
 	github.com/Azure/skewer v0.0.14
 	github.com/aws/aws-sdk-go v1.44.241
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/digitalocean/godo v1.27.0
+	github.com/digitalocean/godo v1.138.1-0.20250225190532-8a2012e821cc
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
-	github.com/google/go-querystring v1.0.0
+	github.com/google/go-querystring v1.1.0
 	github.com/google/uuid v1.6.0
 	github.com/jmattheis/goverter v1.4.0
 	github.com/jmespath/go-jmespath v0.4.0
@@ -35,7 +35,7 @@ require (
 	github.com/vburenin/ifacemaker v1.2.1
 	go.uber.org/mock v0.4.0
 	golang.org/x/net v0.30.0
-	golang.org/x/oauth2 v0.23.0
+	golang.org/x/oauth2 v0.27.0
 	golang.org/x/sys v0.26.0
 	google.golang.org/api v0.151.0
 	google.golang.org/grpc v1.65.0
@@ -52,6 +52,7 @@ require (
 	k8s.io/cloud-provider-gcp/providers v0.28.2
 	k8s.io/component-base v0.33.0-alpha.0
 	k8s.io/component-helpers v0.33.0-alpha.0
+	k8s.io/dynamic-resource-allocation v0.0.0
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kubelet v0.33.0-alpha.0
 	k8s.io/kubernetes v1.33.0-alpha.0
@@ -136,6 +137,8 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jessevdk/go-flags v1.4.1-0.20181029123624-5de817a9aa20 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -191,7 +194,7 @@ require (
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
-	golang.org/x/time v0.7.0 // indirect
+	golang.org/x/time v0.10.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240826202546-f6391c0de4c7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240826202546-f6391c0de4c7 // indirect
@@ -206,7 +209,6 @@ require (
 	k8s.io/cri-api v0.33.0-alpha.0 // indirect
 	k8s.io/cri-client v0.0.0 // indirect
 	k8s.io/csi-translation-lib v0.27.0 // indirect
-	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20240911193312-2b36238f13e9 // indirect
 	k8s.io/kms v0.33.0-alpha.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f // indirect
@@ -221,7 +223,7 @@ require (
 
 replace github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/service/eks v1.38.49
 
-replace github.com/digitalocean/godo => github.com/digitalocean/godo v1.27.0
+replace github.com/digitalocean/godo => github.com/digitalocean/godo v1.138.1-0.20250225190532-8a2012e821cc
 
 replace github.com/rancher/go-rancher => github.com/rancher/go-rancher v0.1.0
 

@@ -35,6 +35,9 @@ var (
 )
 
 type nodeGroupClient interface {
+	// GetNodePoolTemplate returns the template for a given node pool - used in helping CA for scale up from zero simulations.
+	GetNodePoolTemplate(ctx context.Context, clusterID string, nodePoolName string) (*godo.KubernetesNodePoolTemplateResponse, *godo.Response, error)
+
 	// ListNodePools lists all the node pools found in a Kubernetes cluster.
 	ListNodePools(ctx context.Context, clusterID string, opts *godo.ListOptions) ([]*godo.KubernetesNodePool, *godo.Response, error)
 
@@ -147,17 +150,22 @@ func (m *Manager) Refresh() error {
 		if !nodePool.AutoScale {
 			continue
 		}
-
+		nodePoolTemplateResponse, _, err := m.client.GetNodePoolTemplate(ctx, m.clusterID, nodePool.Name)
+		klog.V(4).Infof("fetched template response - %v", nodePoolTemplateResponse)
+		if err != nil {
+			return err
+		}
 		klog.V(4).Infof("adding node pool: %q name: %s min: %d max: %d",
 			nodePool.ID, nodePool.Name, nodePool.MinNodes, nodePool.MaxNodes)
 
 		group = append(group, &NodeGroup{
-			id:        nodePool.ID,
-			clusterID: m.clusterID,
-			client:    m.client,
-			nodePool:  nodePool,
-			minSize:   nodePool.MinNodes,
-			maxSize:   nodePool.MaxNodes,
+			id:               nodePool.ID,
+			clusterID:        m.clusterID,
+			client:           m.client,
+			nodePool:         nodePool,
+			nodePoolTemplate: nodePoolTemplateResponse,
+			minSize:          nodePool.MinNodes,
+			maxSize:          nodePool.MaxNodes,
 		})
 	}
 
