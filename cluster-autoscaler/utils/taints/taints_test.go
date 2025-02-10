@@ -723,3 +723,127 @@ func TestCountNodeTaints(t *testing.T) {
 	got := CountNodeTaints([]*apiv1.Node{node, node2}, taintConfig)
 	assert.Equal(t, want, got)
 }
+
+func TestAddTaints(t *testing.T) {
+	testCases := []struct {
+		name           string
+		existingTaints []string
+		newTaints      []string
+		wantTaints     []string
+	}{
+		{
+			name:       "no existing taints",
+			newTaints:  []string{"t1", "t2"},
+			wantTaints: []string{"t1", "t2"},
+		},
+		{
+			name:           "existing taints - no overlap",
+			existingTaints: []string{"t1"},
+			newTaints:      []string{"t2", "t3"},
+			wantTaints:     []string{"t1", "t2", "t3"},
+		},
+		{
+			name:           "existing taints - duplicates",
+			existingTaints: []string{"t1"},
+			newTaints:      []string{"t1", "t2"},
+			wantTaints:     []string{"t1", "t2"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			n := BuildTestNode("node", 1000, 1000)
+			existingTaints := make([]apiv1.Taint, len(tc.existingTaints))
+			for i, t := range tc.existingTaints {
+				existingTaints[i] = apiv1.Taint{
+					Key:    t,
+					Effect: apiv1.TaintEffectNoSchedule,
+				}
+			}
+			n.Spec.Taints = append([]apiv1.Taint{}, existingTaints...)
+			fakeClient := buildFakeClient(t, n)
+			newTaints := make([]apiv1.Taint, len(tc.newTaints))
+			for i, t := range tc.newTaints {
+				newTaints[i] = apiv1.Taint{
+					Key:    t,
+					Effect: apiv1.TaintEffectNoSchedule,
+				}
+			}
+			err := AddTaints(n, fakeClient, newTaints, false)
+			assert.NoError(t, err)
+			apiNode := getNode(t, fakeClient, "node")
+			for _, want := range tc.wantTaints {
+				assert.True(t, HasTaint(n, want))
+				assert.True(t, HasTaint(apiNode, want))
+			}
+		})
+	}
+}
+
+func TestCleanTaints(t *testing.T) {
+	testCases := []struct {
+		name           string
+		existingTaints []string
+		taintsToRemove []string
+		wantTaints     []string
+		wantModified   bool
+	}{
+		{
+			name:           "no existing taints",
+			taintsToRemove: []string{"t1", "t2"},
+			wantTaints:     []string{},
+			wantModified:   false,
+		},
+		{
+			name:           "existing taints - no overlap",
+			existingTaints: []string{"t1"},
+			taintsToRemove: []string{"t2", "t3"},
+			wantTaints:     []string{"t1"},
+			wantModified:   false,
+		},
+		{
+			name:           "existing taints - remove one",
+			existingTaints: []string{"t1", "t2"},
+			taintsToRemove: []string{"t1"},
+			wantTaints:     []string{"t2"},
+			wantModified:   true,
+		},
+		{
+			name:           "existing taints - remove all",
+			existingTaints: []string{"t1", "t2"},
+			taintsToRemove: []string{"t1", "t2"},
+			wantTaints:     []string{},
+			wantModified:   true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			n := BuildTestNode("node", 1000, 1000)
+			existingTaints := make([]apiv1.Taint, len(tc.existingTaints))
+			for i, taintKey := range tc.existingTaints {
+				existingTaints[i] = apiv1.Taint{
+					Key:    taintKey,
+					Effect: apiv1.TaintEffectNoSchedule,
+				}
+			}
+			n.Spec.Taints = append([]apiv1.Taint{}, existingTaints...)
+			fakeClient := buildFakeClient(t, n)
+
+			modified, err := CleanTaints(n, fakeClient, tc.taintsToRemove, false)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantModified, modified)
+
+			apiNode := getNode(t, fakeClient, "node")
+
+			for _, want := range tc.wantTaints {
+				assert.True(t, HasTaint(apiNode, want))
+				assert.True(t, HasTaint(n, want))
+			}
+
+			for _, removed := range tc.taintsToRemove {
+				assert.False(t, HasTaint(apiNode, removed))
+				assert.False(t, HasTaint(n, removed), "Taint %s should have been removed from local node object", removed)
+			}
+		})
+	}
+}
