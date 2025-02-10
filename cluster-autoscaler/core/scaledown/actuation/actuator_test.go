@@ -1223,7 +1223,9 @@ func TestStartDeletion(t *testing.T) {
 				// Verify ScaleDownNodes looks as expected.
 				ignoreSdNodeOrder := cmpopts.SortSlices(func(a, b *status.ScaleDownNode) bool { return a.Node.Name < b.Node.Name })
 				cmpNg := cmp.Comparer(func(a, b *testprovider.TestNodeGroup) bool { return a.Id() == b.Id() })
-				statusCmpOpts := cmp.Options{ignoreSdNodeOrder, cmpNg, cmpopts.EquateEmpty()}
+				// Deletion taint may be lifted by goroutine, ignore taints to avoid race condition
+				ignoreTaints := cmpopts.IgnoreFields(apiv1.NodeSpec{}, "Taints")
+				statusCmpOpts := cmp.Options{ignoreSdNodeOrder, cmpNg, cmpopts.EquateEmpty(), ignoreTaints}
 				if diff := cmp.Diff(wantScaleDownNodes, gotScaleDownNodes, statusCmpOpts); diff != "" {
 					t.Errorf("StartDeletion scaled down nodes diff (-want +got):\n%s", diff)
 				}
