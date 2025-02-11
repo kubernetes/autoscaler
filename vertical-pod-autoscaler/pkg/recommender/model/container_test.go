@@ -44,7 +44,6 @@ func newUsageSample(timestamp time.Time, usage int64, resource ResourceName) *Co
 	return &ContainerUsageSample{
 		MeasureStart: timestamp,
 		Usage:        ResourceAmount(usage),
-		Request:      TestRequest[resource],
 		Resource:     resource,
 	}
 }

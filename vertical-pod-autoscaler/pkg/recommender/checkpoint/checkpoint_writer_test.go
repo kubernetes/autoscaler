@@ -77,7 +77,6 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	container.AddSample(&model.ContainerUsageSample{
 		MeasureStart: timeNow,
 		Usage:        model.MemoryAmountFromBytes(1024 * 1024 * 1024),
-		Request:      testRequest[model.ResourceMemory],
 		Resource:     model.ResourceMemory,
 	})
 	vpa := addVpa(t, cluster, testVpaID1, testSelectorStr)
