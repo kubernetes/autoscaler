@@ -99,7 +99,7 @@ Today, only the VPA admission controller is responsible for changing the pod spe
 The VPA updater is responsible for evicting pods so that the admission controller can change them
 during admission.
 
-In the newly added `InPlaceOrRecreate` mode, the VPA Updater will attempt to execute in-plac
+In the newly added `InPlaceOrRecreate` mode, the VPA Updater will attempt to execute in-place
 updates FIRST. In certain situations, if it is unable to process an in-place update in time, it
 will evict the pod to force a change.
 
