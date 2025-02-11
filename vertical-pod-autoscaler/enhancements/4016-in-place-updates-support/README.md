@@ -19,7 +19,7 @@
 
 VPA applies its recommendations with a mutating webhook, during pod creation. It can also evict
 pods expecting that it will apply the recommendation when the pod is recreated. Today, this process
-is very disruptive as any changes in recommendations requires a pod to be recreated.
+is potentially disruptive as any changes in recommendations requires a pod to be recreated.
 
 We can instead reduce the amount of disruption by leveraging the [in-place update feature] which is
 currently an [alpha feature since 1.27] and graduating to [beta in 1.33].
