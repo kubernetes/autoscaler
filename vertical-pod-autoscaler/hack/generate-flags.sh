@@ -40,16 +40,22 @@ extract_flags() {
     echo "|------|---------|-------------|"
 
     $binary --help 2>&1 | grep -E '^\s*-' | while read -r line; do
-        flag=$(echo "$line" | awk '{print $1}' | sed 's/^-*//;s/=.*$//')
-        default=$(echo "$line" | sed -n 's/.*default \([^)]*\).*/\1/p')
-        description=$(echo "$line" | sed -E 's/^\s*-[^[:space:]]+ [^[:space:]]+ //;s/ \(default.*\)//')
-        description=$(echo "$description" | sed -E "s/^--?${flag}[[:space:]]?//")
+        if [[ $line == *"-v, --v Level"* ]]; then
+            # Special handling for the -v, --v Level flag
+            flag="v"
+            default=$(echo "$line" | sed -n 's/.*default: \([0-9]\+\).*/\1/p')
+            description="Set the log level verbosity"
+        else
+            flag=$(echo "$line" | awk '{print $1}' | sed 's/^-*//;s/=.*$//')
+            default=$(echo "$line" | sed -n 's/.*default \([^)]*\).*/\1/p')
+            description=$(echo "$line" | sed -E 's/^\s*-[^[:space:]]+ [^[:space:]]+ //;s/ \(default.*\)//')
+            description=$(echo "$description" | sed -E "s/^--?${flag}[[:space:]]?//")
+        fi
         
-	echo "| \`--${flag}\` | ${default} | ${description} |"
+        echo "| \`--${flag}\` | ${default:-} | ${description} |"
     done
     echo
 }
-
 # Build components
 pushd "${SCRIPT_ROOT}" >/dev/null
 for component in "${COMPONENTS[@]}"; do

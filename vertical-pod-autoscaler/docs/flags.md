@@ -3,7 +3,7 @@ This document contains the flags for all VPA components.
 
 # What are the parameters to VPA admission-controller?
 This document is auto-generated from the flag definitions in the VPA admission-controller code.
-Last updated: 2025-02-09 10:07:39 UTC
+Last updated: 2025-02-11 13:55:46 UTC
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -33,7 +33,7 @@ Last updated: 2025-02-09 10:07:39 UTC
 | `--tls-cert-file` | "/etc/tls-certs/serverCert.pem" |                   Path to server certificate PEM file. |
 | `--tls-ciphers` |  |                     A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2. |
 | `--tls-private-key` | "/etc/tls-certs/serverKey.pem" |                 Path to server certificate key PEM file. |
-| `--v,` | 4 | Level                                set the log level verbosity |
+| `--v` | 4 | Set the log level verbosity |
 | `--vmodule` |  |                     comma-separated list of pattern=N settings for file-filtered logging |
 | `--vpa-object-namespace` |  |            Namespace to search for VPA objects. Empty means all namespaces will be used. |
 | `--webhook-address` |  |                 Address under which webhook is registered. Used when registerByURL is set to true. |
@@ -45,7 +45,7 @@ Last updated: 2025-02-09 10:07:39 UTC
 
 # What are the parameters to VPA recommender?
 This document is auto-generated from the flag definitions in the VPA recommender code.
-Last updated: 2025-02-09 10:07:39 UTC
+Last updated: 2025-02-11 13:55:47 UTC
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -115,13 +115,13 @@ Last updated: 2025-02-09 10:07:39 UTC
 | `--target-memory-percentile` | 0.9 |                       Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
 | `--use-external-metrics` |  |                                 ALPHA.  Use an external metrics provider instead of metrics_server. |
 | `--username` |  |                                      The username used in the prometheus server basic auth |
-| `--v,` | 4 | Level                                              set the log level verbosity |
+| `--v` | 4 | Set the log level verbosity |
 | `--vmodule` |  |                                   comma-separated list of pattern=N settings for file-filtered logging |
 | `--vpa-object-namespace` |  |                          Namespace to search for VPA objects. Empty means all namespaces will be used. |
 
 # What are the parameters to VPA updater?
 This document is auto-generated from the flag definitions in the VPA updater code.
-Last updated: 2025-02-09 10:07:40 UTC
+Last updated: 2025-02-11 13:55:47 UTC
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -158,7 +158,7 @@ Last updated: 2025-02-09 10:07:40 UTC
 | `--stderrthreshold` |  |                                        set the log level threshold for writing to standard error |
 | `--updater-interval` | 1m0s |                                       How often updater should run |
 | `--use-admission-controller-status` | true |                                 If true, updater will only evict pods when admission controller status is valid. |
-| `--v,` | 4 | Level                                                         set the log level verbosity |
+| `--v` | 4 | Set the log level verbosity |
 | `--vmodule` |  |                                              comma-separated list of pattern=N settings for file-filtered logging |
 | `--vpa-object-namespace` |  |                                     Namespace to search for VPA objects. Empty means all namespaces will be used. |
 
