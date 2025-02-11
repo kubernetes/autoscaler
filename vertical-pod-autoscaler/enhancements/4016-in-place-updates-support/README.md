@@ -37,7 +37,7 @@ introduced as separate enhancement proposals.
 
 It is important to note that **VPA cannot guarantee NO disruptions**. This is because the
 underlying container runtime is responsible for actuating the resize operation and there are no
-guarantees provided (see [this thread]for more information). However, in practice if the
+guarantees provided (see [this thread] for more information). However, in practice if the
 underlying container runtime supports it, we expect these disruptions to be minimal and that MOST
 of the time the updates will be done in-place.
 
