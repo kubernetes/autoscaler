@@ -200,7 +200,9 @@ func applyVPAPolicyForContainer(containerName string,
 
 	var maxAllowed apiv1.ResourceList
 	if containerPolicy != nil {
-		maxAllowed = containerPolicy.MaxAllowed
+		// Deep copy containerPolicy.MaxAllowed as maxAllowed can later on be merged with globalMaxAllowed.
+		// Deep copy is needed to prevent unwanted modifications to containerPolicy.MaxAllowed.
+		maxAllowed = containerPolicy.MaxAllowed.DeepCopy()
 	}
 	if maxAllowed == nil {
 		maxAllowed = globalMaxAllowed

@@ -569,9 +569,14 @@ func TestApplyVPAPolicy(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
+			resourcePolicyCopy := tt.ResourcePolicy.DeepCopy()
+
 			actual, err := ApplyVPAPolicy(tt.PodRecommendation, tt.ResourcePolicy, tt.GlobalMaxAllowed)
 			assert.Nil(t, err)
 			assert.Equal(t, tt.Expected, actual)
+
+			// Make sure that the func does not have a side affect and does not modify the passed resource policy.
+			assert.Equal(t, resourcePolicyCopy, tt.ResourcePolicy)
 		})
 	}
 }
