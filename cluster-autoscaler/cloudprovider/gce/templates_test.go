@@ -1304,6 +1304,18 @@ func TestExtractExtendedResourcesFromKubeEnv(t *testing.T) {
 			expectedExtendedResources: apiv1.ResourceList{},
 			expectedErr:               true,
 		},
+		{
+			name: "two valid values one of them defined in node labels",
+			kubeEnvValue: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,clusterautoscaler-nodetemplate-resources.test.co/test-resource=3,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo=bar,baz=10G",
+			expectedExtendedResources: apiv1.ResourceList{
+				apiv1.ResourceName("baz"):                   *resource.NewQuantity(10*units.GB, resource.DecimalSI),
+				apiv1.ResourceName("test.co/test-resource"): *resource.NewQuantity(3, resource.DecimalSI),
+			},
+			expectedErr: false,
+		},
 	}
 
 	for _, tc := range testCases {
