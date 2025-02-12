@@ -3,10 +3,9 @@ This document contains the flags for all VPA components.
 
 # What are the parameters to VPA admission-controller?
 This document is auto-generated from the flag definitions in the VPA admission-controller code.
-Last updated: 2025-02-11 13:55:46 UTC
 
 | Flag | Default | Description |
-|------|---------|-------------|
+|---------|---------|-------------|
 | `--add-dir-header` |  |                         If true, adds the file directory to the header of the log messages |
 | `--address` | ":8944" |                         The address to expose Prometheus metrics. |
 | `--alsologtostderr` |  |                        log to standard error as well as files (no effect when -logtostderr=true) |
@@ -45,10 +44,9 @@ Last updated: 2025-02-11 13:55:46 UTC
 
 # What are the parameters to VPA recommender?
 This document is auto-generated from the flag definitions in the VPA recommender code.
-Last updated: 2025-02-11 13:55:47 UTC
 
 | Flag | Default | Description |
-|------|---------|-------------|
+|---------|---------|-------------|
 | `--add-dir-header` |  |                                       If true, adds the file directory to the header of the log messages |
 | `--address` | ":8942" |                                       The address to expose Prometheus metrics. |
 | `--alsologtostderr` |  |                                      log to standard error as well as files (no effect when -logtostderr=true) |
@@ -121,10 +119,9 @@ Last updated: 2025-02-11 13:55:47 UTC
 
 # What are the parameters to VPA updater?
 This document is auto-generated from the flag definitions in the VPA updater code.
-Last updated: 2025-02-11 13:55:47 UTC
 
 | Flag | Default | Description |
-|------|---------|-------------|
+|---------|---------|-------------|
 | `--add-dir-header` |  |                                                  If true, adds the file directory to the header of the log messages |
 | `--address` | ":8943" |                                                  The address to expose Prometheus metrics. |
 | `--alsologtostderr` |  |                                                 log to standard error as well as files (no effect when -logtostderr=true) |

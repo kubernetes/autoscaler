@@ -34,7 +34,6 @@ extract_flags() {
     
     echo "# What are the parameters to VPA ${component}?"
     echo "This document is auto-generated from the flag definitions in the VPA ${component} code."
-    echo "Last updated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
     echo
     echo "| Flag | Default | Description |"
     echo "|---------|---------|-------------|"
