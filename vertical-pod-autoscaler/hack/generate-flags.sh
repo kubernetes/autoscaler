@@ -37,7 +37,7 @@ extract_flags() {
     echo "Last updated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
     echo
     echo "| Flag | Default | Description |"
-    echo "|------|---------|-------------|"
+    echo "|---------|---------|-------------|"
 
     $binary --help 2>&1 | grep -E '^\s*-' | while read -r line; do
         if [[ $line == *"-v, --v Level"* ]]; then
