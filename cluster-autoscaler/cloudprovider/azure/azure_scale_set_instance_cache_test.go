@@ -19,26 +19,11 @@ package azure
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
-)
-
-var (
-	ctrl                                 *gomock.Controller
-	currentTime, expiredTime             time.Time
-	provider                             *AzureCloudProvider
-	scaleSet                             *ScaleSet
-	mockVMSSVMClient                     *mockvmssvmclient.MockInterface
-	expectedVMSSVMs                      []compute.VirtualMachineScaleSetVM
-	expectedStates                       []cloudprovider.InstanceState
-	instanceCache, expectedInstanceCache []cloudprovider.Instance
 )
 
 func testGetInstanceCacheWithStates(t *testing.T, vms []compute.VirtualMachineScaleSetVM,
@@ -52,4 +37,129 @@ func testGetInstanceCacheWithStates(t *testing.T, vms []compute.VirtualMachineSc
 		})
 	}
 	return instanceCacheTest
+}
+
+// Suggestion: could populate all combinations, should reunify with TestInstanceStatusFromProvisioningStateAndPowerState
+func TestInstanceStatusFromVM(t *testing.T) {
+	t.Run("fast delete enablement = false", func(t *testing.T) {
+		provider := newTestProvider(t)
+		scaleSet := newTestScaleSet(provider.azureManager, "testScaleSet")
+
+		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStarting)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+
+		t.Run("provisioning state = failed, power state = running", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateRunning)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+
+		t.Run("provisioning state = failed, power state = stopping", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopping)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+
+		t.Run("provisioning state = failed, power state = stopped", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopped)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+
+		t.Run("provisioning state = failed, power state = deallocated", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateDeallocated)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+
+		t.Run("provisioning state = failed, power state = unknown", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+	})
+
+	t.Run("fast delete enablement = true", func(t *testing.T) {
+		provider := newTestProvider(t)
+		scaleSet := newTestScaleSetWithFastDelete(provider.azureManager, "testScaleSet")
+
+		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStarting)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+
+		t.Run("provisioning state = failed, power state = running", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateRunning)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
+		})
+
+		t.Run("provisioning state = failed, power state = stopping", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopping)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
+			assert.NotNil(t, status.ErrorInfo)
+		})
+
+		t.Run("provisioning state = failed, power state = stopped", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopped)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
+			assert.NotNil(t, status.ErrorInfo)
+		})
+
+		t.Run("provisioning state = failed, power state = deallocated", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateDeallocated)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
+			assert.NotNil(t, status.ErrorInfo)
+		})
+
+		t.Run("provisioning state = failed, power state = unknown", func(t *testing.T) {
+			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status)
+			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
+			assert.NotNil(t, status.ErrorInfo)
+		})
+	})
 }

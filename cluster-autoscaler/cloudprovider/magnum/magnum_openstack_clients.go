@@ -231,3 +231,12 @@ func createHeatClient(cfg *Config, provider *gophercloud.ProviderClient, opts co
 
 	return heatClient, nil
 }
+
+func createNovaClient(cfg *Config, provider *gophercloud.ProviderClient, opts config.AutoscalingOptions) (*gophercloud.ServiceClient, error) {
+	novaClient, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{Type: "compute", Name: "nova", Region: cfg.Global.Region})
+	if err != nil {
+		return nil, fmt.Errorf("could not create compute client: %v", err)
+	}
+
+	return novaClient, nil
+}

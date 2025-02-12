@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/compute/v2/flavors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/clusters"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stackresources"
@@ -47,6 +48,7 @@ type nodeGroupStacks struct {
 type magnumManagerImpl struct {
 	clusterClient *gophercloud.ServiceClient
 	heatClient    *gophercloud.ServiceClient
+	novaClient    *gophercloud.ServiceClient
 
 	clusterName string
 
@@ -55,10 +57,11 @@ type magnumManagerImpl struct {
 }
 
 // createMagnumManagerImpl creates an instance of magnumManagerImpl.
-func createMagnumManagerImpl(clusterClient, heatClient *gophercloud.ServiceClient, opts config.AutoscalingOptions) (*magnumManagerImpl, error) {
+func createMagnumManagerImpl(clusterClient, heatClient *gophercloud.ServiceClient, novaClient *gophercloud.ServiceClient, opts config.AutoscalingOptions) (*magnumManagerImpl, error) {
 	manager := magnumManagerImpl{
 		clusterClient: clusterClient,
 		heatClient:    heatClient,
+		novaClient:    novaClient,
 		clusterName:   opts.ClusterName,
 		stackInfo:     make(map[string]nodeGroupStacks),
 
@@ -507,4 +510,13 @@ func (mgr *magnumManagerImpl) nodeGroupForNode(node *apiv1.Node) (string, error)
 	}
 
 	return "", fmt.Errorf("could not find node group for node %s", node.Spec.ProviderID)
+}
+
+func (mgr *magnumManagerImpl) getFlavorById(flavorId string) (*flavors.Flavor, error) {
+	flavor, err := flavors.Get(mgr.novaClient, flavorId).Extract()
+	klog.V(5).Infof("getFlavorByID: Got flavor from nova: %s", flavorId)
+	if err != nil {
+		return nil, fmt.Errorf("could not get flavor: %v", err)
+	}
+	return flavor, nil
 }

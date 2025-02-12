@@ -21,6 +21,7 @@ package builder
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/client-go/informers"
 )
@@ -30,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.OVHcloudProviderName,
 }
 
-// DefaultCloudProvider is OVHcloud.
+// DefaultCloudProvider for OVHcloud-only build is OVHcloud.
 const DefaultCloudProvider = cloudprovider.OVHcloudProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {

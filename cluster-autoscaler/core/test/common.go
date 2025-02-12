@@ -19,6 +19,7 @@ package test
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"testing"
 	"time"
 
@@ -44,6 +45,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -178,7 +180,7 @@ func NewScaleTestAutoscalingContext(
 	if debuggingSnapshotter == nil {
 		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
 	}
-	clusterSnapshot, err := testsnapshot.NewTestSnapshot()
+	clusterSnapshot, fwHandle, err := testsnapshot.NewTestSnapshotAndHandle()
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
@@ -192,6 +194,7 @@ func NewScaleTestAutoscalingContext(
 		},
 		CloudProvider:        provider,
 		ClusterSnapshot:      clusterSnapshot,
+		FrameworkHandle:      fwHandle,
 		ExpanderStrategy:     random.NewStrategy(),
 		ProcessorCallbacks:   processorCallbacks,
 		DebuggingSnapshotter: debuggingSnapshotter,
@@ -341,19 +344,21 @@ type expanderResults struct {
 
 // MockReportingStrategy implements expander.Strategy
 type MockReportingStrategy struct {
-	defaultStrategy expander.Strategy
-	optionToChoose  *GroupSizeChange
-	t               *testing.T
-	results         *expanderResults
+	defaultStrategy           expander.Strategy
+	optionToChoose            *GroupSizeChange
+	similarNodeGroupsToChoose *[]string
+	t                         *testing.T
+	results                   *expanderResults
 }
 
-// NewMockRepotingStrategy creates an expander strategy with reporting and mocking capabilities.
-func NewMockRepotingStrategy(t *testing.T, optionToChoose *GroupSizeChange) *MockReportingStrategy {
+// NewMockReportingStrategy creates an expander strategy with reporting and mocking capabilities.
+func NewMockReportingStrategy(t *testing.T, optionToChoose *GroupSizeChange, similarNodeGroupsToChoose *[]string) *MockReportingStrategy {
 	return &MockReportingStrategy{
-		defaultStrategy: random.NewStrategy(),
-		results:         &expanderResults{},
-		optionToChoose:  optionToChoose,
-		t:               t,
+		defaultStrategy:           random.NewStrategy(),
+		results:                   &expanderResults{},
+		optionToChoose:            optionToChoose,
+		similarNodeGroupsToChoose: similarNodeGroupsToChoose,
+		t:                         t,
 	}
 }
 
@@ -373,7 +378,16 @@ func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo m
 	for _, option := range options {
 		groupSizeChange := expanderOptionToGroupSizeChange(option)
 		if groupSizeChange == *r.optionToChoose {
-			return &option
+			bestOption := option
+			if r.similarNodeGroupsToChoose != nil {
+				bestOption.SimilarNodeGroups = []cloudprovider.NodeGroup{}
+				for _, nodeGroup := range options {
+					if slices.Contains(*r.similarNodeGroupsToChoose, nodeGroup.NodeGroup.Id()) {
+						bestOption.SimilarNodeGroups = append(bestOption.SimilarNodeGroups, nodeGroup.NodeGroup)
+					}
+				}
+			}
+			return &bestOption
 		}
 	}
 	assert.Fail(r.t, "did not find expansionOptionToChoose %+v", r.optionToChoose)

@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.IonoscloudProviderName,
 }
 
-// DefaultCloudProvider for IonosCloud-only build is ionoscloud.
+// DefaultCloudProvider for IonosCloud-only build is IonosCloud.
 const DefaultCloudProvider = cloudprovider.IonoscloudProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {

@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.BrightboxProviderName,
 }
 
-// DefaultCloudProvider is Brightbox
+// DefaultCloudProvider for Brightbox-only build is Brightbox.
 const DefaultCloudProvider = cloudprovider.BrightboxProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
