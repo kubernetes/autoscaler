@@ -1306,7 +1306,7 @@ func TestExtractExtendedResourcesFromKubeEnv(t *testing.T) {
 		},
 		{
 			name: "two valid values one of them defined in node labels",
-			kubeEnvValue: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,clusterautoscaler-nodetemplate-resources-test.co/test-resource=3,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+			kubeEnvValue: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,clusterautoscaler-nodetemplate-resources.test.co/test-resource=3,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
 				"kube_reserved=cpu=1000m,memory=300000Mi;" +
 				"extended_resources=foo=bar,baz=10G",
