@@ -88,12 +88,18 @@ func CreateTestPods(n int) []*apiv1.Pod {
 	return CreateTestPodsWithPrefix("p", n)
 }
 
-// AssignTestPodsToNodes distributes test pods evenly across test nodes.
-func AssignTestPodsToNodes(pods []*apiv1.Pod, nodes []*apiv1.Node) {
+// AssignTestPodsToNodes distributes test pods evenly across test nodes, and returns a map of the distribution.
+func AssignTestPodsToNodes(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string][]*apiv1.Pod {
 	if len(nodes) == 0 {
-		return
+		return nil
 	}
+	podsByNode := map[string][]*apiv1.Pod{}
 	for i := 0; i < len(pods); i++ {
-		pods[i].Spec.NodeName = nodes[i%len(nodes)].Name
+		pod := pods[i]
+		nodeName := nodes[i%len(nodes)].Name
+
+		pod.Spec.NodeName = nodeName
+		podsByNode[nodeName] = append(podsByNode[nodeName], pod)
 	}
+	return podsByNode
 }

@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
@@ -43,7 +44,6 @@ func addTestCPUSample(cluster *ClusterState, container ContainerID, cpuCores flo
 		ContainerUsageSample: ContainerUsageSample{
 			MeasureStart: testTimestamp,
 			Usage:        CPUAmountFromCores(cpuCores),
-			Request:      testRequest[ResourceCPU],
 			Resource:     ResourceCPU,
 		},
 	}
@@ -56,7 +56,6 @@ func addTestMemorySample(cluster *ClusterState, container ContainerID, memoryByt
 		ContainerUsageSample: ContainerUsageSample{
 			MeasureStart: testTimestamp,
 			Usage:        MemoryAmountFromBytes(memoryBytes),
-			Request:      testRequest[ResourceMemory],
 			Resource:     ResourceMemory,
 		},
 	}

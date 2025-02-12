@@ -18,6 +18,7 @@ package api
 
 import (
 	v1 "k8s.io/api/core/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 

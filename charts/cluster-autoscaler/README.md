@@ -75,6 +75,7 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [Cluster API](#cluster-api)
 - [Exoscale](#exoscale)
 - [Hetzner Cloud](#hetzner-cloud)
+- [Civo](#civo)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -282,6 +283,23 @@ Each autoscaling group requires an additional `instanceType` and `region` key to
 
 Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
 
+### Civo
+
+The following parameters are required:
+
+- `cloudProvider=civo`
+- `autoscalingGroups=...`
+
+When installing the helm chart to the namespace `kube-system`, you can set `secretKeyRefNameOverride` to `civo-api-access`.
+Otherwise specify the following parameters:
+
+- `civoApiUrl=https://api.civo.com`
+- `civoApiKey=...`
+- `civoClusterID=...`
+- `civoRegion=...`
+
+Read [cluster-autoscaler/cloudprovider/civo/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/civo/README.md) for further information on the setup without helm.
+
 ## Uninstalling the Chart
 
 To uninstall `my-release`:
@@ -339,6 +357,14 @@ extraVolumeMounts:
   name: azure-identity-token
   readOnly: true
 ```
+
+### Custom arguments
+
+You can use the `customArgs` value to give any argument to cluster autoscaler command.
+
+Typical use case is to give an environment variable as an argument which will be interpolated at execution time.
+
+This is helpful when you need to inject values from configmap or secret.
 
 ## Troubleshooting
 
@@ -413,14 +439,19 @@ vpa:
 | azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureUseWorkloadIdentityExtension | bool | `false` | Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureVMType | string | `"vmss"` | Azure VM type. |
+| civoApiKey | string | `""` | API key for the Civo API. Required if `cloudProvider=civo` |
+| civoApiUrl | string | `"https://api.civo.com"` | URL for the Civo API. Required if `cloudProvider=civo` |
+| civoClusterID | string | `""` | Cluster ID for the Civo cluster. Required if `cloudProvider=civo` |
+| civoRegion | string | `""` | Region for the Civo cluster. Required if `cloudProvider=civo` |
 | cloudConfigPath | string | `""` | Configuration file for cloud provider. |
-| cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. |
+| cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum`, `clusterapi` and `civo` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. `civo` for Civo Cloud. |
 | clusterAPICloudConfigPath | string | `"/etc/kubernetes/mgmt-kubeconfig"` | Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig` |
 | clusterAPIConfigMapsNamespace | string | `""` | Namespace on the workload cluster to store Leader election and status configmaps |
 | clusterAPIKubeconfigSecret | string | `""` | Secret containing kubeconfig for connecting to Cluster API managed workloadcluster Required if `cloudProvider=clusterapi` and `clusterAPIMode=kubeconfig-kubeconfig,kubeconfig-incluster or incluster-kubeconfig` |
 | clusterAPIMode | string | `"incluster-incluster"` | Cluster API mode, see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters Syntax: workloadClusterMode-ManagementClusterMode for `kubeconfig-kubeconfig`, `incluster-kubeconfig` and `single-kubeconfig` you always must mount the external kubeconfig using either `extraVolumeSecrets` or `extraMounts` and `extraVolumes` if you dont set `clusterAPIKubeconfigSecret`and thus use an in-cluster config or want to use a non capi generated kubeconfig you must do so for the workload kubeconfig as well |
 | clusterAPIWorkloadKubeconfigPath | string | `"/etc/kubernetes/value"` | Path to kubeconfig for connecting to Cluster API managed workloadcluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or kubeconfig-incluster` |
 | containerSecurityContext | object | `{}` | [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
+| customArgs | list | `[]` | Additional custom container arguments. Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler parameters and their default values. List of arguments as strings. |
 | deployment.annotations | object | `{}` | Annotations to add to the Deployment object. |
 | dnsPolicy | string | `"ClusterFirst"` | Defaults to `ClusterFirst`. Valid values are: `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`. If autoscaler does not depend on cluster DNS, recommended to set this to `Default`. |
 | envFromConfigMap | string | `""` | ConfigMap name to use as envFrom. |
@@ -439,7 +470,7 @@ vpa:
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.31.0"` | Image tag |
+| image.tag | string | `"v1.32.0"` | Image tag |
 | initContainers | list | `[]` | Any additional init containers. |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | kwokConfigMapName | string | `"kwok-provider-config"` | configmap for configuring kwok provider |
@@ -467,7 +498,7 @@ vpa:
 | replicaCount | int | `1` | Desired number of pods |
 | resources | object | `{}` | Pod resource requests and limits. |
 | revisionHistoryLimit | int | `10` | The number of revisions to keep. |
-| secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables |
+| secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS, Azure and Civo env variables |
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |
 | service.clusterIP | string | `""` | IP address to assign to service |

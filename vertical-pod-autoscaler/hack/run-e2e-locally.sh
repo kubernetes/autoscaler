@@ -74,8 +74,12 @@ echo "Deleting KIND cluster 'kind'."
 kind delete cluster -n kind -q
 
 echo "Creating KIND cluster 'kind'"
-KIND_VERSION="kindest/node:v1.26.3"
-kind create cluster --image=${KIND_VERSION} 
+KIND_VERSION="kindest/node:v1.32.0"
+if ! kind create cluster --image=${KIND_VERSION}; then
+    echo "Failed to create KIND cluster. Exiting. Make sure kind version is updated."
+    echo "Available versions: https://github.com/kubernetes-sigs/kind/releases"
+    exit 1
+fi
 
 echo "Building metrics-pump image"
 docker build -t localhost:5001/write-metrics:dev -f ${SCRIPT_ROOT}/hack/e2e/Dockerfile.externalmetrics-writer ${SCRIPT_ROOT}/hack

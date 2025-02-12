@@ -35,6 +35,7 @@ var (
 	lowerBoundMemoryPercentile = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
 	upperBoundMemoryPercentile = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
 	humanizeMemory             = flag.Bool("humanize-memory", false, "Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability.")
+	roundCPUMillicores         = flag.Int("round-cpu-millicores", 1, `CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -189,10 +190,10 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources)
 	for _, name := range containerNames {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
 			ContainerName:  name,
-			Target:         model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory),
-			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound, *humanizeMemory),
-			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound, *humanizeMemory),
-			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory),
+			Target:         model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory, *roundCPUMillicores),
+			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound, *humanizeMemory, *roundCPUMillicores),
+			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound, *humanizeMemory, *roundCPUMillicores),
+			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory, *roundCPUMillicores),
 		})
 	}
 	recommendation := &vpa_types.RecommendedPodResources{

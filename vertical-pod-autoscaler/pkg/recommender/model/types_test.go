@@ -28,75 +28,81 @@ type ResourcesAsResourceListTestCase struct {
 	name         string
 	resources    Resources
 	humanize     bool
+	roundCPU     int
 	resourceList apiv1.ResourceList
 }
 
 func TestResourcesAsResourceList(t *testing.T) {
 	testCases := []ResourcesAsResourceListTestCase{
 		{
-			name: "basic resources without humanize",
+			name: "basic resources without humanize and no cpu rounding",
 			resources: Resources{
 				ResourceCPU:    1000,
 				ResourceMemory: 1000,
 			},
 			humanize: false,
+			roundCPU: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
 				apiv1.ResourceMemory: *resource.NewQuantity(1000, resource.DecimalSI),
 			},
 		},
 		{
-			name: "basic resources with humanize",
+			name: "basic resources with humanize and cpu rounding to 1",
 			resources: Resources{
 				ResourceCPU:    1000,
 				ResourceMemory: 262144000, // 250Mi
 			},
 			humanize: true,
+			roundCPU: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
 				apiv1.ResourceMemory: resource.MustParse("250.00Mi"),
 			},
 		},
 		{
-			name: "large memory value with humanize",
+			name: "large memory value with humanize and cpu rounding to 3",
 			resources: Resources{
 				ResourceCPU:    1000,
 				ResourceMemory: 839500000, // 800.61Mi
 			},
 			humanize: true,
+			roundCPU: 3,
 			resourceList: apiv1.ResourceList{
-				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1002, resource.DecimalSI),
 				apiv1.ResourceMemory: resource.MustParse("800.61Mi"),
 			},
 		},
 		{
-			name: "zero values without humanize",
+			name: "zero values without humanize and cpu rounding to 2",
 			resources: Resources{
 				ResourceCPU:    0,
 				ResourceMemory: 0,
 			},
 			humanize: false,
+			roundCPU: 2,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(0, resource.DecimalSI),
 				apiv1.ResourceMemory: *resource.NewQuantity(0, resource.DecimalSI),
 			},
 		},
 		{
-			name: "large memory value without humanize",
+			name: "large memory value without humanize and cpu rounding to 13",
 			resources: Resources{
-				ResourceCPU:    1000,
+				ResourceCPU:    1231241,
 				ResourceMemory: 839500000,
 			},
 			humanize: false,
+			roundCPU: 13,
 			resourceList: apiv1.ResourceList{
-				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1231243, resource.DecimalSI),
 				apiv1.ResourceMemory: *resource.NewQuantity(839500000, resource.DecimalSI),
 			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := ResourcesAsResourceList(tc.resources, tc.humanize)
+			result := ResourcesAsResourceList(tc.resources, tc.humanize, tc.roundCPU)
 			if !result[apiv1.ResourceCPU].Equal(tc.resourceList[apiv1.ResourceCPU]) {
 				t.Errorf("expected %v, got %v", tc.resourceList[apiv1.ResourceCPU], result[apiv1.ResourceCPU])
 			}
@@ -190,6 +196,63 @@ func TestHumanizeMemoryQuantity(t *testing.T) {
 		t.Run(tc.name, func(*testing.T) {
 			result := HumanizeMemoryQuantity(tc.value)
 			assert.Equal(t, tc.wanted, result)
+		})
+	}
+}
+
+type TestRoundUpToScaleTestCase struct {
+	name        string
+	value       ResourceAmount
+	scale       int
+	expected    ResourceAmount
+	expectedErr string
+}
+
+func TestRoundUpToScale(t *testing.T) {
+	testsCases := []TestRoundUpToScaleTestCase{
+		{
+			name:        "Round up to nearest 7",
+			value:       ResourceAmount(100),
+			scale:       7,
+			expected:    ResourceAmount(105),
+			expectedErr: "",
+		},
+		{
+			name:        "Exact multiple of 10",
+			value:       ResourceAmount(100),
+			scale:       10,
+			expected:    ResourceAmount(100),
+			expectedErr: "",
+		},
+		{
+			name:        "Zero value with scale 5",
+			value:       ResourceAmount(0),
+			scale:       5,
+			expected:    ResourceAmount(0),
+			expectedErr: "",
+		},
+		{
+			name:        "Negative scale value",
+			value:       ResourceAmount(100),
+			scale:       -5,
+			expected:    ResourceAmount(100),
+			expectedErr: "scale must be greater than zero",
+		},
+		{
+			name:        "Scale is zero",
+			value:       ResourceAmount(100),
+			scale:       0,
+			expected:    ResourceAmount(100),
+			expectedErr: "scale must be greater than zero",
+		},
+	}
+	for _, tc := range testsCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := RoundUpToScale(tc.value, tc.scale)
+			assert.Equal(t, tc.expected, result)
+			if tc.expectedErr != "" {
+				assert.Equal(t, tc.expectedErr, err.Error())
+			}
 		})
 	}
 }
@@ -605,66 +668,6 @@ func TestResourceNamesApiToModel(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result := ResourceNamesApiToModel(tc.apiResources)
 			assert.Equal(t, tc.modelResources, *result) // Dereference the result here
-		})
-	}
-}
-
-type RoundResourceAmountsTestCase struct {
-	name      string
-	resources Resources
-	want      Resources
-}
-
-func TestRoundResourceAmounts(t *testing.T) {
-	tc := []RoundResourceAmountsTestCase{
-		{
-			name: "should round down CPU and memory",
-			resources: Resources{
-				ResourceCPU:    ResourceAmount(4500), // 4.5 CPU cores
-				ResourceMemory: ResourceAmount(7168), // 7168MB memory
-			},
-			want: Resources{
-				ResourceCPU:    ResourceAmount(4000), // Round down to 4.0 CPU cores
-				ResourceMemory: ResourceAmount(7000), // Round down to 7000MB
-			},
-		},
-		{
-			name: "exact multiples should remain unchanged",
-			resources: Resources{
-				ResourceCPU:    ResourceAmount(2000), // 2.0 CPU cores
-				ResourceMemory: ResourceAmount(4000), // 4000MB memory
-			},
-			want: Resources{
-				ResourceCPU:    ResourceAmount(2000), // Should remain 2.0
-				ResourceMemory: ResourceAmount(4000), // Should remain 4000
-			},
-		},
-		{
-			name: "small values should round to zero",
-			resources: Resources{
-				ResourceCPU:    ResourceAmount(499), // 0.499 CPU cores
-				ResourceMemory: ResourceAmount(999), // 999MB memory
-			},
-			want: Resources{
-				ResourceCPU:    ResourceAmount(0), // Round down to 0
-				ResourceMemory: ResourceAmount(0), // Round down to 0
-			},
-		},
-		{
-			name:      "empty resources should remain empty",
-			resources: Resources{},
-			want:      Resources{},
-		},
-	}
-
-	for _, tc := range tc {
-		t.Run(tc.name, func(t *testing.T) {
-			result := tc.resources
-			for resource, amount := range result {
-				// Assuming unit of 1000 for both CPU and Memory
-				result[resource] = RoundResourceAmount(amount, 1000)
-			}
-			assert.Equal(t, tc.want, result)
 		})
 	}
 }

@@ -18,6 +18,7 @@ package priority
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -35,7 +36,6 @@ type scalingDirectionPodEvictionAdmission struct {
 
 // Admit admits a Pod for eviction in one of three cases
 // * no EvictionRequirement exists for this Pod
-// * no Recommendation exists for at least one Container in this Pod
 // * no Resource requests are set for at least one Container in this Pod
 // * all EvictionRequirements are evaluated to 'true' for at least one Container in this Pod
 func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *vpa_types.RecommendedPodResources) bool {
@@ -45,8 +45,10 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *
 	}
 	for _, container := range pod.Spec.Containers {
 		recommendedResources := vpa_utils.GetRecommendationForContainer(container.Name, resources)
+		// if a container doesn't have a recommendation, the VPA has set `.containerPolicy.mode: off` for this container,
+		// so we can skip this container
 		if recommendedResources == nil {
-			return true
+			continue
 		}
 		if s.admitContainer(container, recommendedResources, podEvictionRequirements) {
 			return true

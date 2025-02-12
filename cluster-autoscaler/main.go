@@ -37,10 +37,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	"k8s.io/kubernetes/pkg/features"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -112,7 +114,6 @@ func multiStringFlag(name string, usage string) *MultiStringFlag {
 }
 
 var (
-	leaseResourceName       = flag.String("lease-resource-name", "cluster-autoscaler", "The lease resource to use in leader election.")
 	clusterName             = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -194,7 +195,7 @@ var (
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(estimator.AvailableEstimators, ",")+"]")
 
-	expanderFlag = flag.String("expander", expander.RandomExpanderName, "Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly.")
+	expanderFlag = flag.String("expander", expander.LeastWasteExpanderName, "Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly.")
 
 	grpcExpanderCert = flag.String("grpc-expander-cert", "", "Path to cert used by gRPC server over TLS")
 	grpcExpanderURL  = flag.String("grpc-expander-url", "", "URL to reach gRPC expander server.")
@@ -281,6 +282,7 @@ var (
 	checkCapacityProvisioningRequestBatchTimebox = flag.Duration("check-capacity-provisioning-request-batch-timebox", 10*time.Second, "Maximum time to process a batch of provisioning requests.")
 	forceDeleteLongUnregisteredNodes             = flag.Bool("force-delete-unregistered-nodes", false, "Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to.")
 	enableDynamicResourceAllocation              = flag.Bool("enable-dynamic-resource-allocation", false, "Whether logic for handling DRA (Dynamic Resource Allocation) objects is enabled.")
+	clusterSnapshotParallelism                   = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation.")
 )
 
 func isFlagPassed(name string) bool {
@@ -461,6 +463,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CheckCapacityProvisioningRequestBatchTimebox: *checkCapacityProvisioningRequestBatchTimebox,
 		ForceDeleteLongUnregisteredNodes:             *forceDeleteLongUnregisteredNodes,
 		DynamicResourceAllocationEnabled:             *enableDynamicResourceAllocation,
+		ClusterSnapshotParallelism:                   *clusterSnapshotParallelism,
 	}
 }
 
@@ -503,10 +506,17 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
+	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
+	if autoscalingOptions.DynamicResourceAllocationEnabled {
+		// TODO(DRA): Remove this once DeltaSnapshotStore is integrated with DRA.
+		klog.Warningf("Using BasicSnapshotStore instead of DeltaSnapshotStore because DRA is enabled. Autoscaling performance/scalability might be decreased.")
+		snapshotStore = store.NewBasicSnapshotStore()
+	}
+
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		FrameworkHandle:      fwHandle,
-		ClusterSnapshot:      predicate.NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled),
+		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,
@@ -552,6 +562,8 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 		podListProcessor.AddProcessor(provreqProcesor)
+
+		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
 	}
 
 	if *proactiveScaleupEnabled {
@@ -659,10 +671,13 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 
 	// Autoscale ad infinitum.
 	if *frequentLoopsEnabled {
+		// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
+		// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
 		lastRun := time.Now()
+		previousRun := time.Now()
 		for {
-			trigger.Wait(lastRun)
-			lastRun = time.Now()
+			trigger.Wait(previousRun)
+			previousRun, lastRun = lastRun, time.Now()
 			loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
 		}
 	} else {
@@ -683,13 +698,22 @@ func main() {
 		klog.Fatalf("Failed to add logging feature flags: %v", err)
 	}
 
+	leaderElection := leaderElectionConfiguration()
+	// Must be called before kube_flag.InitFlags() to ensure leader election flags are parsed and available.
+	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
 
-	leaderElection := defaultLeaderElectionConfiguration()
-	leaderElection.LeaderElect = true
-	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+	// If the DRA flag is passed, we need to set the DRA feature gate as well. The selection of scheduler plugins for the default
+	// scheduling profile depends on feature gates, and the DRA plugin is only included if the DRA feature gate is enabled. The DRA
+	// plugin itself also checks the DRA feature gate and doesn't do anything if it's not enabled.
+	if *enableDynamicResourceAllocation && !featureGate.Enabled(features.DynamicResourceAllocation) {
+		if err := featureGate.SetFromMap(map[string]bool{string(features.DynamicResourceAllocation): true}); err != nil {
+			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
+		}
+	}
 
 	logs.InitLogs()
 	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
@@ -770,14 +794,14 @@ func main() {
 	}
 }
 
-func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+func leaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
 	return componentbaseconfig.LeaderElectionConfiguration{
-		LeaderElect:   false,
+		LeaderElect:   true,
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.LeasesResourceLock,
-		ResourceName:  *leaseResourceName,
+		ResourceName:  "cluster-autoscaler",
 	}
 }
 

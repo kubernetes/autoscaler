@@ -37,11 +37,11 @@ package model
 
 import (
 	"fmt"
-	"math"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
@@ -206,12 +206,8 @@ func (a *AggregateContainerState) SubtractSample(sample *ContainerUsageSample) {
 
 func (a *AggregateContainerState) addCPUSample(sample *ContainerUsageSample) {
 	cpuUsageCores := CoresFromCPUAmount(sample.Usage)
-	cpuRequestCores := CoresFromCPUAmount(sample.Request)
-	// Samples are added with the weight equal to the current request. This means that
-	// whenever the request is increased, the history accumulated so far effectively decays,
-	// which helps react quickly to CPU starvation.
 	a.AggregateCPUUsage.AddSample(
-		cpuUsageCores, math.Max(cpuRequestCores, minSampleWeight), sample.MeasureStart)
+		cpuUsageCores, minSampleWeight, sample.MeasureStart)
 	if sample.MeasureStart.After(a.LastSampleStart) {
 		a.LastSampleStart = sample.MeasureStart
 	}

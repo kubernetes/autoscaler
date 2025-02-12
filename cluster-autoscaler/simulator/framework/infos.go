@@ -77,7 +77,9 @@ func (n *NodeInfo) Pods() []*PodInfo {
 // AddPod adds the given Pod and associated data to the NodeInfo.
 func (n *NodeInfo) AddPod(pod *PodInfo) {
 	n.schedNodeInfo.AddPod(pod.Pod)
-	n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
+	if len(pod.PodExtraInfo.NeededResourceClaims) > 0 {
+		n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
+	}
 }
 
 // RemovePod removes the given pod and its associated data from the NodeInfo.
@@ -111,6 +113,24 @@ func (n *NodeInfo) DeepCopy() *NodeInfo {
 	}
 	// Node() can be nil, but DeepCopy() handles nil receivers gracefully.
 	return NewNodeInfo(n.Node().DeepCopy(), newSlices, newPods...)
+}
+
+// ResourceClaims returns all ResourceClaims contained in the PodInfos in this NodeInfo. Shared claims
+// are taken into account, each claim should only be returned once.
+func (n *NodeInfo) ResourceClaims() []*resourceapi.ResourceClaim {
+	processedClaims := map[types.UID]bool{}
+	var result []*resourceapi.ResourceClaim
+	for _, pod := range n.Pods() {
+		for _, claim := range pod.NeededResourceClaims {
+			if processedClaims[claim.UID] {
+				// Shared claim, already grouped.
+				continue
+			}
+			result = append(result, claim)
+			processedClaims[claim.UID] = true
+		}
+	}
+	return result
 }
 
 // NewNodeInfo returns a new internal NodeInfo from the provided data.

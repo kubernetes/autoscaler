@@ -9,17 +9,18 @@ env:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   test-and-verify:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5.1.0
         with:
           go-version: '1.22.2'
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4.2.2
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/autoscaler
 
@@ -37,6 +38,12 @@ jobs:
         run: hack/verify-all.sh -v
         env:
           GO111MODULE: auto
+
+      - name: golangci-lint - vertical-pod-autoscaler
+        uses: golangci/golangci-lint-action@v6
+        with:
+          args: --timeout=30m
+          working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/vertical-pod-autoscaler
 
       - name: Test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler

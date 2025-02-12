@@ -103,7 +103,7 @@ spec:
             - --cluster-name={{ tpl (.Values.magnumClusterName) . }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "clusterapi" }}
-            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels .Values.autoDiscovery.namepace }}
+            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels .Values.autoDiscovery.namespace }}
             - --node-group-auto-discovery=clusterapi:{{ template "cluster-autoscaler.capiAutodiscoveryConfig" . }}
             {{- end }}
             {{- if eq .Values.clusterAPIMode "incluster-kubeconfig"}}
@@ -131,6 +131,9 @@ spec:
             {{- else }}
             - --{{ $key | mustRegexFind "^[^_]+" }}
             {{- end }}
+          {{- end }}
+          {{- range .Values.customArgs }}
+            - {{ . }}
           {{- end }}
           env:
             - name: POD_NAMESPACE
@@ -218,6 +221,27 @@ spec:
           {{- else if eq .Values.cloudProvider "kwok" }}
             - name: KWOK_PROVIDER_CONFIGMAP
               value: "{{.Values.kwokConfigMapName | default "kwok-provider-config"}}"
+          {{- else if eq .Values.cloudProvider "civo" }}
+            - name: CIVO_API_URL
+              valueFrom:
+                secretKeyRef:
+                  key: api-url
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: CIVO_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: CIVO_CLUSTER_ID
+              valueFrom:
+                secretKeyRef:
+                  key: cluster-id
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: CIVO_REGION
+              valueFrom:
+                secretKeyRef:
+                  key: region
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
           {{- end }}
           {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}

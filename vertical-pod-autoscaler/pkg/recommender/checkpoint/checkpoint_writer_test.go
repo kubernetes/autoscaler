@@ -23,6 +23,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 
@@ -76,7 +77,6 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	container.AddSample(&model.ContainerUsageSample{
 		MeasureStart: timeNow,
 		Usage:        model.MemoryAmountFromBytes(1024 * 1024 * 1024),
-		Request:      testRequest[model.ResourceMemory],
 		Resource:     model.ResourceMemory,
 	})
 	vpa := addVpa(t, cluster, testVpaID1, testSelectorStr)

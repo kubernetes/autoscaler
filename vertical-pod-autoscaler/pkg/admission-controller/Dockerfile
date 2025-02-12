@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM golang:1.23.4 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.23.6 AS builder
 
 WORKDIR /workspace
 
@@ -26,8 +26,9 @@ COPY common common
 COPY pkg pkg
 
 ARG TARGETOS TARGETARCH
+ARG BUILD_LD_FLAGS="-s"
 
-RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/admission-controller -o admission-controller-$TARGETARCH
+RUN CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/admission-controller -ldflags="${BUILD_LD_FLAGS}" -o admission-controller-$TARGETARCH
 
 FROM gcr.io/distroless/static:nonroot
 
