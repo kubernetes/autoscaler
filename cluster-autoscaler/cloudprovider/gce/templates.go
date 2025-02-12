@@ -457,10 +457,13 @@ func extractExtendedResourcesFromKubeEnv(kubeEnv KubeEnv) (apiv1.ResourceList, e
 		if err != nil {
 			return apiv1.ResourceList{}, err
 		}
-		const extendedResourcesKeyPrefix = "clusterautoscaler-nodetemplate-resources-"
+		const extendedResourcesKeyPrefix = "clusterautoscaler-nodetemplate-resources."
 		for key, value := range nodeLabelsMap {
 			if strings.HasPrefix(key, extendedResourcesKeyPrefix) {
 				key = strings.TrimPrefix(key, extendedResourcesKeyPrefix)
+				if _, existsBefore := extendedResourcesMap[key]; existsBefore {
+					klog.Warningf("extended resource %s defined twice in template", key)
+				}
 				extendedResourcesMap[key] = value
 			}
 		}
