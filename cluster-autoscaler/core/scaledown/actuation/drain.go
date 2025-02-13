@@ -93,7 +93,7 @@ func (e Evictor) drainNode(ctx *acontext.AutoscalingContext, nodeInfo *framework
 	if e.fullDsEviction {
 		return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, append(pods, dsPods...), nil, force)
 	}
-	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, pods, dsPods, false)
+	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, pods, dsPods, force)
 }
 
 // EvictDaemonSetPods creates eviction objects for all DaemonSet pods on the node.
@@ -101,7 +101,7 @@ func (e Evictor) drainNode(ctx *acontext.AutoscalingContext, nodeInfo *framework
 func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
 	node := nodeInfo.Node()
 	dsPods, _ := podsToEvict(nodeInfo, ctx.DaemonSetEvictionForEmptyNodes)
-	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, nil, dsPods, false)
+	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, nil, dsPods, false) // force option applies only to full eviction pods
 }
 
 // drainNodeWithPodsBasedOnPodPriority performs drain logic on the node based on pod priorities.
@@ -193,7 +193,7 @@ func (e Evictor) initiateEviction(ctx *acontext.AutoscalingContext, node *apiv1.
 
 	for _, pod := range bestEffortEvictionPods {
 		go func(pod *apiv1.Pod) {
-			bestEffortEvictionConfirmations <- e.evictPod(ctx, pod, retryUntil, maxTermination, false, false)
+			bestEffortEvictionConfirmations <- e.evictPod(ctx, pod, retryUntil, maxTermination, false, false) // force option applies only to full eviction pods
 		}(pod)
 	}
 
