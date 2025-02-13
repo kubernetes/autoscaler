@@ -75,6 +75,8 @@ echo "Generating flags documentation..."
     echo "# Vertical Pod Autoscaler Flags"
     echo "This document contains the flags for all VPA components."
     echo
+    echo "> **Note:** This document is auto-generated from the default branch (master) of the VPA repository."
+    echo
 
     for component in "${COMPONENTS[@]}"; do
         binary="${SCRIPT_ROOT}/pkg/${component}/${component}"

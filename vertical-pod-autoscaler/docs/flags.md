@@ -1,6 +1,8 @@
 # Vertical Pod Autoscaler Flags
 This document contains the flags for all VPA components.
 
+> **Note:** This document is auto-generated from the default branch (master) of the VPA repository.
+
 # What are the parameters to VPA admission-controller?
 This document is auto-generated from the flag definitions in the VPA admission-controller code.
 
