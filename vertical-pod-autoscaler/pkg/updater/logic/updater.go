@@ -38,6 +38,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
@@ -51,6 +52,16 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
+const (
+	// DeferredResizeUpdateTimeout defines the duration during which an in-place resize request
+	// is considered deferred. If the resize is not completed within this time, it falls back to eviction.
+	DeferredResizeUpdateTimeout = 1 * time.Minute
+
+	// InProgressResizeUpdateTimeout defines the duration during which an in-place resize request
+	// is considered in progress. If the resize is not completed within this time, it falls back to eviction.
+	InProgressResizeUpdateTimeout = 1 * time.Hour
+)
+
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
 type Updater interface {
 	// RunOnce represents single iteration in the main-loop of Updater
@@ -58,19 +69,21 @@ type Updater interface {
 }
 
 type updater struct {
-	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
-	podLister                    v1lister.PodLister
-	eventRecorder                record.EventRecorder
-	evictionFactory              eviction.PodsEvictionRestrictionFactory
-	recommendationProcessor      vpa_api_util.RecommendationProcessor
-	evictionAdmission            priority.PodEvictionAdmission
-	priorityProcessor            priority.PriorityProcessor
-	evictionRateLimiter          *rate.Limiter
-	selectorFetcher              target.VpaTargetSelectorFetcher
-	useAdmissionControllerStatus bool
-	statusValidator              status.Validator
-	controllerFetcher            controllerfetcher.ControllerFetcher
-	ignoredNamespaces            []string
+	vpaLister                       vpa_lister.VerticalPodAutoscalerLister
+	podLister                       v1lister.PodLister
+	eventRecorder                   record.EventRecorder
+	evictionFactory                 eviction.PodsEvictionRestrictionFactory
+	recommendationProcessor         vpa_api_util.RecommendationProcessor
+	evictionAdmission               priority.PodEvictionAdmission
+	priorityProcessor               priority.PriorityProcessor
+	evictionRateLimiter             *rate.Limiter
+	selectorFetcher                 target.VpaTargetSelectorFetcher
+	useAdmissionControllerStatus    bool
+	statusValidator                 status.Validator
+	controllerFetcher               controllerfetcher.ControllerFetcher
+	ignoredNamespaces               []string
+	patchCalculators                []patch.Calculator
+	lastInPlaceUpdateAttemptTimeMap map[string]time.Time
 }
 
 // NewUpdater creates Updater with given configuration
@@ -90,6 +103,7 @@ func NewUpdater(
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
 	ignoredNamespaces []string,
+	patchCalculators []patch.Calculator,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -113,7 +127,9 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
-		ignoredNamespaces: ignoredNamespaces,
+		ignoredNamespaces:               ignoredNamespaces,
+		patchCalculators:                patchCalculators,
+		lastInPlaceUpdateAttemptTimeMap: make(map[string]time.Time),
 	}, nil
 }
 
@@ -149,8 +165,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 			continue
 		}
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
-			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto {
-			klog.V(3).InfoS("Skipping VPA object because its mode is not \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
+			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
+			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
@@ -201,29 +217,63 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpasWithEvictablePodsCounter := metrics_updater.NewVpasWithEvictablePodsCounter()
 	vpasWithEvictedPodsCounter := metrics_updater.NewVpasWithEvictedPodsCounter()
 
+	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdtateablePodsCounter()
+	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdtatedPodsCounter()
+
 	// using defer to protect against 'return' after evictionRateLimiter.Wait
 	defer controlledPodsCounter.Observe()
 	defer evictablePodsCounter.Observe()
 	defer vpasWithEvictablePodsCounter.Observe()
 	defer vpasWithEvictedPodsCounter.Observe()
+	// separate counters for in-place
+	defer vpasWithInPlaceUpdatablePodsCounter.Observe()
+	defer vpasWithInPlaceUpdatedPodsCounter.Observe()
 
 	// NOTE: this loop assumes that controlledPods are filtered
-	// to contain only Pods controlled by a VPA in auto or recreate mode
+	// to contain only Pods controlled by a VPA in auto, recreate, or inPlaceOrRecreate mode
+	klog.V(2).InfoS("Processing controlled pods", "count", len(allLivePods))
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
 		controlledPodsCounter.Add(vpaSize, vpaSize)
-		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods, vpa)
-		podsForUpdate := u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
+		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods, vpa, u.patchCalculators)
+		podsForUpdate := u.getPodsUpdateOrder(filterOutNonUpdatablePods(livePods, evictionLimiter), vpa)
 		evictablePodsCounter.Add(vpaSize, len(podsForUpdate))
 
+		withInPlaceUpdatable := false
+		withInPlaceUpdated := false
 		withEvictable := false
 		withEvicted := false
-		for _, pod := range podsForUpdate {
+
+		for _, updatablePod := range podsForUpdate {
+			pod := updatablePod.Pod()
+			if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlaceOrRecreate {
+				withInPlaceUpdatable = true
+				fallBackToEviction, err := u.AttemptInPlaceUpdate(ctx, vpa, pod, evictionLimiter)
+				if err != nil {
+					klog.V(0).InfoS("In-place update failed", "error", err, "pod", klog.KObj(pod))
+					return
+				}
+				if fallBackToEviction {
+					// TODO(jkyros): this needs to be cleaner, but we absolutely need to make sure a disruptionless update doesn't "sneak through"
+					// if the pod is disruptionless, there's no need to evict, just wait until the next updater loop
+					if updatablePod.IsDisruptionless() {
+						klog.InfoS("Not falling back to eviction, pod was supposed to be disruptionless", "pod", klog.KObj(pod))
+						continue
+					} else {
+						klog.V(4).InfoS("Falling back to eviction for pod", "pod", klog.KObj(pod))
+					}
+				} else {
+					withInPlaceUpdated = true
+					metrics_updater.AddInPlaceUpdatedPod(vpaSize)
+					continue
+				}
+			}
+
 			withEvictable = true
 			if !evictionLimiter.CanEvict(pod) {
 				continue
 			}
-			err := u.evictionRateLimiter.Wait(ctx)
+			err = u.evictionRateLimiter.Wait(ctx)
 			if err != nil {
 				klog.V(0).InfoS("Eviction rate limiter wait failed", "error", err)
 				return
@@ -238,6 +288,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 			}
 		}
 
+		if withInPlaceUpdatable {
+			vpasWithInPlaceUpdatablePodsCounter.Add(vpaSize, 1)
+		}
+		if withInPlaceUpdated {
+			vpasWithInPlaceUpdatedPodsCounter.Add(vpaSize, 1)
+		}
 		if withEvictable {
 			vpasWithEvictablePodsCounter.Add(vpaSize, 1)
 		}
@@ -246,6 +302,20 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 	}
 	timer.ObserveStep("EvictPods")
+}
+
+// VpaRecommendationProvided checks the VPA status to see if it has provided a recommendation yet. Used
+// to make sure we don't get bogus values for in-place scaling
+// TODO(jkyros):  take this out when you find the proper place to gate this
+func VpaRecommendationProvided(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	// for _, condition := range vpa.Status.Conditions {
+	// 	if condition.Type == vpa_types.RecommendationProvided && condition.Status == apiv1.ConditionTrue {
+	// 		return true
+	// 	}
+	// }
+	// TODO(maxcao13): The above condition doesn't work in tests because sometimes there is no recommender to set this status
+	// so we should check the recommendation field directly. Or we can set the above condition manually in tests.
+	return vpa.Status.Recommendation != nil
 }
 
 func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate.Limiter {
@@ -262,25 +332,37 @@ func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
+func (u *updater) getPodsUpdateOrder(updatablePods []*eviction.UpdatablePod, vpa *vpa_types.VerticalPodAutoscaler) []*eviction.UpdatablePod {
 	priorityCalculator := priority.NewUpdatePriorityCalculator(
 		vpa,
 		nil,
 		u.recommendationProcessor,
 		u.priorityProcessor)
 
-	for _, pod := range pods {
+	for _, pod := range updatablePods {
 		priorityCalculator.AddPod(pod, time.Now())
 	}
 
-	return priorityCalculator.GetSortedPods(u.evictionAdmission)
+	return priorityCalculator.GetSortedUpdatablePods(u.evictionAdmission)
 }
 
+// TODO(maxcao13): Deprecated in favour of filterNonUpdatablePods
 func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriction eviction.PodsEvictionRestriction) []*apiv1.Pod {
 	result := make([]*apiv1.Pod, 0)
 	for _, pod := range pods {
 		if evictionRestriction.CanEvict(pod) {
 			result = append(result, pod)
+		}
+	}
+	return result
+}
+
+func filterOutNonUpdatablePods(pods []*apiv1.Pod, evictionRestriction eviction.PodsEvictionRestriction) []*eviction.UpdatablePod {
+	result := make([]*eviction.UpdatablePod, 0)
+	for _, pod := range pods {
+		if evictionRestriction.CanEvict(pod) || evictionRestriction.CanInPlaceUpdate(pod) {
+			updatablePod := eviction.NewUpdatablePod(pod)
+			result = append(result, updatablePod)
 		}
 	}
 	return result
@@ -325,4 +407,64 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	}
 
 	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
+}
+
+func (u *updater) AttemptInPlaceUpdate(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler, pod *apiv1.Pod, evictionLimiter eviction.PodsEvictionRestriction) (fallBackToEviction bool, err error) {
+	klog.V(4).InfoS("Checking preconditions for attemping in-place update", "pod", klog.KObj(pod))
+	if !evictionLimiter.CanInPlaceUpdate(pod) {
+		if pod.Status.QOSClass == apiv1.PodQOSGuaranteed {
+			klog.V(4).InfoS("Can't resize pod in-place due to QOSClass change, falling back to eviction", "pod", klog.KObj(pod), "qosClass", pod.Status.QOSClass)
+			return true, nil
+		}
+		if eviction.IsInPlaceUpdating(pod) {
+			lastInPlaceUpdateTime, exists := u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)]
+			if !exists {
+				klog.V(4).InfoS("In-place update in progress for pod but no lastInPlaceUpdateTime found, setting it to now", "pod", klog.KObj(pod))
+				lastInPlaceUpdateTime = time.Now()
+				u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)] = lastInPlaceUpdateTime
+			}
+			// if currently inPlaceUpdating, we should only fallback to eviction if the update has failed. i.e: one of the following conditions:
+			// 1. .status.resize: Infeasible
+			// 2. .status.resize: Deferred + more than 1 minute has elapsed since the lastInPlaceUpdateTime
+			// 3. .status.resize: InProgress + more than 1 hour has elapsed since the lastInPlaceUpdateTime
+			switch pod.Status.Resize {
+			case apiv1.PodResizeStatusDeferred:
+				if time.Since(lastInPlaceUpdateTime) > DeferredResizeUpdateTimeout {
+					klog.V(4).InfoS(fmt.Sprintf("In-place update deferred for more than %v, falling back to eviction", DeferredResizeUpdateTimeout), "pod", klog.KObj(pod))
+					fallBackToEviction = true
+				} else {
+					klog.V(4).InfoS("In-place update deferred, NOT falling back to eviction yet", "pod", klog.KObj(pod))
+				}
+			case apiv1.PodResizeStatusInProgress:
+				if time.Since(lastInPlaceUpdateTime) > InProgressResizeUpdateTimeout {
+					klog.V(4).InfoS(fmt.Sprintf("In-place update in progress for more than %v, falling back to eviction", InProgressResizeUpdateTimeout), "pod", klog.KObj(pod))
+					fallBackToEviction = true
+				} else {
+					klog.V(4).InfoS("In-place update in progress, NOT falling back to eviction yet", "pod", klog.KObj(pod))
+				}
+			case apiv1.PodResizeStatusInfeasible:
+				klog.V(4).InfoS("In-place update infeasible, falling back to eviction", "pod", klog.KObj(pod))
+				fallBackToEviction = true
+			default:
+				klog.V(4).InfoS("In-place update status unknown, falling back to eviction", "pod", klog.KObj(pod))
+				fallBackToEviction = true
+			}
+			return fallBackToEviction, nil
+		}
+		klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+		return false, nil
+	}
+
+	// TODO(jkyros): need our own rate limiter or can we freeload off the eviction one?
+	err = u.evictionRateLimiter.Wait(ctx)
+	if err != nil {
+		// TODO(jkyros): whether or not we fall back to eviction here probably depends on *why* we failed
+		klog.ErrorS(err, "Eviction rate limiter wait failed for in-place resize", "pod", klog.KObj(pod))
+		return false, err
+	}
+
+	klog.V(2).InfoS("Actuating in-place update", "pod", klog.KObj(pod))
+	u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)] = time.Now()
+	err = evictionLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
+	return false, err
 }
