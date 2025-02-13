@@ -289,6 +289,10 @@ func (m *mockActuator) StartDeletion(_, _ []*apiv1.Node) (status.ScaleDownResult
 	return status.ScaleDownError, []*status.ScaleDownNode{}, nil
 }
 
+func (m *mockActuator) StartForceDeletion(_, _ []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
+	return status.ScaleDownError, []*status.ScaleDownNode{}, nil
+}
+
 func (m *mockActuator) CheckStatus() scaledown.ActuationStatus {
 	return m.status
 }
