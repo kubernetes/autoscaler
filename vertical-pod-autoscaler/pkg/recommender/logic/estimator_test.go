@@ -83,6 +83,30 @@ func TestConfidenceMultiplier(t *testing.T) {
 	// Expect testedEstimator2 to return zero.
 	assert.Equal(t, model.ResourceAmount(0),
 		testedEstimator2.GetResourceEstimation(s)[model.ResourceCPU])
+
+	timestamp := anyTime
+	testedCPU3 := WithCPUConfidenceMultiplier(0.1, 2.0, baseCPUEstimator)
+	testedMemory3 := WithMemoryConfidenceMultiplier(0.1, 2.0, baseMemoryEstimator)
+	testedEstimator3 := NewCombinedEstimator(testedCPU3, testedMemory3)
+
+	for i := 1; i <= 9; i++ {
+		s.AddSample(&model.ContainerUsageSample{
+			MeasureStart: timestamp,
+			Usage:        model.CPUAmountFromCores(1.0),
+			Resource:     model.ResourceCPU,
+		})
+		timestamp = timestamp.Add(time.Minute * 2)
+	}
+
+	// Expected confidence = 9/(60*24) = 0.00625.
+	assert.Equal(t, 0.00625, getConfidence(s))
+	// Expected CPU estimation = 3.14 * (1 + multiplier/confidence)^exponent =
+	// 3.14 * (1 + 0.1/0.00625)^2 = 907.46.
+	// Expected Memory estimation =
+	// 3140000000 * (1 + 0.1/0.00625)^2 = 907460000000
+	resourceEstimation := testedEstimator3.GetResourceEstimation(s)
+	assert.Equal(t, 907.46, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
+	assert.Equal(t, 9.0746e+11, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
 }
 
 // Verifies that the confidenceMultiplier works for the case of no
