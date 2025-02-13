@@ -184,5 +184,12 @@ func isNodeGoodTemplateCandidate(node *apiv1.Node, now time.Time) bool {
 	ready, lastTransitionTime, _ := kube_util.GetReadinessState(node)
 	stable := lastTransitionTime.Add(stabilizationDelay).Before(now)
 	schedulable := !node.Spec.Unschedulable
-	return ready && stable && schedulable
+	toBeDeleted := false
+	for _, taint := range node.Spec.Taints {
+		if taint.Key == taints.ToBeDeletedTaint {
+			toBeDeleted = true
+			break
+		}
+	}
+	return ready && stable && schedulable && !toBeDeleted
 }
