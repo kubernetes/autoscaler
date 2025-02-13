@@ -19,20 +19,30 @@ package routines
 import (
 	"k8s.io/klog/v2"
 
+	apiv1 "k8s.io/api/core/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
-// CappingPostProcessor ensure that the policy is applied to recommendation
-// it applies policy for fields: MinAllowed and MaxAllowed
-type CappingPostProcessor struct{}
+type cappingPostProcessor struct {
+	globalMaxAllowed apiv1.ResourceList
+}
 
-var _ RecommendationPostProcessor = &CappingPostProcessor{}
+var _ RecommendationPostProcessor = &cappingPostProcessor{}
+
+// NewCappingRecommendationProcessor constructs new RecommendationPostProcessor that adjusts recommendation
+// for given pod to obey VPA resources policy and a global max allowed configuration.
+func NewCappingRecommendationProcessor(globalMaxAllowed apiv1.ResourceList) RecommendationPostProcessor {
+	return &cappingPostProcessor{
+		globalMaxAllowed: globalMaxAllowed,
+	}
+}
 
 // Process apply the capping post-processing to the recommendation. (use to be function getCappedRecommendation)
-func (c CappingPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+func (c cappingPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
 	// TODO: maybe rename the vpa_utils.ApplyVPAPolicy to something that mention that it is doing capping only
-	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, vpa.Spec.ResourcePolicy)
+	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
 	if err != nil {
 		klog.ErrorS(err, "Failed to apply policy for VPA", "vpa", klog.KObj(vpa))
 		return recommendation
