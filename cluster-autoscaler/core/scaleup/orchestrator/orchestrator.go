@@ -176,9 +176,10 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	// Pick some expansion option.
 	bestOption := o.autoscalingContext.ExpanderStrategy.BestOption(options, nodeInfos)
 	if bestOption == nil || bestOption.NodeCount <= 0 {
+		klog.Errorf("Expander filtered out all options, valid options: %d (this shouldn't happen)", len(options))
 		return &status.ScaleUpStatus{
-			Result:                  status.ScaleUpNoOptionsAvailable,
-			PodsRemainUnschedulable: GetRemainingPods(podEquivalenceGroups, skippedNodeGroups),
+			Result:                  status.ScaleUpError,
+			PodsRemainUnschedulable: getAllPods(podEquivalenceGroups, skippedNodeGroups),
 			ConsideredNodeGroups:    nodeGroups,
 		}, nil
 	}
@@ -828,6 +829,23 @@ func GetRemainingPods(egs []*equivalence.PodGroup, skipped map[string]status.Rea
 		}
 	}
 	return remaining
+}
+
+// ExpandPodGrops flattens all equivalence groups into a list of NoScaleUpInfo
+func getAllPods(egs []*equivalence.PodGroup, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
+	podInfos := []status.NoScaleUpInfo{}
+	for _, eg := range egs {
+		for _, pod := range eg.Pods {
+			noScaleUpInfo := status.NoScaleUpInfo{
+				Pod:                pod,
+				RejectedNodeGroups: eg.SchedulingErrors,
+				SkippedNodeGroups:  skipped,
+			}
+			podInfos = append(podInfos, noScaleUpInfo)
+		}
+	}
+
+	return podInfos
 }
 
 // GetPodsAwaitingEvaluation returns list of pods for which CA was unable to help
