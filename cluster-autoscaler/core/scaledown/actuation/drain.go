@@ -261,6 +261,9 @@ func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Po
 		if err := forceDeletePod(ctx, podToEvict); err != nil {
 			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: err}
 		}
+		if e.evictionRegister != nil {
+			e.evictionRegister.RegisterEviction(podToEvict)
+		}
 		return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
 	}
 	if fullEvictionPod {
