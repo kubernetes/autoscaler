@@ -205,6 +205,7 @@ func TestNodeInfo(t *testing.T) {
 				cmpopts.SortSlices(func(p1, p2 *schedulerframework.PodInfo) bool {
 					return p1.Pod.Name < p2.Pod.Name
 				}),
+				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
 			}
 			if diff := cmp.Diff(tc.wantSchedNodeInfo, wrappedNodeInfo.ToScheduler(), nodeInfoCmpOpts...); diff != "" {
 				t.Errorf("ToScheduler() output differs from expected, diff (-want +got): %s", diff)
@@ -297,6 +298,7 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 				// We don't care about this field staying the same, and it differs because it's a global counter bumped
 				// on every AddPod.
 				cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
+				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
 			); diff != "" {
 				t.Errorf("nodeInfo differs after DeepCopyNodeInfo, diff (-want +got): %s", diff)
 			}
