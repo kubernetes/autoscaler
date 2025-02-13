@@ -25,6 +25,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+const (
+	// SystemNodeCriticalLabel is a label that marks critical pods with the highest priority.
+	SystemNodeCriticalLabel = "system-node-critical"
+)
+
 var (
 	// cpu amount used for account pods that don't specify cpu requests
 	defaultMinCPU        = *resource.NewMilliQuantity(50, resource.DecimalSI)

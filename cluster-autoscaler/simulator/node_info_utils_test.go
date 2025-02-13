@@ -31,13 +31,15 @@ import (
 	resourceapi "k8s.io/api/resource/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/kubernetes/pkg/controller/daemon"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/kubernetes/pkg/controller/daemon"
 )
 
 var (
@@ -69,7 +71,21 @@ var (
 			},
 		},
 	}
-	testDaemonSets = []*appsv1.DaemonSet{ds1, ds2, ds3}
+	ds4 = &appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ds4",
+			Namespace: "ds4-namespace",
+			UID:       types.UID("ds4"),
+		},
+		Spec: appsv1.DaemonSetSpec{
+			Template: apiv1.PodTemplateSpec{
+				Spec: apiv1.PodSpec{
+					PriorityClassName: labels.SystemNodeCriticalLabel,
+				},
+			},
+		},
+	}
+	testDaemonSets = []*appsv1.DaemonSet{ds1, ds2, ds3, ds4}
 )
 
 func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
@@ -98,6 +114,7 @@ func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
 			wantPods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				buildDSPod(ds2, "n"),
+				buildDSPod(ds4, "n"),
 			},
 		},
 		{
@@ -116,6 +133,7 @@ func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
 				SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")),
 				buildDSPod(ds1, "n"),
 				buildDSPod(ds2, "n"),
+				buildDSPod(ds4, "n"),
 			},
 		},
 	} {
@@ -208,6 +226,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			daemonSets: testDaemonSets,
 			wantPods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
+				buildDSPod(ds4, "n"),
 			},
 		},
 		{
@@ -232,6 +251,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			wantPods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				buildDSPod(ds2, "n"),
+				buildDSPod(ds4, "n"),
 			},
 		},
 		{
@@ -248,6 +268,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			wantPods: []*apiv1.Pod{
 				SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")),
 				buildDSPod(ds1, "n"),
+				buildDSPod(ds4, "n"),
 			},
 		},
 		{
@@ -266,6 +287,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 				SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")),
 				buildDSPod(ds1, "n"),
 				buildDSPod(ds2, "n"),
+				buildDSPod(ds4, "n"),
 			},
 		},
 	}
