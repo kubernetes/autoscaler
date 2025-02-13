@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions"
 	listers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -214,12 +215,23 @@ func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1.Provisionin
 }
 
 // FilterOutProvisioningClass filters out ProvReqs that belongs to certain Provisioning Class
-func FilterOutProvisioningClass(prList []*provreqwrapper.ProvisioningRequest, class string) []*provreqwrapper.ProvisioningRequest {
+func FilterOutProvisioningClass(prList []*provreqwrapper.ProvisioningRequest, class string, checkCapacityProcessorInstance string) []*provreqwrapper.ProvisioningRequest {
 	newPrList := []*provreqwrapper.ProvisioningRequest{}
 	for _, pr := range prList {
-		if pr.Spec.ProvisioningClassName == class {
+		if matchesProvisioningClass(pr, class, checkCapacityProcessorInstance) {
 			newPrList = append(newPrList, pr)
 		}
 	}
 	return newPrList
+}
+
+func matchesProvisioningClass(pr *provreqwrapper.ProvisioningRequest, class string, checkCapacityProcessorInstance string) bool {
+	switch class {
+	case v1.ProvisioningClassCheckCapacity:
+		return provisioningrequest.SupportedCheckCapacityClass(pr.ProvisioningRequest, checkCapacityProcessorInstance)
+	case v1.ProvisioningClassBestEffortAtomicScaleUp:
+		return pr.Spec.ProvisioningClassName == v1.ProvisioningClassBestEffortAtomicScaleUp
+	default:
+		return false
+	}
 }
