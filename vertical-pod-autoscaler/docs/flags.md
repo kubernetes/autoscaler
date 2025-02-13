@@ -1,90 +1,163 @@
-# What are the parameters to VPA admission controller?
-This document is auto-generated from the flag definitions in the VPA admission controller code.
-Last updated: 2025-01-31 18:07:15 UTC
+# Vertical Pod Autoscaler Flags
+This document contains the flags for all VPA components.
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| --address | String | :8944 | The address to expose Prometheus metrics. |
-| --client-ca-file | String | /etc/tls-certs/caCert.pem | Path to CA PEM file. |
-| --min-tls-version | String | tls1_2 | The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3. |
-| --port | Int | 8000 | The port to listen on. |
-| --register-by-url | Bool | false | If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name |
-| --register-webhook | Bool | true | If set to true, admission webhook object will be created on start up to register with the API server. |
-| --reload-cert | Bool | false | If set to true, reload leaf certificate. |
-| --tls-cert-file | String | /etc/tls-certs/serverCert.pem | Path to server certificate PEM file. |
-| --tls-ciphers | String |  | A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2. |
-| --tls-private-key | String | /etc/tls-certs/serverKey.pem | Path to server certificate key PEM file. |
-| --webhook-address | String |  | Address under which webhook is registered. Used when registerByURL is set to true. |
-| --webhook-failure-policy-fail | Bool | false | If set to true, will configure the admission webhook failurePolicy to \"Fail\". Use with caution. |
-| --webhook-labels | String |  | Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2 |
-| --webhook-port | String |  | Server Port for Webhook |
-| --webhook-service | String | vpa-webhook | Kubernetes service under which webhook is registered. Used when registerByURL is set to false. |
-| --webhook-timeout-seconds | Int | 30 | Timeout in seconds that the API server should wait for this webhook to respond before failing. |
+> **Note:** This document is auto-generated from the default branch (master) of the VPA repository.
+
+# What are the parameters to VPA admission-controller?
+This document is auto-generated from the flag definitions in the VPA admission-controller code.
+
+| Flag | Default | Description |
+|---------|---------|-------------|
+| `--add-dir-header` |  |                         If true, adds the file directory to the header of the log messages |
+| `--address` | ":8944" |                         The address to expose Prometheus metrics. |
+| `--alsologtostderr` |  |                        log to standard error as well as files (no effect when -logtostderr=true) |
+| `--client-ca-file` | "/etc/tls-certs/caCert.pem" |                  Path to CA PEM file. |
+| `--ignored-vpa-object-namespaces` |  |   Comma separated list of namespaces to ignore when searching for VPA objects. Empty means no namespaces will be ignored. |
+| `--kube-api-burst` | 10 |                   QPS burst limit when making requests to Kubernetes apiserver |
+| `--kube-api-qps` | 5 |                     QPS limit when making requests to Kubernetes apiserver |
+| `--kubeconfig` |  |                      Path to a kubeconfig. Only required if out-of-cluster. |
+| `--log-backtrace-at` | :0 |         when logging hits line file:N, emit a stack trace |
+| `--log-dir` |  |                         If non-empty, write log files in this directory (no effect when -logtostderr=true) |
+| `--log-file` |  |                        If non-empty, use this log file (no effect when -logtostderr=true) |
+| `--log-file-max-size` | 1800 |                 Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. |
+| `--logtostderr` | true |                            log to standard error instead of files |
+| `--min-tls-version` | "tls1_2" |                 The minimum TLS version to accept.  Must be set to either tls1_2 |
+| `--one-output` |  |                             If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
+| `--port` | 8000 |                               The port to listen on. |
+| `--profiling` |  |                              Is debug/pprof endpoint enabled |
+| `--register-by-url` |  |                        If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name |
+| `--register-webhook` | true |                       If set to true, admission webhook object will be created on start up to register with the API server. |
+| `--reload-cert` |  |                            If set to true, reload leaf certificate. |
+| `--skip-headers` |  |                           If true, avoid header prefixes in the log messages |
+| `--skip-log-headers` |  |                       If true, avoid headers when opening log files (no effect when -logtostderr=true) |
+| `--stderrthreshold` |  |               set the log level threshold for writing to standard error |
+| `--tls-cert-file` | "/etc/tls-certs/serverCert.pem" |                   Path to server certificate PEM file. |
+| `--tls-ciphers` |  |                     A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2. |
+| `--tls-private-key` | "/etc/tls-certs/serverKey.pem" |                 Path to server certificate key PEM file. |
+| `--v` | 4 | Set the log level verbosity |
+| `--vmodule` |  |                     comma-separated list of pattern=N settings for file-filtered logging |
+| `--vpa-object-namespace` |  |            Namespace to search for VPA objects. Empty means all namespaces will be used. |
+| `--webhook-address` |  |                 Address under which webhook is registered. Used when registerByURL is set to true. |
+| `--webhook-failure-policy-fail` |  |            If set to true, will configure the admission webhook failurePolicy to "Fail". Use with caution. |
+| `--webhook-labels` |  |                  Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2 |
+| `--webhook-port` |  |                    Server Port for Webhook |
+| `--webhook-service` | "vpa-webhook" |                 Kubernetes service under which webhook is registered. Used when registerByURL is set to false. |
+| `--webhook-timeout-seconds` | 30 |            Timeout in seconds that the API server should wait for this webhook to respond before failing. |
 
 # What are the parameters to VPA recommender?
 This document is auto-generated from the flag definitions in the VPA recommender code.
-Last updated: 2025-01-31 18:07:14 UTC
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| --address | String | :8942 | The address to expose Prometheus metrics. |
-| --checkpoints-gc-interval | Duration | 10Minute | `How often orphaned checkpoints should be garbage collected` |
-| --checkpoints-timeout | Duration | 0 | `Timeout for writing checkpoints since the start of the recommender's main loop` |
-| --container-name-label | String | name | `Label name to look for container names` |
-| --container-namespace-label | String | namespace | `Label name to look for container namespaces` |
-| --container-pod-name-label | String | pod_name | `Label name to look for container pod names` |
-| --cpu-histogram-decay-half-life | Duration | 0 | `The amount of time it takes a historical CPU usage sample to lose half of its weight.` |
-| --cpu-integer-post-processor-enabled | Bool | false | Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
-| --external-metrics-cpu-metric | String |  | ALPHA.  Metric to use with external metrics provider for CPU usage. |
-| --external-metrics-memory-metric | String |  | ALPHA.  Metric to use with external metrics provider for memory usage. |
-| --history-length | String | 8d | `How much time back prometheus have to be queried to get historical metrics` |
-| --history-resolution | String | 1h | `Resolution at which Prometheus is queried for historical metrics` |
-| --humanize-memory | Bool | false | Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
-| --memory-aggregation-interval | Duration | 0 | `The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval)` |
-| --memory-aggregation-interval-count | Int64 | 0 | `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count.` |
-| --memory-histogram-decay-half-life | Duration | 0 | `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.` |
-| --memory-saver | Bool | false | `If true, only track pods which have an associated VPA` |
-| --metric-for-pod-labels | String | up{job=\"kubernetes-pods\"} | `Which metric to look for pod labels in metrics` |
-| --min-checkpoints | Int | 10 | Minimum number of checkpoints to write per recommender's main loop |
-| --oom-bump-up-ratio | Float64 | 0 | `The memory bump up ratio when OOM occurred, default is 1.2.` |
-| --oom-min-bump-up-bytes | Float64 | 0 | `The minimal increase of memory when OOM occurred in bytes, default is 100 * 1024 * 1024` |
-| --password | String |  | The password used in the prometheus server basic auth |
-| --pod-label-prefix | String | pod_label_ | `Which prefix to look for pod labels in metrics` |
-| --pod-name-label | String | kubernetes_pod_name | `Label name to look for pod names` |
-| --pod-namespace-label | String | kubernetes_namespace | `Label name to look for pod namespaces` |
-| --pod-recommendation-min-cpu-millicores | Float64 | 25 | `Minimum CPU recommendation for a pod` |
-| --pod-recommendation-min-memory-mb | Float64 | 250 | `Minimum memory recommendation for a pod` |
-| --prometheus-address | String | http://prometheus.monitoring.svc | `Where to reach for Prometheus metrics` |
-| --prometheus-cadvisor-job-name | String | kubernetes-cadvisor | `Name of the prometheus job name which scrapes the cAdvisor metrics` |
-| --prometheus-query-timeout | String | 5m | `How long to wait before killing long queries` |
-| --recommendation-lower-bound-cpu-percentile | Float64 | 0.5 | `CPU usage percentile that will be used for the lower bound on CPU recommendation.` |
-| --recommendation-lower-bound-memory-percentile | Float64 | 0.5 | `Memory usage percentile that will be used for the lower bound on memory recommendation.` |
-| --recommendation-margin-fraction | Float64 | 0.15 | `Fraction of usage added as the safety margin to the recommended request` |
-| --recommendation-upper-bound-cpu-percentile | Float64 | 0.95 | `CPU usage percentile that will be used for the upper bound on CPU recommendation.` |
-| --recommendation-upper-bound-memory-percentile | Float64 | 0.95 | `Memory usage percentile that will be used for the upper bound on memory recommendation.` |
-| --recommender-interval | Duration | 1Minute | `How often metrics should be fetched` |
-| --recommender-name | String | 0 | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
-| --round-cpu-millicores | Int | 1 | `CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.` |
-| --storage | String |  | `Specifies storage mode. Supported values: prometheus, checkpoint (default)` |
-| --target-cpu-percentile | Float64 | 0.9 | CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
-| --target-memory-percentile | Float64 | 0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
-| --use-external-metrics | Bool | false | ALPHA.  Use an external metrics provider instead of metrics_server. |
-| --username | String |  | The username used in the prometheus server basic auth |
+| Flag | Default | Description |
+|---------|---------|-------------|
+| `--add-dir-header` |  |                                       If true, adds the file directory to the header of the log messages |
+| `--address` | ":8942" |                                       The address to expose Prometheus metrics. |
+| `--alsologtostderr` |  |                                      log to standard error as well as files (no effect when -logtostderr=true) |
+| `--checkpoints-gc-interval` | 10m0s |                     How often orphaned checkpoints should be garbage collected |
+| `--checkpoints-timeout` | 1m0s |                         Timeout for writing checkpoints since the start of the recommender's main loop |
+| `--container-name-label` | "name" |                          Label name to look for container names |
+| `--container-namespace-label` | "namespace" |                     Label name to look for container namespaces |
+| `--container-pod-name-label` | "pod_name" |                      Label name to look for container pod names |
+| `--cpu-histogram-decay-half-life` | 24h0m0s |               The amount of time it takes a historical CPU usage sample to lose half of its weight. |
+| `--cpu-integer-post-processor-enabled` |  |                   Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
+| `--external-metrics-cpu-metric` |  |                   ALPHA.  Metric to use with external metrics provider for CPU usage. |
+| `--external-metrics-memory-metric` |  |                ALPHA.  Metric to use with external metrics provider for memory usage. |
+| `--history-length` | "8d" |                                How much time back prometheus have to be queried to get historical metrics |
+| `--history-resolution` | "1h" |                            Resolution at which Prometheus is queried for historical metrics |
+| `--humanize-memory` |  |                                      Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
+| `--ignored-vpa-object-namespaces` |  |                 Comma separated list of namespaces to ignore when searching for VPA objects. Empty means no namespaces will be ignored. |
+| `--kube-api-burst` | 10 |                                 QPS burst limit when making requests to Kubernetes apiserver |
+| `--kube-api-qps` | 5 |                                   QPS limit when making requests to Kubernetes apiserver |
+| `--kubeconfig` |  |                                    Path to a kubeconfig. Only required if out-of-cluster. |
+| `--leader-elect` |  |                                         Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. |
+| `--leader-elect-lease-duration` | 15s |                 The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. |
+| `--leader-elect-renew-deadline` | 10s |                 The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. |
+| `--leader-elect-resource-lock` | "leases" |                    The type of resource object that is used for locking during leader election. Supported options are 'leases'. |
+| `--leader-elect-resource-name` | "vpa-recommender-lease" |                    The name of resource object that is used for locking during leader election. |
+| `--leader-elect-resource-namespace` | "kube-system" |               The namespace of resource object that is used for locking during leader election. |
+| `--leader-elect-retry-period` | 2s |                   The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. |
+| `--log-backtrace-at` | :0 |                       when logging hits line file:N, emit a stack trace |
+| `--log-dir` |  |                                       If non-empty, write log files in this directory (no effect when -logtostderr=true) |
+| `--log-file` |  |                                      If non-empty, use this log file (no effect when -logtostderr=true) |
+| `--log-file-max-size` | 1800 |                               Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. |
+| `--logtostderr` | true |                                          log to standard error instead of files |
+| `--memory-aggregation-interval` | 24h0m0s |                 The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval) |
+| `--memory-aggregation-interval-count` | 8 |                The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count. |
+| `--memory-histogram-decay-half-life` | 24h0m0s |            The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period. |
+| `--memory-saver` |  |                                         If true, only track pods which have an associated VPA |
+| `--metric-for-pod-labels` | "up{job=\"kubernetes-pods\"}" |                         Which metric to look for pod labels in metrics |
+| `--min-checkpoints` | 10 |                                  Minimum number of checkpoints to write per recommender's main loop |
+| `--one-output` |  |                                           If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
+| `--oom-bump-up-ratio` | 1.2 |                              The memory bump up ratio when OOM occurred, default is 1.2. |
+| `--oom-min-bump-up-bytes` | 1.048576e+08 |                          The minimal increase of memory when OOM occurred in bytes, default is 100 * 1024 * 1024 |
+| `--password` |  |                                      The password used in the prometheus server basic auth |
+| `--pod-label-prefix` | "pod_label_" |                              Which prefix to look for pod labels in metrics |
+| `--pod-name-label` | "kubernetes_pod_name" |                                Label name to look for pod names |
+| `--pod-namespace-label` | "kubernetes_namespace" |                           Label name to look for pod namespaces |
+| `--pod-recommendation-min-cpu-millicores` | 25 |          Minimum CPU recommendation for a pod |
+| `--pod-recommendation-min-memory-mb` | 250 |               Minimum memory recommendation for a pod |
+| `--profiling` |  |                                            Is debug/pprof endpoint enabled |
+| `--prometheus-address` | "http://prometheus.monitoring.svc" |                            Where to reach for Prometheus metrics |
+| `--prometheus-cadvisor-job-name` | "kubernetes-cadvisor" |                  Name of the prometheus job name which scrapes the cAdvisor metrics |
+| `--prometheus-query-timeout` | "5m" |                      How long to wait before killing long queries |
+| `--recommendation-lower-bound-cpu-percentile` | 0.5 |      CPU usage percentile that will be used for the lower bound on CPU recommendation. |
+| `--recommendation-lower-bound-memory-percentile` | 0.5 |   Memory usage percentile that will be used for the lower bound on memory recommendation. |
+| `--recommendation-margin-fraction` | 0.15 |                 Fraction of usage added as the safety margin to the recommended request |
+| `--recommendation-upper-bound-cpu-percentile` | 0.95 |      CPU usage percentile that will be used for the upper bound on CPU recommendation. |
+| `--recommendation-upper-bound-memory-percentile` | 0.95 |   Memory usage percentile that will be used for the upper bound on memory recommendation. |
+| `--recommender-interval` | 1m0s |                        How often metrics should be fetched |
+| `--recommender-name` | "default" |                              Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
+| `--round-cpu-millicores` | 1 |                             CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor. |
+| `--skip-headers` |  |                                         If true, avoid header prefixes in the log messages |
+| `--skip-log-headers` |  |                                     If true, avoid headers when opening log files (no effect when -logtostderr=true) |
+| `--stderrthreshold` |  |                             set the log level threshold for writing to standard error |
+| `--storage` |  |                                       Specifies storage mode. Supported values: prometheus, checkpoint |
+| `--target-cpu-percentile` | 0.9 |                          CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
+| `--target-memory-percentile` | 0.9 |                       Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
+| `--use-external-metrics` |  |                                 ALPHA.  Use an external metrics provider instead of metrics_server. |
+| `--username` |  |                                      The username used in the prometheus server basic auth |
+| `--v` | 4 | Set the log level verbosity |
+| `--vmodule` |  |                                   comma-separated list of pattern=N settings for file-filtered logging |
+| `--vpa-object-namespace` |  |                          Namespace to search for VPA objects. Empty means all namespaces will be used. |
 
 # What are the parameters to VPA updater?
 This document is auto-generated from the flag definitions in the VPA updater code.
-Last updated: 2025-01-31 18:07:14 UTC
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| --address | String | :8943 | The address to expose Prometheus metrics. |
-| --evict-after-oom-threshold | Duration | 10Minute | `Evict pod that has OOMed in less than evict-after-oom-threshold since start.` |
-| --eviction-rate-burst | Int | 1 | `Burst of pods that can be evicted.` |
-| --eviction-rate-limit | Float64 | -1 | `Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable the rate limiter.` |
-| --eviction-tolerance | Float64 | 0.5 | `Fraction of replica count that can be evicted for update, if more than one pod can be evicted.` |
-| --in-recommendation-bounds-eviction-lifetime-threshold | Duration |  | Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range |
-| --min-replicas | Int | 2 | `Minimum number of replicas to perform update` |
-| --pod-update-threshold | Float64 | 0.1 | Ignore updates that have priority lower than the value of this flag |
-| --updater-interval | Duration | 1Minute | `How often updater should run` |
-| --use-admission-controller-status | Bool | true | If true, updater will only evict pods when admission controller status is valid. |
+| Flag | Default | Description |
+|---------|---------|-------------|
+| `--add-dir-header` |  |                                                  If true, adds the file directory to the header of the log messages |
+| `--address` | ":8943" |                                                  The address to expose Prometheus metrics. |
+| `--alsologtostderr` |  |                                                 log to standard error as well as files (no effect when -logtostderr=true) |
+| `--evict-after-oom-threshold` | 10m0s |                              Evict pod that has OOMed in less than evict-after-oom-threshold since start. |
+| `--eviction-rate-burst` | 1 |                                         Burst of pods that can be evicted. |
+| `--eviction-rate-limit` |  |                                       Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable |
+| `--eviction-tolerance` | 0.5 |                                        Fraction of replica count that can be evicted for update, if more than one pod can be evicted. |
+| `--ignored-vpa-object-namespaces` |  |                            Comma separated list of namespaces to ignore when searching for VPA objects. Empty means no namespaces will be ignored. |
+| `--in-recommendation-bounds-eviction-lifetime-threshold` | 12h0m0s |   Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range |
+| `--kube-api-burst` | 10 |                                            QPS burst limit when making requests to Kubernetes apiserver |
+| `--kube-api-qps` | 5 |                                              QPS limit when making requests to Kubernetes apiserver |
+| `--kubeconfig` |  |                                               Path to a kubeconfig. Only required if out-of-cluster. |
+| `--leader-elect` |  |                                                    Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. |
+| `--leader-elect-lease-duration` | 15s |                            The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. |
+| `--leader-elect-renew-deadline` | 10s |                            The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. |
+| `--leader-elect-resource-lock` | "leases" |                               The type of resource object that is used for locking during leader election. Supported options are 'leases'. |
+| `--leader-elect-resource-name` | "vpa-updater" |                               The name of resource object that is used for locking during leader election. |
+| `--leader-elect-resource-namespace` | "kube-system" |                          The namespace of resource object that is used for locking during leader election. |
+| `--leader-elect-retry-period` | 2s |                              The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. |
+| `--log-backtrace-at` | :0 |                                  when logging hits line file:N, emit a stack trace |
+| `--log-dir` |  |                                                  If non-empty, write log files in this directory (no effect when -logtostderr=true) |
+| `--log-file` |  |                                                 If non-empty, use this log file (no effect when -logtostderr=true) |
+| `--log-file-max-size` | 1800 |                                          Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. |
+| `--logtostderr` | true |                                                     log to standard error instead of files |
+| `--min-replicas` | 2 |                                                Minimum number of replicas to perform update |
+| `--one-output` |  |                                                      If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
+| `--pod-update-threshold` | 0.1 |                                      Ignore updates that have priority lower than the value of this flag |
+| `--profiling` |  |                                                       Is debug/pprof endpoint enabled |
+| `--skip-headers` |  |                                                    If true, avoid header prefixes in the log messages |
+| `--skip-log-headers` |  |                                                If true, avoid headers when opening log files (no effect when -logtostderr=true) |
+| `--stderrthreshold` |  |                                        set the log level threshold for writing to standard error |
+| `--updater-interval` | 1m0s |                                       How often updater should run |
+| `--use-admission-controller-status` | true |                                 If true, updater will only evict pods when admission controller status is valid. |
+| `--v` | 4 | Set the log level verbosity |
+| `--vmodule` |  |                                              comma-separated list of pattern=N settings for file-filtered logging |
+| `--vpa-object-namespace` |  |                                     Namespace to search for VPA objects. Empty means all namespaces will be used. |
 
