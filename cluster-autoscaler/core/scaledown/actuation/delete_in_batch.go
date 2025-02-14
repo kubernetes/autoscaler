@@ -90,7 +90,7 @@ func (d *NodeDeletionBatcher) deleteNodesAndRegisterStatus(nodes []*apiv1.Node, 
 	for _, node := range nodes {
 		if err != nil {
 			result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroupId, drain, d.nodeDeletionTracker, "", result)
+			CleanUpAndRecordErrorForFailedScaleDownEvent(d.ctx, node, nodeGroupId, drain, d.nodeDeletionTracker, "", result)
 		} else {
 			RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.scaleStateNotifier, node, nodeGroup, drain, d.nodeDeletionTracker)
 		}
@@ -135,7 +135,7 @@ func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
 			drain := drainedNodeDeletions[node.Name]
 			if err != nil {
 				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-				CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroupId, drain, d.nodeDeletionTracker, "", result)
+				CleanUpAndRecordErrorForFailedScaleDownEvent(d.ctx, node, nodeGroupId, drain, d.nodeDeletionTracker, "", result)
 			} else {
 				RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.scaleStateNotifier, node, nodeGroup, drain, d.nodeDeletionTracker)
 			}
@@ -185,16 +185,27 @@ func IsNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
 	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
 }
 
-// CleanUpAndRecordFailedScaleDownEvent record failed scale down event and log an error.
-func CleanUpAndRecordFailedScaleDownEvent(ctx *context.AutoscalingContext, node *apiv1.Node, nodeGroupId string, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, errMsg string, status status.NodeDeleteResult) {
-	if drain {
-		klog.Errorf("Scale-down: couldn't delete node %q with drain, %v, status error: %v", node.Name, errMsg, status.Err)
-		ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain and delete node: %v", status.Err)
+// CleanUpAndRecordErrorForFailedScaleDownEvent record failed scale down event and log an error.
+func CleanUpAndRecordErrorForFailedScaleDownEvent(ctx *context.AutoscalingContext, node *apiv1.Node, nodeGroupId string, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, errMsg string, status status.NodeDeleteResult) {
+	CleanUpAndRecordFailedScaleDownEvent(ctx, node, nodeGroupId, drain, nodeDeletionTracker, errMsg, status, false)
+}
 
+// CleanUpAndRecordFailedScaleDownEvent record failed scale down event and log a warning or an error.
+func CleanUpAndRecordFailedScaleDownEvent(ctx *context.AutoscalingContext, node *apiv1.Node, nodeGroupId string, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, errMsg string, status status.NodeDeleteResult, logAsWarning bool) {
+	var logMsgFormat, eventMsgFormat string
+	if drain {
+		logMsgFormat = "couldn't delete node %q with drain"
+		eventMsgFormat = "failed to drain and delete node"
 	} else {
-		klog.Errorf("Scale-down: couldn't delete empty node, %v, status error: %v", errMsg, status.Err)
-		ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete empty node: %v", status.Err)
+		logMsgFormat = "couldn't delete empty node %q"
+		eventMsgFormat = "failed to delete empty node"
 	}
+	if logAsWarning {
+		klog.Warningf("Scale-down: "+logMsgFormat+", %v, status error: %v", node.Name, errMsg, status.Err)
+	} else {
+		klog.Errorf("Scale-down: "+logMsgFormat+", %v, status error: %v", node.Name, errMsg, status.Err)
+	}
+	ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", eventMsgFormat+": %v", status.Err)
 	taints.CleanToBeDeleted(node, ctx.ClientSet, ctx.CordonNodeBeforeTerminate)
 	nodeDeletionTracker.EndDeletion(nodeGroupId, node.Name, status)
 }

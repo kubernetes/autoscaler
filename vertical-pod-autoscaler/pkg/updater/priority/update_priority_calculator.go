@@ -18,8 +18,8 @@ package priority
 
 import (
 	"flag"
-	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -170,23 +170,28 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
 	sb := &strings.Builder{}
 	for _, cr := range r.ContainerRecommendations {
-		sb.WriteString(fmt.Sprintf("%s: ", cr.ContainerName))
+		sb.WriteString(cr.ContainerName)
+		sb.WriteString(": ")
 		if cr.Target != nil {
 			sb.WriteString("target: ")
 			if !cr.Target.Memory().IsZero() {
-				sb.WriteString(fmt.Sprintf("%dk ", cr.Target.Memory().ScaledValue(resource.Kilo)))
+				sb.WriteString(strconv.FormatInt(cr.Target.Memory().ScaledValue(resource.Kilo), 10))
+				sb.WriteString("k ")
 			}
 			if !cr.Target.Cpu().IsZero() {
-				sb.WriteString(fmt.Sprintf("%vm; ", cr.Target.Cpu().MilliValue()))
+				sb.WriteString(strconv.FormatInt(cr.Target.Cpu().MilliValue(), 10))
+				sb.WriteString("m; ")
 			}
 		}
 		if cr.UncappedTarget != nil {
 			sb.WriteString("uncappedTarget: ")
 			if !cr.UncappedTarget.Memory().IsZero() {
-				sb.WriteString(fmt.Sprintf("%dk ", cr.UncappedTarget.Memory().ScaledValue(resource.Kilo)))
+				sb.WriteString(strconv.FormatInt(cr.Target.Memory().ScaledValue(resource.Kilo), 10))
+				sb.WriteString("k ")
 			}
 			if !cr.UncappedTarget.Cpu().IsZero() {
-				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
+				sb.WriteString(strconv.FormatInt(cr.Target.Cpu().MilliValue(), 10))
+				sb.WriteString("m;")
 			}
 		}
 	}

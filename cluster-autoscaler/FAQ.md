@@ -924,7 +924,7 @@ Expanders can be selected by passing the name to the `--expander` flag, i.e.
 
 Currently Cluster Autoscaler has 5 expanders:
 
-* `random` - this is the default expander, and should be used when you don't have a particular
+* `random` - should be used when you don't have a particular
 need for the node groups to scale differently.
 
 * `most-pods` - selects the node group that would be able to schedule the most pods when scaling
@@ -932,7 +932,7 @@ up. This is useful when you are using nodeSelector to make sure certain pods lan
 Note that this won't cause the autoscaler to select bigger nodes vs. smaller, as it can add multiple
 smaller nodes at once.
 
-* `least-waste` - selects the node group that will have the least idle CPU (if tied, unused memory)
+* `least-waste` - this is the default expander, selects the node group that will have the least idle CPU (if tied, unused memory)
 after scale-up. This is useful when you have different classes of nodes, for example, high CPU or high memory nodes, and only want to expand those when there are pending pods that need a lot of those resources.
 
 * `least-nodes` - selects the node group that will use the least number of nodes after scale-up. This is useful when you want to minimize the number of nodes in the cluster and instead opt for fewer larger nodes. Useful when chained with the `most-pods` expander before it to ensure that the node group selected can fit the most pods on the fewest nodes.
@@ -994,7 +994,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `enable-provisioning-requests` | Whether the clusterautoscaler will be handling the ProvisioningRequest CRs. |  |
 | `enforce-node-group-min-size` | Should CA scale up the node group to the configured min size if needed. |  |
 | `estimator` | Type of resource estimator to be used in scale up. Available values: [binpacking] | "binpacking" |
-| `expander` | Type of node group expander to be used in scale up. Available values: [random,most-pods,least-waste,price,priority,grpc]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly. | "random" |
+| `expander` | Type of node group expander to be used in scale up. Available values: [random,most-pods,least-waste,price,priority,grpc]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly. | "least-waste" |
 | `expendable-pods-priority-cutoff` | Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable. | -10 |
 | `feature-gates` | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: |  |
 | `force-delete-unregistered-nodes` | Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to. |  |

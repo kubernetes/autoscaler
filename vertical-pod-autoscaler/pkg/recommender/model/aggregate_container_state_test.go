@@ -44,7 +44,6 @@ func addTestCPUSample(cluster *ClusterState, container ContainerID, cpuCores flo
 		ContainerUsageSample: ContainerUsageSample{
 			MeasureStart: testTimestamp,
 			Usage:        CPUAmountFromCores(cpuCores),
-			Request:      testRequest[ResourceCPU],
 			Resource:     ResourceCPU,
 		},
 	}
@@ -57,7 +56,6 @@ func addTestMemorySample(cluster *ClusterState, container ContainerID, memoryByt
 		ContainerUsageSample: ContainerUsageSample{
 			MeasureStart: testTimestamp,
 			Usage:        MemoryAmountFromBytes(memoryBytes),
-			Request:      testRequest[ResourceMemory],
 			Resource:     ResourceMemory,
 		},
 	}
