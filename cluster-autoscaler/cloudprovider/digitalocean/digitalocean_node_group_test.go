@@ -460,3 +460,8 @@ func (m *doClientMock) DeleteNode(ctx context.Context, clusterID, poolID, nodeID
 	args := m.Called(ctx, clusterID, poolID, nodeID, nil)
 	return args.Get(0).(*godo.Response), args.Error(1)
 }
+
+func (m *doClientMock) GetNodePoolTemplate(ctx context.Context, clusterID string, nodePoolName string) (*godo.KubernetesNodePoolTemplateResponse, *godo.Response, error) {
+	args := m.Called(ctx, clusterID, nodePoolName)
+	return args.Get(0).(*godo.KubernetesNodePoolTemplateResponse), args.Get(1).(*godo.Response), args.Error(2)
+}
