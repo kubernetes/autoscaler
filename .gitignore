@@ -34,3 +34,7 @@ Session.vim
 
 # Binary files
 bin/
+cluster-autoscaler/hack/tools/bin
+
+# gosec
+gosec-report.sarif

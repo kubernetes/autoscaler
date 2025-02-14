@@ -124,6 +124,8 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ## Tool Versions
 CONTROLLER_TOOLS_VERSION ?= v0.14.0
 
+include hack/tools.mk
+
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
 $(CONTROLLER_GEN): $(LOCALBIN)
@@ -187,3 +189,11 @@ download-kubeconfigs:
 .PHONY: test-integration
 test-integration:
 	../.ci/local_integration_test
+
+.PHONY: sast
+sast: $(GOSEC)
+	@./hack/sast.sh
+
+.PHONY: sast-report
+sast-report: $(GOSEC)
+	@./hack/sast.sh --gosec-report true
