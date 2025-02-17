@@ -215,6 +215,7 @@ func AddTaints(node *apiv1.Node, client kube_client.Interface, taints []apiv1.Ta
 			return err
 		}
 		klog.V(1).Infof("Successfully added %v on node %v", strings.Join(taintKeys(taints), ","), node.Name)
+		node.Spec.Taints = append([]apiv1.Taint{}, freshNode.Spec.Taints...)
 		return nil
 	}
 }
@@ -350,6 +351,7 @@ func CleanTaints(node *apiv1.Node, client kube_client.Interface, taintKeys []str
 			return false, err
 		}
 		klog.V(1).Infof("Successfully released %v on node %v", strings.Join(taintKeys, ","), node.Name)
+		node.Spec.Taints = append([]apiv1.Taint{}, freshNode.Spec.Taints...)
 		return true, nil
 	}
 }
