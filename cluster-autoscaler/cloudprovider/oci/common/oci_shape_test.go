@@ -95,6 +95,7 @@ func TestNodePoolGetShape(t *testing.T) {
 		"basic shape": {
 			shape: "VM.Standard1.2",
 			expected: &Shape{
+				Name:          "VM.Standard1.2",
 				CPU:           4,
 				MemoryInBytes: 16 * 1024 * 1024 * 1024,
 				GPU:           0,
@@ -107,6 +108,7 @@ func TestNodePoolGetShape(t *testing.T) {
 				MemoryInGBs: common.Float32(64),
 			},
 			expected: &Shape{
+				Name:          "VM.Standard.E3.Flex",
 				CPU:           8,
 				MemoryInBytes: 4 * 16 * 1024 * 1024 * 1024,
 				GPU:           0,
