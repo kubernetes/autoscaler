@@ -22,7 +22,7 @@ ARCH ?= amd64
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
 GOARM=7
-GOLANG_VERSION = 1.24
+GOLANG_VERSION = 1.23
 REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
