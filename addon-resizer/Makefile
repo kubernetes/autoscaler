@@ -22,7 +22,7 @@ ARCH ?= amd64
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
 GOARM=7
-GOLANG_VERSION = 1.23
+GOLANG_VERSION = 1.24
 REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
@@ -30,8 +30,6 @@ MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
 TAG = 1.8.23
 # The output type could either be docker (local), or registry.
 OUTPUT_TYPE ?= docker
-
-BASEIMAGE?=gcr.io/distroless/static:latest
 
 TEMP_DIR := $(shell mktemp -d)
 
@@ -53,17 +51,14 @@ buildx-setup:
 container: .container-$(ARCH)
 .container-$(ARCH): buildx-setup
 	cp -r * $(TEMP_DIR)
-	cd $(TEMP_DIR) && sed -i 's|BASEIMAGE|$(BASEIMAGE)|g' Dockerfile
-
-	docker run --rm -v $(TEMP_DIR):$(TEMP_DIR):Z -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
-        golang:${GOLANG_VERSION} \
-        /bin/bash -c "\
-            cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-            CGO_ENABLED=0 GOARM=$(GOARM) GOARCH=$(ARCH) go build -a -installsuffix cgo --ldflags '-w -X k8s.io/autoscaler/addon-resizer/nanny.AddonResizerVersion=$(TAG)' -o $(TEMP_DIR)/pod_nanny nanny/main/pod_nanny.go"
+	cd $(TEMP_DIR)
 
 	docker buildx build \
 		--pull \
 		--platform linux/$(ARCH) \
+		--build-arg ARCH=$(ARCH) \
+		--build-arg GOARM=$(GOARM) \
+		--build-arg TAG=$(TAG) \
 		--output=type=$(OUTPUT_TYPE) \
 		-t $(MULTI_ARCH_IMG):$(TAG) $(TEMP_DIR)
 
