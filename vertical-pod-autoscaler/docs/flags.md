@@ -54,12 +54,13 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--alsologtostderr` |  |                                        log to standard error as well as files (no effect when -logtostderr=true) |
 | `--checkpoints-gc-interval` | 10m0s |                       How often orphaned checkpoints should be garbage collected |
 | `--checkpoints-timeout` | 1m0s |                           Timeout for writing checkpoints since the start of the recommender's main loop |
+| `--confidence-interval-cpu` | 24h0m0s |                       The time interval used for computing the confidence multiplier for the CPU lower and upper bound. Default: 24h |
+| `--confidence-interval-memory` | 24h0m0s |                    The time interval used for computing the confidence multiplier for the memory lower and upper bound. Default: 24h |
 | `--container-name-label` | "name" |                            Label name to look for container names |
 | `--container-namespace-label` | "namespace" |                       Label name to look for container namespaces |
 | `--container-pod-name-label` | "pod_name" |                        Label name to look for container pod names |
 | `--container-recommendation-max-allowed-cpu` |  |      Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed. |
 | `--container-recommendation-max-allowed-memory` |  |   Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed. |
-| `--cpu-confidence-interval` | 24h0m0s |                       The time interval used for computing the confidence multiplier for the CPU target recommendation. Default: 24h |
 | `--cpu-histogram-decay-half-life` | 24h0m0s |                 The amount of time it takes a historical CPU usage sample to lose half of its weight. |
 | `--cpu-integer-post-processor-enabled` |  |                     Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
 | `--external-metrics-cpu-metric` |  |                     ALPHA.  Metric to use with external metrics provider for CPU usage. |
@@ -85,7 +86,6 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--logtostderr` | true |                                            log to standard error instead of files |
 | `--memory-aggregation-interval` | 24h0m0s |                   The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval) |
 | `--memory-aggregation-interval-count` | 8 |                  The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count. |
-| `--memory-confidence-interval` | 24h0m0s |                    The time interval used for computing the confidence multiplier for the memory target recommendation. Default: 24h |
 | `--memory-histogram-decay-half-life` | 24h0m0s |              The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period. |
 | `--memory-saver` |  |                                           If true, only track pods which have an associated VPA |
 | `--metric-for-pod-labels` | "up{job=\"kubernetes-pods\"}" |                           Which metric to look for pod labels in metrics |
