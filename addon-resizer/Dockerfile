@@ -12,9 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM BASEIMAGE
+FROM golang:1.23 AS builder
 
-COPY pod_nanny /
+WORKDIR /workspace
+
+COPY . .
+
+ARG ARCH GOARM
+ARG TAG
+
+RUN CGO_ENABLED=0 GOARM=$GOARM GOARCH=$ARCH go build -a -installsuffix cgo --ldflags "-w -X k8s.io/autoscaler/addon-resizer/nanny.AddonResizerVersion=$TAG" -o pod_nanny nanny/main/pod_nanny.go
+
+FROM gcr.io/distroless/static:nonroot
+
+COPY --from=builder /workspace/pod_nanny /pod-nanny
 
 USER nobody
 
