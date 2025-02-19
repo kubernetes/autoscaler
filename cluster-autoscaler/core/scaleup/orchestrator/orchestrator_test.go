@@ -1438,15 +1438,34 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	noSimilarNodeGroupsExpander := NewMockReportingStrategy(t, &GroupSizeChange{GroupName: "ng2", SizeChange: 2}, &emptySimilarNodeGroups)
 
 	testCases := []struct {
-		name             string
-		expanderStrategy *MockReportingStrategy
+		name                              string
+		expanderStrategy                  *MockReportingStrategy
+		skipSimilarNodeGroupRecomputation bool
+		expectedNGSizes                   map[string]int
 	}{
 		{
 			name: "balance groups",
+			expectedNGSizes: map[string]int{
+				"ng2": 2,
+				"ng3": 2,
+			},
 		},
 		{
 			name:             "balance groups recomputes similar nodegroups",
 			expanderStrategy: noSimilarNodeGroupsExpander,
+			expectedNGSizes: map[string]int{
+				"ng2": 2,
+				"ng3": 2,
+			},
+		},
+		{
+			name:                              "ensure similar node groups are not recomputed",
+			expanderStrategy:                  noSimilarNodeGroupsExpander,
+			skipSimilarNodeGroupRecomputation: true,
+			expectedNGSizes: map[string]int{
+				"ng2": 3,
+				"ng3": 1,
+			},
 		},
 	}
 
@@ -1461,7 +1480,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			}
 			testCfg := map[string]ngInfo{
 				"ng1": {min: 1, max: 1, size: 1},
-				"ng2": {min: 1, max: 2, size: 1},
+				"ng2": {min: 1, max: 5, size: 1},
 				"ng3": {min: 1, max: 5, size: 1},
 				"ng4": {min: 1, max: 5, size: 3},
 			}
@@ -1490,10 +1509,11 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 			options := config.AutoscalingOptions{
-				EstimatorName:            estimator.BinpackingEstimatorName,
-				BalanceSimilarNodeGroups: true,
-				MaxCoresTotal:            config.DefaultMaxClusterCores,
-				MaxMemoryTotal:           config.DefaultMaxClusterMemory,
+				EstimatorName:                     estimator.BinpackingEstimatorName,
+				BalanceSimilarNodeGroups:          true,
+				SkipSimilarNodeGroupRecomputation: tc.skipSimilarNodeGroupRecomputation,
+				MaxCoresTotal:                     config.DefaultMaxClusterCores,
+				MaxMemoryTotal:                    config.DefaultMaxClusterMemory,
 			}
 			context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 			assert.NoError(t, err)
@@ -1523,12 +1543,11 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 				groupMap[group.Id()] = group
 			}
 
-			ng2size, err := groupMap["ng2"].TargetSize()
-			assert.NoError(t, err)
-			ng3size, err := groupMap["ng3"].TargetSize()
-			assert.NoError(t, err)
-			assert.Equal(t, 2, ng2size)
-			assert.Equal(t, 2, ng3size)
+			for ng, size := range tc.expectedNGSizes {
+				ngSize, err := groupMap[ng].TargetSize()
+				assert.NoError(t, err)
+				assert.Equal(t, size, ngSize)
+			}
 		})
 	}
 }
