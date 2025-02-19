@@ -1,5 +1,5 @@
 # See https://cloud.google.com/cloud-build/docs/build-config
-timeout: 7200s
+timeout: 43200s # 12 hours - builds for each arch take time
 # this prevents errors if you don't use both _GIT_TAG and _PULL_BASE_REF,
 # or any new substitutions added in the future.
 options:
