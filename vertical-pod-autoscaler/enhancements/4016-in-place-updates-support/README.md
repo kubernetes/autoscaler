@@ -63,8 +63,8 @@ Add a new supported value of [`UpdateMode`]:
 
 * `InPlaceOrRecreate`
 
-Here we specify `OrRecreate` to make sure the user explicitly knows that the pod may be
-restarted.
+Here we specify `InPlaceOrRecreate` to make sure the user explicitly knows that the existing pod
+may be replaced.
 
 [`UpdateMode`]: https://github.com/kubernetes/autoscaler/blob/71b489f5aec3899157b37472cdf36a1de223d011/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124
 
@@ -105,14 +105,14 @@ patch, it will fail and VPA will need to fallback to a regular eviction (see bel
 
 ## Design Details
 
-Today, only the VPA admission controller is responsible for changing the pod spec.
+Prior to this AEP, only the VPA admission controller was responsible for changing the pod spec.
 
 The VPA updater is responsible for evicting pods so that the admission controller can change them
 during admission.
 
 In the newly added `InPlaceOrRecreate` mode, the VPA Updater will attempt to execute in-place
-updates FIRST. If it is unable to process an in-place update in time, it will evict the pod to force
-a change.
+updates _FIRST_. If it is unable to process an in-place update in time, it will evict the pod to
+force a change.
 
 This will effectively match the current behavior in `Auto` except that resizes will first be
 attempted in-place.
@@ -136,9 +136,9 @@ starting pods just as it does for VPAs in `Initial`, `Auto`, and `Recreate` mode
 
 ### 2. In-Place Updates (**NEW**) {#in-place}
 
-In the `InPlaceOrRecreate` modes VPA updater will attempt to apply updates that require container
-restart in-place. It will update them under the same conditions that would trigger update with
-`Recreate` mode. That is it will apply an in-place update if:
+In the `InPlaceOrRecreate` modes, and for updates that require a container restart, the VPA updater
+will attempt to apply updates in place. It will update them under the same conditions that would
+trigger an update with `Recreate` mode. That is it will apply an in-place update if:
 
 * Any container has a request below the corresponding `LowerBound` or
 * Any container has a request above the corresponding `UpperBound` or
