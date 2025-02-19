@@ -94,9 +94,14 @@ two key features:
 
 Note that resize operations will NOT change the pod's quality of service (QoS) class.
 
+Note that in the initial Beta version of in-place updates, [memory limit downscaling is forbidden]
+for pods with `resizePolicy: PreferNoRestart`. This means that when VPA will attempt to apply the
+patch, it will fail and VPA will need to fallback to a regular eviction (see below).
+
 [In-place update of pod resources KEP]: https://github.com/kubernetes/enhancements/issues/1287
 [`/resize` subresource]:https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources#api-changes
 [`ResizePolicy`]: https://github.com/kubernetes/api/blob/4dccc5e86b957cea946a63c4f052ee7dec3946ce/core/v1/types.go#L2636
+[memory limit downscaling is forbidden]: https://github.com/kubernetes/enhancements/pull/5089
 
 ## Design Details
 
@@ -153,12 +158,14 @@ The VPA updater will evict a pod to actuate a recommendation if it attempted to 
 recommendation in place and failed.
 
 VPA updater will consider that the update failed if:
-* The pod has `.status.resize: Infeasible` or
-* The pod has `.status.resize: Deferred` and more than 5 minutes elapsed since the update or
-* The pod has `.status.resize: InProgress` and more than 1 hour elapsed since the update:
-  * There seems to be a bug where containers that say they need to be restarted get stuck in update, hopefully it gets
-    fixed and we don't have to worry about this by beta.
+* The pod has condition `PodResizePending` with reason `Infeasible` or
+* The pod has condition `PodResizePending` with reason `Deferred` and more than 5 minutes elapsed
+  since the update or
+* The pod has condition `PodResizing` and more than 1 hour elapsed since the update or
 * Patch attempt returns an error.
+
+Note that in the initial version of In-Place updates, memory limit downscaling will always fail.
+This means VPA will need to evict the pod normally for this change to happen.
 
 ### Comparison of `UpdateMode`s
 
