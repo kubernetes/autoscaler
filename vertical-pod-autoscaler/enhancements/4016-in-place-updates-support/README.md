@@ -122,7 +122,7 @@ In the future, this logic may be improved to:
 * Make changes that are only attempted using in-place resizes and wouldn't ultimately result in an
   eviction on failure.
 * In the case of failure, make smaller updates to circumvent a node that does not have enough
-  headroom to accept the full resize but could accomodate a smaller one.
+  headroom to accept the full resize but could accommodate a smaller one.
 
 We classify two types of updates in the context of this new mode:
 
