@@ -1,5 +1,9 @@
-# rancher server credentials
+# When you create a token in the Rancher UI, 
+# it shows you the API endpoint, that is the Rancher URL with the /v3 appended at the end.
+# Make sure the URL does not contains this /v3 appended.
+# Rancher Base URL (Not API endpoint)
 url: https://rancher.example.org
+# rancher server credentials
 token: <rancher token>
 # name and namespace of the clusters.provisioning.cattle.io resource on the
 # rancher server
