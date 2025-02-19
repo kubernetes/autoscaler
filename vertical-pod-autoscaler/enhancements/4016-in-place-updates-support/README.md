@@ -7,9 +7,8 @@
 - [Proposal](#proposal)
 - [Context](#context)
 - [Design Details](#design-details)
-    - [Applying Updates During Pod Admission](#applying-updates-during-pod-admission)
-    - [Applying Disruption-free Updates](#Applying-disruption-free-updates)
-    - [Applying Disruptive Updates](#applying-disruptive-updates)
+    - [1. Applying Updates During Pod Admission](#pod-admission)
+    - [2. In-Place Updates (**NEW**)](#in-place)
     - [Comparison of `UpdateMode`s](#comparison-of-updatemodes)
     - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
@@ -49,11 +48,11 @@ VPA.
 ### Goals
 
 * Allow VPA to actuate with reduced disruption.
-* Allow VPA to actuate more frequently.
 * Allow VPA to actuate in situations where actuation by eviction is not desirable.
 
 ### Non-Goals
 
+* Allow VPA to actuate more frequently.
 * Allow VPA to operate with NO disruptions, see the [note above](#disruptions).
 * Improved handling of injected sidecars
   * Separate AEP will improve VPAs handling of injected sidecars.
@@ -68,6 +67,13 @@ Here we specify `OrRecreate` to make sure the user explicitly knows that the pod
 restarted.
 
 [`UpdateMode`]: https://github.com/kubernetes/autoscaler/blob/71b489f5aec3899157b37472cdf36a1de223d011/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124
+
+For the initial release of in-place updates with VPA, in-place updates will only be available
+using the `InPlaceOrRecreate` mode. In the future, once the SIG feels that the feature is
+mature enough, this behavior will become the default behavior for the `Auto` mode. See the [`Auto`
+mode documentation].
+
+[`Auto` mode documentation]: https://github.com/kubernetes/autoscaler/blob/78c8173b979316f892327022d53369760b000210/vertical-pod-autoscaler/docs/api.md#updatemode
 
 ## Context
 
@@ -100,57 +106,55 @@ The VPA updater is responsible for evicting pods so that the admission controlle
 during admission.
 
 In the newly added `InPlaceOrRecreate` mode, the VPA Updater will attempt to execute in-place
-updates FIRST. In certain situations, if it is unable to process an in-place update in time, it
-will evict the pod to force a change.
+updates FIRST. If it is unable to process an in-place update in time, it will evict the pod to force
+a change.
 
-We classify three types of updates in the context of this new mode:
+This will effectively match the current behavior in `Auto` except that resizes will first be
+attempted in-place.
+
+In the future, this logic may be improved to:
+* Provide more frequent resizes.
+* Make changes that are only attempted using in-place resizes and wouldn't ultimately result in an
+  eviction on failure.
+* In the case of failure, make smaller updates to circumvent a node that does not have enough
+  headroom to accept the full resize but could accomodate a smaller one.
+
+We classify two types of updates in the context of this new mode:
 
 1. Updates on pod admission
-2. Disruption-free updates
-3. Disruptive updates
+2. In-place updates
 
-**NOTE:** Here "disruptive" is from the perspective of VPA. As mentioned above, the container
-runtime MAY choose to restart a container or pod as needed.
-
-More on these two types of changes below.
-
-### 1. Applying Updates During Pod Admission
+### 1. Applying Updates During Pod Admission {#pod-admission}
 
 For VPAs using the new `InPlaceOrRecreate` mode, the VPA Admission Controller will apply updates to
 starting pods just as it does for VPAs in `Initial`, `Auto`, and `Recreate` modes.
 
-### 2. Applying Disruption-free Updates (**NEW**)
-
-In the `InPlaceOrRecreate` mode when an update only changes resources for which a container
-indicates that it doesn't require a restart, then VPA can attempt to actuate the change without
-disrupting the pod. VPA Updater will:
-* attempt to actuate such updates in place,
-* attempt to actuate them if difference between recommendation and request is at least 10%
-  * even if pod has been running for less than 12h,
-* if necessary execute only partial updates (if some changes would require a restart).
-
-If VPA updater fails to update the size of a container, we ignore the failure and try again. We
-will not intentionally evict the pod unless the conditions call for a disruptive update (see
-below).
-
-### 3. Applying Disruptive Updates
+### 2. In-Place Updates (**NEW**) {#in-place}
 
 In the `InPlaceOrRecreate` modes VPA updater will attempt to apply updates that require container
-restart in place. It will update them under the same conditions that would trigger update with
-`Recreate` mode. That is it will apply disruptive updates if:
+restart in-place. It will update them under the same conditions that would trigger update with
+`Recreate` mode. That is it will apply an in-place update if:
 
 * Any container has a request below the corresponding `LowerBound` or
 * Any container has a request above the corresponding `UpperBound` or
 * Difference between sum of pods requests and sum of recommendation `Target`s is more than 10% and the pod has been
   running undisrupted for at least 12h.
-  * Successful disruptive update counts as disruption here (and prevents further disruptive updates to the pod for 12h).
+  * NOTE: A successful update counts as disruption here (and prevents further disruptive updates to the pod for 12h).
 
-For disruptive updates, the VPA updater will evict a pod to actuate a recommendation if it
-attempted to apply the recommendation in place and failed.
+(NEW!) In addition, VPA will attempt an in-place update in some cases where we NORMALLY would not
+be able to perform an eviction, including:
+
+* If `CanEvict` is false.
+* If any of the `EvictionRequirements` on the VPA are not true.
+
+These additional resizes can be attempted because the eviction fallback would fail anyway.
+
+The VPA updater will evict a pod to actuate a recommendation if it attempted to apply the
+recommendation in place and failed.
 
 VPA updater will consider that the update failed if:
 * The pod has `.status.resize: Infeasible` or
-* The pod has `.status.resize: Deferred` and more than 1 minute elapsed since the update or
+* The pod has `.status.resize: Deferred` and more than 5 minutes elapsed since the update or
 * The pod has `.status.resize: InProgress` and more than 1 hour elapsed since the update:
   * There seems to be a bug where containers that say they need to be restarted get stuck in update, hopefully it gets
     fixed and we don't have to worry about this by beta.
@@ -158,7 +162,7 @@ VPA updater will consider that the update failed if:
 
 ### Comparison of `UpdateMode`s
 
-VPA updater considers the following conditions when deciding if it should apply an update:
+Today, VPA updater considers the following conditions when deciding if it should apply an update:
 - [`CanEvict`]:
   - Pod is `Pending` or
   - There are enough running pods in the controller.
@@ -182,24 +186,16 @@ VPA updater considers the following conditions when deciding if it should apply 
    * Quick OOM,
    * Outside recommended range,
    * Long-lived pod with significant change.
+   * `EvictionRequirements` are all true.
  
-`InPlaceOrRecreate` will attempt to apply a disruption-free update in place if it meets at least one
+`InPlaceOrRecreate` will attempt to apply an update in place if it meets at least one
 of the following conditions:
 * Quick OOM,
 * Outside recommended range,
-* Significant change.
-
-`InPlaceOrRecreate` when considering a disruption-free update in place ignore some conditions that
-influence eviction decission in the `Recreate` mode:
+* Long-lived Significant change.
 * [`CanEvict`] won't be checked and
-* Pods with significant change can be updated even if they are not long-lived.
+* [`EvictionRequirements`] won't be checked
 
-`InPlaceOrRecreate` will attempt to apply updates that are **not** disruption-free in place under
-the same conditions that apply to updates in the `Recreate` mode.
-
-`InPlaceOrRecreate` will attempt to apply updates that by eviction when:
-* VPA already attempted to apply the update in-place and failed and
-* it meets conditions for applying in the `Recreate` mode.
 
 [`CanEvict`]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/eviction/pods_eviction_restriction.go#LL100C10-L100C37
 [by default less than 10 minutes]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L37
@@ -207,6 +203,7 @@ the same conditions that apply to updates in the `Recreate` mode.
 [by default 12h]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L35
 [by default 10%]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L33
 [Outside recommended range]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/priority_processor.go#L73
+[`EvictionRequirements`]: https://github.com/kubernetes/autoscaler/blob/54fe60ed4d4bb4cb89fe4abe11284d1bd6b06390/vertical-pod-autoscaler/pkg/updater/priority/scaling_direction_pod_eviction_admission.go
 
 ### Test Plan
 
@@ -214,12 +211,12 @@ The following test scenarios will be added to e2e tests. The `InPlaceOrRecreate`
 tested in the following scenarios:
 
 * Admission controller applies recommendation to pod controlled by VPA. 
-* Disruption-free in-place update applied to all containers of a pod (request in recommendation bounds).
-* Partial disruption-free update applied to some containers of a pod, some disruptive changes skipped (request in
+* In-place update applied to all containers of a pod.
+* Partial updates applied to some containers of a pod, some changes skipped (request in
   recommendation bounds).
-* Disruptive in-place update applied to all containers of a pod (request out ouf recommendation bounds). 
-* Disruptive in-place update will fail. Pod should be evicted and the recommendation applied.
-* Disruption free in-place updates fail, pod should not be evicted.
+* In-place update will fail. Pod should be evicted and the recommendation applied.
+* In-place update will fail but `CanEvict` is false, pod should not be evicted.
+* In-place update will fail but `EvictionRequirements` are false, pod should not be evicted.
 
 ### Details still to consider
 
@@ -231,4 +228,4 @@ Needs more research on how to scale down on memory safely.
 ## Implementation History
 
 - 2023-05-10: initial version
-- 2025-02-07: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
+- 2025-02-19: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
