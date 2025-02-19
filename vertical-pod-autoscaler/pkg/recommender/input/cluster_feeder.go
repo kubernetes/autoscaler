@@ -23,7 +23,6 @@ import (
 	"slices"
 	"time"
 
-	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -349,7 +348,7 @@ func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(namespace strin
 		vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
 		if !allVPAKeys[vpaID] {
 			if errFeeder := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{}); errFeeder != nil {
-				err = errors.Wrapf(err, "failed to delete orphaned checkpoint %s", klog.KRef(namespace, checkpoint.Name))
+				err = fmt.Errorf("failed to delete orphaned checkpoint %s: %w", klog.KRef(namespace, checkpoint.Name), err)
 				continue
 			}
 			klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
