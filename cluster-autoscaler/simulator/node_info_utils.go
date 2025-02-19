@@ -148,23 +148,34 @@ func podsExpectedOnFreshNode(sanitizedExampleNodeInfo *framework.NodeInfo, daemo
 	// TODO(DRA): Figure out how to make this work for DS pods using DRA. Currently such pods would get force-added to the
 	// ClusterSnapshot, but the ResourceClaims reflecting their DRA usage on the Node wouldn't. So CA would be overestimating
 	// available DRA resources on the Node.
-	if forceDaemonSets {
-		var pendingDS []*appsv1.DaemonSet
-		for _, ds := range daemonsets {
-			if !runningDS[ds.UID] {
-				pendingDS = append(pendingDS, ds)
-			}
-		}
-		// The provided nodeInfo has to have taints properly sanitized, or this won't work correctly.
-		daemonPods, err := daemonset.GetDaemonSetPodsForNode(sanitizedExampleNodeInfo, pendingDS)
-		if err != nil {
-			return nil, err
-		}
-		for _, pod := range daemonPods {
-			// There's technically no need to sanitize these pods since they're created from scratch, but
-			// it's nice to have the same suffix for all names in one sanitized NodeInfo when debugging.
-			result = append(result, &framework.PodInfo{Pod: createSanitizedPod(pod.Pod, sanitizedExampleNodeInfo.Node().Name, nameSuffix)})
+	var pendingDS []*appsv1.DaemonSet
+	for _, ds := range daemonsets {
+		if !runningDS[ds.UID] {
+			pendingDS = append(pendingDS, ds)
 		}
 	}
+	// The provided nodeInfo has to have taints properly sanitized, or this won't work correctly.
+	daemonPods, err := daemonset.GetDaemonSetPodsForNode(sanitizedExampleNodeInfo, pendingDS)
+	if err != nil {
+		return nil, err
+	}
+	for _, pod := range daemonPods {
+		if !forceDaemonSets && !isPreemptingSystemNodeCritical(pod) {
+			continue
+		}
+		// There's technically no need to sanitize these pods since they're created from scratch, but
+		// it's nice to have the same suffix for all names in one sanitized NodeInfo when debugging.
+		result = append(result, &framework.PodInfo{Pod: createSanitizedPod(pod.Pod, sanitizedExampleNodeInfo.Node().Name, nameSuffix)})
+	}
 	return result, nil
+}
+
+func isPreemptingSystemNodeCritical(pod *framework.PodInfo) bool {
+	if pod.Spec.PriorityClassName != labels.SystemNodeCriticalLabel {
+		return false
+	}
+	if pod.Spec.PreemptionPolicy != nil && *pod.Spec.PreemptionPolicy != apiv1.PreemptLowerPriority {
+		return false
+	}
+	return true
 }
