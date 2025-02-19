@@ -164,8 +164,14 @@ VPA updater will consider that the update failed if:
 * The pod has condition `PodResizing` and more than 1 hour elapsed since the update or
 * Patch attempt returns an error.
 
-Note that in the initial version of In-Place updates, memory limit downscaling will always fail.
-This means VPA will need to evict the pod normally for this change to happen.
+Note that in the initial version of In-Place updates, memory limit downscaling will always fail
+the patch operation. This means VPA will need to evict the pod normally for this change to happen.
+
+#### A note on `ResizePolicy`.
+
+VPA does not care and should not care about a container's `ResizePolicy` setting. In the new mode,
+it will simply issue the `/resize` request and let the underlying machinery apply the resize
+operation in a way that complies with the user's specification.
 
 ### Comparison of `UpdateMode`s
 
