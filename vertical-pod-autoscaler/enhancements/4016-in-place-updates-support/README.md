@@ -2,13 +2,14 @@
 
 <!-- toc -->
 - [Summary](#summary)
+    - [A Note On Disruptions](#a-note-on-disruptions)
     - [Goals](#goals)
     - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Context](#context)
 - [Design Details](#design-details)
-    - [1. Applying Updates During Pod Admission](#pod-admission)
-    - [2. In-Place Updates (**NEW**)](#in-place)
+    - [1. Applying Updates During Pod Admission](#applying-updates-during-pod-admission)
+    - [2. In-Place Updates](#in-place-updates)
     - [Comparison of `UpdateMode`s](#comparison-of-updatemodes)
     - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
@@ -30,9 +31,9 @@ introduced as separate enhancement proposals.
 
 [in-place update feature]: https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
 [alpha feature since 1.27]: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#api-change-3
-[beta in 1.33]: https://github.com/orgs/kubernetes/projects/178/views/1
+[beta in 1.33]: https://github.com/kubernetes/enhancements/blob/4c3449517e1a7cf00907fd8a6dc780350275035a/keps/sig-node/1287-in-place-update-pod-resources/kep.yaml#L38-L41
 
-### A Note On Disruptions {#disruptions}
+### A Note On Disruptions
 
 It is important to note that **VPA cannot guarantee NO disruptions**. This is because the
 underlying container runtime is responsible for actuating the resize operation and there are no
@@ -101,7 +102,7 @@ patch, it will fail and VPA will need to fallback to a regular eviction (see bel
 [In-place update of pod resources KEP]: https://github.com/kubernetes/enhancements/issues/1287
 [`/resize` subresource]:https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources#api-changes
 [`ResizePolicy`]: https://github.com/kubernetes/api/blob/4dccc5e86b957cea946a63c4f052ee7dec3946ce/core/v1/types.go#L2636
-[memory limit downscaling is forbidden]: https://github.com/kubernetes/enhancements/pull/5089
+[memory limit downscaling is forbidden]: https://github.com/kubernetes/enhancements/blob/4c3449517e1a7cf00907fd8a6dc780350275035a/keps/sig-node/1287-in-place-update-pod-resources/README.md#memory-limit-decreases
 
 ## Design Details
 
@@ -129,12 +130,12 @@ We classify two types of updates in the context of this new mode:
 1. Updates on pod admission
 2. In-place updates
 
-### 1. Applying Updates During Pod Admission {#pod-admission}
+### 1. Applying Updates During Pod Admission
 
 For VPAs using the new `InPlaceOrRecreate` mode, the VPA Admission Controller will apply updates to
 starting pods just as it does for VPAs in `Initial`, `Auto`, and `Recreate` modes.
 
-### 2. In-Place Updates (**NEW**) {#in-place}
+### 2. In-Place Updates
 
 In the `InPlaceOrRecreate` modes, and for updates that require a container restart, the VPA updater
 will attempt to apply updates in place. It will update them under the same conditions that would
