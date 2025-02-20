@@ -111,7 +111,7 @@ rules:
     - csinodes
     - csidrivers
     - csistoragecapacities
-    - volumeattachment
+    - volumeattachments
     verbs:
     - watch
     - list
