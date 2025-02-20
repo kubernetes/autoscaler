@@ -153,10 +153,13 @@ be able to perform an eviction, including:
 * If `CanEvict` is false.
 * If any of the `EvictionRequirements` on the VPA are not true.
 
-These additional resizes can be attempted because the eviction fallback would fail anyway.
+If the in-place resize operation fails in this case, VPA can still proceed with the normal eviction
+path which would get blocked anyway due to these conditions preventing it from happening.
 
 The VPA updater will evict a pod to actuate a recommendation if it attempted to apply the
-recommendation in place and failed.
+recommendation in place and failed. This will happen even if we attempted the in-place resize
+for conditions that normally would not lead to an eviction. This is safe because the eviction would
+be prevented anyway.
 
 VPA updater will consider that the update failed if:
 * The pod has condition `PodResizePending` with reason `Infeasible` or
