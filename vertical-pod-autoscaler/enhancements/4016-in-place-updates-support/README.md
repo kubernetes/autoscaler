@@ -8,8 +8,8 @@
 - [Proposal](#proposal)
 - [Context](#context)
 - [Design Details](#design-details)
-    - [1. Applying Updates During Pod Admission](#applying-updates-during-pod-admission)
-    - [2. In-Place Updates](#in-place-updates)
+    - [Applying Updates During Pod Admission](#applying-updates-during-pod-admission)
+    - [In-Place Updates](#in-place-updates)
     - [Comparison of `UpdateMode`s](#comparison-of-updatemodes)
     - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
@@ -130,12 +130,12 @@ We classify two types of updates in the context of this new mode:
 1. Updates on pod admission
 2. In-place updates
 
-### 1. Applying Updates During Pod Admission
+### Applying Updates During Pod Admission
 
 For VPAs using the new `InPlaceOrRecreate` mode, the VPA Admission Controller will apply updates to
 starting pods just as it does for VPAs in `Initial`, `Auto`, and `Recreate` modes.
 
-### 2. In-Place Updates
+### In-Place Updates
 
 In the `InPlaceOrRecreate` modes, and for updates that require a container restart, the VPA updater
 will attempt to apply updates in place. It will update them under the same conditions that would
