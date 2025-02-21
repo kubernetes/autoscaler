@@ -105,23 +105,31 @@ func (osf *shapeGetterImpl) GetNodePoolShape(np *oke.NodePool, ephemeralStorage 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resp, err := osf.shapeClient.ListShapes(ctx, core.ListShapesRequest{
+	request := core.ListShapesRequest{
 		CompartmentId: np.CompartmentId,
-		Limit:         common.Int(500),
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to ListShapes")
 	}
 
-	// Update the cache based on latest results
-	for _, s := range resp.Items {
-		osf.cache[*s.Shape] = &Shape{
-			Name:                    shapeName,
-			CPU:                     getFloat32(s.Ocpus) * 2, // convert ocpu to vcpu
-			GPU:                     getInt(s.Gpus),
-			MemoryInBytes:           getFloat32(s.MemoryInGBs) * 1024 * 1024 * 1024,
-			EphemeralStorageInBytes: float32(ephemeralStorage),
+	for {
+		resp, err := osf.shapeClient.ListShapes(ctx, request)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to ListShapes")
 		}
+
+		// Update the cache based on latest results
+		for _, s := range resp.Items {
+			osf.cache[*s.Shape] = &Shape{
+				Name:                    shapeName,
+				CPU:                     getFloat32(s.Ocpus) * 2, // convert ocpu to vcpu
+				GPU:                     getInt(s.Gpus),
+				MemoryInBytes:           getFloat32(s.MemoryInGBs) * 1024 * 1024 * 1024,
+				EphemeralStorageInBytes: float32(ephemeralStorage),
+			}
+		}
+
+		if resp.OpcNextPage == nil {
+			break
+		}
+		request.Page = resp.OpcNextPage
 	}
 
 	// fetch value from updated cache... if it exists.
