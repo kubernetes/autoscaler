@@ -102,12 +102,13 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUM
 			}
 		case ResourceMemory:
 			newKey = apiv1.ResourceMemory
-			quantity = QuantityFromMemoryAmount(resourceAmount)
-			if humanizeMemory && !quantity.IsZero() {
-				rawValues := quantity.Value()
-				humanizedValue := HumanizeMemoryQuantity(rawValues)
-				klog.V(4).InfoS("Converting raw value to humanized value", "rawValue", rawValues, "humanizedValue", humanizedValue)
+			if humanizeMemory && resourceAmount > 0 {
+				humanizedValue := HumanizeMemoryQuantity(resourceAmount)
+				klog.V(4).InfoS("Converting raw value to humanized value", "resourceAmount", resourceAmount, "humanizedValue", humanizedValue)
 				quantity = resource.MustParse(humanizedValue)
+				klog.V(4).InfoS("after quantity creation", "quantity", quantity.String())
+			} else {
+				quantity = QuantityFromMemoryAmount(resourceAmount)
 			}
 		default:
 			klog.ErrorS(nil, "Cannot translate resource name", "resourceName", key)
@@ -153,24 +154,24 @@ func resourceAmountFromFloat(amount float64) ResourceAmount {
 	}
 }
 
-// HumanizeMemoryQuantity converts raw bytes to human-readable string using binary units (KiB, MiB, GiB, TiB) with two decimal places.
-func HumanizeMemoryQuantity(bytes int64) string {
+// HumanizeMemoryQuantity converts bytes to a human-readable string using binary units (KiB, MiB, GiB, TiB), rounding to the nearest whole number.
+func HumanizeMemoryQuantity(bytes ResourceAmount) string {
 	const (
-		KiB = 1024
-		MiB = 1024 * KiB
-		GiB = 1024 * MiB
-		TiB = 1024 * GiB
+		Ki ResourceAmount = 1024
+		Mi                = 1024 * Ki
+		Gi                = 1024 * Mi
+		Ti                = 1024 * Gi
 	)
 
 	switch {
-	case bytes >= TiB:
-		return fmt.Sprintf("%.2fTi", float64(bytes)/float64(TiB))
-	case bytes >= GiB:
-		return fmt.Sprintf("%.2fGi", float64(bytes)/float64(GiB))
-	case bytes >= MiB:
-		return fmt.Sprintf("%.2fMi", float64(bytes)/float64(MiB))
-	case bytes >= KiB:
-		return fmt.Sprintf("%.2fKi", float64(bytes)/float64(KiB))
+	case bytes >= Ti:
+		return fmt.Sprintf("%.0fTi", math.Ceil(float64(bytes)/float64(Ti)))
+	case bytes >= Gi:
+		return fmt.Sprintf("%.0fGi", math.Ceil(float64(bytes)/float64(Gi)))
+	case bytes >= Mi:
+		return fmt.Sprintf("%.0fMi", math.Ceil(float64(bytes)/float64(Mi)))
+	case bytes >= Ki:
+		return fmt.Sprintf("%.0fKi", math.Ceil(float64(bytes)/float64(Ki)))
 	default:
 		return fmt.Sprintf("%d", bytes)
 	}
