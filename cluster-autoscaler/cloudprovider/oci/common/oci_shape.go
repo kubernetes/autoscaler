@@ -118,7 +118,7 @@ func (osf *shapeGetterImpl) GetNodePoolShape(np *oke.NodePool, ephemeralStorage 
 		// Update the cache based on latest results
 		for _, s := range resp.Items {
 			osf.cache[*s.Shape] = &Shape{
-				Name:                    shapeName,
+				Name:                    *s.Shape,
 				CPU:                     getFloat32(s.Ocpus) * 2, // convert ocpu to vcpu
 				GPU:                     getInt(s.Gpus),
 				MemoryInBytes:           getFloat32(s.MemoryInGBs) * 1024 * 1024 * 1024,
