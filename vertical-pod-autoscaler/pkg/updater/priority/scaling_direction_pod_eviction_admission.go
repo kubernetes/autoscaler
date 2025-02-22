@@ -120,4 +120,5 @@ func (s *scalingDirectionPodEvictionAdmission) LoopInit(_ []*apiv1.Pod, vpaContr
 }
 
 func (s *scalingDirectionPodEvictionAdmission) CleanUp() {
+	s.EvictionRequirements = make(map[*apiv1.Pod][]*vpa_types.EvictionRequirement)
 }
