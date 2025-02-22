@@ -461,18 +461,19 @@ func (m *ociManagerImpl) GetExistingNodePoolSizeViaCompute(np NodePool) (int, er
 			if !strings.HasPrefix(*item.DisplayName, displayNamePrefix) {
 				continue
 			}
+			if *item.Id == "" {
+				continue
+			}
 			switch item.LifecycleState {
 			case core.InstanceLifecycleStateStopped, core.InstanceLifecycleStateTerminated:
 				klog.V(4).Infof("skipping instance is in stopped/terminated state: %q", *item.Id)
 			case core.InstanceLifecycleStateCreatingImage, core.InstanceLifecycleStateStarting, core.InstanceLifecycleStateProvisioning, core.InstanceLifecycleStateMoving:
-				if *item.Id != "" {
-					instances = append(instances, cloudprovider.Instance{
-						Id: *item.Id,
-						Status: &cloudprovider.InstanceStatus{
-							State: cloudprovider.InstanceCreating,
-						},
-					})
-				}
+				instances = append(instances, cloudprovider.Instance{
+					Id: *item.Id,
+					Status: &cloudprovider.InstanceStatus{
+						State: cloudprovider.InstanceCreating,
+					},
+				})
 			// in case an instance is running, it could either be installing OKE software or become a Ready node.
 			// we do not know, but as we only need info if a node is stopped / terminated, we do not care
 			case core.InstanceLifecycleStateRunning:
@@ -527,6 +528,12 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 	var instances []cloudprovider.Instance
 	for _, node := range nodePool.Nodes {
 
+		// A node pool can fail to scale up if there's no capacity in the region. In that case, the node pool will be
+		// returned by the API, but it will not actually exist or have an ID, so we don't want to tell the autoscaler about it.
+		if *node.Id == "" {
+			continue
+		}
+
 		if node.NodeError != nil {
 
 			errorClass := cloudprovider.OtherErrorClass
@@ -562,16 +569,12 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 				},
 			})
 		case oke.NodeLifecycleStateCreating, oke.NodeLifecycleStateUpdating:
-			// A node pool can fail to scale up if there's no capacity in the region. In that case, the node pool will be
-			// returned by the API, but it will not actually exist or have an ID, so we don't want to tell the autoscaler about it.
-			if *node.Id != "" {
-				instances = append(instances, cloudprovider.Instance{
-					Id: *node.Id,
-					Status: &cloudprovider.InstanceStatus{
-						State: cloudprovider.InstanceCreating,
-					},
-				})
-			}
+			instances = append(instances, cloudprovider.Instance{
+				Id: *node.Id,
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+				},
+			})
 		case oke.NodeLifecycleStateActive:
 			instances = append(instances, cloudprovider.Instance{
 				Id: *node.Id,
