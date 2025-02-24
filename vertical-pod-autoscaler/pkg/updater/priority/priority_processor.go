@@ -75,16 +75,12 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 					outsideRecommendedRange = true
 				}
 
-				// TODO(jkyros): I think we're picking up early zeroes here from the VPA when it has no recommendation, I think that's why I have to wait
-				// for the recommendation later before I try to scale in-place
-				// TODO(jkyros): For in place VPA, this might be gross, but we need this pod to be in the eviction list because it doesn't actually have
-				// the resources it asked for even if the spec is right, and we might need to fall back to evicting it
-				// TODO(jkyros): Can we have empty container status at this point for real? It's at least failing the tests if we don't check, but
-				// we could just populate the status in the tests
 				// TODO(maxcao13): Can we just ignore the spec, and use status.containerStatus.resources now?
 				// Apparently: This also means that resources field in the pod spec can no longer be relied upon as an indicator of the pod's actual resources.
 				// reference: https://kubernetes.io/blog/2023/05/12/in-place-pod-resize-alpha/
 				// KEP reference: https://github.com/kubernetes/enhancements/pull/5089/files#diff-14542847beb0f0fd767db1aff1316f8569a968385e2bb89567c4cc0af1ae5942R761
+				// Although this seems like a big API change (wouldn't work for VPA on kubernetes < 1.33 without feature gate applied). I'll leave it up for reviewers.
+				// IMO, this should probably be implemented for a followup enhancement.
 
 				// Statuses can be missing, or status resources can be nil
 				if len(pod.Status.ContainerStatuses) > num && pod.Status.ContainerStatuses[num].Resources != nil {

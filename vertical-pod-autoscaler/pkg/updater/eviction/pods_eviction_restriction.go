@@ -444,29 +444,12 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 			return false
 		}
 
-		noRestartPoliciesPopulated := true
-		isPodRestartPolicyNever := pod.Spec.RestartPolicy == apiv1.RestartPolicyNever
-
 		for _, container := range pod.Spec.Containers {
 			// If some of these are populated, we know it at least understands resizing
-			if len(container.ResizePolicy) > 0 {
-				noRestartPoliciesPopulated = false
+			if container.ResizePolicy == nil {
+				klog.InfoS("Can't resize pod, container resize policy does not exist; is InPlacePodVerticalScaling enabled?", "pod", klog.KObj(pod))
+				return false
 			}
-
-			for _, policy := range container.ResizePolicy {
-				if policy.RestartPolicy != apiv1.NotRequired {
-					klog.V(4).InfoS("in-place resize of pod will cause container disruption, because of container resize policy", "pod", klog.KObj(pod), "container", container.Name, "containerResizeRestartPolicy", policy.RestartPolicy)
-					if isPodRestartPolicyNever {
-						klog.InfoS("in-place resize of pod not possible, container resize policy and pod restartPolicy conflict", "pod", klog.KObj(pod), "container", container.Name, "containerResizeRestartPolicy", policy.RestartPolicy, "podRestartPolicy", pod.Spec.RestartPolicy)
-						return false
-					}
-				}
-			}
-		}
-
-		// If none of the policies are populated, our feature is probably not enabled, so we can't in-place regardless
-		if noRestartPoliciesPopulated {
-			klog.InfoS("impossible to resize pod in-place, container resize policies are not populated", "pod", klog.KObj(pod))
 		}
 
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
@@ -483,7 +466,7 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 			// number of pods that are actually running
 			actuallyAlive := singleGroupStats.running - (singleGroupStats.evicted + singleGroupStats.inPlaceUpdating)
 			klog.V(4).InfoS("Checking pod disruption tolerance",
-				"podName", pod.Name,
+				"pod", klog.KObj(pod),
 				"configuredPods", singleGroupStats.configured,
 				"runningPods", singleGroupStats.running,
 				"evictedPods", singleGroupStats.evicted,
@@ -493,7 +476,7 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 				"actuallyAlive", actuallyAlive,
 			)
 			if actuallyAlive > shouldBeAlive {
-				klog.V(4).InfoS("Pod can be resized in-place; more pods are running than required", "podName", pod.Name, "shouldBeAlive", shouldBeAlive, "actuallyAlive", actuallyAlive)
+				klog.V(4).InfoS("Pod can be resized in-place; more pods are running than required", "pod", klog.KObj(pod), "shouldBeAlive", shouldBeAlive, "actuallyAlive", actuallyAlive)
 				return true
 			}
 
@@ -501,7 +484,7 @@ func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 			if singleGroupStats.running == singleGroupStats.configured &&
 				singleGroupStats.evictionTolerance == 0 &&
 				singleGroupStats.evicted == 0 && singleGroupStats.inPlaceUpdating == 0 {
-				klog.V(4).InfoS("Pod can be resized in-place; all pods are running and eviction tolerance is 0", "podName", pod.Name)
+				klog.V(4).InfoS("Pod can be resized in-place; all pods are running and eviction tolerance is 0", "pod", klog.KObj(pod))
 				return true
 			}
 		}
@@ -583,6 +566,8 @@ func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 
 	return nil
 }
+
+// TODO(maxcao13): Switch to conditions after 1.33 is released: https://github.com/kubernetes/enhancements/pull/5089
 
 // IsInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update
 func IsInPlaceUpdating(podToCheck *apiv1.Pod) (isUpdating bool) {
