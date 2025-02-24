@@ -58,7 +58,6 @@ var (
 	minReplicas = flag.Int("min-replicas", 2,
 		`Minimum number of replicas to perform update`)
 
-	// TODO(maxcao13): Should this be combined into disruption tolerance, or should we have a separate flag for that, or we just don't rename?
 	evictionToleranceFraction = flag.Float64("eviction-tolerance", 0.5,
 		`Fraction of replica count that can be evicted for update, if more than one pod can be evicted.`)
 
