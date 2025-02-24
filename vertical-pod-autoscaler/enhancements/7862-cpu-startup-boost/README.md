@@ -1,7 +1,7 @@
-# AEP-: CPU Startup Boost
+# AEP-7862: CPU Startup Boost
 
 <!-- toc -->
-- [AEP-: CPU Startup Boost](#aep--cpu-startup-boost)
+- [AEP-7862: CPU Startup Boost](#aep-7862-cpu-startup-boost)
   - [Summary](#summary)
     - [Goals](#goals)
     - [Non-Goals](#non-goals)
