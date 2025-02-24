@@ -10,7 +10,10 @@ spec:
   selector:
     matchLabels:
 {{ include "cluster-autoscaler.instance-name" . | indent 6 }}
-{{- if .Values.podDisruptionBudget }}
-  {{ toYaml .Values.podDisruptionBudget | nindent 2 }}
-{{- end }}
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if and .Values.podDisruptionBudget.maxUnavailable (not .Values.podDisruptionBudget.minAvailable) }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
 {{- end -}}
