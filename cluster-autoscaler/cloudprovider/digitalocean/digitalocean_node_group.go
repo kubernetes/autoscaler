@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/digitalocean/godo"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	utilerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/kubernetes/pkg/util/taints"
 )
 
 const (
@@ -317,17 +319,24 @@ func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplateResponse) (*framewo
 	if err != nil {
 		return nil, fmt.Errorf("failed to create capacity resources - %s", err)
 	}
+	addedTaints, _, err := taints.ParseTaints(resp.Template.Taints)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse taints from template - %s", err)
+	}
 	l := map[string]string{
 		apiv1.LabelOSStable:   cloudprovider.DefaultOS,
 		apiv1.LabelArchStable: cloudprovider.DefaultArch,
 	}
+
 	l = cloudprovider.JoinStringMaps(l, resp.Template.Labels)
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   generateWorkerName(resp.Name, 1),
 			Labels: l,
 		},
-		Spec: apiv1.NodeSpec{},
+		Spec: apiv1.NodeSpec{
+			Taints: addedTaints,
+		},
 		Status: apiv1.NodeStatus{
 			Allocatable: allocatable,
 			Capacity:    capacity,
