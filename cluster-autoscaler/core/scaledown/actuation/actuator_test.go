@@ -1274,9 +1274,10 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	ndb := NewNodeDeletionBatcher(&ctx, scaleStateNotifier, ndt, 0*time.Second)
 	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
 	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, shutdownGracePeriodByPodPriority: legacyFlagDrainConfig, fullDsEviction: force}
+	scheduler := NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor)
 	actuator := Actuator{
 		ctx: &ctx, nodeDeletionTracker: ndt,
-		nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
+		nodeDeletionScheduler: scheduler,
 		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 		configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(ctx.NodeGroupDefaults),
 	}
@@ -1305,9 +1306,12 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	// Deletion taint may be lifted by goroutine, ignore taints to avoid race condition
 	ignoreTaints := cmpopts.IgnoreFields(apiv1.NodeSpec{}, "Taints")
 	statusCmpOpts := cmp.Options{ignoreSdNodeOrder, cmpNg, cmpopts.EquateEmpty(), ignoreTaints}
+	// lock deletion scheduler so race detector does not complain
+	scheduler.Lock()
 	if diff := cmp.Diff(wantScaleDownNodes, gotScaleDownNodes, statusCmpOpts); diff != "" {
 		t.Errorf("StartDeletion scaled down nodes diff (-want +got):\n%s", diff)
 	}
+	scheduler.Unlock()
 
 	// Verify that all expected nodes were deleted using the cloud provider hook.
 	var gotDeletedNodes []string
