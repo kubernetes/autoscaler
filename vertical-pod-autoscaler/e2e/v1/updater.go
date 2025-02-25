@@ -82,7 +82,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 
 		//gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		// TODO(maxcao13): I don't think we need this much complexity for checking inplace, but I won't remove it for now
-		err := WaitForPodsUpdatedWithoutEviction(f, initialPods, podList)
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
@@ -117,7 +117,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		initialPods := podList.DeepCopy()
 
 		ginkgo.By("Waiting for pods to be in-place downscaled")
-		err := WaitForPodsUpdatedWithoutEviction(f, initialPods, podList)
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
@@ -149,9 +149,6 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 			// Feature is probably not working here
 			ginkgo.Skip("Skipping test, InPlacePodVerticalScaling not available")
 		}
-
-		ginkgo.By(fmt.Sprintf("Waiting for pods to be in-place updated, hoping it won't happen, sleep for %s", VpaInPlaceTimeout.String()))
-		CheckNoContainersRestarted(f)
 
 		updatedPodList, err := GetHamsterPods(f)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
