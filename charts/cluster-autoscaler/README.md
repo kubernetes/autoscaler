@@ -438,6 +438,7 @@ vpa:
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
 | azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureUseWorkloadIdentityExtension | bool | `false` | Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
+| azureUserAssignedIdentityID | string | `""` | When vmss has multiple user assigned identity assigned, azureUserAssignedIdentityID specifies which identity to be used |
 | azureVMType | string | `"vmss"` | Azure VM type. |
 | civoApiKey | string | `""` | API key for the Civo API. Required if `cloudProvider=civo` |
 | civoApiUrl | string | `"https://api.civo.com"` | URL for the Civo API. Required if `cloudProvider=civo` |
