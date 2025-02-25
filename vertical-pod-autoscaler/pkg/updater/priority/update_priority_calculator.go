@@ -34,7 +34,7 @@ import (
 )
 
 var (
-	defaultUpdateThreshold = flag.Float64("pod-update-threshold", 0.1, "Ignore updates that have priority lower than the value of this flag")
+	defaultUpdateThreshold = flag.Float64("pod-update-threshold", 0.1, "Ignore disruptive updates that have priority lower than the value of this flag")
 
 	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Hour*12, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 
@@ -150,6 +150,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
+// TODO(maxcao13): Not used for now, deprecated by GetSortedUpdatablePods; remove later when fixing tests
 func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*apiv1.Pod {
 	sort.Sort(byPriorityDesc(calc.pods))
 
