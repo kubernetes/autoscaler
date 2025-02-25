@@ -188,7 +188,7 @@ spec:
             - name: ARM_USER_ASSIGNED_IDENTITY_ID
               valueFrom:
                 secretKeyRef:
-                  key: azureUserAssignedIdentityID
+                  key: UserAssignedIdentityID
                   name: {{ template "cluster-autoscaler.fullname" . }}
             {{- else }}
             - name: ARM_TENANT_ID
