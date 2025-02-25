@@ -1083,6 +1083,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-unready-enabled` | Should CA scale down unready nodes of the cluster | true |
 | `scale-down-unready-time` | How long an unready node should be unneeded before it is eligible for scale down | 20m0s |
 | `scale-down-utilization-threshold` | The maximum value between the sum of cpu requests and sum of memory requests of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down | 0.5 |
+| `scale-up-ignore-backoff-errors` | Cloud provider error message parts that should not trigger a scaleup backoff |  |
 | `scale-up-from-zero` | Should CA scale up when there are 0 ready nodes. | true |
 | `scan-interval` | How often cluster is reevaluated for scale up or down | 10s |
 | `scheduler-config-file` | scheduler-config allows changing configuration of in-tree scheduler plugins acting on PreFilter and Filter extension points |  |
