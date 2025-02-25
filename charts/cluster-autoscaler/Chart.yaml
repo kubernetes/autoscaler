@@ -12,5 +12,3 @@ sources:
   - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
 type: application
 version: 9.46.2
-
-
