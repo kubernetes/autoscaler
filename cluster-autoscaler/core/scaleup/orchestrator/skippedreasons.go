@@ -43,6 +43,8 @@ var (
 	MaxLimitReachedReason = NewSkippedReasons("max node group size reached")
 	// NotReadyReason node group is not ready.
 	NotReadyReason = NewSkippedReasons("not ready for scale-up")
+	// HasDynamicHeadroomReason node group has per-node vertical scaling headroom.
+	HasDynamicHeadroomReason = NewSkippedReasons("at least one node can be vertically scaled")
 )
 
 // MaxResourceLimitReached contains information why given node group was skipped.
