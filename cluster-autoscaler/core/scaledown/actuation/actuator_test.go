@@ -1302,9 +1302,7 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	// Verify ScaleDownNodes looks as expected.
 	ignoreSdNodeOrder := cmpopts.SortSlices(func(a, b *status.ScaleDownNode) bool { return a.Node.Name < b.Node.Name })
 	cmpNg := cmp.Comparer(func(a, b *testprovider.TestNodeGroup) bool { return a.Id() == b.Id() })
-	// Nodes will have deletion taints, skipping them here since we check them later
-	ignoreTaints := cmpopts.IgnoreFields(apiv1.NodeSpec{}, "Taints")
-	statusCmpOpts := cmp.Options{ignoreSdNodeOrder, cmpNg, cmpopts.EquateEmpty(), ignoreTaints}
+	statusCmpOpts := cmp.Options{ignoreSdNodeOrder, cmpNg, cmpopts.EquateEmpty()}
 	if diff := cmp.Diff(wantScaleDownNodes, gotScaleDownNodes, statusCmpOpts); diff != "" {
 		t.Errorf("StartDeletion scaled down nodes diff (-want +got):\n%s", diff)
 	}
