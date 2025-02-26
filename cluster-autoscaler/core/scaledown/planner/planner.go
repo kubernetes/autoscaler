@@ -456,3 +456,18 @@ func (p *Planner) MarkNodesAsToBeRemoved(nodes []simulator.NodeToBeRemoved, t ti
 	}
 	return nil
 }
+
+func (p *Planner) MarkNodesAsUnremovable(nodes []simulator.UnremovableNode, t time.Time) error {
+	for _, node := range nodes {
+		existingNode := node.Node
+		annotations := existingNode.GetAnnotations()
+		annotations[utils.AnnotationUnneededKey] = "false"
+		delete(annotations, utils.AnnotationUnneededSinceKey)
+		existingNode.SetAnnotations(annotations)
+		_, err := p.context.ClientSet.CoreV1().Nodes().Update(ctx.TODO(), existingNode, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to mark node %s as unremovable: %v", existingNode.Name, err)
+		}
+	}
+	return nil
+}
