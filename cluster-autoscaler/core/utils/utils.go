@@ -28,6 +28,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
+const (
+	AnnotationUnneededKey      = "cluster-autoscaler.kubernetes.io/unneeded"
+	AnnotationUnneededSinceKey = "cluster-autoscaler.kubernetes.io/unneeded-since"
+)
+
 // isVirtualNode determines if the node is created by virtual kubelet
 func isVirtualNode(node *apiv1.Node) bool {
 	return node.ObjectMeta.Labels["type"] == "virtual-kubelet"

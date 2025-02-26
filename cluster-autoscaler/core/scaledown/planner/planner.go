@@ -17,6 +17,7 @@ limitations under the License.
 package planner
 
 import (
+	ctx "context"
 	"fmt"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -150,6 +152,16 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	p.scaleDownContext.ResourcesLeft = p.resourceLimitsFinder.LimitsLeft(p.context, nodes, resourceLimiter, p.latestUpdate).DeepCopy()
 	p.scaleDownContext.ResourcesWithLimits = resourceLimiter.GetResources()
 	emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes := p.unneededNodes.RemovableAt(p.context, *p.scaleDownContext, p.latestUpdate)
+
+	err = p.MarkNodesAsToBeRemoved(emptyRemovableNodes, p.latestUpdate)
+	if err != nil {
+		klog.Warningf("failed to mark nodes as unneeded: %v", err)
+	}
+	err = p.MarkNodesAsToBeRemoved(needDrainRemovableNodes, p.latestUpdate)
+	if err != nil {
+		klog.Warningf("failed to mark nodes as unneeded: %v", err)
+	}
+
 	p.addUnremovableNodes(unremovableNodes)
 
 	needDrainRemovableNodes = sortByRisk(needDrainRemovableNodes)
@@ -428,4 +440,19 @@ func timedOut(timer *time.Timer) bool {
 	default:
 		return false
 	}
+}
+
+func (p *Planner) MarkNodesAsToBeRemoved(nodes []simulator.NodeToBeRemoved, t time.Time) error {
+	for _, node := range nodes {
+		existingNode := node.Node
+		annotations := existingNode.GetAnnotations()
+		annotations[utils.AnnotationUnneededKey] = "true"
+		annotations[utils.AnnotationUnneededSinceKey] = t.Format(time.RFC3339)
+		existingNode.SetAnnotations(annotations)
+		_, err := p.context.ClientSet.CoreV1().Nodes().Update(ctx.TODO(), existingNode, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to mark node %s as unneeded: %v", existingNode.Name, err)
+		}
+	}
+	return nil
 }

@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
+	coreutils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -73,7 +74,17 @@ func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 			ntbr: nn,
 		}
 		if val, found := n.byName[name]; found {
-			updated[name].since = val.since
+			nodeannotations := nn.Node.GetAnnotations()
+			if v, ok := nodeannotations[coreutils.AnnotationUnneededSinceKey]; ok {
+				if t, err := time.Parse(time.RFC3339, v); err == nil {
+					updated[name].since = t
+				} else {
+					klog.Warningf("Failed to parse timestamp from annotation for node %s, defaulting to current time: %v", name, err)
+					updated[name].since = ts
+				}
+			} else {
+				updated[name].since = val.since
+			}
 		} else {
 			updated[name].since = ts
 		}
