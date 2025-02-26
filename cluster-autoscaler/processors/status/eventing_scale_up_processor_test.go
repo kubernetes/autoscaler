@@ -101,6 +101,21 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 			expectedTriggered:   0,
 			expectedNoTriggered: 0,
 		},
+		{
+			caseName: "No scale up; max total nodes in cluster reached",
+			state: &ScaleUpStatus{
+				Result:               ScaleUpLimitedByMaxNodesTotal,
+				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{{}},
+				PodsTriggeredScaleUp: []*apiv1.Pod{},
+				PodsRemainUnschedulable: []NoScaleUpInfo{
+					{Pod: p1},
+					{Pod: p2},
+					{Pod: p3},
+				},
+			},
+			expectedTriggered:   0,
+			expectedNoTriggered: 3,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -166,9 +181,18 @@ func TestReasonsMessage(t *testing.T) {
 		"2 max limit reached",
 		"1 not ready",
 	}
-	result := ReasonsMessage(NoScaleUpInfo{nil, rejected, skipped}, considered)
+	result := ReasonsMessage(ScaleUpNoOptionsAvailable, NoScaleUpInfo{nil, rejected, skipped}, considered)
 
 	for _, part := range expected {
 		assert.Contains(t, result, part)
 	}
+}
+
+func TestReasonsMessageWhenScaleUpLimitedByMaxNodesTotal(t *testing.T) {
+	considered := map[string]cloudprovider.NodeGroup{}
+	noScaleUpInfo := NoScaleUpInfo{
+		Pod: nil,
+	}
+	result := ReasonsMessage(ScaleUpLimitedByMaxNodesTotal, noScaleUpInfo, considered)
+	assert.Contains(t, result, "max total nodes in cluster reached")
 }
