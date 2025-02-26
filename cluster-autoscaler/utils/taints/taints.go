@@ -19,6 +19,7 @@ package taints
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -160,7 +161,7 @@ func taintKeys(taints []apiv1.Taint) []string {
 }
 
 // MarkToBeDeleted sets a taint that makes the node unschedulable.
-func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode bool) error {
+func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode bool) (*apiv1.Node, error) {
 	taint := apiv1.Taint{
 		Key:    ToBeDeletedTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -170,7 +171,7 @@ func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode 
 }
 
 // MarkDeletionCandidate sets a soft taint that makes the node preferably unschedulable.
-func MarkDeletionCandidate(node *apiv1.Node, client kube_client.Interface) error {
+func MarkDeletionCandidate(node *apiv1.Node, client kube_client.Interface) (*apiv1.Node, error) {
 	taint := apiv1.Taint{
 		Key:    DeletionCandidateTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -179,8 +180,8 @@ func MarkDeletionCandidate(node *apiv1.Node, client kube_client.Interface) error
 	return AddTaints(node, client, []apiv1.Taint{taint}, false)
 }
 
-// AddTaints sets the specified taints on the node.
-func AddTaints(node *apiv1.Node, client kube_client.Interface, taints []apiv1.Taint, cordonNode bool) error {
+// AddTaints sets the specified taints on the node and returns an updated copy of the node.
+func AddTaints(node *apiv1.Node, client kube_client.Interface, taints []apiv1.Taint, cordonNode bool) (*apiv1.Node, error) {
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()
 	var err error
@@ -191,7 +192,7 @@ func AddTaints(node *apiv1.Node, client kube_client.Interface, taints []apiv1.Ta
 			freshNode, err = client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
 				klog.Warningf("Error while adding %v taints on node %v: %v", strings.Join(taintKeys(taints), ","), node.Name, err)
-				return fmt.Errorf("failed to get node %v: %v", node.Name, err)
+				return nil, fmt.Errorf("failed to get node %v: %v", node.Name, err)
 			}
 		}
 
@@ -201,7 +202,7 @@ func AddTaints(node *apiv1.Node, client kube_client.Interface, taints []apiv1.Ta
 				refresh = true
 				continue
 			}
-			return nil
+			return freshNode, nil
 		}
 		_, err = client.CoreV1().Nodes().Update(context.TODO(), freshNode, metav1.UpdateOptions{})
 		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
@@ -212,11 +213,10 @@ func AddTaints(node *apiv1.Node, client kube_client.Interface, taints []apiv1.Ta
 
 		if err != nil {
 			klog.Warningf("Error while adding %v taints on node %v: %v", strings.Join(taintKeys(taints), ","), node.Name, err)
-			return err
+			return nil, err
 		}
 		klog.V(1).Infof("Successfully added %v on node %v", strings.Join(taintKeys(taints), ","), node.Name)
-		node.Spec.Taints = append([]apiv1.Taint{}, freshNode.Spec.Taints...)
-		return nil
+		return freshNode, nil
 	}
 }
 
@@ -286,17 +286,17 @@ func GetTaintTime(node *apiv1.Node, taintKey string) (*time.Time, error) {
 }
 
 // CleanToBeDeleted cleans CA's NoSchedule taint from a node.
-func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode bool) (bool, error) {
+func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode bool) (*apiv1.Node, error) {
 	return CleanTaints(node, client, []string{ToBeDeletedTaint}, cordonNode)
 }
 
 // CleanDeletionCandidate cleans CA's soft NoSchedule taint from a node.
-func CleanDeletionCandidate(node *apiv1.Node, client kube_client.Interface) (bool, error) {
+func CleanDeletionCandidate(node *apiv1.Node, client kube_client.Interface) (*apiv1.Node, error) {
 	return CleanTaints(node, client, []string{DeletionCandidateTaint}, false)
 }
 
-// CleanTaints cleans the specified taints from a node.
-func CleanTaints(node *apiv1.Node, client kube_client.Interface, taintKeys []string, cordonNode bool) (bool, error) {
+// CleanTaints cleans the specified taints from a node and returns an updated copy of the node.
+func CleanTaints(node *apiv1.Node, client kube_client.Interface, taintKeys []string, cordonNode bool) (*apiv1.Node, error) {
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()
 	var err error
@@ -307,7 +307,7 @@ func CleanTaints(node *apiv1.Node, client kube_client.Interface, taintKeys []str
 			freshNode, err = client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
 				klog.Warningf("Error while removing %v taints from node %v: %v", strings.Join(taintKeys, ","), node.Name, err)
-				return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
+				return nil, fmt.Errorf("failed to get node %v: %v", node.Name, err)
 			}
 		}
 		newTaints := make([]apiv1.Taint, 0)
@@ -330,7 +330,7 @@ func CleanTaints(node *apiv1.Node, client kube_client.Interface, taintKeys []str
 				refresh = true
 				continue
 			}
-			return false, nil
+			return freshNode, nil
 		}
 
 		freshNode.Spec.Taints = newTaints
@@ -348,11 +348,10 @@ func CleanTaints(node *apiv1.Node, client kube_client.Interface, taintKeys []str
 
 		if err != nil {
 			klog.Warningf("Error while releasing %v taints on node %v: %v", strings.Join(taintKeys, ","), node.Name, err)
-			return false, err
+			return nil, err
 		}
 		klog.V(1).Infof("Successfully released %v on node %v", strings.Join(taintKeys, ","), node.Name)
-		node.Spec.Taints = append([]apiv1.Taint{}, freshNode.Spec.Taints...)
-		return true, nil
+		return freshNode, nil
 	}
 }
 
@@ -376,11 +375,11 @@ func CleanAllTaints(nodes []*apiv1.Node, client kube_client.Interface, recorder 
 		if !taintsPresent {
 			continue
 		}
-		cleaned, err := CleanTaints(node, client, taintKeys, cordonNode)
+		updatedNode, err := CleanTaints(node, client, taintKeys, cordonNode)
 		if err != nil {
 			recorder.Eventf(node, apiv1.EventTypeWarning, "ClusterAutoscalerCleanup",
 				"failed to clean %v on node %v: %v", strings.Join(taintKeys, ","), node.Name, err)
-		} else if cleaned {
+		} else if node != nil && updatedNode != nil && !slices.Equal(updatedNode.Spec.Taints, node.Spec.Taints) {
 			recorder.Eventf(node, apiv1.EventTypeNormal, "ClusterAutoscalerCleanup",
 				"removed %v taints from node %v", strings.Join(taintKeys, ","), node.Name)
 		}

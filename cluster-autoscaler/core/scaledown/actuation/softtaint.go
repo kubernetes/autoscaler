@@ -60,7 +60,7 @@ func UpdateSoftDeletionTaints(context *context.AutoscalingContext, uneededNodes,
 			continue
 		}
 		b.processWithinBudget(func() {
-			err := taints.MarkDeletionCandidate(node, context.ClientSet)
+			_, err := taints.MarkDeletionCandidate(node, context.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
 				klog.Warningf("Soft taint on %s adding error %v", node.Name, err)
