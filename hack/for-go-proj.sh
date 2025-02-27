@@ -67,6 +67,6 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   go test -run=None ./...
   popd
   pushd ${CONTRIB_ROOT}/cluster-autoscaler/
-  go test ./...
+  make test-in-docker
   popd
 fi
