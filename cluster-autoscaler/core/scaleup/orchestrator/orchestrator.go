@@ -224,7 +224,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		var scaleUpStatus *status.ScaleUpStatus
 		oldId := bestOption.NodeGroup.Id()
 		if o.autoscalingContext.AsyncNodeGroupsEnabled {
-			initializer := NewAsyncNodeGroupInitializer(bestOption.NodeGroup, nodeInfos[oldId], o.scaleUpExecutor, o.taintConfig, daemonSets, o.processors.ScaleUpStatusProcessor, o.autoscalingContext, allOrNothing)
+			initializer := NewAsyncNodeGroupInitializer(bestOption, nodeInfos[oldId], o.scaleUpExecutor, o.taintConfig, daemonSets, o.processors.ScaleUpStatusProcessor, o.autoscalingContext, allOrNothing)
 			createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroupAsync(bestOption, nodeInfos, schedulablePodGroups, podEquivalenceGroups, daemonSets, initializer)
 		} else {
 			createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroup(bestOption, nodeInfos, schedulablePodGroups, podEquivalenceGroups, daemonSets)
