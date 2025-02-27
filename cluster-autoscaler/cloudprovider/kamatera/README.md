@@ -30,18 +30,19 @@ You can see an example of the cloud config file at [examples/deployment.yaml](ex
 
 it is an INI file with the following fields:
 
-| Key | Value | Mandatory | Default |
-|-----|-------|-----------|---------|
-| global/kamatera-api-client-id | Kamatera API Client ID | yes | none |
-| global/kamatera-api-secret | Kamatera API Secret | yes | none |
-| global/cluster-name | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string used to set the cluster server tag | yes | none |
-| global/default-min-size | default minimum size of a node group (must be > 0) | no | 1 |
-| global/default-max-size | default maximum size of a node group | no | 254 |
-| global/default-<SERVER_CONFIG_KEY> | replace <SERVER_CONFIG_KEY> with the relevant configuration key | see below | see below |
-| nodegroup \"name\" | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string within the cluster used to set the node group server tag | yes | none |
-| nodegroup \"name\"/min-size | minimum size for a specific node group | no | global/defaut-min-size |
-| nodegroup \"name\"/max-size | maximum size for a specific node group | no | global/defaut-min-size |
-| nodegroup \"name\"/<SERVER_CONFIG_KEY> | replace <SERVER_CONFIG_KEY> with the relevant configuration key | no | global/default-<SERVER_CONFIG_KEY> |
+| Key                                    | Value                                                                                                                                                   | Mandatory | Default                            |
+|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|------------------------------------|
+| global/kamatera-api-client-id          | Kamatera API Client ID                                                                                                                                  | yes       | none                               |
+| global/kamatera-api-secret             | Kamatera API Secret                                                                                                                                     | yes       | none                               |
+| global/cluster-name                    | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string used to set the cluster server tag                       | yes       | none                               |
+| global/filter-name-prefix              | autoscaler will only handle server names that start with this prefix                                                                                    | no        | none                               |
+| global/default-min-size                | default minimum size of a node group (must be > 0)                                                                                                      | no        | 1                                  |
+| global/default-max-size                | default maximum size of a node group                                                                                                                    | no        | 254                                |
+| global/default-<SERVER_CONFIG_KEY>     | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | see below | see below                          |
+| nodegroup \"name\"                     | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string within the cluster used to set the node group server tag | yes       | none                               |
+| nodegroup \"name\"/min-size            | minimum size for a specific node group                                                                                                                  | no        | global/defaut-min-size             |
+| nodegroup \"name\"/max-size            | maximum size for a specific node group                                                                                                                  | no        | global/defaut-min-size             |
+| nodegroup \"name\"/<SERVER_CONFIG_KEY> | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | no        | global/default-<SERVER_CONFIG_KEY> |
 
 ### Server configuration keys
 
