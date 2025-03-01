@@ -72,7 +72,15 @@ func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 		updated[name] = &node{
 			ntbr: nn,
 		}
-		if val, found := n.byName[name]; found {
+
+		nodeAnnotations := nn.Node.GetAnnotations()
+		if v, ok := nodeAnnotations["cluster-autoscaler.kubernetes.io/since"]; ok {
+			if t, err := time.Parse(time.RFC3339, v); err == nil {
+				updated[name].since = t
+			} else {
+				klog.Warningf("Error parsing timestamp for node %s: %s", name, err)
+			}
+		} else if val, found := n.byName[name]; found {
 			updated[name].since = val.since
 		} else {
 			updated[name].since = ts
