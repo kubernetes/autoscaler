@@ -306,6 +306,9 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 		updatedNode := node.DeepCopy()
 		nodeAnnotations := node.GetAnnotations()
 		if _, ok := nodeAnnotations[unneeded.NODE_COOLDOWN_SINCE_ANNOTATION]; !ok {
+			if nodeAnnotations == nil {
+				nodeAnnotations = make(map[string]string)
+			}
 			nodeAnnotations[unneeded.NODE_COOLDOWN_SINCE_ANNOTATION] = p.latestUpdate.Format(time.RFC3339)
 			updatedNode.SetAnnotations(nodeAnnotations)
 			p.context.AutoscalingKubeClients.ClientSet.CoreV1().Nodes().Update(ctx.TODO(), updatedNode, metav1.UpdateOptions{})
