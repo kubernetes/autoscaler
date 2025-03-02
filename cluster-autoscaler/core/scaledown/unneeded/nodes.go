@@ -35,6 +35,10 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+const (
+	NODE_COOLDOWN_SINCE_ANNOTATION = "cluster-autoscaler.kubernetes.io/since"
+)
+
 // Nodes tracks the state of cluster nodes that are not needed.
 type Nodes struct {
 	sdtg         scaleDownTimeGetter
@@ -74,7 +78,7 @@ func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 		}
 
 		nodeAnnotations := nn.Node.GetAnnotations()
-		if v, ok := nodeAnnotations["cluster-autoscaler.kubernetes.io/since"]; ok {
+		if v, ok := nodeAnnotations[NODE_COOLDOWN_SINCE_ANNOTATION]; ok {
 			if t, err := time.Parse(time.RFC3339, v); err == nil {
 				updated[name].since = t
 			} else {
