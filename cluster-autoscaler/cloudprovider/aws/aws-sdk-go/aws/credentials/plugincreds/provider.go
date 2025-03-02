@@ -7,7 +7,7 @@
 //
 // As of Go 1.8 plugins are only supported on the Linux platform.
 //
-// Plugin Symbol Name
+// # Plugin Symbol Name
 //
 // The "GetAWSSDKCredentialProvider" is the symbol name that will be used to
 // lookup the credentials provider getter from the plugin. If you want to use a
@@ -18,52 +18,52 @@
 // retrieve the credentials, and another to determine if the credentials have
 // expired.
 //
-// Plugin Symbol Signature
+// # Plugin Symbol Signature
 //
 // The plugin credential provider requires the symbol to match the
 // following signature.
 //
-//   func() (RetrieveFn func() (key, secret, token string, err error), IsExpiredFn func() bool)
+//	func() (RetrieveFn func() (key, secret, token string, err error), IsExpiredFn func() bool)
 //
-// Plugin Implementation Example
+// # Plugin Implementation Example
 //
 // The following is an example implementation of a SDK credential provider using
 // the plugin provider in this package. See the SDK's example/aws/credential/plugincreds/plugin
 // folder for a runnable example of this.
 //
-//   package main
+//	package main
 //
-//   func main() {}
+//	func main() {}
 //
-//   var myCredProvider provider
+//	var myCredProvider provider
 //
-//   // Build: go build -o plugin.so -buildmode=plugin plugin.go
-//   func init() {
-//   	// Initialize a mock credential provider with stubs
-//   	myCredProvider = provider{"a","b","c"}
-//   }
+//	// Build: go build -o plugin.so -buildmode=plugin plugin.go
+//	func init() {
+//		// Initialize a mock credential provider with stubs
+//		myCredProvider = provider{"a","b","c"}
+//	}
 //
-//   // GetAWSSDKCredentialProvider is the symbol SDK will lookup and use to
-//   // get the credential provider's retrieve and isExpired functions.
-//   func GetAWSSDKCredentialProvider() (func() (key, secret, token string, err error), func() bool) {
-//   	return myCredProvider.Retrieve,	myCredProvider.IsExpired
-//   }
+//	// GetAWSSDKCredentialProvider is the symbol SDK will lookup and use to
+//	// get the credential provider's retrieve and isExpired functions.
+//	func GetAWSSDKCredentialProvider() (func() (key, secret, token string, err error), func() bool) {
+//		return myCredProvider.Retrieve,	myCredProvider.IsExpired
+//	}
 //
-//   // mock implementation of a type that returns retrieves credentials and
-//   // returns if they have expired.
-//   type provider struct {
-//   	key, secret, token string
-//   }
+//	// mock implementation of a type that returns retrieves credentials and
+//	// returns if they have expired.
+//	type provider struct {
+//		key, secret, token string
+//	}
 //
-//   func (p provider) Retrieve() (key, secret, token string, err error) {
-//   	return p.key, p.secret, p.token, nil
-//   }
+//	func (p provider) Retrieve() (key, secret, token string, err error) {
+//		return p.key, p.secret, p.token, nil
+//	}
 //
-//   func (p *provider) IsExpired() bool {
-//   	return false;
-//   }
+//	func (p *provider) IsExpired() bool {
+//		return false;
+//	}
 //
-// Configuring SDK for Plugin Credentials
+// # Configuring SDK for Plugin Credentials
 //
 // To configure the SDK to use a plugin's credential provider you'll need to first
 // open the plugin file using the plugin standard library package. Once you have
@@ -72,24 +72,24 @@
 // credentials loader of a Session or Config. See the SDK's example/aws/credential/plugincreds
 // folder for a runnable example of this.
 //
-//   // Open plugin, and load it into the process.
-//   p, err := plugin.Open("somefile.so")
-//   if err != nil {
-//   	return nil, err
-//   }
+//	// Open plugin, and load it into the process.
+//	p, err := plugin.Open("somefile.so")
+//	if err != nil {
+//		return nil, err
+//	}
 //
-//   // Create a new Credentials value which will source the provider's Retrieve
-//   // and IsExpired functions from the plugin.
-//   creds, err := plugincreds.NewCredentials(p)
-//   if err != nil {
-//   	return nil, err
-//   }
+//	// Create a new Credentials value which will source the provider's Retrieve
+//	// and IsExpired functions from the plugin.
+//	creds, err := plugincreds.NewCredentials(p)
+//	if err != nil {
+//		return nil, err
+//	}
 //
-//   // Example to configure a Session with the newly created credentials that
-//   // will be sourced using the plugin's functionality.
-//   sess := session.Must(session.NewSession(&aws.Config{
-//   	Credentials:  creds,
-//   }))
+//	// Example to configure a Session with the newly created credentials that
+//	// will be sourced using the plugin's functionality.
+//	sess := session.Must(session.NewSession(&aws.Config{
+//		Credentials:  creds,
+//	}))
 package plugincreds
 
 import (
