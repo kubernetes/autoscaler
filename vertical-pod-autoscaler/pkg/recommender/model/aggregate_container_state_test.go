@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -101,6 +102,73 @@ func TestAggregateStateByContainerName(t *testing.T) {
 
 	// Build the AggregateContainerStateMap.
 	aggregateResources := AggregateStateByContainerName(cluster.aggregateStateMap)
+	assert.Contains(t, aggregateResources, "app-A")
+	assert.Contains(t, aggregateResources, "app-B")
+	assert.Contains(t, aggregateResources, "app-C")
+
+	// Expect samples from all containers to be grouped by the container name.
+	assert.Equal(t, 2, aggregateResources["app-A"].TotalSamplesCount)
+	assert.Equal(t, 1, aggregateResources["app-B"].TotalSamplesCount)
+	assert.Equal(t, 1, aggregateResources["app-C"].TotalSamplesCount)
+
+	config := GetAggregationsConfig()
+	// Compute the expected histograms for the "app-A" containers.
+	expectedCPUHistogram := util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife)
+	expectedCPUHistogram.Merge(cluster.findOrCreateAggregateContainerState(containers[0]).AggregateCPUUsage)
+	expectedCPUHistogram.Merge(cluster.findOrCreateAggregateContainerState(containers[2]).AggregateCPUUsage)
+	actualCPUHistogram := aggregateResources["app-A"].AggregateCPUUsage
+
+	expectedMemoryHistogram := util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife)
+	expectedMemoryHistogram.AddSample(2e9, 1.0, cluster.GetContainer(containers[0]).WindowEnd)
+	expectedMemoryHistogram.AddSample(4e9, 1.0, cluster.GetContainer(containers[2]).WindowEnd)
+	actualMemoryHistogram := aggregateResources["app-A"].AggregateMemoryPeaks
+
+	assert.True(t, expectedCPUHistogram.Equals(actualCPUHistogram), "Expected:\n%s\nActual:\n%s", expectedCPUHistogram, actualCPUHistogram)
+	assert.True(t, expectedMemoryHistogram.Equals(actualMemoryHistogram), "Expected:\n%s\nActual:\n%s", expectedMemoryHistogram, actualMemoryHistogram)
+}
+
+// Creates two pods, each having two containers:
+//
+//	testPodID1: { 'app-A', 'app-B' }
+//	testPodID2: { 'app-A', 'app-C' }
+//
+// Adds a few usage samples to the containers.
+// Verifies that AggregateStateByContainerName() properly aggregates
+// container CPU and memory peak histograms, grouping the two containers
+// with the same name ('app-A') together.
+func TestAggregateStateByNodeAndContainerName(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	pod1Labels := labels.Set{"label-1": "value-1", "__internal_node": "node1"}
+	cluster.AddOrUpdatePod(testPodID1, pod1Labels, apiv1.PodRunning)
+	otherLabels := labels.Set{"label-2": "value-2", "__internal_node": "node1"}
+	cluster.AddOrUpdatePod(testPodID2, otherLabels, apiv1.PodRunning)
+
+	// Create 4 containers: 2 with the same name and 2 with different names.
+	containers := []ContainerID{
+		{testPodID1, "app-A"},
+		{testPodID1, "app-B"},
+		{testPodID2, "app-A"},
+		{testPodID2, "app-C"},
+	}
+	for _, c := range containers {
+		assert.NoError(t, cluster.AddOrUpdateContainer(c, testRequest))
+	}
+
+	// Add CPU usage samples to all containers.
+	assert.NoError(t, addTestCPUSample(cluster, containers[0], 1.0)) // app-A
+	assert.NoError(t, addTestCPUSample(cluster, containers[1], 5.0)) // app-B
+	assert.NoError(t, addTestCPUSample(cluster, containers[2], 3.0)) // app-A
+	assert.NoError(t, addTestCPUSample(cluster, containers[3], 5.0)) // app-C
+	// Add Memory usage samples to all containers.
+	assert.NoError(t, addTestMemorySample(cluster, containers[0], 2e9))  // app-A
+	assert.NoError(t, addTestMemorySample(cluster, containers[1], 10e9)) // app-B
+	assert.NoError(t, addTestMemorySample(cluster, containers[2], 4e9))  // app-A
+	assert.NoError(t, addTestMemorySample(cluster, containers[3], 10e9)) // app-C
+
+	// Build the AggregateContainerStateMap.
+	aggregatebyNodeResources := AggregateStateByNodeAndContainerName(cluster.aggregateStateMap)
+	require.Contains(t, aggregatebyNodeResources, "node1")
+	aggregateResources := aggregatebyNodeResources["node1"]
 	assert.Contains(t, aggregateResources, "app-A")
 	assert.Contains(t, aggregateResources, "app-B")
 	assert.Contains(t, aggregateResources, "app-C")

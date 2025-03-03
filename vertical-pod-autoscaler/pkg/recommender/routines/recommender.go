@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 
+	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
@@ -91,10 +92,23 @@ func (r *recommender) UpdateVPAs() {
 		if !found {
 			continue
 		}
-		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 		had := vpa.HasRecommendation()
+		listOfResourceRecommendation := &v1.RecommendedPodResources{}
+		if observedVpa.Spec.Scope == "node" {
+			nodeAndContainerNameToAggregateStateMap := GetContainerNameToAggregateStateMapByNode(vpa)
+			for node, m := range nodeAndContainerNameToAggregateStateMap {
+				resources := r.podResourceRecommender.GetRecommendedPodResources(m)
+				r := logic.MapToListOfRecommendedContainerResources(resources)
+				for i := range r.ContainerRecommendations {
+					r.ContainerRecommendations[i].Scope = "node=" + node
+				}
+				listOfResourceRecommendation.ContainerRecommendations = append(listOfResourceRecommendation.ContainerRecommendations, r.ContainerRecommendations...)
+			}
+		} else {
+			resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 
-		listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
+			listOfResourceRecommendation = logic.MapToListOfRecommendedContainerResources(resources)
+		}
 
 		for _, postProcessor := range r.recommendationPostProcessor {
 			listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)

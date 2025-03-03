@@ -107,6 +107,8 @@ type VerticalPodAutoscalerSpec struct {
 	// recommendation) or contain exactly one recommender.
 	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
+
+	Scope string `json:"scope,omitempty" protobuf:"bytes,5,opt,name=scope"`
 }
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
@@ -298,6 +300,9 @@ type RecommendedContainerResources struct {
 	// Used only as status indication, will not affect actual resource assignment.
 	// +optional
 	UncappedTarget v1.ResourceList `json:"uncappedTarget,omitempty" protobuf:"bytes,5,opt,name=uncappedTarget"`
+	// When running VPA for finer-grained scope than a workload, e.g. per-node.
+	// +optional
+	Scope string `json:"scope,omitempty" protobuf:"bytes,5,opt,name=scope"`
 }
 
 // VerticalPodAutoscalerConditionType are the valid conditions of
