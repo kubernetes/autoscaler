@@ -38,13 +38,14 @@ if [[ "${SOURCE_PATH}" != *"src/k8s.io/autoscaler" ]]; then
   export PATH="${GOBIN}:${PATH}"
 fi
 
-# Install Golint (linting tool).
-go get -u github.com/golang/lint/golint
-go get -u golang.org/x/lint/golint
+# Install golangci-lint (linting tool).
+GOLANGCI_LINT_VERSION=v1.60.3
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@"${GOLANGCI_LINT_VERSION}"
 
 ###############################################################################
 
 PACKAGES="$(go list -e ./... | grep -vE '/tmp/|/vendor/')"
 LINT_FOLDERS="$(echo ${PACKAGES} | sed "s|k8s.io/autoscaler/cluster-autoscaler|.|g")"
 
-#TODO: To add lint checking, after fixing issues
+# Run Static Application Security Testing (SAST) using gosec
+make sast-report -C cluster-autoscaler

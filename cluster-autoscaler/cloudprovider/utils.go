@@ -77,7 +77,7 @@ func BuildKubeProxy(name string) *apiv1.Pod {
 	priority := scheduling.SystemCriticalPriority
 	return &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("kube-proxy-%s-%d", name, rand.Int63()),
+			Name:      fmt.Sprintf("kube-proxy-%s-%d", name, rand.Int63()), // #nosec G404 (CWE-338) -- code inherited from upstream
 			Namespace: "kube-system",
 			Annotations: map[string]string{
 				kubetypes.ConfigSourceAnnotationKey: kubetypes.FileSource,

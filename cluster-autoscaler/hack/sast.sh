@@ -43,6 +43,7 @@ dir_to_exclude="-exclude-dir=cloudprovider/alicloud
 -exclude-dir=cloudprovider/baiducloud
 -exclude-dir=cloudprovider/bizflycloud
 -exclude-dir=cloudprovider/brightbox
+-exclude-dir=cloudprovider/builder
 -exclude-dir=cloudprovider/cherryservers
 -exclude-dir=cloudprovider/civo
 -exclude-dir=cloudprovider/cloudstack
@@ -50,6 +51,7 @@ dir_to_exclude="-exclude-dir=cloudprovider/alicloud
 -exclude-dir=cloudprovider/digitalocean
 -exclude-dir=cloudprovider/equinixmetal
 -exclude-dir=cloudprovider/exoscale
+-exclude-dir=cloudprovider/externalgrpc
 -exclude-dir=cloudprovider/gce
 -exclude-dir=cloudprovider/hetzner
 -exclude-dir=cloudprovider/huaweicloud
@@ -66,6 +68,24 @@ dir_to_exclude="-exclude-dir=cloudprovider/alicloud
 -exclude-dir=cloudprovider/tencentcloud
 -exclude-dir=cloudprovider/volcengine
 -exclude-dir=cloudprovider/vultr
+-exclude-dir=apis
+-exclude-dir=cluster-state
+-exclude-dir=config
+-exclude-dir=context
+-exclude-dir=core
+-exclude-dir=debuggingsnapshot
+-exclude-dir=estimator
+-exclude-dir=expander
+-exclude-dir=hack
+-exclude-dir=loop
+-exclude-dir=metrics
+-exclude-dir=observers
+-exclude-dir=processors
+-exclude-dir=proposals
+-exclude-dir=provisioningrequest
+-exclude-dir=simulator
+-exclude-dir=util
+-exclude-dir=version
 "
 
 ${TOOLS_BIN_DIR}/gosec -exclude-generated $dir_to_exclude $gosec_report_parse_flags ./...

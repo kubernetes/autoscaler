@@ -23,6 +23,7 @@ package mcm
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -36,7 +37,8 @@ import (
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	"k8s.io/utils/pointer"
 	"maps"
-	"math/rand"
+	"math"
+	"math/big"
 	"net/http"
 	"os"
 	"slices"
@@ -471,9 +473,9 @@ func (m *McmManager) SetMachineDeploymentSize(ctx context.Context, nodeGroup *no
 	// don't scale down during rolling update, as that could remove ready node with workload
 	if md.Spec.Replicas >= int32(size) && !isRollingUpdateFinished(md) {
 		return false, fmt.Errorf("MachineDeployment %s is under rolling update , cannot reduce replica count", md.Name)
-	}
+	} // #nosec G115 (CWE-190) -- replicas will not overflow the range of int32
 	clone := md.DeepCopy()
-	clone.Spec.Replicas = int32(size)
+	clone.Spec.Replicas = int32(size) // #nosec G115 (CWE-190) -- replicas will not overflow the range of int32
 
 	_, err = m.machineClient.MachineDeployments(nodeGroup.Namespace).Update(ctx, clone, metav1.UpdateOptions{})
 	return true, err
@@ -922,7 +924,12 @@ func getZoneValueFromMCLabels(labels map[string]string) string {
 
 func (m *McmManager) buildNodeFromTemplate(name string, template *nodeTemplate) (*apiv1.Node, error) {
 	node := apiv1.Node{}
-	nodeName := fmt.Sprintf("%s-%d", name, rand.Int63())
+	n, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	if err != nil {
+		fmt.Println("error:", err)
+		return &node, err
+	}
+	nodeName := fmt.Sprintf("%s-%d", name, n.Int64())
 
 	node.ObjectMeta = metav1.ObjectMeta{
 		Name:     nodeName,
@@ -1118,7 +1125,7 @@ func computeScaleDownData(md *v1alpha1.MachineDeployment, machineNamesForDeletio
 	data.RevisedScaledownAmount = uniqueForDeletionSet.Len()
 	data.RevisedMachineDeployment = nil
 
-	expectedReplicas := md.Spec.Replicas - int32(data.RevisedScaledownAmount)
+	expectedReplicas := md.Spec.Replicas - int32(data.RevisedScaledownAmount) // #nosec G115 (CWE-190) -- RevisedScaledownAmount will not overflow the range of int32
 	if expectedReplicas == md.Spec.Replicas {
 		klog.Infof("MachineDeployment %q is already set to %d, no need to scale-down", md.Name, expectedReplicas)
 	} else if expectedReplicas < 0 {

@@ -12,3 +12,6 @@ Session.vim
 .netrwhist
 .vscode
 ./integration/logs
+
+# gosec
+gosec-report.sarif

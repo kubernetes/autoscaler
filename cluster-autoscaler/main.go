@@ -669,7 +669,7 @@ func main() {
 		if *enableProfiling {
 			routes.Profiling{}.Install(pathRecorderMux)
 		}
-		err := http.ListenAndServe(*address, pathRecorderMux)
+		err := http.ListenAndServe(*address, pathRecorderMux) // #nosec G114 (CWE-676) -- code inherited from upstream
 		klog.Fatalf("Failed to start metrics: %v", err)
 	}()
 

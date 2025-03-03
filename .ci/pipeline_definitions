@@ -2,17 +2,11 @@ autoscaler:
   base_definition:
     repo:
       source_labels:
-      - name: 'cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1'
+      - name: cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1
         value:
-          policy: 'scan'
-          path_config:
-            exclude_paths:
-              - '.*/aws-sdk-go/.*'
-              - '^vendor/.*'
-              - '.*/vendor/.*'
-              - '.*/cloudprovider/((?!mcm/).)*/.*'
-              - '^addon-resizer/.*'
-              - '^vertical-pod-autoscaler/.*'
+          policy: skip
+          comment: |
+            we use gosec for sast scanning. See attached log.
     traits:
       version:
         preprocess:
@@ -36,6 +30,8 @@ autoscaler:
             dockerfile: './cluster-autoscaler/Dockerfile'
     steps:
       test:
+        image: 'golang:1.22.2'
+      check:
         image: 'golang:1.22.2'
       build:
         image: 'golang:1.22.2'
@@ -62,6 +58,16 @@ autoscaler:
               image: europe-docker.pkg.dev/gardener-project/releases/gardener/autoscaler/cluster-autoscaler
         release:
           nextversion: 'bump_minor'
+          assets:
+            - type: build-step-log
+              step_name: check
+              purposes:
+                - lint
+                - sast
+                - gosec
+              comment: |
+                we use gosec (linter) for SAST scans
+                see: https://github.com/securego/gosec
         slack:
           default_channel: 'internal_scp_workspace'
           channel_cfgs:

@@ -64,12 +64,12 @@ func rotateLogFile(fileName string) (*os.File, error) {
 
 	if _, err := os.Stat(fileName); err == nil { // !strings.Contains(err.Error(), "no such file or directory") {
 		for i := 9; i > 0; i-- {
-			os.Rename(fmt.Sprintf("%s.%d", fileName, i), fmt.Sprintf("%s.%d", fileName, i+1))
+			_ = os.Rename(fmt.Sprintf("%s.%d", fileName, i), fmt.Sprintf("%s.%d", fileName, i+1))
 		}
-		os.Rename(fileName, fmt.Sprintf("%s.%d", fileName, 1))
+		_ = os.Rename(fileName, fmt.Sprintf("%s.%d", fileName, 1))
 	}
 
-	return os.Create(fileName)
+	return os.Create(fileName) //#nosec G304 (CWE-22) -- this is used only for tests. Cannot be exploited
 }
 
 func (driver *Driver) addTaintsToInitialNodes() error {
@@ -135,7 +135,7 @@ func (driver *Driver) adjustNodeGroups() error {
 }
 
 // getNumberOfReadyNodes tries to retrieve the list of node objects in the cluster.
-func (c *Cluster) getNumberOfReadyNodes() int16 {
+func (c *Cluster) getNumberOfReadyNodes() int {
 	nodes, _ := c.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	count := 0
 	for _, n := range nodes.Items {
@@ -146,7 +146,7 @@ func (c *Cluster) getNumberOfReadyNodes() int16 {
 			}
 		}
 	}
-	return int16(count)
+	return count
 }
 
 func (driver *Driver) scaleAutoscaler(replicas int32) error {
@@ -206,7 +206,7 @@ func (driver *Driver) runAutoscaler() {
 
 	outputFile, err := rotateLogFile(CALogFile)
 	gom.Expect(err).ShouldNot(gom.HaveOccurred())
-	autoscalerSession, err = gexec.Start(exec.Command(args[0], args[1:]...), outputFile, outputFile)
+	autoscalerSession, err = gexec.Start(exec.Command(args[0], args[1:]...), outputFile, outputFile) //#nosec G204 (CWE-78) -- this is used only for tests. Cannot be exploited
 	gom.Expect(err).ShouldNot(gom.HaveOccurred())
 	gom.Expect(autoscalerSession.ExitCode()).Should(gom.Equal(-1))
 }
