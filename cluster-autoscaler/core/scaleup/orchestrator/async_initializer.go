@@ -21,10 +21,12 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -41,6 +43,7 @@ type AsyncNodeGroupInitializer struct {
 	mutex                  sync.Mutex
 	allTargetSizes         map[string]int64
 	nodeGroup              cloudprovider.NodeGroup
+	triggeringPods         []*apiv1.Pod
 	nodeInfo               *framework.NodeInfo
 	scaleUpExecutor        *scaleUpExecutor
 	taintConfig            taints.TaintConfig
@@ -52,7 +55,7 @@ type AsyncNodeGroupInitializer struct {
 
 // NewAsyncNodeGroupInitializer creates a new AsyncNodeGroupInitializer instance.
 func NewAsyncNodeGroupInitializer(
-	nodeGroup cloudprovider.NodeGroup,
+	option *expander.Option,
 	nodeInfo *framework.NodeInfo,
 	scaleUpExecutor *scaleUpExecutor,
 	taintConfig taints.TaintConfig,
@@ -63,7 +66,8 @@ func NewAsyncNodeGroupInitializer(
 ) *AsyncNodeGroupInitializer {
 	return &AsyncNodeGroupInitializer{
 		allTargetSizes:         map[string]int64{},
-		nodeGroup:              nodeGroup,
+		nodeGroup:              option.NodeGroup,
+		triggeringPods:         option.Pods,
 		nodeInfo:               nodeInfo,
 		scaleUpExecutor:        scaleUpExecutor,
 		taintConfig:            taintConfig,
@@ -104,8 +108,7 @@ func (s *AsyncNodeGroupInitializer) ChangeTargetSize(nodeGroup string, delta int
 func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncNodeGroupCreationResult) {
 	if result.Error != nil {
 		klog.Errorf("Async node group creation failed. Async scale-up is cancelled. %v", result.Error)
-		scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, result.Error))
-		s.scaleUpStatusProcessor.Process(s.context, scaleUpStatus)
+		s.emitScaleUpStatus(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, result.Error))
 		return
 	}
 	mainCreatedNodeGroup := result.CreationResult.MainCreatedNodeGroup
@@ -144,7 +147,17 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 			failedNodeGroupIds = append(failedNodeGroupIds, failedNodeGroup.Id())
 		}
 		klog.Errorf("Async scale-up for asynchronously created node group failed: %v (node groups: %v)", err, failedNodeGroupIds)
+		s.emitScaleUpStatus(&status.ScaleUpStatus{
+			CreateNodeGroupResults: []nodegroups.CreateNodeGroupResult{result.CreationResult},
+			FailedResizeNodeGroups: failedNodeGroups,
+			PodsTriggeredScaleUp:   s.triggeringPods,
+		}, err)
 		return
 	}
 	klog.Infof("Initial scale-up succeeded. Scale ups: %v", scaleUpInfos)
+}
+
+func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.ScaleUpStatus, err errors.AutoscalerError) {
+	status.UpdateScaleUpError(scaleUpStatus, err)
+	s.scaleUpStatusProcessor.Process(s.context, scaleUpStatus)
 }
