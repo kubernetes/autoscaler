@@ -66,6 +66,8 @@ const (
 	ScaleUpNotTried
 	// ScaleUpInCooldown - the scale up wasn't even attempted, because it's in a cooldown state (it's suspended for a scheduled period of time).
 	ScaleUpInCooldown
+	// ScaleUpLimitedByMaxNodesTotal - the scale up wasn't attempted, because the cluster reached max nodes total
+	ScaleUpLimitedByMaxNodesTotal
 )
 
 // WasSuccessful returns true if the scale-up was successful.

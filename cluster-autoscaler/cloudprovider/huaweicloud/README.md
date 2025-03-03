@@ -406,9 +406,3 @@ cluster by the cluster autoscaler
 - Wait for nodes to be removed: as pods being removed from nodes, several nodes will become underutilized or empty, 
 and will be removed by the cluster autoscaler
 
-    
-## Support & Contact Info
-
-Interested in Cluster Autoscaler on Huawei Cloud? Want to talk? Have questions, concerns or great ideas?
-
-Please reach out to us at `shiqi.wang1@huawei.com`.

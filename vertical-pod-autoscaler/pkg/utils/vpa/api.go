@@ -19,7 +19,9 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -81,15 +83,25 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 // The method blocks until vpaLister is initially populated.
 func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerLister {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalers", namespace, fields.Everything())
-	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
-		&vpa_types.VerticalPodAutoscaler{},
-		1*time.Hour,
-		&cache.ResourceEventHandlerFuncs{},
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	informerOptions := cache.InformerOptions{
+		ObjectType:    &vpa_types.VerticalPodAutoscaler{},
+		ListerWatcher: vpaListWatch,
+		Handler:       &cache.ResourceEventHandlerFuncs{},
+		ResyncPeriod:  1 * time.Hour,
+		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	}
+
+	store, controller := cache.NewInformerWithOptions(informerOptions)
+	indexer, ok := store.(cache.Indexer)
+	if !ok {
+		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
+		os.Exit(255)
+	}
 	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
-	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
+	if !cache.WaitForCacheSync(stopChannel, controller.HasSynced) {
 		klog.ErrorS(nil, "Failed to sync VPA cache during initialization")
+		os.Exit(255)
 	} else {
 		klog.InfoS("Initial VPA synced successfully")
 	}
@@ -180,7 +192,16 @@ func FindParentControllerForPod(ctx context.Context, pod *core.Pod, ctrlFetcher 
 		},
 		ApiVersion: ownerRefrence.APIVersion,
 	}
-	return ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
+	controller, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
+
+	// ignore NodeInvalidOwner error when looking for the parent controller for a Pod. While this _is_ an error when
+	// validating the targetRef of a VPA, this is a valid scenario when iterating over all Pods and finding their owner.
+	// vpa updater and admission-controller don't care about these Pods, because they cannot have a valid VPA point to
+	// them, so it is safe to ignore this here.
+	if err != nil && !errors.Is(err, controllerfetcher.ErrNodeInvalidOwner) {
+		return nil, err
+	}
+	return controller, nil
 }
 
 // GetUpdateMode returns the updatePolicy.updateMode for a given VPA.

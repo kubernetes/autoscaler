@@ -25,6 +25,7 @@ import (
 
 	"github.com/spf13/pflag"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/client-go/informers"
@@ -103,6 +104,8 @@ var (
 var (
 	// CPU as integer to benefit for CPU management Static Policy ( https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy )
 	postProcessorCPUasInteger = flag.Bool("cpu-integer-post-processor-enabled", false, "Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental)")
+	maxAllowedCPU             = resource.QuantityValue{}
+	maxAllowedMemory          = resource.QuantityValue{}
 )
 
 const (
@@ -115,6 +118,11 @@ const (
 	defaultResyncPeriod               time.Duration = 10 * time.Minute
 )
 
+func init() {
+	flag.Var(&maxAllowedCPU, "container-recommendation-max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&maxAllowedMemory, "container-recommendation-max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+}
+
 func main() {
 	commonFlags := common.InitCommonFlags()
 	klog.InitFlags(nil)
@@ -124,10 +132,11 @@ func main() {
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	kube_flag.InitFlags()
-	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion, "recommenderName", *recommenderName)
+	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion(), "recommenderName", *recommenderName)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
-		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		os.Exit(255)
 	}
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
@@ -140,7 +149,8 @@ func main() {
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
-			klog.Fatalf("Unable to get hostname: %v", err)
+			klog.ErrorS(err, "Unable to get hostname")
+			os.Exit(255)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -158,7 +168,8 @@ func main() {
 			},
 		)
 		if err != nil {
-			klog.Fatalf("Unable to create leader election lock: %v", err)
+			klog.ErrorS(err, "Unable to create leader election lock")
+			os.Exit(255)
 		}
 
 		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
@@ -199,12 +210,15 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 }
 
 func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+	// Create a stop channel that will be used to signal shutdown
+	stopCh := make(chan struct{})
+	defer close(stopCh)
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
-	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.IgnoredVpaObjectNamespaces))
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
-	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, commonFlag.IgnoredVpaObjectNamespaces)
+	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
@@ -215,8 +229,9 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
 
+	globalMaxAllowed := initGlobalMaxAllowed()
 	// CappingPostProcessor, should always come in the last position for post-processing
-	postProcessors = append(postProcessors, &routines.CappingPostProcessor{})
+	postProcessors = append(postProcessors, routines.NewCappingRecommendationProcessor(globalMaxAllowed))
 	var source input_metrics.PodMetricsLister
 	if *useExternalMetrics {
 		resourceMetrics := map[apiv1.ResourceName]string{}
@@ -249,6 +264,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,
 		IgnoredNamespaces:   ignoredNamespaces,
+		VpaObjectNamespace:  commonFlag.VpaObjectNamespace,
 	}.Make()
 	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
 
@@ -266,7 +282,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
-		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
+		klog.ErrorS(err, "Could not parse --prometheus-query-timeout as a time.Duration")
+		os.Exit(255)
 	}
 
 	if useCheckpoints {
@@ -293,7 +310,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
-			klog.Fatalf("Could not initialize history provider: %v", err)
+			klog.ErrorS(err, "Could not initialize history provider")
+			os.Exit(255)
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
@@ -306,4 +324,16 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		recommender.RunOnce()
 		healthCheck.UpdateLastActivity()
 	}
+}
+
+func initGlobalMaxAllowed() apiv1.ResourceList {
+	result := make(apiv1.ResourceList)
+	if !maxAllowedCPU.Quantity.IsZero() {
+		result[apiv1.ResourceCPU] = maxAllowedCPU.Quantity
+	}
+	if !maxAllowedMemory.Quantity.IsZero() {
+		result[apiv1.ResourceMemory] = maxAllowedMemory.Quantity
+	}
+
+	return result
 }

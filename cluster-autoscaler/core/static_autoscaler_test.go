@@ -504,7 +504,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	// Remove unregistered nodes.
 	readyNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	allNodeLister.SetNodes([]*apiv1.Node{n1, n2})
-	allPodListerMock.On("List").Return([]*apiv1.Pod{p1, p2}, nil).Once()
+	allPodListerMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleDownMock.On("ScaleDown", "ng2", "n3").Return(nil).Once()
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
@@ -535,11 +535,6 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 	onScaleUpMock := &onScaleUpMock{}
 	onScaleDownMock := &onScaleDownMock{}
 	deleteFinished := make(chan bool, 1)
-
-	n1 := BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Now())
-	n2 := BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, true, time.Now())
 
 	tn := BuildTestNode("tn", 1000, 1000)
 	tni := framework.NewTestNodeInfo(tn)
@@ -709,6 +704,11 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 			}
 
 			tc.beforeTest(processors)
+
+			n1 := BuildTestNode("n1", 1000, 1000)
+			SetNodeReadyState(n1, true, time.Now())
+			n2 := BuildTestNode("n2", 1000, 1000)
+			SetNodeReadyState(n2, true, time.Now())
 
 			provider.AddNode("ng1", n1)
 			provider.AddNode("ng2", n2)

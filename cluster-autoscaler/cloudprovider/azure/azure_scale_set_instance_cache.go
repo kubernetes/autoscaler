@@ -198,6 +198,7 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 }
 
 // instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus.
+// Suggestion: reunify this with instanceStatusFromProvisioningStateAndPowerState() in azure_scale_set.go
 func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSetVM) *cloudprovider.InstanceStatus {
 	// Prefer the proactive cache view of the instance state if we aren't in a terminal state
 	// This is because the power state may be taking longer to update and we don't want
@@ -224,6 +225,8 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 	case string(compute.GalleryProvisioningStateCreating):
 		status.State = cloudprovider.InstanceCreating
 	case string(compute.GalleryProvisioningStateFailed):
+		status.State = cloudprovider.InstanceRunning
+
 		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", to.String(vm.ID), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
 		if scaleSet.enableFastDeleteOnFailedProvisioning {
 			// Provisioning can fail both during instance creation or after the instance is running.
@@ -231,7 +234,8 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 			// ProvisioningState represents the most recent provisioning state, therefore only report
 			// InstanceCreating errors when the power state indicates the instance has not yet started running
 			if !isRunningVmPowerState(powerState) {
-				klog.V(4).Infof("VM %s reports failed provisioning state with non-running power state: %s", *vm.ID, powerState)
+				// This fast deletion relies on the fact that InstanceCreating + ErrorInfo will subsequently trigger a deletion.
+				// Could be revisited to rely on something more stable/explicit.
 				status.State = cloudprovider.InstanceCreating
 				status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
@@ -239,7 +243,6 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 					ErrorMessage: "Azure failed to provision a node for this node group",
 				}
 			} else {
-				klog.V(5).Infof("VM %s reports a failed provisioning state but is running (%s)", *vm.ID, powerState)
 				status.State = cloudprovider.InstanceRunning
 			}
 		}

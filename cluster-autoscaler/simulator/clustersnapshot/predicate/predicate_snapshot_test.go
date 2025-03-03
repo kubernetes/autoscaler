@@ -56,7 +56,7 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle, true), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true), nil
 	},
 }
 
@@ -1119,6 +1119,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 						// We don't care about this field staying the same, and it differs because it's a global counter bumped on every AddPod.
 						cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
 						cmp.AllowUnexported(framework.NodeInfo{}, schedulerframework.NodeInfo{}),
+						cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
 						cmpopts.SortSlices(func(i1, i2 *framework.NodeInfo) bool { return i1.Node().Name < i2.Node().Name }),
 						IgnoreObjectOrder[*resourceapi.ResourceClaim](),
 						IgnoreObjectOrder[*resourceapi.ResourceSlice](),

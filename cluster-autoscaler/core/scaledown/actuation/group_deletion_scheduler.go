@@ -77,30 +77,57 @@ func (ds *GroupDeletionScheduler) ResetAndReportMetrics() {
 // ScheduleDeletion schedules deletion of the node. Nodes that should be deleted in groups are queued until whole group is scheduled for deletion,
 // other nodes are passed over to NodeDeletionBatcher immediately.
 func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool) {
+	ds.scheduleDeletion(nodeInfo, nodeGroup, batchSize, drain, false)
+}
+
+// scheduleForceDeletion schedules forced node deletion, similar to ScheduleDeletion but bypassing eviction errors and PDB checks.
+func (ds *GroupDeletionScheduler) scheduleForceDeletion(nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool) {
+	ds.scheduleDeletion(nodeInfo, nodeGroup, batchSize, drain, true)
+}
+
+// scheduleDeletion handles the common logic for scheduling node deletion, supporting
+// both normal and forced deletion based on the 'force' parameter.
+func (ds *GroupDeletionScheduler) scheduleDeletion(nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool, force bool) {
 	opts, err := nodeGroup.GetOptions(ds.ctx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "GetOptions returned error %v", err)}
-		ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "failed to get autoscaling options for a node group", nodeDeleteResult)
+		ds.AbortNodeDeletionDueToError(nodeInfo.Node(), nodeGroup.Id(), drain, "failed to get autoscaling options for a node group", nodeDeleteResult)
 		return
 	}
 	if opts == nil {
 		opts = &config.NodeGroupAutoscalingOptions{}
 	}
 
-	nodeDeleteResult := ds.prepareNodeForDeletion(nodeInfo, drain)
+	nodeDeleteResult := ds.prepareNodeForDeletion(nodeInfo, drain, force)
 	if nodeDeleteResult.Err != nil {
-		ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult)
-		return
+		if force {
+			klog.Infof("Starting force deletion of node %s", nodeInfo.Node().Name)
+			if err := nodeGroup.ForceDeleteNodes([]*apiv1.Node{nodeInfo.Node()}); err != nil {
+				focrefulNodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
+				ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "forceful node deletion failed", focrefulNodeDeleteResult, true)
+				return
+			}
+		} else {
+			ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult, true)
+			return
+		}
 	}
 
 	ds.addToBatcher(nodeInfo, nodeGroup, batchSize, drain, opts.ZeroOrMaxNodeScaling)
 }
 
 // prepareNodeForDeletion is a long-running operation, so it needs to avoid locking the AtomicDeletionScheduler object
-func (ds *GroupDeletionScheduler) prepareNodeForDeletion(nodeInfo *framework.NodeInfo, drain bool) status.NodeDeleteResult {
+func (ds *GroupDeletionScheduler) prepareNodeForDeletion(nodeInfo *framework.NodeInfo, drain bool, force bool) status.NodeDeleteResult {
 	node := nodeInfo.Node()
 	if drain {
-		if evictionResults, err := ds.evictor.DrainNode(ds.ctx, nodeInfo); err != nil {
+		var evictionResults map[string]status.PodEvictionResult
+		var err error
+		if force {
+			evictionResults, err = ds.evictor.drainNodeForce(ds.ctx, nodeInfo)
+		} else {
+			evictionResults, err = ds.evictor.DrainNode(ds.ctx, nodeInfo)
+		}
+		if err != nil {
 			return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
 		}
 	} else {
@@ -122,7 +149,7 @@ func (ds *GroupDeletionScheduler) addToBatcher(nodeInfo *framework.NodeInfo, nod
 	if atomic {
 		if ds.failuresForGroup[nodeGroup.Id()] {
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(errors.TransientError, "couldn't scale down other nodes in this node group")}
-			CleanUpAndRecordFailedScaleDownEvent(ds.ctx, nodeInfo.Node(), nodeGroup.Id(), drain, ds.nodeDeletionTracker, "scale down failed for node group as a whole", nodeDeleteResult)
+			CleanUpAndRecordErrorForFailedScaleDownEvent(ds.ctx, nodeInfo.Node(), nodeGroup.Id(), drain, ds.nodeDeletionTracker, "scale down failed for node group as a whole", nodeDeleteResult)
 			delete(ds.nodeQueue, nodeGroup.Id())
 		}
 		if len(ds.nodeQueue[nodeGroup.Id()]) < batchSize {
@@ -134,18 +161,23 @@ func (ds *GroupDeletionScheduler) addToBatcher(nodeInfo *framework.NodeInfo, nod
 	ds.nodeQueue[nodeGroup.Id()] = []*apiv1.Node{}
 }
 
+// AbortNodeDeletionDueToError frees up a node that couldn't be deleted successfully. If it was a part of a group, the same is applied for other nodes queued for deletion.
+func (ds *GroupDeletionScheduler) AbortNodeDeletionDueToError(node *apiv1.Node, nodeGroupId string, drain bool, errMsg string, result status.NodeDeleteResult) {
+	ds.AbortNodeDeletion(node, nodeGroupId, drain, errMsg, result, false)
+}
+
 // AbortNodeDeletion frees up a node that couldn't be deleted successfully. If it was a part of a group, the same is applied for other nodes queued for deletion.
-func (ds *GroupDeletionScheduler) AbortNodeDeletion(node *apiv1.Node, nodeGroupId string, drain bool, errMsg string, result status.NodeDeleteResult) {
+func (ds *GroupDeletionScheduler) AbortNodeDeletion(node *apiv1.Node, nodeGroupId string, drain bool, errMsg string, result status.NodeDeleteResult, logAsWarning bool) {
 	ds.Lock()
 	defer ds.Unlock()
 	ds.failuresForGroup[nodeGroupId] = true
-	CleanUpAndRecordFailedScaleDownEvent(ds.ctx, node, nodeGroupId, drain, ds.nodeDeletionTracker, errMsg, result)
+	CleanUpAndRecordFailedScaleDownEvent(ds.ctx, node, nodeGroupId, drain, ds.nodeDeletionTracker, errMsg, result, logAsWarning)
 	for _, otherNode := range ds.nodeQueue[nodeGroupId] {
 		if otherNode == node {
 			continue
 		}
 		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(errors.TransientError, "couldn't scale down other nodes in this node group")}
-		CleanUpAndRecordFailedScaleDownEvent(ds.ctx, otherNode, nodeGroupId, drain, ds.nodeDeletionTracker, "scale down failed for node group as a whole", nodeDeleteResult)
+		CleanUpAndRecordFailedScaleDownEvent(ds.ctx, otherNode, nodeGroupId, drain, ds.nodeDeletionTracker, "scale down failed for node group as a whole", nodeDeleteResult, logAsWarning)
 	}
 	delete(ds.nodeQueue, nodeGroupId)
 }

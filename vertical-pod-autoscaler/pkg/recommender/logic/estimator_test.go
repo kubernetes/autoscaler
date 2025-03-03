@@ -21,12 +21,14 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
 var (
-	anyTime = time.Unix(0, 0)
+	anyTime                   = time.Unix(0, 0)
+	defaultConfidenceInterval = time.Hour * 24
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
@@ -67,12 +69,12 @@ func TestPercentileEstimator(t *testing.T) {
 func TestConfidenceMultiplier(t *testing.T) {
 	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
 	baseMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(3.14e9))
-	testedCPU1 := WithCPUConfidenceMultiplier(1.0, 1.0, baseCPUEstimator)
-	testedMemory1 := WithMemoryConfidenceMultiplier(1.0, 1.0, baseMemoryEstimator)
+	testedCPU1 := WithCPUConfidenceMultiplier(1.0, 1.0, baseCPUEstimator, defaultConfidenceInterval)
+	testedMemory1 := WithMemoryConfidenceMultiplier(1.0, 1.0, baseMemoryEstimator, defaultConfidenceInterval)
 	testedEstimator1 := NewCombinedEstimator(testedCPU1, testedMemory1)
 
-	testedCPU2 := WithCPUConfidenceMultiplier(1.0, -1.0, baseCPUEstimator)
-	testedMemory2 := WithMemoryConfidenceMultiplier(1.0, -1.0, baseMemoryEstimator)
+	testedCPU2 := WithCPUConfidenceMultiplier(1.0, -1.0, baseCPUEstimator, defaultConfidenceInterval)
+	testedMemory2 := WithMemoryConfidenceMultiplier(1.0, -1.0, baseMemoryEstimator, defaultConfidenceInterval)
 	testedEstimator2 := NewCombinedEstimator(testedCPU2, testedMemory2)
 
 	s := model.NewAggregateContainerState()
@@ -82,6 +84,64 @@ func TestConfidenceMultiplier(t *testing.T) {
 	// Expect testedEstimator2 to return zero.
 	assert.Equal(t, model.ResourceAmount(0),
 		testedEstimator2.GetResourceEstimation(s)[model.ResourceCPU])
+
+	timestamp := anyTime
+	testedCPU3 := WithCPUConfidenceMultiplier(0.1, 2.0, baseCPUEstimator, defaultConfidenceInterval)
+	testedMemory3 := WithMemoryConfidenceMultiplier(0.1, 2.0, baseMemoryEstimator, defaultConfidenceInterval)
+	testedEstimator3 := NewCombinedEstimator(testedCPU3, testedMemory3)
+
+	for i := 1; i <= 9; i++ {
+		s.AddSample(&model.ContainerUsageSample{
+			MeasureStart: timestamp,
+			Usage:        model.CPUAmountFromCores(1.0),
+			Resource:     model.ResourceCPU,
+		})
+		timestamp = timestamp.Add(time.Minute * 2)
+	}
+
+	// Expected confidence = 9/(60*24) = 0.00625.
+	assert.Equal(t, 0.00625, getConfidence(s, defaultConfidenceInterval))
+	// Expected CPU estimation = 3.14 * (1 + multiplier/confidence)^exponent =
+	// 3.14 * (1 + 0.1/0.00625)^2 = 907.46.
+	// Expected Memory estimation =
+	// 3140000000 * (1 + 0.1/0.00625)^2 = 907460000000
+	resourceEstimation := testedEstimator3.GetResourceEstimation(s)
+	assert.Equal(t, 907.46, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
+	assert.Equal(t, 9.0746e+11, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
+}
+
+// TestConfidenceMultiplierWithCustomInterval verifies that the confidenceMultiplier calculates the internal
+// confidence based on the amount of historical samples and the provided ConfidenceInterval.
+func TestConfidenceMultiplierWithCustomInterval(t *testing.T) {
+	customConfidenceInterval := time.Minute * 18
+	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
+	baseMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(3.14e9))
+
+	s := model.NewAggregateContainerState()
+
+	timestamp := anyTime
+	testedCPU4 := WithCPUConfidenceMultiplier(0.1, 2.0, baseCPUEstimator, customConfidenceInterval)
+	testedMemory4 := WithMemoryConfidenceMultiplier(0.1, 2.0, baseMemoryEstimator, customConfidenceInterval)
+	testedEstimator4 := NewCombinedEstimator(testedCPU4, testedMemory4)
+
+	for i := 1; i <= 9; i++ {
+		s.AddSample(&model.ContainerUsageSample{
+			MeasureStart: timestamp,
+			Usage:        model.CPUAmountFromCores(1.0),
+			Resource:     model.ResourceCPU,
+		})
+		timestamp = timestamp.Add(time.Minute * 2)
+	}
+
+	// Expected confidence = 9/18 = 0.5
+	assert.Equal(t, 0.5, getConfidence(s, customConfidenceInterval))
+	// Expected CPU estimation = 3.14 * (1 + multiplier/confidence)^exponent =
+	// 3.14 * (1 + 0.1/0.5)^2 = 4.5216
+	// Expected Memory estimation =
+	// 3140000000 * (1 + 0.1/0.5)^2 = 4521600000
+	resourceEstimation := testedEstimator4.GetResourceEstimation(s)
+	assert.Equal(t, 4.521, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
+	assert.Equal(t, 4.5216e+9, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
 }
 
 // Verifies that the confidenceMultiplier works for the case of no
@@ -90,8 +150,8 @@ func TestConfidenceMultiplier(t *testing.T) {
 func TestConfidenceMultiplierNoHistory(t *testing.T) {
 	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
 	baseMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(3.14e9))
-	testedCPU := WithCPUConfidenceMultiplier(0.1, 2.0, baseCPUEstimator)
-	testedMemory := WithMemoryConfidenceMultiplier(0.1, 2.0, baseMemoryEstimator)
+	testedCPU := WithCPUConfidenceMultiplier(0.1, 2.0, baseCPUEstimator, defaultConfidenceInterval)
+	testedMemory := WithMemoryConfidenceMultiplier(0.1, 2.0, baseMemoryEstimator, defaultConfidenceInterval)
 	testedEstimator := NewCombinedEstimator(testedCPU, testedMemory)
 	s := model.NewAggregateContainerState()
 	// Expect testedEstimator to return the maximum possible resource amount.

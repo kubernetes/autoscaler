@@ -18,18 +18,20 @@ package metrics
 
 import (
 	"context"
+	"os"
 	"time"
 
 	k8sapiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 	"k8s.io/metrics/pkg/client/external_metrics"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 // PodMetricsLister wraps both metrics-client and External Metrics
@@ -70,7 +72,8 @@ type ExternalClientOptions struct {
 func NewExternalClient(c *rest.Config, clusterState *model.ClusterState, options ExternalClientOptions) PodMetricsLister {
 	extClient, err := external_metrics.NewForConfig(c)
 	if err != nil {
-		klog.Fatalf("Failed initializing external metrics client: %v", err)
+		klog.ErrorS(err, "Failed initializing external metrics client")
+		os.Exit(255)
 	}
 	return &externalMetricsClient{
 		externalClient: extClient,

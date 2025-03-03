@@ -67,15 +67,17 @@ type memoryMarginEstimator struct {
 }
 
 type cpuConfidenceMultiplier struct {
-	multiplier    float64
-	exponent      float64
-	baseEstimator CPUEstimator
+	multiplier         float64
+	exponent           float64
+	baseEstimator      CPUEstimator
+	confidenceInterval time.Duration
 }
 
 type memoryConfidenceMultiplier struct {
-	multiplier    float64
-	exponent      float64
-	baseEstimator MemoryEstimator
+	multiplier         float64
+	exponent           float64
+	baseEstimator      MemoryEstimator
+	confidenceInterval time.Duration
 }
 
 type cpuMinResourceEstimator struct {
@@ -133,20 +135,22 @@ func WithMemoryMargin(marginFraction float64, baseEstimator MemoryEstimator) Mem
 }
 
 // WithCPUConfidenceMultiplier return a CPUEstimator estimator
-func WithCPUConfidenceMultiplier(multiplier, exponent float64, baseEstimator CPUEstimator) CPUEstimator {
+func WithCPUConfidenceMultiplier(multiplier, exponent float64, baseEstimator CPUEstimator, confidenceInterval time.Duration) CPUEstimator {
 	return &cpuConfidenceMultiplier{
-		multiplier:    multiplier,
-		exponent:      exponent,
-		baseEstimator: baseEstimator,
+		multiplier:         multiplier,
+		exponent:           exponent,
+		baseEstimator:      baseEstimator,
+		confidenceInterval: confidenceInterval,
 	}
 }
 
 // WithMemoryConfidenceMultiplier returns a MemoryEstimator that scales the
-func WithMemoryConfidenceMultiplier(multiplier, exponent float64, baseEstimator MemoryEstimator) MemoryEstimator {
+func WithMemoryConfidenceMultiplier(multiplier, exponent float64, baseEstimator MemoryEstimator, confidenceInterval time.Duration) MemoryEstimator {
 	return &memoryConfidenceMultiplier{
-		multiplier:    multiplier,
-		exponent:      exponent,
-		baseEstimator: baseEstimator,
+		multiplier:         multiplier,
+		exponent:           exponent,
+		baseEstimator:      baseEstimator,
+		confidenceInterval: confidenceInterval,
 	}
 }
 
@@ -179,23 +183,23 @@ func (c *combinedEstimator) GetResourceEstimation(s *model.AggregateContainerSta
 // of 1 sample per minute, this metric is equal to N.
 // This implementation is a very simple heuristic which looks at the total count
 // of samples and the time between the first and the last sample.
-func getConfidence(s *model.AggregateContainerState) float64 {
+func getConfidence(s *model.AggregateContainerState, confidenceInterval time.Duration) float64 {
 	// Distance between the first and the last observed sample time, measured in days.
-	lifespanInDays := float64(s.LastSampleStart.Sub(s.FirstSampleStart)) / float64(time.Hour*24)
+	lifespanInDays := float64(s.LastSampleStart.Sub(s.FirstSampleStart)) / float64(confidenceInterval)
 	// Total count of samples normalized such that it equals the number of days for
 	// frequency of 1 sample/minute.
-	samplesAmount := float64(s.TotalSamplesCount) / (60 * 24)
+	samplesAmount := float64(s.TotalSamplesCount) / confidenceInterval.Minutes()
 	return math.Min(lifespanInDays, samplesAmount)
 }
 
 func (e *cpuConfidenceMultiplier) GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount {
-	confidence := getConfidence(s)
+	confidence := getConfidence(s, e.confidenceInterval)
 	base := e.baseEstimator.GetCPUEstimation(s)
 	return model.ScaleResource(base, math.Pow(1.+e.multiplier/confidence, e.exponent))
 }
 
 func (e *memoryConfidenceMultiplier) GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount {
-	confidence := getConfidence(s)
+	confidence := getConfidence(s, e.confidenceInterval)
 	base := e.baseEstimator.GetMemoryEstimation(s)
 	return model.ScaleResource(base, math.Pow(1.+e.multiplier/confidence, e.exponent))
 }

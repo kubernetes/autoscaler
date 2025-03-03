@@ -10,6 +10,8 @@
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
 - [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
 - [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
+- [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
+- [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
@@ -213,6 +215,8 @@ Name | Type | Description | Default
 `container-pod-name-label` | String | Label name to look for container pod names | "pod_name"
 `container-name-label` | String | Label name to look for container names | "name"
 `vpa-object-namespace` | String | Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used. | apiv1.NamespaceAll
+`container-recommendation-max-allowed-cpu` | Quantity | Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed. | Empty (no max allowed cpu by default)
+`container-recommendation-max-allowed-memory` | Quantity | Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed. | Empty (no max allowed memory by default)
 `memory-aggregation-interval` | Duration | The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval | model.DefaultMemoryAggregationInterval
 `memory-aggregation-interval-count` | Int64 | The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count. | model.DefaultMemoryAggregationIntervalCount
 `memory-histogram-decay-half-life` | Duration | The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period. | model.DefaultMemoryHistogramDecayHalfLife
@@ -295,3 +299,16 @@ Common use cases:
 2. CPU-only VPA:
 * Use controlledResources: ["cpu"] when you want to automate CPU resource allocation
 * Useful when memory requirements are stable but CPU usage varies
+
+### How can I have Pods in the kube-system namespace under VPA control in AKS?
+
+When running a webhook in AKS, it blocks webhook requests for the kube-system namespace in order to protect the system.
+See the [AKS FAQ page](https://learn.microsoft.com/en-us/azure/aks/faq#can-admission-controller-webhooks-impact-kube-system-and-internal-aks-namespaces-) for more info.
+
+The `--webhook-labels` parameter for the VPA admission-controller can be used to bypass this behaviour, if required by the user.
+
+### How can I configure VPA when running in EKS with Cilium?
+
+When running in EKS with Cilium, the EKS API server cannot route traffic to the overlay network. The VPA admission-controller
+Pods either need to use host networking or be exposed through a service or ingress.
+See the [Cilium Helm installation page](https://docs.cilium.io/en/stable/installation/k8s-install-helm/) for more info.

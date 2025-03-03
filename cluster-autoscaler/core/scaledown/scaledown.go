@@ -57,6 +57,8 @@ type Actuator interface {
 	// Actuator to ignore some of them e.g. if max configured level of
 	// parallelism is reached.
 	StartDeletion(empty, needDrain []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError)
+	// StartForceDeletion triggers a new forced deletion process. It bypasses PDBs and forcefully deletes the pods and the nodes.
+	StartForceDeletion(empty, needDrain []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError)
 	// CheckStatus returns an immutable snapshot of ongoing deletions.
 	CheckStatus() ActuationStatus
 	// ClearResultsNotNewerThan removes information about deletions finished

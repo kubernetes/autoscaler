@@ -47,7 +47,6 @@ You can also read about the [features](./docs/features.md) and [known limitation
 
 ## Related links
 
-- [Design
-  proposal](https://github.com/kubernetes/design-proposals-archive/blob/main/autoscaling/vertical-pod-autoscaler.md)
-- [API
-  definition](pkg/apis/autoscaling.k8s.io/v1/types.go)
+- [Design proposal](https://github.com/kubernetes/design-proposals-archive/blob/main/autoscaling/vertical-pod-autoscaler.md)
+- [API definition](pkg/apis/autoscaling.k8s.io/v1/types.go)
+- [API reference](./docs/api.md)

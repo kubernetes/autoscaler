@@ -19,6 +19,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -78,7 +79,6 @@ func makeTestUsageSample() *ContainerUsageSampleWithKey {
 	return &ContainerUsageSampleWithKey{ContainerUsageSample{
 		MeasureStart: testTimestamp,
 		Usage:        1.0,
-		Request:      testRequest[ResourceCPU],
 		Resource:     ResourceCPU},
 		testContainerID}
 }
@@ -275,7 +275,6 @@ func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 	newUsageSample := &ContainerUsageSampleWithKey{ContainerUsageSample{
 		MeasureStart: gcTimestamp.Add(1 * time.Hour),
 		Usage:        usageSample.Usage,
-		Request:      usageSample.Request,
 		Resource:     usageSample.Resource},
 		testContainerID}
 	// Add usage sample to the container again.
@@ -354,7 +353,8 @@ func addVpaObject(cluster *ClusterState, id VpaID, vpa *vpa_types.VerticalPodAut
 	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	err := cluster.AddOrUpdateVpa(vpa, parsedSelector)
 	if err != nil {
-		klog.Fatalf("AddOrUpdateVpa() failed: %v", err)
+		klog.ErrorS(err, "AddOrUpdateVpa() failed")
+		os.Exit(255)
 	}
 	return cluster.Vpas[id]
 }

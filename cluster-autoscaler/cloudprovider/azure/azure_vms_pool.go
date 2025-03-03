@@ -160,7 +160,7 @@ func (agentPool *VMsPool) Nodes() ([]cloudprovider.Instance, error) {
 
 	nodes := make([]cloudprovider.Instance, 0, len(vms))
 	for _, vm := range vms {
-		if len(*vm.ID) == 0 {
+		if vm.ID == nil || len(*vm.ID) == 0 {
 			continue
 		}
 		resourceID, err := convertResourceGroupNameToLower("azure://" + *vm.ID)

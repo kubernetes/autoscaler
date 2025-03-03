@@ -101,6 +101,9 @@ azureTenantID: ""
 # azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set.
 azureUseManagedIdentityExtension: false
 
+# azureUserAssignedIdentityID -- When vmss has multiple user assigned identity assigned, azureUserAssignedIdentityID specifies which identity to be used
+azureUserAssignedIdentityID: ""
+
 # azureUseWorkloadIdentityExtension -- Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set.
 azureUseWorkloadIdentityExtension: false
 
@@ -110,13 +113,30 @@ azureVMType: "vmss"
 # azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
 azureEnableForceDelete: false
 
+# civoApiUrl -- URL for the Civo API.
+# Required if `cloudProvider=civo`
+civoApiUrl: "https://api.civo.com"
+
+# civoApiKey -- API key for the Civo API.
+# Required if `cloudProvider=civo`
+civoApiKey: ""
+
+# civoClusterID -- Cluster ID for the Civo cluster.
+# Required if `cloudProvider=civo`
+civoClusterID: ""
+
+# civoRegion -- Region for the Civo cluster.
+# Required if `cloudProvider=civo`
+civoRegion: ""
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
-# Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported.
+# Currently only `gce`, `aws`, `azure`, `magnum`, `clusterapi` and `civo` are supported.
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
 # `magnum` for OpenStack Magnum, `clusterapi` for Cluster API.
+# `civo` for Civo Cloud.
 cloudProvider: aws
 
 # clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
@@ -192,9 +212,17 @@ extraArgs:
   # scale-down-delay-after-delete: 0s
   # scale-down-delay-after-failure: 3m
   # scale-down-unneeded-time: 10m
+  # node-deletion-delay-timeout: 2m
+  # node-deletion-batcher-interval: 0s
   # skip-nodes-with-system-pods: true
   # balancing-ignore-label_1: first-label-to-ignore
   # balancing-ignore-label_2: second-label-to-ignore
+
+# customArgs -- Additional custom container arguments.
+# Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
+# parameters and their default values.
+# List of arguments as strings.
+customArgs: []
 
 # extraEnv -- Additional container environment variables.
 extraEnv: {}
@@ -257,7 +285,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.31.0
+  tag: v1.32.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -438,5 +466,5 @@ vpa:
   # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
   containerPolicy: {}
 
-# secretKeyRefNameOverride -- Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables
+# secretKeyRefNameOverride -- Overrides the name of the Secret to use when loading the secretKeyRef for AWS, Azure and Civo env variables
 secretKeyRefNameOverride: ""

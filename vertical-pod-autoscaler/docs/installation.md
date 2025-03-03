@@ -10,16 +10,15 @@
   - [Install command](#install-command)
   - [Tear down](#tear-down)
 
-The current default version is Vertical Pod Autoscaler 1.2.1
+The current default version is Vertical Pod Autoscaler 1.3.0
 
 ## Compatibility
 
 | VPA version     | Kubernetes version |
 |-----------------|--------------------|
-| 1.2.1           | 1.27+              |
-| 1.2.0           | 1.27+              |
-| 1.1.2           | 1.25+              |
-| 1.1.1           | 1.25+              |
+| 1.3.x           | 1.28+              |
+| 1.2.x           | 1.27+              |
+| 1.1.x           | 1.25+              |
 | 1.0             | 1.25+              |
 | 0.14            | 1.25+              |
 | 0.13            | 1.25+              |
