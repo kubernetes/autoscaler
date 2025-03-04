@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
 )
@@ -43,6 +44,53 @@ func TestBuildAsg(t *testing.T) {
 	assert.Error(t, err)
 	_, err = asgCache.buildAsgFromSpec("1:2:")
 	assert.Error(t, err)
+}
+
+func TestBuildAsgTags(t *testing.T) {
+
+	cases := []struct {
+		name    string
+		specs   []string
+		want    []map[string]string
+		wantErr bool
+	}{
+		{
+			name: "MultiSpecs",
+			specs: []string{
+				"asg:tag=tag,anothertag",
+				"asg:tag=cooltag,anothertag",
+				"asg:tag=label=value,anothertag",
+				"asg:tag=my:label=value,my:otherlabel=othervalue",
+			},
+			want: []map[string]string{
+				{"tag": "", "anothertag": ""},
+				{"cooltag": "", "anothertag": ""},
+				{"label": "value", "anothertag": ""},
+				{"my:label": "value", "my:otherlabel": "othervalue"},
+			},
+		},
+		{
+			name: "SingleSpec",
+			specs: []string{
+				"asg:tag=mylabel=value,myotherlabel=othervalue",
+			},
+			want: []map[string]string{
+				{"mylabel": "value", "myotherlabel": "othervalue"},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			do := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
+			specs, _ := parseASGAutoDiscoverySpecs(do)
+			asgCache := &asgCache{
+				asgAutoDiscoverySpecs: specs,
+			}
+			got := asgCache.buildAsgTags()
+			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
+		})
+	}
 }
 
 func validateAsg(t *testing.T, asg *asg, name string, minSize int, maxSize int) {
