@@ -20,19 +20,22 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 )
 
 func TestBookCapacity(t *testing.T) {
 	tests := []struct {
-		name         string
-		prConditions []metav1.Condition
-		want         bool
+		name                           string
+		provisioningClassName          string
+		prConditions                   []metav1.Condition
+		prParameters                   map[string]*v1.Parameter
+		checkCapacityProcessorInstance string
+		want                           bool
 	}{
 		{
-			name: "BookingExpired",
+			name:                  "BookingExpired check capacity",
+			provisioningClassName: v1.ProvisioningClassCheckCapacity,
 			prConditions: []metav1.Condition{
 				{
 					Type:   v1.Provisioned,
@@ -46,7 +49,23 @@ func TestBookCapacity(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "Failed",
+			name:                  "BookingExpired best effort atomic",
+			provisioningClassName: v1.ProvisioningClassBestEffortAtomicScaleUp,
+			prConditions: []metav1.Condition{
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+				{
+					Type:   v1.BookingExpired,
+					Status: metav1.ConditionTrue,
+				},
+			},
+			want: false,
+		},
+		{
+			name:                  "Failed check capacity",
+			provisioningClassName: v1.ProvisioningClassCheckCapacity,
 			prConditions: []metav1.Condition{
 				{
 					Type:   v1.Provisioned,
@@ -60,11 +79,33 @@ func TestBookCapacity(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "empty conditions",
+			name:                  "Failed best effort atomic",
+			provisioningClassName: v1.ProvisioningClassBestEffortAtomicScaleUp,
+			prConditions: []metav1.Condition{
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+				{
+					Type:   v1.Failed,
+					Status: metav1.ConditionTrue,
+				},
+			},
 			want: false,
 		},
 		{
-			name: "Capacity found and provisioned",
+			name:                  "empty conditions for check capacity",
+			provisioningClassName: v1.ProvisioningClassCheckCapacity,
+			want:                  false,
+		},
+		{
+			name:                  "empty conditions for best effort atomic",
+			provisioningClassName: v1.ProvisioningClassBestEffortAtomicScaleUp,
+			want:                  false,
+		},
+		{
+			name:                  "Capacity found and provisioned check capacity",
+			provisioningClassName: v1.ProvisioningClassCheckCapacity,
 			prConditions: []metav1.Condition{
 				{
 					Type:   v1.Provisioned,
@@ -78,7 +119,66 @@ func TestBookCapacity(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "Capacity is not found",
+			name:                  "Capacity found and provisioned best effort atomic",
+			provisioningClassName: v1.ProvisioningClassBestEffortAtomicScaleUp,
+			prConditions: []metav1.Condition{
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+			},
+			want: true,
+		},
+		{
+			name:                  "Capacity found and provisioned check capacity but processor instance not matching",
+			provisioningClassName: v1.ProvisioningClassCheckCapacity,
+			prConditions: []metav1.Condition{
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+			},
+			checkCapacityProcessorInstance: "test",
+			want:                           false,
+		},
+		{
+			name:                  "Capacity found and provisioned best effort atomic but processor instance means ignore",
+			provisioningClassName: v1.ProvisioningClassBestEffortAtomicScaleUp,
+			prConditions: []metav1.Condition{
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
+				},
+			},
+			checkCapacityProcessorInstance: "test",
+			want:                           false,
+		},
+		{
+			name:                  "Capacity is not found for check capacity",
+			provisioningClassName: v1.ProvisioningClassCheckCapacity,
+			prConditions: []metav1.Condition{
+				{
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionFalse,
+				},
+			},
+			want: false,
+		},
+		{
+			name:                  "Capacity is not found for best effort atomic",
+			provisioningClassName: v1.ProvisioningClassBestEffortAtomicScaleUp,
 			prConditions: []metav1.Condition{
 				{
 					Type:   v1.Provisioned,
@@ -90,20 +190,18 @@ func TestBookCapacity(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			for class := range provisioningrequest.SupportedProvisioningClasses {
-				pr := provreqwrapper.NewProvisioningRequest(
-					&v1.ProvisioningRequest{
-						Spec: v1.ProvisioningRequestSpec{
-							ProvisioningClassName: class,
-						},
-						Status: v1.ProvisioningRequestStatus{
-							Conditions: test.prConditions,
-						},
-					}, nil)
-				got := ShouldCapacityBeBooked(pr)
-				if got != test.want {
-					t.Errorf("Want: %v, got: %v", test.want, got)
-				}
+			pr := provreqwrapper.NewProvisioningRequest(
+				&v1.ProvisioningRequest{
+					Spec: v1.ProvisioningRequestSpec{
+						ProvisioningClassName: test.provisioningClassName,
+					},
+					Status: v1.ProvisioningRequestStatus{
+						Conditions: test.prConditions,
+					},
+				}, nil)
+			got := ShouldCapacityBeBooked(pr, test.checkCapacityProcessorInstance)
+			if got != test.want {
+				t.Errorf("Want: %v, got: %v", test.want, got)
 			}
 		})
 	}

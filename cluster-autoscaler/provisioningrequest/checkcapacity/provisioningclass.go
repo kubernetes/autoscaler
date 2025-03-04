@@ -132,7 +132,7 @@ func (o *checkCapacityProvClass) getProvisioningRequestsAndPods(unschedulablePod
 	if !o.isBatchEnabled() {
 		klog.Info("Processing single provisioning request (non-batch)")
 		prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
-		prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity)
+		prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity, o.context.CheckCapacityProcessorInstance)
 		if len(prs) == 0 {
 			return nil, nil
 		}
