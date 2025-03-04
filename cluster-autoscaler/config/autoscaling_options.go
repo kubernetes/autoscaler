@@ -120,6 +120,8 @@ type AutoscalingOptions struct {
 	GpuTotal []GpuLimits
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery []string
+	// SkipSimilarNodeGroupRecomputation skips similar NodeGroup recomputation for the best option returned by the expander during scaleups
+	SkipSimilarNodeGroupRecomputation bool
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
 	EstimatorName string
 	// ExpanderNames sets the chain of node group expanders to be used in scale up
