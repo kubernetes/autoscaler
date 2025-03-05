@@ -221,6 +221,7 @@ var (
 
 var autoscalingOptions *config.AutoscalingOptions
 
+// AutoscalingOptions returns the singleton instance of AutoscalingOptions, initializing it if necessary.
 func AutoscalingOptions() config.AutoscalingOptions {
 	if autoscalingOptions == nil {
 		newAutoscalingOptions := createAutoscalingOptions()
