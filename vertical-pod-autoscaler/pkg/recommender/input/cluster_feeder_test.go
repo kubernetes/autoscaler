@@ -36,6 +36,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -556,9 +557,98 @@ func TestClusterStateFeeder_LoadPods_MemorySaverMode(t *testing.T) {
 			}
 
 			feeder.LoadPods()
-			assert.Len(t, feeder.clusterState.Pods, len(tc.PodLabels), "number of pods is not %d", len(tc.PodLabels))
+			assert.Len(t, clusterState.addedPods, len(tc.PodLabels), "number of pods is not %d", len(tc.PodLabels))
 		})
 	}
+}
+
+func newContainerMetricsSnapshot(id model.ContainerID, cpuUsage int64, memUsage int64) (*metrics.ContainerMetricsSnapshot, []*model.ContainerUsageSampleWithKey) {
+	snapshotTimestamp := time.Now()
+	snapshotWindow := time.Duration(1234)
+	snapshot := &metrics.ContainerMetricsSnapshot{
+		ID:             id,
+		SnapshotTime:   snapshotTimestamp,
+		SnapshotWindow: snapshotWindow,
+		Usage: model.Resources{
+			model.ResourceCPU:    model.ResourceAmount(cpuUsage),
+			model.ResourceMemory: model.ResourceAmount(memUsage),
+		},
+	}
+	samples := []*model.ContainerUsageSampleWithKey{
+		{
+			Container: id,
+			ContainerUsageSample: model.ContainerUsageSample{
+				MeasureStart: snapshotTimestamp,
+				Resource:     model.ResourceCPU,
+				Usage:        model.ResourceAmount(cpuUsage),
+			},
+		},
+		{
+			Container: id,
+			ContainerUsageSample: model.ContainerUsageSample{
+				MeasureStart: snapshotTimestamp,
+				Resource:     model.ResourceMemory,
+				Usage:        model.ResourceAmount(memUsage),
+			},
+		},
+	}
+	return snapshot, samples
+}
+
+type fakeMetricsClient struct {
+	snapshots []*metrics.ContainerMetricsSnapshot
+}
+
+func (m fakeMetricsClient) GetContainersMetrics() ([]*metrics.ContainerMetricsSnapshot, error) {
+	return m.snapshots, nil
+}
+
+func TestClusterStateFeeder_LoadRealTimeMetrics(t *testing.T) {
+	namespaceName := "test-namespace"
+	podID := model.PodID{Namespace: namespaceName, PodName: "Pod"}
+	regularContainer1 := model.ContainerID{PodID: podID, ContainerName: "Container1"}
+	regularContainer2 := model.ContainerID{PodID: podID, ContainerName: "Container2"}
+	initContainer := model.ContainerID{PodID: podID, ContainerName: "InitContainer"}
+
+	pods := map[model.PodID]*model.PodState{
+		podID: {ID: podID,
+			Containers: map[string]*model.ContainerState{
+				"Container1": {},
+				"Container2": {},
+			},
+			InitContainers: []string{
+				"InitContainer",
+			}},
+	}
+
+	var containerMetricsSnapshots []*metrics.ContainerMetricsSnapshot
+
+	regularContainer1MetricsSnapshot, regularContainer1UsageSamples := newContainerMetricsSnapshot(regularContainer1, 100, 1024)
+	containerMetricsSnapshots = append(containerMetricsSnapshots, regularContainer1MetricsSnapshot)
+	regularContainer2MetricsSnapshot, regularContainer2UsageSamples := newContainerMetricsSnapshot(regularContainer2, 200, 2048)
+	containerMetricsSnapshots = append(containerMetricsSnapshots, regularContainer2MetricsSnapshot)
+	initContainer1MetricsSnapshots, _ := newContainerMetricsSnapshot(initContainer, 300, 3072)
+	containerMetricsSnapshots = append(containerMetricsSnapshots, initContainer1MetricsSnapshots)
+
+	clusterState := NewFakeClusterState(nil, pods)
+
+	feeder := clusterStateFeeder{
+		memorySaveMode: false,
+		clusterState:   clusterState,
+		metricsClient:  fakeMetricsClient{snapshots: containerMetricsSnapshots},
+	}
+
+	feeder.LoadRealTimeMetrics()
+
+	assert.Equal(t, 2, len(clusterState.addedSamples))
+
+	samplesForContainer1 := clusterState.addedSamples[regularContainer1]
+	assert.Contains(t, samplesForContainer1, regularContainer1UsageSamples[0])
+	assert.Contains(t, samplesForContainer1, regularContainer1UsageSamples[1])
+
+	samplesForContainer2 := clusterState.addedSamples[regularContainer2]
+	assert.Contains(t, samplesForContainer2, regularContainer2UsageSamples[0])
+	assert.Contains(t, samplesForContainer2, regularContainer2UsageSamples[1])
 }
 
 type fakeHistoryProvider struct {
