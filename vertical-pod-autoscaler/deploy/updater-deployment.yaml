@@ -20,8 +20,8 @@ spec:
         runAsUser: 65534 # nobody
       containers:
         - name: updater
-          image: registry.k8s.io/autoscaling/vpa-updater:1.3.0
-          imagePullPolicy: IfNotPresent
+          image: 125608480246.dkr.ecr.eu-west-3.amazonaws.com/vpa-updater:v0.1.0
+          imagePullPolicy: Always
           env:
             - name: NAMESPACE
               valueFrom:

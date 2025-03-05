@@ -26,6 +26,7 @@ import (
 	"golang.org/x/time/rate"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -38,6 +39,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
@@ -50,6 +52,8 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
+
+const podKind = "Pod"
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
 type Updater interface {
@@ -96,6 +100,39 @@ func NewUpdater(
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create eviction restriction factory: %v", err)
 	}
+
+	// for testing! {
+	vpa, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers("groundcover-erez").Get(context.Background(), "clickhouse-vpa5", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("Error getting VPA", err)
+		klog.ErrorS(err, "Cannot get VPA", "vpa", klog.KRef("vpa", "groundcover-erez/clickhouse-vpa5"))
+	} else {
+		vpa.Status.Conditions = []vpa_types.VerticalPodAutoscalerCondition{
+			{
+				Type:   vpa_types.RecommendationProvided,
+				Status: apiv1.ConditionTrue,
+			},
+		}
+		vpa.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "clickhouse",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("4"),
+						apiv1.ResourceMemory: resource.MustParse("4Gi"),
+					},
+				},
+			},
+		}
+
+		_, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers("groundcover-erez").UpdateStatus(context.Background(), vpa, metav1.UpdateOptions{})
+		if err != nil {
+			fmt.Println("Error updating VPA status", err)
+			klog.ErrorS(err, "Cannot update VPA status", "vpa", klog.KRef("vpa", "groundcover-erez/clickhouse-vpa5"))
+		}
+	}
+	// } for testing!
+
 	return &updater{
 		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
 		podLister:                    newPodLister(kubeClient, namespace),
@@ -153,10 +190,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}
-		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
-		if err != nil {
-			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
-			continue
+
+		var selector labels.Selector
+		if vpa.Spec.TargetRef.Kind != podKind {
+			selector, err = u.selectorFetcher.Fetch(ctx, vpa)
+			if err != nil {
+				klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
+				continue
+			}
 		}
 
 		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
@@ -183,6 +224,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
+		podVpas := filterPodVpasByPodNameAndNamespace(vpaList, pod.Name, pod.Namespace)
+		if len(podVpas) > 0 {
+			for _, vpa := range podVpas {
+				controlledPods[vpa] = append(controlledPods[vpa], pod)
+			}
+			continue
+		}
+
 		controllingVPA := vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
@@ -291,6 +340,16 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 	for _, pod := range pods {
 		if pod.DeletionTimestamp == nil {
 			result = append(result, pod)
+		}
+	}
+	return result
+}
+
+func filterPodVpasByPodNameAndNamespace(vpas []*vpa_types.VerticalPodAutoscaler, podName, namespace string) []*vpa_types.VerticalPodAutoscaler {
+	result := make([]*vpa_types.VerticalPodAutoscaler, 0)
+	for _, vpa := range vpas {
+		if vpa.Spec.TargetRef != nil && vpa.Spec.TargetRef.Name == podName && vpa.Namespace == namespace {
+			result = append(result, vpa)
 		}
 	}
 	return result

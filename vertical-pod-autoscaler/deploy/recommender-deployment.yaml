@@ -20,8 +20,8 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: recommender
-        image: registry.k8s.io/autoscaling/vpa-recommender:1.3.0
-        imagePullPolicy: IfNotPresent
+        image: 125608480246.dkr.ecr.eu-west-3.amazonaws.com/vpa-recommender:v0.1.0
+        imagePullPolicy: Always
         resources:
           limits:
             cpu: 200m
