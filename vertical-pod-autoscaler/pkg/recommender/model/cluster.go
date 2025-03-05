@@ -88,6 +88,8 @@ type PodState struct {
 	labelSetKey labelSetKey
 	// Containers that belong to the Pod, keyed by the container name.
 	Containers map[string]*ContainerState
+	// InitContainers is a list of init containers names which belong to the Pod.
+	InitContainers []string
 	// PodPhase describing current life cycle phase of the Pod.
 	Phase apiv1.PodPhase
 }

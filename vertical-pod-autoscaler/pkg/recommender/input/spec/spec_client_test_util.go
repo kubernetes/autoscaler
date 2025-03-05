@@ -82,6 +82,13 @@ spec:
       requests:
         memory: "4096Mi"
         cpu: "4000m"
+  initContainers:
+  - name: Name21-init
+    image: Name21-initImage
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "40m"
 `
 
 type podListerMock struct {
@@ -116,8 +123,10 @@ func newSpecClientTestCase() *specClientTestCase {
 	containerSpec21 := newTestContainerSpec(podID2, "Name21", 2000, 2048*1024*1024)
 	containerSpec22 := newTestContainerSpec(podID2, "Name22", 4000, 4096*1024*1024)
 
-	podSpec1 := newTestPodSpec(podID1, containerSpec11, containerSpec12)
-	podSpec2 := newTestPodSpec(podID2, containerSpec21, containerSpec22)
+	initContainerSpec21 := newTestContainerSpec(podID2, "Name21-init", 40, 128*1024*1024)
+
+	podSpec1 := newTestPodSpec(podID1, []BasicContainerSpec{containerSpec11, containerSpec12}, nil)
+	podSpec2 := newTestPodSpec(podID2, []BasicContainerSpec{containerSpec21, containerSpec22}, []BasicContainerSpec{initContainerSpec21})
 
 	return &specClientTestCase{
 		podSpecs: []*BasicPodSpec{podSpec1, podSpec2},
@@ -141,11 +150,12 @@ func newTestContainerSpec(podID model.PodID, containerName string, milicores int
 	}
 }
 
-func newTestPodSpec(podId model.PodID, containerSpecs ...BasicContainerSpec) *BasicPodSpec {
+func newTestPodSpec(podId model.PodID, containerSpecs []BasicContainerSpec, initContainerSpecs []BasicContainerSpec) *BasicPodSpec {
 	return &BasicPodSpec{
-		ID:         podId,
-		PodLabels:  map[string]string{podId.PodName + "LabelKey": podId.PodName + "LabelValue"},
-		Containers: containerSpecs,
+		ID:             podId,
+		PodLabels:      map[string]string{podId.PodName + "LabelKey": podId.PodName + "LabelValue"},
+		Containers:     containerSpecs,
+		InitContainers: initContainerSpecs,
 	}
 }
 

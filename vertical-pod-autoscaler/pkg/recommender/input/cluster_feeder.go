@@ -476,6 +476,11 @@ func (feeder *clusterStateFeeder) LoadPods() {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
 			}
 		}
+		for _, initContainer := range pod.InitContainers {
+			podInitContainers := feeder.clusterState.Pods()[pod.ID].InitContainers
+			feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
+
+		}
 	}
 }
 

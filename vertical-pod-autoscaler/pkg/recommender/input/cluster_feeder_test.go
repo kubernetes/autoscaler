@@ -419,7 +419,70 @@ func makeTestSpecClient(podLabels []map[string]string) spec.SpecClient {
 	}
 }
 
-func TestClusterStateFeeder_LoadPods(t *testing.T) {
+func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int64) spec.BasicContainerSpec {
+	containerID := model.ContainerID{
+		PodID:         podID,
+		ContainerName: containerName,
+	}
+	requestedResources := model.Resources{
+		model.ResourceCPU:    model.ResourceAmount(milicores),
+		model.ResourceMemory: model.ResourceAmount(memory),
+	}
+	return spec.BasicContainerSpec{
+		ID:      containerID,
+		Image:   containerName + "Image",
+		Request: requestedResources,
+	}
+}
+
+func newTestPodSpec(podId model.PodID, containerSpecs []spec.BasicContainerSpec, initContainerSpecs []spec.BasicContainerSpec) *spec.BasicPodSpec {
+	return &spec.BasicPodSpec{
+		ID:             podId,
+		PodLabels:      map[string]string{podId.PodName + "LabelKey": podId.PodName + "LabelValue"},
+		Containers:     containerSpecs,
+		InitContainers: initContainerSpecs,
+	}
+}
+
+func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
+	podWithoutInitContainersID := model.PodID{Namespace: "default", PodName: "PodWithoutInitContainers"}
+	containerSpecs := []spec.BasicContainerSpec{
+		newTestContainerSpec(podWithoutInitContainersID, "container1", 500, 512*1024*1024),
+		newTestContainerSpec(podWithoutInitContainersID, "container2", 1000, 1024*1024*1024),
+	}
+	podWithoutInitContainers := newTestPodSpec(podWithoutInitContainersID, containerSpecs, nil)
+
+	podWithInitContainersID := model.PodID{Namespace: "default", PodName: "PodWithInitContainers"}
+	containerSpecs2 := []spec.BasicContainerSpec{
+		newTestContainerSpec(podWithInitContainersID, "container1", 2000, 2048*1024*1024),
+	}
+	initContainerSpecs2 := []spec.BasicContainerSpec{
+		newTestContainerSpec(podWithInitContainersID, "init1", 40, 128*1024*1024),
+		newTestContainerSpec(podWithInitContainersID, "init2", 100, 256*1024*1024),
+	}
+	podWithInitContainers := newTestPodSpec(podWithInitContainersID, containerSpecs2, initContainerSpecs2)
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{podWithoutInitContainers, podWithInitContainers}}
+
+	clusterState := model.NewClusterState(testGcPeriod)
+
+	feeder := clusterStateFeeder{
+		specClient:     client,
+		memorySaveMode: false,
+		clusterState:   clusterState,
+	}
+
+	feeder.LoadPods()
+
+	assert.Equal(t, len(feeder.clusterState.Pods()), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].Containers), 1)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].Containers), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
+
+}
+
+func TestClusterStateFeeder_LoadPods_MemorySaverMode(t *testing.T) {
 	for _, tc := range []struct {
 		Name              string
 		VPALabelSelectors []string
