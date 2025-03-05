@@ -77,7 +77,46 @@ const (
 	testGcPeriod = time.Minute
 )
 
-func TestLoadPods(t *testing.T) {
+// NewClusterState returns a new clusterState with no pods.
+func NewFakeClusterState(vpas map[model.VpaID]*model.Vpa, pods map[model.PodID]*model.PodState) *fakeClusterState {
+	return &fakeClusterState{
+		stubbedVPAs:  vpas,
+		stubbedPods:  pods,
+		addedSamples: make(map[model.ContainerID][]*model.ContainerUsageSampleWithKey),
+	}
+}
+
+type fakeClusterState struct {
+	model.ClusterState
+	addedPods    []model.PodID
+	addedSamples map[model.ContainerID][]*model.ContainerUsageSampleWithKey
+	stubbedVPAs  map[model.VpaID]*model.Vpa
+	stubbedPods  map[model.PodID]*model.PodState
+}
+
+func (cs *fakeClusterState) AddSample(sample *model.ContainerUsageSampleWithKey) error {
+	samplesForContainer := cs.addedSamples[sample.Container]
+	cs.addedSamples[sample.Container] = append(samplesForContainer, sample)
+	return nil
+}
+
+func (cs *fakeClusterState) AddOrUpdatePod(podID model.PodID, _ labels.Set, _ v1.PodPhase) {
+	cs.addedPods = append(cs.addedPods, podID)
+}
+
+func (cs *fakeClusterState) Pods() map[model.PodID]*model.PodState {
+	return cs.stubbedPods
+}
+
+func (cs *fakeClusterState) VPAs() map[model.VpaID]*model.Vpa {
+	return cs.stubbedVPAs
+}
+
+func (cs *fakeClusterState) StateMapSize() int {
+	return 0
+}
+
+func TestLoadVPAs(t *testing.T) {
 
 	type testCase struct {
 		name                                string
@@ -329,11 +368,11 @@ func TestLoadPods(t *testing.T) {
 			}
 
 			if !tc.expectedVpaFetch {
-				assert.NotContains(t, clusterState.Vpas, vpaID)
+				assert.NotContains(t, clusterState.VPAs(), vpaID)
 				return
 			}
-			assert.Contains(t, clusterState.Vpas, vpaID)
-			storedVpa := clusterState.Vpas[vpaID]
+			assert.Contains(t, clusterState.VPAs(), vpaID)
+			storedVpa := clusterState.VPAs()[vpaID]
 			if tc.expectedSelector != nil {
 				assert.NotNil(t, storedVpa.PodSelector)
 				assert.Equal(t, tc.expectedSelector.String(), storedVpa.PodSelector.String())
@@ -427,14 +466,14 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
-			clusterState := model.NewClusterState(testGcPeriod)
+			vpas := make(map[model.VpaID]*model.Vpa)
 			for i, selector := range tc.VPALabelSelectors {
 				vpaLabel, err := labels.Parse(selector)
 				assert.NoError(t, err)
-				clusterState.Vpas = map[model.VpaID]*model.Vpa{
-					{VpaName: fmt.Sprintf("test-vpa-%d", i), Namespace: "default"}: {PodSelector: vpaLabel},
-				}
+				key := model.VpaID{VpaName: fmt.Sprintf("test-vpa-%d", i), Namespace: "default"}
+				vpas[key] = &model.Vpa{PodSelector: vpaLabel}
 			}
+			clusterState := NewFakeClusterState(vpas, nil)
 
 			feeder := clusterStateFeeder{
 				specClient:     makeTestSpecClient(tc.PodLabels),
@@ -443,7 +482,9 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 			}
 
 			feeder.LoadPods()
-			assert.Len(t, feeder.clusterState.Pods, tc.TrackedPods, "number of pods is not %d", tc.TrackedPods)
+			assert.Len(t, clusterState.addedPods, tc.TrackedPods, "number of pods is not %d", tc.TrackedPods)
+
+			clusterState = NewFakeClusterState(vpas, nil)
 
 			feeder = clusterStateFeeder{
 				specClient:     makeTestSpecClient(tc.PodLabels),
@@ -506,10 +547,10 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		clusterState: clusterState,
 	}
 	feeder.InitFromHistoryProvider(&provider)
-	if !assert.Contains(t, feeder.clusterState.Pods, pod1) {
+	if !assert.Contains(t, feeder.clusterState.Pods(), pod1) {
 		return
 	}
-	pod1State := feeder.clusterState.Pods[pod1]
+	pod1State := feeder.clusterState.Pods()[pod1]
 	if !assert.Contains(t, pod1State.Containers, containerCpu) {
 		return
 	}
@@ -700,7 +741,7 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		coreClient:          client.CoreV1(),
 		vpaLister:           vpaLister,
 		vpaCheckpointClient: checkpointClient,
-		clusterState:        &model.ClusterState{},
+		clusterState:        model.NewClusterState(testGcPeriod),
 		recommenderName:     "default",
 	}
 
