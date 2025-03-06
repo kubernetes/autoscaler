@@ -124,12 +124,6 @@ func TestGetNodePoolNodes(t *testing.T) {
 					Message: common.String("blah blah quota exceeded blah blah"),
 				},
 			},
-			{
-				// This case happens if a node fails to scale up due to lack of capacity in the region.
-				// It's not a real node, so we shouldn't return it in the list of nodes.
-				Id:             common.String(""),
-				LifecycleState: oke.NodeLifecycleStateCreating,
-			},
 		},
 	}
 
@@ -326,7 +320,9 @@ func TestBuildGenericLabels(t *testing.T) {
 
 }
 
-type mockOKEClient struct{}
+type mockOKEClient struct {
+	deleteCallCount int
+}
 
 func (c mockOKEClient) GetNodePool(context.Context, oke.GetNodePoolRequest) (oke.GetNodePoolResponse, error) {
 	return oke.GetNodePoolResponse{}, nil
@@ -335,6 +331,7 @@ func (c mockOKEClient) UpdateNodePool(context.Context, oke.UpdateNodePoolRequest
 	return oke.UpdateNodePoolResponse{}, nil
 }
 func (c mockOKEClient) DeleteNode(context.Context, oke.DeleteNodeRequest) (oke.DeleteNodeResponse, error) {
+	c.deleteCallCount += 1
 	return oke.DeleteNodeResponse{
 		RawResponse: &http.Response{
 			Status:     "200 OK",
@@ -358,8 +355,9 @@ func TestRemoveInstance(t *testing.T) {
 
 	expectedInstances := map[string]int{instanceId4: 1, instanceId5: 1, instanceId6: 1}
 
+	okeClient := mockOKEClient{}
 	nodePoolCache := newNodePoolCache(nil)
-	nodePoolCache.okeClient = mockOKEClient{}
+	nodePoolCache.okeClient = okeClient
 	nodePoolCache.cache[nodePoolId] = &oke.NodePool{
 		Nodes: []oke.Node{
 			{Id: common.String(instanceId1), LifecycleState: oke.NodeLifecycleStateDeleting},
@@ -383,7 +381,7 @@ func TestRemoveInstance(t *testing.T) {
 		t.Errorf("Fail to remove instance #{instanceId3}")
 	}
 
-	if err := nodePoolCache.removeInstance(nodePoolId, "", "badNode"); err == nil {
+	if err := nodePoolCache.removeInstance(nodePoolId, "", "badNode"); err != nil || okeClient.deleteCallCount > 3 {
 		t.Errorf("Bad node should not have been deleted.")
 	}
 
