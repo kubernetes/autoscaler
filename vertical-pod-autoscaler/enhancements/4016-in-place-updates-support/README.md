@@ -57,6 +57,8 @@ VPA.
 * Allow VPA to operate with NO disruptions, see the [note above](#disruptions).
 * Improved handling of injected sidecars
   * Separate AEP will improve VPAs handling of injected sidecars.
+* Partial updates applied to some containers of a pod, some changes skipped (request in
+  recommendation bounds).
 
 ## Proposal
 
@@ -177,6 +179,25 @@ VPA does not care and should not care about a container's `ResizePolicy` setting
 it will simply issue the `/resize` request and let the underlying machinery apply the resize
 operation in a way that complies with the user's specification.
 
+#### Partial Updates
+
+A non-goal for this initial implementation of in-place updates is to support "partial
+container updates," which refers to sending resize requests only to the container(s) that
+require them.
+
+This feature is not in the initial AEP scope due to the way the VPA has worked in the past.
+Note that on the API level, in-place resizes work by submitting patches to the `resize` subresource for *individual containers*.
+Updates through the `Recreate` updateMode are actuated by Pod evictions, and VPA does
+**not** accounted for individual containers when deciding when to evict.
+This requires a refactor that is not immediately obvious to implement.
+
+On the flipside, updating all containers of a pod during an in-place
+resize is not ideal. This can potentially cause unnecessary disruption when
+downsizing containers with limits or updating containers with
+`.spec.resizePolicy[].restartPolicy: RestartContainer`.
+
+Moving forward, support for in-place partial updates will be considered as a feature request or future enhancement.
+
 ### Comparison of `UpdateMode`s
 
 Today, VPA updater considers the following conditions when deciding if it should apply an update:
@@ -229,8 +250,6 @@ tested in the following scenarios:
 
 * Admission controller applies recommendation to pod controlled by VPA. 
 * In-place update applied to all containers of a pod.
-* Partial updates applied to some containers of a pod, some changes skipped (request in
-  recommendation bounds).
 * In-place update will fail. Pod should be evicted and the recommendation applied.
 * In-place update will fail but `CanEvict` is false, pod should not be evicted.
 * In-place update will fail but `EvictionRequirements` are false, pod should not be evicted.
@@ -246,3 +265,4 @@ Needs more research on how to scale down on memory safely.
 
 - 2023-05-10: initial version
 - 2025-02-19: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
+- 2025-03-06: Scope changes to "partial updates" feature
