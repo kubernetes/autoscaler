@@ -318,6 +318,30 @@ type AutoscalingOptions struct {
 	// It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance.
 	// Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.
 	CheckCapacityProcessorInstance string
+	// MaxInactivityTime is the maximum time from last recorded autoscaler activity before automatic restart.
+	MaxInactivityTime time.Duration
+	// MaxFailingTime is the maximum time from last recorded successful autoscaler run before automatic restart.
+	MaxFailingTime time.Duration
+	// DebuggingSnapshotEnabled is used to enable/disable debugging snapshot creation.
+	DebuggingSnapshotEnabled bool
+	// EnableProfiling is debug/pprof endpoint enabled.
+	EnableProfiling bool
+	// Address is the address to expose prometheus metrics.
+	Address string
+	// EmitPerNodeGroupMetrics is used to enable/disable emitting per node group metrics.
+	EmitPerNodeGroupMetrics bool
+	// FrequentLoopsEnabled is used to enable/disable frequent loops.
+	FrequentLoopsEnabled bool
+	// ScanInterval is how often cluster is reevaluated for scale up or down
+	ScanInterval time.Duration
+	// ForceDaemonSets is used to block scale-up of node groups too small for all suitable Daemon Sets pods.
+	ForceDaemonSets bool
+	// NodeInfoCacheExpireTime is the time after which the node info cache expires for each item, Default value is 10 years.
+	NodeInfoCacheExpireTime time.Duration
+	// ProactiveScaleupEnabled is used to enable/disable proactive scale up.
+	ProactiveScaleupEnabled bool
+	// PodInjectionLimit limits total number of pods while injecting fake pods.
+	PodInjectionLimit int
 }
 
 // KubeClientOptions specify options for kube client
