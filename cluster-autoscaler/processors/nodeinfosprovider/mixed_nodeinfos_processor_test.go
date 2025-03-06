@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -50,6 +51,11 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	SetNodeReadyState(unready4, false, now)
 	justReady5 := BuildTestNode("n5", 5000, 5000)
 	SetNodeReadyState(justReady5, true, now)
+	readyToBeDeleted6 := BuildTestNode("n6", 2000, 2000)
+	SetNodeReadyState(readyToBeDeleted6, true, now.Add(-2*time.Minute))
+	setToBeDeletedTaint(readyToBeDeleted6)
+	ready7 := BuildTestNode("n7", 6000, 6000)
+	SetNodeReadyState(ready7, true, now.Add(-2*time.Minute))
 
 	tn := BuildTestNode("tn", 5000, 5000)
 	tni := framework.NewTestNodeInfo(tn)
@@ -57,7 +63,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	// Cloud provider with TemplateNodeInfo implemented.
 	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
 		nil, nil, nil, nil, nil,
-		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni, "ng5": tni})
+		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni, "ng5": tni, "ng6": tni})
 	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
 	provider1.AddNode("ng1", ready1)
 	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
@@ -68,15 +74,18 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	provider1.AddNodeGroup("ng4", 0, 1000, 0) // Nodegroup without nodes.
 	provider1.AddNodeGroup("ng5", 1, 10, 1)   // Nodegroup with node that recently became ready.
 	provider1.AddNode("ng5", justReady5)
+	provider1.AddNodeGroup("ng6", 1, 10, 1) // Nodegroup with to be deleted node
+	provider1.AddNode("ng6", readyToBeDeleted6)
+	provider1.AddNode("ng6", ready7)
 
 	// Cloud provider with TemplateNodeInfo not implemented.
 	provider2 := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
-	provider2.AddNodeGroup("ng6", 1, 10, 1) // Nodegroup without nodes.
+	provider2.AddNodeGroup("ng7", 1, 10, 1) // Nodegroup without nodes.
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}
+	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1, ready7, readyToBeDeleted6}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
 	err := snapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
 	assert.NoError(t, err)
@@ -90,7 +99,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	}
 	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
-	assert.Equal(t, 5, len(res))
+	assert.Equal(t, 6, len(res))
 	info, found := res["ng1"]
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, ready1, info.Node())
@@ -106,6 +115,9 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	info, found = res["ng5"]
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, tn, info.Node())
+	info, found = res["ng6"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready7, info.Node())
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	ctx = context.AutoscalingContext{
@@ -313,4 +325,12 @@ func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) int64 {
 	}
 
 	return nodeCapacityValue
+}
+
+func setToBeDeletedTaint(node *apiv1.Node) {
+	node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
+		Key:    taints.ToBeDeletedTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
 }
