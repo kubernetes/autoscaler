@@ -32,6 +32,8 @@ type BasicPodSpec struct {
 	PodLabels map[string]string
 	// List of containers within this pod.
 	Containers []BasicContainerSpec
+	// List of init containers within this pod.
+	InitContainers []BasicContainerSpec
 	// PodPhase describing current life cycle phase of the Pod.
 	Phase v1.PodPhase
 }
@@ -82,21 +84,23 @@ func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
 		PodName:   pod.Name,
 		Namespace: pod.Namespace,
 	}
-	containerSpecs := newContainerSpecs(podId, pod)
+	containerSpecs := newContainerSpecs(podId, pod.Spec.Containers)
+	initContainerSpecs := newContainerSpecs(podId, pod.Spec.InitContainers)
 
 	basicPodSpec := &BasicPodSpec{
-		ID:         podId,
-		PodLabels:  pod.Labels,
-		Containers: containerSpecs,
-		Phase:      pod.Status.Phase,
+		ID:             podId,
+		PodLabels:      pod.Labels,
+		Containers:     containerSpecs,
+		InitContainers: initContainerSpecs,
+		Phase:          pod.Status.Phase,
 	}
 	return basicPodSpec
 }
 
-func newContainerSpecs(podID model.PodID, pod *v1.Pod) []BasicContainerSpec {
+func newContainerSpecs(podID model.PodID, containers []v1.Container) []BasicContainerSpec {
 	var containerSpecs []BasicContainerSpec
 
-	for _, container := range pod.Spec.Containers {
+	for _, container := range containers {
 		containerSpec := newContainerSpec(podID, container)
 		containerSpecs = append(containerSpecs, containerSpec)
 	}

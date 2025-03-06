@@ -43,7 +43,7 @@ type Recommender interface {
 	// RunOnce performs one iteration of recommender duties followed by update of recommendations in VPA objects.
 	RunOnce()
 	// GetClusterState returns ClusterState used by Recommender
-	GetClusterState() *model.ClusterState
+	GetClusterState() model.ClusterState
 	// GetClusterStateFeeder returns ClusterStateFeeder used by Recommender
 	GetClusterStateFeeder() input.ClusterStateFeeder
 	// UpdateVPAs computes recommendations and sends VPAs status updates to API Server
@@ -55,7 +55,7 @@ type Recommender interface {
 }
 
 type recommender struct {
-	clusterState                  *model.ClusterState
+	clusterState                  model.ClusterState
 	clusterStateFeeder            input.ClusterStateFeeder
 	checkpointWriter              checkpoint.CheckpointWriter
 	checkpointsGCInterval         time.Duration
@@ -68,7 +68,7 @@ type recommender struct {
 	recommendationPostProcessor   []RecommendationPostProcessor
 }
 
-func (r *recommender) GetClusterState() *model.ClusterState {
+func (r *recommender) GetClusterState() model.ClusterState {
 	return r.clusterState
 }
 
@@ -81,13 +81,13 @@ func (r *recommender) UpdateVPAs() {
 	cnt := metrics_recommender.NewObjectCounter()
 	defer cnt.Observe()
 
-	for _, observedVpa := range r.clusterState.ObservedVpas {
+	for _, observedVpa := range r.clusterState.ObservedVPAs() {
 		key := model.VpaID{
 			Namespace: observedVpa.Namespace,
 			VpaName:   observedVpa.Name,
 		}
 
-		vpa, found := r.clusterState.Vpas[key]
+		vpa, found := r.clusterState.VPAs()[key]
 		if !found {
 			continue
 		}
@@ -155,7 +155,7 @@ func (r *recommender) RunOnce() {
 
 	r.clusterStateFeeder.LoadRealTimeMetrics()
 	timer.ObserveStep("LoadMetrics")
-	klog.V(3).InfoS("ClusterState is tracking", "pods", len(r.clusterState.Pods), "vpas", len(r.clusterState.Vpas))
+	klog.V(3).InfoS("ClusterState is tracking", "pods", len(r.clusterState.Pods()), "vpas", len(r.clusterState.VPAs()))
 
 	r.UpdateVPAs()
 	timer.ObserveStep("UpdateVPAs")
@@ -172,7 +172,7 @@ func (r *recommender) RunOnce() {
 
 // RecommenderFactory makes instances of Recommender.
 type RecommenderFactory struct {
-	ClusterState *model.ClusterState
+	ClusterState model.ClusterState
 
 	ClusterStateFeeder     input.ClusterStateFeeder
 	ControllerFetcher      controllerfetcher.ControllerFetcher

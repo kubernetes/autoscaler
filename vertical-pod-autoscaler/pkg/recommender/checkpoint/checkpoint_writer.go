@@ -42,11 +42,11 @@ type CheckpointWriter interface {
 
 type checkpointWriter struct {
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
-	cluster             *model.ClusterState
+	cluster             model.ClusterState
 }
 
 // NewCheckpointWriter returns new instance of a CheckpointWriter
-func NewCheckpointWriter(cluster *model.ClusterState, vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter) CheckpointWriter {
+func NewCheckpointWriter(cluster model.ClusterState, vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter) CheckpointWriter {
 	return &checkpointWriter{
 		vpaCheckpointClient: vpaCheckpointClient,
 		cluster:             cluster,
@@ -77,7 +77,7 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 }
 
 func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.Time, minCheckpoints int) error {
-	vpas := getVpasToCheckpoint(writer.cluster.Vpas)
+	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
 	for _, vpa := range vpas {
 
 		// Draining ctx.Done() channel. ctx.Err() will be checked if timeout occurred, but minCheckpoints have
@@ -123,13 +123,13 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 // Build the AggregateContainerState for the purpose of the checkpoint. This is an aggregation of state of all
 // containers that belong to pods matched by the VPA.
 // Note however that we exclude the most recent memory peak for each container (see below).
-func buildAggregateContainerStateMap(vpa *model.Vpa, cluster *model.ClusterState, now time.Time) map[string]*model.AggregateContainerState {
+func buildAggregateContainerStateMap(vpa *model.Vpa, cluster model.ClusterState, now time.Time) map[string]*model.AggregateContainerState {
 	aggregateContainerStateMap := vpa.AggregateStateByContainerName()
 	// Note: the memory peak from the current (ongoing) aggregation interval is not included in the
 	// checkpoint to avoid having multiple peaks in the same interval after the state is restored from
 	// the checkpoint. Therefore we are extracting the current peak from all containers.
 	// TODO: Avoid the nested loop over all containers for each VPA.
-	for _, pod := range cluster.Pods {
+	for _, pod := range cluster.Pods() {
 		for containerName, container := range pod.Containers {
 			aggregateKey := cluster.MakeAggregateStateKey(pod, containerName)
 			if vpa.UsesAggregation(aggregateKey) {
