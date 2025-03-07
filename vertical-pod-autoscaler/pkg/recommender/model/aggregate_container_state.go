@@ -307,12 +307,12 @@ func AggregateStateByContainerName(aggregateContainerStateMap aggregateContainer
 // present in the cluster state.
 type ContainerStateAggregatorProxy struct {
 	containerID ContainerID
-	cluster     *ClusterState
+	cluster     *clusterState
 }
 
 // NewContainerStateAggregatorProxy creates a ContainerStateAggregatorProxy
 // pointing to the cluster state.
-func NewContainerStateAggregatorProxy(cluster *ClusterState, containerID ContainerID) ContainerStateAggregator {
+func NewContainerStateAggregatorProxy(cluster *clusterState, containerID ContainerID) ContainerStateAggregator {
 	return &ContainerStateAggregatorProxy{containerID, cluster}
 }
 
