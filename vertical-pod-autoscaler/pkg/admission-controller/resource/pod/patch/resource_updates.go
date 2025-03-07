@@ -78,7 +78,7 @@ func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_uti
 	// Add empty resources object if missing.
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
 		pod.Spec.Containers[i].Resources.Requests == nil {
-		patches = append(patches, getPatchInitializingEmptyResources(i))
+		patches = append(patches, GetPatchInitializingEmptyResources(i))
 	}
 
 	annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
@@ -96,23 +96,25 @@ func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_uti
 func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annotations []string, current core.ResourceList, containerIndex int, resources core.ResourceList, fieldName, resourceName string) ([]resource_admission.PatchRecord, []string) {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
-		patches = append(patches, getPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
+		patches = append(patches, GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
 	}
 	for resource, request := range resources {
-		patches = append(patches, getAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
+		patches = append(patches, GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
 		annotations = append(annotations, fmt.Sprintf("%s %s", resource, resourceName))
 	}
 	return patches, annotations
 }
 
-func getAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
+// GetAddResourceRequirementValuePatch returns a patch record to add resource requirements to a container.
+func GetAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
 		Value: quantity.String()}
 }
 
-func getPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
+// GetPatchInitializingEmptyResources returns a patch record to initialize an empty resources object for a container.
+func GetPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
@@ -120,7 +122,9 @@ func getPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
 	}
 }
 
-func getPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_admission.PatchRecord {
+// GetPatchInitializingEmptyResourcesSubfield returns a patch record to initialize an empty subfield
+// (e.g., "requests" or "limits") within a container's resources object.
+func GetPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
