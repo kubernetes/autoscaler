@@ -248,9 +248,6 @@ func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(context *context.
 
 // RemoveUnneededNodeGroups removes uneeded node groups
 func (p *MockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
-	if !context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-		return nil, nil
-	}
 	removedNodeGroups = make([]cloudprovider.NodeGroup, 0)
 	nodeGroups := context.CloudProvider.NodeGroups()
 	for _, nodeGroup := range nodeGroups {

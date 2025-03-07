@@ -826,7 +826,6 @@ func TestNoCreateNodeGroupMaxCoresLimitHit(t *testing.T) {
 	options := defaultOptions
 	options.MaxCoresTotal = 7
 	options.MaxMemoryTotal = 100000
-	options.NodeAutoprovisioningEnabled = true
 
 	largeNode := BuildTestNode("n", 8000, 8000)
 	SetNodeReadyState(largeNode, true, time.Time{})
@@ -1555,11 +1554,9 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		}, nil, []string{"T1"}, map[string]*framework.NodeInfo{"T1": ti1})
 
 	options := config.AutoscalingOptions{
-		EstimatorName:                    estimator.BinpackingEstimatorName,
-		MaxCoresTotal:                    5000 * 64,
-		MaxMemoryTotal:                   5000 * 64 * 20,
-		NodeAutoprovisioningEnabled:      true,
-		MaxAutoprovisionedNodeGroupCount: 10,
+		EstimatorName:  estimator.BinpackingEstimatorName,
+		MaxCoresTotal:  5000 * 64,
+		MaxMemoryTotal: 5000 * 64 * 20,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
@@ -1608,12 +1605,10 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 		}, nil, []string{"T1"}, map[string]*framework.NodeInfo{"T1": ti1})
 
 	options := config.AutoscalingOptions{
-		BalanceSimilarNodeGroups:         true,
-		EstimatorName:                    estimator.BinpackingEstimatorName,
-		MaxCoresTotal:                    5000 * 64,
-		MaxMemoryTotal:                   5000 * 64 * 20,
-		NodeAutoprovisioningEnabled:      true,
-		MaxAutoprovisionedNodeGroupCount: 10,
+		BalanceSimilarNodeGroups: true,
+		EstimatorName:            estimator.BinpackingEstimatorName,
+		MaxCoresTotal:            5000 * 64,
+		MaxMemoryTotal:           5000 * 64 * 20,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
@@ -1762,8 +1757,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 		}
 
 		options := config.AutoscalingOptions{
-			NodeAutoprovisioningEnabled: true,
-			AsyncNodeGroupsEnabled:      true,
+			AsyncNodeGroupsEnabled: true,
 		}
 		podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 		listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
