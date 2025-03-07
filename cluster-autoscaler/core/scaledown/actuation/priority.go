@@ -19,11 +19,8 @@ package actuation
 import (
 	"math"
 	"sort"
-	"strconv"
-	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/klog/v2"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 )
 
@@ -71,39 +68,6 @@ func groupIndex(pod *apiv1.Pod, groups []podEvictionGroup) int {
 		index--
 	}
 	return index
-}
-
-// ParseShutdownGracePeriodsAndPriorities parse priorityGracePeriodStr and returns an array of ShutdownGracePeriodByPodPriority if succeeded.
-// Otherwise, returns an empty list
-func ParseShutdownGracePeriodsAndPriorities(priorityGracePeriodStr string) []kubelet_config.ShutdownGracePeriodByPodPriority {
-	var priorityGracePeriodMap, emptyMap []kubelet_config.ShutdownGracePeriodByPodPriority
-
-	if priorityGracePeriodStr == "" {
-		return emptyMap
-	}
-	priorityGracePeriodStrArr := strings.Split(priorityGracePeriodStr, ",")
-	for _, item := range priorityGracePeriodStrArr {
-		priorityAndPeriod := strings.Split(item, ":")
-		if len(priorityAndPeriod) != 2 {
-			klog.Errorf("Parsing shutdown grace periods failed because '%s' is not a priority and grace period couple separated by ':'", item)
-			return emptyMap
-		}
-		priority, err := strconv.Atoi(priorityAndPeriod[0])
-		if err != nil {
-			klog.Errorf("Parsing shutdown grace periods and priorities failed: %v", err)
-			return emptyMap
-		}
-		shutDownGracePeriod, err := strconv.Atoi(priorityAndPeriod[1])
-		if err != nil {
-			klog.Errorf("Parsing shutdown grace periods and priorities failed: %v", err)
-			return emptyMap
-		}
-		priorityGracePeriodMap = append(priorityGracePeriodMap, kubelet_config.ShutdownGracePeriodByPodPriority{
-			Priority:                   int32(priority),
-			ShutdownGracePeriodSeconds: int64(shutDownGracePeriod),
-		})
-	}
-	return priorityGracePeriodMap
 }
 
 // SingleRuleDrainConfig returns an array of ShutdownGracePeriodByPodPriority with a single ShutdownGracePeriodByPodPriority

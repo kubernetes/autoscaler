@@ -28,7 +28,6 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -228,11 +227,7 @@ var (
 	checkCapacityProcessorInstance               = flag.String("check-capacity-processor-instance", "", "Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key \"processorInstance\" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.")
 
 	// Deprecated flags
-	_                                = flag.Bool("gce-expander-ephemeral-storage-support", true, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider (Deprecated, to be removed in 1.30+)")
-	ignoreTaintsFlag                 = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
-	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.This flag is deprecated and will be removed in future releases.")
-	maxEmptyBulkDeleteFlag           = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time. DEPRECATED: Use --max-scale-down-parallelism instead.")
-	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed.This flag is deprecated and will be removed in future releases.")
+	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
 )
 
 var autoscalingOptions *config.AutoscalingOptions
@@ -264,24 +259,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 
-	// in order to avoid inconsistent deletion thresholds for the legacy planner and the new actuator, the max-empty-bulk-delete,
-	// and max-scale-down-parallelism flags must be set to the same value.
-	if isFlagPassed("max-empty-bulk-delete") && !isFlagPassed("max-scale-down-parallelism") {
-		*maxScaleDownParallelismFlag = *maxEmptyBulkDeleteFlag
-		klog.Warning("The max-empty-bulk-delete flag will be deprecated in k8s version 1.29. Please use max-scale-down-parallelism instead.")
-		klog.Infof("Setting max-scale-down-parallelism to %d, based on the max-empty-bulk-delete value %d", *maxScaleDownParallelismFlag, *maxEmptyBulkDeleteFlag)
-	} else if !isFlagPassed("max-empty-bulk-delete") && isFlagPassed("max-scale-down-parallelism") {
-		*maxEmptyBulkDeleteFlag = *maxScaleDownParallelismFlag
-	}
-
-	if isFlagPassed("node-autoprovisioning-enabled") {
-		klog.Warning("The node-autoprovisioning-enabled flag is deprecated and will be removed in k8s version 1.31.")
-	}
-
-	if isFlagPassed("max-autoprovisioned-node-group-count") {
-		klog.Warning("The max-autoprovisioned-node-group-count flag is deprecated and will be removed in k8s version 1.31.")
-	}
-
 	var parsedSchedConfig *scheduler_config.KubeSchedulerConfiguration
 	// if scheduler config flag was set by the user
 	if pflag.CommandLine.Changed(config.SchedulerConfigFileFlag) {
@@ -297,7 +274,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 
 	var drainPriorityConfigMap []kubelet_config.ShutdownGracePeriodByPodPriority
 	if isFlagPassed("drain-priority-config") {
-		drainPriorityConfigMap = actuation.ParseShutdownGracePeriodsAndPriorities(*drainPriorityConfig)
+		drainPriorityConfigMap = parseShutdownGracePeriodsAndPriorities(*drainPriorityConfig)
 		if len(drainPriorityConfigMap) == 0 {
 			klog.Fatalf("Invalid configuration, parsing --drain-priority-config")
 		}
@@ -326,7 +303,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
 		MaxBulkSoftTaintCount:            *maxBulkSoftTaintCount,
 		MaxBulkSoftTaintTime:             *maxBulkSoftTaintTime,
-		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxPodEvictionTime:               *maxPodEvictionTime,
 		MaxNodesTotal:                    *maxNodesTotal,
@@ -353,8 +329,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:                  *namespace,
 		ClusterName:                      *clusterName,
-		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
-		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
 		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
@@ -522,4 +496,37 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 		Max:     maxVal,
 	}
 	return parsedGpuLimits, nil
+}
+
+// parseShutdownGracePeriodsAndPriorities parse priorityGracePeriodStr and returns an array of ShutdownGracePeriodByPodPriority if succeeded.
+// Otherwise, returns an empty list
+func parseShutdownGracePeriodsAndPriorities(priorityGracePeriodStr string) []kubelet_config.ShutdownGracePeriodByPodPriority {
+	var priorityGracePeriodMap, emptyMap []kubelet_config.ShutdownGracePeriodByPodPriority
+
+	if priorityGracePeriodStr == "" {
+		return emptyMap
+	}
+	priorityGracePeriodStrArr := strings.Split(priorityGracePeriodStr, ",")
+	for _, item := range priorityGracePeriodStrArr {
+		priorityAndPeriod := strings.Split(item, ":")
+		if len(priorityAndPeriod) != 2 {
+			klog.Errorf("Parsing shutdown grace periods failed because '%s' is not a priority and grace period couple separated by ':'", item)
+			return emptyMap
+		}
+		priority, err := strconv.Atoi(priorityAndPeriod[0])
+		if err != nil {
+			klog.Errorf("Parsing shutdown grace periods and priorities failed: %v", err)
+			return emptyMap
+		}
+		shutDownGracePeriod, err := strconv.Atoi(priorityAndPeriod[1])
+		if err != nil {
+			klog.Errorf("Parsing shutdown grace periods and priorities failed: %v", err)
+			return emptyMap
+		}
+		priorityGracePeriodMap = append(priorityGracePeriodMap, kubelet_config.ShutdownGracePeriodByPodPriority{
+			Priority:                   int32(priority),
+			ShutdownGracePeriodSeconds: int64(shutDownGracePeriod),
+		})
+	}
+	return priorityGracePeriodMap
 }
