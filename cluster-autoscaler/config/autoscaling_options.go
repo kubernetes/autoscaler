@@ -198,10 +198,6 @@ type AutoscalingOptions struct {
 	ConfigNamespace string
 	// ClusterName if available
 	ClusterName string
-	// NodeAutoprovisioningEnabled tells whether the node auto-provisioning is enabled for this cluster.
-	NodeAutoprovisioningEnabled bool
-	// MaxAutoprovisionedNodeGroupCount is the maximum number of autoprovisioned groups in the cluster.
-	MaxAutoprovisionedNodeGroupCount int
 	// UnremovableNodeRecheckTimeout is the timeout before we check again a node that couldn't be removed before
 	UnremovableNodeRecheckTimeout time.Duration
 	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale-up.

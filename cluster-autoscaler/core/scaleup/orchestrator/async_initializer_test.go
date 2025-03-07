@@ -67,8 +67,7 @@ func TestNodePoolAsyncInitialization(t *testing.T) {
 					return nil
 				}, nil)
 			options := config.AutoscalingOptions{
-				NodeAutoprovisioningEnabled: true,
-				AsyncNodeGroupsEnabled:      true,
+				AsyncNodeGroupsEnabled: true,
 			}
 			listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)

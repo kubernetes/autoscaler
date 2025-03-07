@@ -18,6 +18,7 @@ package main
 
 import (
 	ctx "context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -230,7 +231,6 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	}
 
 	// These metrics should be published only once.
-	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
