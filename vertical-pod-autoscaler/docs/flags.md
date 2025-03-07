@@ -135,6 +135,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `--eviction-rate-burst` | 1 |                                         Burst of pods that can be evicted. |
 | `--eviction-rate-limit` |  |                                       Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable |
 | `--eviction-tolerance` | 0.5 |                                        Fraction of replica count that can be evicted for update, if more than one pod can be evicted. |
+| `--feature-gates` |  |                                     A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: |
 | `--ignored-vpa-object-namespaces` |  |                            A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `--in-recommendation-bounds-eviction-lifetime-threshold` | 12h0m0s |   Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range |
 | `--kube-api-burst` | 10 |                                            QPS burst limit when making requests to Kubernetes apiserver |

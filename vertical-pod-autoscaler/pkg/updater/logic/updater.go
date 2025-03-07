@@ -43,6 +43,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
@@ -235,7 +236,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		vpaSize := len(livePods)
 		controlledPodsCounter.Add(vpaSize, vpaSize)
 		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods, vpa, u.patchCalculators)
-		podsForUpdate := u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
+		podsForUpdate := u.getPodsUpdateOrder(filterNonUpdatablePods(livePods, evictionLimiter), vpa)
 		evictablePodsCounter.Add(vpaSize, len(podsForUpdate))
 
 		withInPlaceUpdatable := false
@@ -243,20 +244,26 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withEvictable := false
 		withEvicted := false
 
+		logDisabledFeatureGate := false
+
 		for _, pod := range podsForUpdate {
 			if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlaceOrRecreate {
-				withInPlaceUpdatable = true
-				fallBackToEviction, err := u.AttemptInPlaceUpdate(ctx, vpa, pod, evictionLimiter)
-				if err != nil {
-					klog.V(0).InfoS("In-place update failed", "error", err, "pod", klog.KObj(pod))
-					return
-				}
-				if fallBackToEviction {
-					klog.V(4).InfoS("Falling back to eviction for pod", "pod", klog.KObj(pod))
+				if features.Enabled(features.InPlaceOrRecreate) {
+					withInPlaceUpdatable = true
+					fallBackToEviction, err := u.AttemptInPlaceUpdate(ctx, vpa, pod, evictionLimiter)
+					if err != nil {
+						klog.V(0).InfoS("In-place update failed", "error", err, "pod", klog.KObj(pod))
+						return
+					}
+					if fallBackToEviction {
+						klog.V(4).InfoS("Falling back to eviction for pod", "pod", klog.KObj(pod))
+					} else {
+						withInPlaceUpdated = true
+						metrics_updater.AddInPlaceUpdatedPod(vpaSize)
+						continue
+					}
 				} else {
-					withInPlaceUpdated = true
-					metrics_updater.AddInPlaceUpdatedPod(vpaSize)
-					continue
+					logDisabledFeatureGate = true
 				}
 			}
 
@@ -291,6 +298,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 		if withEvicted {
 			vpasWithEvictedPodsCounter.Add(vpaSize, 1)
 		}
+		if logDisabledFeatureGate {
+			klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
+		}
 	}
 	timer.ObserveStep("EvictPods")
 }
@@ -323,10 +333,10 @@ func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalP
 	return priorityCalculator.GetSortedPods(u.evictionAdmission)
 }
 
-func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriction eviction.PodsEvictionRestriction) []*apiv1.Pod {
+func filterNonUpdatablePods(pods []*apiv1.Pod, evictionRestriction eviction.PodsEvictionRestriction) []*apiv1.Pod {
 	result := make([]*apiv1.Pod, 0)
 	for _, pod := range pods {
-		if evictionRestriction.CanEvict(pod) {
+		if evictionRestriction.CanEvict(pod) || evictionRestriction.CanInPlaceUpdate(pod) {
 			result = append(result, pod)
 		}
 	}

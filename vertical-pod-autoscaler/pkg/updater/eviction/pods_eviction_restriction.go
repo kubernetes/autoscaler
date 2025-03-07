@@ -36,6 +36,7 @@ import (
 
 	resource_updates "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -433,6 +434,9 @@ func setUpInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 
 // CanInPlaceUpdate performs the same checks
 func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
+	if !features.Enabled(features.InPlaceOrRecreate) {
+		return false
+	}
 	cr, present := e.podToReplicaCreatorMap[GetPodID(pod)]
 	if present {
 		// If our QoS class is guaranteed, we can't change the resources without a restart
