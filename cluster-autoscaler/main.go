@@ -638,6 +638,14 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	stop := make(chan struct{})
 	informerFactory.Start(stop)
 
+	klog.Info("Initializing resource informers, blocking until caches are synced")
+	informersSynced := informerFactory.WaitForCacheSync(stop)
+	for _, synced := range informersSynced {
+		if !synced {
+			return nil, nil, fmt.Errorf("unable to start and sync resource informers")
+		}
+	}
+
 	podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
 
 	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
