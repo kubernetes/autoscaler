@@ -12,6 +12,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `--address` | ":8944" |                         The address to expose Prometheus metrics. |
 | `--alsologtostderr` |  |                        log to standard error as well as files (no effect when -logtostderr=true) |
 | `--client-ca-file` | "/etc/tls-certs/caCert.pem" |                  Path to CA PEM file. |
+| `--feature-gates` |  |            A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: |
 | `--ignored-vpa-object-namespaces` |  |   A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `--kube-api-burst` | 10 |                   QPS burst limit when making requests to Kubernetes apiserver |
 | `--kube-api-qps` | 5 |                     QPS limit when making requests to Kubernetes apiserver |
@@ -65,6 +66,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--cpu-integer-post-processor-enabled` |  |                     Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
 | `--external-metrics-cpu-metric` |  |                     ALPHA.  Metric to use with external metrics provider for CPU usage. |
 | `--external-metrics-memory-metric` |  |                  ALPHA.  Metric to use with external metrics provider for memory usage. |
+| `--feature-gates` |  |                            A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: |
 | `--history-length` | "8d" |                                  How much time back prometheus have to be queried to get historical metrics |
 | `--history-resolution` | "1h" |                              Resolution at which Prometheus is queried for historical metrics |
 | `--humanize-memory` |  |                                        Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
@@ -135,6 +137,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `--eviction-rate-burst` | 1 |                                         Burst of pods that can be evicted. |
 | `--eviction-rate-limit` |  |                                       Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable |
 | `--eviction-tolerance` | 0.5 |                                        Fraction of replica count that can be evicted for update, if more than one pod can be evicted. |
+| `--feature-gates` |  |                                     A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: |
 | `--ignored-vpa-object-namespaces` |  |                            A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `--in-recommendation-bounds-eviction-lifetime-threshold` | 12h0m0s |   Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range |
 | `--kube-api-burst` | 10 |                                            QPS burst limit when making requests to Kubernetes apiserver |
