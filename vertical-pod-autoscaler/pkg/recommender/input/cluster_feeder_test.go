@@ -25,6 +25,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/client-go/testing"
+	"k8s.io/klog/v2/ktesting"
 
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -637,9 +638,10 @@ func TestFilterVPAsIgnoreNamespaces(t *testing.T) {
 }
 
 func TestCanCleanupCheckpoints(t *testing.T) {
+	_, tctx := ktesting.NewTestContext(t)
 	client := fake.NewSimpleClientset()
 
-	_, err := client.CoreV1().Namespaces().Create(context.TODO(), &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "testNamespace"}}, metav1.CreateOptions{})
+	_, err := client.CoreV1().Namespaces().Create(tctx, &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "testNamespace"}}, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container").WithNamespace("testNamespace").WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
@@ -704,7 +706,7 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		recommenderName:     "default",
 	}
 
-	feeder.GarbageCollectCheckpoints()
+	feeder.GarbageCollectCheckpoints(tctx)
 
 	assert.Contains(t, deletedCheckpoints, "nonExistentVPA")
 

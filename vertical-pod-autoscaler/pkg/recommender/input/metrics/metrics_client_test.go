@@ -20,23 +20,26 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/klog/v2/ktesting"
 )
 
 func TestGetContainersMetricsReturnsEmptyList(t *testing.T) {
+	_, tctx := ktesting.NewTestContext(t)
 	tc := newEmptyMetricsClientTestCase()
 	emptyMetricsClient := tc.createFakeMetricsClient()
 
-	containerMetricsSnapshots, err := emptyMetricsClient.GetContainersMetrics()
+	containerMetricsSnapshots, err := emptyMetricsClient.GetContainersMetrics(tctx)
 
 	assert.NoError(t, err)
 	assert.Empty(t, containerMetricsSnapshots, "should be empty for empty MetricsGetter")
 }
 
 func TestGetContainersMetricsReturnsResults(t *testing.T) {
+	_, tctx := ktesting.NewTestContext(t)
 	tc := newMetricsClientTestCase()
 	fakeMetricsClient := tc.createFakeMetricsClient()
 
-	snapshots, err := fakeMetricsClient.GetContainersMetrics()
+	snapshots, err := fakeMetricsClient.GetContainersMetrics(tctx)
 
 	assert.NoError(t, err)
 	assert.Len(t, snapshots, len(tc.getAllSnaps()), "It should return right number of snapshots")
