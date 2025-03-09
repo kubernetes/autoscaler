@@ -26,7 +26,6 @@ import (
 	"golang.org/x/time/rate"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -39,7 +38,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
@@ -100,38 +98,6 @@ func NewUpdater(
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create eviction restriction factory: %v", err)
 	}
-
-	// for testing! {
-	vpa, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers("groundcover-erez").Get(context.Background(), "clickhouse-vpa5", metav1.GetOptions{})
-	if err != nil {
-		fmt.Println("Error getting VPA", err)
-		klog.ErrorS(err, "Cannot get VPA", "vpa", klog.KRef("vpa", "groundcover-erez/clickhouse-vpa5"))
-	} else {
-		vpa.Status.Conditions = []vpa_types.VerticalPodAutoscalerCondition{
-			{
-				Type:   vpa_types.RecommendationProvided,
-				Status: apiv1.ConditionTrue,
-			},
-		}
-		vpa.Status.Recommendation = &vpa_types.RecommendedPodResources{
-			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
-				{
-					ContainerName: "clickhouse",
-					Target: apiv1.ResourceList{
-						apiv1.ResourceCPU:    resource.MustParse("4"),
-						apiv1.ResourceMemory: resource.MustParse("4Gi"),
-					},
-				},
-			},
-		}
-
-		_, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers("groundcover-erez").UpdateStatus(context.Background(), vpa, metav1.UpdateOptions{})
-		if err != nil {
-			fmt.Println("Error updating VPA status", err)
-			klog.ErrorS(err, "Cannot update VPA status", "vpa", klog.KRef("vpa", "groundcover-erez/clickhouse-vpa5"))
-		}
-	}
-	// } for testing!
 
 	return &updater{
 		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
