@@ -36,7 +36,7 @@ import (
 var (
 	defaultUpdateThreshold = flag.Float64("pod-update-threshold", 0.1, "Ignore updates that have priority lower than the value of this flag")
 
-	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Minute*5, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
+	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Minute*30, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 
 	evictAfterOOMThreshold = flag.Duration("evict-after-oom-threshold", 10*time.Minute,
 		`Evict pod that has OOMed in less than evict-after-oom-threshold since start.`)
