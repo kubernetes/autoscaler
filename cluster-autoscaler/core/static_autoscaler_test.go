@@ -807,13 +807,11 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:                    estimator.BinpackingEstimatorName,
-		ScaleDownEnabled:                 true,
-		MaxNodesTotal:                    100,
-		MaxCoresTotal:                    100,
-		MaxMemoryTotal:                   100000,
-		NodeAutoprovisioningEnabled:      true,
-		MaxAutoprovisionedNodeGroupCount: 10,
+		EstimatorName:    estimator.BinpackingEstimatorName,
+		ScaleDownEnabled: true,
+		MaxNodesTotal:    100,
+		MaxCoresTotal:    100,
+		MaxMemoryTotal:   100000,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 

@@ -104,8 +104,6 @@ type AutoscalingOptions struct {
 	// NodeGroupDefaults are default values for per NodeGroup options.
 	// They will be used any time a specific value is not provided for a given NodeGroup.
 	NodeGroupDefaults NodeGroupAutoscalingOptions
-	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
-	MaxEmptyBulkDelete int
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
 	MaxNodesTotal int
 	// MaxCoresTotal sets the maximum number of cores in the whole cluster
@@ -198,10 +196,6 @@ type AutoscalingOptions struct {
 	ConfigNamespace string
 	// ClusterName if available
 	ClusterName string
-	// NodeAutoprovisioningEnabled tells whether the node auto-provisioning is enabled for this cluster.
-	NodeAutoprovisioningEnabled bool
-	// MaxAutoprovisionedNodeGroupCount is the maximum number of autoprovisioned groups in the cluster.
-	MaxAutoprovisionedNodeGroupCount int
 	// UnremovableNodeRecheckTimeout is the timeout before we check again a node that couldn't be removed before
 	UnremovableNodeRecheckTimeout time.Duration
 	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale-up.
@@ -318,6 +312,30 @@ type AutoscalingOptions struct {
 	// It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance.
 	// Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.
 	CheckCapacityProcessorInstance string
+	// MaxInactivityTime is the maximum duration without recorded autoscaler activity before it is considered unhealthy.
+	MaxInactivityTime time.Duration
+	// MaxFailingTime is the maximum duration without a successful autoscaler run before it is considered unhealthy.
+	MaxFailingTime time.Duration
+	// DebuggingSnapshotEnabled is used to enable/disable debugging snapshot creation.
+	DebuggingSnapshotEnabled bool
+	// EnableProfiling is debug/pprof endpoint enabled.
+	EnableProfiling bool
+	// Address is the address of an auxiliary endpoint exposing process information like metrics, health checks and profiling data.
+	Address string
+	// EmitPerNodeGroupMetrics is used to enable/disable emitting per node group metrics.
+	EmitPerNodeGroupMetrics bool
+	// FrequentLoopsEnabled is used to enable/disable frequent loops.
+	FrequentLoopsEnabled bool
+	// ScanInterval is how often cluster is reevaluated for scale up or down
+	ScanInterval time.Duration
+	// ForceDaemonSets is used to block scale-up of node groups too small for all suitable Daemon Sets pods.
+	ForceDaemonSets bool
+	// NodeInfoCacheExpireTime is the time after which the node info cache expires for each item, Default value is 10 years.
+	NodeInfoCacheExpireTime time.Duration
+	// ProactiveScaleupEnabled is used to enable/disable proactive scale up.
+	ProactiveScaleupEnabled bool
+	// PodInjectionLimit limits total number of pods while injecting fake pods.
+	PodInjectionLimit int
 }
 
 // KubeClientOptions specify options for kube client
