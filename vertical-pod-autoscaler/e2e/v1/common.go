@@ -53,6 +53,9 @@ const (
 	// VpaEvictionTimeout is a timeout for VPA to restart a pod if there are no
 	// mechanisms blocking it (for example PDB).
 	VpaEvictionTimeout = 3 * time.Minute
+	// VpaInPlaceTimeout is a timeout for the VPA to finish in-place resizing a
+	// pod, if there are no mechanisms blocking it.
+	VpaInPlaceTimeout = 2 * time.Minute
 
 	defaultHamsterReplicas     = int32(3)
 	defaultHamsterBackoffLimit = int32(10)
@@ -554,4 +557,55 @@ func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimi
 	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
 	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
 	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil, lrType)
+}
+
+// WaitForPodsUpdatedWithoutEviction waits for pods to be updated without any evictions taking place over the polling
+// interval.
+func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv1.PodList) error {
+	framework.Logf("waiting for at least one pod to be updated without eviction")
+	err := wait.PollUntilContextTimeout(context.TODO(), pollInterval, VpaInPlaceTimeout, false, func(context.Context) (bool, error) {
+		podList, err := GetHamsterPods(f)
+		if err != nil {
+			return false, err
+		}
+		resourcesHaveDiffered := false
+		podMissing := false
+		for _, initialPod := range initialPods.Items {
+			found := false
+			for _, pod := range podList.Items {
+				if initialPod.Name == pod.Name {
+					found = true
+					for num, container := range pod.Spec.Containers {
+						for resourceName, resourceLimit := range container.Resources.Limits {
+							initialResourceLimit := initialPod.Spec.Containers[num].Resources.Limits[resourceName]
+							if !resourceLimit.Equal(initialResourceLimit) {
+								framework.Logf("%s/%s: %s limit spec(%v) differs from initial limit spec(%v)", pod.Name, container.Name, resourceName, resourceLimit.String(), initialResourceLimit.String())
+								resourcesHaveDiffered = true
+							}
+						}
+						for resourceName, resourceRequest := range container.Resources.Requests {
+							initialResourceRequest := initialPod.Spec.Containers[num].Resources.Requests[resourceName]
+							if !resourceRequest.Equal(initialResourceRequest) {
+								framework.Logf("%s/%s: %s request spec(%v) differs from initial request spec(%v)", pod.Name, container.Name, resourceName, resourceRequest.String(), initialResourceRequest.String())
+								resourcesHaveDiffered = true
+							}
+						}
+					}
+				}
+			}
+			if !found {
+				podMissing = true
+			}
+		}
+		if podMissing {
+			return true, fmt.Errorf("a pod was erroneously evicted")
+		}
+		if resourcesHaveDiffered {
+			framework.Logf("after checking %d pods, resources have started to differ", len(podList.Items))
+			return true, nil
+		}
+		return false, nil
+	})
+	framework.Logf("finished waiting for at least one pod to be updated without eviction")
+	return err
 }
