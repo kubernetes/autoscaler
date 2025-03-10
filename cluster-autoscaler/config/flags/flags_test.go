@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package flags
 
 import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -89,5 +90,59 @@ func TestParseSingleGpuLimit(t *testing.T) {
 		} else {
 			assert.Equal(t, testcase.expectedLimits, limits)
 		}
+	}
+}
+
+func TestParseShutdownGracePeriodsAndPriorities(t *testing.T) {
+	testCases := []struct {
+		name  string
+		input string
+		want  []kubelet_config.ShutdownGracePeriodByPodPriority
+	}{
+		{
+			name:  "empty input",
+			input: "",
+			want:  nil,
+		},
+		{
+			name:  "Incorrect string - incorrect priority grace period pairs",
+			input: "1:2,34",
+			want:  nil,
+		},
+		{
+			name:  "Incorrect string - trailing ,",
+			input: "1:2, 3:4,",
+			want:  nil,
+		},
+		{
+			name:  "Incorrect string - trailing space",
+			input: "1:2,3:4 ",
+			want:  nil,
+		},
+		{
+			name:  "Non integers - 1",
+			input: "1:2,3:a",
+			want:  nil,
+		},
+		{
+			name:  "Non integers - 2",
+			input: "1:2,3:23.2",
+			want:  nil,
+		},
+		{
+			name:  "parsable input",
+			input: "1:2,3:4",
+			want: []kubelet_config.ShutdownGracePeriodByPodPriority{
+				{1, 2},
+				{3, 4},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			shutdownGracePeriodByPodPriority := parseShutdownGracePeriodsAndPriorities(tc.input)
+			assert.Equal(t, tc.want, shutdownGracePeriodByPodPriority)
+		})
 	}
 }
