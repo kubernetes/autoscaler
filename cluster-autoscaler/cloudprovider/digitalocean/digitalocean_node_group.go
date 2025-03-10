@@ -23,10 +23,13 @@ import (
 
 	"github.com/digitalocean/godo"
 	apiv1 "k8s.io/api/core/v1"
-
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	utilerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/kubernetes/pkg/util/taints"
 )
 
 const (
@@ -43,13 +46,13 @@ var (
 // configuration info and functions to control a set of nodes that have the
 // same capacity and set of labels.
 type NodeGroup struct {
-	id        string
-	clusterID string
-	client    nodeGroupClient
-	nodePool  *godo.KubernetesNodePool
-
-	minSize int
-	maxSize int
+	id               string
+	clusterID        string
+	client           nodeGroupClient
+	nodePool         *godo.KubernetesNodePool
+	nodePoolTemplate *godo.KubernetesNodePoolTemplateResponse
+	minSize          int
+	maxSize          int
 }
 
 // MaxSize returns maximum size of the node group.
@@ -213,7 +216,21 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
 func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	if n.nodePoolTemplate != nil {
+		// Template has already been populated from cache - convert to node info and return
+		tni, err := toNodeInfoTemplate(n.nodePoolTemplate)
+		if err != nil {
+			return nil, utilerrors.NewAutoscalerError(utilerrors.InternalError, err.Error())
+		}
+		return tni, nil
+	}
+
+	// No template present in cache - attempt to fetch from API
+	resp, _, err := n.client.GetNodePoolTemplate(context.TODO(), n.clusterID, n.nodePool.Name)
+	if err != nil {
+		return nil, utilerrors.NewAutoscalerError(utilerrors.InternalError, err.Error())
+	}
+	return toNodeInfoTemplate(resp)
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
@@ -291,4 +308,65 @@ func toInstanceStatus(nodeState *godo.KubernetesNodeStatus) *cloudprovider.Insta
 	}
 
 	return st
+}
+
+func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplateResponse) (*framework.NodeInfo, error) {
+	allocatable, err := parseToQuanitity(resp.Template.Allocatable.CPU, resp.Template.Allocatable.Pods, resp.Template.Allocatable.Memory)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create allocatable resources - %s", err)
+	}
+	capacity, err := parseToQuanitity(resp.Template.Capacity.CPU, resp.Template.Capacity.Pods, resp.Template.Capacity.Memory)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create capacity resources - %s", err)
+	}
+	addedTaints, _, err := taints.ParseTaints(resp.Template.Taints)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse taints from template - %s", err)
+	}
+	l := map[string]string{
+		apiv1.LabelOSStable:   cloudprovider.DefaultOS,
+		apiv1.LabelArchStable: cloudprovider.DefaultArch,
+	}
+
+	l = cloudprovider.JoinStringMaps(l, resp.Template.Labels)
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   generateWorkerName(resp.Name, 1),
+			Labels: l,
+		},
+		Spec: apiv1.NodeSpec{
+			Taints: addedTaints,
+		},
+		Status: apiv1.NodeStatus{
+			Allocatable: allocatable,
+			Capacity:    capacity,
+			Phase:       apiv1.NodeRunning,
+			Conditions:  cloudprovider.BuildReadyConditions(),
+		},
+	}
+	return framework.NewNodeInfo(node, nil), nil
+}
+
+func parseToQuanitity(cpu int64, pods int64, memory string) (apiv1.ResourceList, error) {
+	c := resource.NewQuantity(cpu, resource.DecimalSI)
+	p := resource.NewQuantity(pods, resource.DecimalSI)
+	m, err := resource.ParseQuantity(memory)
+	if err != nil {
+		return nil, err
+	}
+	return apiv1.ResourceList{
+		apiv1.ResourceCPU:    *c,
+		apiv1.ResourceMemory: m,
+		apiv1.ResourcePods:   *p,
+	}, nil
+}
+
+func generateWorkerName(poolName string, workerID int64) string {
+	var customAlphabet string = "n38uc7mqfyxojrbwgea6tl2ps5kh4ivd01z9"
+	var customAlphabetSize int64 = int64(len(customAlphabet))
+	s := ""
+	for ; workerID > 0; workerID = workerID / customAlphabetSize {
+		s = string(customAlphabet[workerID%customAlphabetSize]) + s
+	}
+	return fmt.Sprintf("%s-%s", poolName, s)
 }
