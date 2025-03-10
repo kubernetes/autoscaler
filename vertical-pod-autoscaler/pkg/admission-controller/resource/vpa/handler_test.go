@@ -33,74 +33,17 @@ const (
 )
 
 func TestValidateVPA(t *testing.T) {
-	badUpdateMode := vpa_types.UpdateMode("bad")
 	validUpdateMode := vpa_types.UpdateModeOff
-	badMinReplicas := int32(0)
 	validMinReplicas := int32(1)
 	badScalingMode := vpa_types.ContainerScalingMode("bad")
 	badCPUResource := resource.MustParse("187500u")
 	validScalingMode := vpa_types.ContainerScalingModeAuto
-	scalingModeOff := vpa_types.ContainerScalingModeOff
-	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	tests := []struct {
 		name        string
 		vpa         vpa_types.VerticalPodAutoscaler
 		isCreate    bool
 		expectError error
 	}{
-		{
-			name: "empty update",
-			vpa:  vpa_types.VerticalPodAutoscaler{},
-		},
-		{
-			name:        "empty create",
-			vpa:         vpa_types.VerticalPodAutoscaler{},
-			isCreate:    true,
-			expectError: fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1"),
-		},
-		{
-			name: "no update mode",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{},
-				},
-			},
-			expectError: fmt.Errorf("UpdateMode is required if UpdatePolicy is used"),
-		},
-		{
-			name: "bad update mode",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &badUpdateMode,
-					},
-				},
-			},
-			expectError: fmt.Errorf("unexpected UpdateMode value bad"),
-		},
-		{
-			name: "zero minReplicas",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						MinReplicas: &badMinReplicas,
-						UpdateMode:  &validUpdateMode,
-					},
-				},
-			},
-			expectError: fmt.Errorf("MinReplicas has to be positive, got 0"),
-		},
-		{
-			name: "no policy name",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					ResourcePolicy: &vpa_types.PodResourcePolicy{
-						ContainerPolicies: []vpa_types.ContainerResourcePolicy{{}},
-					},
-				},
-			},
-			expectError: fmt.Errorf("ContainerPolicies.ContainerName is required"),
-		},
 		{
 			name: "invalid scaling mode",
 			vpa: vpa_types.VerticalPodAutoscaler{
@@ -116,21 +59,6 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			expectError: fmt.Errorf("unexpected Mode value bad"),
-		},
-		{
-			name: "more than one recommender",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &validUpdateMode,
-					},
-					Recommenders: []*vpa_types.VerticalPodAutoscalerRecommenderSelector{
-						{Name: "test1"},
-						{Name: "test2"},
-					},
-				},
-			},
-			expectError: fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders."),
 		},
 		{
 			name: "bad limits",
@@ -236,23 +164,6 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			expectError: fmt.Errorf("MaxAllowed: Memory [%v] must be a whole number of bytes", resource.MustParse("500m")),
-		},
-		{
-			name: "scaling off with controlled values requests and limits",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					ResourcePolicy: &vpa_types.PodResourcePolicy{
-						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
-							{
-								ContainerName:    "loot box",
-								Mode:             &scalingModeOff,
-								ControlledValues: &controlledValuesRequestsAndLimits,
-							},
-						},
-					},
-				},
-			},
-			expectError: fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off."),
 		},
 		{
 			name: "all valid",

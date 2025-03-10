@@ -824,33 +824,121 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					"name":"hamster"
 				},
 		   	"resourcePolicy": {
-		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"cpu":"50m"}}]
+		  		"containerPolicies": [{"containerName": "hamster-vpa-valid", "minAllowed":{"cpu":"50m"}}]
 		  	}
 		  }
 		}`)
 		err := InstallRawVPA(f, validVPA)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Valid VPA object rejected")
-
 		ginkgo.By("Setting up invalid VPA object")
-		// The invalid object differs by name and minAllowed - there is an invalid "requests" field.
-		invalidVPA := []byte(`{
-			"kind": "VerticalPodAutoscaler",
-			"apiVersion": "autoscaling.k8s.io/v1",
-			"metadata": {"name": "hamster-vpa-invalid"},
-			"spec": {
-				"targetRef": {
-					"apiVersion": "apps/v1",
-					"kind": "Deployment",
-					"name":"hamster"
-				},
-		   	"resourcePolicy": {
-		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"requests":{"cpu":"50m"}}}]
-		  	}
-		  }
-		}`)
-		err2 := InstallRawVPA(f, invalidVPA)
-		gomega.Expect(err2).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
-		gomega.Expect(err2.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`))
+		invalidVPAs := map[string][]byte{
+			`spec\.resourcePolicy\.containerPolicies\[0\]\.containerName: Invalid value: "\*": spec\.resourcePolicy\.containerPolicies\[0\]\.containerName in body should match '^[a-zA-Z0-9-_]+$'`: []byte(`{
+				"kind": "VerticalPodAutoscaler",
+				"apiVersion": "autoscaling.k8s.io/v1",
+				"metadata": {"name": "basic-vpa"},
+				"spec": {
+					"targetRef": {
+						"apiVersion": "apps/v1",
+						"kind": "Deployment",
+						"name": "example-deployment"
+					},
+					"resourcePolicy": {
+						"containerPolicies": [{
+							"containerName": "*",
+							"mode": "Auto"
+						}]
+					},
+					"updatePolicy": {
+						"updateMode": "Auto"
+					}
+				}
+			}`),
+			`spec.resourcePolicy.containerPolicies[0].containerName: Invalid value: "string": ContainerName cannot be empty`: []byte(`{
+				"kind": "VerticalPodAutoscaler",
+				"apiVersion": "autoscaling.k8s.io/v1",
+				"metadata": {"name": "example-vpa-containername-empty"},
+				"spec": {
+					"targetRef": {
+						"apiVersion": "apps/v1",
+						"kind": "Deployment",
+						"name": "example-deployment"
+					},
+					"resourcePolicy": {
+						"containerPolicies": [{
+							"containerName": ""
+							"mode": "Auto",
+							"controlledResources": ["RequestsAndLimits"]
+						}]
+					},
+					"updatePolicy": {
+						"updateMode": "Recreate",
+						"minReplicas": 2
+					}
+				}
+			}`),
+			`spec.updatePolicy.minReplicas: Invalid value: -1: spec.updatePolicy.minReplicas in body should be greater than or equal to 1`: []byte(`{
+				"kind": "VerticalPodAutoscaler",
+				"apiVersion": "autoscaling.k8s.io/v1",
+				"metadata": {"name": "vpa-minreplicas-negative"},
+				"spec": {
+					"targetRef": {
+						"apiVersion": "apps/v1",
+						"kind": "Deployment",
+						"name": "nginx"
+					},
+					"resourcePolicy": {
+						"containerPolicies": [{
+							"containerName": "nginx",
+							"mode": "Auto",
+							"minAllowed": {
+								"memory": "200Mi"
+							},
+							"maxAllowed": {
+								"memory": "500Mi"
+							}
+						}]
+					},
+					"updatePolicy": {
+						"updateMode": "Auto",
+						"minReplicas": -1
+					}
+				}
+			}`),
+			`spec.updatePolicy.updateMode: Unsupported value: "InvalidMode": supported values: "Off", "Initial", "Recreate", "Auto"`: []byte(`{
+				"kind": "VerticalPodAutoscaler",
+				"apiVersion": "autoscaling.k8s.io/v1",
+				"metadata": {"name": "vpa-updatemode-invalid"},
+				"spec": {
+					"targetRef": {
+						"apiVersion": "apps/v1",
+						"kind": "Deployment",
+						"name": "nginx"
+					},
+					"resourcePolicy": {
+						"containerPolicies": [{
+							"containerName": "nginx",
+							"mode": "Auto",
+							"minAllowed": {
+								"memory": "200Mi"
+							},
+							"maxAllowed": {
+								"memory": "500Mi"
+							}
+						}]
+					},
+					"updatePolicy": {
+						"updateMode": "InvalidMode"
+					}
+				}
+			}`),
+		}
+
+		var err2 error
+		for regexExp, invalidVPA := range invalidVPAs {
+			err2 = InstallRawVPA(f, invalidVPA)
+			gomega.Expect(err2).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
+			gomega.Expect(err2.Error()).To(gomega.MatchRegexp(regexExp))
+		}
 	})
 
 	ginkgo.It("reloads the webhook leaf and CA certificate", func(ctx ginkgo.SpecContext) {
@@ -899,7 +987,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					"name":"hamster"
 				},
 		   	"resourcePolicy": {
-		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"requests":{"cpu":"50m"}}}]
+		  		"containerPolicies": [{"containerName": "cert-vpa-invalid", "minAllowed":{"requests":{"cpu":"50m"}}}]
 		  	}
 		  }
 		}`)
@@ -907,7 +995,6 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
 	})
-
 })
 
 func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) *apiv1.PodList {
