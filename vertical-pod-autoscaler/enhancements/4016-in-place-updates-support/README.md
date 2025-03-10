@@ -12,6 +12,8 @@
     - [In-Place Updates](#in-place-updates)
     - [Comparison of `UpdateMode`s](#comparison-of-updatemodes)
     - [Test Plan](#test-plan)
+    - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
+    - [Kubernetes version compatibility](#kubernetes-version-compatibility)
 - [Implementation History](#implementation-history)
 <!-- /toc -->
 
@@ -235,6 +237,28 @@ tested in the following scenarios:
 * In-place update will fail but `CanEvict` is false, pod should not be evicted.
 * In-place update will fail but `EvictionRequirements` are false, pod should not be evicted.
 
+### Upgrade / Downgrade Strategy
+
+#### Upgrade
+
+On upgrade of the VPA to 1.4.0 (tentative release version), nothing will change,
+VPAs will continue to work as before.
+
+Users can use the new `InPlaceOrRecreate` by enabling the alpha Feature Gate
+(defaults to off) and setting their VPA UpdateMode to use `InPlaceOrRecreate`.
+
+#### Downgrade
+
+On downgrade of VPA from 1.4.0 (tentative release version), nothing will change.
+VPAs will continue to work as previously, unless, the user had enabled the feature
+gate. In which case downgrade could break their VPA that uses `InPlaceOrRecreate`.
+
+### Kubernetes version compatibility
+
+`InPlaceOrRecreate` is being build assuming that the Kubernetes version is at least 1.33 with the beta
+version of [KEP-1287: In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287)
+enabled. Should these conditions not be true, the VPA shall fall back to `Recreate`.
+
 ### Details still to consider
 
 #### Careful with memory scale down
@@ -246,3 +270,4 @@ Needs more research on how to scale down on memory safely.
 
 - 2023-05-10: initial version
 - 2025-02-19: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
+- 2025-03-08: Add "Upgrade / Downgrade Strategy" and "Kubernetes version compatibility" sections
