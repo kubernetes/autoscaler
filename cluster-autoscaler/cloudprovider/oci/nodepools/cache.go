@@ -76,7 +76,9 @@ func (c *nodePoolCache) removeInstance(nodePoolID, instanceID string, nodeName s
 	if instanceID == "" {
 		klog.Errorf("Node %s doesn't have an instance id so it can't be deleted.", nodeName)
 		klog.Errorf("This could be due to a Compute Instance issue in OCI such as Out Of Host Capacity error. Check the instance status on OCI Console.")
-		return errors.Errorf("Node %s doesn't have an instance id so it can't be deleted.", nodeName)
+		// We silently fail here because returning an error will cause the cluster autoscaler to stop its reconciliation loop, preventing other
+		// node pools from autoscaling.
+		return nil
 	}
 
 	klog.Infof("Deleting instance %q from node pool %q", instanceID, nodePoolID)
