@@ -30,6 +30,8 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
+const podKind = "Pod"
+
 // Matcher is capable of returning a single matching VPA object
 // for a pod. Will return nil if no matching object is found.
 type Matcher interface {
@@ -76,16 +78,30 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.
 			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpaConfig))
 			continue
 		}
-		if vpaConfig.Spec.TargetRef.Kind != parentController.Kind ||
-			vpaConfig.Namespace != parentController.Namespace ||
-			vpaConfig.Spec.TargetRef.Name != parentController.Name {
+
+		if vpaConfig.Namespace != parentController.Namespace {
 			continue // This pod is not associated to the right controller
 		}
 
-		selector, err := m.selectorFetcher.Fetch(ctx, vpaConfig)
-		if err != nil {
-			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpaConfig), "error", err)
-			continue
+		var selector labels.Selector
+		if vpaConfig.Spec.TargetRef.Kind == podKind && vpaConfig.Spec.TargetRef.Name == pod.Name {
+			return vpaConfig
+		} else {
+			if vpaConfig.Spec.TargetRef.Name != parentController.Name {
+				klog.V(3).InfoS("Skipping VPA object because targetRef name does not match parent controller name", "vpa", klog.KObj(vpaConfig))
+				continue
+			}
+
+			if vpaConfig.Spec.TargetRef.Kind != parentController.Kind {
+				klog.V(3).InfoS("Skipping VPA object because targetRef kind does not match parent controller kind", "vpa", klog.KObj(vpaConfig))
+				continue
+			}
+
+			selector, err = m.selectorFetcher.Fetch(ctx, vpaConfig)
+			if err != nil {
+				klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpaConfig), "error", err)
+				continue
+			}
 		}
 
 		vpaWithSelector := &vpa_api_util.VpaWithSelector{Vpa: vpaConfig, Selector: selector}

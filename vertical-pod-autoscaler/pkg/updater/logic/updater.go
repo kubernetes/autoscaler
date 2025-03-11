@@ -51,6 +51,8 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
+const podKind = "Pod"
+
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
 type Updater interface {
 	// RunOnce represents single iteration in the main-loop of Updater
@@ -153,10 +155,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}
-		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
-		if err != nil {
-			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
-			continue
+
+		var selector labels.Selector
+		if vpa.Spec.TargetRef.Kind != podKind {
+			selector, err = u.selectorFetcher.Fetch(ctx, vpa)
+			if err != nil {
+				klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
+				continue
+			}
 		}
 
 		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
@@ -183,6 +189,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
+		podVpas := filterPodVpasByPodNameAndNamespace(vpaList, pod.Name, pod.Namespace)
+		if len(podVpas) > 0 {
+			for _, vpa := range podVpas {
+				controlledPods[vpa] = append(controlledPods[vpa], pod)
+			}
+			continue
+		}
+
 		controllingVPA := vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
@@ -291,6 +305,16 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 	for _, pod := range pods {
 		if pod.DeletionTimestamp == nil {
 			result = append(result, pod)
+		}
+	}
+	return result
+}
+
+func filterPodVpasByPodNameAndNamespace(vpas []*vpa_types.VerticalPodAutoscaler, podName, namespace string) []*vpa_types.VerticalPodAutoscaler {
+	result := make([]*vpa_types.VerticalPodAutoscaler, 0)
+	for _, vpa := range vpas {
+		if vpa.Spec.TargetRef != nil && vpa.Spec.TargetRef.Name == podName && vpa.Namespace == namespace {
+			result = append(result, vpa)
 		}
 	}
 	return result

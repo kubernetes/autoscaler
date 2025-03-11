@@ -89,6 +89,7 @@ const (
 	replicaSet            controllerKind = "ReplicaSet"
 	daemonSet             controllerKind = "DaemonSet"
 	job                   controllerKind = "Job"
+	pod                   controllerKind = "Pod"
 )
 
 type podReplicaCreator struct {
@@ -231,8 +232,8 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 		}
 
 		var configured int
-		if creator.Kind == job {
-			// Job has no replicas configuration, so we will use actual number of live pods as replicas count.
+		if creator.Kind == job || creator.Kind == pod {
+			// Job or pod has no replicas configuration, so we will use actual number of live pods as replicas count.
 			configured = actual
 		} else {
 			var err error

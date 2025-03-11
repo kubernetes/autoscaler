@@ -53,7 +53,7 @@ var (
 	updaterInterval = flag.Duration("updater-interval", 1*time.Minute,
 		`How often updater should run`)
 
-	minReplicas = flag.Int("min-replicas", 2,
+	minReplicas = flag.Int("min-replicas", 1,
 		`Minimum number of replicas to perform update`)
 
 	evictionToleranceFraction = flag.Float64("eviction-tolerance", 0.5,
