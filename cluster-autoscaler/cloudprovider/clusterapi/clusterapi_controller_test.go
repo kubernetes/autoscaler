@@ -18,7 +18,9 @@ package clusterapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"math/rand"
 	"path"
 	"reflect"
@@ -251,6 +253,39 @@ func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machin
 			}
 
 			return true, s, nil
+		case "patch":
+			action, ok := action.(clientgotesting.PatchAction)
+			if !ok {
+				return true, nil, fmt.Errorf("failed to convert Action to PatchAction: %T", action)
+			}
+
+			pt := action.GetPatchType()
+			if pt != types.MergePatchType {
+				return true, nil, fmt.Errorf("unexpected patch type: expected = %s, got = %s", types.MergePatchType, pt)
+			}
+
+			var scale autoscalingv1.Scale
+			err := json.Unmarshal(action.GetPatch(), &scale)
+			if err != nil {
+				return true, nil, fmt.Errorf("couldn't unmarshal patch: %w", err)
+			}
+
+			_, err = dynamicClientset.Resource(gvr).Namespace(action.GetNamespace()).Patch(context.TODO(), action.GetName(), pt, action.GetPatch(), metav1.PatchOptions{})
+			if err != nil {
+				return true, nil, err
+			}
+
+			newReplicas := scale.Spec.Replicas
+
+			return true, &autoscalingv1.Scale{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      action.GetName(),
+					Namespace: action.GetNamespace(),
+				},
+				Spec: autoscalingv1.ScaleSpec{
+					Replicas: newReplicas,
+				},
+			}, nil
 		default:
 			return true, nil, fmt.Errorf("unknown verb: %v", action.GetVerb())
 		}
