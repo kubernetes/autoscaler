@@ -38,125 +38,6 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
-	// TODO(jkyros): it should only evict here if the feature gate is off, so we need to
-	// check behavior by making sure it aligns with the feature gate. e.g. if it's on, then do this test, if it's not, then skip it
-
-	// 1. check if we have resize policies, if we do, do the test with in-place
-	// 2. if we don't, then do it the old way
-
-	ginkgo.It("In-place update pods when Admission Controller status available", func() {
-		const statusUpdateInterval = 10 * time.Second
-
-		ginkgo.By("Setting up the Admission Controller status")
-		stopCh := make(chan struct{})
-		statusUpdater := status.NewUpdater(
-			f.ClientSet,
-			status.AdmissionControllerStatusName,
-			status.AdmissionControllerStatusNamespace,
-			statusUpdateInterval,
-			"e2e test",
-		)
-		defer func() {
-			// Schedule a cleanup of the Admission Controller status.
-			// Status is created outside the test namespace.
-			ginkgo.By("Deleting the Admission Controller status")
-			close(stopCh)
-			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
-				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
-			gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		}()
-		statusUpdater.Run(stopCh)
-
-		podList := setupPodsForUpscalingInPlace(f)
-		if len(podList.Items[0].Spec.Containers[0].ResizePolicy) <= 0 {
-			// Feature is probably not working here
-			ginkgo.Skip("Skipping test, InPlacePodVerticalScaling not available")
-		}
-
-		initialPods := podList.DeepCopy()
-		// 1. Take initial pod list
-		// 2. Loop through and compare all the resource values
-		// 3. When they change, it's good
-
-		ginkgo.By("Waiting for pods to be in-place updated")
-
-		//gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		// TODO(maxcao13): I don't think we need this much complexity for checking inplace, but I won't remove it for now
-		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	})
-
-	ginkgo.It("Does not evict pods for downscaling in-place", func() {
-		const statusUpdateInterval = 10 * time.Second
-
-		ginkgo.By("Setting up the Admission Controller status")
-		stopCh := make(chan struct{})
-		statusUpdater := status.NewUpdater(
-			f.ClientSet,
-			status.AdmissionControllerStatusName,
-			status.AdmissionControllerStatusNamespace,
-			statusUpdateInterval,
-			"e2e test",
-		)
-		defer func() {
-			// Schedule a cleanup of the Admission Controller status.
-			// Status is created outside the test namespace.
-			ginkgo.By("Deleting the Admission Controller status")
-			close(stopCh)
-			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
-				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
-			gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		}()
-		statusUpdater.Run(stopCh)
-
-		podList := setupPodsForDownscalingInPlace(f, nil)
-		if len(podList.Items[0].Spec.Containers[0].ResizePolicy) <= 0 {
-			// Feature is probably not working here
-			ginkgo.Skip("Skipping test, InPlacePodVerticalScaling not available")
-		}
-		initialPods := podList.DeepCopy()
-
-		ginkgo.By("Waiting for pods to be in-place downscaled")
-		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	})
-
-	ginkgo.It("does not in-place update pods when there is no recommendation", func() {
-		const statusUpdateInterval = 10 * time.Second
-
-		ginkgo.By("Setting up the Admission Controller status")
-		stopCh := make(chan struct{})
-		statusUpdater := status.NewUpdater(
-			f.ClientSet,
-			status.AdmissionControllerStatusName,
-			status.AdmissionControllerStatusNamespace,
-			statusUpdateInterval,
-			"e2e test",
-		)
-		defer func() {
-			// Schedule a cleanup of the Admission Controller status.
-			// Status is created outside the test namespace.
-			ginkgo.By("Deleting the Admission Controller status")
-			close(stopCh)
-			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
-				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
-			gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		}()
-		statusUpdater.Run(stopCh)
-
-		podList := setupPodsForUpscalingWithoutRecommendation(f)
-		if len(podList.Items[0].Spec.Containers[0].ResizePolicy) <= 0 {
-			// Feature is probably not working here
-			ginkgo.Skip("Skipping test, InPlacePodVerticalScaling not available")
-		}
-
-		updatedPodList, err := GetHamsterPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		for _, pod := range updatedPodList.Items {
-			gomega.Expect(getCPURequest(pod.Spec)).To(gomega.Equal(ParseQuantityOrDie("100m")))
-		}
-	})
-
 	ginkgo.It("evicts pods when Admission Controller status available", func() {
 		const statusUpdateInterval = 10 * time.Second
 
@@ -256,6 +137,82 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
+})
+
+var _ = UpdaterE2eDescribe("InPlaceOrRecreate", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		checkInPlaceOrRecreateTestsEnabled(f)
+	})
+
+	ginkgo.It("In-place update pods when Admission Controller status available", func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			status.AdmissionControllerStatusNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForUpscalingInPlace(f)
+
+		initialPods := podList.DeepCopy()
+		// 1. Take initial pod list
+		// 2. Loop through and compare all the resource values
+		// 3. When they change, it's good
+
+		ginkgo.By("Waiting for pods to be in-place updated")
+
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("Does not evict pods for downscaling in-place", func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			status.AdmissionControllerStatusNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForDownscalingInPlace(f, nil)
+		initialPods := podList.DeepCopy()
+
+		ginkgo.By("Waiting for pods to be in-place downscaled")
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
 

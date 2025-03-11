@@ -20,6 +20,7 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 BASE_NAME=$(basename $0)
+FEATURE_GATES=${FEATURE_GATES:-""}
 source "${SCRIPT_ROOT}/hack/lib/util.sh"
 
 ARCH=$(kube::util::host_arch)
@@ -99,3 +100,16 @@ for i in ${COMPONENTS}; do
      REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl apply -f -
   fi
 done
+
+# TODO: come up with some sort of plan for feature gate enablement e2e testing purposes
+# only applies to updater for now
+
+# --feature-gates A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:
+# InPlaceOrRecreate=true|false (BETA - default=false)
+if [ -n "${FEATURE_GATES}" ]; then
+  echo "Enabling feature gates: ${FEATURE_GATES}"
+  kubectl -n kube-system patch deployment vpa-updater --type=json \
+  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args", "value": [
+    --feature-gates='"${FEATURE_GATES}"'
+  ]}]'
+fi

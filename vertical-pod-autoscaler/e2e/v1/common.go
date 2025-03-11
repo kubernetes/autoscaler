@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -36,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -59,6 +61,9 @@ const (
 
 	defaultHamsterReplicas     = int32(3)
 	defaultHamsterBackoffLimit = int32(10)
+
+	// VpaNamespace is the default namespace that holds the all the VPA components.
+	VpaNamespace = "kube-system"
 )
 
 var hamsterTargetRef = &autoscaling.CrossVersionObjectReference{
@@ -608,4 +613,43 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 	})
 	framework.Logf("finished waiting for at least one pod to be updated without eviction")
 	return err
+}
+
+// checkInPlaceOrRecreateTestsEnabled check for enabled feature gates in the cluster used for the
+// InPlaceOrRecreate VPA feature.
+// Use this in a "beforeEach" call before any suites that use InPlaceOrRecreate featuregate.
+func checkInPlaceOrRecreateTestsEnabled(f *framework.Framework) {
+	ginkgo.By("Checking InPlacePodVerticalScaling cluster feature gate is on")
+
+	podList, err := f.ClientSet.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	apiServerPod := podList.Items[0]
+	gomega.Expect(apiServerPod.Spec.Containers).To(gomega.HaveLen(1))
+	apiServerContainer := apiServerPod.Spec.Containers[0]
+	gomega.Expect(apiServerContainer.Name).To(gomega.Equal("kube-apiserver"))
+	if !anyContainsSubstring(apiServerContainer.Command, "InPlacePodVerticalScaling") {
+		ginkgo.Skip("Skipping suite: InPlacePodVerticalScaling feature gate is not enabled on the cluster level")
+	}
+
+	ginkgo.By("Checking InPlaceOrRecreate VPA feature gate is on")
+
+	deploy, err := f.ClientSet.AppsV1().Deployments(VpaNamespace).Get(context.TODO(), "vpa-updater", metav1.GetOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(deploy.Spec.Template.Spec.Containers).To(gomega.HaveLen(1))
+	vpaUpdaterPod := deploy.Spec.Template.Spec.Containers[0]
+	gomega.Expect(vpaUpdaterPod.Name).To(gomega.Equal("updater"))
+	if !anyContainsSubstring(vpaUpdaterPod.Args, string(features.InPlaceOrRecreate)) {
+		ginkgo.Skip("Skipping suite: InPlaceOrRecreate feature gate is not enabled on the VPA level")
+	}
+}
+
+func anyContainsSubstring(arr []string, substr string) bool {
+	for _, s := range arr {
+		if strings.Contains(s, substr) {
+			return true
+		}
+	}
+	return false
 }
