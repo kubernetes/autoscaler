@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/utils/clock"
 
 	corescheme "k8s.io/client-go/kubernetes/scheme"
 	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -84,6 +85,7 @@ type updater struct {
 	controllerFetcher               controllerfetcher.ControllerFetcher
 	ignoredNamespaces               []string
 	patchCalculators                []patch.Calculator
+	clock                           clock.Clock
 	lastInPlaceUpdateAttemptTimeMap map[string]time.Time
 }
 
@@ -130,6 +132,7 @@ func NewUpdater(
 		),
 		ignoredNamespaces:               ignoredNamespaces,
 		patchCalculators:                patchCalculators,
+		clock:                           &clock.RealClock{},
 		lastInPlaceUpdateAttemptTimeMap: make(map[string]time.Time),
 	}, nil
 }
@@ -386,6 +389,7 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 
 func (u *updater) AttemptInPlaceUpdate(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler, pod *apiv1.Pod, evictionLimiter eviction.PodsEvictionRestriction) (fallBackToEviction bool, err error) {
 	klog.V(4).InfoS("Checking preconditions for attemping in-place update", "pod", klog.KObj(pod))
+	clock := u.clock
 	if !evictionLimiter.CanInPlaceUpdate(pod) {
 		if pod.Status.QOSClass == apiv1.PodQOSGuaranteed {
 			klog.V(4).InfoS("Can't resize pod in-place due to QOSClass change, falling back to eviction", "pod", klog.KObj(pod), "qosClass", pod.Status.QOSClass)
@@ -395,9 +399,10 @@ func (u *updater) AttemptInPlaceUpdate(ctx context.Context, vpa *vpa_types.Verti
 			lastInPlaceUpdateTime, exists := u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)]
 			if !exists {
 				klog.V(4).InfoS("In-place update in progress for pod but no lastInPlaceUpdateTime found, setting it to now", "pod", klog.KObj(pod))
-				lastInPlaceUpdateTime = time.Now()
+				lastInPlaceUpdateTime = clock.Now()
 				u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)] = lastInPlaceUpdateTime
 			}
+
 			// TODO(maxcao13): fix this after 1.33 KEP changes
 			// if currently inPlaceUpdating, we should only fallback to eviction if the update has failed. i.e: one of the following conditions:
 			// 1. .status.resize: Infeasible
@@ -405,14 +410,14 @@ func (u *updater) AttemptInPlaceUpdate(ctx context.Context, vpa *vpa_types.Verti
 			// 3. .status.resize: InProgress + more than 1 hour has elapsed since the lastInPlaceUpdateTime
 			switch pod.Status.Resize {
 			case apiv1.PodResizeStatusDeferred:
-				if time.Since(lastInPlaceUpdateTime) > DeferredResizeUpdateTimeout {
+				if clock.Since(lastInPlaceUpdateTime) > DeferredResizeUpdateTimeout {
 					klog.V(4).InfoS(fmt.Sprintf("In-place update deferred for more than %v, falling back to eviction", DeferredResizeUpdateTimeout), "pod", klog.KObj(pod))
 					fallBackToEviction = true
 				} else {
 					klog.V(4).InfoS("In-place update deferred, NOT falling back to eviction yet", "pod", klog.KObj(pod))
 				}
 			case apiv1.PodResizeStatusInProgress:
-				if time.Since(lastInPlaceUpdateTime) > InProgressResizeUpdateTimeout {
+				if clock.Since(lastInPlaceUpdateTime) > InProgressResizeUpdateTimeout {
 					klog.V(4).InfoS(fmt.Sprintf("In-place update in progress for more than %v, falling back to eviction", InProgressResizeUpdateTimeout), "pod", klog.KObj(pod))
 					fallBackToEviction = true
 				} else {
@@ -439,7 +444,7 @@ func (u *updater) AttemptInPlaceUpdate(ctx context.Context, vpa *vpa_types.Verti
 	}
 
 	klog.V(2).InfoS("Actuating in-place update", "pod", klog.KObj(pod))
-	u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)] = time.Now()
+	u.lastInPlaceUpdateAttemptTimeMap[eviction.GetPodID(pod)] = u.clock.Now()
 	err = evictionLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
 	return false, err
 }
