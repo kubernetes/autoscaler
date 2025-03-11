@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"regexp"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/pointer"
-	"os"
-	"regexp"
-	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -335,68 +335,7 @@ func (driver *Driver) controllerTests() {
 			})
 		})
 	})
-	Describe("testing targeted scale-down done using priority annotation", func() {
-		Context("when more than one machines have priority 1 in the same nodegrp", func() {
-			It("should scale-down correct node and reset priorities of the rest to 3", func() {
-				By("Deploying a workload A")
-				Expect(driver.deployWorkload(int32(1), scaleUpWorkload+"-a", workerWithOneZone, false)).To(BeNil())
-				By("Validating Scale up, node A should join soon")
-				Eventually(
-					driver.targetCluster.getNumberOfReadyNodes,
-					pollingTimeout,
-					pollingInterval).
-					Should(BeNumerically("==", initialNumberOfNodes+1))
 
-				By("Setting priority annotation with value 1 on the machine obj for node A")
-				mcdList, err := driver.controlCluster.MCMClient.MachineV1alpha1().MachineDeployments(controlClusterNamespace).List(context.TODO(), metav1.ListOptions{})
-				Expect(err).To(BeNil())
-
-				var mcdName string
-				for _, mcd := range mcdList.Items {
-					if strings.Contains(mcd.Name, workerWithOneZone) {
-						mcdName = mcd.Name
-						break
-					}
-				}
-
-				mcList, err := driver.controlCluster.MCMClient.MachineV1alpha1().Machines(controlClusterNamespace).List(context.TODO(), metav1.ListOptions{
-					LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{mcdNameLabel: mcdName}})})
-				Expect(err).To(BeNil())
-
-				clone := mcList.Items[0].DeepCopy()
-				clone.Annotations[mcmPriorityAnnotation] = "1"
-				_, err = driver.controlCluster.MCMClient.MachineV1alpha1().Machines(controlClusterNamespace).Update(context.TODO(), clone, metav1.UpdateOptions{})
-				Expect(err).To(BeNil())
-
-				By("Deploying another workload B")
-				Expect(driver.deployWorkload(int32(1), scaleUpWorkload+"-b", workerWithOneZone, false)).To(BeNil())
-				By("Validating Scale up, node B should join soon")
-				Eventually(
-					driver.targetCluster.getNumberOfReadyNodes,
-					pollingTimeout,
-					pollingInterval).
-					Should(BeNumerically("==", initialNumberOfNodes+2))
-
-				By("Scaling down workload B to zero...")
-				Expect(driver.scaleWorkload(scaleUpWorkload+"-b", 0)).To(BeNil())
-
-				By("Validating Scale down due to under-utilization")
-				Eventually(
-					driver.targetCluster.getNumberOfReadyNodes,
-					pollingTimeout,
-					pollingInterval).
-					Should(BeNumerically("==", initialNumberOfNodes+1))
-
-				By("Checking that the node A is not removed and it's priority is set to 3")
-				mc, err := driver.controlCluster.MCMClient.MachineV1alpha1().Machines(controlClusterNamespace).Get(context.TODO(), clone.Name, metav1.GetOptions{})
-				Expect(err).Should(BeNil())
-				Expect(mc.Annotations[mcmPriorityAnnotation]).To(Equal("3"))
-
-				// For AfterCheck function to clean up the workload, set flag as true
-				flag = true
-			})
-		})
-	})
 	Describe("testing CA behaviour when MCM is offline", func() {
 		Context("When the available replicas of MCM are zero.", func() {
 			It("The CA should suspend it's operations as long as MCM is offline", func() {

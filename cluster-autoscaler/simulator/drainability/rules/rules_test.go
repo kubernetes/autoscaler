@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 func TestDrainable(t *testing.T) {
@@ -111,7 +112,7 @@ func TestDrainable(t *testing.T) {
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {
-			got := tc.rules.Drainable(nil, &apiv1.Pod{})
+			got := tc.rules.Drainable(nil, &apiv1.Pod{}, nil)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Drainable(): got status diff (-want +got):\n%s", diff)
 			}
@@ -127,6 +128,6 @@ func (r fakeRule) Name() string {
 	return "FakeRule"
 }
 
-func (r fakeRule) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {
+func (r fakeRule) Drainable(*drainability.DrainContext, *apiv1.Pod, *framework.NodeInfo) drainability.Status {
 	return r.status
 }

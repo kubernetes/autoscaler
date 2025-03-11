@@ -347,13 +347,14 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
 		kubeEnvCache:                     map[GceRef]KubeEnv{},
 		migBaseNameCache:                 map[GceRef]string{},
+		migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
 	}
 	migLister := NewMigLister(cache)
 	manager := &gceManagerImpl{
 		cache:                  cache,
 		migLister:              migLister,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second),
+		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second, false),
 		GceService:             gceService,
 		projectId:              projectId,
 		regional:               regional,

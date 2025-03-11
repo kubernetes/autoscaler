@@ -8,9 +8,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"k8s.io/klog/v2"
 	"sync"
 	"time"
+
+	"k8s.io/klog/v2"
 
 	fakeuntyped "github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/fake"
 	apipolicyv1beta1 "k8s.io/api/policy/v1beta1"
@@ -52,7 +53,7 @@ func (t *FakeObjectTracker) Add(obj runtime.Object) error {
 }
 
 // Get receives a get event with the object
-func (t *FakeObjectTracker) Get(gvr schema.GroupVersionResource, ns, name string) (runtime.Object, error) {
+func (t *FakeObjectTracker) Get(gvr schema.GroupVersionResource, ns, name string, getOps ...metav1.GetOptions) (runtime.Object, error) {
 	var err error
 	if t.fakingOptions.failAll != nil {
 		err = t.fakingOptions.failAll.RunFakeInvocations()
@@ -75,16 +76,21 @@ func (t *FakeObjectTracker) Get(gvr schema.GroupVersionResource, ns, name string
 		}
 	}
 
-	return t.delegatee.Get(gvr, ns, name)
+	return t.delegatee.Get(gvr, ns, name, getOps...)
 }
 
 // Create receives a create event with the object. Not needed for CA.
-func (t *FakeObjectTracker) Create(gvr schema.GroupVersionResource, obj runtime.Object, ns string) error {
+func (t *FakeObjectTracker) Create(gvr schema.GroupVersionResource, obj runtime.Object, ns string, createOps ...metav1.CreateOptions) error {
 	return nil
 }
 
-// Update receives an update event with the object
-func (t *FakeObjectTracker) Update(gvr schema.GroupVersionResource, obj runtime.Object, ns string) error {
+// Apply receives an apply event with the object. Not needed for CA.
+func (t *FakeObjectTracker) Apply(gvr schema.GroupVersionResource, obj runtime.Object, ns string, patchOps ...metav1.PatchOptions) error {
+	return nil
+}
+
+// Patch receives a patch event with the object. Not needed for CA.
+func (t *FakeObjectTracker) Patch(gvr schema.GroupVersionResource, obj runtime.Object, ns string, patchOps ...metav1.PatchOptions) error {
 	var err error
 	if t.fakingOptions.failAll != nil {
 		err = t.fakingOptions.failAll.RunFakeInvocations()
@@ -104,7 +110,45 @@ func (t *FakeObjectTracker) Update(gvr schema.GroupVersionResource, obj runtime.
 			return err
 		}
 	}
-	err = t.delegatee.Update(gvr, obj, ns)
+	err = t.delegatee.Patch(gvr, obj, ns, patchOps...)
+	if err != nil {
+		return err
+	}
+
+	if t.FakeWatcher == nil {
+		return errors.New("error sending event on a tracker with no watch support")
+	}
+
+	if t.IsStopped() {
+		return errors.New("error sending event on a stopped tracker")
+	}
+
+	t.FakeWatcher.Modify(obj)
+	return nil
+}
+
+// Update receives an update event with the object
+func (t *FakeObjectTracker) Update(gvr schema.GroupVersionResource, obj runtime.Object, ns string, updateOps ...metav1.UpdateOptions) error {
+	var err error
+	if t.fakingOptions.failAll != nil {
+		err = t.fakingOptions.failAll.RunFakeInvocations()
+		if err != nil {
+			return err
+		}
+	}
+	if t.fakingOptions.failAt != nil {
+		if gvr.Resource == "nodes" {
+			err = t.fakingOptions.failAt.Node.Update.RunFakeInvocations()
+		} else if gvr.Resource == "machines" {
+			err = t.fakingOptions.failAt.Machine.Update.RunFakeInvocations()
+		} else if gvr.Resource == "machinedeployments" {
+			err = t.fakingOptions.failAt.MachineDeployment.Update.RunFakeInvocations()
+		}
+		if err != nil {
+			return err
+		}
+	}
+	err = t.delegatee.Update(gvr, obj, ns, updateOps...)
 	if err != nil {
 		return err
 	}
@@ -122,30 +166,30 @@ func (t *FakeObjectTracker) Update(gvr schema.GroupVersionResource, obj runtime.
 }
 
 // List receives a list event with the object
-func (t *FakeObjectTracker) List(gvr schema.GroupVersionResource, gvk schema.GroupVersionKind, ns string) (runtime.Object, error) {
+func (t *FakeObjectTracker) List(gvr schema.GroupVersionResource, gvk schema.GroupVersionKind, ns string, listOps ...metav1.ListOptions) (runtime.Object, error) {
 	if t.fakingOptions.failAll != nil {
 		err := t.fakingOptions.failAll.RunFakeInvocations()
 		if err != nil {
 			return nil, err
 		}
 	}
-	return t.delegatee.List(gvr, gvk, ns)
+	return t.delegatee.List(gvr, gvk, ns, listOps...)
 }
 
 // Delete receives an delete event with the object. Not needed for CA.
-func (t *FakeObjectTracker) Delete(gvr schema.GroupVersionResource, ns, name string) error {
+func (t *FakeObjectTracker) Delete(gvr schema.GroupVersionResource, ns, name string, deleteOps ...metav1.DeleteOptions) error {
 	return nil
 }
 
 // Watch receives a watch event with the object
-func (t *FakeObjectTracker) Watch(gvr schema.GroupVersionResource, name string) (watch.Interface, error) {
+func (t *FakeObjectTracker) Watch(gvr schema.GroupVersionResource, name string, listOps ...metav1.ListOptions) (watch.Interface, error) {
 	if t.fakingOptions.failAll != nil {
 		err := t.fakingOptions.failAll.RunFakeInvocations()
 		if err != nil {
 			return nil, err
 		}
 	}
-	return t.delegatee.Watch(gvr, name)
+	return t.delegatee.Watch(gvr, name, listOps...)
 }
 
 func (t *FakeObjectTracker) watchReactionFunc(action k8stesting.Action) (bool, watch.Interface, error) {

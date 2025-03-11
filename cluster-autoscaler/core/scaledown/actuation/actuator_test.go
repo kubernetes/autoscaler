@@ -42,6 +42,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -1152,7 +1153,7 @@ func TestStartDeletion(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Couldn't set up autoscaling context: %v", err)
 				}
-				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 				for _, bucket := range emptyNodeGroupViews {
 					for _, node := range bucket.Nodes {
 						err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
@@ -1425,7 +1426,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 			scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
 			scaleStateNotifier.Register(csr)
 			ndt := deletiontracker.NewNodeDeletionTracker(0)

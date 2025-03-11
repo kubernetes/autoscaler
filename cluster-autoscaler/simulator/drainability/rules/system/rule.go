@@ -22,6 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Rule is a drainability rule on how to handle system pods.
@@ -38,7 +39,7 @@ func (r *Rule) Name() string {
 }
 
 // Drainable decides what to do with system pods on node drain.
-func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, _ *framework.NodeInfo) drainability.Status {
 	if pod.Namespace == "kube-system" && len(drainCtx.RemainingPdbTracker.MatchingPdbs(pod)) == 0 {
 		return drainability.NewBlockedStatus(drain.UnmovableKubeSystemPod, fmt.Errorf("non-daemonset, non-mirrored, non-pdb-assigned kube-system pod present: %s", pod.Name))
 	}

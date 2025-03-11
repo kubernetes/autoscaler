@@ -22,7 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -73,14 +73,14 @@ func (o *checkCapacityProvClass) Provision(
 	if len(unschedulablePods) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
-	pr, err := provreqclient.ProvisioningRequestForPods(o.client, unschedulablePods)
-	if err != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, err.Error()))
-	}
-	if pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
+
+	prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
+	prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity)
+	if len(prs) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
-
+	// Pick 1 ProvisioningRequest.
+	pr := prs[0]
 	o.context.ClusterSnapshot.Fork()
 	defer o.context.ClusterSnapshot.Revert()
 
@@ -99,10 +99,10 @@ func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, p
 	capacityAvailable = true
 	st, _, err := o.injector.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 	if len(st) < len(unschedulablePods) || err != nil {
-		conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
+		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
 		capacityAvailable = false
 	} else {
-		conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
+		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
 	}
 	_, updErr := o.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
 	if updErr != nil {

@@ -24,7 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -49,63 +49,49 @@ func TestFetchPodTemplates(t *testing.T) {
 	}
 }
 
-func TestProvisioningRequestForPods(t *testing.T) {
-	checkCapacityProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "check-capacity", "1m", "100", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
+func TestProvisioningRequestsForPods(t *testing.T) {
+	checkCapacityProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "check-capacity", "1m", "100", "", int32(100), false, time.Now(), v1.ProvisioningClassCheckCapacity)
 	customProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "custom", "1m", "100", "", int32(100), false, time.Now(), "custom")
 	checkCapacityPods, _ := pods.PodsForProvisioningRequest(checkCapacityProvReq)
 	customProvReqPods, _ := pods.PodsForProvisioningRequest(customProvReq)
 	regularPod := BuildTestPod("p1", 600, 100)
 	client := NewFakeProvisioningRequestClient(context.Background(), t, checkCapacityProvReq, customProvReq)
 	testCases := []struct {
-		name      string
-		pods      []*apiv1.Pod
-		className string
-		err       bool
-		pr        *provreqwrapper.ProvisioningRequest
+		name string
+		pods []*apiv1.Pod
+		err  bool
+		prs  []*provreqwrapper.ProvisioningRequest
 	}{
 		{
-			name:      "no pods",
-			pods:      []*apiv1.Pod{},
-			className: "some-class",
-			err:       true,
+			name: "no pods",
+			pods: []*apiv1.Pod{},
 		},
 		{
-			name:      "pods from one Provisioning Class",
-			pods:      checkCapacityPods,
-			className: v1beta1.ProvisioningClassCheckCapacity,
-			pr:        checkCapacityProvReq,
+			name: "pods from one Provisioning Class",
+			pods: checkCapacityPods,
+			prs:  []*provreqwrapper.ProvisioningRequest{checkCapacityProvReq},
 		},
 		{
-			name:      "pods from different Provisioning Classes",
-			pods:      append(checkCapacityPods, customProvReqPods...),
-			className: v1beta1.ProvisioningClassCheckCapacity,
-			err:       true,
+			name: "pods from different Provisioning Classes",
+			pods: append(checkCapacityPods, customProvReqPods...),
+			prs:  []*provreqwrapper.ProvisioningRequest{checkCapacityProvReq, customProvReq},
 		},
 		{
-			name:      "regular pod",
-			pods:      []*apiv1.Pod{regularPod},
-			className: v1beta1.ProvisioningClassCheckCapacity,
-			err:       true,
+			name: "regular pod",
+			pods: []*apiv1.Pod{regularPod},
 		},
 		{
-			name:      "provreq pods and regular pod",
-			pods:      append(checkCapacityPods, regularPod),
-			className: v1beta1.ProvisioningClassCheckCapacity,
-			err:       true,
+			name: "provreq pods and regular pod",
+			pods: append(checkCapacityPods, regularPod),
+			prs:  []*provreqwrapper.ProvisioningRequest{checkCapacityProvReq},
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			pr, err := ProvisioningRequestForPods(client, tc.pods)
-			if tc.err {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, pr, tc.pr)
-				assert.Equal(t, pr.Spec.ProvisioningClassName, tc.className)
-			}
+			got := ProvisioningRequestsForPods(client, tc.pods)
+			assert.ElementsMatch(t, got, tc.prs)
 		})
 	}
 }

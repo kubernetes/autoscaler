@@ -30,6 +30,16 @@ const AzureNodepoolLabel = "kubernetes.azure.com/agentpool"
 // AzureDiskTopologyKey is the topology key of Azure Disk CSI driver
 const AzureDiskTopologyKey = "topology.disk.csi.azure.com/zone"
 
+// Those labels are added on the VMSS and shouldn't affect nodepool similarity
+const aksEngineVersionLabel = "aksEngineVersion"
+const creationSource = "creationSource"
+const poolName = "poolName"
+const resourceNameSuffix = "resourceNameSuffix"
+const aksConsolidatedAdditionalProperties = "kubernetes.azure.com/consolidated-additional-properties"
+
+// AKS node image version
+const aksNodeImageVersion = "kubernetes.azure.com/node-image-version"
+
 func nodesFromSameAzureNodePool(n1, n2 *schedulerframework.NodeInfo) bool {
 	n1AzureNodePool := n1.Node().Labels[AzureNodepoolLabel]
 	n2AzureNodePool := n2.Node().Labels[AzureNodepoolLabel]
@@ -53,6 +63,13 @@ func CreateAzureNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config
 	azureIgnoredLabels[AzureNodepoolLegacyLabel] = true
 	azureIgnoredLabels[AzureNodepoolLabel] = true
 	azureIgnoredLabels[AzureDiskTopologyKey] = true
+	azureIgnoredLabels[aksEngineVersionLabel] = true
+	azureIgnoredLabels[creationSource] = true
+	azureIgnoredLabels[poolName] = true
+	azureIgnoredLabels[resourceNameSuffix] = true
+	azureIgnoredLabels[aksNodeImageVersion] = true
+	azureIgnoredLabels[aksConsolidatedAdditionalProperties] = true
+
 	for _, k := range extraIgnoredLabels {
 		azureIgnoredLabels[k] = true
 	}

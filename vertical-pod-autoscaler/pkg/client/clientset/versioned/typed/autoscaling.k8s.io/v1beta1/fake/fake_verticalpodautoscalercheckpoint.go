@@ -23,7 +23,6 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
@@ -36,9 +35,9 @@ type FakeVerticalPodAutoscalerCheckpoints struct {
 	ns   string
 }
 
-var verticalpodautoscalercheckpointsResource = schema.GroupVersionResource{Group: "autoscaling.k8s.io", Version: "v1beta1", Resource: "verticalpodautoscalercheckpoints"}
+var verticalpodautoscalercheckpointsResource = v1beta1.SchemeGroupVersion.WithResource("verticalpodautoscalercheckpoints")
 
-var verticalpodautoscalercheckpointsKind = schema.GroupVersionKind{Group: "autoscaling.k8s.io", Version: "v1beta1", Kind: "VerticalPodAutoscalerCheckpoint"}
+var verticalpodautoscalercheckpointsKind = v1beta1.SchemeGroupVersion.WithKind("VerticalPodAutoscalerCheckpoint")
 
 // Get takes name of the verticalPodAutoscalerCheckpoint, and returns the corresponding verticalPodAutoscalerCheckpoint object, and an error if there is any.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
@@ -105,7 +104,7 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) Update(ctx context.Context, verti
 // Delete takes name of the verticalPodAutoscalerCheckpoint and deletes it. Returns an error if one occurs.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(verticalpodautoscalercheckpointsResource, c.ns, name), &v1beta1.VerticalPodAutoscalerCheckpoint{})
+		Invokes(testing.NewDeleteActionWithOptions(verticalpodautoscalercheckpointsResource, c.ns, name, opts), &v1beta1.VerticalPodAutoscalerCheckpoint{})
 
 	return err
 }

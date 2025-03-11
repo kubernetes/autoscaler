@@ -32,9 +32,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
 	"github.com/spf13/pflag"
@@ -57,6 +59,9 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/podinjection"
+	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
@@ -178,8 +183,9 @@ var (
 		"node-group-auto-discovery",
 		"One or more definition(s) of node group auto-discovery. "+
 			"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
-			"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
+			"The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
 			"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
+			"Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`. "+
 			"Can be used multiple times.")
 
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
@@ -198,6 +204,7 @@ var (
 	writeStatusConfigMapFlag         = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
 	statusConfigMapName              = flag.String("status-config-map-name", "cluster-autoscaler-status", "Status configmap name")
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
+	maxBinpackingTimeFlag            = flag.Duration("max-binpacking-time", 5*time.Minute, "Maximum time spend on binpacking for a single scale-up. If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed.This flag is deprecated and will be removed in future releases.")
@@ -216,10 +223,10 @@ var (
 	awsUseStaticInstanceList  = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
 
 	// GCE specific flags
-	concurrentGceRefreshes            = flag.Int("gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
-	gceMigInstancesMinRefreshWaitTime = flag.Duration("gce-mig-instances-min-refresh-wait-time", 5*time.Second, "The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.")
-	_                                 = flag.Bool("gce-expander-ephemeral-storage-support", true, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider (Deprecated, to be removed in 1.30+)")
-
+	concurrentGceRefreshes             = flag.Int("gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
+	gceMigInstancesMinRefreshWaitTime  = flag.Duration("gce-mig-instances-min-refresh-wait-time", 5*time.Second, "The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.")
+	_                                  = flag.Bool("gce-expander-ephemeral-storage-support", true, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider (Deprecated, to be removed in 1.30+)")
+	bulkGceMigInstancesListingEnabled  = flag.Bool("bulk-mig-instances-listing-enabled", false, "Fetch GCE mig instances in bulk instead of per mig")
 	enableProfiling                    = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
 	clusterAPICloudConfigAuthoritative = flag.Bool("clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
 	cordonNodeBeforeTerminate          = flag.Bool("cordon-node-before-terminating", false, "Should CA cordon nodes before terminating during downscale process")
@@ -261,6 +268,9 @@ var (
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
 	provisioningRequestsEnabled = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
 	frequentLoopsEnabled        = flag.Bool("frequent-loops-enabled", false, "Whether clusterautoscaler triggers new iterations more frequently when it's needed")
+	asyncNodeGroupsEnabled      = flag.Bool("async-node-groups", false, "Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk.")
+	proactiveScaleupEnabled     = flag.Bool("enable-proactive-scaleup", false, "Whether to enable/disable proactive scale-ups, defaults to false")
+	podInjectionLimit           = flag.Int("pod-injection-limit", 5000, "Limits total number of pods while injecting fake pods. If unschedulable pods already exceeds the limit, pod injection is disabled but pods are not truncated.")
 )
 
 func isFlagPassed(name string) bool {
@@ -404,6 +414,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			ConcurrentRefreshes:            *concurrentGceRefreshes,
 			MigInstancesMinRefreshWaitTime: *gceMigInstancesMinRefreshWaitTime,
 			LocalSSDDiskSizeProvider:       localssdsize.NewSimpleLocalSSDProvider(),
+			BulkMigInstancesListingEnabled: *bulkGceMigInstancesListingEnabled,
 		},
 		ClusterAPICloudConfigAuthoritative: *clusterAPICloudConfigAuthoritative,
 		CordonNodeBeforeTerminate:          *cordonNodeBeforeTerminate,
@@ -418,6 +429,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		RecordDuplicatedEvents:             *recordDuplicatedEvents,
 		MaxNodesPerScaleUp:                 *maxNodesPerScaleUp,
 		MaxNodeGroupBinpackingDuration:     *maxNodeGroupBinpackingDuration,
+		MaxBinpackingTime:                  *maxBinpackingTimeFlag,
 		NodeDeletionBatcherInterval:        *nodeDeletionBatcherInterval,
 		SkipNodesWithSystemPods:            *skipNodesWithSystemPods,
 		SkipNodesWithLocalStorage:          *skipNodesWithLocalStorage,
@@ -434,6 +446,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		DynamicNodeDeleteDelayAfterTaintEnabled: *dynamicNodeDeleteDelayAfterTaintEnabled,
 		BypassedSchedulers:                      scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
 		ProvisioningRequestEnabled:              *provisioningRequestsEnabled,
+		AsyncNodeGroupsEnabled:                  *asyncNodeGroupsEnabled,
 	}
 }
 
@@ -490,24 +503,24 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
-	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
+	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker, scheduling.ScheduleAnywhere)
 
 	if autoscalingOptions.ProvisioningRequestEnabled {
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
 
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		provreqOrchestrator, err := provreqorchestrator.New(restConfig)
-		if err != nil {
-			return nil, err
-		}
-		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
-
-		opts.ScaleUpOrchestrator = scaleUpOrchestrator
 		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
 		if err != nil {
 			return nil, err
 		}
-		provreqProcesor := provreq.NewCombinedProvReqProcessor(client, []provreq.ProvisioningRequestProcessor{checkcapacity.NewCheckCapacityProcessor(client)})
+		provreqOrchestrator := provreqorchestrator.New(client, []provreqorchestrator.ProvisioningClass{
+			checkcapacity.New(client),
+			besteffortatomic.New(client),
+		})
+		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
+
+		opts.ScaleUpOrchestrator = scaleUpOrchestrator
+		provreqProcesor := provreq.NewProvReqProcessor(client, opts.PredicateChecker)
 		if err != nil {
 			return nil, err
 		}
@@ -517,7 +530,22 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 			return nil, err
 		}
 		podListProcessor.AddProcessor(injector)
+		podListProcessor.AddProcessor(provreqProcesor)
 	}
+
+	if *proactiveScaleupEnabled {
+		podInjectionBackoffRegistry := podinjectionbackoff.NewFakePodControllerRegistry()
+
+		podInjectionPodListProcessor := podinjection.NewPodInjectionPodListProcessor(podInjectionBackoffRegistry)
+		enforceInjectedPodsLimitProcessor := podinjection.NewEnforceInjectedPodsLimitProcessor(*podInjectionLimit)
+
+		podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{podInjectionPodListProcessor, podListProcessor, enforceInjectedPodsLimitProcessor})
+
+		// FakePodsScaleUpStatusProcessor processor needs to be the first processor in ScaleUpStatusProcessor as it filters out fake pods from
+		// Scale Up status so that we don't emit events.
+		opts.Processors.ScaleUpStatusProcessor = podinjection.NewFakePodsScaleUpStatusProcessor(podInjectionBackoffRegistry)
+	}
+
 	opts.Processors.PodListProcessor = podListProcessor
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
 	if autoscalingOptions.ParallelDrain {

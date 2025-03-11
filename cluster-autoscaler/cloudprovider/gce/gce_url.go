@@ -18,38 +18,55 @@ package gce
 
 import (
 	"fmt"
+	"net/url"
+	"path"
 	"regexp"
-	"strings"
 )
 
 const (
-	projectsSubstring = "/projects/"
-	defaultDomainUrl  = "https://www.googleapis.com/compute/v1"
+	projectsSubstring  = "/projects/"
+	defaultDomainUrl   = "https://www.googleapis.com/compute/v1"
+	anyHttpsUrlPattern = "https://.*/"
 )
 
 // ParseMigUrl expects url in format:
-// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroups/<name>
+// https://.*/projects/<project-id>/zones/<zone>/instanceGroups/<name>
 func ParseMigUrl(url string) (project string, zone string, name string, err error) {
-	return parseGceUrl(url, "instanceGroups")
+	return parseGceUrl(anyHttpsUrlPattern, url, "instanceGroups")
 }
 
 // ParseIgmUrl expects url in format:
-// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
+// https://.*/<project-id>/zones/<zone>/instanceGroupManagers/<name>
 func ParseIgmUrl(url string) (project string, zone string, name string, err error) {
-	return parseGceUrl(url, "instanceGroupManagers")
+	return parseGceUrl(anyHttpsUrlPattern, url, "instanceGroupManagers")
+}
+
+// ParseIgmUrlRef expects url in format:
+// projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
+// and returns a GceRef struct for it.
+func ParseIgmUrlRef(url string) (GceRef, error) {
+	project, zone, name, err := parseGceUrl("", url, "instanceGroupManagers")
+	if err != nil {
+		return GceRef{}, err
+	}
+	return GceRef{
+		Project: project,
+		Zone:    zone,
+		Name:    name,
+	}, nil
 }
 
 // ParseInstanceUrl expects url in format:
-// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
+// https://.*/<project-id>/zones/<zone>/instances/<name>
 func ParseInstanceUrl(url string) (project string, zone string, name string, err error) {
-	return parseGceUrl(url, "instances")
+	return parseGceUrl(anyHttpsUrlPattern, url, "instances")
 }
 
 // ParseInstanceUrlRef expects url in format:
-// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
+// https://.*/projects/<project-id>/zones/<zone>/instances/<name>
 // and returns a GceRef struct for it.
 func ParseInstanceUrlRef(url string) (GceRef, error) {
-	project, zone, name, err := parseGceUrl(url, "instances")
+	project, zone, name, err := parseGceUrl(anyHttpsUrlPattern, url, "instances")
 	if err != nil {
 		return GceRef{}, err
 	}
@@ -83,15 +100,31 @@ func IsInstanceTemplateRegional(templateUrl string) (bool, error) {
 	return regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl)
 }
 
-func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
-	reg := regexp.MustCompile(fmt.Sprintf("https://.*/projects/.*/zones/.*/%s/.*", expectedResource))
-	errMsg := fmt.Errorf("wrong url: expected format <url>/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
+// InstanceTemplateNameFromUrl retrieves name of the Instance Template from the url.
+func InstanceTemplateNameFromUrl(instanceTemplateLink string) (InstanceTemplateName, error) {
+	templateUrl, err := url.Parse(instanceTemplateLink)
+	if err != nil {
+		return InstanceTemplateName{}, err
+	}
+	regional, err := IsInstanceTemplateRegional(templateUrl.String())
+	if err != nil {
+		return InstanceTemplateName{}, err
+	}
+
+	_, templateName := path.Split(templateUrl.EscapedPath())
+	return InstanceTemplateName{templateName, regional}, nil
+}
+
+func parseGceUrl(prefix, url, expectedResource string) (project string, zone string, name string, err error) {
+	reg := regexp.MustCompile(fmt.Sprintf("%sprojects/.*/zones/.*/%s/.*", prefix, expectedResource))
+	errMsg := fmt.Errorf("wrong url: expected format %sprojects/<project-id>/zones/<zone>/%s/<name>, got %s", prefix, expectedResource, url)
 	if !reg.MatchString(url) {
 		return "", "", "", errMsg
 	}
-	splitted := strings.Split(strings.Split(url, projectsSubstring)[1], "/")
-	project = splitted[0]
-	zone = splitted[2]
-	name = splitted[4]
+
+	subMatches := regexp.MustCompile(fmt.Sprintf("%sprojects/(.*)/zones/(.*)/%s/(.*)", prefix, expectedResource)).FindStringSubmatch(url)
+	project = subMatches[1]
+	zone = subMatches[2]
+	name = subMatches[3]
 	return project, zone, name, nil
 }

@@ -19,15 +19,23 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+	"strings"
 	"time"
 
-	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
-
+	"github.com/spf13/pflag"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
-	klog "k8s.io/klog/v2"
+	componentbaseconfig "k8s.io/component-base/config"
+	componentbaseoptions "k8s.io/component-base/config/options"
+	"k8s.io/klog/v2"
+	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
@@ -39,7 +47,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
@@ -59,20 +67,21 @@ var (
 
 	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	// prometheus history provider configs
-	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
-	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
-	queryTimeout        = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
-	podLabelPrefix      = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
-	podLabelsMetricName = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
-	podNamespaceLabel   = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for pod namespaces`)
-	podNameLabel        = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for pod names`)
-	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container namespaces`)
-	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
-	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
-	vpaObjectNamespace  = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
-	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
-	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
-	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+	historyLength              = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
+	historyResolution          = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
+	queryTimeout               = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
+	podLabelPrefix             = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
+	podLabelsMetricName        = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
+	podNamespaceLabel          = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for pod namespaces`)
+	podNameLabel               = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for pod names`)
+	ctrNamespaceLabel          = flag.String("container-namespace-label", "namespace", `Label name to look for container namespaces`)
+	ctrPodNameLabel            = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
+	ctrNameLabel               = flag.String("container-name-label", "name", `Label name to look for container names`)
+	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used. Must not be used if ignored-vpa-object-namespaces is set.")
+	ignoredVpaObjectNamespaces = flag.String("ignored-vpa-object-namespaces", "", "Comma separated list of namespaces to ignore. Must not be used if vpa-object-namespace is used.")
+	username                   = flag.String("username", "", "The username used in the prometheus server basic auth")
+	password                   = flag.String("password", "", "The password used in the prometheus server basic auth")
+	memorySaver                = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
 	// external metrics provider config
 	useExternalMetrics   = flag.Bool("use-external-metrics", false, "ALPHA.  Use an external metrics provider instead of metrics_server.")
 	externalCpuMetric    = flag.String("external-metrics-cpu-metric", "", "ALPHA.  Metric to use with external metrics provider for CPU usage.")
@@ -107,9 +116,85 @@ const (
 
 func main() {
 	klog.InitFlags(nil)
+
+	leaderElection := defaultLeaderElectionConfiguration()
+	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender: %v", common.VerticalPodAutoscalerVersion, *recommenderName)
 
+	if len(*vpaObjectNamespace) > 0 && len(*ignoredVpaObjectNamespaces) > 0 {
+		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+	}
+
+	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
+	metrics.Initialize(*address, healthCheck)
+	metrics_recommender.Register()
+	metrics_quality.Register()
+
+	if !leaderElection.LeaderElect {
+		run(healthCheck)
+	} else {
+		id, err := os.Hostname()
+		if err != nil {
+			klog.Fatalf("Unable to get hostname: %v", err)
+		}
+		id = id + "_" + string(uuid.NewUUID())
+
+		config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
+		kubeClient := kube_client.NewForConfigOrDie(config)
+
+		lock, err := resourcelock.New(
+			leaderElection.ResourceLock,
+			leaderElection.ResourceNamespace,
+			leaderElection.ResourceName,
+			kubeClient.CoreV1(),
+			kubeClient.CoordinationV1(),
+			resourcelock.ResourceLockConfig{
+				Identity: id,
+			},
+		)
+		if err != nil {
+			klog.Fatalf("Unable to create leader election lock: %v", err)
+		}
+
+		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
+			Lock:            lock,
+			LeaseDuration:   leaderElection.LeaseDuration.Duration,
+			RenewDeadline:   leaderElection.RenewDeadline.Duration,
+			RetryPeriod:     leaderElection.RetryPeriod.Duration,
+			ReleaseOnCancel: true,
+			Callbacks: leaderelection.LeaderCallbacks{
+				OnStartedLeading: func(_ context.Context) {
+					run(healthCheck)
+				},
+				OnStoppedLeading: func() {
+					klog.Fatal("lost master")
+				},
+			},
+		})
+	}
+}
+
+const (
+	defaultLeaseDuration = 15 * time.Second
+	defaultRenewDeadline = 10 * time.Second
+	defaultRetryPeriod   = 2 * time.Second
+)
+
+func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+	return componentbaseconfig.LeaderElectionConfiguration{
+		LeaderElect:       false,
+		LeaseDuration:     metav1.Duration{Duration: defaultLeaseDuration},
+		RenewDeadline:     metav1.Duration{Duration: defaultRenewDeadline},
+		RetryPeriod:       metav1.Duration{Duration: defaultRetryPeriod},
+		ResourceLock:      resourcelock.LeasesResourceLock,
+		ResourceName:      "vpa-recommender",
+		ResourceNamespace: metav1.NamespaceSystem,
+	}
+}
+
+func run(healthCheck *metrics.HealthCheck) {
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
@@ -118,11 +203,6 @@ func main() {
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, *vpaObjectNamespace)
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
-
-	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
-	metrics.Initialize(*address, healthCheck)
-	metrics_recommender.Register()
-	metrics_quality.Register()
 
 	useCheckpoints := *storage != "prometheus"
 
@@ -150,6 +230,8 @@ func main() {
 		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(config))
 	}
 
+	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
+
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
@@ -162,6 +244,7 @@ func main() {
 		MemorySaveMode:      *memorySaver,
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,
+		IgnoredNamespaces:   ignoredNamespaces,
 	}.Make()
 	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
 
@@ -210,6 +293,9 @@ func main() {
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
+
+	// Start updating health check endpoint.
+	healthCheck.StartMonitoring()
 
 	ticker := time.Tick(*metricsFetcherInterval)
 	for range ticker {

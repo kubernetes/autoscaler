@@ -20,12 +20,20 @@ import (
 	"context"
 	"flag"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/spf13/pflag"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
+	componentbaseconfig "k8s.io/component-base/config"
+	componentbaseoptions "k8s.io/component-base/config/options"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
@@ -65,8 +73,9 @@ var (
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
 
-	namespace          = os.Getenv("NAMESPACE")
-	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
+	namespace                  = os.Getenv("NAMESPACE")
+	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used. Must not be used if ignored-vpa-object-namespaces is set.")
+	ignoredVpaObjectNamespaces = flag.String("ignored-vpa-object-namespaces", "", "Comma separated list of namespaces to ignore. Must not be used if vpa-object-namespace is used.")
 )
 
 const (
@@ -78,13 +87,84 @@ const (
 
 func main() {
 	klog.InitFlags(nil)
+
+	leaderElection := defaultLeaderElectionConfiguration()
+	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
 
-	healthCheck := metrics.NewHealthCheck(*updaterInterval*5, true)
+	if len(*vpaObjectNamespace) > 0 && len(*ignoredVpaObjectNamespaces) > 0 {
+		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+	}
+
+	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
 	metrics.Initialize(*address, healthCheck)
 	metrics_updater.Register()
 
+	if !leaderElection.LeaderElect {
+		run(healthCheck)
+	} else {
+		id, err := os.Hostname()
+		if err != nil {
+			klog.Fatalf("Unable to get hostname: %v", err)
+		}
+		id = id + "_" + string(uuid.NewUUID())
+
+		config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
+		kubeClient := kube_client.NewForConfigOrDie(config)
+
+		lock, err := resourcelock.New(
+			leaderElection.ResourceLock,
+			leaderElection.ResourceNamespace,
+			leaderElection.ResourceName,
+			kubeClient.CoreV1(),
+			kubeClient.CoordinationV1(),
+			resourcelock.ResourceLockConfig{
+				Identity: id,
+			},
+		)
+		if err != nil {
+			klog.Fatalf("Unable to create leader election lock: %v", err)
+		}
+
+		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
+			Lock:            lock,
+			LeaseDuration:   leaderElection.LeaseDuration.Duration,
+			RenewDeadline:   leaderElection.RenewDeadline.Duration,
+			RetryPeriod:     leaderElection.RetryPeriod.Duration,
+			ReleaseOnCancel: true,
+			Callbacks: leaderelection.LeaderCallbacks{
+				OnStartedLeading: func(_ context.Context) {
+					run(healthCheck)
+				},
+				OnStoppedLeading: func() {
+					klog.Fatal("lost master")
+				},
+			},
+		})
+	}
+}
+
+const (
+	defaultLeaseDuration = 15 * time.Second
+	defaultRenewDeadline = 10 * time.Second
+	defaultRetryPeriod   = 2 * time.Second
+)
+
+func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+	return componentbaseconfig.LeaderElectionConfiguration{
+		LeaderElect:       false,
+		LeaseDuration:     metav1.Duration{Duration: defaultLeaseDuration},
+		RenewDeadline:     metav1.Duration{Duration: defaultRenewDeadline},
+		RetryPeriod:       metav1.Duration{Duration: defaultRetryPeriod},
+		ResourceLock:      resourcelock.LeasesResourceLock,
+		ResourceName:      "vpa-updater",
+		ResourceNamespace: metav1.NamespaceSystem,
+	}
+}
+
+func run(healthCheck *metrics.HealthCheck) {
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
@@ -101,6 +181,9 @@ func main() {
 	if namespace != "" {
 		admissionControllerStatusNamespace = namespace
 	}
+
+	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
+
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
@@ -117,10 +200,15 @@ func main() {
 		controllerFetcher,
 		priority.NewProcessor(),
 		*vpaObjectNamespace,
+		ignoredNamespaces,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
 	}
+
+	// Start updating health check endpoint.
+	healthCheck.StartMonitoring()
+
 	ticker := time.Tick(*updaterInterval)
 	for range ticker {
 		ctx, cancel := context.WithTimeout(context.Background(), *updaterInterval)

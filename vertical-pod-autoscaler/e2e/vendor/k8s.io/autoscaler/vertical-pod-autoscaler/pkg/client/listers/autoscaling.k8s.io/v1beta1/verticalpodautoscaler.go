@@ -26,8 +26,10 @@ import (
 )
 
 // VerticalPodAutoscalerLister helps list VerticalPodAutoscalers.
+// All objects returned here must be treated as read-only.
 type VerticalPodAutoscalerLister interface {
 	// List lists all VerticalPodAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1beta1.VerticalPodAutoscaler, err error)
 	// VerticalPodAutoscalers returns an object that can list and get VerticalPodAutoscalers.
 	VerticalPodAutoscalers(namespace string) VerticalPodAutoscalerNamespaceLister
@@ -58,10 +60,13 @@ func (s *verticalPodAutoscalerLister) VerticalPodAutoscalers(namespace string) V
 }
 
 // VerticalPodAutoscalerNamespaceLister helps list and get VerticalPodAutoscalers.
+// All objects returned here must be treated as read-only.
 type VerticalPodAutoscalerNamespaceLister interface {
 	// List lists all VerticalPodAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1beta1.VerticalPodAutoscaler, err error)
 	// Get retrieves the VerticalPodAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1beta1.VerticalPodAutoscaler, error)
 	VerticalPodAutoscalerNamespaceListerExpansion
 }

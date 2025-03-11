@@ -40,8 +40,9 @@ fi
 
 ##############################################################################
 
-GO111MODULE=off go test $(GO111MODULE=off go list ./cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor | grep -v integration)
-GO111MODULE=off go test $(GO111MODULE=off go list ./cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor)
+cd cluster-autoscaler 
+go test $(go list ./... | grep -v cloudprovider | grep -v vendor | grep -v integration)
+go test $(go list ./cloudprovider/mcm/... | grep -v vendor)
 
 #TODO: Return success failure properly
 echo "CI tests are done"

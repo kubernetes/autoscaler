@@ -114,7 +114,8 @@ func TestGetManagedNodegroup(t *testing.T) {
 	nodegroupName := "testNodegroup"
 	clusterName := "testCluster"
 
-	taintEffect1 := "effect 1"
+	taintEffect1 := eks.TaintEffectNoSchedule
+	taintEffectTranslated1 := apiv1.TaintEffectNoSchedule
 	taintKey1 := "key 1"
 	taintValue1 := "value 1"
 	taint1 := eks.Taint{
@@ -123,7 +124,8 @@ func TestGetManagedNodegroup(t *testing.T) {
 		Value:  &taintValue1,
 	}
 
-	taintEffect2 := "effect 2"
+	taintEffect2 := eks.TaintEffectNoExecute
+	taintEffectTranslated2 := apiv1.TaintEffectNoExecute
 	taintKey2 := "key 2"
 	taintValue2 := "value 2"
 	taint2 := eks.Taint{
@@ -163,10 +165,10 @@ func TestGetManagedNodegroup(t *testing.T) {
 	taintList, labelMap, tagMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
 	assert.Equal(t, len(taintList), 2)
-	assert.Equal(t, taintList[0].Effect, apiv1.TaintEffect(taintEffect1))
+	assert.Equal(t, taintList[0].Effect, taintEffectTranslated1)
 	assert.Equal(t, taintList[0].Key, taintKey1)
 	assert.Equal(t, taintList[0].Value, taintValue1)
-	assert.Equal(t, taintList[1].Effect, apiv1.TaintEffect(taintEffect2))
+	assert.Equal(t, taintList[1].Effect, taintEffectTranslated2)
 	assert.Equal(t, taintList[1].Key, taintKey2)
 	assert.Equal(t, taintList[1].Value, taintValue2)
 	assert.Equal(t, len(labelMap), 7)
@@ -734,4 +736,52 @@ func TestGetInstanceTypesFromInstanceRequirementsWithEmptyList(t *testing.T) {
 	exp := fmt.Errorf("no instance types found for requirements")
 	assert.EqualError(t, err, exp.Error())
 	assert.Equal(t, "", result)
+}
+
+func TestTaintEksTranslator(t *testing.T) {
+	key := "key"
+	value := "value"
+
+	taintEffect1 := eks.TaintEffectNoSchedule
+	taintEffectTranslated1 := apiv1.TaintEffectNoSchedule
+	taint1 := eks.Taint{
+		Effect: &taintEffect1,
+		Key:    &key,
+		Value:  &value,
+	}
+
+	t1, err := taintEksTranslator(&taint1)
+	assert.Nil(t, err)
+	assert.Equal(t, t1, taintEffectTranslated1)
+
+	taintEffect2 := eks.TaintEffectNoSchedule
+	taintEffectTranslated2 := apiv1.TaintEffectNoSchedule
+	taint2 := eks.Taint{
+		Effect: &taintEffect2,
+		Key:    &key,
+		Value:  &value,
+	}
+	t2, err := taintEksTranslator(&taint2)
+	assert.Nil(t, err)
+	assert.Equal(t, t2, taintEffectTranslated2)
+
+	taintEffect3 := eks.TaintEffectNoExecute
+	taintEffectTranslated3 := apiv1.TaintEffectNoExecute
+	taint3 := eks.Taint{
+		Effect: &taintEffect3,
+		Key:    &key,
+		Value:  &value,
+	}
+	t3, err := taintEksTranslator(&taint3)
+	assert.Nil(t, err)
+	assert.Equal(t, t3, taintEffectTranslated3)
+
+	taintEffect4 := "TAINT_NO_EXISTS"
+	taint4 := eks.Taint{
+		Effect: &taintEffect4,
+		Key:    &key,
+		Value:  &value,
+	}
+	_, err = taintEksTranslator(&taint4)
+	assert.Error(t, err)
 }

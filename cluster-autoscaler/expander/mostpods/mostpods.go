@@ -37,6 +37,7 @@ func (m *mostpods) BestOptions(expansionOptions []expander.Option, nodeInfo map[
 	for _, option := range expansionOptions {
 		if len(option.Pods) == maxPods {
 			maxOptions = append(maxOptions, option)
+			continue
 		}
 
 		if len(option.Pods) > maxPods {

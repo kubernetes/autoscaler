@@ -277,7 +277,7 @@ func TestDrainable(t *testing.T) {
 			drainCtx := &drainability.DrainContext{
 				Timestamp: testTime,
 			}
-			status := New().Drainable(drainCtx, test.pod)
+			status := New().Drainable(drainCtx, test.pod, nil)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})

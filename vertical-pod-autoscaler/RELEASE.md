@@ -121,14 +121,17 @@ other pattern start only with `vertical-pod-autoscaler/v0.9.0` so we should make
 sure nothing we care about will break if we do.
 
 1.  [ ] Update information about newest version and K8s compatibility in
-    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation)
-    and the yaml files:
+    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation).
+
+1.  [ ] Update the yaml files:
 
     ```sh
     sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment*.yaml ./hack/vpa-process-yaml.sh
     ```
-   Merge this change into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release (example
-   PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
+1.  [ ] Update the default tag in  [vpa-up.sh](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/vpa-up.sh).
+
+1.  [ ] Merge these changes into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release
+    (example PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
 
 1.  [ ] Tag the commit with version const change
 
@@ -156,8 +159,8 @@ sure nothing we care about will break if we do.
     [groups.yaml](https://github.com/kubernetes/k8s.io/blob/master/groups/sig-autoscaling/groups.yaml)
     under k8s-infra-staging-autoscaling.
 * Permissions to add images to
-    `k8s.gcr.io/images/k8s-staging-autoscaling/images.yaml` are governed by
-    [OWNERS file](https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/images/k8s-staging-autoscaling/OWNERS).
+    [`k8s.io/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml`](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml) are governed by
+    [OWNERS file](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/OWNERS).
 * Permissions to add tags to
     [kubernetes/autoscaler](https://github.com/kubernetes/autoscaler) and create
     releases in the repo you must be:

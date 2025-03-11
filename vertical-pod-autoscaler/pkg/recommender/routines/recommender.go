@@ -28,7 +28,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -76,7 +76,7 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 	return r.clusterStateFeeder
 }
 
-// Updates VPA CRD objects' statuses.
+// UpdateVPAs update VPA CRD objects' status.
 func (r *recommender) UpdateVPAs() {
 	cnt := metrics_recommender.NewObjectCounter()
 	defer cnt.Observe()
@@ -116,7 +116,7 @@ func (r *recommender) UpdateVPAs() {
 				pods := r.clusterState.GetMatchingPods(vpa)
 				klog.Infof("MatchingPods: %+v", pods)
 				if len(pods) != vpa.PodCount {
-					klog.Errorf("ClusterState pod count and matching pods disagree for vpa %v/%v", vpa.ID.Namespace, vpa.ID.VpaName)
+					klog.Errorf("ClusterState pod count and matching pods disagree for VPA %s", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
 				}
 			}
 		}
@@ -126,7 +126,7 @@ func (r *recommender) UpdateVPAs() {
 			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
 		if err != nil {
 			klog.Errorf(
-				"Cannot update VPA %v/%v object. Reason: %+v", vpa.ID.Namespace, vpa.ID.VpaName, err)
+				"Cannot update VPA %s object. Reason: %+v", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), err)
 		}
 	}
 }

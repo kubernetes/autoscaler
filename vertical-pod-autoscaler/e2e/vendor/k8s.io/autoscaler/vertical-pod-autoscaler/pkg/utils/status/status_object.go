@@ -37,7 +37,7 @@ const (
 	AdmissionControllerStatusName = "vpa-admission-controller"
 	// AdmissionControllerStatusNamespace is the namespace of
 	// the Admission Controller status object.
-	AdmissionControllerStatusNamespace = "kube-system"
+	AdmissionControllerStatusNamespace = metav1.NamespaceSystem
 	// AdmissionControllerStatusTimeout is a time after which
 	// if not updated the Admission Controller status is no longer valid.
 	AdmissionControllerStatusTimeout = 1 * time.Minute

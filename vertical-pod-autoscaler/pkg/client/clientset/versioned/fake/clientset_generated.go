@@ -80,21 +80,24 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 	return c.tracker
 }
 
-var _ clientset.Interface = &Clientset{}
+var (
+	_ clientset.Interface = &Clientset{}
+	_ testing.FakeClient  = &Clientset{}
+)
 
 // AutoscalingV1 retrieves the AutoscalingV1Client
 func (c *Clientset) AutoscalingV1() autoscalingv1.AutoscalingV1Interface {
 	return &fakeautoscalingv1.FakeAutoscalingV1{Fake: &c.Fake}
 }
 
-// AutoscalingV1beta2 retrieves the AutoscalingV1beta2Client
-func (c *Clientset) AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface {
-	return &fakeautoscalingv1beta2.FakeAutoscalingV1beta2{Fake: &c.Fake}
-}
-
 // AutoscalingV1beta1 retrieves the AutoscalingV1beta1Client
 func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface {
 	return &fakeautoscalingv1beta1.FakeAutoscalingV1beta1{Fake: &c.Fake}
+}
+
+// AutoscalingV1beta2 retrieves the AutoscalingV1beta2Client
+func (c *Clientset) AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface {
+	return &fakeautoscalingv1beta2.FakeAutoscalingV1beta2{Fake: &c.Fake}
 }
 
 // PocV1alpha1 retrieves the PocV1alpha1Client

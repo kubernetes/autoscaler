@@ -197,7 +197,11 @@ const (
 	// ProvisioningClassCheckCapacity denotes that CA will check if current cluster state can fulfill this request,
 	// and reserve the capacity for a specified time.
 	ProvisioningClassCheckCapacity string = "check-capacity.autoscaling.x-k8s.io"
-	// ProvisioningClassAtomicScaleUp denotes that CA try to provision the capacity
+	// ProvisioningClassBestEffortAtomicScaleUp denotes that CA try to provision the capacity
 	// in an atomic manner.
-	ProvisioningClassAtomicScaleUp string = "atomic-scale-up.autoscaling.x-k8s.io"
+	ProvisioningClassBestEffortAtomicScaleUp string = "best-effort-atomic-scale-up.autoscaling.x-k8s.io"
+	// ProvisioningRequestPodAnnotationKey is a key used to annotate pods consuming provisioning request.
+	ProvisioningRequestPodAnnotationKey = "autoscaling.x-k8s.io/consume-provisioning-request"
+	// ProvisioningClassPodAnnotationKey is a key used to add annotation about Provisioning Class
+	ProvisioningClassPodAnnotationKey = "autoscaling.x-k8s.io/provisioning-class-name"
 )

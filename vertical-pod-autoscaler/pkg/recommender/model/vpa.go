@@ -282,7 +282,7 @@ func (vpa *Vpa) AsStatus() *vpa_types.VerticalPodAutoscalerStatus {
 	return status
 }
 
-// HasMatchedPods returns true if there are are currently active pods in the
+// HasMatchedPods returns true if there are currently active pods in the
 // cluster matching this VPA, based on conditions. UpdateConditions should be
 // called first.
 func (vpa *Vpa) HasMatchedPods() bool {
