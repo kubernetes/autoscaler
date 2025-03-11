@@ -20,7 +20,7 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 BASE_NAME=$(basename $0)
-FEATURE_GATES=${FEATURE_GATES:-""}
+FEATURE_GATES=${FEATURE_GATES:-""""}
 source "${SCRIPT_ROOT}/hack/lib/util.sh"
 
 ARCH=$(kube::util::host_arch)
@@ -81,12 +81,23 @@ for i in ${COMPONENTS}; do
   fi
   if [ $i == admission-controller ] ; then
     (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh e2e || true)
+    kubectl apply -f ${SCRIPT_ROOT}/deploy/admission-controller-service.yaml
   fi
   ALL_ARCHITECTURES=${ARCH} make --directory ${SCRIPT_ROOT}/pkg/${i} docker-build REGISTRY=${REGISTRY} TAG=${TAG}
   docker tag ${REGISTRY}/vpa-${i}-${ARCH}:${TAG} ${REGISTRY}/vpa-${i}:${TAG}
   kind load docker-image ${REGISTRY}/vpa-${i}:${TAG}
 done
 
+apply_feature_gate() {
+  component=$1
+  if [ "${component}" == "admission-controller" ]; then
+    kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--feature-gates='"${FEATURE_GATES}"'"}]' -o yaml -f -
+  elif [ "${component}" == "updater" ]; then
+    kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args", "value": ["--feature-gates='"${FEATURE_GATES}"'"]}]' -o yaml -f -
+  else
+    cat # passthrough
+  fi
+}
 
 for i in ${COMPONENTS}; do
   if [ $i == recommender-externalmetrics ] ; then
@@ -97,19 +108,6 @@ for i in ${COMPONENTS}; do
      kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/metrics-pump.yaml
      kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/${i}-deployment.yaml
   else
-     REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl apply -f -
+    REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | apply_feature_gate "$i" | kubectl apply -f -
   fi
 done
-
-# TODO: come up with some sort of plan for feature gate enablement e2e testing purposes
-# only applies to updater for now
-
-# --feature-gates A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:
-# InPlaceOrRecreate=true|false (BETA - default=false)
-if [ -n "${FEATURE_GATES}" ]; then
-  echo "Enabling feature gates: ${FEATURE_GATES}"
-  kubectl -n kube-system patch deployment vpa-updater --type=json \
-  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args", "value": [
-    --feature-gates='"${FEATURE_GATES}"'
-  ]}]'
-fi

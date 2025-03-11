@@ -12,6 +12,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `--address` | ":8944" |                         The address to expose Prometheus metrics. |
 | `--alsologtostderr` |  |                        log to standard error as well as files (no effect when -logtostderr=true) |
 | `--client-ca-file` | "/etc/tls-certs/caCert.pem" |                  Path to CA PEM file. |
+| `--feature-gates` |  |            A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: |
 | `--ignored-vpa-object-namespaces` |  |   A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `--kube-api-burst` | 10 |                   QPS burst limit when making requests to Kubernetes apiserver |
 | `--kube-api-qps` | 5 |                     QPS limit when making requests to Kubernetes apiserver |

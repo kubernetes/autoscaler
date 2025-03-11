@@ -521,7 +521,7 @@ var _ = ActuationSuiteE2eDescribe("InPlaceOrRecreate", func() {
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
-		checkInPlaceOrRecreateTestsEnabled(f)
+		checkInPlaceOrRecreateTestsEnabled(f, true, true)
 	})
 
 	ginkgo.It("still applies recommendations on restart when update mode is InPlaceOrRecreate", func() {

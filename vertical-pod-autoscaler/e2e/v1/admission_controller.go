@@ -37,9 +37,18 @@ import (
 	"github.com/onsi/gomega"
 )
 
+const (
+	webhookConfigName = "vpa-webhook-config"
+	webhookName       = "vpa.k8s.io"
+)
+
 var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		waitForVpaWebhookRegistration(f)
+	})
 
 	ginkgo.It("starts pods with new recommended request", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
@@ -909,6 +918,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	})
 
 	ginkgo.It("starts pods with new recommended request with InPlaceOrRecreate mode", func() {
+		checkInPlaceOrRecreateTestsEnabled(f, true, false)
+
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
@@ -993,4 +1004,18 @@ func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 	podList, err := framework_deployment.GetPodsForDeployment(context.TODO(), c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when listing pods after deployment resize")
 	return podList
+}
+
+func waitForVpaWebhookRegistration(f *framework.Framework) {
+	ginkgo.By("Waiting for VPA webhook registration")
+	gomega.Eventually(func() bool {
+		webhook, err := f.ClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
+		if err != nil {
+			return false
+		}
+		if webhook != nil && len(webhook.Webhooks) > 0 && webhook.Webhooks[0].Name == webhookName {
+			return true
+		}
+		return false
+	}, 3*time.Minute, 5*time.Second).Should(gomega.BeTrue(), "Webhook was not registered in the cluster")
 }

@@ -145,7 +145,7 @@ var _ = UpdaterE2eDescribe("InPlaceOrRecreate", func() {
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
-		checkInPlaceOrRecreateTestsEnabled(f)
+		checkInPlaceOrRecreateTestsEnabled(f, true, true)
 	})
 
 	ginkgo.It("In-place update pods when Admission Controller status available", func() {
