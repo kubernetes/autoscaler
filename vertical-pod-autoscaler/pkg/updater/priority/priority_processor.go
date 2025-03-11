@@ -52,7 +52,7 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
-	for num, podContainer := range pod.Spec.Containers {
+	for _, podContainer := range pod.Spec.Containers {
 		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
 			klog.V(4).InfoS("Not listed in VPA observed containers label. Skipping container priority calculations", "label", annotations.VpaObservedContainersLabel, "observedContainers", pod.GetAnnotations()[annotations.VpaObservedContainersLabel], "containerName", podContainer.Name, "vpa", klog.KObj(vpa))
 			continue
@@ -74,36 +74,6 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 					(hasUpperBound && request.Cmp(upperBound) > 0) {
 					outsideRecommendedRange = true
 				}
-
-				// TODO(maxcao13): Can we just ignore the spec, and use status.containerStatus.resources now?
-				// Apparently: This also means that resources field in the pod spec can no longer be relied upon as an indicator of the pod's actual resources.
-				// reference: https://kubernetes.io/blog/2023/05/12/in-place-pod-resize-alpha/
-				// KEP reference: https://github.com/kubernetes/enhancements/pull/5089/files#diff-14542847beb0f0fd767db1aff1316f8569a968385e2bb89567c4cc0af1ae5942R761
-				// Although this seems like a big API change (wouldn't work for VPA on kubernetes < 1.33 without feature gate applied). I'll leave it up for reviewers.
-				// IMO, this should probably be implemented for a followup enhancement.
-
-				// Statuses can be missing, or status resources can be nil
-				if len(pod.Status.ContainerStatuses) > num && pod.Status.ContainerStatuses[num].Resources != nil {
-					if statusRequest, hasStatusRequest := pod.Status.ContainerStatuses[num].Resources.Requests[resourceName]; hasStatusRequest {
-						// If we're updating, but we still don't have what we asked for, we may still need to act on this pod
-						if request.MilliValue() > statusRequest.MilliValue() {
-							scaleUp = true
-							// It's okay if we're actually still resizing, but if we can't now or we're stuck, make sure the pod
-							// is still in the list so we can evict it to go live on a fatter node or something
-							if pod.Status.Resize == apiv1.PodResizeStatusDeferred || pod.Status.Resize == apiv1.PodResizeStatusInfeasible {
-								klog.V(4).InfoS("Pod looks like it's stuck scaling up, leaving it in for eviction", "pod", klog.KObj(pod), "resizeStatus", pod.Status.Resize)
-							} else {
-								klog.V(4).InfoS("Pod is in the process of scaling up, leaving it in so we can see if it's taking too long", "pod", klog.KObj(pod), "resizeStatus", pod.Status.Resize)
-							}
-						}
-						// I guess if it's not outside of compliance, it's probably okay it's stuck here?
-						if (hasLowerBound && statusRequest.Cmp(lowerBound) < 0) ||
-							(hasUpperBound && statusRequest.Cmp(upperBound) > 0) {
-							outsideRecommendedRange = true
-						}
-					}
-				}
-
 			} else {
 				// Note: if the request is not specified, the container will use the
 				// namespace default request. Currently we ignore it and treat such
@@ -115,9 +85,6 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 		}
 	}
 
-	// TODO(jkyros): hmm this gets hairy here because if "status" is what let us into the list,
-	// we probably need to do these calculations vs the status rather than the spec, because the
-	// spec is a "lie"
 	resourceDiff := 0.0
 	for resource, totalRecommended := range totalRecommendedPerResource {
 		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
