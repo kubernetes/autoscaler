@@ -19,7 +19,7 @@ require (
 	github.com/Azure/skewer v0.0.14
 	github.com/aws/aws-sdk-go v1.44.241
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/digitalocean/godo v1.138.1-0.20250225190532-8a2012e821cc
+	github.com/digitalocean/godo v1.138.1-0.20250304183508-77b312672a67
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
@@ -35,7 +35,7 @@ require (
 	github.com/vburenin/ifacemaker v1.2.1
 	go.uber.org/mock v0.4.0
 	golang.org/x/net v0.30.0
-	golang.org/x/oauth2 v0.27.0
+	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sys v0.26.0
 	google.golang.org/api v0.151.0
 	google.golang.org/grpc v1.65.0
@@ -194,7 +194,7 @@ require (
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
-	golang.org/x/time v0.10.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240826202546-f6391c0de4c7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240826202546-f6391c0de4c7 // indirect
@@ -223,7 +223,7 @@ require (
 
 replace github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/service/eks v1.38.49
 
-replace github.com/digitalocean/godo => github.com/digitalocean/godo v1.138.1-0.20250225190532-8a2012e821cc
+replace github.com/digitalocean/godo => github.com/digitalocean/godo v1.138.1-0.20250304183508-77b312672a67
 
 replace github.com/rancher/go-rancher => github.com/rancher/go-rancher v0.1.0
 

@@ -75,11 +75,8 @@ func defaultDOClientMock(clusterID string) *doClientMock {
 }
 
 func setGetNodeTemplateMock(c *doClientMock, times int) *doClientMock {
-	c.On("GetNodePoolTemplate", context.Background(), "123456", "").Return(&godo.KubernetesNodePoolTemplateResponse{
-		ClusterUUID: "123456",
-		Name:        "some-pool",
-		Slug:        "s-1vcpu-2gb",
-		Template: &godo.KubernetesNodePoolTemplate{
+	c.On("GetNodePoolTemplate", context.Background(), "123456", "").Return(&godo.KubernetesNodePoolTemplate{
+		Template: &godo.KubernetesNodeTemplate{
 			Labels: make(map[string]string),
 			Capacity: &godo.KubernetesNodePoolResources{
 				CPU:    1,

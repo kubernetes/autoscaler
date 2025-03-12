@@ -36,7 +36,7 @@ var (
 
 type nodeGroupClient interface {
 	// GetNodePoolTemplate returns the template for a given node pool - used in helping CA for scale up from zero simulations.
-	GetNodePoolTemplate(ctx context.Context, clusterID string, nodePoolName string) (*godo.KubernetesNodePoolTemplateResponse, *godo.Response, error)
+	GetNodePoolTemplate(ctx context.Context, clusterID string, nodePoolName string) (*godo.KubernetesNodePoolTemplate, *godo.Response, error)
 
 	// ListNodePools lists all the node pools found in a Kubernetes cluster.
 	ListNodePools(ctx context.Context, clusterID string, opts *godo.ListOptions) ([]*godo.KubernetesNodePool, *godo.Response, error)

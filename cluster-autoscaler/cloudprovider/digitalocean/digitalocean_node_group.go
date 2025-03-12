@@ -50,7 +50,7 @@ type NodeGroup struct {
 	clusterID        string
 	client           nodeGroupClient
 	nodePool         *godo.KubernetesNodePool
-	nodePoolTemplate *godo.KubernetesNodePoolTemplateResponse
+	nodePoolTemplate *godo.KubernetesNodePoolTemplate
 	minSize          int
 	maxSize          int
 }
@@ -310,7 +310,7 @@ func toInstanceStatus(nodeState *godo.KubernetesNodeStatus) *cloudprovider.Insta
 	return st
 }
 
-func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplateResponse) (*framework.NodeInfo, error) {
+func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplate) (*framework.NodeInfo, error) {
 	allocatable, err := parseToQuanitity(resp.Template.Allocatable.CPU, resp.Template.Allocatable.Pods, resp.Template.Allocatable.Memory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create allocatable resources - %s", err)
@@ -331,7 +331,7 @@ func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplateResponse) (*framewo
 	l = cloudprovider.JoinStringMaps(l, resp.Template.Labels)
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   generateWorkerName(resp.Name, 1),
+			Name:   generateWorkerName(resp.Template.Name, 1),
 			Labels: l,
 		},
 		Spec: apiv1.NodeSpec{
