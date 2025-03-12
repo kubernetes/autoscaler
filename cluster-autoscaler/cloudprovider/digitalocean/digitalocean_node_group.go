@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 
 	"github.com/digitalocean/godo"
 	apiv1 "k8s.io/api/core/v1"
@@ -331,7 +332,7 @@ func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplate) (*framework.NodeI
 	l = cloudprovider.JoinStringMaps(l, resp.Template.Labels)
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   generateWorkerName(resp.Template.Name, 1),
+			Name:   generateWorkerName(resp.Template.Name, rand.Int63()),
 			Labels: l,
 		},
 		Spec: apiv1.NodeSpec{
