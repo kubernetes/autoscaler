@@ -35,6 +35,33 @@ const (
 	RecommendationMissingMaxDuration = 30 * time.Minute
 )
 
+// ClusterState holds all runtime information about the cluster required for the
+// VPA operations, i.e. configuration of resources (pods, containers,
+// VPA objects), aggregated utilization of compute resources (CPU, memory) and
+// events (container OOMs).
+// All input to the VPA Recommender algorithm lives in this structure.
+type ClusterState interface {
+	StateMapSize() int
+	AddOrUpdatePod(podID PodID, newLabels labels.Set, phase apiv1.PodPhase)
+	GetContainer(containerID ContainerID) *ContainerState
+	DeletePod(podID PodID)
+	AddOrUpdateContainer(containerID ContainerID, request Resources) error
+	AddSample(sample *ContainerUsageSampleWithKey) error
+	RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error
+	AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler, selector labels.Selector) error
+	DeleteVpa(vpaID VpaID) error
+	MakeAggregateStateKey(pod *PodState, containerName string) AggregateStateKey
+	RateLimitedGarbageCollectAggregateCollectionStates(ctx context.Context, now time.Time, controllerFetcher controllerfetcher.ControllerFetcher)
+	RecordRecommendation(vpa *Vpa, now time.Time) error
+	GetMatchingPods(vpa *Vpa) []PodID
+	GetControllerForPodUnderVPA(ctx context.Context, pod *PodState, controllerFetcher controllerfetcher.ControllerFetcher) *controllerfetcher.ControllerKeyWithAPIVersion
+	GetControllingVPA(pod *PodState) *Vpa
+	VPAs() map[VpaID]*Vpa
+	SetObservedVPAs([]*vpa_types.VerticalPodAutoscaler)
+	ObservedVPAs() []*vpa_types.VerticalPodAutoscaler
+	Pods() map[PodID]*PodState
+}
+
 type clusterState struct {
 	// Pods in the cluster.
 	pods map[PodID]*PodState
@@ -45,7 +72,7 @@ type clusterState struct {
 	// a warning about it.
 	emptyVPAs map[VpaID]time.Time
 	// Observed VPAs. Used to check if there are updates needed.
-	observedVpas []*vpa_types.VerticalPodAutoscaler
+	observedVPAs []*vpa_types.VerticalPodAutoscaler
 
 	// All container aggregations where the usage samples are stored.
 	aggregateStateMap aggregateContainerStatesMap
@@ -305,11 +332,11 @@ func (cluster *clusterState) Pods() map[PodID]*PodState {
 }
 
 func (cluster *clusterState) SetObservedVPAs(observedVPAs []*vpa_types.VerticalPodAutoscaler) {
-	cluster.observedVpas = observedVPAs
+	cluster.observedVPAs = observedVPAs
 }
 
 func (cluster *clusterState) ObservedVPAs() []*vpa_types.VerticalPodAutoscaler {
-	return cluster.observedVpas
+	return cluster.observedVPAs
 }
 
 func newPod(id PodID) *PodState {
@@ -521,31 +548,4 @@ func (k aggregateStateKey) Labels() labels.Labels {
 		return labels.Set{}
 	}
 	return (*k.labelSetMap)[k.labelSetKey]
-}
-
-// ClusterState holds all runtime information about the cluster required for the
-// VPA operations, i.e. configuration of resources (pods, containers,
-// VPA objects), aggregated utilization of compute resources (CPU, memory) and
-// events (container OOMs).
-// All input to the VPA Recommender algorithm lives in this structure.
-type ClusterState interface {
-	StateMapSize() int
-	AddOrUpdatePod(podID PodID, newLabels labels.Set, phase apiv1.PodPhase)
-	GetContainer(containerID ContainerID) *ContainerState
-	DeletePod(podID PodID)
-	AddOrUpdateContainer(containerID ContainerID, request Resources) error
-	AddSample(sample *ContainerUsageSampleWithKey) error
-	RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error
-	AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler, selector labels.Selector) error
-	DeleteVpa(vpaID VpaID) error
-	MakeAggregateStateKey(pod *PodState, containerName string) AggregateStateKey
-	RateLimitedGarbageCollectAggregateCollectionStates(ctx context.Context, now time.Time, controllerFetcher controllerfetcher.ControllerFetcher)
-	RecordRecommendation(vpa *Vpa, now time.Time) error
-	GetMatchingPods(vpa *Vpa) []PodID
-	GetControllerForPodUnderVPA(ctx context.Context, pod *PodState, controllerFetcher controllerfetcher.ControllerFetcher) *controllerfetcher.ControllerKeyWithAPIVersion
-	GetControllingVPA(pod *PodState) *Vpa
-	VPAs() map[VpaID]*Vpa
-	SetObservedVPAs([]*vpa_types.VerticalPodAutoscaler)
-	ObservedVPAs() []*vpa_types.VerticalPodAutoscaler
-	Pods() map[PodID]*PodState
 }
