@@ -46,9 +46,10 @@ func GetPodsToMove(nodeInfo *framework.NodeInfo, deleteOptions options.NodeDelet
 		remainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 	drainCtx := &drainability.DrainContext{
-		RemainingPdbTracker: remainingPdbTracker,
-		Listers:             listers,
-		Timestamp:           timestamp,
+		RemainingPdbTracker:  remainingPdbTracker,
+		Listers:              listers,
+		Timestamp:            timestamp,
+		BspChosenNodeToEvict: "",
 	}
 	for _, podInfo := range nodeInfo.Pods() {
 		pod := podInfo.Pod

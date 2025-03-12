@@ -18,11 +18,19 @@ package system
 
 import (
 	"fmt"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+)
+
+const (
+	// BspDisruptionTimeout is the timeout afterwhich CA will evict non-pdb-assigned blocking system pods
+	BspDisruptionTimeout = time.Hour
+	// KubeSystemNamespace is the namespase includes system pods
+	KubeSystemNamespace = "kube-system"
 )
 
 // Rule is a drainability rule on how to handle system pods.
@@ -40,8 +48,25 @@ func (r *Rule) Name() string {
 
 // Drainable decides what to do with system pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, _ *framework.NodeInfo) drainability.Status {
-	if pod.Namespace == "kube-system" && len(drainCtx.RemainingPdbTracker.MatchingPdbs(pod)) == 0 {
+	if isBlockingSystemPod(drainCtx, pod) {
+		if isBspPassedDisruptionTimeout(pod, drainCtx.Timestamp) && isChosenNode(pod, drainCtx.BspChosenNodeToEvict) {
+			drainCtx.BspChosenNodeToEvict = pod.Spec.NodeName
+			return drainability.NewDrainableStatus()
+		}
 		return drainability.NewBlockedStatus(drain.UnmovableKubeSystemPod, fmt.Errorf("non-daemonset, non-mirrored, non-pdb-assigned kube-system pod present: %s", pod.Name))
 	}
 	return drainability.NewUndefinedStatus()
+}
+
+func isBlockingSystemPod(drainCtx *drainability.DrainContext, pod *apiv1.Pod) bool {
+	return pod.Namespace == KubeSystemNamespace && len(drainCtx.RemainingPdbTracker.MatchingPdbs(pod)) == 0
+}
+
+func isBspPassedDisruptionTimeout(pod *apiv1.Pod, drainTime time.Time) bool {
+	return !pod.ObjectMeta.CreationTimestamp.IsZero() &&
+		drainTime.After(pod.ObjectMeta.CreationTimestamp.Add(BspDisruptionTimeout))
+}
+
+func isChosenNode(pod *apiv1.Pod, bspChosenNodeToEvict string) bool {
+	return bspChosenNodeToEvict == "" || pod.Spec.NodeName == bspChosenNodeToEvict
 }

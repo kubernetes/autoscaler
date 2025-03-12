@@ -25,7 +25,8 @@ import (
 
 // DrainContext contains parameters for drainability rules.
 type DrainContext struct {
-	RemainingPdbTracker pdb.RemainingPdbTracker
-	Listers             kube_util.ListerRegistry
-	Timestamp           time.Time
+	RemainingPdbTracker  pdb.RemainingPdbTracker
+	Listers              kube_util.ListerRegistry
+	Timestamp            time.Time
+	BspChosenNodeToEvict string
 }
