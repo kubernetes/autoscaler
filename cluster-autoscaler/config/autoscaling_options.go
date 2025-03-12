@@ -276,6 +276,8 @@ type AutoscalingOptions struct {
 	// MinReplicaCount controls the minimum number of replicas that a replica set or replication controller should have
 	// to allow their pods deletion in scale down
 	MinReplicaCount int
+	// BspDisruptionTimeout is the timeout after which CA will evict non-pdb-assigned blocking system pods
+	BspDisruptionTimeout time.Duration
 	// NodeDeleteDelayAfterTaint is the duration to wait before deleting a node after tainting it
 	NodeDeleteDelayAfterTaint time.Duration
 	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.

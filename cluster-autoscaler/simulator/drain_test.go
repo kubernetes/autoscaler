@@ -43,7 +43,11 @@ import (
 
 func TestGetPodsToMove(t *testing.T) {
 	var (
-		testTime = time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
+		testTime                                = time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
+		bspDisruptionTimeout                    = time.Hour
+		creationTimeBeforeBspDisturptionTimeout = testTime.Add(-bspDisruptionTimeout).Add(-time.Minute)
+		creationTimeAfterBspDisturptionTimeout  = testTime.Add(-bspDisruptionTimeout).Add(time.Minute)
+
 		replicas = int32(5)
 
 		unreplicatedPod = &apiv1.Pod{
@@ -66,6 +70,22 @@ func TestGetPodsToMove(t *testing.T) {
 				Name:            "systemPod",
 				Namespace:       "kube-system",
 				OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
+			},
+		}
+		drainableBlockingSystemPod = &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "systemPod",
+				Namespace:         "kube-system",
+				OwnerReferences:   GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
+				CreationTimestamp: metav1.Time{Time: creationTimeBeforeBspDisturptionTimeout},
+			},
+		}
+		nonDrainableBlockingSystemPod = &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "systemPod",
+				Namespace:         "kube-system",
+				OwnerReferences:   GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
+				CreationTimestamp: metav1.Time{Time: creationTimeAfterBspDisturptionTimeout},
 			},
 		}
 		localStoragePod = &apiv1.Pod{
@@ -542,6 +562,28 @@ func TestGetPodsToMove(t *testing.T) {
 			},
 		},
 		{
+			desc:    "Kube-system no pdb system pods blocking",
+			pods:    []*apiv1.Pod{nonDrainableBlockingSystemPod},
+			wantErr: true,
+			wantBlocking: &drain.BlockingPod{
+				Pod:    nonDrainableBlockingSystemPod,
+				Reason: drain.UnmovableKubeSystemPod,
+			}},
+		{
+			desc:     "Kube-system no pdb system pods allowing",
+			pods:     []*apiv1.Pod{drainableBlockingSystemPod},
+			wantPods: []*apiv1.Pod{drainableBlockingSystemPod},
+		},
+		{
+			desc:    "Kube-system no pdb system pods blocking",
+			pods:    []*apiv1.Pod{drainableBlockingSystemPod, nonDrainableBlockingSystemPod},
+			wantErr: true,
+			wantBlocking: &drain.BlockingPod{
+				Pod:    nonDrainableBlockingSystemPod,
+				Reason: drain.UnmovableKubeSystemPod,
+			},
+		},
+		{
 			desc:    "Local storage",
 			pods:    []*apiv1.Pod{localStoragePod},
 			wantErr: true,
@@ -771,6 +813,7 @@ func TestGetPodsToMove(t *testing.T) {
 				SkipNodesWithSystemPods:           true,
 				SkipNodesWithLocalStorage:         true,
 				SkipNodesWithCustomControllerPods: true,
+				BspDisruptionTimeout:              bspDisruptionTimeout,
 			}
 			rules := append(tc.rules, rules.Default(deleteOptions)...)
 			tracker := pdb.NewBasicRemainingPdbTracker()
