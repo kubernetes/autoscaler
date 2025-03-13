@@ -393,7 +393,7 @@ func (*Mounter) List() ([]MountPoint, error) {
 
 func statx(file string) (unix.Statx_t, error) {
 	var stat unix.Statx_t
-	if err := unix.Statx(0, file, unix.AT_STATX_DONT_SYNC, 0, &stat); err != nil {
+	if err := unix.Statx(unix.AT_FDCWD, file, unix.AT_STATX_DONT_SYNC, 0, &stat); err != nil {
 		if err == unix.ENOSYS {
 			return stat, errStatxNotSupport
 		}
@@ -577,7 +577,7 @@ func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target
 			sensitiveOptionsLog := sanitizedOptionsForLogging(options, sensitiveOptions)
 			detailedErr := fmt.Sprintf("format of disk %q failed: type:(%q) target:(%q) options:(%q) errcode:(%v) output:(%v) ", source, fstype, target, sensitiveOptionsLog, err, string(output))
 			klog.Error(detailedErr)
-			return NewMountError(FormatFailed, detailedErr)
+			return NewMountError(FormatFailed, "%s", detailedErr)
 		}
 
 		klog.Infof("Disk successfully formatted (mkfs): %s - %s %s", fstype, source, target)
@@ -600,7 +600,7 @@ func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target
 	// Mount the disk
 	klog.V(4).Infof("Attempting to mount disk %s in %s format at %s", source, fstype, target)
 	if err := mounter.MountSensitive(source, target, fstype, options, sensitiveOptions); err != nil {
-		return NewMountError(mountErrorValue, err.Error())
+		return NewMountError(mountErrorValue, "%s", err.Error())
 	}
 
 	return nil
