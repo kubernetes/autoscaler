@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strings"
 
 	"github.com/digitalocean/godo"
 	apiv1 "k8s.io/api/core/v1"
@@ -34,8 +35,10 @@ import (
 )
 
 const (
-	doksLabelNamespace = "doks.digitalocean.com"
-	nodeIDLabel        = doksLabelNamespace + "/node-id"
+	doksLabelNamespace              = "doks.digitalocean.com"
+	nodeIDLabel                     = doksLabelNamespace + "/node-id"
+	generatedWorkerNameSuffixLength = 6
+	generatedWorkerNameCharset      = "n38uc7mqfyxojrbwgea6tl2ps5kh4ivd01z9"
 )
 
 var (
@@ -332,7 +335,7 @@ func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplate) (*framework.NodeI
 	l = cloudprovider.JoinStringMaps(l, resp.Template.Labels)
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   generateWorkerName(resp.Template.Name, rand.Int63()),
+			Name:   generateWorkerName(resp.Template.Name),
 			Labels: l,
 		},
 		Spec: apiv1.NodeSpec{
@@ -362,12 +365,11 @@ func parseToQuanitity(cpu int64, pods int64, memory string) (apiv1.ResourceList,
 	}, nil
 }
 
-func generateWorkerName(poolName string, workerID int64) string {
-	var customAlphabet string = "n38uc7mqfyxojrbwgea6tl2ps5kh4ivd01z9"
-	var customAlphabetSize int64 = int64(len(customAlphabet))
-	s := ""
-	for ; workerID > 0; workerID = workerID / customAlphabetSize {
-		s = string(customAlphabet[workerID%customAlphabetSize]) + s
+func generateWorkerName(poolName string) string {
+	var b strings.Builder
+	for i := 0; i < generatedWorkerNameSuffixLength; i++ {
+		d := generatedWorkerNameCharset[rand.Intn(len(generatedWorkerNameCharset))]
+		b.WriteByte(d)
 	}
-	return fmt.Sprintf("%s-%s", poolName, s)
+	return fmt.Sprintf("%s-%s", poolName, b.String())
 }

@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/digitalocean/godo"
@@ -440,6 +441,18 @@ func testNodeGroup(client nodeGroupClient, np *godo.KubernetesNodePool) *NodeGro
 		minSize:   minNodes,
 		maxSize:   maxNodes,
 	}
+}
+
+func TestGenerateWorkerName(t *testing.T) {
+	t.Run("generate worker node name", func(t *testing.T) {
+		prefix := "testpool"
+		expectedLength := generatedWorkerNameSuffixLength
+		g := generateWorkerName(prefix)
+		parts := strings.Split(g, "-")
+		assert.Equal(t, 2, len(parts), "incorrect number of components for generated worker name")
+		assert.Equal(t, prefix, parts[0], "unexpected prefix in generated worker name")
+		assert.Equal(t, expectedLength, len(parts[1]), "incorrect suffix length for generated worker name")
+	})
 }
 
 type doClientMock struct {
