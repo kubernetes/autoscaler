@@ -647,7 +647,6 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 		})
 	}
 }
-
 func TestFetchAvailableDiskTypes(t *testing.T) {
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
@@ -657,14 +656,14 @@ func TestFetchAvailableDiskTypes(t *testing.T) {
 	getDiskTypesAggregatedListOKResponse, _ := os.ReadFile("fixtures/diskTypes_aggregatedList.json")
 	server.On("handle", "/projects/project-id/aggregated/diskTypes").Return(string(getDiskTypesAggregatedListOKResponse)).Times(1)
 
-	t.Run("correctly parse a response", func(t *testing.T) {
+	t.Run("correctly parse a filtered response", func(t *testing.T) {
 		want := map[string][]string{
 			// "us-central1" region should be skipped
 			"us-central1-a": {"local-ssd", "pd-balanced", "pd-ssd", "pd-standard"},
 			"us-central1-b": {"hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput", "local-ssd", "pd-balanced", "pd-extreme", "pd-ssd", "pd-standard"},
 		}
 
-		got, err := g.FetchAvailableDiskTypes()
+		got, err := g.FetchAvailableDiskTypes("us-central1")
 
 		assert.NoError(t, err)
 		if diff := cmp.Diff(want, got, cmpopts.EquateErrors()); diff != "" {
@@ -860,7 +859,7 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"FetchAvailableDiskTypes_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchAvailableDiskTypes()
+				_, err := client.FetchAvailableDiskTypes("")
 				return err
 			},
 			httpTimeout: instantTimeout,
