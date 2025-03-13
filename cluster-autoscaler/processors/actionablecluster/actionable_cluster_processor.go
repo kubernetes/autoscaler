@@ -66,7 +66,7 @@ func (e *EmptyClusterProcessor) ShouldAbort(context *context.AutoscalingContext,
 
 // OnEmptyCluster runs actions if the cluster is empty
 func OnEmptyCluster(context *context.AutoscalingContext, status string, emitEvent bool) {
-	klog.Warningf(status)
+	klog.Warning(status)
 	context.ProcessorCallbacks.ResetUnneededNodes()
 	// updates metrics related to empty cluster's state.
 	metrics.UpdateClusterSafeToAutoscale(false)
