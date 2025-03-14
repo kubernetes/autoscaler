@@ -12,6 +12,9 @@
     - [In-Place Updates](#in-place-updates)
     - [Comparison of `UpdateMode`s](#comparison-of-updatemodes)
     - [Test Plan](#test-plan)
+    - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
+    - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+    - [Kubernetes version compatibility](#kubernetes-version-compatibility)
 - [Implementation History](#implementation-history)
 <!-- /toc -->
 
@@ -254,6 +257,49 @@ tested in the following scenarios:
 * In-place update will fail but `CanEvict` is false, pod should not be evicted.
 * In-place update will fail but `EvictionRequirements` are false, pod should not be evicted.
 
+### Upgrade / Downgrade Strategy
+
+#### Upgrade
+
+On upgrade of the VPA to 1.4.0 (tentative release version), nothing will change,
+VPAs will continue to work as before.
+
+Users can use the new `InPlaceOrRecreate` by enabling the alpha Feature Gate (which defaults to disabled)
+by passing `--feature-gates=InPlaceOrRecreate=true` to the updater and admission-controller components and setting
+their VPA UpdateMode to use `InPlaceOrRecreate`.
+
+#### Downgrade
+
+On downgrade of VPA from 1.4.0 (tentative release version), nothing will change.
+VPAs will continue to work as previously, unless, the user had enabled the feature
+gate. In which case downgrade could break their VPA that uses `InPlaceOrRecreate`.
+
+### Feature Enablement and Rollback
+
+#### How can this feature be enabled / disabled in a live cluster?
+
+- Feature gate name: InPlaceOrRecreate
+- Components depending on the feature gate:
+  - admission-controller
+  - updater
+
+Disabling of feature gate `InPlaceOrRecreate` will cause the following to happen:
+
+- admission-controller to **reject** new VPA objects being created with `InPlaceOrRecreate` configured
+  - A descriptive error message should be returned to the user letting them know that they are using a feature gated feature
+- updater to fall back to `Recreate`, should it encounter a VPA configured with `InPlaceOrRecreate`
+
+Enabling of feature gate `InPlaceOrRecreate` will cause the following to happen:
+
+- admission-controller to **accept** new VPA objects being created with `InPlaceOrRecreate` configured
+- updater will attempt to perform an in-place adjustment for VPAs configured with `InPlaceOrRecreate`
+
+### Kubernetes version compatibility
+
+`InPlaceOrRecreate` is being built assuming that it will be running on a Kubernetes version of at least 1.33
+with the beta version of [KEP-1287: In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287)
+enabled. Should these conditions not be true, the VPA shall fall back to `Recreate` and emit a log message saying that it did so.
+
 ### Details still to consider
 
 #### Careful with memory scale down
@@ -266,3 +312,4 @@ Needs more research on how to scale down on memory safely.
 - 2023-05-10: initial version
 - 2025-02-19: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
 - 2025-03-06: Scope changes to "partial updates" feature
+- 2025-03-08: Add "Upgrade / Downgrade Strategy" and "Kubernetes version compatibility" sections
