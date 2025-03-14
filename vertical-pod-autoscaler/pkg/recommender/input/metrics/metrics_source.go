@@ -58,7 +58,7 @@ func (s podMetricsSource) List(ctx context.Context, namespace string, opts v1.Li
 type externalMetricsClient struct {
 	externalClient external_metrics.ExternalMetricsClient
 	options        ExternalClientOptions
-	clusterState   *model.ClusterState
+	clusterState   model.ClusterState
 }
 
 // ExternalClientOptions specifies parameters for using an External Metrics Client.
@@ -69,7 +69,7 @@ type ExternalClientOptions struct {
 }
 
 // NewExternalClient returns a Source for an External Metrics Client.
-func NewExternalClient(c *rest.Config, clusterState *model.ClusterState, options ExternalClientOptions) PodMetricsLister {
+func NewExternalClient(c *rest.Config, clusterState model.ClusterState, options ExternalClientOptions) PodMetricsLister {
 	extClient, err := external_metrics.NewForConfig(c)
 	if err != nil {
 		klog.ErrorS(err, "Failed initializing external metrics client")
@@ -85,7 +85,7 @@ func NewExternalClient(c *rest.Config, clusterState *model.ClusterState, options
 func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts v1.ListOptions) (*v1beta1.PodMetricsList, error) {
 	result := v1beta1.PodMetricsList{}
 
-	for _, vpa := range s.clusterState.Vpas {
+	for _, vpa := range s.clusterState.VPAs() {
 		if vpa.PodCount == 0 {
 			continue
 		}
