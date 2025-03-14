@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.BizflyCloudProviderName,
 }
 
-// DefaultCloudProvider build is Bizflycloud..
+// DefaultCloudProvider for Bizflycloud-only build is Bizflycloud.
 const DefaultCloudProvider = cloudprovider.BizflyCloudProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {

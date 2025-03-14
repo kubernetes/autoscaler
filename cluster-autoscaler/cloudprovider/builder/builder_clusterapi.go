@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.ClusterAPIProviderName,
 }
 
-// DefaultCloudProvider for machineapi-only build.
+// DefaultCloudProvider for Cluster API-only build is Cluster API.
 const DefaultCloudProvider = cloudprovider.ClusterAPIProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
