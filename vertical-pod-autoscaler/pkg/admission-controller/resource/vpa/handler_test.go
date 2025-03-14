@@ -24,7 +24,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 )
 
 const (
@@ -42,6 +45,8 @@ func TestValidateVPA(t *testing.T) {
 	validScalingMode := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
+	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
+	inPlaceOrRecreateEnabledTestName := "InPlaceOrRecreate update mode enabled by feature gate"
 	tests := []struct {
 		name        string
 		vpa         vpa_types.VerticalPodAutoscaler
@@ -77,6 +82,27 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			expectError: fmt.Errorf("unexpected UpdateMode value bad"),
+		},
+		{
+			name: "InPlaceOrRecreate update mode not enabled by feature gate",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceOrRecreateUpdateMode,
+					},
+				},
+			},
+			expectError: fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission and updater args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate),
+		},
+		{
+			name: inPlaceOrRecreateEnabledTestName,
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceOrRecreateUpdateMode,
+					},
+				},
+			},
 		},
 		{
 			name: "zero minReplicas",
@@ -282,6 +308,9 @@ func TestValidateVPA(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			if tc.name == inPlaceOrRecreateEnabledTestName {
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+			}
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
