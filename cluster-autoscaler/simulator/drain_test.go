@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	system_rules "k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -43,7 +44,10 @@ import (
 
 func TestGetPodsToMove(t *testing.T) {
 	var (
-		testTime = time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
+		testTime                                = time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
+		creationTimeBeforeBspDisturptionTimeout = testTime.Add(-system_rules.BspDisruptionTimeout).Add(-time.Minute)
+		creationTimeAfterBspDisturptionTimeout  = testTime.Add(-system_rules.BspDisruptionTimeout).Add(time.Minute)
+
 		replicas = int32(5)
 
 		unreplicatedPod = &apiv1.Pod{
@@ -66,6 +70,22 @@ func TestGetPodsToMove(t *testing.T) {
 				Name:            "systemPod",
 				Namespace:       "kube-system",
 				OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
+			},
+		}
+		drainableBlockingSystemPod = &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "systemPod",
+				Namespace:         "kube-system",
+				OwnerReferences:   GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
+				CreationTimestamp: metav1.Time{Time: creationTimeBeforeBspDisturptionTimeout},
+			},
+		}
+		nonDrainableBlockingSystemPod = &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "systemPod",
+				Namespace:         "kube-system",
+				OwnerReferences:   GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
+				CreationTimestamp: metav1.Time{Time: creationTimeAfterBspDisturptionTimeout},
 			},
 		}
 		localStoragePod = &apiv1.Pod{
@@ -538,6 +558,28 @@ func TestGetPodsToMove(t *testing.T) {
 			wantErr: true,
 			wantBlocking: &drain.BlockingPod{
 				Pod:    systemPod,
+				Reason: drain.UnmovableKubeSystemPod,
+			},
+		},
+		{
+			desc:    "Kube-system no pdb system pods blocking",
+			pods:    []*apiv1.Pod{nonDrainableBlockingSystemPod},
+			wantErr: true,
+			wantBlocking: &drain.BlockingPod{
+				Pod:    nonDrainableBlockingSystemPod,
+				Reason: drain.UnmovableKubeSystemPod,
+			}},
+		{
+			desc:     "Kube-system no pdb system pods allowing",
+			pods:     []*apiv1.Pod{drainableBlockingSystemPod},
+			wantPods: []*apiv1.Pod{drainableBlockingSystemPod},
+		},
+		{
+			desc:    "Kube-system no pdb system pods blocking",
+			pods:    []*apiv1.Pod{drainableBlockingSystemPod, nonDrainableBlockingSystemPod},
+			wantErr: true,
+			wantBlocking: &drain.BlockingPod{
+				Pod:    nonDrainableBlockingSystemPod,
 				Reason: drain.UnmovableKubeSystemPod,
 			},
 		},
