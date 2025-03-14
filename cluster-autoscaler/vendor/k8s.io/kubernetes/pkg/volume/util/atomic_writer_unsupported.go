@@ -1,5 +1,8 @@
+//go:build !linux
+// +build !linux
+
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +17,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package version
+package util
 
-// ClusterAutoscalerVersion contains version of CA.
-const ClusterAutoscalerVersion = "1.30.4"
+import (
+	"runtime"
+
+	"k8s.io/klog/v2"
+)
+
+// chown changes the numeric uid and gid of the named file.
+// This is a no-op on unsupported platforms.
+func (w *AtomicWriter) chown(name string, uid, _ /* gid */ int) error {
+	klog.Warningf("%s: skipping change of Linux owner %v for file %s; unsupported on %s", w.logContext, uid, name, runtime.GOOS)
+	return nil
+}
