@@ -1,0 +1,195 @@
+{
+    "kind": "compute#diskTypeAggregatedList",
+    "id": "projects/project-id/aggregated/diskTypes",
+    "items": {
+        "regions/us-central1": {
+            "warning": {
+                "code": "NO_RESULTS_ON_PAGE",
+                "message": "No results for the scope 'regions/us-central1'.",
+                "data": [
+                    {
+                        "key": "scope",
+                        "value": "regions/us-central1"
+                    }
+                ]
+            }
+        },
+        "regions/us-central2": {
+            "warning": {
+                "code": "NO_RESULTS_ON_PAGE",
+                "message": "No results for the scope 'regions/us-central2'.",
+                "data": [
+                    {
+                        "key": "scope",
+                        "value": "regions/us-central2"
+                    }
+                ]
+            }
+        },
+        "zones/us-central1-a": {
+            "diskTypes": [
+                {
+                    "kind": "compute#diskType",
+                    "id": "30003",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "local-ssd",
+                    "description": "Local SSD",
+                    "validDiskSize": "375GB-375GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a/diskTypes/local-ssd",
+                    "defaultDiskSizeGb": "375"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30007",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "pd-balanced",
+                    "description": "Balanced Persistent Disk",
+                    "validDiskSize": "10GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a/diskTypes/pd-balanced",
+                    "defaultDiskSizeGb": "100"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30002",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "pd-ssd",
+                    "description": "SSD Persistent Disk",
+                    "validDiskSize": "10GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a/diskTypes/pd-ssd",
+                    "defaultDiskSizeGb": "100"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30001",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "pd-standard",
+                    "description": "Standard Persistent Disk",
+                    "validDiskSize": "10GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-a/diskTypes/pd-standard",
+                    "defaultDiskSizeGb": "500"
+                }
+            ]
+        },
+        "zones/us-central1-b": {
+            "diskTypes": [
+                {
+                    "kind": "compute#diskType",
+                    "id": "30014",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "hyperdisk-balanced",
+                    "description": "Hyperdisk Balanced Persistent Disk",
+                    "validDiskSize": "4GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/hyperdisk-balanced",
+                    "defaultDiskSizeGb": "100"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30012",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "hyperdisk-extreme",
+                    "description": "Hyperdisk Extreme Persistent Disk",
+                    "validDiskSize": "64GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/hyperdisk-extreme",
+                    "defaultDiskSizeGb": "1000"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30013",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "hyperdisk-throughput",
+                    "description": "Hyperdisk Throughput Persistent Disk",
+                    "validDiskSize": "2048GB-32768GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/hyperdisk-throughput",
+                    "defaultDiskSizeGb": "2048"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30003",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "local-ssd",
+                    "description": "Local SSD",
+                    "validDiskSize": "375GB-375GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/local-ssd",
+                    "defaultDiskSizeGb": "375"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30007",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "pd-balanced",
+                    "description": "Balanced Persistent Disk",
+                    "validDiskSize": "10GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/pd-balanced",
+                    "defaultDiskSizeGb": "100"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30008",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "pd-extreme",
+                    "description": "Extreme Persistent Disk",
+                    "validDiskSize": "500GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/pd-extreme",
+                    "defaultDiskSizeGb": "1000"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30002",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "pd-ssd",
+                    "description": "SSD Persistent Disk",
+                    "validDiskSize": "10GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/pd-ssd",
+                    "defaultDiskSizeGb": "100"
+                },
+                {
+                    "kind": "compute#diskType",
+                    "id": "30001",
+                    "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+                    "name": "pd-standard",
+                    "description": "Standard Persistent Disk",
+                    "validDiskSize": "10GB-65536GB",
+                    "zone": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b",
+                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/zones/us-central1-b/diskTypes/pd-standard",
+                    "defaultDiskSizeGb": "500"
+                }
+            ]
+        }
+    },
+    "zones/us-central2-a": {
+        "warning": {
+            "code": "NO_RESULTS_ON_PAGE",
+            "message": "No results for the scope 'zones/us-central2-a'.",
+            "data": [
+                {
+                    "key": "scope",
+                    "value": "zones/us-central2-a"
+                }
+            ]
+        }
+    },
+    "zones/us-central2-b": {
+        "warning": {
+            "code": "NO_RESULTS_ON_PAGE",
+            "message": "No results for the scope 'zones/us-central2-b'.",
+            "data": [
+                {
+                    "key": "scope",
+                    "value": "zones/us-central2-b"
+                }
+            ]
+        }
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project-id/aggregated/diskTypes"
+}
