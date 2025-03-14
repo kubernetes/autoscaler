@@ -277,6 +277,7 @@ func (h *histogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint
 		h.bucketWeight[bucket] += float64(weight) * ratio
 	}
 	h.totalWeight += checkpoint.TotalWeight
+	h.updateMinAndMaxBucket()
 
 	return nil
 }
