@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.CivoProviderName,
 }
 
-// DefaultCloudProvider for civo-only build is Civo.
+// DefaultCloudProvider for Civo-only build is Civo.
 const DefaultCloudProvider = cloudprovider.CivoProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
