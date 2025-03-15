@@ -18,12 +18,25 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
-
 function print_help {
   echo "ERROR! Usage: vpa-process-yaml.sh <YAML files>+"
   echo "Script will output content of YAML files separated with YAML document"
   echo "separator and substituting REGISTRY and TAG for pod images"
+}
+
+function apply_feature_gate() {
+  filename=$1
+  if [ -n "${FEATURE_GATES}" ]; then
+    if [[ "${filename}" == *"admission-controller"* ]]; then
+      kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--feature-gates='"${FEATURE_GATES}"'"}]' -o yaml -f -
+    elif [[ "${filename}" == *"updater"* ]] || [[ "${filename}" == *"recommender"* ]]; then
+      kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args", "value": ["--feature-gates='"${FEATURE_GATES}"'"]}]' -o yaml -f -
+    else
+      cat # passthrough
+    fi
+  else
+    cat
+  fi
 }
 
 if [ $# -eq 0 ]; then
@@ -36,6 +49,7 @@ DEFAULT_TAG="1.3.0"
 
 REGISTRY_TO_APPLY=${REGISTRY-$DEFAULT_REGISTRY}
 TAG_TO_APPLY=${TAG-$DEFAULT_TAG}
+FEATURE_GATES=${FEATURE_GATES:-""}
 
 if [ "${REGISTRY_TO_APPLY}" != "${DEFAULT_REGISTRY}" ]; then
   (>&2 echo "WARNING! Using image repository from REGISTRY env variable (${REGISTRY_TO_APPLY}) instead of ${DEFAULT_REGISTRY}.")
@@ -46,7 +60,7 @@ if [ "${TAG_TO_APPLY}" != "${DEFAULT_TAG}" ]; then
 fi
 
 for i in $*; do
-  sed -e "s,${DEFAULT_REGISTRY}/\([a-z-]*\):.*,${REGISTRY_TO_APPLY}/\1:${TAG_TO_APPLY}," $i
+  sed -e "s,${DEFAULT_REGISTRY}/\([a-z-]*\):.*,${REGISTRY_TO_APPLY}/\1:${TAG_TO_APPLY}," $i | apply_feature_gate "$(basename "$i")"
   echo ""
   echo "---"
 done

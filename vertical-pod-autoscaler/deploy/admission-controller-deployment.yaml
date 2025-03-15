@@ -47,15 +47,3 @@ spec:
         - name: tls-certs
           secret:
             secretName: vpa-tls-certs
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vpa-webhook
-  namespace: kube-system
-spec:
-  ports:
-    - port: 443
-      targetPort: 8000
-  selector:
-    app: vpa-admission-controller
