@@ -75,7 +75,7 @@ kind delete cluster -n kind -q
 
 echo "Creating KIND cluster 'kind'"
 KIND_VERSION="kindest/node:v1.32.0"
-if ! kind create cluster --image=${KIND_VERSION}; then
+if ! kind create cluster --image=${KIND_VERSION} --config ${SCRIPT_ROOT}/hack/kind-config.yaml; then
     echo "Failed to create KIND cluster. Exiting. Make sure kind version is updated."
     echo "Available versions: https://github.com/kubernetes-sigs/kind/releases"
     exit 1
