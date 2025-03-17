@@ -1,0 +1,75 @@
+{{- if .Values.admissionController.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+    {{- if .Values.updater.deploymentLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.updater.deploymentLabels "context" $ ) | nindent 8 }}
+    {{- end }}
+  {{ if .Values.updater.annotations }}
+  annotations:
+    {{- include "common.tplvalues.render" ( dict "value" .Values.updater.annotations "context" $ ) | nindent 8 }}
+  {{ end }}
+spec:
+  replicas: {{ .Values.admissionController.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+        {{- if .Values.updater.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.updater.podAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.podAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "vertical-pod-autoscaler.updater.serviceAccount.name" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+        - name: updater
+          image: {{ .Values.updater.image.registry }}/{{ .Values.updater.image.repository }}:{{ .Values.updater.image.tag }}
+          imagePullPolicy: {{ .Values.updater.image.pullPolicy }}
+          {{ if .Values.updater.extraArgs }}
+          args:
+            {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraArgs "context" $ ) | nindent 8 }}
+          {{- end }}
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if .Values.updater.extraEnv }}
+            {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraEnv "context" $ ) | nindent 8 }}
+            {{- end }}
+          resources:
+            limits:
+              cpu: 200m
+              memory: 500Mi
+            requests:
+              cpu: 50m
+              memory: 200Mi
+          ports:
+            - name: prometheus
+              containerPort: 8943
+      nodeSelector:
+        {{- if .Values.updater.nodeSelector }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.nodeSelector "context" $ ) | nindent 8 }}
+        {{- end }}
+      tolerations:
+        {{- if .Values.updater.tolerations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.tolerations "context" $ ) | nindent 8 }}
+        {{- end }}
+      affinity:
+        {{- if .Values.updater.affinity }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.affinity "context" $ ) | nindent 8 }}
+        {{- end }}
+{{- end }}

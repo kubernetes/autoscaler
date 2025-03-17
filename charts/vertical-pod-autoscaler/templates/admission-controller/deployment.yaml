@@ -1,0 +1,87 @@
+{{- if .Values.admissionController.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+    {{- if .Values.admissionController.deploymentLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.deploymentLabels "context" $ ) | nindent 8 }}
+    {{- end }}
+  {{ if .Values.admissionController.annotations }}
+  annotations:
+    {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.annotations "context" $ ) | nindent 8 }}
+  {{ end }}
+spec:
+  replicas: {{ .Values.admissionController.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+        {{- if .Values.admissionController.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.admissionController.podAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.podAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "vertical-pod-autoscaler.admissionController.serviceAccount.name" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+        - name: admission-controller
+          image: {{ .Values.admissionController.image.registry }}/{{ .Values.admissionController.image.repository }}:{{ .Values.admissionController.image.tag }}
+          imagePullPolicy: {{ .Values.admissionController.image.pullPolicy }}
+          args:
+            - --v=4
+            - --stderrthreshold=info
+            - --reload-cert
+            {{- if .Values.admissionController.extraArgs }}
+            {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraArgs "context" $ ) | nindent 8 }}
+            {{- end }}
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if .Values.admissionController.extraEnv }}
+            {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraEnv "context" $ ) | nindent 8 }}
+            {{- end }}
+          resources:
+            limits:
+              cpu: 200m
+              memory: 500Mi
+            requests:
+              cpu: 50m
+              memory: 200Mi
+          ports:
+            - containerPort: 8000
+            - name: prometheus
+              containerPort: 8944
+          volumeMounts:
+            - name: tls-certs
+              mountPath: "/etc/tls-certs"
+              readOnly: true
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: vpa-tls-certs
+      nodeSelector:
+        {{- if .Values.admissionController.nodeSelector }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.nodeSelector "context" $ ) | nindent 8 }}
+        {{- end }}
+      tolerations:
+        {{- if .Values.admissionController.tolerations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.tolerations "context" $ ) | nindent 8 }}
+        {{- end }}
+      affinity:
+        {{- if .Values.admissionController.affinity }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.affinity "context" $ ) | nindent 8 }}
+        {{- end }}
+{{- end }}

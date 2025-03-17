@@ -1,0 +1,63 @@
+# Default values for vertical-pod-autoscaler
+
+admissionController:
+  enabled: true
+  replicas: 1
+  image:
+    registry: 125608480246.dkr.ecr.eu-west-3.amazonaws.com
+    repository: vpa-admission-controller
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: vpa-admission-controller
+
+  deploymentAnnotations: {}
+  podAnnotations: {}
+
+  deploymentLabels: {}
+  podLabels: {}
+
+  resources: {} # TODO UDI
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  extraArgs: []
+  extraEnv: []
+
+  tls:
+    caCert: ""
+    cert: ""
+    key: ""
+    existingSecret: ""
+
+
+updater:
+  enabled: true
+  image:
+    registry: 125608480246.dkr.ecr.eu-west-3.amazonaws.com
+    repository: vpa-updater
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+    annotations: {}
+
+  deploymentAnnotations: {}
+  podAnnotations: {}
+  podLabels: {}
+
+  resources: {}
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  extraArgs: []
+  extraEnv: []
+

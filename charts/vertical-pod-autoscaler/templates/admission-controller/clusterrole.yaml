@@ -1,0 +1,92 @@
+# based on vertical-pod-autoscaler/deploy/vpa-rbac.yaml
+{{- if .Values.admissionController.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+rules:
+  # vpa-target-reader
+  - apiGroups:
+    - '*'
+    resources:
+    - '*/scale'
+    verbs:
+    - get
+    - watch
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+      - deployments
+      - replicasets
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  # vpa-admission-controller
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+      - nodes
+      - limitranges
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "admissionregistration.k8s.io"
+    resources:
+      - mutatingwebhookconfigurations
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+  - apiGroups:
+      - "poc.autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - create
+      - update
+      - get
+      - list
+      - watch
+{{- end }}
