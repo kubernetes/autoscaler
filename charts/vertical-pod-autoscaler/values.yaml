@@ -20,7 +20,13 @@ admissionController:
   deploymentLabels: {}
   podLabels: {}
 
-  resources: {} # TODO UDI
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 50m
+      memory: 200Mi
 
   nodeSelector: {}
   tolerations: []
@@ -52,7 +58,13 @@ updater:
   podAnnotations: {}
   podLabels: {}
 
-  resources: {}
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1000Mi
+    requests:
+      cpu: 50m
+      memory: 500Mi
 
   nodeSelector: {}
   tolerations: []
@@ -60,4 +72,3 @@ updater:
 
   extraArgs: []
   extraEnv: []
-

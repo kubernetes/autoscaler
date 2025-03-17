@@ -35,31 +35,26 @@ spec:
         runAsNonRoot: true
         runAsUser: 65534 # nobody
       containers:
-        - name: updater
-          image: {{ .Values.updater.image.registry }}/{{ .Values.updater.image.repository }}:{{ .Values.updater.image.tag }}
-          imagePullPolicy: {{ .Values.updater.image.pullPolicy }}
-          {{ if .Values.updater.extraArgs }}
-          args:
-            {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraArgs "context" $ ) | nindent 8 }}
+      - name: updater
+        image: {{ .Values.updater.image.registry }}/{{ .Values.updater.image.repository }}:{{ .Values.updater.image.tag }}
+        imagePullPolicy: {{ .Values.updater.image.pullPolicy }}
+        {{ if .Values.updater.extraArgs }}
+        args:
+          {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraArgs "context" $ ) | nindent 8 }}
+        {{- end }}
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- if .Values.updater.extraEnv }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraEnv "context" $ ) | nindent 8 }}
           {{- end }}
-          env:
-            - name: NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            {{- if .Values.updater.extraEnv }}
-            {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraEnv "context" $ ) | nindent 8 }}
-            {{- end }}
-          resources:
-            limits:
-              cpu: 200m
-              memory: 500Mi
-            requests:
-              cpu: 50m
-              memory: 200Mi
-          ports:
-            - name: prometheus
-              containerPort: 8943
+        resources:
+          {{- toYaml .Values.updater.resources | nindent 10 }}
+        ports:
+          - name: prometheus
+            containerPort: 8943
       nodeSelector:
         {{- if .Values.updater.nodeSelector }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.updater.nodeSelector "context" $ ) | nindent 8 }}

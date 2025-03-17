@@ -35,39 +35,34 @@ spec:
         runAsNonRoot: true
         runAsUser: 65534 # nobody
       containers:
-        - name: admission-controller
-          image: {{ .Values.admissionController.image.registry }}/{{ .Values.admissionController.image.repository }}:{{ .Values.admissionController.image.tag }}
-          imagePullPolicy: {{ .Values.admissionController.image.pullPolicy }}
-          args:
-            - --v=4
-            - --stderrthreshold=info
-            - --reload-cert
-            {{- if .Values.admissionController.extraArgs }}
-            {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraArgs "context" $ ) | nindent 8 }}
-            {{- end }}
-          env:
-            - name: NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            {{- if .Values.admissionController.extraEnv }}
-            {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraEnv "context" $ ) | nindent 8 }}
-            {{- end }}
-          resources:
-            limits:
-              cpu: 200m
-              memory: 500Mi
-            requests:
-              cpu: 50m
-              memory: 200Mi
-          ports:
-            - containerPort: 8000
-            - name: prometheus
-              containerPort: 8944
-          volumeMounts:
-            - name: tls-certs
-              mountPath: "/etc/tls-certs"
-              readOnly: true
+      - name: admission-controller
+        image: {{ .Values.admissionController.image.registry }}/{{ .Values.admissionController.image.repository }}:{{ .Values.admissionController.image.tag }}
+        imagePullPolicy: {{ .Values.admissionController.image.pullPolicy }}
+        args:
+          - --v=4
+          - --stderrthreshold=info
+          - --reload-cert
+          {{- if .Values.admissionController.extraArgs }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraArgs "context" $ ) | nindent 8 }}
+          {{- end }}
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- if .Values.admissionController.extraEnv }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraEnv "context" $ ) | nindent 8 }}
+          {{- end }}
+        resources:
+          {{- toYaml .Values.admissionController.resources | nindent 10 }}
+        ports:
+          - containerPort: 8000
+          - name: prometheus
+            containerPort: 8944
+        volumeMounts:
+          - name: tls-certs
+            mountPath: "/etc/tls-certs"
+            readOnly: true
       volumes:
         - name: tls-certs
           secret:
