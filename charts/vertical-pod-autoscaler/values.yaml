@@ -4,8 +4,7 @@ admissionController:
   enabled: true
   replicas: 1
   image:
-    registry: 125608480246.dkr.ecr.eu-west-3.amazonaws.com
-    repository: vpa-admission-controller
+    repository: public.ecr.aws/groundcovercom/groundcover/vpa-admission-controller
     tag: v0.1.0
     pullPolicy: IfNotPresent
 
@@ -45,8 +44,7 @@ admissionController:
 updater:
   enabled: true
   image:
-    registry: 125608480246.dkr.ecr.eu-west-3.amazonaws.com
-    repository: vpa-updater
+    repository: public.ecr.aws/groundcovercom/groundcover/vpa-updater
     tag: v0.1.0
     pullPolicy: IfNotPresent
 

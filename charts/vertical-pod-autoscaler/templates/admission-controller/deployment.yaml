@@ -36,7 +36,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: admission-controller
-        image: {{ .Values.admissionController.image.registry }}/{{ .Values.admissionController.image.repository }}:{{ .Values.admissionController.image.tag }}
+        image: {{ .Values.admissionController.image.repository }}:{{ .Values.admissionController.image.tag }}
         imagePullPolicy: {{ .Values.admissionController.image.pullPolicy }}
         args:
           - --v=4
