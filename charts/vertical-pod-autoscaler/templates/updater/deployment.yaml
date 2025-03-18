@@ -55,16 +55,16 @@ spec:
         ports:
           - name: prometheus
             containerPort: 8943
+      {{ with .Values.updater.nodeSelector }}
       nodeSelector:
-        {{- if .Values.updater.nodeSelector }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.nodeSelector "context" $ ) | nindent 8 }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.updater.tolerations }}
       tolerations:
-        {{- if .Values.updater.tolerations }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.tolerations "context" $ ) | nindent 8 }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.updater.affinity }}
       affinity:
-        {{- if .Values.updater.affinity }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.affinity "context" $ ) | nindent 8 }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
 {{- end }}

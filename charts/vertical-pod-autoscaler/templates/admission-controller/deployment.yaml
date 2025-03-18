@@ -70,16 +70,16 @@ spec:
         - name: tls-certs
           secret:
             secretName: vpa-tls-certs
+      {{ with .Values.admissionController.nodeSelector }} 
       nodeSelector:
-        {{- if .Values.admissionController.nodeSelector }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.nodeSelector "context" $ ) | nindent 8 }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.admissionController.tolerations }}
       tolerations:
-        {{- if .Values.admissionController.tolerations }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.tolerations "context" $ ) | nindent 8 }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.admissionController.affinity }}
       affinity:
-        {{- if .Values.admissionController.affinity }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.affinity "context" $ ) | nindent 8 }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
 {{- end }}
