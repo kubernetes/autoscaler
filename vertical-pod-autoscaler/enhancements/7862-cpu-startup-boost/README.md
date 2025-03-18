@@ -13,8 +13,10 @@
     - [Validation](#validation)
       - [Static Validation](#static-validation)
       - [Dynamic Validation](#dynamic-validation)
-    - [Feature Enablement](#feature-enablement)
     - [Mitigating Failed In-Place Downsizes](#mitigating-failed-in-place-downsizes)
+    - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+      - [How can this feature be enabled / disabled in a live cluster?](#how-can-this-feature-be-enabled--disabled-in-a-live-cluster)
+    - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
   - [Test Plan](#test-plan)
   - [Examples](#examples)
     - [CPU Boost Only](#cpu-boost-only)
@@ -35,6 +37,9 @@ This proposal allows VPA to boost the CPU request and limit of containers during
 the pod startup and to scale the CPU resources back down when the pod is `Ready`,
 leveraging the [in-place pod resize Kubernetes feature](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
 
+> [!NOTE]
+> This feature depends on the new `InPlaceOrRecreate` VPA mode:
+> [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md)
 
 ### Goals
 
@@ -92,11 +97,20 @@ and contain the following fields:
   * `StartupBoost.CPU.Value`: the target value of the CPU request or limit
   during the startup boost phase.
 
-NOTE: The boosted CPU value will be capped by
-[`--container-recommendation-max-allowed-cpu`](https://github.com/kubernetes/autoscaler/blob/4d294562e505431d518a81e8833accc0ec99c9b8/vertical-pod-autoscaler/pkg/recommender/main.go#L122)
-flag value, if set.
+> [!IMPORTANT]
+> The boosted CPU value will be capped by
+> [`--container-recommendation-max-allowed-cpu`](https://github.com/kubernetes/autoscaler/blob/4d294562e505431d518a81e8833accc0ec99c9b8/vertical-pod-autoscaler/pkg/recommender/main.go#L122)
+> flag value, if set.
 
-NOTE: Only one of `Factor` or `Value` may be specified per container policy.
+> [!IMPORTANT]
+> Only one of `Factor` or `Value` may be specified per container policy.
+
+We will also add a new mode to the [`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236):
+  * **NEW**: `StartupBoostOnly`: new mode that will allow users to only enable
+  the startup boost feature for a container and not vanilla VPA altogether.
+  * **NEW**: `Auto`: we will modify the existing `Auto` mode to enable both
+  vanilla VPA and CPU Startup Boost (when `StartupBoost` parameter is
+  specified).
 
 #### Priority of `StartupBoost`
 
@@ -121,9 +135,11 @@ excluded from [`ControlledResources`](https://github.com/kubernetes/autoscaler/b
 are created/updated:
    * The VPA autoscaling mode must be `InPlaceOrRecreate` (since it does not
    make sense to use this feature with disruptive modes of VPA).
-   * The boost factor is >= 1
+   * The boost factor is >= 1 (via CRD validation rules)
    * Only one of `StartupBoost.CPU.Factor` or `StartupBoost.CPU.Value` is
    specified
+   * The [feature enablement](#feature-enablement) flags must be on.
+
 
 #### Dynamic Validation
 
@@ -134,35 +150,58 @@ are created/updated:
 utilize this feature. Therefore, VPA will not boost CPU resources of workloads
 that do not configure a Readiness or a Startup probe.
 
-### Feature Enablement
-
-During the Alpha launch of this feature, users will need to:
-* Enable the CPU startup boost feature via a binary flag.
-* Set the VPA autoscaling mode to `InPlaceOrRecreate`
-* Set the [`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236)
-to either:
-  * **NEW**: `StartupBoostOnly`: this mode will allow users to only enable the
-  startup boost feature for a container and not vanilla VPA altogether.
-  * **NEW**: `Auto`: in this mode, both vanilla VPA and CPU Startup Boost will
-  be enabled.
-
-
 ### Mitigating Failed In-Place Downsizes
 
-The VPA Updater will evict a pod to actuate a startup CPU boost
+The VPA Updater **will not** evict a pod to actuate a startup CPU boost
 recommendation if it attempted to apply the recommendation in place and it
-failed (see the [scenarios](https://github.com/kubernetes/autoscaler/blob/0a34bf5d3a71b486bdaa440f1af7f8d50dc8e391/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md?plain=1#L164-L169)
-where the VPA updater will consider that the update failed).
-
-We will cache pods that have failed the in-place downsize and not reattempt to
-CPU boost them again for the next hour, to **avoid** an eviction loop scenario
-like this:
+failed (see the [scenarios](https://github.com/kubernetes/autoscaler/blob/0a34bf5d3a71b486bdaa440f1af7f8d50dc8e391/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md?plain=1#L164-L169 ) where the VPA
+updater will consider that the update failed). This is to avoid an eviction
+loop:
 
 1. A pod is created and has its CPU resources boosted
-2. The pod is ready. VPA Updater tries to downscale the pod in-place and it
+1. The pod is ready. VPA Updater tries to downscale the pod in-place and it
 fails.
-1. VPA Updater evicts the pod. (If we do nothing, the logic flow goes back to
-(1)).
+1. VPA Updater evicts the pod. Logic flow goes back to (1).
+
+### Feature Enablement and Rollback
+
+#### How can this feature be enabled / disabled in a live cluster?
+
+* Feature gates names: `CPUStartupBoost` and `InPlaceOrRecreate` (from
+[AEP-4016](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md#feature-enablement-and-rollback))
+* Components depending on the feature gates:
+  * admission-controller
+  * updater
+
+Enabling of feature gates `CPUStartupBoost` AND `InPlaceOrRecreate` will cause
+the following to happen:
+  * admission-controller to **accept** new VPA objects being created with
+`StartupBoostOnly` configured.
+  * admission-controller to **boost** CPU resources.
+  * updater to **unboost** the CPU resources.
+
+Disabling of feature gates `CPUStartupBoost` OR `InPlaceOrRecreate` will cause
+the following to happen:
+  * admission-controller to **reject** new VPA objects being created with
+  `StartupBoostOnly` configured.
+    * A descriptive error message should be returned to the user letting them
+    know that they are using a feature gated feature.
+  * admission-controller **to not** boost CPU resources, should it encounter a
+  VPA configured with a `StartupBoost` config and `StartupBoostOnly` or `Auto`
+  `ContainerScalingMode`.
+  * updater **to not** unboost CPU resources when pods become `Ready`, should it
+  encounter a VPA configured with a `StartupBoost` config and `StartupBoostOnly`
+  or `Auto` `ContainerScalingMode`.
+
+### Kubernetes Version Compatibility
+
+Similarly to [AEP-4016](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support#kubernetes-version-compatibility),
+`StartupBoost` configuration and `StartupBoostOnly` mode are built assuming that
+VPA will be running on a Kubernetes 1.33+ with the beta version of
+[KEP-1287: In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287)
+enabled. If this is not the case, VPA will behave as if the `CPUStartupBoost`
+feature gate was disabled (see [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+section for details).
 
 ## Test Plan
 
@@ -177,7 +216,6 @@ becomes `Ready`. Then, the pod is scaled back down in-place.
 Readiness or a Startup probe.
 * Pod is evicted the first time that an in-place update fails when scaling the
 pod back down. And a new CPU boost is not attempted when the pod is recreated.
-
 
 ## Examples
 
@@ -241,5 +279,5 @@ spec:
 
 ## Implementation History
 
-* 2025-03-12: Initial version.
+* 2025-03-18: Initial version.
 
