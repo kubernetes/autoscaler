@@ -225,7 +225,8 @@ and make progress.
 - Consider [node
   metatdata](https://github.com/kubernetes/autoscaler/issues/5928).
 - Change autoscaling behavior for pods that are not run under a DaemonSet.
-- Provide an informed recommendation when a new node is added to a cluster.
+- Use data from other nodes to make an informed recommendation when a pod is
+  added to a DaemonSet with VPA enabled after a new node is added to a cluster.
 
 ## Proposal
 
@@ -261,13 +262,13 @@ bogged down.
 #### Story 1
 
 Observability solutions often use a node-local agent deployed as a DaemonSet in
-Kubernetes to collect observability data. In this archtecture, the DaemonSet
+Kubernetes to collect observability data. In this architecture, the DaemonSet
 may be deployed across many nodes with different workloads running on them. For
 instance, consider an example where Prometheus is deployed as a DaemonSet. Some
 workloads are specifically designed to aggregate and export metrics (Kube State
 Metrics, Statsd, cAdvisor, and others). On the nodes where these metrics-heavy
-workloads are scheduled, the node-local Prometheus collector will have much
-more work to do and thus will consume more CPU/memory resources.
+workloads are scheduled, the node-local Prometheus collector will have much more
+work to do and thus will consume more CPU/memory resources.
 
 Following the implementation of this proposal, the resource requests can be
 customized to each node to remediate overprivisioning and underprovisioning of
@@ -361,8 +362,20 @@ type VerticalPodAutoscalerSpec struct {
 +   // By default, the scope is all pods under the controller specified in `TargetRef`. Scope
 +   // may also be set to "node" when the TargetRef is a DaemonSet, to apply recommendations
 +   // independently to the pod scheduled to each node under the DaemonSet.
-+   Scope string `json:"scope,omitzero" protobuf:"bytes,4,opt,name=scope"`
++   // +kubebuilder:validation:Enum=;node
++   Scope VPAScope `json:"scope,omitzero" protobuf:"bytes,4,opt,name=scope"`
 }
+```
+
+The VPAScope type will allow "Default" and "Node" options:
+```
+// +enum
+type VPAScope string
+
+const (
+    ScopeDefault = ""
+    ScopeNode = "node"
+)
 ```
 
 An empty string in the scope field maintains existing functionality for the
@@ -379,18 +392,20 @@ API to ensure that Scope is not set to an invalid value.
 
 When this feature is enabled, the internal representation of the
 VerticalPodAutoscaler will be divided into N objects, where N is the number of
-Nodes with a pod scheduled. Aside from this difference, most mechanics of
+Nodes with a pod scheduled. When the recommendation is produced and exposed on
+the VerticalPodAutoscaler, the recommendation will include the recommendation
+generated for each node. Aside from these differences, the mechanics of
 VerticalPodAutoscaling will remain fundamentally unchanged.
 
 When using Metrics Server, the VerticalPodAutoscalerCheckpoints will also be
-divided into separate resources, by scope. When the storage is Prometheus,
-VerticalPodAutoscalerCheckpoints are not created.
+divided into separate resources, by the node scope. When the storage is
+Prometheus, VerticalPodAutoscalerCheckpoints are not created.
 
 Internally, the
 [ClusterState](https://github.com/kubernetes/autoscaler/blob/vpa-release-1.3/vertical-pod-autoscaler/pkg/recommender/model/cluster.go#L38-L63)
 will track a separate VPA for each schedulable node of the DaemonSet. Nodes
 that with taints that are not tolerated or that otherwise do not meet the
-nodeSelector criteria will be ignored.
+nodeSelector criteria for the DaemonSet in the TargetRef will be ignored.
 
 
 ### Test Plan
