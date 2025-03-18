@@ -7,11 +7,11 @@ metadata:
   labels:
     app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
     {{- if .Values.updater.deploymentLabels }}
-    {{- include "common.tplvalues.render" ( dict "value" .Values.updater.deploymentLabels "context" $ ) | nindent 8 }}
+    {{- toYaml .Values.updater.deploymentLabels | nindent 8 }}
     {{- end }}
   {{ if .Values.updater.annotations }}
   annotations:
-    {{- include "common.tplvalues.render" ( dict "value" .Values.updater.annotations "context" $ ) | nindent 8 }}
+    {{- toYaml .Values.updater.annotations | nindent 8 }}
   {{ end }}
 spec:
   replicas: {{ .Values.admissionController.replicas }}
@@ -23,11 +23,11 @@ spec:
       labels:
         app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
         {{- if .Values.updater.podLabels }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.podLabels "context" $ ) | nindent 8 }}
+        {{- toYaml .Values.updater.podLabels | nindent 8 }}
         {{- end }}
       annotations:
         {{- if .Values.updater.podAnnotations }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.updater.podAnnotations "context" $ ) | nindent 8 }}
+        {{- toYaml .Values.updater.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
       serviceAccountName: {{ include "vertical-pod-autoscaler.updater.serviceAccount.name" . }}
@@ -40,7 +40,7 @@ spec:
         imagePullPolicy: {{ .Values.updater.image.pullPolicy }}
         {{ if .Values.updater.extraArgs }}
         args:
-          {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraArgs "context" $ ) | nindent 8 }}
+          {{- toYaml .Values.updater.extraArgs | nindent 8 }}
         {{- end }}
         env:
           - name: NAMESPACE
@@ -48,7 +48,7 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
           {{- if .Values.updater.extraEnv }}
-          {{- include "common.tplvalues.render" ( dict "value" .Values.updater.extraEnv "context" $ ) | nindent 8 }}
+          {{- toYaml .Values.updater.extraEnv | nindent 8 }}
           {{- end }}
         resources:
           {{- toYaml .Values.updater.resources | nindent 10 }}

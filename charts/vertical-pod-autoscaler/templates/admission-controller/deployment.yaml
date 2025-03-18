@@ -7,11 +7,11 @@ metadata:
   labels:
     app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
     {{- if .Values.admissionController.deploymentLabels }}
-    {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.deploymentLabels "context" $ ) | nindent 8 }}
+    {{- toYaml .Values.admissionController.deploymentLabels | nindent 8 }}
     {{- end }}
   {{ if .Values.admissionController.annotations }}
   annotations:
-    {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.annotations "context" $ ) | nindent 8 }}
+    {{- toYaml .Values.admissionController.annotations | nindent 8 }}
   {{ end }}
 spec:
   replicas: {{ .Values.admissionController.replicas }}
@@ -23,11 +23,11 @@ spec:
       labels:
         app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
         {{- if .Values.admissionController.podLabels }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.podLabels "context" $ ) | nindent 8 }}
+        {{- toYaml .Values.admissionController.podLabels | nindent 8 }}
         {{- end }}
       annotations:
         {{- if .Values.admissionController.podAnnotations }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.podAnnotations "context" $ ) | nindent 8 }}
+        {{- toYaml .Values.admissionController.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
       serviceAccountName: {{ include "vertical-pod-autoscaler.admissionController.serviceAccount.name" . }}
@@ -42,19 +42,20 @@ spec:
           - --v=4
           - --stderrthreshold=info
           - --reload-cert
+          - --webhook-service={{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
           - --client-ca-file=/etc/tls-certs/ca.crt
           - --tls-cert-file=/etc/tls-certs/tls.crt
           - --tls-private-key=/etc/tls-certs/tls.key
           {{- if .Values.admissionController.extraArgs }}
-          {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraArgs "context" $ ) | nindent 8 }}
+          {{- toYaml .Values.admissionController.extraArgs | nindent 8 }}
           {{- end }}
         env:
           - name: NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          {{- if .Values.admissionController.extraEnv }}
-          {{- include "common.tplvalues.render" ( dict "value" .Values.admissionController.extraEnv "context" $ ) | nindent 8 }}
+          {{ with .Values.admissionController.extraEnv }}
+          {{- toYaml . | nindent 8 }}
           {{- end }}
         resources:
           {{- toYaml .Values.admissionController.resources | nindent 10 }}

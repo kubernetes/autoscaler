@@ -1,7 +1,7 @@
 {{- if .Values.admissionController.enabled }}
 {{- if not .Values.admissionController.tls.existingSecret }}
 {{- $ca := genCA (include "vertical-pod-autoscaler.admissionController.fullname" .) 365 }}
-{{- $cn := printf "%s.%s.svc" "vpa-webhook" .Release.Namespace }}
+{{- $cn := printf "%s.%s.svc" (include "vertical-pod-autoscaler.admissionController.fullname" .) .Release.Namespace }}
 {{- $cert := genSignedCert $cn nil (list $cn) 365 $ca }}
 apiVersion: v1
 kind: Secret
