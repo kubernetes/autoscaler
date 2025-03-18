@@ -18,13 +18,13 @@ package service
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -144,7 +144,7 @@ func (client *client) createQueryString(api string, args map[string]string) stri
 	params.Add("apiKey", client.config.APIKey)
 	encodedParams := params.Encode()
 
-	mac := hmac.New(sha1.New, []byte(client.config.SecretKey))
+	mac := hmac.New(sha256.New, []byte(client.config.SecretKey))
 	mac.Write([]byte(strings.Replace(strings.ToLower(encodedParams), "+", "%20", -1)))
 	signature := base64.StdEncoding.EncodeToString(mac.Sum(nil))
 	encodedParams = fmt.Sprintf("%s&signature=%s", encodedParams, url.QueryEscape(signature))
@@ -174,7 +174,7 @@ func (client *client) newRequest(api string, args map[string]string, async bool,
 	}
 	klog.Info("NewAPIRequest response status code:", response.StatusCode)
 
-	body, _ := ioutil.ReadAll(response.Body)
+	body, _ := io.ReadAll(response.Body)
 	var data map[string]interface{}
 	_ = json.Unmarshal([]byte(body), &data)
 
