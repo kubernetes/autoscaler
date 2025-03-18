@@ -420,13 +420,13 @@ func makeTestSpecClient(podLabels []map[string]string) spec.SpecClient {
 	}
 }
 
-func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int64) spec.BasicContainerSpec {
+func newTestContainerSpec(podID model.PodID, containerName string, millicores int, memory int64) spec.BasicContainerSpec {
 	containerID := model.ContainerID{
 		PodID:         podID,
 		ContainerName: containerName,
 	}
 	requestedResources := model.Resources{
-		model.ResourceCPU:    model.ResourceAmount(milicores),
+		model.ResourceCPU:    model.ResourceAmount(millicores),
 		model.ResourceMemory: model.ResourceAmount(memory),
 	}
 	return spec.BasicContainerSpec{
