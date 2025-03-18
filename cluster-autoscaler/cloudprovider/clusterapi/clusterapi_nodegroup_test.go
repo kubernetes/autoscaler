@@ -406,17 +406,72 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 
 func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 	type testCase struct {
-		description         string
-		delta               int
-		initial             int32
-		targetSizeIncrement int32
-		expected            int32
-		expectedError       bool
+		description            string
+		delta                  int
+		initial                int32
+		targetSizeIncrement    int32
+		expected               int32
+		expectedError          bool
+		includeDeletingMachine bool
+		includeFailedMachine   bool
+		includePendingMachine  bool
 	}
 
 	test := func(t *testing.T, tc *testCase, testConfig *testConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)
 		defer stop()
+
+		// machines in deletion should not be counted towards the active nodes when calculating a decrease in size.
+		if tc.includeDeletingMachine {
+			if tc.initial < 1 {
+				t.Fatal("test cannot pass, deleted machine requires at least 1 machine in machineset")
+			}
+
+			// Simulate a machine in deleting
+			machine := testConfig.machines[0].DeepCopy()
+			timestamp := metav1.Now()
+			machine.SetDeletionTimestamp(&timestamp)
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		// machines that have failed should not be counted towards the active nodes when calculating a decrease in size.
+		if tc.includeFailedMachine {
+			// because we want to allow for tests that have deleted machines and failed machines, we use the second machine in the test data.
+			if tc.initial < 2 {
+				t.Fatal("test cannot pass, failed machine requires at least 2 machine in machineset")
+			}
+
+			// Simulate a failed machine
+			machine := testConfig.machines[1].DeepCopy()
+
+			unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+			unstructured.SetNestedField(machine.Object, "FailureMessage", "status", "failureMessage")
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		// machines that are in pending state should not be counted towards the active nodes when calculating a decrease in size.
+		if tc.includePendingMachine {
+			// because we want to allow for tests that have deleted, failed machines, and pending machine, we use the third machine in the test data.
+			if tc.initial < 3 {
+				t.Fatal("test cannot pass, pending machine requires at least 3 machine in machineset")
+			}
+
+			// Simulate a pending machine
+			machine := testConfig.machines[2].DeepCopy()
+
+			unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+			unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -522,45 +577,83 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 		}
 	}
 
-	annotations := map[string]string{
-		nodeGroupMinSizeAnnotationKey: "1",
-		nodeGroupMaxSizeAnnotationKey: "10",
-	}
-
-	t.Run("MachineSet", func(t *testing.T) {
-		tc := testCase{
+	testCases := []testCase{
+		{
 			description:         "Same number of existing instances and node group target size should error",
 			initial:             3,
 			targetSizeIncrement: 0,
 			expected:            3,
 			delta:               -1,
 			expectedError:       true,
-		}
-		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
-	})
-
-	t.Run("MachineSet", func(t *testing.T) {
-		tc := testCase{
+		},
+		{
 			description:         "A node group with target size 4 but only 3 existing instances should decrease by 1",
 			initial:             3,
 			targetSizeIncrement: 1,
 			expected:            3,
 			delta:               -1,
-		}
-		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
-	})
+		},
+		{
+			description:            "A node group with 4 replicas with one machine in deleting state should decrease by 1",
+			initial:                4,
+			targetSizeIncrement:    0,
+			expected:               3,
+			delta:                  -1,
+			includeDeletingMachine: true,
+		},
+		{
+			description:          "A node group with 4 replicas with one failed machine should decrease by 1",
+			initial:              4,
+			targetSizeIncrement:  0,
+			expected:             3,
+			delta:                -1,
+			includeFailedMachine: true,
+		},
+		{
+			description:           "A node group with 4 replicas with one pending machine should decrease by 1",
+			initial:               4,
+			targetSizeIncrement:   0,
+			expected:              3,
+			delta:                 -1,
+			includePendingMachine: true,
+		},
+		{
+			description:           "A node group with 5 replicas with one pending and one failed machine should decrease by 2",
+			initial:               5,
+			targetSizeIncrement:   0,
+			expected:              3,
+			delta:                 -2,
+			includeFailedMachine:  true,
+			includePendingMachine: true,
+		},
+		{
+			description:            "A node group with 5 replicas with one pending, one failed, and one deleting machine should decrease by 3",
+			initial:                5,
+			targetSizeIncrement:    0,
+			expected:               2,
+			delta:                  -3,
+			includeFailedMachine:   true,
+			includePendingMachine:  true,
+			includeDeletingMachine: true,
+		},
+	}
 
-	t.Run("MachineDeployment", func(t *testing.T) {
-		tc := testCase{
-			description:         "Same number of existing instances and node group target size should error",
-			initial:             3,
-			targetSizeIncrement: 0,
-			expected:            3,
-			delta:               -1,
-			expectedError:       true,
-		}
-		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
-	})
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+		})
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+		})
+	}
 }
 
 func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
@@ -580,7 +673,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 		description: "errors because initial+delta < len(nodes)",
 		delta:       -1,
 		initial:     3,
-		errorMsg:    "attempt to delete existing nodes targetSize:3 delta:-1 existingNodes: 3",
+		errorMsg:    "attempt to delete existing nodes currentReplicas:3 delta:-1 existingNodes: 3",
 	}}
 
 	test := func(t *testing.T, tc *testCase, testConfig *testConfig) {
