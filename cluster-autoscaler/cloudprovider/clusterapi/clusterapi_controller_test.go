@@ -1664,6 +1664,11 @@ func TestIsFailedMachineProviderID(t *testing.T) {
 			providerID: normalizedProviderID("foo"),
 			expected:   false,
 		},
+		{
+			name:       "with provider ID created by createFailedMachineNormalizedProviderID should return true",
+			providerID: normalizedProviderID(createFailedMachineNormalizedProviderID("cluster-api", "id-0001")),
+			expected:   true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1690,6 +1695,11 @@ func TestMachineKeyFromFailedProviderID(t *testing.T) {
 			name:       "with a machine with an underscore in the name",
 			providerID: normalizedProviderID(fmt.Sprintf("%stest-namespace_foo_bar", failedMachinePrefix)),
 			expected:   "test-namespace/foo_bar",
+		},
+		{
+			name:       "with a provider ID created by createFailedMachineNormalizedProviderID",
+			providerID: normalizedProviderID(createFailedMachineNormalizedProviderID("cluster-api", "id-0001")),
+			expected:   "cluster-api/id-0001",
 		},
 	}
 
