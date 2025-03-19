@@ -406,15 +406,16 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 
 func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 	type testCase struct {
-		description            string
-		delta                  int
-		initial                int32
-		targetSizeIncrement    int32
-		expected               int32
-		expectedError          bool
-		includeDeletingMachine bool
-		includeFailedMachine   bool
-		includePendingMachine  bool
+		description                        string
+		delta                              int
+		initial                            int32
+		targetSizeIncrement                int32
+		expected                           int32
+		expectedError                      bool
+		includeDeletingMachine             bool
+		includeFailedMachine               bool
+		includeFailedMachineWithProviderID bool
+		includePendingMachine              bool
 	}
 
 	test := func(t *testing.T, tc *testCase, testConfig *testConfig) {
@@ -447,7 +448,9 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			// Simulate a failed machine
 			machine := testConfig.machines[1].DeepCopy()
 
-			unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+			if !tc.includeFailedMachineWithProviderID {
+				unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+			}
 			unstructured.SetNestedField(machine.Object, "FailureMessage", "status", "failureMessage")
 
 			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
@@ -635,6 +638,15 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			includeFailedMachine:   true,
 			includePendingMachine:  true,
 			includeDeletingMachine: true,
+		},
+		{
+			description:                        "A node group with 4 replicas with one failed machine that has a provider ID should decrease by 1",
+			initial:                            4,
+			targetSizeIncrement:                0,
+			expected:                           3,
+			delta:                              -1,
+			includeFailedMachine:               true,
+			includeFailedMachineWithProviderID: true,
 		},
 	}
 
