@@ -81,6 +81,10 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		}
 
 		containerName := GetHamsterContainerNameByIndex(0)
+		// check if the namespace exists and print the namespace name
+		ginkgo.By(fmt.Sprintf("Namespace name: %s", f.Namespace.Name))
+		CheckNamespaceOrCreate(f, f.Namespace.Name)
+
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
