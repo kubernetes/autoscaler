@@ -91,7 +91,7 @@ func (p *SharedCredentialsProvider) IsExpired() bool {
 	return !p.retrieved
 }
 
-// loadProfiles loads from the file pointed to by shared credentials filename for profile.
+// loadProfile loads from the file pointed to by shared credentials filename for profile.
 // The credentials retrieved from the profile will be returned or error. Error will be
 // returned if it fails to read from the file, or the data is invalid.
 func loadProfile(filename, profile string) (Value, error) {
