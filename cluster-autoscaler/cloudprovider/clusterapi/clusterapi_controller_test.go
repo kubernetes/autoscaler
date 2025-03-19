@@ -2218,7 +2218,7 @@ func TestNodeHasValidProviderID(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			observed := nodeHasValidProviderID(tc.providerID)
+			observed := isProviderIDNormalized(tc.providerID)
 			if observed != tc.expectedReturn {
 				t.Fatalf("unexpected return for provider ID %q, expected %t, observed %t", tc.providerID, tc.expectedReturn, observed)
 			}

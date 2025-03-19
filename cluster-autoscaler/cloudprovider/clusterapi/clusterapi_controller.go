@@ -383,10 +383,10 @@ func machineKeyFromFailedProviderID(providerID normalizedProviderID) string {
 	return strings.Replace(namespaceName, "_", "/", 1)
 }
 
-// nodeHasValidProviderID determines whether a node's providerID is the standard
+// isProviderIDNormalized determines whether a node's providerID is the standard
 // providerID assigned by the cloud provider, or if it has
 // been modified by the CAS CAPI provider to indicate deleting, pending, or failed
-func nodeHasValidProviderID(providerID normalizedProviderID) bool {
+func isProviderIDNormalized(providerID normalizedProviderID) bool {
 	return !isDeletingMachineProviderID(providerID) &&
 		!isPendingMachineProviderID(providerID) &&
 		!isFailedMachineProviderID(providerID)
