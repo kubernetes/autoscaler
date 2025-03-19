@@ -1,0 +1,72 @@
+# Default values for vertical-pod-autoscaler
+
+admissionController:
+  enabled: true
+  replicas: 1
+  image:
+    repository: public.ecr.aws/groundcovercom/groundcover/vpa-admission-controller
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: vpa-admission-controller
+
+  deploymentAnnotations: {}
+  podAnnotations: {}
+
+  deploymentLabels: {}
+  podLabels: {}
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 50m
+      memory: 200Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  extraArgs: []
+  extraEnv: []
+
+  tls:
+    caCert: ""
+    cert: ""
+    key: ""
+    existingSecret: ""
+
+
+updater:
+  enabled: true
+  image:
+    repository: public.ecr.aws/groundcovercom/groundcover/vpa-updater
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+    annotations: {}
+
+  deploymentAnnotations: {}
+  podAnnotations: {}
+  podLabels: {}
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1000Mi
+    requests:
+      cpu: 50m
+      memory: 500Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  extraArgs: []
+  extraEnv: []

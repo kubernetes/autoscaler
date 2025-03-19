@@ -1,0 +1,86 @@
+{{- if .Values.admissionController.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+    {{- if .Values.admissionController.deploymentLabels }}
+    {{- toYaml .Values.admissionController.deploymentLabels | nindent 8 }}
+    {{- end }}
+  {{ if .Values.admissionController.annotations }}
+  annotations:
+    {{- toYaml .Values.admissionController.annotations | nindent 8 }}
+  {{ end }}
+spec:
+  replicas: {{ .Values.admissionController.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+        {{- if .Values.admissionController.podLabels }}
+        {{- toYaml .Values.admissionController.podLabels | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.admissionController.podAnnotations }}
+        {{- toYaml .Values.admissionController.podAnnotations | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "vertical-pod-autoscaler.admissionController.serviceAccount.name" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+      - name: admission-controller
+        image: {{ .Values.admissionController.image.repository }}:{{ .Values.admissionController.image.tag }}
+        imagePullPolicy: {{ .Values.admissionController.image.pullPolicy }}
+        args:
+          - --v=4
+          - --stderrthreshold=info
+          - --reload-cert
+          - --webhook-service={{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+          - --client-ca-file=/etc/tls-certs/ca.crt
+          - --tls-cert-file=/etc/tls-certs/tls.crt
+          - --tls-private-key=/etc/tls-certs/tls.key
+          {{- if .Values.admissionController.extraArgs }}
+          {{- toYaml .Values.admissionController.extraArgs | nindent 8 }}
+          {{- end }}
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{ with .Values.admissionController.extraEnv }}
+          {{- toYaml . | nindent 8 }}
+          {{- end }}
+        resources:
+          {{- toYaml .Values.admissionController.resources | nindent 10 }}
+        ports:
+          - containerPort: 8000
+          - name: prometheus
+            containerPort: 8944
+        volumeMounts:
+          - name: tls-certs
+            mountPath: "/etc/tls-certs"
+            readOnly: true
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: vpa-tls-certs
+      {{ with .Values.admissionController.nodeSelector }} 
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.admissionController.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.admissionController.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+{{- end }}

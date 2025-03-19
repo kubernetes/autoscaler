@@ -1,0 +1,14 @@
+{{- if .Values.updater.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.updater.serviceAccount.name" . }}
+    namespace: {{ .Release.Namespace | quote }}
+{{- end }}

@@ -1,0 +1,70 @@
+{{- if .Values.admissionController.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+    {{- if .Values.updater.deploymentLabels }}
+    {{- toYaml .Values.updater.deploymentLabels | nindent 8 }}
+    {{- end }}
+  {{ if .Values.updater.annotations }}
+  annotations:
+    {{- toYaml .Values.updater.annotations | nindent 8 }}
+  {{ end }}
+spec:
+  replicas: {{ .Values.admissionController.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+        {{- if .Values.updater.podLabels }}
+        {{- toYaml .Values.updater.podLabels | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.updater.podAnnotations }}
+        {{- toYaml .Values.updater.podAnnotations | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "vertical-pod-autoscaler.updater.serviceAccount.name" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+      - name: updater
+        image:  {{ .Values.updater.image.repository }}:{{ .Values.updater.image.tag }}
+        imagePullPolicy: {{ .Values.updater.image.pullPolicy }}
+        {{ if .Values.updater.extraArgs }}
+        args:
+          {{- toYaml .Values.updater.extraArgs | nindent 8 }}
+        {{- end }}
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- if .Values.updater.extraEnv }}
+          {{- toYaml .Values.updater.extraEnv | nindent 8 }}
+          {{- end }}
+        resources:
+          {{- toYaml .Values.updater.resources | nindent 10 }}
+        ports:
+          - name: prometheus
+            containerPort: 8943
+      {{ with .Values.updater.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.updater.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.updater.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+{{- end }}

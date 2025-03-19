@@ -1,0 +1,16 @@
+{{- if .Values.admissionController.enabled }}
+{{- if not .Values.admissionController.tls.existingSecret }}
+{{- $ca := genCA (include "vertical-pod-autoscaler.admissionController.fullname" .) 365 }}
+{{- $cn := printf "%s.%s.svc" (include "vertical-pod-autoscaler.admissionController.fullname" .) .Release.Namespace }}
+{{- $cert := genSignedCert $cn nil (list $cn) 365 $ca }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vpa-tls-certs
+type: Opaque
+data:
+  ca.crt: {{ default $ca.Cert .Values.admissionController.tls.caCert | b64enc | quote }}
+  tls.crt: {{ default $cert.Cert .Values.admissionController.tls.cert | b64enc | quote }}
+  tls.key: {{ default $cert.Key .Values.admissionController.tls.key | b64enc | quote }}
+{{- end }}
+{{- end }}
