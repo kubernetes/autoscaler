@@ -356,6 +356,11 @@ func machineKeyFromDeletingMachineProviderID(providerID normalizedProviderID) st
 	return strings.Replace(namespaceName, "_", "/", 1)
 }
 
+// createPendingMachineProviderID creates a providerID for a machine that is pending
+func createPendingMachineProviderID(namespace, name string) string {
+	return fmt.Sprintf("%s%s_%s", pendingMachinePrefix, namespace, name)
+}
+
 func isPendingMachineProviderID(providerID normalizedProviderID) bool {
 	return strings.HasPrefix(string(providerID), pendingMachinePrefix)
 }
@@ -376,6 +381,15 @@ func isFailedMachineProviderID(providerID normalizedProviderID) bool {
 func machineKeyFromFailedProviderID(providerID normalizedProviderID) string {
 	namespaceName := strings.TrimPrefix(string(providerID), failedMachinePrefix)
 	return strings.Replace(namespaceName, "_", "/", 1)
+}
+
+// isProviderIDNormalized determines whether a node's providerID is the standard
+// providerID assigned by the cloud provider, or if it has
+// been modified by the CAS CAPI provider to indicate deleting, pending, or failed
+func isProviderIDNormalized(providerID normalizedProviderID) bool {
+	return !isDeletingMachineProviderID(providerID) &&
+		!isPendingMachineProviderID(providerID) &&
+		!isFailedMachineProviderID(providerID)
 }
 
 // findNodeByNodeName finds the Node object keyed by name.. Returns
@@ -677,7 +691,7 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 
 		if !found {
 			klog.V(4).Infof("Status.NodeRef of machine %q is currently nil", machine.GetName())
-			providerIDs = append(providerIDs, fmt.Sprintf("%s%s_%s", pendingMachinePrefix, machine.GetNamespace(), machine.GetName()))
+			providerIDs = append(providerIDs, createPendingMachineProviderID(machine.GetNamespace(), machine.GetName()))
 			continue
 		}
 
