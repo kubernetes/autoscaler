@@ -212,9 +212,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 	// provider.
 	actualNodes := 0
 	for _, node := range nodes {
-		if !isPendingMachineProviderID(normalizedProviderID(node.Id)) &&
-			!isFailedMachineProviderID(normalizedProviderID(node.Id)) &&
-			!isDeletingMachineProviderID(normalizedProviderID(node.Id)) {
+		if nodeHasValidProviderID(normalizedProviderID(node.Id)) {
 			actualNodes += 1
 		}
 	}
