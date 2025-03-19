@@ -26,7 +26,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -113,6 +112,13 @@ func WithResourceClaim(refName, claimName, templateName string) func(*apiv1.Pod)
 	}
 }
 
+// WithControllerOwnerRef sets an owner reference to the pod.
+func WithControllerOwnerRef(name, kind string, uid types.UID) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.OwnerReferences = GenerateOwnerReferences(name, kind, "apps/v1", uid)
+	}
+}
+
 // WithDSController creates a daemonSet owner ref for the pod.
 func WithDSController() func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
@@ -171,6 +177,13 @@ func WithMaxSkew(maxSkew int32, topologySpreadingKey string) func(*apiv1.Pod) {
 				},
 			}
 		}
+	}
+}
+
+// WithCreationTimestamp sets creation timestamp to the pod.
+func WithCreationTimestamp(timestamp time.Time) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.CreationTimestamp = metav1.Time{Time: timestamp}
 	}
 }
 
