@@ -59,7 +59,8 @@ case ${SUITE} in
     ;;
 esac
 
-export REGISTRY=us-central1-docker.pkg.dev/`gcloud config get-value core/project`
+export REGISTRY=us-central1-docker.pkg.dev/`gcloud config get-value core/project`/vpa
+gcloud artifacts repositories create vpa --repository-format=docker --location=us-central1
 export TAG=latest
 
 echo "Configuring registry authentication"
