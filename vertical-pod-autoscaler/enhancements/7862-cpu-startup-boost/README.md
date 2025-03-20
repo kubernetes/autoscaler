@@ -31,11 +31,12 @@ running in containerized applications, especially Java workloads. This delay can
 negatively impact the user experience and overall application performance. One
 potential solution is to provide additional CPU resources to pods during their
 startup phase, but this can lead to waste if the extra CPU resources are not
-set back to their original values after the pods are ready.
+set back to their original values after the pods have started up.
 
 This proposal allows VPA to boost the CPU request and limit of containers during
-the pod startup and to scale the CPU resources back down when the pod is `Ready`,
-leveraging the [in-place pod resize Kubernetes feature](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
+the pod startup and to scale the CPU resources back down when the pod is
+`Ready` or after certain time has elapsed, leveraging the
+[in-place pod resize Kubernetes feature](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
 
 > [!NOTE]
 > This feature depends on the new `InPlaceOrRecreate` VPA mode:
@@ -44,17 +45,16 @@ leveraging the [in-place pod resize Kubernetes feature](https://github.com/kuber
 ### Goals
 
 * Allow VPA to boost the CPU request and limit of a pod's containers during the
-pod startup (from creation time until it becomes `Ready`).
+pod (re-)creation time.
 * Allow VPA to scale pods down [in-place](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources)
 to the existing VPA recommendation for that container, if any, or to the CPU
 resources configured in the pod spec, as soon as their [`Ready`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions)
-condition is true.
+condition is true and `StartupBoost.CPU.Duration` has elapsed.
 
 ### Non-Goals
 
-* Allow VPA to boost CPU resources of pods that are already [`Ready`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions).
-* Allow VPA to boost CPU resources during startup of workloads that have not
-configured a [Readiness or a Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
+* Allow VPA to boost CPU resources of pods outside of the pod (re-)creation
+time.
 * Allow VPA to boost memory resources.
   * This is out of scope for now because the in-place pod resize feature
   [does not support memory limit decrease yet.](https://github.com/kubernetes/enhancements/tree/758ea034908515a934af09d03a927b24186af04c/keps/sig-node/1287-in-place-update-pod-resources#memory-limit-decreases)
@@ -68,6 +68,10 @@ boost.
 * To extend [`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236)
 with a new `StartupBoostOnly` mode to allow users to only enable the startup
 boost feature and not vanilla VPA altogether.
+
+* To allow CPU startup boost if a `StartupBoost` config is specified in `Auto`
+[`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236)
+container policies.
 
 ## Design Details
 
@@ -83,9 +87,10 @@ limits to align with its `StartupBoost` policy, if specified, during the pod
 creation.
 
 1. The VPA Updater monitors pods targeted by the VPA object and when the pod
-condition is `Ready`, it scales down the CPU resources to the appropriate
-non-boosted value: `existing VPA recommendation for that container` (if any) OR
-the `CPU resources configured in the pod spec`.
+condition is `Ready` and  `StartupBoost.CPU.Duration` has elapsed, it scales
+down the CPU resources to the appropriate non-boosted value:
+`existing VPA recommendation for that container` (if any) OR the
+`CPU resources configured in the pod spec`.
     * The scale down is applied [in-place](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
 
 ### API Changes
@@ -96,6 +101,8 @@ and contain the following fields:
   resource request and limit of the containers' targeted by the VPA object.
   * `StartupBoost.CPU.Value`: the target value of the CPU request or limit
   during the startup boost phase.
+  * [Optional] `StartupBoost.CPU.Duration`: if specified, it indicates for how
+  long to keep the pod boosted **after** it goes to `Ready`.
 
 > [!IMPORTANT]
 > The boosted CPU value will be capped by
@@ -104,6 +111,15 @@ and contain the following fields:
 
 > [!IMPORTANT]
 > Only one of `Factor` or `Value` may be specified per container policy.
+
+
+> [!NOTE]
+> To ensure that containers are unboosted only after their applications are
+> started and ready, it is recommended to configure a
+> [Readiness or a Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+> for the containers that will be CPU boosted. Check the [Test Plan](#test-plan)
+> section for more details on this feature's behavior for different combinations
+> of probers + `StartupBoost.CPU.Duration`.
 
 We will also add a new mode to the [`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236):
   * **NEW**: `StartupBoostOnly`: new mode that will allow users to only enable
@@ -146,21 +162,17 @@ are created/updated:
 * `StartupBoost.CPU.Value` must be greater than the CPU request or limit of the
   container during the boost phase, otherwise we risk downscaling the container.
 
-* Workloads must be configured with a Readiness or a Startup probe to be able to
-utilize this feature. Therefore, VPA will not boost CPU resources of workloads
-that do not configure a Readiness or a Startup probe.
-
 ### Mitigating Failed In-Place Downsizes
 
-The VPA Updater **will not** evict a pod to actuate a startup CPU boost
-recommendation if it attempted to apply the recommendation in place and it
-failed (see the [scenarios](https://github.com/kubernetes/autoscaler/blob/0a34bf5d3a71b486bdaa440f1af7f8d50dc8e391/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md?plain=1#L164-L169 ) where the VPA
+The VPA Updater **will not** evict a pod if it attempted to scaled the pod down
+in place (to unboost its CPU resources) and the update failed (see the
+[scenarios](https://github.com/kubernetes/autoscaler/blob/0a34bf5d3a71b486bdaa440f1af7f8d50dc8e391/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md?plain=1#L164-L169 ) where the VPA
 updater will consider that the update failed). This is to avoid an eviction
 loop:
 
 1. A pod is created and has its CPU resources boosted
-1. The pod is ready. VPA Updater tries to downscale the pod in-place and it
-fails.
+1. The pod meets the conditions to be unboosted. VPA Updater tries to downscale
+the pod in-place and it fails.
 1. VPA Updater evicts the pod. Logic flow goes back to (1).
 
 ### Feature Enablement and Rollback
@@ -189,9 +201,9 @@ the following to happen:
   * admission-controller **to not** boost CPU resources, should it encounter a
   VPA configured with a `StartupBoost` config and `StartupBoostOnly` or `Auto`
   `ContainerScalingMode`.
-  * updater **to not** unboost CPU resources when pods become `Ready`, should it
-  encounter a VPA configured with a `StartupBoost` config and `StartupBoostOnly`
-  or `Auto` `ContainerScalingMode`.
+  * updater **to not** unboost CPU resources when pods meet the scale down
+  requirements, should it encounter a VPA configured with a `StartupBoost`
+  config and `StartupBoostOnly` or `Auto` `ContainerScalingMode`.
 
 ### Kubernetes Version Compatibility
 
@@ -199,9 +211,8 @@ Similarly to [AEP-4016](https://github.com/kubernetes/autoscaler/tree/master/ver
 `StartupBoost` configuration and `StartupBoostOnly` mode are built assuming that
 VPA will be running on a Kubernetes 1.33+ with the beta version of
 [KEP-1287: In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287)
-enabled. If this is not the case, VPA will behave as if the `CPUStartupBoost`
-feature gate was disabled (see [Feature Enablement and Rollback](#feature-enablement-and-rollback)
-section for details).
+enabled. If this is not the case, VPA's attempt to unboost pods may fail and the
+pods may remain boosted for their whole lifecycle.
 
 ## Test Plan
 
@@ -209,13 +220,22 @@ Other than comprehensive unit tests, we will also add the following scenarios to
 our e2e tests:
 
 * CPU Startup Boost recommendation is applied to pod controlled by VPA until it
-becomes `Ready`. Then, the pod is scaled back down in-place.
+becomes `Ready` and `StartupBoost.CPU.Duration` has elapsed. Then, the pod is
+scaled back down in-place. We'll also test the following sub-cases:
   * Boost is applied to all containers of a pod.
-  * Boost is applied to a subset of containers.
-* CPU Startup Boost will not be applied if a pod is not configured with a
-Readiness or a Startup probe.
-* Pod is evicted the first time that an in-place update fails when scaling the
-pod back down. And a new CPU boost is not attempted when the pod is recreated.
+  * Boost is applied only to a subset of containers in a pod.
+  * Combinations of probes + `StartupBoost.CPU.Duration`:
+    * No probes and no `StartupBoost.CPU.Duration` specified: unboost will
+    likely happen immediately.
+    * No probes and a 60s `StartupBoost.CPU.Duration`: unboost will likely
+    happen after 60s.
+    * A readiness/startup probe and no `StartupBoost.CPU.Duration` specified:
+    unboost will likely as soon as the pod becomes `Ready`.
+    *  A readiness/startup probe and a 60s `StartupBoost.CPU.Duration`
+    specified: unboost will likely happen 60s **after** the pod becomes `Ready`.
+
+* Pod is not evicted if the in-place update fails when scaling the pod back
+down.
 
 ## Examples
 
@@ -223,6 +243,10 @@ Here are some examples of the VPA CR incorporating CPU boosting for different
 scenarios.
 
 ### CPU Boost Only
+
+All containers under `example` deployment will receive "regular" VPA updates,
+**except for** `boosted-container-name`. `boosted-container-name` will only be
+CPU boosted/unboosted, because it has a `StartupBoostOnly` container policy.
 
 ```yaml
 apiVersion: "autoscaling.k8s.io/v1"
@@ -247,6 +271,11 @@ spec:
 ```
 
 ### CPU Boost and Vanilla VPA
+
+All containers under `example` deployment will receive "regular" VPA updates,
+**including** `boosted-container-name`. Additionally, `boosted-container-name`
+will be CPU boosted/unboosted, because it has a `StartupBoost` config in its
+container policy and `Auto` container policy mode.
 
 ```yaml
 apiVersion: "autoscaling.k8s.io/v1"
@@ -279,5 +308,5 @@ spec:
 
 ## Implementation History
 
-* 2025-03-18: Initial version.
+* 2025-03-20: Initial version.
 
