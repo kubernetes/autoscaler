@@ -1,34 +1,78 @@
-permissions:
-  contents: read
+name: Release
 
-jobs:
-  release:
-    permissions:
-      contents: write  # for helm/chart-releaser-action to push chart release and create a release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-
-      - name: Install Helm
-        uses: azure/setup-helm@v4.2.0
-        with:
-          version: v3.4.0
-
-      - env:
-          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CR_RELEASE_NAME_TEMPLATE: "cluster-autoscaler-chart-{{ .Version }}"
-        name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
-name: Release Charts
 on:
   push:
     branches:
-      - master
+      - main
+    paths:
+      - charts/vertical-pod-autoscaler/Chart.yaml
+
+env:
+  GCP_PROJECT_ID: groundcovercom
+  REGION: us
+  HELM_REPO: groundcover-helm
+  IMAGE_REPO: us-docker.pkg.dev/groundcovercom/groundcover-docker
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/groundcovercom/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"
+          service_account: operator-ci-sa@groundcovercom.iam.gserviceaccount.com
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Login to Google Artifact Registry for Docker
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Extract Versions
+        id: versions
+        run: |
+            APP_VERSION=$(yq e '.appVersion' charts/vertical-pod-autoscaler/Chart.yaml)
+            CHART_VERSION=$(yq e '.version' charts/vertical-pod-autoscaler/Chart.yaml)
+            echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+            echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
+
+      - name: Update values.yaml with APP_VERSION
+        run: |
+            yq e -i '.admissionController.image.tag = "${{ env.APP_VERSION }}"' charts/vertical-pod-autoscaler/values.yaml
+            yq e -i '.updater.image.tag = "${{ env.APP_VERSION }}"' charts/vertical-pod-autoscaler/values.yaml
+
+      - name: Build and Push Docker Image with Latest
+        env:
+          IMAGE_TAG: ${{ env.APP_VERSION }}
+          IMAGE_REPO: ${{ env.IMAGE_REPO }}          
+          PLATFORMS: linux/amd64,linux/arm64          
+        run: |
+            ./build.sh
+
+      - name: Package vpa Helm Chart
+        run: |
+            mkdir dist/
+            helm package -d dist/
+            helm push dist/vertical-pod-autoscaler-${{ env.CHART_VERSION }}.tgz oci://${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.HELM_REPO }}
+
+      - name: Verify Helm Chart Push
+        if: github.event_name == 'push'
+        run: |
+            helm pull oci://${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.HELM_REPO }}/vertical-pod-autoscaler --version ${{ env.CHART_VERSION }} --untar
+            ls -l vertical-pod-autoscaler/

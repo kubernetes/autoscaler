@@ -36,7 +36,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: updater
-        image:  {{ .Values.updater.image.repository }}:{{ .Values.updater.image.tag }}
+        image: {{ .Values.updater.image.repository }}:{{ default .Chart.AppVersion .Values.updater.image.tag }}
         imagePullPolicy: {{ .Values.updater.image.pullPolicy }}
         {{ if .Values.updater.extraArgs }}
         args:

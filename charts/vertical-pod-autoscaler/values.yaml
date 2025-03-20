@@ -4,8 +4,7 @@ admissionController:
   enabled: true
   replicas: 1
   image:
-    repository: public.ecr.aws/groundcovercom/groundcover/vpa-admission-controller
-    tag: v0.1.0
+    repository: us-docker.pkg.dev/groundcovercom/repo/groundcover/vpa-admission-controller
     pullPolicy: IfNotPresent
 
   serviceAccount:
@@ -44,8 +43,7 @@ admissionController:
 updater:
   enabled: true
   image:
-    repository: public.ecr.aws/groundcovercom/groundcover/vpa-updater
-    tag: v0.1.0
+    repository: us-docker.pkg.dev/groundcovercom/repo/groundcover/vpa-updater
     pullPolicy: IfNotPresent
 
   serviceAccount:
