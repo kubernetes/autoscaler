@@ -59,7 +59,7 @@ case ${SUITE} in
     ;;
 esac
 
-export REGISTRY=gcr.io/`gcloud config get-value core/project`
+export REGISTRY=us-central1-docker.pkg.dev/`gcloud config get-value core/project`
 export TAG=latest
 
 echo "Configuring registry authentication"
