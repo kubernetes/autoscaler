@@ -76,7 +76,7 @@ var (
 		"How long after scale up that scale down evaluation resumes")
 	scaleDownDelayTypeLocal = flag.Bool("scale-down-delay-type-local", false,
 		"Should --scale-down-delay-after-* flags be applied locally per nodegroup or globally across all nodegroups")
-	scaleDownDelayAfterDelete = flag.Duration("scale-down-delay-after-delete", 0,
+	scaleDownDelayAfterDelete = flag.Duration("scale-down-delay-after-delete", *scanInterval,
 		"How long after node deletion that scale down evaluation resumes, defaults to scanInterval")
 	scaleDownDelayAfterFailure = flag.Duration("scale-down-delay-after-failure", config.DefaultScaleDownDelayAfterFailure,
 		"How long after scale down failure that scale down evaluation resumes")
