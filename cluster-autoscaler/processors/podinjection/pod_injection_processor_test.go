@@ -19,6 +19,7 @@ package podinjection
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -40,24 +41,24 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 	node := BuildTestNode("node1", 100, 0)
 
 	replicaSet1 := createTestReplicaSet("rep-set-1", "default", 5)
-	scheduledPodRep1Copy1 := buildTestPod("default", "-scheduled-pod-rep1-1", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID), withNodeName(node.Name))
-	podRep1Copy1 := buildTestPod("default", "pod-rep1-1", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
-	podRep1Copy2 := buildTestPod("default", "pod-rep1-2", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	scheduledPodRep1Copy1 := buildTestPod("default", "-scheduled-pod-rep1-1", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID), WithNodeName(node.Name))
+	podRep1Copy1 := buildTestPod("default", "pod-rep1-1", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	podRep1Copy2 := buildTestPod("default", "pod-rep1-2", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
 
 	job1 := createTestJob("job-1", "default", 10, 10, 0)
-	scheduledPodJob1Copy1 := buildTestPod("default", "scheduled-pod-job1-1", withControllerOwnerRef(job1.Name, "Job", job1.UID), withNodeName(node.Name))
-	podJob1Copy1 := buildTestPod("default", "pod-job1-1", withControllerOwnerRef(job1.Name, "Job", job1.UID))
-	podJob1Copy2 := buildTestPod("default", "pod-job1-2", withControllerOwnerRef(job1.Name, "Job", job1.UID))
+	scheduledPodJob1Copy1 := buildTestPod("default", "scheduled-pod-job1-1", WithControllerOwnerRef(job1.Name, "Job", job1.UID), WithNodeName(node.Name))
+	podJob1Copy1 := buildTestPod("default", "pod-job1-1", WithControllerOwnerRef(job1.Name, "Job", job1.UID))
+	podJob1Copy2 := buildTestPod("default", "pod-job1-2", WithControllerOwnerRef(job1.Name, "Job", job1.UID))
 
 	parallelStatefulset := createTestStatefulset("parallel-statefulset-1", "default", appsv1.ParallelPodManagement, 10)
-	scheduledParallelStatefulsetPod := buildTestPod("default", "parallel-scheduled-pod-statefulset-1", withControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID), withNodeName(node.Name))
-	parallelStatefulsetPodCopy1 := buildTestPod("default", "parallel-pod-statefulset1-1", withControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID))
-	parallelStatefulsetPodCopy2 := buildTestPod("default", "parallel-pod-statefulset1-2", withControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID))
+	scheduledParallelStatefulsetPod := buildTestPod("default", "parallel-scheduled-pod-statefulset-1", WithControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID), WithNodeName(node.Name))
+	parallelStatefulsetPodCopy1 := buildTestPod("default", "parallel-pod-statefulset1-1", WithControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID))
+	parallelStatefulsetPodCopy2 := buildTestPod("default", "parallel-pod-statefulset1-2", WithControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID))
 
 	sequentialStatefulset := createTestStatefulset("sequential-statefulset-1", "default", appsv1.OrderedReadyPodManagement, 10)
-	scheduledSequentialStatefulsetPod := buildTestPod("default", "sequential-scheduled-pod-statefulset-1", withControllerOwnerRef(sequentialStatefulset.Name, "StatefulSet", sequentialStatefulset.UID), withNodeName(node.Name))
-	sequentialStatefulsetPodCopy1 := buildTestPod("default", "sequential-pod-statefulset1-1", withControllerOwnerRef(sequentialStatefulset.Name, "StatefulSet", sequentialStatefulset.UID))
-	sequentialStatefulsetPodCopy2 := buildTestPod("default", "sequential-pod-statefulset1-2", withControllerOwnerRef(sequentialStatefulset.Name, "StatefulSet", sequentialStatefulset.UID))
+	scheduledSequentialStatefulsetPod := buildTestPod("default", "sequential-scheduled-pod-statefulset-1", WithControllerOwnerRef(sequentialStatefulset.Name, "StatefulSet", sequentialStatefulset.UID), WithNodeName(node.Name))
+	sequentialStatefulsetPodCopy1 := buildTestPod("default", "sequential-pod-statefulset1-1", WithControllerOwnerRef(sequentialStatefulset.Name, "StatefulSet", sequentialStatefulset.UID))
+	sequentialStatefulsetPodCopy2 := buildTestPod("default", "sequential-pod-statefulset1-2", WithControllerOwnerRef(sequentialStatefulset.Name, "StatefulSet", sequentialStatefulset.UID))
 
 	replicaSetLister, err := kubernetes.NewTestReplicaSetLister([]*appsv1.ReplicaSet{&replicaSet1})
 	assert.NoError(t, err)
@@ -67,46 +68,46 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 	assert.NoError(t, err)
 
 	testCases := []struct {
-		name             string
-		scheduledPods    []*apiv1.Pod
-		unschedulabePods []*apiv1.Pod
-		wantPods         []*apiv1.Pod
+		name              string
+		scheduledPods     []*apiv1.Pod
+		unschedulablePods []*apiv1.Pod
+		wantPods          []*apiv1.Pod
 	}{
 		{
-			name:             "ReplicaSet",
-			scheduledPods:    []*apiv1.Pod{scheduledPodRep1Copy1},
-			unschedulabePods: []*apiv1.Pod{podRep1Copy1, podRep1Copy2},
-			wantPods:         append([]*apiv1.Pod{podRep1Copy1, podRep1Copy2}, makeFakePods(replicaSet1.UID, podRep1Copy1, 2)...),
+			name:              "ReplicaSet",
+			scheduledPods:     []*apiv1.Pod{scheduledPodRep1Copy1},
+			unschedulablePods: []*apiv1.Pod{podRep1Copy1, podRep1Copy2},
+			wantPods:          append([]*apiv1.Pod{podRep1Copy1, podRep1Copy2}, makeFakePods(replicaSet1.UID, scheduledPodRep1Copy1, 2)...),
 		},
 		{
-			name:             "Job",
-			scheduledPods:    []*apiv1.Pod{scheduledPodJob1Copy1},
-			unschedulabePods: []*apiv1.Pod{podJob1Copy1, podJob1Copy2},
-			wantPods:         append([]*apiv1.Pod{podJob1Copy1, podJob1Copy2}, makeFakePods(job1.UID, podJob1Copy1, 7)...),
+			name:              "Job",
+			scheduledPods:     []*apiv1.Pod{scheduledPodJob1Copy1},
+			unschedulablePods: []*apiv1.Pod{podJob1Copy1, podJob1Copy2},
+			wantPods:          append([]*apiv1.Pod{podJob1Copy1, podJob1Copy2}, makeFakePods(job1.UID, scheduledPodJob1Copy1, 7)...),
 		},
 		{
-			name:             "Statefulset - Parallel pod management policy",
-			scheduledPods:    []*apiv1.Pod{scheduledParallelStatefulsetPod},
-			unschedulabePods: []*apiv1.Pod{parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2},
-			wantPods:         append([]*apiv1.Pod{parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2}, makeFakePods(parallelStatefulset.UID, parallelStatefulsetPodCopy1, 7)...),
+			name:              "Statefulset - Parallel pod management policy",
+			scheduledPods:     []*apiv1.Pod{scheduledParallelStatefulsetPod},
+			unschedulablePods: []*apiv1.Pod{parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2},
+			wantPods:          append([]*apiv1.Pod{parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2}, makeFakePods(parallelStatefulset.UID, scheduledParallelStatefulsetPod, 7)...),
 		},
 		{
-			name:             "Statefulset - sequential pod management policy",
-			scheduledPods:    []*apiv1.Pod{scheduledSequentialStatefulsetPod},
-			unschedulabePods: []*apiv1.Pod{sequentialStatefulsetPodCopy1, sequentialStatefulsetPodCopy2},
-			wantPods:         []*apiv1.Pod{sequentialStatefulsetPodCopy1, sequentialStatefulsetPodCopy2},
+			name:              "Statefulset - sequential pod management policy",
+			scheduledPods:     []*apiv1.Pod{scheduledSequentialStatefulsetPod},
+			unschedulablePods: []*apiv1.Pod{sequentialStatefulsetPodCopy1, sequentialStatefulsetPodCopy2},
+			wantPods:          []*apiv1.Pod{sequentialStatefulsetPodCopy1, sequentialStatefulsetPodCopy2},
 		},
 		{
-			name:             "Mix of controllers",
-			scheduledPods:    []*apiv1.Pod{scheduledPodRep1Copy1, scheduledPodJob1Copy1, scheduledParallelStatefulsetPod},
-			unschedulabePods: []*apiv1.Pod{podRep1Copy1, podRep1Copy2, podJob1Copy1, podJob1Copy2, parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2},
+			name:              "Mix of controllers",
+			scheduledPods:     []*apiv1.Pod{scheduledPodRep1Copy1, scheduledPodJob1Copy1, scheduledParallelStatefulsetPod},
+			unschedulablePods: []*apiv1.Pod{podRep1Copy1, podRep1Copy2, podJob1Copy1, podJob1Copy2, parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2},
 			wantPods: append(
 				append(
 					append(
 						[]*apiv1.Pod{podRep1Copy1, podRep1Copy2, podJob1Copy1, podJob1Copy2, parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2},
-						makeFakePods(replicaSet1.UID, podRep1Copy1, 2)...),
-					makeFakePods(job1.UID, podJob1Copy1, 7)...),
-				makeFakePods(parallelStatefulset.UID, parallelStatefulsetPodCopy1, 7)...,
+						makeFakePods(replicaSet1.UID, scheduledPodRep1Copy1, 2)...),
+					makeFakePods(job1.UID, scheduledPodJob1Copy1, 7)...),
+				makeFakePods(parallelStatefulset.UID, scheduledParallelStatefulsetPod, 7)...,
 			),
 		},
 	}
@@ -123,7 +124,7 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
-			pods, err := p.Process(&ctx, tc.unschedulabePods)
+			pods, err := p.Process(&ctx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})
@@ -134,31 +135,46 @@ func TestGroupPods(t *testing.T) {
 	noControllerPod := buildTestPod("default", "pod-no-podGroup")
 
 	replicaSet1 := createTestReplicaSet("rep-set-1", "default", 10)
-	podRep1Copy1 := buildTestPod("default", "pod-rep1-1", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
-	podRep1Copy2 := buildTestPod("default", "pod-rep1-2", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
-	podRep1ScheduledCopy1 := buildTestPod("default", "pod-rep1-3", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID), withNodeName("n1"))
-	podRep1ScheduledCopy2 := buildTestPod("default", "pod-rep1-4", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID), withNodeName("n1"))
+	podRep1Copy1 := buildTestPod("default", "pod-rep1-1", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	podRep1Copy2 := buildTestPod("default", "pod-rep1-2", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	podRep1ScheduledCopy1 := buildTestPod("default", "pod-rep1-3", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID), WithNodeName("n1"))
+	podRep1ScheduledCopy2 := buildTestPod("default", "pod-rep1-4", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID), WithNodeName("n1"))
+	timestamp := time.Date(2025, 3, 19, 12, 0, 0, 0, time.UTC)
+	podRep1OlderCopy := buildTestPod(
+		"default",
+		"pod-rep1-5",
+		WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID),
+		WithNodeName("n1"),
+		WithCreationTimestamp(timestamp),
+	)
+	podRep1NewerCopy := buildTestPod(
+		"default",
+		"pod-rep1-6",
+		WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID),
+		WithNodeName("n1"),
+		WithCreationTimestamp(timestamp.Add(1*time.Minute)),
+	)
 
 	replicaSet2 := createTestReplicaSet("rep-set-2", "default", 10)
-	podRep2Copy1 := buildTestPod("default", "pod-rep2-1", withControllerOwnerRef(replicaSet2.Name, "ReplicaSet", replicaSet2.UID))
-	podRep2ScheduledCopy1 := buildTestPod("default", "pod-rep2-1", withControllerOwnerRef(replicaSet2.Name, "ReplicaSet", replicaSet2.UID), withNodeName("n1"))
+	podRep2Copy1 := buildTestPod("default", "pod-rep2-1", WithControllerOwnerRef(replicaSet2.Name, "ReplicaSet", replicaSet2.UID))
+	podRep2ScheduledCopy1 := buildTestPod("default", "pod-rep2-1", WithControllerOwnerRef(replicaSet2.Name, "ReplicaSet", replicaSet2.UID), WithNodeName("n1"))
 
 	replicaSet3 := createTestReplicaSet("rep-set-3", "default", 10)
-	podRep3Copy1 := buildTestPod("default", "pod-rep3-1", withControllerOwnerRef(replicaSet3.Name, "ReplicaSet", replicaSet3.UID))
+	podRep3Copy1 := buildTestPod("default", "pod-rep3-1", WithControllerOwnerRef(replicaSet3.Name, "ReplicaSet", replicaSet3.UID))
 
 	job1 := createTestJob("job-1", "default", 10, 10, 0)
-	podJob1Copy1 := buildTestPod("default", "pod-job1-1", withControllerOwnerRef(job1.Name, "Job", job1.UID))
-	podJob1Copy2 := buildTestPod("default", "pod-job1-2", withControllerOwnerRef(job1.Name, "Job", job1.UID))
+	podJob1Copy1 := buildTestPod("default", "pod-job1-1", WithControllerOwnerRef(job1.Name, "Job", job1.UID))
+	podJob1Copy2 := buildTestPod("default", "pod-job1-2", WithControllerOwnerRef(job1.Name, "Job", job1.UID))
 
 	job2 := createTestJob("job-2", "default", 10, 10, 0)
-	podJob2Copy1 := buildTestPod("default", "pod-job-2", withControllerOwnerRef(job2.Name, "Job", job2.UID))
+	podJob2Copy1 := buildTestPod("default", "pod-job-2", WithControllerOwnerRef(job2.Name, "Job", job2.UID))
 
 	statefulset1 := createTestStatefulset("statefulset-1", "default", appsv1.ParallelPodManagement, 10)
-	statefulset1Copy1 := buildTestPod("default", "pod-statefulset1-1", withControllerOwnerRef(statefulset1.Name, "StatefulSet", statefulset1.UID))
-	statefulset1Copy2 := buildTestPod("default", "pod-statefulset1-2", withControllerOwnerRef(statefulset1.Name, "StatefulSet", statefulset1.UID))
+	statefulset1Copy1 := buildTestPod("default", "pod-statefulset1-1", WithControllerOwnerRef(statefulset1.Name, "StatefulSet", statefulset1.UID))
+	statefulset1Copy2 := buildTestPod("default", "pod-statefulset1-2", WithControllerOwnerRef(statefulset1.Name, "StatefulSet", statefulset1.UID))
 
 	statefulset2 := createTestStatefulset("statefulset-2", "default", appsv1.ParallelPodManagement, 10)
-	statefulset2Copy1 := buildTestPod("default", "pod-statefulset2-1", withControllerOwnerRef(statefulset2.Name, "StatefulSet", statefulset2.UID))
+	statefulset2Copy1 := buildTestPod("default", "pod-statefulset2-1", WithControllerOwnerRef(statefulset2.Name, "StatefulSet", statefulset2.UID))
 
 	testCases := []struct {
 		name            string
@@ -182,8 +198,8 @@ func TestGroupPods(t *testing.T) {
 			scheduledPods: []*apiv1.Pod{podRep1ScheduledCopy1, podRep1ScheduledCopy2, podRep2ScheduledCopy1},
 			replicaSets:   []*appsv1.ReplicaSet{&replicaSet1, &replicaSet2},
 			wantGroupedPods: map[types.UID]podGroup{
-				replicaSet1.UID: {podCount: 2, desiredReplicas: 10, sample: nil},
-				replicaSet2.UID: {podCount: 1, desiredReplicas: 10, sample: nil},
+				replicaSet1.UID: {podCount: 2, desiredReplicas: 10, sample: podRep1ScheduledCopy1, ownerUid: replicaSet1.UID},
+				replicaSet2.UID: {podCount: 1, desiredReplicas: 10, sample: podRep2ScheduledCopy1, ownerUid: replicaSet2.UID},
 			},
 		},
 		{
@@ -192,7 +208,7 @@ func TestGroupPods(t *testing.T) {
 			unscheduledPods: []*apiv1.Pod{podRep1Copy1, podRep2Copy1},
 			replicaSets:     []*appsv1.ReplicaSet{&replicaSet1, &replicaSet2},
 			wantGroupedPods: map[types.UID]podGroup{
-				replicaSet1.UID: {podCount: 2, desiredReplicas: 10, sample: podRep1Copy1, ownerUid: replicaSet1.UID},
+				replicaSet1.UID: {podCount: 2, desiredReplicas: 10, sample: podRep1ScheduledCopy2, ownerUid: replicaSet1.UID},
 				replicaSet2.UID: {podCount: 1, desiredReplicas: 10, sample: podRep2Copy1, ownerUid: replicaSet2.UID},
 			},
 		},
@@ -246,6 +262,15 @@ func TestGroupPods(t *testing.T) {
 				statefulset1.UID: {podCount: 1, desiredReplicas: 10, sample: statefulset1Copy1, ownerUid: statefulset1.UID},
 			},
 		},
+		{
+			name:            "newest pod as a sample",
+			unscheduledPods: []*apiv1.Pod{podRep1Copy1},
+			scheduledPods:   []*apiv1.Pod{podRep1NewerCopy, podRep1OlderCopy},
+			replicaSets:     []*appsv1.ReplicaSet{&replicaSet1},
+			wantGroupedPods: map[types.UID]podGroup{
+				replicaSet1.UID: {podCount: 3, desiredReplicas: 10, sample: podRep1NewerCopy, ownerUid: replicaSet1.UID},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -271,8 +296,8 @@ func TestGroupPods(t *testing.T) {
 
 func TestUpdatePodGroups(t *testing.T) {
 	replicaSet1 := createTestReplicaSet("rep-set-1", "default", 10)
-	podRep1Copy1 := buildTestPod("default", "pod-rep1-1", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
-	podRep1Copy2 := buildTestPod("default", "pod-rep1-2", withControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	podRep1Copy1 := buildTestPod("default", "pod-rep1-1", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	podRep1Copy2 := buildTestPod("default", "pod-rep1-2", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
 	samplePodGroups := map[types.UID]podGroup{replicaSet1.UID: makePodGroup(10)}
 	sampleFalse := false
 	sampleTrue := true
@@ -347,7 +372,7 @@ func TestUpdatePodGroups(t *testing.T) {
 	}
 }
 func TestMakeFakePods(t *testing.T) {
-	samplePod := buildTestPod("default", "test-pod")
+	samplePod := buildTestPod("default", "test-pod", WithNodeName("test-node"))
 	// Test case: Positive fake pod count
 	fakePodCount := 5
 	ownerUid := types.UID("sample uid")
@@ -356,6 +381,7 @@ func TestMakeFakePods(t *testing.T) {
 	for idx, fakePod := range fakePods {
 		assert.Equal(t, fakePod.Name, fmt.Sprintf("%s-copy-%d", samplePod.Name, idx+1))
 		assert.Equal(t, fakePod.UID, types.UID(fmt.Sprintf("%s-%d", string(ownerUid), idx+1)))
+		assert.Equal(t, "", fakePod.Spec.NodeName)
 		assert.NotNil(t, fakePod.Annotations)
 		assert.Equal(t, fakePod.Annotations[FakePodAnnotationKey], FakePodAnnotationValue)
 	}
@@ -407,15 +433,3 @@ func buildTestPod(namespace, name string, opts ...podOption) *apiv1.Pod {
 }
 
 type podOption func(*apiv1.Pod)
-
-func withControllerOwnerRef(name, kind string, uid types.UID) podOption {
-	return func(pod *apiv1.Pod) {
-		pod.OwnerReferences = GenerateOwnerReferences(name, kind, "apps/v1", uid)
-	}
-}
-
-func withNodeName(nodeName string) podOption {
-	return func(pod *apiv1.Pod) {
-		pod.Spec.NodeName = nodeName
-	}
-}
