@@ -1001,7 +1001,7 @@ func filterNodesFromSelectedGroups(cp cloudprovider.CloudProvider, nodes ...*api
 	filtered := make([]*apiv1.Node, 0, len(nodes))
 	for _, n := range nodes {
 		if ng, err := cp.NodeGroupForNode(n); err != nil {
-			klog.Errorf("Failed to get a node group node node: %v", err)
+			klog.Errorf("Failed to get a nodegroup for node %q: %v", n.Name, err)
 		} else if ng != nil {
 			filtered = append(filtered, n)
 		}
