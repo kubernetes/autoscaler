@@ -673,6 +673,33 @@ func TestFetchAvailableDiskTypes(t *testing.T) {
 	})
 }
 
+func TestFetchAvailableDiskTypesByFilter(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project-id", server.URL, "")
+
+	// ref: https://cloud.google.com/compute/docs/reference/rest/v1/diskTypes/aggregatedList
+	getDiskTypesAggregatedListOKResponse, _ := os.ReadFile("fixtures/diskTypes_aggregatedList_withFiltering.json")
+	server.On("handle", "/projects/project-id/aggregated/diskTypes").Return(string(getDiskTypesAggregatedListOKResponse)).Times(1)
+
+	t.Run("correctly parse a filtered response", func(t *testing.T) {
+		want := map[string][]string{
+			// "us-central1" region should be skipped
+			"us-central1-a": {"local-ssd", "pd-balanced", "pd-ssd", "pd-standard"},
+			"us-central1-b": {"hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput", "local-ssd", "pd-balanced", "pd-extreme", "pd-ssd", "pd-standard"},
+		}
+
+		// filtering by zones in us-central1
+		filter := fmt.Sprintf("zone eq .+us-central1.*")
+		got, err := g.FetchAvailableDiskTypesByFilter(filter)
+
+		assert.NoError(t, err)
+		if diff := cmp.Diff(want, got, cmpopts.EquateErrors()); diff != "" {
+			t.Errorf("FetchAvailableDiskTypes(): err diff (-want +got):\n%s", diff)
+		}
+	})
+}
+
 func TestUserAgent(t *testing.T) {
 	server := test_util.NewHttpServerMock(test_util.MockFieldUserAgent, test_util.MockFieldResponse)
 	defer server.Close()
