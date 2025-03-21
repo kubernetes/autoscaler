@@ -265,6 +265,21 @@ func TestHistogramLoadFromCheckpointReturnsErrorOnNilInput(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestHistogramIsNotEmptyAfterSavingAndLoadingCheckpointsWithBoundaryValues(t *testing.T) {
+	histogram := NewHistogram(testHistogramOptions)
+	histogram.AddSample(1, weightEpsilon, anyTime)
+	histogram.AddSample(2, (float64(MaxCheckpointWeight)*weightEpsilon - weightEpsilon), anyTime)
+	assert.False(t, histogram.IsEmpty())
+
+	checkpoint, err := histogram.SaveToChekpoint()
+	assert.NoError(t, err)
+
+	newHistogram := NewHistogram(testHistogramOptions)
+	err = newHistogram.LoadFromCheckpoint(checkpoint)
+	assert.NoError(t, err)
+	assert.False(t, newHistogram.IsEmpty())
+}
+
 func areUnique(values ...interface{}) bool {
 	dict := make(map[interface{}]bool)
 	for i, v := range values {
