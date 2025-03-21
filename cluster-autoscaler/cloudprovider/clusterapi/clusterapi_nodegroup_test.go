@@ -1736,3 +1736,223 @@ func TestNodeGroupGetOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestNodeGroupNodesInstancesStatus(t *testing.T) {
+	type testCase struct {
+		description                        string
+		nodeCount                          int
+		includePendingMachine              bool
+		includeDeletingMachine             bool
+		includeFailedMachineWithNodeRef    bool
+		includeFailedMachineWithoutNodeRef bool
+		includeFailedMachineDeleting       bool
+	}
+
+	testCases := []testCase{
+		{
+			description: "standard number of nodes",
+			nodeCount:   5,
+		},
+		{
+			description:           "includes a machine in pending state",
+			nodeCount:             5,
+			includePendingMachine: true,
+		},
+		{
+			description:            "includes a machine in deleting state",
+			nodeCount:              5,
+			includeDeletingMachine: true,
+		},
+		{
+			description:                     "includes a machine in failed state with nodeRef",
+			nodeCount:                       5,
+			includeFailedMachineWithNodeRef: true,
+		},
+		{
+			description:                        "includes a machine in failed state without nodeRef",
+			nodeCount:                          5,
+			includeFailedMachineWithoutNodeRef: true,
+		},
+	}
+
+	test := func(t *testing.T, tc *testCase, testConfig *testConfig) {
+		controller, stop := mustCreateTestController(t, testConfig)
+		defer stop()
+
+		if tc.includePendingMachine {
+			if tc.nodeCount < 1 {
+				t.Fatal("test cannot pass, deleted machine requires at least 1 machine in machineset")
+			}
+
+			machine := testConfig.machines[0].DeepCopy()
+			unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+			unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		if tc.includeDeletingMachine {
+			if tc.nodeCount < 2 {
+				t.Fatal("test cannot pass, deleted machine requires at least 2 machine in machineset")
+			}
+
+			machine := testConfig.machines[1].DeepCopy()
+			timestamp := metav1.Now()
+			machine.SetDeletionTimestamp(&timestamp)
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		if tc.includeFailedMachineWithNodeRef {
+			if tc.nodeCount < 3 {
+				t.Fatal("test cannot pass, deleted machine requires at least 3 machine in machineset")
+			}
+
+			machine := testConfig.machines[2].DeepCopy()
+			unstructured.SetNestedField(machine.Object, "node-1", "status", "nodeRef", "name")
+			unstructured.SetNestedField(machine.Object, "ErrorMessage", "status", "errorMessage")
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		if tc.includeFailedMachineWithoutNodeRef {
+			if tc.nodeCount < 4 {
+				t.Fatal("test cannot pass, deleted machine requires at least 4 machine in machineset")
+			}
+
+			machine := testConfig.machines[3].DeepCopy()
+			unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
+			unstructured.SetNestedField(machine.Object, "ErrorMessage", "status", "errorMessage")
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		if tc.includeFailedMachineDeleting {
+			if tc.nodeCount < 5 {
+				t.Fatal("test cannot pass, deleted machine requires at least 5 machine in machineset")
+			}
+
+			machine := testConfig.machines[4].DeepCopy()
+			timestamp := metav1.Now()
+			machine.SetDeletionTimestamp(&timestamp)
+			unstructured.SetNestedField(machine.Object, "ErrorMessage", "status", "errorMessage")
+
+			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		nodegroups, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+
+		ng := nodegroups[0]
+		instances, err := ng.Nodes()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		expectedCount := tc.nodeCount
+		if len(instances) != expectedCount {
+			t.Errorf("expected %d nodes, got %d", expectedCount, len(instances))
+		}
+
+		// Sort instances by Id for stable comparison
+		sort.Slice(instances, func(i, j int) bool {
+			return instances[i].Id < instances[j].Id
+		})
+
+		for _, instance := range instances {
+			t.Logf("instance: %v", instance)
+			if tc.includePendingMachine && strings.HasPrefix(instance.Id, pendingMachinePrefix) {
+				if instance.Status == nil || instance.Status.State != cloudprovider.InstanceCreating {
+					t.Errorf("expected pending machine to have status %v, got %v", cloudprovider.InstanceCreating, instance.Status)
+				}
+			} else if tc.includeDeletingMachine && strings.HasPrefix(instance.Id, deletingMachinePrefix) {
+				if instance.Status == nil || instance.Status.State != cloudprovider.InstanceDeleting {
+					t.Errorf("expected deleting machine to have status %v, got %v", cloudprovider.InstanceDeleting, instance.Status)
+				}
+			} else if tc.includeFailedMachineWithNodeRef && strings.HasPrefix(instance.Id, failedMachinePrefix) {
+				if instance.Status != nil {
+					t.Errorf("expected failed machine with nodeRef to not have status, got %v", instance.Status)
+				}
+			} else if tc.includeFailedMachineWithoutNodeRef && strings.HasPrefix(instance.Id, failedMachinePrefix) {
+				if instance.Status == nil || instance.Status.State != cloudprovider.InstanceCreating {
+					t.Errorf("expected failed machine without nodeRef to have status %v, got %v", cloudprovider.InstanceCreating, instance.Status)
+				}
+				if instance.Status == nil || instance.Status.ErrorInfo.ErrorClass != cloudprovider.OtherErrorClass {
+					t.Errorf("expected failed machine without nodeRef to have error class %v, got %v", cloudprovider.OtherErrorClass, instance.Status.ErrorInfo.ErrorClass)
+				}
+				if instance.Status == nil || instance.Status.ErrorInfo.ErrorCode != "ProvisioningFailed" {
+					t.Errorf("expected failed machine without nodeRef to have error code %v, got %v", "ProvisioningFailed", instance.Status.ErrorInfo.ErrorCode)
+				}
+			} else if tc.includeFailedMachineDeleting && strings.HasPrefix(instance.Id, failedMachinePrefix) {
+				if instance.Status == nil || instance.Status.State != cloudprovider.InstanceDeleting {
+					t.Errorf("expected failed machine deleting to have status %v, got %v", cloudprovider.InstanceDeleting, instance.Status)
+				}
+				if instance.Status == nil || instance.Status.ErrorInfo.ErrorClass != cloudprovider.OtherErrorClass {
+					t.Errorf("expected failed machine deleting to have error class %v, got %v", cloudprovider.OtherErrorClass, instance.Status.ErrorInfo.ErrorClass)
+				}
+				if instance.Status == nil || instance.Status.ErrorInfo.ErrorCode != "DeletingFailed" {
+					t.Errorf("expected failed machine deleting to have error code %v, got %v", "DeletingFailed", instance.Status.ErrorInfo.ErrorCode)
+				}
+			}
+		}
+	}
+
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
+	t.Run("MachineSet", func(t *testing.T) {
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				test(
+					t,
+					&tc,
+					createMachineSetTestConfig(
+						RandomString(6),
+						RandomString(6),
+						RandomString(6),
+						tc.nodeCount,
+						annotations,
+						nil,
+					),
+				)
+			})
+		}
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				test(
+					t,
+					&tc,
+					createMachineDeploymentTestConfig(
+						RandomString(6),
+						RandomString(6),
+						RandomString(6),
+						tc.nodeCount,
+						annotations,
+						nil,
+					),
+				)
+			})
+		}
+	})
+}
