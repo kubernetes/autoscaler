@@ -88,10 +88,10 @@ func (a *AggregationsConfig) GetMemoryAggregationWindowLength() time.Duration {
 
 func (a *AggregationsConfig) cpuHistogramOptions() util.HistogramOptions {
 	// CPU histograms use exponential bucketing scheme with the smallest bucket
-	// size of 0.01 core, max of 1000.0 cores and the relative error of HistogramRelativeError.
+	// size of 0.001 core, max of 1000.0 cores and the relative error of HistogramRelativeError.
 	//
 	// When parameters below are changed SupportedCheckpointVersion has to be bumped.
-	options, err := util.NewExponentialHistogramOptions(1000.0, 0.01, 1.+a.HistogramBucketSizeGrowth, epsilon)
+	options, err := util.NewExponentialHistogramOptions(1000.0, 0.001, 1.+a.HistogramBucketSizeGrowth, epsilon)
 	if err != nil {
 		panic("Invalid CPU histogram options") // Should not happen.
 	}
