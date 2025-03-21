@@ -134,7 +134,7 @@ func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPer
 		}
 		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now
-			r.clusterStateFeeder.GarbageCollectCheckpoints()
+			r.clusterStateFeeder.GarbageCollectCheckpoints(ctx)
 		}
 	}
 }
@@ -153,7 +153,7 @@ func (r *recommender) RunOnce() {
 	r.clusterStateFeeder.LoadPods()
 	timer.ObserveStep("LoadPods")
 
-	r.clusterStateFeeder.LoadRealTimeMetrics()
+	r.clusterStateFeeder.LoadRealTimeMetrics(ctx)
 	timer.ObserveStep("LoadMetrics")
 	klog.V(3).InfoS("ClusterState is tracking", "pods", len(r.clusterState.Pods), "vpas", len(r.clusterState.Vpas))
 
