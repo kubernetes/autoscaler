@@ -2674,6 +2674,65 @@ func TestStaticAutoscalerRunOnceInvokesScaleDownStatusProcessor(t *testing.T) {
 
 }
 
+func TestFilterNodesFromSelectedGroups(t *testing.T) {
+	node1 := BuildTestNode("node1", 1000, 1000)
+	node1.Spec.ProviderID = "A"
+	node2 := BuildTestNode("node2", 1000, 1000)
+	node2.Spec.ProviderID = "B"
+	node3 := BuildTestNode("node3", 1000, 1000)
+	node3.Spec.ProviderID = "C"
+	invalidNode := BuildTestNode("invalidNode", 1000, 1000)
+	invalidNode.Spec.ProviderID = "invalid"
+
+	provider := &mockprovider.CloudProvider{}
+	provider.On("NodeGroupForNode", mock.Anything).Return(
+		func(node *apiv1.Node) cloudprovider.NodeGroup {
+			if node.Spec.ProviderID == "A" || node.Spec.ProviderID == "B" {
+				return &mockprovider.NodeGroup{}
+			}
+			return nil
+		}, func(node *apiv1.Node) error {
+			if node.Spec.ProviderID == "invalid" {
+				return fmt.Errorf("broken provider")
+			}
+			return nil
+		})
+
+	tests := []struct {
+		name      string
+		nodes     []*apiv1.Node
+		wantNodes []*apiv1.Node
+	}{
+		{
+			name:      "returns no nodes if none were provided",
+			nodes:     []*apiv1.Node{},
+			wantNodes: []*apiv1.Node{},
+		},
+		{
+			name:      "returns nodes with matching providers",
+			nodes:     []*apiv1.Node{node1, node2},
+			wantNodes: []*apiv1.Node{node1, node2},
+		},
+		{
+			name:      "filters out nodes with not matching provider",
+			nodes:     []*apiv1.Node{node1, node2, node3},
+			wantNodes: []*apiv1.Node{node1, node2},
+		},
+		{
+			name:      "filters out nodes with broken provider",
+			nodes:     []*apiv1.Node{node1, node2, invalidNode},
+			wantNodes: []*apiv1.Node{node1, node2},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filteredNodes := filterNodesFromSelectedGroups(provider, tt.nodes...)
+			assert.Equal(t, tt.wantNodes, filteredNodes)
+		})
+	}
+}
+
 func waitForDeleteToFinish(t *testing.T, deleteFinished <-chan bool) {
 	t.Helper()
 	select {
