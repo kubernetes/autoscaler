@@ -67,7 +67,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--external-metrics-memory-metric` |  |                  ALPHA.  Metric to use with external metrics provider for memory usage. |
 | `--history-length` | "8d" |                                  How much time back prometheus have to be queried to get historical metrics |
 | `--history-resolution` | "1h" |                              Resolution at which Prometheus is queried for historical metrics |
-| `--humanize-memory` |  |                                        Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
+| `--humanize-memory` |  |                                        Convert memory values in recommendations to the highest appropriate binary unit (KiB, MiB, GiB, TiB), rounded to the nearest whole number for better readability. |
 | `--ignored-vpa-object-namespaces` |  |                   A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `--kube-api-burst` | 10 |                                   QPS burst limit when making requests to Kubernetes apiserver |
 | `--kube-api-qps` | 5 |                                     QPS limit when making requests to Kubernetes apiserver |
