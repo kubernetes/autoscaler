@@ -253,9 +253,82 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 	// must match the ID on the Node object itself.
 	// https://github.com/kubernetes/autoscaler/blob/a973259f1852303ba38a3a61eeee8489cf4e1b13/cluster-autoscaler/clusterstate/clusterstate.go#L967-L985
 	instances := make([]cloudprovider.Instance, len(providerIDs))
-	for i := range providerIDs {
+	for i, providerID := range providerIDs {
+		providerIDNormalized := normalizedProviderID(providerID)
+
+		// Add instance Status to report instance state to cluster-autoscaler.
+		// This helps cluster-autoscaler make better scaling decisions.
+		//
+		// Machine can be Failed for a variety of reasons, here we are looking for a specific errors:
+		// - Failed to provision
+		// - Failed to delete.
+		// Other reasons for a machine to be in a Failed state are not forwarding Status to the autoscaler.
+		var status *cloudprovider.InstanceStatus
+		switch {
+		case isFailedMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine failed in node group %s (%s)", ng.Id(), providerID)
+
+			machine, err := ng.machineController.findMachineByProviderID(providerIDNormalized)
+			if err != nil {
+				return nil, err
+			}
+
+			if machine != nil {
+				if !machine.GetDeletionTimestamp().IsZero() {
+					klog.V(4).Infof("Machine failed in node group %s (%s) is being deleted", ng.Id(), providerID)
+					status = &cloudprovider.InstanceStatus{
+						State: cloudprovider.InstanceDeleting,
+						ErrorInfo: &cloudprovider.InstanceErrorInfo{
+							ErrorClass:   cloudprovider.OtherErrorClass,
+							ErrorCode:    "DeletingFailed",
+							ErrorMessage: "Machine deletion failed",
+						},
+					}
+				} else {
+					_, nodeFound, err := unstructured.NestedFieldCopy(machine.UnstructuredContent(), "status", "nodeRef")
+					if err != nil {
+						return nil, err
+					}
+
+					// Machine failed without a nodeRef, this indicates that the machine failed to provision.
+					// This is a special case where the machine is in a Failed state and the node is not created.
+					// Machine controller will not reconcile this machine, so we need to report this to the autoscaler.
+					if !nodeFound {
+						klog.V(4).Infof("Machine failed in node group %s (%s) was being created", ng.Id(), providerID)
+						status = &cloudprovider.InstanceStatus{
+							State: cloudprovider.InstanceCreating,
+							ErrorInfo: &cloudprovider.InstanceErrorInfo{
+								ErrorClass:   cloudprovider.OtherErrorClass,
+								ErrorCode:    "ProvisioningFailed",
+								ErrorMessage: "Machine provisioning failed",
+							},
+						}
+					}
+				}
+			}
+
+		case isPendingMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine pending in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+			}
+
+		case isDeletingMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine deleting in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceDeleting,
+			}
+
+		default:
+			klog.V(4).Infof("Machine running in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceRunning,
+			}
+		}
+
 		instances[i] = cloudprovider.Instance{
-			Id: providerIDs[i],
+			Id:     providerID,
+			Status: status,
 		}
 	}
 
