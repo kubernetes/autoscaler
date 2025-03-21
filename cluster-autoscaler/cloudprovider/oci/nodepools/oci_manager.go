@@ -461,6 +461,9 @@ func (m *ociManagerImpl) GetExistingNodePoolSizeViaCompute(np NodePool) (int, er
 			if !strings.HasPrefix(*item.DisplayName, displayNamePrefix) {
 				continue
 			}
+			if *item.Id == "" {
+				continue
+			}
 			switch item.LifecycleState {
 			case core.InstanceLifecycleStateStopped, core.InstanceLifecycleStateTerminated:
 				klog.V(4).Infof("skipping instance is in stopped/terminated state: %q", *item.Id)
@@ -524,6 +527,12 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 	var instances []cloudprovider.Instance
 	for _, node := range nodePool.Nodes {
+
+		// A node pool can fail to scale up if there's no capacity in the region. In that case, the node pool will be
+		// returned by the API, but it will not actually exist or have an ID, so we don't want to tell the autoscaler about it.
+		if *node.Id == "" {
+			continue
+		}
 
 		if node.NodeError != nil {
 
