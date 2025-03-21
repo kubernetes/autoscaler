@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/component-helpers/scheduling/corev1"
+	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/utils/ptr"
 )
 
@@ -46,16 +47,6 @@ func ClaimAllocated(claim *resourceapi.ResourceClaim) bool {
 // ClaimInUse returns whether the provided claim is currently reserved for any consumer.
 func ClaimInUse(claim *resourceapi.ResourceClaim) bool {
 	return len(claim.Status.ReservedFor) > 0
-}
-
-// ClaimReservedForPod returns whether the provided claim is currently reserved for the provided pod.
-func ClaimReservedForPod(claim *resourceapi.ResourceClaim, pod *apiv1.Pod) bool {
-	for _, consumerRef := range claim.Status.ReservedFor {
-		if claimConsumerReferenceMatchesPod(pod, consumerRef) {
-			return true
-		}
-	}
-	return false
 }
 
 // ClaimFullyReserved returns whether the provided claim already has the maximum possible reservations
@@ -105,7 +96,7 @@ func ClearPodReservationInPlace(claim *resourceapi.ResourceClaim, pod *apiv1.Pod
 // AddPodReservationInPlace adds a reservation for the provided pod to the provided Claim. It is a no-op
 // if the claim is already reserved for the Pod.
 func AddPodReservationInPlace(claim *resourceapi.ResourceClaim, pod *apiv1.Pod) {
-	if !ClaimReservedForPod(claim, pod) {
+	if !resourceclaim.IsReservedForPod(pod, claim) {
 		claim.Status.ReservedFor = append(claim.Status.ReservedFor, PodClaimConsumerReference(pod))
 	}
 }
