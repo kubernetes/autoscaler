@@ -36,6 +36,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -77,7 +78,46 @@ const (
 	testGcPeriod = time.Minute
 )
 
-func TestLoadPods(t *testing.T) {
+// NewClusterState returns a new clusterState with no pods.
+func NewFakeClusterState(vpas map[model.VpaID]*model.Vpa, pods map[model.PodID]*model.PodState) *fakeClusterState {
+	return &fakeClusterState{
+		stubbedVPAs:  vpas,
+		stubbedPods:  pods,
+		addedSamples: make(map[model.ContainerID][]*model.ContainerUsageSampleWithKey),
+	}
+}
+
+type fakeClusterState struct {
+	model.ClusterState
+	addedPods    []model.PodID
+	addedSamples map[model.ContainerID][]*model.ContainerUsageSampleWithKey
+	stubbedVPAs  map[model.VpaID]*model.Vpa
+	stubbedPods  map[model.PodID]*model.PodState
+}
+
+func (cs *fakeClusterState) AddSample(sample *model.ContainerUsageSampleWithKey) error {
+	samplesForContainer := cs.addedSamples[sample.Container]
+	cs.addedSamples[sample.Container] = append(samplesForContainer, sample)
+	return nil
+}
+
+func (cs *fakeClusterState) AddOrUpdatePod(podID model.PodID, _ labels.Set, _ v1.PodPhase) {
+	cs.addedPods = append(cs.addedPods, podID)
+}
+
+func (cs *fakeClusterState) Pods() map[model.PodID]*model.PodState {
+	return cs.stubbedPods
+}
+
+func (cs *fakeClusterState) VPAs() map[model.VpaID]*model.Vpa {
+	return cs.stubbedVPAs
+}
+
+func (cs *fakeClusterState) StateMapSize() int {
+	return 0
+}
+
+func TestLoadVPAs(t *testing.T) {
 
 	type testCase struct {
 		name                                string
@@ -329,11 +369,11 @@ func TestLoadPods(t *testing.T) {
 			}
 
 			if !tc.expectedVpaFetch {
-				assert.NotContains(t, clusterState.Vpas, vpaID)
+				assert.NotContains(t, clusterState.VPAs(), vpaID)
 				return
 			}
-			assert.Contains(t, clusterState.Vpas, vpaID)
-			storedVpa := clusterState.Vpas[vpaID]
+			assert.Contains(t, clusterState.VPAs(), vpaID)
+			storedVpa := clusterState.VPAs()[vpaID]
 			if tc.expectedSelector != nil {
 				assert.NotNil(t, storedVpa.PodSelector)
 				assert.Equal(t, tc.expectedSelector.String(), storedVpa.PodSelector.String())
@@ -380,7 +420,70 @@ func makeTestSpecClient(podLabels []map[string]string) spec.SpecClient {
 	}
 }
 
-func TestClusterStateFeeder_LoadPods(t *testing.T) {
+func newTestContainerSpec(podID model.PodID, containerName string, millicores int, memory int64) spec.BasicContainerSpec {
+	containerID := model.ContainerID{
+		PodID:         podID,
+		ContainerName: containerName,
+	}
+	requestedResources := model.Resources{
+		model.ResourceCPU:    model.ResourceAmount(millicores),
+		model.ResourceMemory: model.ResourceAmount(memory),
+	}
+	return spec.BasicContainerSpec{
+		ID:      containerID,
+		Image:   containerName + "Image",
+		Request: requestedResources,
+	}
+}
+
+func newTestPodSpec(podId model.PodID, containerSpecs []spec.BasicContainerSpec, initContainerSpecs []spec.BasicContainerSpec) *spec.BasicPodSpec {
+	return &spec.BasicPodSpec{
+		ID:             podId,
+		PodLabels:      map[string]string{podId.PodName + "LabelKey": podId.PodName + "LabelValue"},
+		Containers:     containerSpecs,
+		InitContainers: initContainerSpecs,
+	}
+}
+
+func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
+	podWithoutInitContainersID := model.PodID{Namespace: "default", PodName: "PodWithoutInitContainers"}
+	containerSpecs := []spec.BasicContainerSpec{
+		newTestContainerSpec(podWithoutInitContainersID, "container1", 500, 512*1024*1024),
+		newTestContainerSpec(podWithoutInitContainersID, "container2", 1000, 1024*1024*1024),
+	}
+	podWithoutInitContainers := newTestPodSpec(podWithoutInitContainersID, containerSpecs, nil)
+
+	podWithInitContainersID := model.PodID{Namespace: "default", PodName: "PodWithInitContainers"}
+	containerSpecs2 := []spec.BasicContainerSpec{
+		newTestContainerSpec(podWithInitContainersID, "container1", 2000, 2048*1024*1024),
+	}
+	initContainerSpecs2 := []spec.BasicContainerSpec{
+		newTestContainerSpec(podWithInitContainersID, "init1", 40, 128*1024*1024),
+		newTestContainerSpec(podWithInitContainersID, "init2", 100, 256*1024*1024),
+	}
+	podWithInitContainers := newTestPodSpec(podWithInitContainersID, containerSpecs2, initContainerSpecs2)
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{podWithoutInitContainers, podWithInitContainers}}
+
+	clusterState := model.NewClusterState(testGcPeriod)
+
+	feeder := clusterStateFeeder{
+		specClient:     client,
+		memorySaveMode: false,
+		clusterState:   clusterState,
+	}
+
+	feeder.LoadPods()
+
+	assert.Equal(t, len(feeder.clusterState.Pods()), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].Containers), 1)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].Containers), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
+
+}
+
+func TestClusterStateFeeder_LoadPods_MemorySaverMode(t *testing.T) {
 	for _, tc := range []struct {
 		Name              string
 		VPALabelSelectors []string
@@ -427,14 +530,14 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
-			clusterState := model.NewClusterState(testGcPeriod)
+			vpas := make(map[model.VpaID]*model.Vpa)
 			for i, selector := range tc.VPALabelSelectors {
 				vpaLabel, err := labels.Parse(selector)
 				assert.NoError(t, err)
-				clusterState.Vpas = map[model.VpaID]*model.Vpa{
-					{VpaName: fmt.Sprintf("test-vpa-%d", i), Namespace: "default"}: {PodSelector: vpaLabel},
-				}
+				key := model.VpaID{VpaName: fmt.Sprintf("test-vpa-%d", i), Namespace: "default"}
+				vpas[key] = &model.Vpa{PodSelector: vpaLabel}
 			}
+			clusterState := NewFakeClusterState(vpas, nil)
 
 			feeder := clusterStateFeeder{
 				specClient:     makeTestSpecClient(tc.PodLabels),
@@ -443,7 +546,9 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 			}
 
 			feeder.LoadPods()
-			assert.Len(t, feeder.clusterState.Pods, tc.TrackedPods, "number of pods is not %d", tc.TrackedPods)
+			assert.Len(t, clusterState.addedPods, tc.TrackedPods, "number of pods is not %d", tc.TrackedPods)
+
+			clusterState = NewFakeClusterState(vpas, nil)
 
 			feeder = clusterStateFeeder{
 				specClient:     makeTestSpecClient(tc.PodLabels),
@@ -452,9 +557,98 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 			}
 
 			feeder.LoadPods()
-			assert.Len(t, feeder.clusterState.Pods, len(tc.PodLabels), "number of pods is not %d", len(tc.PodLabels))
+			assert.Len(t, clusterState.addedPods, len(tc.PodLabels), "number of pods is not %d", len(tc.PodLabels))
 		})
 	}
+}
+
+func newContainerMetricsSnapshot(id model.ContainerID, cpuUsage int64, memUsage int64) (*metrics.ContainerMetricsSnapshot, []*model.ContainerUsageSampleWithKey) {
+	snapshotTimestamp := time.Now()
+	snapshotWindow := time.Duration(1234)
+	snapshot := &metrics.ContainerMetricsSnapshot{
+		ID:             id,
+		SnapshotTime:   snapshotTimestamp,
+		SnapshotWindow: snapshotWindow,
+		Usage: model.Resources{
+			model.ResourceCPU:    model.ResourceAmount(cpuUsage),
+			model.ResourceMemory: model.ResourceAmount(memUsage),
+		},
+	}
+	samples := []*model.ContainerUsageSampleWithKey{
+		{
+			Container: id,
+			ContainerUsageSample: model.ContainerUsageSample{
+				MeasureStart: snapshotTimestamp,
+				Resource:     model.ResourceCPU,
+				Usage:        model.ResourceAmount(cpuUsage),
+			},
+		},
+		{
+			Container: id,
+			ContainerUsageSample: model.ContainerUsageSample{
+				MeasureStart: snapshotTimestamp,
+				Resource:     model.ResourceMemory,
+				Usage:        model.ResourceAmount(memUsage),
+			},
+		},
+	}
+	return snapshot, samples
+}
+
+type fakeMetricsClient struct {
+	snapshots []*metrics.ContainerMetricsSnapshot
+}
+
+func (m fakeMetricsClient) GetContainersMetrics() ([]*metrics.ContainerMetricsSnapshot, error) {
+	return m.snapshots, nil
+}
+
+func TestClusterStateFeeder_LoadRealTimeMetrics(t *testing.T) {
+	namespaceName := "test-namespace"
+	podID := model.PodID{Namespace: namespaceName, PodName: "Pod"}
+	regularContainer1 := model.ContainerID{PodID: podID, ContainerName: "Container1"}
+	regularContainer2 := model.ContainerID{PodID: podID, ContainerName: "Container2"}
+	initContainer := model.ContainerID{PodID: podID, ContainerName: "InitContainer"}
+
+	pods := map[model.PodID]*model.PodState{
+		podID: {ID: podID,
+			Containers: map[string]*model.ContainerState{
+				"Container1": {},
+				"Container2": {},
+			},
+			InitContainers: []string{
+				"InitContainer",
+			}},
+	}
+
+	var containerMetricsSnapshots []*metrics.ContainerMetricsSnapshot
+
+	regularContainer1MetricsSnapshot, regularContainer1UsageSamples := newContainerMetricsSnapshot(regularContainer1, 100, 1024)
+	containerMetricsSnapshots = append(containerMetricsSnapshots, regularContainer1MetricsSnapshot)
+	regularContainer2MetricsSnapshot, regularContainer2UsageSamples := newContainerMetricsSnapshot(regularContainer2, 200, 2048)
+	containerMetricsSnapshots = append(containerMetricsSnapshots, regularContainer2MetricsSnapshot)
+	initContainer1MetricsSnapshots, _ := newContainerMetricsSnapshot(initContainer, 300, 3072)
+	containerMetricsSnapshots = append(containerMetricsSnapshots, initContainer1MetricsSnapshots)
+
+	clusterState := NewFakeClusterState(nil, pods)
+
+	feeder := clusterStateFeeder{
+		memorySaveMode: false,
+		clusterState:   clusterState,
+		metricsClient:  fakeMetricsClient{snapshots: containerMetricsSnapshots},
+	}
+
+	feeder.LoadRealTimeMetrics()
+
+	assert.Equal(t, 2, len(clusterState.addedSamples))
+
+	samplesForContainer1 := clusterState.addedSamples[regularContainer1]
+	assert.Contains(t, samplesForContainer1, regularContainer1UsageSamples[0])
+	assert.Contains(t, samplesForContainer1, regularContainer1UsageSamples[1])
+
+	samplesForContainer2 := clusterState.addedSamples[regularContainer2]
+	assert.Contains(t, samplesForContainer2, regularContainer2UsageSamples[0])
+	assert.Contains(t, samplesForContainer2, regularContainer2UsageSamples[1])
 }
 
 type fakeHistoryProvider struct {
@@ -506,10 +700,10 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		clusterState: clusterState,
 	}
 	feeder.InitFromHistoryProvider(&provider)
-	if !assert.Contains(t, feeder.clusterState.Pods, pod1) {
+	if !assert.Contains(t, feeder.clusterState.Pods(), pod1) {
 		return
 	}
-	pod1State := feeder.clusterState.Pods[pod1]
+	pod1State := feeder.clusterState.Pods()[pod1]
 	if !assert.Contains(t, pod1State.Containers, containerCpu) {
 		return
 	}
@@ -700,7 +894,7 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		coreClient:          client.CoreV1(),
 		vpaLister:           vpaLister,
 		vpaCheckpointClient: checkpointClient,
-		clusterState:        &model.ClusterState{},
+		clusterState:        model.NewClusterState(testGcPeriod),
 		recommenderName:     "default",
 	}
 
