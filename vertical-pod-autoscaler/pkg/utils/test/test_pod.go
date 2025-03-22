@@ -32,6 +32,8 @@ type PodBuilder interface {
 	WithLabels(labels map[string]string) PodBuilder
 	WithAnnotations(annotations map[string]string) PodBuilder
 	WithPhase(phase apiv1.PodPhase) PodBuilder
+	WithQOSClass(class apiv1.PodQOSClass) PodBuilder
+	WithResizeStatus(resizeStatus apiv1.PodResizeStatus) PodBuilder
 	Get() *apiv1.Pod
 }
 
@@ -54,6 +56,8 @@ type podBuilderImpl struct {
 	phase                 apiv1.PodPhase
 	containerStatuses     []apiv1.ContainerStatus
 	initContainerStatuses []apiv1.ContainerStatus
+	qosClass              apiv1.PodQOSClass
+	resizeStatus          apiv1.PodResizeStatus
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -111,6 +115,18 @@ func (pb *podBuilderImpl) AddInitContainerStatus(initContainerStatus apiv1.Conta
 	return &r
 }
 
+func (pb *podBuilderImpl) WithQOSClass(class apiv1.PodQOSClass) PodBuilder {
+	r := *pb
+	r.qosClass = class
+	return &r
+}
+
+func (pb *podBuilderImpl) WithResizeStatus(resizeStatus apiv1.PodResizeStatus) PodBuilder {
+	r := *pb
+	r.resizeStatus = resizeStatus
+	return &r
+}
+
 func (pb *podBuilderImpl) Get() *apiv1.Pod {
 	startTime := metav1.Time{
 		Time: testTimestamp,
@@ -151,6 +167,12 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 	}
 	if pb.phase != "" {
 		pod.Status.Phase = pb.phase
+	}
+	if pb.qosClass != "" {
+		pod.Status.QOSClass = pb.qosClass
+	}
+	if pb.resizeStatus != "" {
+		pod.Status.Resize = pb.resizeStatus
 	}
 
 	if pb.containerStatuses != nil {
