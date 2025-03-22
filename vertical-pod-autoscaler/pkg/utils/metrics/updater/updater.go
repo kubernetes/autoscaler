@@ -108,6 +108,8 @@ var (
 		}, []string{"vpa_size_log2"},
 	)
 
+	// TODO: Add metrics for failed in-place update attempts
+
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
 )
