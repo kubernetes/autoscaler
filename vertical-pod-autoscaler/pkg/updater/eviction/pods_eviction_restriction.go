@@ -18,6 +18,7 @@ package eviction
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -25,12 +26,17 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
 	coreinformer "k8s.io/client-go/informers/core/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+
+	resource_updates "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -48,12 +54,18 @@ type PodsEvictionRestriction interface {
 	Evict(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
 	// CanEvict checks if pod can be safely evicted
 	CanEvict(pod *apiv1.Pod) bool
+
+	// InPlaceUpdate updates the pod resources in-place
+	InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
+	// CanInPlaceUpdate checks if the pod can be updated in-place
+	CanInPlaceUpdate(pod *apiv1.Pod) bool
 }
 
 type podsEvictionRestrictionImpl struct {
 	client                       kube_client.Interface
 	podToReplicaCreatorMap       map[string]podReplicaCreator
 	creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats
+	patchCalculators             []patch.Calculator
 }
 
 type singleGroupStats struct {
@@ -62,13 +74,14 @@ type singleGroupStats struct {
 	running           int
 	evictionTolerance int
 	evicted           int
+	inPlaceUpdating   int
 }
 
 // PodsEvictionRestrictionFactory creates PodsEvictionRestriction
 type PodsEvictionRestrictionFactory interface {
 	// NewPodsEvictionRestriction creates PodsEvictionRestriction for given set of pods,
 	// controlled by a single VPA object.
-	NewPodsEvictionRestriction(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) PodsEvictionRestriction
+	NewPodsEvictionRestriction(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, patchCalculators []patch.Calculator) PodsEvictionRestriction
 }
 
 type podsEvictionRestrictionFactoryImpl struct {
@@ -99,7 +112,7 @@ type podReplicaCreator struct {
 
 // CanEvict checks if pod can be safely evicted
 func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
-	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
+	cr, present := e.podToReplicaCreatorMap[GetPodID(pod)]
 	if present {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
 		if pod.Status.Phase == apiv1.PodPending {
@@ -107,13 +120,34 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 		}
 		if present {
 			shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
-			if singleGroupStats.running-singleGroupStats.evicted > shouldBeAlive {
+			actuallyAlive := singleGroupStats.running - (singleGroupStats.evicted + singleGroupStats.inPlaceUpdating)
+
+			klog.V(4).InfoS("Pod disruption tolerance",
+				"pod", klog.KObj(pod),
+				"running", singleGroupStats.running,
+				"configured", singleGroupStats.configured,
+				"tolerance", singleGroupStats.evictionTolerance,
+				"evicted", singleGroupStats.evicted,
+				"updating", singleGroupStats.inPlaceUpdating)
+			if IsInPlaceUpdating(pod) {
+				if (actuallyAlive - 1) > shouldBeAlive { // -1 because this pod is the one being in-place updated
+					if pod.Status.Resize == apiv1.PodResizeStatusInfeasible || pod.Status.Resize == apiv1.PodResizeStatusDeferred {
+						klog.InfoS("Attempted in-place resize was impossible, should now evict", "pod", klog.KObj(pod), "resizePolicy", pod.Status.Resize)
+						return true
+					}
+				}
+				klog.V(4).InfoS("Would be able to evict, but already resizing", "pod", klog.KObj(pod))
+				return false
+			}
+
+			if actuallyAlive > shouldBeAlive {
 				return true
 			}
 			// If all pods are running and eviction tolerance is small evict 1 pod.
 			if singleGroupStats.running == singleGroupStats.configured &&
 				singleGroupStats.evictionTolerance == 0 &&
-				singleGroupStats.evicted == 0 {
+				singleGroupStats.evicted == 0 &&
+				singleGroupStats.inPlaceUpdating == 0 {
 				return true
 			}
 		}
@@ -124,7 +158,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 // Evict sends eviction instruction to api client. Returns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
 func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
-	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
+	cr, present := e.podToReplicaCreatorMap[GetPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %s/%s: not in replicated pods map", podToEvict.Namespace, podToEvict.Name)
 	}
@@ -193,7 +227,7 @@ func NewPodsEvictionRestrictionFactory(client kube_client.Interface, minReplicas
 
 // NewPodsEvictionRestriction creates PodsEvictionRestriction for a given set of pods,
 // controlled by a single VPA object.
-func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) PodsEvictionRestriction {
+func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, patchCalculators []patch.Calculator) PodsEvictionRestriction {
 	// We can evict pod only if it is a part of replica set
 	// For each replica set we can evict only a fraction of pods.
 	// Evictions may be later limited by pod disruption budget if configured.
@@ -247,18 +281,24 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 		singleGroup.configured = configured
 		singleGroup.evictionTolerance = int(float64(configured) * f.evictionToleranceFraction)
 		for _, pod := range replicas {
-			podToReplicaCreatorMap[getPodID(pod)] = creator
+			podToReplicaCreatorMap[GetPodID(pod)] = creator
 			if pod.Status.Phase == apiv1.PodPending {
 				singleGroup.pending = singleGroup.pending + 1
+			}
+			if IsInPlaceUpdating(pod) {
+				singleGroup.inPlaceUpdating = singleGroup.inPlaceUpdating + 1
 			}
 		}
 		singleGroup.running = len(replicas) - singleGroup.pending
 		creatorToSingleGroupStatsMap[creator] = singleGroup
+
 	}
 	return &podsEvictionRestrictionImpl{
 		client:                       f.client,
 		podToReplicaCreatorMap:       podToReplicaCreatorMap,
-		creatorToSingleGroupStatsMap: creatorToSingleGroupStatsMap}
+		creatorToSingleGroupStatsMap: creatorToSingleGroupStatsMap,
+		patchCalculators:             patchCalculators,
+	}
 }
 
 func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
@@ -274,7 +314,8 @@ func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
 	return podReplicaCreator, nil
 }
 
-func getPodID(pod *apiv1.Pod) string {
+// GetPodID returns a string that uniquely identifies a pod by namespace and name
+func GetPodID(pod *apiv1.Pod) string {
 	if pod == nil {
 		return ""
 	}
@@ -391,4 +432,139 @@ func setUpInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 		return nil, fmt.Errorf("Failed to sync %v cache.", kind)
 	}
 	return informer, nil
+}
+
+// CanInPlaceUpdate performs the same checks
+func (e *podsEvictionRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) bool {
+	if !features.Enabled(features.InPlaceOrRecreate) {
+		return false
+	}
+	cr, present := e.podToReplicaCreatorMap[GetPodID(pod)]
+	if present {
+		if IsInPlaceUpdating(pod) {
+			return false
+		}
+
+		for _, container := range pod.Spec.Containers {
+			// If some of these are populated, we know it at least understands resizing
+			if container.ResizePolicy == nil {
+				klog.InfoS("Can't resize pod, container resize policy does not exist; is InPlacePodVerticalScaling enabled?", "pod", klog.KObj(pod))
+				return false
+			}
+		}
+
+		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+
+		// TODO: Rename evictionTolerance to disruptionTolerance?
+		if present {
+			shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
+			actuallyAlive := singleGroupStats.running - (singleGroupStats.evicted + singleGroupStats.inPlaceUpdating)
+			eligibleForInPlaceUpdate := false
+
+			if actuallyAlive > shouldBeAlive {
+				eligibleForInPlaceUpdate = true
+			}
+
+			// If all pods are running, no pods are being evicted or updated, and eviction tolerance is small, we can resize in-place
+			if singleGroupStats.running == singleGroupStats.configured &&
+				singleGroupStats.evictionTolerance == 0 &&
+				singleGroupStats.evicted == 0 && singleGroupStats.inPlaceUpdating == 0 {
+				eligibleForInPlaceUpdate = true
+			}
+
+			klog.V(4).InfoS("Pod disruption tolerance",
+				"pod", klog.KObj(pod),
+				"configuredPods", singleGroupStats.configured,
+				"runningPods", singleGroupStats.running,
+				"evictedPods", singleGroupStats.evicted,
+				"inPlaceUpdatingPods", singleGroupStats.inPlaceUpdating,
+				"evictionTolerance", singleGroupStats.evictionTolerance,
+				"eligibleForInPlaceUpdate", eligibleForInPlaceUpdate,
+			)
+			return eligibleForInPlaceUpdate
+		}
+	}
+	return false
+}
+
+// InPlaceUpdate sends calculates patches and sends resize request to api client. Returns error if pod cannot be in-place updated or if client returned error.
+// Does not check if pod was actually in-place updated after grace period.
+func (e *podsEvictionRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+	cr, present := e.podToReplicaCreatorMap[GetPodID(podToUpdate)]
+	if !present {
+		return fmt.Errorf("pod not suitable for eviction %v: not in replicated pods map", podToUpdate.Name)
+	}
+
+	// separate patches since we have to patch resize and spec separately
+	resourcePatches := []resource_updates.PatchRecord{}
+	annotationPatches := []resource_updates.PatchRecord{}
+	if podToUpdate.Annotations == nil {
+		annotationPatches = append(annotationPatches, patch.GetAddEmptyAnnotationsPatch())
+	}
+	for i, calculator := range e.patchCalculators {
+		p, err := calculator.CalculatePatches(podToUpdate, vpa)
+		if err != nil {
+			return err
+		}
+		klog.V(4).InfoS("Calculated patches for pod", "pod", klog.KObj(podToUpdate), "patches", p)
+		// TODO(maxcao13): change how this works later, this is gross and depends on the resource calculator being first in the slice
+		// we may not even want the updater to patch pod annotations at all
+		if i == 0 {
+			resourcePatches = append(resourcePatches, p...)
+		} else {
+			annotationPatches = append(annotationPatches, p...)
+		}
+	}
+	if len(resourcePatches) > 0 {
+		patch, err := json.Marshal(resourcePatches)
+		if err != nil {
+			return err
+		}
+
+		res, err := e.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{}, "resize")
+		if err != nil {
+			return err
+		}
+		klog.V(4).InfoS("In-place patched pod /resize subresource using patches ", "pod", klog.KObj(res), "patches", string(patch))
+
+		if len(annotationPatches) > 0 {
+			patch, err := json.Marshal(annotationPatches)
+			if err != nil {
+				return err
+			}
+			res, err = e.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
+			if err != nil {
+				return err
+			}
+			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+		}
+	} else {
+		return fmt.Errorf("no resource patches were calculated to apply")
+	}
+
+	// TODO(maxcao13): If this keeps getting called on the same object with the same reason, it is considered a patch request.
+	// And we fail to have the corresponding rbac for it. So figure out if we need this later.
+	// Do we even need to emit an event? The node might reject the resize request. If so, should we rename this to InPlaceResizeAttempted?
+	// eventRecorder.Event(podToUpdate, apiv1.EventTypeNormal, "InPlaceResizedByVPA", "Pod was resized in place by VPA Updater.")
+
+	if podToUpdate.Status.Phase == apiv1.PodRunning {
+		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+		if !present {
+			klog.InfoS("Internal error - cannot find stats for replication group", "pod", klog.KObj(podToUpdate), "podReplicaCreator", cr)
+		} else {
+			singleGroupStats.inPlaceUpdating = singleGroupStats.inPlaceUpdating + 1
+			e.creatorToSingleGroupStatsMap[cr] = singleGroupStats
+		}
+	} else {
+		klog.InfoS("Attempted to in-place update, but pod was not running", "pod", klog.KObj(podToUpdate), "phase", podToUpdate.Status.Phase)
+	}
+
+	return nil
+}
+
+// TODO(maxcao13): Switch to conditions after 1.33 is released: https://github.com/kubernetes/enhancements/pull/5089
+
+// IsInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update
+func IsInPlaceUpdating(podToCheck *apiv1.Pod) (isUpdating bool) {
+	return podToCheck.Status.Resize != ""
 }
