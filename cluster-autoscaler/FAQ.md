@@ -629,7 +629,7 @@ When using this class, Cluster Autoscaler performs following actions:
   Adds a Provisioned=True condition to the ProvReq if capacity is available.
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
 
-  Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler 
+  Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler
   to process only subset of check capacity ProvisioningRequests and ignore the rest.
   It should be done with caution by specifying `--check-capacity-processor-instance=<name>` flag.
   Then, ProvReq Parameters map should contain a key "processorInstance" with a value equal to the configured instance name.
@@ -978,7 +978,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `add-dir-header` | If true, adds the file directory to the header of the log messages |  |
 | `address` | The address to expose prometheus metrics. | ":8085" |
 | `alsologtostderr` | log to standard error as well as files (no effect when -logtostderr=true) |  |
-| `async-node-groups` | Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk. |  |
+| `async-node-groups-enabled` | Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk. |  |
 | `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only |  |
 | `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them |  |
 | `balancing-ignore-label` | Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar | [] |
