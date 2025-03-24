@@ -265,6 +265,33 @@ func TestHistogramLoadFromCheckpointReturnsErrorOnNilInput(t *testing.T) {
 }
 
 func TestHistogramIsNotEmptyAfterSavingAndLoadingCheckpointsWithBoundaryValues(t *testing.T) {
+	// There is a specific scenario in which the weights of the minimum and maximum histogram buckets,
+	// when saved to a VPACheckpoint and subsequently loaded, result in diminished weights for the minimum buckets.
+
+	// This issue arises due to rounding errors when converting float weights to integers in the VPACheckpoint.
+	// For instance, consider the weights:
+	// `w1` which approximates but is slightly larger than or equal to `epsilon`,
+	// `w2` which approximates but is slightly smaller than or equal to (`MaxCheckpointWeight` * `epsilon`) - `epsilon`.
+
+	// When these weights are stored in a VPACheckpoint, they are translated to integers:
+	// `w1` rounds to `1` (`wi1`),
+	// `w2` rounds to `MaxCheckpointWeight` (`wi2`).
+
+	// Upon loading from the VPACheckpoint, the histogram reconstructs its weights using a calculated ratio,
+	// aimed at reverting integer weights back to float values. This ratio is derived from:
+	// (`w1` + `w2`) / (`wi1` + `wi2`)
+	// Reference: https://github.com/plkokanov/autoscaler/blob/2aba67154cd4f117da4702b60a10c38c0651e659/vertical-pod-autoscaler/pkg/recommender/util/histogram.go#L256-L269
+
+	// Given the maximum potential values for `w1`, `w2`, `wi1` and `wi2` we arrive at:
+	// (`epsilon` + `MaxCheckpointWeight` * `epsilon` - `epsilon`) / (1 + MaxCheckpointWeight) = epsilon * `MaxCheckpointWeight` / (1 + MaxCheckpointWeight)
+
+	// Consequently, the maximum value for this ratio is less than `epsilon`, implying that when `w1`,
+	// initially scaled to `1`, is adjusted by this ratio, its recalculated weight falls short of `epsilon`.
+	// The same behavior can be observed when there are more than two weights.
+
+	// This test ensures that in such cases the histogram does not become empty.
+	// For more information check https://github.com/kubernetes/autoscaler/issues/7726
+
 	histogram := NewHistogram(testHistogramOptions)
 	histogram.AddSample(1, weightEpsilon, anyTime)
 	histogram.AddSample(2, (float64(MaxCheckpointWeight)*weightEpsilon - weightEpsilon), anyTime)
