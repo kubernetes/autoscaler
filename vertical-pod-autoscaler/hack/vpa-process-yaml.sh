@@ -24,8 +24,8 @@ function print_help {
   echo "separator and substituting REGISTRY and TAG for pod images"
 }
 
-# Requires input from stdin, otherwise hangs. Checks for "admission-controller", "updater", or "recommender", and
-# applies the respective kubectl patch command to add the feature gates specified in the FEATURE_GATES environment variable.
+# Requires input from stdin, otherwise hangs. If the input is a Deployment manifest,
+# apply kubectl patch to add feature gates specified in the FEATURE_GATES environment variable.
 # e.g. cat file.yaml | apply_feature_gate
 function apply_feature_gate() {
   local input=""
@@ -33,11 +33,13 @@ function apply_feature_gate() {
       input+="$line"$'\n'
   done
 
-  if [ -n "${FEATURE_GATES}" ]; then
-    if echo "$input" | grep -q "admission-controller"; then
-      echo "$input" | kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--feature-gates='"${FEATURE_GATES}"'"}]' -o yaml -f -
-    elif echo "$input" | grep -q "updater" || echo "$input" | grep -q "recommender"; then
-      echo "$input" | kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args", "value": ["--feature-gates='"${FEATURE_GATES}"'"]}]' -o yaml -f -
+  # matching precisely "kind: Deployment" to avoid matching "kind: DeploymentConfig" or a line with extra whitespace
+  if echo "$input" | grep -qE '^kind: Deployment$'; then
+    if [ -n "${FEATURE_GATES}" ]; then
+      if ! echo "$input" | kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--feature-gates='"${FEATURE_GATES}"'"}]' -o yaml -f - 2>/dev/null; then
+        # If it fails, there was no args field, so we need to add it
+        echo "$input" | kubectl patch --type=json --local -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args", "value": ["--feature-gates='"${FEATURE_GATES}"'"]}]' -o yaml -f -
+      fi
     else
       echo "$input"
     fi
