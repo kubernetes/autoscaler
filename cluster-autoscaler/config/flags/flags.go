@@ -193,10 +193,11 @@ var (
 	recordDuplicatedEvents                  = flag.Bool("record-duplicated-events", false, "enable duplication of similar events within a 5 minute window.")
 	maxNodesPerScaleUp                      = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
 	maxNodeGroupBinpackingDuration          = flag.Duration("max-nodegroup-binpacking-duration", 10*time.Second, "Maximum time that will be spent in binpacking simulation for each NodeGroup.")
-	skipNodesWithSystemPods                 = flag.Bool("skip-nodes-with-system-pods", true, "If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet or mirror pods)")
+	skipNodesWithSystemPods                 = flag.Bool("skip-nodes-with-system-pods", true, "If true cluster autoscaler will wait for --blocking-system-pod-distruption-timeout before deleting nodes with pods from kube-system (except for DaemonSet or mirror pods)")
 	skipNodesWithLocalStorage               = flag.Bool("skip-nodes-with-local-storage", true, "If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
 	skipNodesWithCustomControllerPods       = flag.Bool("skip-nodes-with-custom-controller-pods", true, "If true cluster autoscaler will never delete nodes with pods owned by custom controllers")
 	minReplicaCount                         = flag.Int("min-replica-count", 0, "Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
+	bspDisruptionTimeout                    = flag.Duration("blocking-system-pod-distruption-timeout", time.Hour, "The timeout after which CA will evict non-pdb-assigned blocking system pods, applicable only when --skip-nodes-with-system-pods is set to true")
 	nodeDeleteDelayAfterTaint               = flag.Duration("node-delete-delay-after-taint", 5*time.Second, "How long to wait before deleting a node after tainting it")
 	scaleDownSimulationTimeout              = flag.Duration("scale-down-simulation-timeout", 30*time.Second, "How long should we run scale down simulation.")
 	maxCapacityMemoryDifferenceRatio        = flag.Float64("memory-difference-ratio", config.DefaultMaxCapacityMemoryDifferenceRatio, "Maximum difference in memory capacity between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's memory capacity.")
@@ -370,6 +371,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		SkipNodesWithSystemPods:            *skipNodesWithSystemPods,
 		SkipNodesWithLocalStorage:          *skipNodesWithLocalStorage,
 		MinReplicaCount:                    *minReplicaCount,
+		BspDisruptionTimeout:               *bspDisruptionTimeout,
 		NodeDeleteDelayAfterTaint:          *nodeDeleteDelayAfterTaint,
 		ScaleDownSimulationTimeout:         *scaleDownSimulationTimeout,
 		SkipNodesWithCustomControllerPods:  *skipNodesWithCustomControllerPods,
