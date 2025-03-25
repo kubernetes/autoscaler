@@ -280,13 +280,17 @@ func TestHistogramIsNotEmptyAfterSavingAndLoadingCheckpointsWithBoundaryValues(t
 	// Upon loading from the VPACheckpoint, the histogram reconstructs its weights using a calculated ratio,
 	// aimed at reverting integer weights back to float values. This ratio is derived from:
 	// (`w1` + `w2`) / (`wi1` + `wi2`)
-	// Reference: https://github.com/plkokanov/autoscaler/blob/2aba67154cd4f117da4702b60a10c38c0651e659/vertical-pod-autoscaler/pkg/recommender/util/histogram.go#L256-L269
+	// Reference:  https://github.com/kubernetes/autoscaler/blob/aa1d413ea3bf319b56c7b2e65ade1a028e149439/vertical-pod-autoscaler//pkg/recommender/util/histogram.go#L256-L269
 
 	// Given the maximum potential values for `w1`, `w2`, `wi1` and `wi2` we arrive at:
 	// (`epsilon` + `MaxCheckpointWeight` * `epsilon` - `epsilon`) / (1 + MaxCheckpointWeight) = epsilon * `MaxCheckpointWeight` / (1 + MaxCheckpointWeight)
 
 	// Consequently, the maximum value for this ratio is less than `epsilon`, implying that when `w1`,
 	// initially scaled to `1`, is adjusted by this ratio, its recalculated weight falls short of `epsilon`.
+	// When the `minBucket`'s weight is less than `epsilon`, the `histogram.IsEmpty()` returns true.
+	// Reference: https://github.com/kubernetes/autoscaler/blob/aa1d413ea3bf319b56c7b2e65ade1a028e149439/vertical-pod-autoscaler/pkg/recommender/util/histogram.go#L181-L183
+	// Consequently, the `histogram.Percentile(...)` function will always return 0.
+	// Reference: https://github.com/kubernetes/autoscaler/blob/aa1d413ea3bf319b56c7b2e65ade1a028e149439/vertical-pod-autoscaler/pkg/recommender/util/histogram.go#L159-L162
 	// The same behavior can be observed when there are more than two weights.
 
 	// This test ensures that in such cases the histogram does not become empty.
