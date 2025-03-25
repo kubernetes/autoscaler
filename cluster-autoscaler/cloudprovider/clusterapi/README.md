@@ -106,7 +106,7 @@ cluster-autoscaler --cloud-provider=clusterapi
 ```
 +--------+              +------------+
 |  mgmt  |              |  workload  |
-|        | cloud-config | ---------- |
+|        |  kubeconfig  | ---------- |
 |        |<-------------+ autoscaler |
 +--------+              +------------+
 ```
@@ -137,7 +137,7 @@ cluster-autoscaler --cloud-provider=clusterapi \
 ```
 +--------+               +------------+             +----------+
 |  mgmt  |               |     ?      |             | workload |
-|        |  cloud-config | ---------- | kubeconfig  |          |
+|        |  kubeconfig   | ---------- | kubeconfig  |          |
 |        |<--------------+ autoscaler +------------>|          |
 +--------+               +------------+             +----------+
 ```
