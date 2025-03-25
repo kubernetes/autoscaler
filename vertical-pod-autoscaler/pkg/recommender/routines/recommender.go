@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"sync"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -77,16 +78,7 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 	return r.clusterStateFeeder
 }
 
-func processVPAUpdate(r *recommender, observedVpa *v1.VerticalPodAutoscaler, cnt *metrics_recommender.ObjectCounter) {
-	key := model.VpaID{
-		Namespace: observedVpa.Namespace,
-		VpaName:   observedVpa.Name,
-	}
-
-	vpa, found := r.clusterState.VPAs()[key]
-	if !found {
-		return
-	}
+func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *v1.VerticalPodAutoscaler) {
 	resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 	had := vpa.HasRecommendation()
 
@@ -112,7 +104,6 @@ func processVPAUpdate(r *recommender, observedVpa *v1.VerticalPodAutoscaler, cnt
 			klog.InfoS("VPA dump", "vpa", vpa, "hasMatchingPods", hasMatchingPods, "podCount", vpa.PodCount, "matchingPods", pods)
 		}
 	}
-	cnt.Add(vpa)
 
 	_, err := vpa_utils.UpdateVpaStatusIfNeeded(
 		r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
@@ -126,9 +117,43 @@ func (r *recommender) UpdateVPAs() {
 	cnt := metrics_recommender.NewObjectCounter()
 	defer cnt.Observe()
 
-	for _, observedVpa := range r.clusterState.ObservedVPAs() {
-		processVPAUpdate(r, observedVpa, cnt)
+	// Create a channel to send VPA updates to workers
+	vpaUpdates := make(chan *v1.VerticalPodAutoscaler, len(r.clusterState.ObservedVPAs()))
+
+	// Create a wait group to wait for all workers to finish
+	var wg sync.WaitGroup
+
+	// Start 10 workers
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for observedVpa := range vpaUpdates {
+				key := model.VpaID{
+					Namespace: observedVpa.Namespace,
+					VpaName:   observedVpa.Name,
+				}
+
+				vpa, found := r.clusterState.VPAs()[key]
+				if !found {
+					return
+				}
+				processVPAUpdate(r, vpa, observedVpa)
+				cnt.Add(vpa)
+			}
+		}()
 	}
+
+	// Send VPA updates to the workers
+	for _, observedVpa := range r.clusterState.ObservedVPAs() {
+		vpaUpdates <- observedVpa
+	}
+
+	// Close the channel to signal workers to stop
+	close(vpaUpdates)
+
+	// Wait for all workers to finish
+	wg.Wait()
 }
 
 func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPerRun int) {
