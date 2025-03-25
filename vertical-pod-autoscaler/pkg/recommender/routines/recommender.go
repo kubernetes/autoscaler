@@ -19,6 +19,7 @@ package routines
 import (
 	"context"
 	"flag"
+	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -76,53 +77,57 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 	return r.clusterStateFeeder
 }
 
+func processVPAUpdate(r *recommender, observedVpa *v1.VerticalPodAutoscaler, cnt *metrics_recommender.ObjectCounter) {
+	key := model.VpaID{
+		Namespace: observedVpa.Namespace,
+		VpaName:   observedVpa.Name,
+	}
+
+	vpa, found := r.clusterState.VPAs()[key]
+	if !found {
+		return
+	}
+	resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
+	had := vpa.HasRecommendation()
+
+	listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
+
+	for _, postProcessor := range r.recommendationPostProcessor {
+		listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
+	}
+
+	vpa.UpdateRecommendation(listOfResourceRecommendation)
+	if vpa.HasRecommendation() && !had {
+		metrics_recommender.ObserveRecommendationLatency(vpa.Created)
+	}
+	hasMatchingPods := vpa.PodCount > 0
+	vpa.UpdateConditions(hasMatchingPods)
+	if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
+		klog.V(0).InfoS("", "err", err)
+		if klog.V(4).Enabled() {
+			pods := r.clusterState.GetMatchingPods(vpa)
+			if len(pods) != vpa.PodCount {
+				klog.ErrorS(nil, "ClusterState pod count and matching pods disagree for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "podCount", vpa.PodCount, "matchingPods", pods)
+			}
+			klog.InfoS("VPA dump", "vpa", vpa, "hasMatchingPods", hasMatchingPods, "podCount", vpa.PodCount, "matchingPods", pods)
+		}
+	}
+	cnt.Add(vpa)
+
+	_, err := vpa_utils.UpdateVpaStatusIfNeeded(
+		r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
+	if err != nil {
+		klog.ErrorS(err, "Cannot update VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
+	}
+}
+
 // UpdateVPAs update VPA CRD objects' status.
 func (r *recommender) UpdateVPAs() {
 	cnt := metrics_recommender.NewObjectCounter()
 	defer cnt.Observe()
 
 	for _, observedVpa := range r.clusterState.ObservedVPAs() {
-		key := model.VpaID{
-			Namespace: observedVpa.Namespace,
-			VpaName:   observedVpa.Name,
-		}
-
-		vpa, found := r.clusterState.VPAs()[key]
-		if !found {
-			continue
-		}
-		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
-		had := vpa.HasRecommendation()
-
-		listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
-
-		for _, postProcessor := range r.recommendationPostProcessor {
-			listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
-		}
-
-		vpa.UpdateRecommendation(listOfResourceRecommendation)
-		if vpa.HasRecommendation() && !had {
-			metrics_recommender.ObserveRecommendationLatency(vpa.Created)
-		}
-		hasMatchingPods := vpa.PodCount > 0
-		vpa.UpdateConditions(hasMatchingPods)
-		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
-			klog.V(0).InfoS("", "err", err)
-			if klog.V(4).Enabled() {
-				pods := r.clusterState.GetMatchingPods(vpa)
-				if len(pods) != vpa.PodCount {
-					klog.ErrorS(nil, "ClusterState pod count and matching pods disagree for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "podCount", vpa.PodCount, "matchingPods", pods)
-				}
-				klog.InfoS("VPA dump", "vpa", vpa, "hasMatchingPods", hasMatchingPods, "podCount", vpa.PodCount, "matchingPods", pods)
-			}
-		}
-		cnt.Add(vpa)
-
-		_, err := vpa_utils.UpdateVpaStatusIfNeeded(
-			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
-		if err != nil {
-			klog.ErrorS(err, "Cannot update VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
-		}
+		processVPAUpdate(r, observedVpa, cnt)
 	}
 }
 
