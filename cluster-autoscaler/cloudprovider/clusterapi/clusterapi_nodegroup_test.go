@@ -406,16 +406,18 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 
 func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 	type testCase struct {
-		description                        string
-		delta                              int
-		initial                            int32
-		targetSizeIncrement                int32
-		expected                           int32
-		expectedError                      bool
-		includeDeletingMachine             bool
-		includeFailedMachine               bool
-		includeFailedMachineWithProviderID bool
-		includePendingMachine              bool
+		description                         string
+		delta                               int
+		initial                             int32
+		targetSizeIncrement                 int32
+		expected                            int32
+		expectedError                       bool
+		includeDeletingMachine              bool
+		includeFailedMachine                bool
+		includeFailedMachineWithProviderID  bool
+		includePendingMachine               bool
+		includePendingMachineWithProviderID bool
+		machinesDoNotHaveProviderIDs        bool
 	}
 
 	test := func(t *testing.T, tc *testCase, testConfig *testConfig) {
@@ -468,11 +470,24 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			// Simulate a pending machine
 			machine := testConfig.machines[2].DeepCopy()
 
-			unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+			if !tc.includePendingMachineWithProviderID {
+				unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+			}
 			unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
 
 			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
+			}
+		}
+
+		// machines with no provider id can be created on some providers, notably bare metal
+		if tc.machinesDoNotHaveProviderIDs {
+			for _, machine := range testConfig.machines {
+				updated := machine.DeepCopy()
+				unstructured.RemoveNestedField(updated.Object, "spec", "providerID")
+				if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, updated); err != nil {
+					t.Fatalf("unexpected error updating machine, got %v", err)
+				}
 			}
 		}
 
@@ -647,6 +662,23 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			delta:                              -1,
 			includeFailedMachine:               true,
 			includeFailedMachineWithProviderID: true,
+		},
+		{
+			description:                         "A node group with 4 replicas with one pending machine that has a provider ID should decrease by 1",
+			initial:                             4,
+			targetSizeIncrement:                 0,
+			expected:                            3,
+			delta:                               -1,
+			includePendingMachine:               true,
+			includePendingMachineWithProviderID: true,
+		},
+		{
+			description:                  "A node group with target size 4 but only 3 existing instances without provider IDs should not scale out",
+			initial:                      3,
+			targetSizeIncrement:          1,
+			expected:                     3,
+			delta:                        -1,
+			machinesDoNotHaveProviderIDs: true,
 		},
 	}
 
