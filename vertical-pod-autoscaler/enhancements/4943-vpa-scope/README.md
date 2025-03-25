@@ -1,15 +1,15 @@
 <!--
-**Note:** When your KEP is complete, all of these comment blocks should be removed.
+**Note:** When your AEP is complete, all of these comment blocks should be removed.
 
 To get started with this template:
 
 - [X] **Pick a hosting SIG.**
   Make sure that the problem space is something the SIG is interested in taking
-  up. KEPs should not be checked in without a sponsoring SIG.
+  up. AEPs should not be checked in without a sponsoring SIG.
 - [X] **Create an issue in kubernetes/enhancements**
   When filing an enhancement tracking issue, please make sure to complete all
-  fields in that template. One of the fields asks for a link to the KEP. You
-  can leave that blank until this KEP is filed, and then go back to the
+  fields in that template. One of the fields asks for a link to the AEP. You
+  can leave that blank until this AEP is filed, and then go back to the
   enhancement and add the link.
 - [X] **Make a copy of this template directory.**
   Copy this template into the owning SIG's directory and name it
@@ -20,17 +20,17 @@ To get started with this template:
   "Status", and date-related fields.
 - [X] **Fill out this file as best you can.**
   At minimum, you should fill in the "Summary" and "Motivation" sections.
-  These should be easy if you've preflighted the idea of the KEP with the
+  These should be easy if you've preflighted the idea of the AEP with the
   appropriate SIG(s).
-- [X] **Create a PR for this KEP.**
+- [X] **Create a PR for this AEP.**
   Assign it to people in the SIG who are sponsoring this process.
 - [ ] **Merge early and iterate.**
   Avoid getting hung up on specific details and instead aim to get the goals of
-  the KEP clarified and merged quickly. The best way to do this is to just
+  the AEP clarified and merged quickly. The best way to do this is to just
   start with the high-level sections and fill out details incrementally in
   subsequent PRs.
 
-Just because a KEP is merged does not mean it is complete or approved. Any KEP
+Just because a AEP is merged does not mean it is complete or approved. Any KEP
 marked as `provisional` is a working document and subject to change. You can
 denote sections that are under active debate as follows:
 
@@ -40,35 +40,36 @@ Stuff that is being argued.
 <<[/UNRESOLVED]>>
 ```
 
-When editing KEPS, aim for tightly-scoped, single-topic PRs to keep discussions
+When editing AEPS, aim for tightly-scoped, single-topic PRs to keep discussions
 focused. If you disagree with what is already in a document, open a new PR
 with suggested changes.
 
-One KEP corresponds to one "feature" or "enhancement" for its whole lifecycle.
-You do not need a new KEP to move from beta to GA, for example. If
-new details emerge that belong in the KEP, edit the KEP. Once a feature has become
-"implemented", major changes should get new KEPs.
+One AEP corresponds to one "feature" or "enhancement" for its whole lifecycle.
+You do not need a new AEP to move from beta to GA, for example. If
+new details emerge that belong in the AEP, edit the KEP. Once a feature has become
+"implemented", major changes should get new AEPs.
 
 The canonical place for the latest set of instructions (and the likely source
 of this file) is [here](/keps/NNNN-kep-template/README.md).
 
-**Note:** Any PRs to move a KEP to `implementable`, or significant changes once
-it is marked `implementable`, must be approved by each of the KEP approvers.
+**Note:** Any PRs to move a AEP to `implementable`, or significant changes once
+it is marked `implementable`, must be approved by each of the AEP approvers.
 If none of those approvers are still appropriate, then changes to that list
 should be approved by the remaining approvers and/or the owning SIG (or
-SIG Architecture for cross-cutting KEPs).
+SIG Architecture for cross-cutting AEPs).
 -->
-# KEP-4943: Vertical Pod Autoscaling for DaemonSets with Heterogeneous Resource Requirements
+
+# AEP-7942: Vertical Pod Autoscaling for DaemonSets with Heterogeneous Resource Requirements
 
 <!--
-This is the title of your KEP. Keep it short, simple, and descriptive. A good
-title can help communicate what the KEP is and should be considered as part of
+This is the title of your AEP. Keep it short, simple, and descriptive. A good
+title can help communicate what the AEP is and should be considered as part of
 any review.
 -->
 
 <!--
-A table of contents is helpful for quickly jumping to sections of a KEP and for
-highlighting any additional information provided beyond the standard KEP
+A table of contents is helpful for quickly jumping to sections of a AEP and for
+highlighting any additional information provided beyond the standard AEP
 template.
 
 Ensure the TOC is wrapped with
@@ -77,44 +78,45 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-- [Release Signoff Checklist](#release-signoff-checklist)
-- [Summary](#summary)
-- [Motivation](#motivation)
-  - [Goals](#goals)
-  - [Non-Goals](#non-goals)
-- [Proposal](#proposal)
-  - [User Stories (Optional)](#user-stories-optional)
-    - [Story 1](#story-1)
-    - [Story 2](#story-2)
-  - [Notes/Constraints/Caveats (Optional)](#notesconstraintscaveats-optional)
-  - [Risks and Mitigations](#risks-and-mitigations)
-- [Design Details](#design-details)
-  - [Test Plan](#test-plan)
-      - [Prerequisite testing updates](#prerequisite-testing-updates)
-      - [Unit tests](#unit-tests)
-      - [Integration tests](#integration-tests)
-      - [e2e tests](#e2e-tests)
-  - [Graduation Criteria](#graduation-criteria)
-  - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
-  - [Version Skew Strategy](#version-skew-strategy)
-- [Production Readiness Review Questionnaire](#production-readiness-review-questionnaire)
-  - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
-  - [Rollout, Upgrade and Rollback Planning](#rollout-upgrade-and-rollback-planning)
-  - [Monitoring Requirements](#monitoring-requirements)
-  - [Dependencies](#dependencies)
-  - [Scalability](#scalability)
-  - [Troubleshooting](#troubleshooting)
-- [Implementation History](#implementation-history)
-- [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
-- [Infrastructure Needed (Optional)](#infrastructure-needed-optional)
-<!-- /toc -->
+
+-   [Release Signoff Checklist](#release-signoff-checklist)
+-   [Summary](#summary)
+-   [Motivation](#motivation)
+    -   [Goals](#goals)
+    -   [Non-Goals](#non-goals)
+-   [Proposal](#proposal)
+    -   [User Stories (Optional)](#user-stories-optional)
+    -   [Story 1](#story-1)
+    -   [Story 2](#story-2)
+    -   [Notes/Constraints/Caveats (Optional)](#notesconstraintscaveats-optional)
+    -   [Risks and Mitigations](#risks-and-mitigations)
+-   [Design Details](#design-details)
+    -   [Test Plan](#test-plan)
+        -   [Prerequisite testing updates](#prerequisite-testing-updates)
+        -   [Unit tests](#unit-tests)
+        -   [Integration tests](#integration-tests)
+        -   [e2e tests](#e2e-tests)
+    -   [Graduation Criteria](#graduation-criteria)
+    -   [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
+    -   [Version Skew Strategy](#version-skew-strategy)
+-   [Production Readiness Review Questionnaire](#production-readiness-review-questionnaire)
+    -   [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+    -   [Rollout, Upgrade and Rollback Planning](#rollout-upgrade-and-rollback-planning)
+    -   [Monitoring Requirements](#monitoring-requirements)
+    -   [Dependencies](#dependencies)
+    -   [Scalability](#scalability)
+    -   [Troubleshooting](#troubleshooting)
+-   [Implementation History](#implementation-history)
+-   [Drawbacks](#drawbacks)
+-   [Alternatives](#alternatives)
+-   [Infrastructure Needed (Optional)](#infrastructure-needed-optional)
+    <!-- /toc -->
 
 ## Release Signoff Checklist
 
 <!--
 **ACTION REQUIRED:** In order to merge code into a release, there must be an
-issue in [kubernetes/enhancements] referencing this KEP and targeting a release
+issue in [kubernetes/enhancements] referencing this AEP and targeting a release
 milestone **before the [Enhancement Freeze](https://git.k8s.io/sig-release/releases)
 of the targeted release**.
 
@@ -126,22 +128,31 @@ Check these off as they are completed for the Release Team to track. These
 checklist items _must_ be updated for the enhancement to be released.
 -->
 
-Items marked with (R) are required *prior to targeting to a milestone / release*.
+Items marked with (R) are required *prior to targeting to a milestone /
+release*.
 
-- [ ] (R) Enhancement issue in release milestone, which links to KEP dir in [kubernetes/enhancements] (not the initial KEP PR)
-- [ ] (R) KEP approvers have approved the KEP status as `implementable`
-- [ ] (R) Design details are appropriately documented
-- [ ] (R) Test plan is in place, giving consideration to SIG Architecture and SIG Testing input (including test refactors)
-  - [ ] e2e Tests for all Beta API Operations (endpoints)
-  - [ ] (R) Ensure GA e2e tests meet requirements for [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md) 
-  - [ ] (R) Minimum Two Week Window for GA e2e tests to prove flake free
-- [ ] (R) Graduation criteria is in place
-  - [ ] (R) [all GA Endpoints](https://github.com/kubernetes/community/pull/1806) must be hit by [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md) 
-- [ ] (R) Production readiness review completed
-- [ ] (R) Production readiness review approved
-- [ ] "Implementation History" section is up-to-date for milestone
-- [ ] User-facing documentation has been created in [kubernetes/website], for publication to [kubernetes.io]
-- [ ] Supporting documentation—e.g., additional design documents, links to mailing list discussions/SIG meetings, relevant PRs/issues, release notes
+-   [ ](R) Enhancement issue in release milestone, which links to AEP dir in
+    [kubernetes/enhancements](not the initial KEP PR)
+-   [ ](R) AEP approvers have approved the KEP status as `implementable`
+-   [ ](R) Design details are appropriately documented
+-   [ ](R) Test plan is in place, giving consideration to SIG Architecture and
+    SIG Testing input (including test refactors)
+    -   [ ] e2e Tests for all Beta API Operations (endpoints)
+    -   [ ](R) Ensure GA e2e tests meet requirements for
+        [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md)
+    -   [ ](R) Minimum Two Week Window for GA e2e tests to prove flake free
+-   [ ](R) Graduation criteria is in place
+    -   [ ](R)
+        [all GA Endpoints](https://github.com/kubernetes/community/pull/1806)
+        must be hit by
+        [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md)
+-   [ ](R) Production readiness review completed
+-   [ ](R) Production readiness review approved
+-   [ ] "Implementation History" section is up-to-date for milestone
+-   [ ] User-facing documentation has been created in [kubernetes/website], for
+    publication to [kubernetes.io]
+-   [ ] Supporting documentation—e.g., additional design documents, links to
+    mailing list discussions/SIG meetings, relevant PRs/issues, release notes
 
 <!--
 **Note:** This checklist is iterative and should be reviewed and updated every time this enhancement is being considered for a milestone.
@@ -159,7 +170,7 @@ This section is incredibly important for producing high-quality, user-focused
 documentation such as release notes or a development roadmap. It should be
 possible to collect this information before implementation begins, in order to
 avoid requiring implementors to split their attention between writing release
-notes and implementing the feature itself. KEP editors and SIG Docs
+notes and implementing the feature itself. AEP editors and SIG Docs
 should help to ensure that the tone and content of the `Summary` section is
 useful for a wide audience.
 
@@ -173,7 +184,7 @@ updates.
 [documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
 -->
 
-This KEP proposes extending the Vertical Pod Autoscaler (VPA) to support use
+This AEP proposes extending the Vertical Pod Autoscaler (VPA) to support use
 cases where each pod under a DaemonSet should have different resource requests
 and limits. This is implemented by adding a `Scope` field to the
 VerticalPodAutoscaler API, which initially supports a value of `node`,
@@ -184,9 +195,9 @@ independently for pods scheuled to the same node.
 
 <!--
 This section is for explicitly listing the motivation, goals, and non-goals of
-this KEP.  Describe why the change is important and the benefits to users. The
+this AEP.  Describe why the change is important and the benefits to users. The
 motivation section can optionally provide links to [experience reports] to
-demonstrate the interest in a KEP within the wider Kubernetes community.
+demonstrate the interest in a AEP within the wider Kubernetes community.
 
 [experience reports]: https://github.com/golang/go/wiki/ExperienceReports -->
 
@@ -197,36 +208,37 @@ target reference. In cases where the workloads, by design, do not evenly
 distribute load, uniform resource allocation is undesirable.
 
 DaemonSets that function as node-local agents are a common example. One
-[experience report for a Managed Prometheus
-service](https://blog.bernot.io/p/vpa-for-workloads-with-heterogeneous-resource-requirements/)
+[experience report for a Managed Prometheus service](https://blog.bernot.io/p/vpa-for-workloads-with-heterogeneous-resource-requirements/)
 describes this problem in more detail. There are similar examples in Networking
 and Observability where the load for any individual pod under a DaemonSet will
-depend on activity on the node that is not necessarily proportional to any
-other factors.
+depend on activity on the node that is not necessarily proportional to any other
+factors.
 
 ### Goals
 
 <!--
-List the specific goals of the KEP. What is it trying to achieve? How will we
+List the specific goals of the AEP. What is it trying to achieve? How will we
 know that this has succeeded?
 -->
 
-- Vertically scale pods under a DaemonSet with different resource requests and
-  limits per node.
-- Effectively manage large disparities in resource requirements between pods in
-  a DaemonSet.
+-   Vertically scale pods under a DaemonSet with different resource requests and
+    limits per node.
+-   Effectively manage large disparities in resource requirements between pods
+    in a DaemonSet.
 
 ### Non-Goals
 
 <!--
-What is out of scope for this KEP? Listing non-goals helps to focus discussion
+What is out of scope for this AEP? Listing non-goals helps to focus discussion
 and make progress.
 -->
-- Consider [node
-  metatdata](https://github.com/kubernetes/autoscaler/issues/5928).
-- Change autoscaling behavior for pods that are not run under a DaemonSet.
-- Use data from other nodes to make an informed recommendation when a pod is
-  added to a DaemonSet with VPA enabled after a new node is added to a cluster.
+
+-   Consider
+    [node metadata](https://github.com/kubernetes/autoscaler/issues/5928).
+-   Change autoscaling behavior for pods that are not run under a DaemonSet.
+-   Use data from other nodes to make an informed recommendation when a pod is
+    added to a DaemonSet with VPA enabled after a new node is added to a
+    cluster.
 
 ## Proposal
 
@@ -253,7 +265,7 @@ over-provisioning and under-provisioning can be reduced.
 ### User Stories (Optional)
 
 <!--
-Detail the things that people will be able to do if this KEP is implemented.
+Detail the things that people will be able to do if this AEP is implemented.
 Include as much detail as possible so that people can understand the "how" of
 the system. The goal here is to make this feel real for users without getting
 bogged down.
@@ -279,10 +291,10 @@ resources across the DaemonSet.
 Networking agents may have a similar use case. For instance, kube-proxy
 sometimes does not set resource requests or limits. In general, networking is a
 high priority. However, under load, kube-proxy may consume more resources
-leading to scheduling problems. With VPA enabled for a kube-proxy DaemonSet,
-the resource requests could be set to an appropriate level on each node that
-would allow the scheduler to better estimate the actual capacity available on
-the node, after considering the capacity needed for kube-proxy.
+leading to scheduling problems. With VPA enabled for a kube-proxy DaemonSet, the
+resource requests could be set to an appropriate level on each node that would
+allow the scheduler to better estimate the actual capacity available on the
+node, after considering the capacity needed for kube-proxy.
 
 ### Notes/Constraints/Caveats (Optional)
 
@@ -300,17 +312,17 @@ different design assumptions and implementations. For instance, narrowing the
 scope to DaemonSets allows us to ignore the potential interactions with
 Hortizonal Pod Autoscaling.
 
-One similar problem considered in the past was [scaling based on node
-metadata](https://github.com/kubernetes/autoscaler/issues/5928). That issue
-broadly suggests that workloads be given more capacity on larger nodes. That
-heuristic may be good enough for some use cases, and this proposal implicitly
-allows for the possibility of extending the "scope" field to support such a
-feature in the future. However, this proposal may also address the same
-underlying need more precisely. Conversely, scaling based on node metadata
-alone would not meet the needs of some of the motivating use cases for this
-proposal, because the underlying assumption of scaling based on node metadata
-is that the workload scales directly proportionally to the node.  We know this
-is not the case in all circumstances.
+One similar problem considered in the past was
+[scaling based on node metadata](https://github.com/kubernetes/autoscaler/issues/5928).
+That issue broadly suggests that workloads be given more capacity on larger
+nodes. That heuristic may be good enough for some use cases, and this proposal
+implicitly allows for the possibility of extending the "scope" field to support
+such a feature in the future. However, this proposal may also address the same
+underlying need more precisely. Conversely, scaling based on node metadata alone
+would not meet the needs of some of the motivating use cases for this proposal,
+because the underlying assumption of scaling based on node metadata is that the
+workload scales directly proportionally to the node. We know this is not the
+case in all circumstances.
 
 ### Risks and Mitigations
 
@@ -329,15 +341,14 @@ Consider including folks who also work outside the SIG or subproject.
 One significant risk is scaling this feature. While VPA generally scales in a
 sublinear way because only a single recommendation is calculated, a VPA with a
 node scope will scale linerarly, requiring separate metrics queries for each
-node and separate recommendation calculations. Care will be taken to ensure
-this is handled efficiently.
+node and separate recommendation calculations. Care will be taken to ensure this
+is handled efficiently.
 
-As of Kubernetes V1.32, [up to 5,000 nodes are
-supported](https://kubernetes.io/docs/setup/best-practices/cluster-large/) per
-cluster. There is no official recommendation on the maximum number of
+As of Kubernetes V1.32,
+[up to 5,000 nodes are supported](https://kubernetes.io/docs/setup/best-practices/cluster-large/)
+per cluster. There is no official recommendation on the maximum number of
 VerticalPodAutoscalers that are supported. However, this proposal does increase
 the load for VerticalPodAutoscalers that use the new node scope option.
-
 
 ## Design Details
 
@@ -352,11 +363,11 @@ First, the implementation of this feature adds the `Scope` field to the
 
 ```
 type VerticalPodAutoscalerSpec struct {
-	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef" protobuf:"bytes,1,name=targetRef"`
+    TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef" protobuf:"bytes,1,name=targetRef"`
 
-	UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty" protobuf:"bytes,2,opt,name=updatePolicy"`
+    UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty" protobuf:"bytes,2,opt,name=updatePolicy"`
 
-	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
+    ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
 
 +   // Scope indicates at what level the recommendations should be calculated and applied.
 +   // By default, the scope is all pods under the controller specified in `TargetRef`. Scope
@@ -367,16 +378,10 @@ type VerticalPodAutoscalerSpec struct {
 }
 ```
 
-The VPAScope type will allow "Default" and "Node" options:
-```
-// +enum
-type VPAScope string
+The VPAScope type will allow "Default" and "Node" options: ``` // +enum type
+VPAScope string
 
-const (
-    ScopeDefault = ""
-    ScopeNode = "node"
-)
-```
+const ( ScopeDefault = "" ScopeNode = "node" ) ```
 
 An empty string in the scope field maintains existing functionality for the
 VerticalPodAutoscaler. The implied scope when the field is left empty is the
@@ -403,10 +408,9 @@ Prometheus, VerticalPodAutoscalerCheckpoints are not created.
 
 Internally, the
 [ClusterState](https://github.com/kubernetes/autoscaler/blob/vpa-release-1.3/vertical-pod-autoscaler/pkg/recommender/model/cluster.go#L38-L63)
-will track a separate VPA for each schedulable node of the DaemonSet. Nodes
-that with taints that are not tolerated or that otherwise do not meet the
+will track a separate VPA for each schedulable node of the DaemonSet. Nodes that
+with taints that are not tolerated or that otherwise do not meet the
 nodeSelector criteria for the DaemonSet in the TargetRef will be ignored.
-
 
 ### Test Plan
 
@@ -422,8 +426,8 @@ when drafting this test plan.
 -->
 
 [X] I/we understand the owners of the involved components may require updates to
-existing tests to make this code solid enough prior to committing the changes necessary
-to implement this enhancement.
+existing tests to make this code solid enough prior to committing the changes
+necessary to implement this enhancement.
 
 ##### Prerequisite testing updates
 
@@ -453,7 +457,7 @@ This can inform certain test coverage improvements that we want to do before
 extending the production code to implement this enhancement.
 -->
 
-- `<package>`: `<date>` - `<test coverage>`
+-   `<package>`: `<date>` - `<test coverage>`
 
 ##### Integration tests
 
@@ -472,7 +476,7 @@ For Beta and GA, add links to added tests together with links to k8s-triage for 
 https://storage.googleapis.com/k8s-triage/index.html
 -->
 
-- <test>: <link to test coverage>
+-   <test>: <link to test coverage>
 
 ##### e2e tests
 
@@ -486,7 +490,7 @@ https://storage.googleapis.com/k8s-triage/index.html
 We expect no non-infra related flakes in the last month as a GA graduation criteria.
 -->
 
-- <test>: <link to test coverage>
+-   <test>: <link to test coverage>
 
 ### Graduation Criteria
 
@@ -496,7 +500,7 @@ We expect no non-infra related flakes in the last month as a GA graduation crite
 Define graduation milestones.
 
 These may be defined in terms of API maturity, [feature gate] graduations, or as
-something else. The KEP should keep this high-level with a focus on what
+something else. The AEP should keep this high-level with a focus on what
 signals will be looked at to determine graduation.
 
 Consider the following in developing the graduation criteria for this enhancement:
@@ -526,7 +530,7 @@ Below are some examples to consider, in addition to the aforementioned [maturity
 
 - Gather feedback from developers and surveys
 - Complete features A, B, C
-- Additional tests are in Testgrid and linked in KEP
+- Additional tests are in Testgrid and linked in AEP
 
 #### GA
 
@@ -588,17 +592,17 @@ enhancement:
 Production readiness reviews are intended to ensure that features merging into
 Kubernetes are observable, scalable and supportable; can be safely operated in
 production environments, and can be disabled or rolled back in the event they
-cause increased failures in production. See more in the PRR KEP at
+cause increased failures in production. See more in the PRR AEP at
 https://git.k8s.io/enhancements/keps/sig-architecture/1194-prod-readiness.
 
 The production readiness review questionnaire must be completed and approved
-for the KEP to move to `implementable` status and be included in the release.
+for the AEP to move to `implementable` status and be included in the release.
 
 In some cases, the questions below should also have answers in `kep.yaml`. This
 is to enable automation to verify the presence of the review, and to reduce review
 burden and latency.
 
-The KEP must have a approver from the
+The AEP must have a approver from the
 [`prod-readiness-approvers`](http://git.k8s.io/enhancements/OWNERS_ALIASES)
 team. Please reach out on the
 [#prod-readiness](https://kubernetes.slack.com/archives/CPNHUMN74) channel if
@@ -623,15 +627,15 @@ well as the [existing list] of feature gates.
 [existing list]: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 -->
 
-- [ ] Feature gate (also fill in values in `kep.yaml`)
-  - Feature gate name:
-  - Components depending on the feature gate:
-- [ ] Other
-  - Describe the mechanism:
-  - Will enabling / disabling the feature require downtime of the control
-    plane?
-  - Will enabling / disabling the feature require downtime or reprovisioning
-    of a node?
+-   [ ] Feature gate (also fill in values in `kep.yaml`)
+    -   Feature gate name:
+    -   Components depending on the feature gate:
+-   [ ] Other
+    -   Describe the mechanism:
+    -   Will enabling / disabling the feature require downtime of the control
+        plane?
+    -   Will enabling / disabling the feature require downtime or reprovisioning
+        of a node?
 
 ###### Does enabling the feature change any default behavior?
 
@@ -737,13 +741,13 @@ and operation of this feature.
 Recall that end users cannot usually observe component logs or access metrics.
 -->
 
-- [ ] Events
-  - Event Reason: 
-- [ ] API .status
-  - Condition name: 
-  - Other field: 
-- [ ] Other (treat as last resort)
-  - Details:
+-   [ ] Events
+    -   Event Reason:
+-   [ ] API .status
+    -   Condition name:
+    -   Other field:
+-   [ ] Other (treat as last resort)
+    -   Details:
 
 ###### What are the reasonable SLOs (Service Level Objectives) for the enhancement?
 
@@ -768,12 +772,12 @@ question.
 Pick one more of these and delete the rest.
 -->
 
-- [ ] Metrics
-  - Metric name:
-  - [Optional] Aggregation method:
-  - Components exposing the metric:
-- [ ] Other (treat as last resort)
-  - Details:
+-   [ ] Metrics
+    -   Metric name:
+    -   [Optional] Aggregation method:
+    -   Components exposing the metric:
+-   [ ] Other (treat as last resort)
+    -   Details:
 
 ###### Are there any missing metrics that would be useful to have to improve observability of this feature?
 
@@ -887,7 +891,7 @@ This through this both in small and large cases, again with respect to the
 Focus not just on happy cases, but primarily on more pathological cases
 (e.g. probes taking a minute instead of milliseconds, failed pods consuming resources, etc.).
 If any of the resources can be exhausted, how this is mitigated with the existing limits
-(e.g. pods per node) or new limits added by this KEP?
+(e.g. pods per node) or new limits added by this AEP?
 
 Are there any tests that were run/should be run to understand performance characteristics better
 and validate the declared limits?
@@ -928,20 +932,20 @@ For each of them, fill in the following information by copying the below templat
 ## Implementation History
 
 <!--
-Major milestones in the lifecycle of a KEP should be tracked in this section.
+Major milestones in the lifecycle of a AEP should be tracked in this section.
 Major milestones might include:
 - the `Summary` and `Motivation` sections being merged, signaling SIG acceptance
 - the `Proposal` section being merged, signaling agreement on a proposed design
 - the date implementation started
-- the first Kubernetes release where an initial version of the KEP was available
-- the version of Kubernetes where the KEP graduated to general availability
-- when the KEP was retired or superseded
+- the first Kubernetes release where an initial version of the AEP was available
+- the version of Kubernetes where the AEP graduated to general availability
+- when the AEP was retired or superseded
 -->
 
 ## Drawbacks
 
 <!--
-Why should this KEP _not_ be implemented?
+Why should this AEP _not_ be implemented?
 -->
 
 ## Alternatives
