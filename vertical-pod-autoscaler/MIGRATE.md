@@ -1,5 +1,12 @@
 # Vertical Pod Autoscaler Migration
 
+### Notice on switching to v1 version (0.4.X-1.2.X to >=1.3.X)
+
+The `v1beta2` API was removed in 1.3.0.
+
+Since `v1beta2` is strictly a subset of `v1`, migrating to `v1` is as simple as
+changing the `apiVersion` to `autoscaling.k8s.io/v1`.
+
 ### Notice on switching to v1beta2 version (0.3.X to >=0.4.0)
 
 In 0.4.0 we introduced a new version of the API - `autoscaling.k8s.io/v1beta2`.
