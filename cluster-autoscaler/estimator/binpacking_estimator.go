@@ -111,13 +111,13 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 		remainingPods, err = e.tryToScheduleOnExistingNodes(estimationState, podsEquivalenceGroup.Pods)
 		if err != nil {
-			klog.Errorf(err.Error())
+			klog.Error(err.Error())
 			return 0, nil
 		}
 
 		err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
 		if err != nil {
-			klog.Errorf(err.Error())
+			klog.Error(err.Error())
 			return 0, nil
 		}
 	}

@@ -21,8 +21,9 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	"k8s.io/klog/v2"
+
+	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 )
 
 // ContainerUsageSample is a measure of resource usage of a container over some
@@ -32,8 +33,6 @@ type ContainerUsageSample struct {
 	MeasureStart time.Time
 	// Average CPU usage in cores or memory usage in bytes.
 	Usage ResourceAmount
-	// CPU or memory request at the time of measurement.
-	Request ResourceAmount
 	// Which resource is this sample for.
 	Resource ResourceName
 }
@@ -150,7 +149,6 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 			oldPeak := ContainerUsageSample{
 				MeasureStart: container.WindowEnd,
 				Usage:        oldMaxMem,
-				Request:      sample.Request,
 				Resource:     ResourceMemory,
 			}
 			container.aggregator.SubtractSample(&oldPeak)
@@ -170,7 +168,6 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 		newPeak := ContainerUsageSample{
 			MeasureStart: container.WindowEnd,
 			Usage:        sample.Usage,
-			Request:      sample.Request,
 			Resource:     ResourceMemory,
 		}
 		container.aggregator.AddSample(&newPeak)

@@ -79,7 +79,6 @@ func makeTestUsageSample() *ContainerUsageSampleWithKey {
 	return &ContainerUsageSampleWithKey{ContainerUsageSample{
 		MeasureStart: testTimestamp,
 		Usage:        1.0,
-		Request:      testRequest[ResourceCPU],
 		Resource:     ResourceCPU},
 		testContainerID}
 }
@@ -276,7 +275,6 @@ func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 	newUsageSample := &ContainerUsageSampleWithKey{ContainerUsageSample{
 		MeasureStart: gcTimestamp.Add(1 * time.Hour),
 		Usage:        usageSample.Usage,
-		Request:      usageSample.Request,
 		Resource:     usageSample.Resource},
 		testContainerID}
 	// Add usage sample to the container again.

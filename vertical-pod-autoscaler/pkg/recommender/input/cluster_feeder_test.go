@@ -483,7 +483,6 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 				{
 					MeasureStart: t0,
 					Usage:        10,
-					Request:      101,
 					Resource:     model.ResourceCPU,
 				},
 			},
@@ -491,7 +490,6 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 				{
 					MeasureStart: t0,
 					Usage:        memAmount,
-					Request:      1024 * 1024 * 1024,
 					Resource:     model.ResourceMemory,
 				},
 			},

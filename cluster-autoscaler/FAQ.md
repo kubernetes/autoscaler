@@ -629,6 +629,19 @@ When using this class, Cluster Autoscaler performs following actions:
   Adds a Provisioned=True condition to the ProvReq if capacity is available.
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
 
+  Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler 
+  to process only subset of check capacity ProvisioningRequests and ignore the rest.
+  It should be done with caution by specifying `--check-capacity-processor-instance=<name>` flag.
+  Then, ProvReq Parameters map should contain a key "processorInstance" with a value equal to the configured instance name.
+
+  This allows to run two Cluster Autoscalers in the cluster, but the second instance (likely this with configured instance name)
+  **should only** handle check capacity ProvisioningRequests and not overlap node groups with the main instance.
+  It is responsibility of the user to ensure the capacity checks are not overlapping.
+  Best-effort atomic ProvisioningRequests processing is disabled in the instance that has this flag set.
+
+  For backwards compatibility, it is possible to differentiate the ProvReqs by prefixing provisioningClassName with the instance name,
+  but it is **not recommended** and will be removed in CA 1.35.
+
 * `best-effort-atomic-scale-up.autoscaling.x-k8s.io` (supported from Cluster Autoscaler version 1.30.2 or later).
 When using this class, Cluster Autoscaler performs following actions:
 
@@ -735,12 +748,12 @@ setting the following flag in your Cluster Autoscaler configuration:
 3. **Batch Size**: Set the maximum number of CheckCapacity ProvisioningRequests
 to process in a single iteration by setting the following flag in your Cluster
 Autoscaler configuration:
-`--max-batch-size=<batch-size>`. The default value is 10.
+`--check-capacity-provisioning-request-max-batch-size=<batch-size>`. The default value is 10.
 
 4. **Batch Timebox**: Set the maximum time in seconds that Cluster Autoscaler will
 spend processing CheckCapacity ProvisioningRequests in a single iteration by
 setting the following flag in your Cluster Autoscaler configuration:
-`--batch-timebox=<timebox>`. The default value is 10s.
+`--check-capacity-provisioning-request-batch-timebox=<timebox>`. The default value is 10s.
 
 ****************
 
@@ -924,7 +937,7 @@ Expanders can be selected by passing the name to the `--expander` flag, i.e.
 
 Currently Cluster Autoscaler has 5 expanders:
 
-* `random` - this is the default expander, and should be used when you don't have a particular
+* `random` - should be used when you don't have a particular
 need for the node groups to scale differently.
 
 * `most-pods` - selects the node group that would be able to schedule the most pods when scaling
@@ -932,7 +945,7 @@ up. This is useful when you are using nodeSelector to make sure certain pods lan
 Note that this won't cause the autoscaler to select bigger nodes vs. smaller, as it can add multiple
 smaller nodes at once.
 
-* `least-waste` - selects the node group that will have the least idle CPU (if tied, unused memory)
+* `least-waste` - this is the default expander, selects the node group that will have the least idle CPU (if tied, unused memory)
 after scale-up. This is useful when you have different classes of nodes, for example, high CPU or high memory nodes, and only want to expand those when there are pending pods that need a lot of those resources.
 
 * `least-nodes` - selects the node group that will use the least number of nodes after scale-up. This is useful when you want to minimize the number of nodes in the cluster and instead opt for fewer larger nodes. Useful when chained with the `most-pods` expander before it to ensure that the node group selected can fit the most pods on the fewest nodes.
@@ -973,6 +986,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `bulk-mig-instances-listing-enabled` | Fetch GCE mig instances in bulk instead of per mig |  |
 | `bypassed-scheduler-names` | Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up. |  |
 | `check-capacity-batch-processing` | Whether to enable batch processing for check capacity requests. |  |
+| `check-capacity-processor-instance` | Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key "processorInstance" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed. |  |
 | `check-capacity-provisioning-request-batch-timebox` | Maximum time to process a batch of provisioning requests. | 10s |
 | `check-capacity-provisioning-request-max-batch-size` | Maximum number of provisioning requests to process in a single batch. | 10 |
 | `cloud-config` | The path to the cloud provider configuration file. Empty string for no configuration file. |  |
@@ -980,6 +994,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `cloud-provider-gce-l7lb-src-cidrs` | CIDRs opened in GCE firewall for L7 LB traffic proxy & health checks | 130.211.0.0/22,35.191.0.0/16 |
 | `cloud-provider-gce-lb-src-cidrs` | CIDRs opened in GCE firewall for L4 LB traffic proxy & health checks | 130.211.0.0/22,209.85.152.0/22,209.85.204.0/22,35.191.0.0/16 |
 | `cluster-name` | Autoscaled cluster name, if available |  |
+| `cluster-snapshot-parallelism` | Maximum parallelism of cluster snapshot creation. | 16 |
 | `clusterapi-cloud-config-authoritative` | Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only |  |
 | `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process |  |
 | `cores-total` | Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | "0:320000" |
@@ -994,7 +1009,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `enable-provisioning-requests` | Whether the clusterautoscaler will be handling the ProvisioningRequest CRs. |  |
 | `enforce-node-group-min-size` | Should CA scale up the node group to the configured min size if needed. |  |
 | `estimator` | Type of resource estimator to be used in scale up. Available values: [binpacking] | "binpacking" |
-| `expander` | Type of node group expander to be used in scale up. Available values: [random,most-pods,least-waste,price,priority,grpc]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly. | "random" |
+| `expander` | Type of node group expander to be used in scale up. Available values: [random,most-pods,least-waste,price,priority,grpc]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly. | "least-waste" |
 | `expendable-pods-priority-cutoff` | Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable. | -10 |
 | `feature-gates` | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: |  |
 | `force-delete-unregistered-nodes` | Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to. |  |
@@ -1015,7 +1030,13 @@ The following startup parameters are supported for cluster autoscaler:
 | `kube-client-qps` | QPS value for kubernetes client. | 5 |
 | `kubeconfig` | Path to kubeconfig file with authorization and master location information. |  |
 | `kubernetes` | Kubernetes master location. Leave blank for default |  |
-| `lease-resource-name` | The lease resource to use in leader election. | "cluster-autoscaler" |
+| `leader-elect` | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. | true |
+| `leader-elect-lease-duration` | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. | 15s |
+| `leader-elect-renew-deadline` | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. | 10s |
+| `leader-elect-resource-lock` | The type of resource object that is used for locking during leader election. Supported options are 'leases'. | "leases" |
+| `leader-elect-resource-name` | The name of resource object that is used for locking during leader election. | "cluster-autoscaler" |
+| `leader-elect-resource-namespace` | The namespace of resource object that is used for locking during leader election. |  |
+| `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s |
 | `log-backtrace-at` | when logging hits line file:N, emit a stack trace | :0 |
 | `log-dir` | If non-empty, write log files in this directory (no effect when -logtostderr=true) |  |
 | `log-file` | If non-empty, use this log file (no effect when -logtostderr=true) |  |

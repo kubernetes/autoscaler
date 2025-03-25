@@ -384,15 +384,6 @@ var (
 		[]string{"direction", "reason"},
 	)
 
-	/**** Metrics related to NodeAutoprovisioning ****/
-	napEnabled = k8smetrics.NewGauge(
-		&k8smetrics.GaugeOpts{
-			Namespace: caNamespace,
-			Name:      "nap_enabled",
-			Help:      "Whether or not Node Autoprovisioning is enabled. 1 if it is, 0 otherwise.",
-		},
-	)
-
 	nodeGroupCreationCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
@@ -457,7 +448,6 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(oldUnregisteredNodesRemovedCount)
 	legacyregistry.MustRegister(overflowingControllersCount)
 	legacyregistry.MustRegister(skippedScaleEventsCount)
-	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
 	legacyregistry.MustRegister(pendingNodeDeletions)
@@ -665,15 +655,6 @@ func UpdateUnneededNodesCount(nodesCount int) {
 func UpdateUnremovableNodesCount(unremovableReasonCounts map[simulator.UnremovableReason]int) {
 	for reason, count := range unremovableReasonCounts {
 		unremovableNodesCount.WithLabelValues(fmt.Sprintf("%v", reason)).Set(float64(count))
-	}
-}
-
-// UpdateNapEnabled records if NodeAutoprovisioning is enabled
-func UpdateNapEnabled(enabled bool) {
-	if enabled {
-		napEnabled.Set(1)
-	} else {
-		napEnabled.Set(0)
 	}
 }
 

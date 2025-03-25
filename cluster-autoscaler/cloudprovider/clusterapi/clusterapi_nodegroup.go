@@ -203,11 +203,26 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	if size+delta < len(nodes) {
-		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
-			size, delta, len(nodes))
+	// we want to filter out machines that are not nodes (eg failed or pending)
+	// so that the node group size can be set properly. this affects situations
+	// where an instance is created, but cannot become a node due to cloud provider
+	// issues such as quota limitations, and thus the autoscaler needs to properly
+	// set the size of the node group. without this adjustment, the core autoscaler
+	// will become confused about the state of nodes and instances in the clusterapi
+	// provider.
+	actualNodes := 0
+	for _, node := range nodes {
+		if isProviderIDNormalized(normalizedProviderID(node.Id)) {
+			actualNodes += 1
+		}
 	}
 
+	if size+delta < actualNodes {
+		return fmt.Errorf("node group %s: attempt to delete existing nodes currentReplicas:%d delta:%d existingNodes: %d",
+			ng.scalableResource.Name(), size, delta, actualNodes)
+	}
+
+	klog.V(4).Infof("%s: DecreaseTargetSize: scaling down: currentReplicas: %d, delta: %d, existingNodes: %d", ng.scalableResource.Name(), size, delta, len(nodes))
 	return ng.scalableResource.SetSize(size + delta)
 }
 

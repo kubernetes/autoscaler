@@ -9,7 +9,7 @@ Before doing the release for the first time check if you have all the necessary 
 There are the following steps of the release process:
 
 1. [ ] Open issue to track the release.
-2. [ ] Update VPA version const.
+2. [ ] Rollup all changes.
 3. [ ] Build and stage images.
 4. [ ] Test the release.
 5. [ ] Promote image.
@@ -20,7 +20,7 @@ There are the following steps of the release process:
 Open a new issue to track the release, use the [vpa_release](https://github.com/kubernetes/autoscaler/issues/new?&template=vpa_release.md) template.
 We use the issue to communicate what is state of the release.
 
-## Update VPA version const
+## Rollup all changes
 
 1. [ ] Wait for all VPA changes that will be in the release to merge.
 2. [ ] Wait for [the end to end tests](https://testgrid.k8s.io/sig-autoscaling-vpa) to run with all VPA changes
@@ -31,13 +31,12 @@ We use the issue to communicate what is state of the release.
 
 ### New minor release
 
-1. [ ] Change the version in
-    [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
-    to `1.${next-minor}.0`,
-2. [ ] Commit and merge the change,
-3. [ ] Go to the merged change,
-4. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-1.${next-minor}` from the
+1. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-1.${next-minor}` from the
     merged change.
+2. [ ] In the **main branch**, change the version in
+    [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
+    to `1.${next-minor}.0`.
+3. [ ] Commit and merge the change.
 
 ### New patch release
 

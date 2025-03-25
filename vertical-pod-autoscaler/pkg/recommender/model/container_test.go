@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
@@ -43,7 +44,6 @@ func newUsageSample(timestamp time.Time, usage int64, resource ResourceName) *Co
 	return &ContainerUsageSample{
 		MeasureStart: timestamp,
 		Usage:        ResourceAmount(usage),
-		Request:      TestRequest[resource],
 		Resource:     resource,
 	}
 }
@@ -85,9 +85,9 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 	// Verify that CPU measures are added to the CPU histogram.
 	// The weight should be equal to the current request.
 	timeStep := memoryAggregationInterval / 2
-	test.mockCPUHistogram.On("AddSample", 3.14, 2.3, testTimestamp)
-	test.mockCPUHistogram.On("AddSample", 6.28, 2.3, testTimestamp.Add(timeStep))
-	test.mockCPUHistogram.On("AddSample", 1.57, 2.3, testTimestamp.Add(2*timeStep))
+	test.mockCPUHistogram.On("AddSample", 3.14, minSampleWeight, testTimestamp)
+	test.mockCPUHistogram.On("AddSample", 6.28, minSampleWeight, testTimestamp.Add(timeStep))
+	test.mockCPUHistogram.On("AddSample", 1.57, minSampleWeight, testTimestamp.Add(2*timeStep))
 	// Verify that memory peaks are added to the memory peaks histogram.
 	memoryAggregationWindowEnd := testTimestamp.Add(memoryAggregationInterval)
 	test.mockMemoryHistogram.On("AddSample", 5.0, 1.0, memoryAggregationWindowEnd)

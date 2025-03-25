@@ -159,7 +159,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot find this node in the node group")
 
-	// test error on deleting a node when the linode API call fails
+	// test error on deleting a node when the API call fails
 	client.On(
 		"DeleteServer", ctx, serverName4,
 	).Return(fmt.Errorf("error on API call")).Once()

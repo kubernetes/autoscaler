@@ -9,6 +9,7 @@
 - [Can I run the VPA in an HA configuration?](#can-i-run-the-vpa-in-an-ha-configuration)
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
 - [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
+- [What are the parameters to VPA admission-controller?](#what-are-the-parameters-to-vpa-admission-controller)
 - [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
 - [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
 - [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
@@ -179,82 +180,15 @@ election with the `--leader-elect=true` parameter.
 
 ### What are the parameters to VPA recommender?
 
-The following startup parameters are supported for VPA recommender:
-
-Name | Type | Description | Default
--|-|-|-
-`recommendation-margin-fraction` | Float64 | Fraction of usage added as the safety margin to the recommended request | 0.15
-`pod-recommendation-min-cpu-millicores` | Float64 | Minimum CPU recommendation for a pod | 25
-`pod-recommendation-min-memory-mb` | Float64 | Minimum memory recommendation for a pod | 250
-`target-cpu-percentile` | Float64 | CPU usage percentile that will be used as a base for CPU target recommendation | 0.9
-`recommendation-lower-bound-cpu-percentile` | Float64 | CPU usage percentile that will be used for the lower bound on CPU recommendation | 0.5
-`recommendation-upper-bound-cpu-percentile` | Float64 | CPU usage percentile that will be used for the upper bound on CPU recommendation | 0.95
-`target-memory-percentile` | Float64 | Memory usage percentile that will be used as a base for memory target recommendation | 0.9
-`recommendation-lower-bound-memory-percentile` | Float64 | Memory usage percentile that will be used for the lower bound on memory recommendation | 0.5
-`recommendation-upper-bound-memory-percentile` | Float64 | Memory usage percentile that will be used for the upper bound on memory recommendation | 0.95
-`checkpoints-timeout` | Duration | Timeout for writing checkpoints since the start of the recommender's main loop | time.Minute
-`min-checkpoints` | Int | Minimum number of checkpoints to write per recommender's main loop | 10
-`memory-saver` | Bool | If true, only track pods which have an associated VPA | false
-`recommender-interval` | Duration | How often metrics should be fetched | 1*time.Minute
-`checkpoints-gc-interval` | Duration | How often orphaned checkpoints should be garbage collected | 10*time.Minute
-`prometheus-address` | String | Where to reach for Prometheus metrics | ""
-`prometheus-cadvisor-job-name` | String | Name of the prometheus job name which scrapes the cAdvisor metrics | "kubernetes-cadvisor"
-`address` | String | The address to expose Prometheus metrics. | ":8942"
-`kubeconfig` | String | Path to a kubeconfig. Only required if out-of-cluster. | ""
-`kube-api-qps` | Float64 | QPS limit when making requests to Kubernetes apiserver | 5.0
-`kube-api-burst` | Float64 | QPS burst limit when making requests to Kubernetes apiserver | 10.0
-`storage` | String | Specifies storage mode. Supported values: prometheus, checkpoint (default) | ""
-`history-length` | String | How much time back prometheus have to be queried to get historical metrics | "8d"
-`history-resolution` | String | Resolution at which Prometheus is queried for historical metrics | "1h"
-`prometheus-query-timeout` | String | How long to wait before killing long queries | "5m"
-`pod-label-prefix` | String | Which prefix to look for pod labels in metrics | "pod_label_"
-`metric-for-pod-labels` | String | Which metric to look for pod labels in metrics | "up{job=\"kubernetes-pods\"}"
-`pod-namespace-label` | String | Label name to look for pod namespaces | "kubernetes_namespace"
-`pod-name-label` | String | Label name to look for pod names | "kubernetes_pod_name"
-`container-namespace-label` | String | Label name to look for container namespaces | "namespace"
-`container-pod-name-label` | String | Label name to look for container pod names | "pod_name"
-`container-name-label` | String | Label name to look for container names | "name"
-`vpa-object-namespace` | String | Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used. | apiv1.NamespaceAll
-`memory-aggregation-interval` | Duration | The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval | model.DefaultMemoryAggregationInterval
-`memory-aggregation-interval-count` | Int64 | The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count. | model.DefaultMemoryAggregationIntervalCount
-`memory-histogram-decay-half-life` | Duration | The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period. | model.DefaultMemoryHistogramDecayHalfLife
-`cpu-histogram-decay-half-life` | Duration | The amount of time it takes a historical CPU usage sample to lose half of its weight. | model.DefaultCPUHistogramDecayHalfLife
-`cpu-integer-post-processor-enabled` | Bool | Enable the CPU integer recommendation post processor | false
-`leader-elect` | Bool | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. **If enabling this in GKE, you MUST also manually set the `--leader-elect-resource-name` flag.** | false
-`leader-elect-lease-duration` | Duration | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. | 15s
-`leader-elect-renew-deadline` | Duration | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. | 10s
-`leader-elect-resource-lock` | String | The type of resource object that is used for locking during leader election. Supported options are 'leases', 'endpointsleases' and 'configmapsleases'. | "leases"
-`leader-elect-resource-name` | String | The name of resource object that is used for locking during leader election. **If using GKE, you must set this value to something OTHER than "vpa-recommender", for example "vpa-recommender-lease".** | "vpa-recommender"
-`leader-elect-resource-namespace` | String | The namespace of resource object that is used for locking during leader election. | "kube-system"
-`leader-elect-retry-period` | Duration | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s
+See the [full list of parameters in the VPA recommender](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/flags.md#what-are-the-parameters-to-vpa-recommender).
 
 ### What are the parameters to VPA updater?
 
-The following startup parameters are supported for VPA updater:
+See the [full list of parameters in the VPA updater](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/flags.md#what-are-the-parameters-to-vpa-updater).
 
-Name | Type | Description | Default
--|-|-|-
-`pod-update-threshold` | Float64 | Ignore updates that have priority lower than the value of this flag | 0.1
-`in-recommendation-bounds-eviction-lifetime-threshold` | Duration | Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range | time.Hour*12
-`evict-after-oom-threshold` | Duration | Evict pod that has OOMed in less than evict-after-oom-threshold since start. | 10*time.Minute
-`updater-interval` | Duration | How often updater should run | 1*time.Minute
-`min-replicas` | Int | Minimum number of replicas to perform update | 2
-`eviction-tolerance` | Float64 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted. | 0.5
-`eviction-rate-limit` | Float64 | Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable the rate limiter. | -1
-`eviction-rate-burst` | Int | Burst of pods that can be evicted. | 1
-`address` | String | The address to expose Prometheus metrics. | ":8943"
-`kubeconfig` | String | Path to a kubeconfig. Only required if out-of-cluster. | ""
-`kube-api-qps` | Float64 | QPS limit when making requests to Kubernetes apiserver | 5.0
-`kube-api-burst` | Float64 | QPS burst limit when making requests to Kubernetes apiserver | 10.0
-`use-admission-controller-status` | Bool | If true, updater will only evict pods when admission controller status is valid. | true
-`vpa-object-namespace` | String | Namespace to search for VPA objects. Empty means all namespaces will be used. | apiv1.NamespaceAll
-`leader-elect` | Bool | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. | false
-`leader-elect-lease-duration` | Duration | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. | 15s
-`leader-elect-renew-deadline` | Duration | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. | 10s
-`leader-elect-resource-lock` | String | The type of resource object that is used for locking during leader election. Supported options are 'leases', 'endpointsleases' and 'configmapsleases'. | "leases"
-`leader-elect-resource-name` | String | The name of resource object that is used for locking during leader election. | "vpa-updater"
-`leader-elect-resource-namespace` | String | The namespace of resource object that is used for locking during leader election. | "kube-system"
-`leader-elect-retry-period` | Duration | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s
+### What are the parameters to VPA admission controller?
+
+See the [full list of parameters in the VPA admission controller](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/flags.md#what-are-the-parameters-to-vpa-admission-controller).
 
 ### How can I configure VPA to manage only specific resources?
 

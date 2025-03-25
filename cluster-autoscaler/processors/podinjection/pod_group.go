@@ -57,7 +57,7 @@ func updatePodGroups(pod *apiv1.Pod, ownerRef metav1.OwnerReference, podGroups m
 	if !found {
 		return podGroups
 	}
-	if group.sample == nil && pod.Spec.NodeName == "" {
+	if group.sample == nil || pod.CreationTimestamp.After(group.sample.CreationTimestamp.Time) {
 		group.sample = pod
 		group.ownerUid = ownerRef.UID
 	}

@@ -1664,6 +1664,11 @@ func TestIsFailedMachineProviderID(t *testing.T) {
 			providerID: normalizedProviderID("foo"),
 			expected:   false,
 		},
+		{
+			name:       "with provider ID created by createFailedMachineNormalizedProviderID should return true",
+			providerID: normalizedProviderID(createFailedMachineNormalizedProviderID("cluster-api", "id-0001")),
+			expected:   true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1690,6 +1695,11 @@ func TestMachineKeyFromFailedProviderID(t *testing.T) {
 			name:       "with a machine with an underscore in the name",
 			providerID: normalizedProviderID(fmt.Sprintf("%stest-namespace_foo_bar", failedMachinePrefix)),
 			expected:   "test-namespace/foo_bar",
+		},
+		{
+			name:       "with a provider ID created by createFailedMachineNormalizedProviderID",
+			providerID: normalizedProviderID(createFailedMachineNormalizedProviderID("cluster-api", "id-0001")),
+			expected:   "cluster-api/id-0001",
 		},
 	}
 
@@ -2127,6 +2137,190 @@ func Test_machineController_nodeGroups(t *testing.T) {
 						t.Errorf("nodeGroups() got = %v, expected to consist of nodegroups for scalable resources: %v", got, tc.expectedScalableResources)
 					}
 				}
+			}
+		})
+	}
+}
+
+func Test_isDeletingMachineProviderID(t *testing.T) {
+	type testCase struct {
+		description    string
+		providerID     string
+		expectedReturn bool
+	}
+
+	testCases := []testCase{
+		{
+			description:    "proper provider ID without deletion prefix should return false",
+			providerID:     "fake-provider://a.provider.id-0001",
+			expectedReturn: false,
+		},
+		{
+			description:    "provider ID with deletion prefix should return true",
+			providerID:     fmt.Sprintf("%s%s_%s", deletingMachinePrefix, "cluster-api", "id-0001"),
+			expectedReturn: true,
+		},
+		{
+			description:    "empty provider ID should return false",
+			providerID:     "",
+			expectedReturn: false,
+		},
+		{
+			description:    "provider ID created with createDeletingMachineNormalizedProviderID returns true",
+			providerID:     createDeletingMachineNormalizedProviderID("cluster-api", "id-0001"),
+			expectedReturn: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			observed := isDeletingMachineProviderID(normalizedProviderID(tc.providerID))
+			if observed != tc.expectedReturn {
+				t.Fatalf("unexpected return for provider ID %q, expected %t, observed %t", tc.providerID, tc.expectedReturn, observed)
+			}
+		})
+	}
+
+}
+
+// TestNodeHasValidProviderID tests all permutations of provider IDs
+// to determine whether the providerID is the standard cloud provider ID
+// or has been modified by CAS CAPI provider
+func TestNodeHasValidProviderID(t *testing.T) {
+	type testCase struct {
+		description    string
+		providerID     normalizedProviderID
+		expectedReturn bool
+	}
+
+	testCases := []testCase{
+		{
+			description:    "real looking provider ID should return true",
+			providerID:     normalizedProviderID("fake-provider://a.provider.id-0001"),
+			expectedReturn: true,
+		},
+		{
+			description:    "provider ID created with createDeletingMachineNormalizedProviderID should return false",
+			providerID:     normalizedProviderID(createDeletingMachineNormalizedProviderID("cluster-api", "id-0001")),
+			expectedReturn: false,
+		},
+		{
+			description:    "provider ID created with createPendingDeletionMachineNormalizedProviderID should return false",
+			providerID:     normalizedProviderID(createPendingMachineProviderID("cluster-api", "id-0001")),
+			expectedReturn: false,
+		},
+		{
+			description:    "provider ID created with createFailedMachineNormalizedProviderID should return false",
+			providerID:     normalizedProviderID(createFailedMachineNormalizedProviderID("cluster-api", "id-0001")),
+			expectedReturn: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			observed := isProviderIDNormalized(tc.providerID)
+			if observed != tc.expectedReturn {
+				t.Fatalf("unexpected return for provider ID %q, expected %t, observed %t", tc.providerID, tc.expectedReturn, observed)
+			}
+		})
+	}
+}
+
+func Test_machineKeyFromDeletingMachineProviderID(t *testing.T) {
+	type testCase struct {
+		description    string
+		providerID     string
+		expectedReturn string
+	}
+
+	testCases := []testCase{
+		{
+			description:    "real looking provider ID with no deletion prefix returns provider id",
+			providerID:     "fake-provider://a.provider.id-0001",
+			expectedReturn: "fake-provider://a.provider.id-0001",
+		},
+		{
+			description:    "namespace_name provider ID with no deletion prefix returns proper provider ID",
+			providerID:     "cluster-api_id-0001",
+			expectedReturn: "cluster-api/id-0001",
+		},
+		{
+			description:    "namespace_name provider ID with deletion prefix returns proper provider ID",
+			providerID:     fmt.Sprintf("%s%s_%s", deletingMachinePrefix, "cluster-api", "id-0001"),
+			expectedReturn: "cluster-api/id-0001",
+		},
+		{
+			description:    "namespace_name provider ID with deletion prefix and two underscores returns proper provider ID",
+			providerID:     fmt.Sprintf("%s%s_%s", deletingMachinePrefix, "cluster-api", "id_0001"),
+			expectedReturn: "cluster-api/id_0001",
+		},
+		{
+			description:    "provider ID created with createDeletingMachineNormalizedProviderID returns proper provider ID",
+			providerID:     createDeletingMachineNormalizedProviderID("cluster-api", "id-0001"),
+			expectedReturn: "cluster-api/id-0001",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			observed := machineKeyFromDeletingMachineProviderID(normalizedProviderID(tc.providerID))
+			if observed != tc.expectedReturn {
+				t.Fatalf("unexpected return for provider ID %q, expected %q, observed %q", tc.providerID, tc.expectedReturn, observed)
+			}
+		})
+	}
+}
+
+func Test_createDeletingMachineNormalizedProviderID(t *testing.T) {
+	type testCase struct {
+		description    string
+		namespace      string
+		name           string
+		expectedReturn string
+	}
+
+	testCases := []testCase{
+		{
+			description:    "namespace and name return proper normalized ID",
+			namespace:      "cluster-api",
+			name:           "id-0001",
+			expectedReturn: fmt.Sprintf("%s%s_%s", deletingMachinePrefix, "cluster-api", "id-0001"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			observed := createDeletingMachineNormalizedProviderID(tc.namespace, tc.name)
+			if observed != tc.expectedReturn {
+				t.Fatalf("unexpected return for (namespace %q, name %q), expected %q, observed %q", tc.namespace, tc.name, tc.expectedReturn, observed)
+			}
+		})
+	}
+}
+
+// Test_createPendingMachineProviderID tests the creation of a pending machine provider ID
+func Test_createPendingMachineProviderID(t *testing.T) {
+	type testCase struct {
+		description    string
+		namespace      string
+		name           string
+		expectedReturn string
+	}
+
+	testCases := []testCase{
+		{
+			description:    "namespace and name return proper normalized ID",
+			namespace:      "cluster-api",
+			name:           "id-0001",
+			expectedReturn: fmt.Sprintf("%s%s_%s", pendingMachinePrefix, "cluster-api", "id-0001"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			observed := createPendingMachineProviderID(tc.namespace, tc.name)
+			if observed != tc.expectedReturn {
+				t.Fatalf("unexpected return for (namespace %q, name %q), expected %q, observed %q", tc.namespace, tc.name, tc.expectedReturn, observed)
 			}
 		})
 	}

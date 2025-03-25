@@ -18,6 +18,7 @@ package priority
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -119,4 +120,5 @@ func (s *scalingDirectionPodEvictionAdmission) LoopInit(_ []*apiv1.Pod, vpaContr
 }
 
 func (s *scalingDirectionPodEvictionAdmission) CleanUp() {
+	s.EvictionRequirements = make(map[*apiv1.Pod][]*vpa_types.EvictionRequirement)
 }
