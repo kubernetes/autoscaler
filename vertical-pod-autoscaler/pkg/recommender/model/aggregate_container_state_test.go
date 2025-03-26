@@ -38,7 +38,7 @@ var (
 	}
 )
 
-func addTestCPUSample(cluster *ClusterState, container ContainerID, cpuCores float64) error {
+func addTestCPUSample(cluster ClusterState, container ContainerID, cpuCores float64) error {
 	sample := ContainerUsageSampleWithKey{
 		Container: container,
 		ContainerUsageSample: ContainerUsageSample{
@@ -50,7 +50,7 @@ func addTestCPUSample(cluster *ClusterState, container ContainerID, cpuCores flo
 	return cluster.AddSample(&sample)
 }
 
-func addTestMemorySample(cluster *ClusterState, container ContainerID, memoryBytes float64) error {
+func addTestMemorySample(cluster ClusterState, container ContainerID, memoryBytes float64) error {
 	sample := ContainerUsageSampleWithKey{
 		Container: container,
 		ContainerUsageSample: ContainerUsageSample{
