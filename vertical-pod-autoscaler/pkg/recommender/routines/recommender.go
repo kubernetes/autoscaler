@@ -68,6 +68,7 @@ type recommender struct {
 	useCheckpoints                bool
 	lastAggregateContainerStateGC time.Time
 	recommendationPostProcessor   []RecommendationPostProcessor
+	updateWorkerCount             int
 }
 
 func (r *recommender) GetClusterState() model.ClusterState {
@@ -123,9 +124,10 @@ func (r *recommender) UpdateVPAs() {
 	// Create a wait group to wait for all workers to finish
 	var wg sync.WaitGroup
 
-	// Start 10 workers
-	for i := 0; i < 10; i++ {
+	// Start workers
+	for i := 0; i < r.updateWorkerCount; i++ {
 		wg.Add(1)
+		klog.InfoS("creating vpa update worker", "worker", i)
 		go func() {
 			defer wg.Done()
 			for observedVpa := range vpaUpdates {
@@ -133,6 +135,7 @@ func (r *recommender) UpdateVPAs() {
 					Namespace: observedVpa.Namespace,
 					VpaName:   observedVpa.Name,
 				}
+				klog.InfoS("processing VPA update", "vpa", klog.KRef(key.Namespace, key.VpaName))
 
 				vpa, found := r.clusterState.VPAs()[key]
 				if !found {
@@ -141,6 +144,7 @@ func (r *recommender) UpdateVPAs() {
 				processVPAUpdate(r, vpa, observedVpa)
 				cnt.Add(vpa)
 			}
+			klog.Info("Closing VPA update worker")
 		}()
 	}
 
@@ -214,6 +218,7 @@ type RecommenderFactory struct {
 
 	CheckpointsGCInterval time.Duration
 	UseCheckpoints        bool
+	UpdateWorkerCount     int
 }
 
 // Make creates a new recommender instance,
@@ -231,6 +236,7 @@ func (c RecommenderFactory) Make() Recommender {
 		recommendationPostProcessor:   c.RecommendationPostProcessors,
 		lastAggregateContainerStateGC: time.Now(),
 		lastCheckpointGC:              time.Now(),
+		updateWorkerCount:             c.UpdateWorkerCount,
 	}
 	klog.V(3).InfoS("New Recommender created", "recommender", recommender)
 	return recommender
