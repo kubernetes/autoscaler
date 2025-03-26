@@ -25,8 +25,8 @@ RUN CGO_ENABLED=0 GOARM=$GOARM GOARCH=$ARCH go build -a -installsuffix cgo --ldf
 
 FROM gcr.io/distroless/static:nonroot
 
-COPY --from=builder /workspace/pod_nanny /pod-nanny
+COPY --from=builder /workspace/pod_nanny /pod_nanny
 
 USER nobody
 
-CMD /pod_nanny
+ENTRYPOINT ["/pod_nanny"]
