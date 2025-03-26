@@ -1335,19 +1335,6 @@ func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
 	controller, stop := mustCreateTestController(t, testConfig)
 	defer stop()
 
-	// Remove Status.NodeRef.Name on all the machines. We want to
-	// force machineSetNodeNames() to only consider the provider
-	// ID for lookups.
-	for i := range testConfig.machines {
-		machine := testConfig.machines[i].DeepCopy()
-
-		unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
-
-		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
-			t.Fatalf("unexpected error updating machine, got %v", err)
-		}
-	}
-
 	nodegroups, err := controller.nodeGroups()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
