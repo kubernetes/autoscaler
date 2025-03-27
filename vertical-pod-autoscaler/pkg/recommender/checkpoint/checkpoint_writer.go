@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -76,27 +77,6 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	return vpas
 }
 
-func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpoints int) error {
-	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
-	for _, vpa := range vpas {
-
-		// Draining ctx.Done() channel. ctx.Err() will be checked if timeout occurred, but minCheckpoints have
-		// to be written before return from this function.
-		select {
-		case <-ctx.Done():
-		default:
-		}
-
-		if ctx.Err() != nil && minCheckpoints <= 0 {
-			return ctx.Err()
-		}
-
-		processCheckpointUpdateForVPA(vpa, writer)
-		minCheckpoints--
-	}
-	return nil
-}
-
 func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
 	now := time.Now()
 	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
@@ -123,6 +103,46 @@ func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
 			vpa.CheckpointWritten = now
 		}
 	}
+}
+
+func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpoints int) error {
+	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
+
+	// Create a channel to send VPA updates to workers
+	vpaCheckpointUpdates := make(chan *model.Vpa, len(vpas))
+
+	// Create a wait group to wait for all workers to finish
+	var wg sync.WaitGroup
+
+	// Start workers
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		klog.InfoS("creating vpa update worker", "worker", i)
+		go func() {
+			defer wg.Done()
+			for vpaToCheckpoint := range vpaCheckpointUpdates {
+				processCheckpointUpdateForVPA(vpaToCheckpoint, writer)
+			}
+		}()
+	}
+
+	for _, vpa := range vpas {
+
+		// Draining ctx.Done() channel. ctx.Err() will be checked if timeout occurred, but minCheckpoints have
+		// to be written before return from this function.
+		select {
+		case <-ctx.Done():
+		default:
+		}
+
+		if ctx.Err() != nil && minCheckpoints <= 0 {
+			return ctx.Err()
+		}
+		vpaCheckpointUpdates <- vpa
+
+		minCheckpoints--
+	}
+	return nil
 }
 
 // Build the AggregateContainerState for the purpose of the checkpoint. This is an aggregation of state of all
