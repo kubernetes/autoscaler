@@ -161,13 +161,12 @@ func (r *recommender) UpdateVPAs() {
 }
 
 func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPerRun int) {
-	now := time.Now()
 	if r.useCheckpoints {
-		if err := r.checkpointWriter.StoreCheckpoints(ctx, now, minCheckpointsPerRun); err != nil {
+		if err := r.checkpointWriter.StoreCheckpoints(ctx, minCheckpointsPerRun); err != nil {
 			klog.V(0).InfoS("Failed to store checkpoints", "err", err)
 		}
 		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
-			r.lastCheckpointGC = now
+			r.lastCheckpointGC = time.Now()
 			r.clusterStateFeeder.GarbageCollectCheckpoints(ctx)
 		}
 	}
