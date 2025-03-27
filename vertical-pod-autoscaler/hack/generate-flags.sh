@@ -21,6 +21,7 @@ set -o pipefail
 SCRIPT_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}"))/..
 TARGET_FILE="${SCRIPT_ROOT}/docs/flags.md"
 COMPONENTS=("admission-controller" "recommender" "updater")
+DEFAULT_TAG="1.3.0"
 
 # Function to extract flags from a binary
 extract_flags() {
@@ -74,6 +75,8 @@ echo "Generating flags documentation..."
 {
     echo "# Vertical Pod Autoscaler Flags"
     echo "This document contains the flags for all VPA components."
+    echo
+    echo "To view the most recent _release_ of flags for all VPA components, consult the release tag [flags($DEFAULT_TAG)](/kubernetes/autoscaler/blob/vertical-pod-autoscaler-$DEFAULT_TAG/vertical-pod-autoscaler/docs/flags.md) documentation."
     echo
     echo "> **Note:** This document is auto-generated from the default branch (master) of the VPA repository."
     echo
