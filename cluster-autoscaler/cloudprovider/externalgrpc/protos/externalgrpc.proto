@@ -1,28 +1,27 @@
 /*
-Copyright 2022 The Kubernetes Authors.
+   Copyright 2022 The Kubernetes Authors.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 syntax = "proto3";
 
 package clusterautoscaler.cloudprovider.v1.externalgrpc;
 
-import "google/protobuf/descriptor.proto";
 import "google/protobuf/any.proto";
-
-import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+import "google/protobuf/descriptor.proto";
 import "k8s.io/api/core/v1/generated.proto";
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 
 option go_package = "cluster-autoscaler/cloudprovider/externalgrpc/protos";
 
@@ -30,42 +29,34 @@ service CloudProvider {
   // CloudProvider specific RPC functions
 
   // NodeGroups returns all node groups configured for this cloud provider.
-  rpc NodeGroups(NodeGroupsRequest)
-    returns (NodeGroupsResponse) {}
+  rpc NodeGroups(NodeGroupsRequest) returns (NodeGroupsResponse) {}
 
   // NodeGroupForNode returns the node group for the given node.
   // The node group id is an empty string if the node should not
   // be processed by cluster autoscaler.
-  rpc NodeGroupForNode(NodeGroupForNodeRequest)
-    returns (NodeGroupForNodeResponse) {}
+  rpc NodeGroupForNode(NodeGroupForNodeRequest) returns (NodeGroupForNodeResponse) {}
 
   // PricingNodePrice returns a theoretical minimum price of running a node for
   // a given period of time on a perfectly matching machine.
   // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
-  rpc PricingNodePrice(PricingNodePriceRequest)
-    returns (PricingNodePriceResponse) {}
+  rpc PricingNodePrice(PricingNodePriceRequest) returns (PricingNodePriceResponse) {}
 
   // PricingPodPrice returns a theoretical minimum price of running a pod for a given
   // period of time on a perfectly matching machine.
   // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
-  rpc PricingPodPrice(PricingPodPriceRequest)
-    returns (PricingPodPriceResponse) {}
+  rpc PricingPodPrice(PricingPodPriceRequest) returns (PricingPodPriceResponse) {}
 
   // GPULabel returns the label added to nodes with GPU resource.
-  rpc GPULabel(GPULabelRequest)
-    returns (GPULabelResponse) {}
+  rpc GPULabel(GPULabelRequest) returns (GPULabelResponse) {}
 
   // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-  rpc GetAvailableGPUTypes(GetAvailableGPUTypesRequest)
-    returns (GetAvailableGPUTypesResponse) {}
+  rpc GetAvailableGPUTypes(GetAvailableGPUTypesRequest) returns (GetAvailableGPUTypesResponse) {}
 
   // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-  rpc Cleanup(CleanupRequest)
-    returns (CleanupResponse) {}
+  rpc Cleanup(CleanupRequest) returns (CleanupResponse) {}
 
   // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-  rpc Refresh(RefreshRequest)
-    returns (RefreshResponse) {}
+  rpc Refresh(RefreshRequest) returns (RefreshResponse) {}
 
   // NodeGroup specific RPC functions
 
@@ -73,45 +64,38 @@ service CloudProvider {
   // that the number of nodes in Kubernetes is different at the moment but should be equal
   // to the size of a node group once everything stabilizes (new nodes finish startup and
   // registration or removed nodes are deleted completely).
-  rpc NodeGroupTargetSize(NodeGroupTargetSizeRequest)
-    returns (NodeGroupTargetSizeResponse) {}
+  rpc NodeGroupTargetSize(NodeGroupTargetSizeRequest) returns (NodeGroupTargetSizeResponse) {}
 
   // NodeGroupIncreaseSize increases the size of the node group. To delete a node you need
   // to explicitly name it and use NodeGroupDeleteNodes. This function should wait until
   // node group size is updated.
-  rpc NodeGroupIncreaseSize(NodeGroupIncreaseSizeRequest)
-    returns (NodeGroupIncreaseSizeResponse) {}
+  rpc NodeGroupIncreaseSize(NodeGroupIncreaseSizeRequest) returns (NodeGroupIncreaseSizeResponse) {}
 
   // NodeGroupDeleteNodes deletes nodes from this node group (and also decreasing the size
   // of the node group with that). Error is returned either on failure or if the given node
   // doesn't belong to this node group. This function should wait until node group size is updated.
-  rpc NodeGroupDeleteNodes(NodeGroupDeleteNodesRequest)
-    returns (NodeGroupDeleteNodesResponse) {}
+  rpc NodeGroupDeleteNodes(NodeGroupDeleteNodesRequest) returns (NodeGroupDeleteNodesResponse) {}
 
   // NodeGroupDecreaseTargetSize decreases the target size of the node group. This function
   // doesn't permit to delete any existing node and can be used only to reduce the request
   // for new nodes that have not been yet fulfilled. Delta should be negative. It is assumed
   // that cloud provider will not delete the existing nodes if the size when there is an option
   // to just decrease the target.
-  rpc NodeGroupDecreaseTargetSize(NodeGroupDecreaseTargetSizeRequest)
-    returns (NodeGroupDecreaseTargetSizeResponse) {}
+  rpc NodeGroupDecreaseTargetSize(NodeGroupDecreaseTargetSizeRequest) returns (NodeGroupDecreaseTargetSizeResponse) {}
 
   // NodeGroupNodes returns a list of all nodes that belong to this node group.
-  rpc NodeGroupNodes(NodeGroupNodesRequest)
-    returns (NodeGroupNodesResponse) {}
+  rpc NodeGroupNodes(NodeGroupNodesRequest) returns (NodeGroupNodesResponse) {}
 
   // NodeGroupTemplateNodeInfo returns a structure of an empty (as if just started) node,
   // with all of the labels, capacity and allocatable information. This will be used in
   // scale-up simulations to predict what would a new node look like if a node group was expanded.
   // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
-  rpc NodeGroupTemplateNodeInfo(NodeGroupTemplateNodeInfoRequest)
-    returns (NodeGroupTemplateNodeInfoResponse) {}
+  rpc NodeGroupTemplateNodeInfo(NodeGroupTemplateNodeInfoRequest) returns (NodeGroupTemplateNodeInfoResponse) {}
 
   // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
   // NodeGroup.
   // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
-  rpc NodeGroupGetOptions(NodeGroupAutoscalingOptionsRequest)
-    returns (NodeGroupAutoscalingOptionsResponse) {}
+  rpc NodeGroupGetOptions(NodeGroupAutoscalingOptionsRequest) returns (NodeGroupAutoscalingOptionsResponse) {}
 }
 
 message NodeGroup {
@@ -128,7 +112,7 @@ message NodeGroup {
   string debug = 4;
 }
 
-message ExternalGrpcNode{
+message ExternalGrpcNode {
   // ID of the node assigned by the cloud provider in the format: <ProviderName>://<ProviderSpecificNodeID>.
   string providerID = 1;
 
@@ -259,7 +243,7 @@ message NodeGroupDeleteNodesRequest {
 
 message NodeGroupDeleteNodesResponse {
   // Intentionally empty.
- }
+}
 
 message NodeGroupDecreaseTargetSizeRequest {
   // Number of nodes to delete.
@@ -343,7 +327,7 @@ message NodeGroupAutoscalingOptions {
   // if cpu or memory utilization is over threshold.
   double scaleDownUtilizationThreshold = 1;
 
-  // ScaleDownGpuUtilizationThreshold sets threshold for gpu nodes to be 
+  // ScaleDownGpuUtilizationThreshold sets threshold for gpu nodes to be
   // considered for scale down if gpu utilization is over threshold.
   double scaleDownGpuUtilizationThreshold = 2;
 
@@ -356,7 +340,13 @@ message NodeGroupAutoscalingOptions {
   k8s.io.apimachinery.pkg.apis.meta.v1.Duration scaleDownUnreadyTime = 4;
 
   // MaxNodeProvisionTime time CA waits for node to be provisioned
-	k8s.io.apimachinery.pkg.apis.meta.v1.Duration MaxNodeProvisionTime = 5;
+  k8s.io.apimachinery.pkg.apis.meta.v1.Duration MaxNodeProvisionTime = 5;
+
+  // ZeroOrMaxNodeScaling means that a node group should be scaled up to maximum size or down to zero nodes all at once instead of one-by-one.
+  bool zeroOrMaxNodeScaling = 6;
+
+  // IgnoreDaemonSetsUtilization sets if daemonsets utilization should be considered during node scale-down
+  bool ignoreDaemonSetsUtilization = 7;
 }
 
 message NodeGroupAutoscalingOptionsRequest {

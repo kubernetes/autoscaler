@@ -61,7 +61,12 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 ```
 
-2. generate gRPC client and server code:
+2. import proto dependencies using go modules
+```bash
+go mod vendor 
+```
+
+3. generate gRPC client and server code:
 
 ```bash
 protoc \
