@@ -38,7 +38,7 @@ import (
 type CheckpointWriter interface {
 	// StoreCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
-	StoreCheckpoints(ctx context.Context, minCheckpoints int) error
+	StoreCheckpoints(ctx context.Context, minCheckpoints int, concurrentWorkers int) error
 }
 
 type checkpointWriter struct {
@@ -105,7 +105,7 @@ func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
 	}
 }
 
-func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpoints int) error {
+func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpoints int, concurrentWorkers int) error {
 	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
 
 	// Create a channel to send VPA updates to workers
@@ -115,14 +115,15 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 	var wg sync.WaitGroup
 
 	// Start workers
-	for i := 0; i < 10; i++ {
+	for i := 0; i < concurrentWorkers; i++ {
 		wg.Add(1)
-		klog.InfoS("creating vpa update worker", "worker", i)
+		klog.InfoS("creating checkpoint update worker", "worker", i)
 		go func() {
 			defer wg.Done()
 			for vpaToCheckpoint := range vpaCheckpointUpdates {
 				processCheckpointUpdateForVPA(vpaToCheckpoint, writer)
 			}
+			klog.Info("Closing checkpoint update worker")
 		}()
 	}
 
@@ -142,6 +143,8 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 
 		minCheckpoints--
 	}
+	close(vpaCheckpointUpdates)
+	wg.Wait()
 	return nil
 }
 
