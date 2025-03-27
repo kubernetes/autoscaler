@@ -140,7 +140,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 	// Create a wait group to wait for all workers to finish
 	var wg sync.WaitGroup
 	// Start workers
-	for i := 0; i < 10; i++ {
+	for i := 0; i < concurrentWorkers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
