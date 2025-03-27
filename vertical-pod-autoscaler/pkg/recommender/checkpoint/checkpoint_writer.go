@@ -37,7 +37,7 @@ import (
 type CheckpointWriter interface {
 	// StoreCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
-	StoreCheckpoints(ctx context.Context, now time.Time, minCheckpoints int) error
+	StoreCheckpoints(ctx context.Context, minCheckpoints int) error
 }
 
 type checkpointWriter struct {
@@ -76,7 +76,7 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	return vpas
 }
 
-func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.Time, minCheckpoints int) error {
+func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpoints int) error {
 	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
 	for _, vpa := range vpas {
 
@@ -91,13 +91,14 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 			return ctx.Err()
 		}
 
-		processCheckpointUpdateForVPA(vpa, writer, now)
+		processCheckpointUpdateForVPA(vpa, writer)
 		minCheckpoints--
 	}
 	return nil
 }
 
-func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter, now time.Time) {
+func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
+	now := time.Now()
 	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
 	for container, aggregatedContainerState := range aggregateContainerStateMap {
 		containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
