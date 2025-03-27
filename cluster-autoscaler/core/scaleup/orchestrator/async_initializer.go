@@ -155,9 +155,17 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 		return
 	}
 	klog.Infof("Initial scale-up succeeded. Scale ups: %v", scaleUpInfos)
+	s.emitScaleUpStatus(&status.ScaleUpStatus{
+		Result:                 status.ScaleUpSuccessful,
+		ScaleUpInfos:           scaleUpInfos,
+		CreateNodeGroupResults: []nodegroups.CreateNodeGroupResult{result.CreationResult},
+		PodsTriggeredScaleUp:   s.triggeringPods,
+	}, nil)
 }
 
 func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.ScaleUpStatus, err errors.AutoscalerError) {
-	status.UpdateScaleUpError(scaleUpStatus, err)
+	if err != nil {
+		status.UpdateScaleUpError(scaleUpStatus, err)
+	}
 	s.scaleUpStatusProcessor.Process(s.context, scaleUpStatus)
 }
