@@ -91,33 +91,37 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 			return ctx.Err()
 		}
 
-		aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
-		for container, aggregatedContainerState := range aggregateContainerStateMap {
-			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
-			if err != nil {
-				klog.ErrorS(err, "Cannot serialize checkpoint", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "container", container)
-				continue
-			}
-			checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
-			vpaCheckpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
-				ObjectMeta: metav1.ObjectMeta{Name: checkpointName},
-				Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
-					ContainerName: container,
-					VPAObjectName: vpa.ID.VpaName,
-				},
-				Status: *containerCheckpoint,
-			}
-			err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint)
-			if err != nil {
-				klog.ErrorS(err, "Cannot save checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
-			} else {
-				klog.V(3).InfoS("Saved checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
-				vpa.CheckpointWritten = now
-			}
-			minCheckpoints--
-		}
+		processCheckpointUpdateForVPA(vpa, writer, now)
+		minCheckpoints--
 	}
 	return nil
+}
+
+func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter, now time.Time) {
+	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
+	for container, aggregatedContainerState := range aggregateContainerStateMap {
+		containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
+		if err != nil {
+			klog.ErrorS(err, "Cannot serialize checkpoint", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "container", container)
+			continue
+		}
+		checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
+		vpaCheckpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
+			ObjectMeta: metav1.ObjectMeta{Name: checkpointName},
+			Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+				ContainerName: container,
+				VPAObjectName: vpa.ID.VpaName,
+			},
+			Status: *containerCheckpoint,
+		}
+		err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint)
+		if err != nil {
+			klog.ErrorS(err, "Cannot save checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
+		} else {
+			klog.V(3).InfoS("Saved checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
+			vpa.CheckpointWritten = now
+		}
+	}
 }
 
 // Build the AggregateContainerState for the purpose of the checkpoint. This is an aggregation of state of all
