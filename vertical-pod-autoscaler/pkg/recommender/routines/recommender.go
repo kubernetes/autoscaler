@@ -19,12 +19,12 @@ package routines
 import (
 	"context"
 	"flag"
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"sync"
 	"time"
 
 	"k8s.io/klog/v2"
 
+	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
@@ -127,7 +127,6 @@ func (r *recommender) UpdateVPAs() {
 	// Start workers
 	for i := 0; i < r.updateWorkerCount; i++ {
 		wg.Add(1)
-		klog.InfoS("creating vpa update worker", "worker", i)
 		go func() {
 			defer wg.Done()
 			for observedVpa := range vpaUpdates {
@@ -135,7 +134,6 @@ func (r *recommender) UpdateVPAs() {
 					Namespace: observedVpa.Namespace,
 					VpaName:   observedVpa.Name,
 				}
-				klog.InfoS("processing VPA update", "vpa", klog.KRef(key.Namespace, key.VpaName))
 
 				vpa, found := r.clusterState.VPAs()[key]
 				if !found {
@@ -144,7 +142,6 @@ func (r *recommender) UpdateVPAs() {
 				processVPAUpdate(r, vpa, observedVpa)
 				cnt.Add(vpa)
 			}
-			klog.Info("Closing VPA update worker")
 		}()
 	}
 
@@ -162,9 +159,8 @@ func (r *recommender) UpdateVPAs() {
 
 func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPerRun int) {
 	if r.useCheckpoints {
-		if err := r.checkpointWriter.StoreCheckpoints(ctx, minCheckpointsPerRun); err != nil {
-			klog.V(0).InfoS("Failed to store checkpoints", "err", err)
-		}
+		r.checkpointWriter.StoreCheckpoints(ctx, minCheckpointsPerRun, r.updateWorkerCount)
+
 		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = time.Now()
 			r.clusterStateFeeder.GarbageCollectCheckpoints(ctx)
