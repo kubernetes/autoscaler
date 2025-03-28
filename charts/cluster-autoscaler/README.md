@@ -428,7 +428,7 @@ vpa:
 | autoscalingGroups | list | `[]` | For AWS, Azure AKS, Exoscale or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> For Hetzner Cloud, the `instanceType` and `region` keys are also required. <pre> - name: mypool<br />   maxSize: 2<br />   minSize: 1<br />   instanceType: CPX21<br />   region: FSN1 </pre> |
 | autoscalingGroupsnamePrefix | list | `[]` | For GCE. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: ig01<br />   maxSize: 10<br />   minSize: 0 </pre> |
 | awsAccessKeyID | string | `""` | AWS access key ID ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
-| awsRegion | string | `"us-east-1"` | AWS region (required if `cloudProvider=aws`) |
+| awsRegion | string | `""` | AWS region (required if `cloudProvider=aws`) |
 | awsSecretAccessKey | string | `""` | AWS access secret key ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | azureClientID | string | `""` | Service Principal ClientID with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
 | azureClientSecret | string | `""` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
