@@ -168,10 +168,16 @@ be prevented anyway.
 
 VPA updater will consider that the update failed if:
 * The pod has condition `PodResizePending` with reason `Infeasible` or
-* The pod has condition `PodResizePending` with reason `Deferred` and more than 5 minutes elapsed
-  since the update or
-* The pod has condition `PodResizeInProgress` and more than 1 hour elapsed since
-  the update or
+* The pod has condition `PodResizePending` with reason `Deferred` and:
+  * **In the initial alpha implementation:** more than 5 minutes elapsed since
+    the update or
+  * **Eventually in the alpha stage:** more than
+    `--in-place-deferred-resize-timeout` elapsed since the update or
+* The pod has condition `PodResizeInProgress` and:
+  * **In the initial alpha implementation:** more than 1 hour elapsed since the
+    update or
+  * **Eventually in the alpha stage:** more than `--in-place-resize-timeout`
+    elapsed since the update or
 * Patch attempt returns an error.
 
 Note that in the initial version of In-Place updates, memory limit downscaling will always fail
@@ -314,3 +320,4 @@ Needs more research on how to scale down on memory safely.
 - 2025-02-19: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
 - 2025-03-06: Scope changes to "partial updates" feature
 - 2025-03-08: Add "Upgrade / Downgrade Strategy" and "Kubernetes version compatibility" sections
+- 2025-03-27: Add flags to control the in-place resize timeouts
