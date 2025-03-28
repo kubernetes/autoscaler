@@ -1,7 +1,7 @@
 # Vertical Pod Autoscaler Flags
 This document contains the flags for all VPA components.
 
-To view the most recent _release_ of flags for all VPA components, consult the release tag [flags(1.3.0)](/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/docs/flags.md) documentation.
+To view the most recent _release_ of flags for all VPA components, consult the release tag [flags(1.3.0)](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/docs/flags.md) documentation.
 
 > **Note:** This document is auto-generated from the default branch (master) of the VPA repository.
 
