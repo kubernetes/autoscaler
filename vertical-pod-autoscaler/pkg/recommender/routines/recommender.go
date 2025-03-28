@@ -127,7 +127,6 @@ func (r *recommender) UpdateVPAs() {
 	// Start workers
 	for i := 0; i < r.updateWorkerCount; i++ {
 		wg.Add(1)
-		klog.InfoS("creating vpa update worker", "worker", i)
 		go func() {
 			defer wg.Done()
 			for observedVpa := range vpaUpdates {
@@ -135,7 +134,6 @@ func (r *recommender) UpdateVPAs() {
 					Namespace: observedVpa.Namespace,
 					VpaName:   observedVpa.Name,
 				}
-				klog.InfoS("processing VPA update", "vpa", klog.KRef(key.Namespace, key.VpaName))
 
 				vpa, found := r.clusterState.VPAs()[key]
 				if !found {
@@ -144,7 +142,6 @@ func (r *recommender) UpdateVPAs() {
 				processVPAUpdate(r, vpa, observedVpa)
 				cnt.Add(vpa)
 			}
-			klog.Info("Closing VPA update worker")
 		}()
 	}
 

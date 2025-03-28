@@ -117,13 +117,11 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 	// Start workers
 	for i := 0; i < concurrentWorkers; i++ {
 		wg.Add(1)
-		klog.InfoS("creating checkpoint update worker", "worker", i)
 		go func() {
 			defer wg.Done()
 			for vpaToCheckpoint := range vpaCheckpointUpdates {
 				processCheckpointUpdateForVPA(vpaToCheckpoint, writer)
 			}
-			klog.Info("Closing checkpoint update worker")
 		}()
 	}
 
@@ -139,11 +137,16 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 		if ctx.Err() != nil && minCheckpoints <= 0 {
 			return ctx.Err()
 		}
+
+		// Send VPA Checkpoint update to the workers
 		vpaCheckpointUpdates <- vpa
 
 		minCheckpoints--
 	}
+	// Close the channel to signal workers to stop
 	close(vpaCheckpointUpdates)
+
+	// Wait for all workers to finish
 	wg.Wait()
 	return nil
 }
