@@ -2773,3 +2773,106 @@ func newEstimatorBuilder() estimator.EstimatorBuilder {
 
 	return estimatorBuilder
 }
+
+func TestCleaningSoftTaintsInScaleDownCoolDown(t *testing.T) {
+	startTime := time.Time{}
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	var allNodes []*apiv1.Node
+	nodesCount := 10
+
+	ngName := "ng"
+	// Create a node group with min size to filter out its nodes from scale down candidates
+	nodeGroup := provider.BuildNodeGroup(ngName, nodesCount, nodesCount+1, nodesCount, true, false, "", nil)
+	provider.InsertNodeGroup(nodeGroup)
+
+	for i := 0; i < nodesCount; i++ {
+		node := BuildTestNode(fmt.Sprintf("%s-node-%d", ngName, i), 2000, 1000)
+		node.CreationTimestamp = metav1.NewTime(startTime)
+		// Add soft taint to all nodes
+		node.Spec.Taints = []apiv1.Taint{apiv1.Taint{
+			Key:    "DeletionCandidateOfClusterAutoscaler",
+			Value:  "1",
+			Effect: apiv1.TaintEffectNoSchedule,
+		}}
+		SetNodeReadyState(node, true, startTime)
+		provider.AddNode(ngName, node)
+		allNodes = append(allNodes, node)
+	}
+
+	client := buildFakeClient(t, allNodes...)
+
+	allNodeLister := kubernetes.NewTestNodeLister(allNodes)
+	daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
+	assert.NoError(t, err)
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, allNodeLister,
+		kubernetes.NewTestPodLister(nil),
+		kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister, nil, nil, nil, nil)
+
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	autoscalingOptions := config.AutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime:         time.Minute,
+			ScaleDownUnreadyTime:          time.Minute,
+			ScaleDownUtilizationThreshold: 0.5,
+			MaxNodeProvisionTime:          10 * time.Second,
+		},
+		MaxScaleDownParallelism:    10,
+		MaxDrainParallelism:        1,
+		ScaleDownEnabled:           true,
+		MaxBulkSoftTaintCount:      20,
+		MaxBulkSoftTaintTime:       5 * time.Second,
+		NodeDeleteDelayAfterTaint:  5 * time.Minute,
+		ScaleDownSimulationTimeout: 10 * time.Second,
+	}
+
+	ctx, err := NewScaleTestAutoscalingContext(autoscalingOptions, client, listerRegistry, provider, processorCallbacks, nil)
+	assert.NoError(t, err)
+
+	processors := processorstest.NewTestProcessors(&ctx)
+	cp := scaledowncandidates.NewCombinedScaleDownCandidatesProcessor()
+	cp.Register(scaledowncandidates.NewScaleDownCandidatesSortingProcessor([]scaledowncandidates.CandidatesComparer{}))
+	processors.ScaleDownNodeProcessor = cp
+
+	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor, nil)
+	ctx.ScaleDownActuator = actuator
+
+	deleteOptions := options.NewNodeDeleteOptions(ctx.AutoscalingOptions)
+	drainabilityRules := rules.Default(deleteOptions)
+
+	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules)
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:   &ctx,
+		clusterStateRegistry: csr,
+		scaleDownActuator:    actuator,
+		scaleDownPlanner:     sdPlanner,
+		processors:           processors,
+		loopStartNotifier:    loopstart.NewObserversList(nil),
+		processorCallbacks:   processorCallbacks,
+	}
+
+	// RunOnce with soft tainted nodes and scale down in cool down
+	err = autoscaler.RunOnce(startTime)
+	candidates, _ := processors.ScaleDownNodeProcessor.GetScaleDownCandidates(&ctx, allNodes)
+	assert.Equal(t, true, autoscaler.isScaleDownInCooldown(startTime, candidates))
+	assertAllNodesWithNoSoftTaints(t, client)
+}
+
+func assertAllNodesWithNoSoftTaints(t assert.TestingT, client *fake.Clientset) {
+	nodes, _ := client.CoreV1().Nodes().List(stdcontext.TODO(), metav1.ListOptions{})
+	for _, node := range nodes.Items {
+		assert.False(t, taints.HasDeletionCandidateTaint(&node))
+	}
+}
+
+func buildFakeClient(t *testing.T, nodes ...*apiv1.Node) *fake.Clientset {
+	fakeClient := fake.NewSimpleClientset()
+	for _, node := range nodes {
+		_, err := fakeClient.CoreV1().Nodes().Create(stdcontext.TODO(), node, metav1.CreateOptions{})
+		assert.NoError(t, err)
+	}
+
+	return fakeClient
+}
