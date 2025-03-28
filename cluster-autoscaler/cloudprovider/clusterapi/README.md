@@ -79,6 +79,12 @@ in the staging namespace, belonging to the purple cluster, with the label owner=
 
 ## Connecting cluster-autoscaler to Cluster API management and workload Clusters
 
+> [!IMPORTANT]
+> `--cloud-config` is the flag to configure the cloud provider. Here the cloud provider is "Cluster API".
+
+> [!IMPORTANT]
+> `--kubeconfig` is the flag to configure the cluster to watch for the need of autoscaling.
+
 You will also need to provide the path to the kubeconfig(s) for the management
 and workload cluster you wish cluster-autoscaler to run against. To specify the
 kubeconfig path for the workload cluster to monitor, use the `--kubeconfig`
