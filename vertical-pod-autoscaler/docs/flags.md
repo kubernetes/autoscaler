@@ -117,6 +117,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--storage` |  |                                         Specifies storage mode. Supported values: prometheus, checkpoint |
 | `--target-cpu-percentile` | 0.9 |                            CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
 | `--target-memory-percentile` | 0.9 |                         Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
+| `--update-worker-count` | 10 |                                Number of concurrent workers to update VPA recommendations and checkpoints |
 | `--use-external-metrics` |  |                                   ALPHA.  Use an external metrics provider instead of metrics_server. |
 | `--username` |  |                                        The username used in the prometheus server basic auth |
 | `--v` | 4 | Set the log level verbosity |
