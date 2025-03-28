@@ -119,7 +119,7 @@ func (r *recommender) UpdateVPAs() {
 	defer cnt.Observe()
 
 	// Create a channel to send VPA updates to workers
-	vpaUpdates := make(chan *v1.VerticalPodAutoscaler, len(r.clusterState.ObservedVPAs()))
+	vpaUpdates := make(chan *v1.VerticalPodAutoscaler)
 
 	// Create a wait group to wait for all workers to finish
 	var wg sync.WaitGroup

@@ -109,7 +109,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
 
 	// Create a channel to send VPA updates to workers
-	vpaCheckpointUpdates := make(chan *model.Vpa, len(vpas))
+	vpaCheckpointUpdates := make(chan *model.Vpa)
 
 	// Create a wait group to wait for all workers to finish
 	var wg sync.WaitGroup
