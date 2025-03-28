@@ -44,14 +44,6 @@ func (c *ClientFactory) NewAgentPoolsClient() *AgentPoolsClient {
 	}
 }
 
-// NewMachinesClient creates a new instance of MachinesClient.
-func (c *ClientFactory) NewMachinesClient() *MachinesClient {
-	return &MachinesClient{
-		subscriptionID: c.subscriptionID,
-		internal:       c.internal,
-	}
-}
-
 // NewMaintenanceConfigurationsClient creates a new instance of MaintenanceConfigurationsClient.
 func (c *ClientFactory) NewMaintenanceConfigurationsClient() *MaintenanceConfigurationsClient {
 	return &MaintenanceConfigurationsClient{
@@ -60,25 +52,9 @@ func (c *ClientFactory) NewMaintenanceConfigurationsClient() *MaintenanceConfigu
 	}
 }
 
-// NewManagedClusterSnapshotsClient creates a new instance of ManagedClusterSnapshotsClient.
-func (c *ClientFactory) NewManagedClusterSnapshotsClient() *ManagedClusterSnapshotsClient {
-	return &ManagedClusterSnapshotsClient{
-		subscriptionID: c.subscriptionID,
-		internal:       c.internal,
-	}
-}
-
 // NewManagedClustersClient creates a new instance of ManagedClustersClient.
 func (c *ClientFactory) NewManagedClustersClient() *ManagedClustersClient {
 	return &ManagedClustersClient{
-		subscriptionID: c.subscriptionID,
-		internal:       c.internal,
-	}
-}
-
-// NewOperationStatusResultClient creates a new instance of OperationStatusResultClient.
-func (c *ClientFactory) NewOperationStatusResultClient() *OperationStatusResultClient {
-	return &OperationStatusResultClient{
 		subscriptionID: c.subscriptionID,
 		internal:       c.internal,
 	}

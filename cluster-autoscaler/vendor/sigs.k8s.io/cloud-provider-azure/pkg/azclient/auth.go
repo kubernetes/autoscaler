@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 
@@ -39,6 +40,8 @@ type AuthProvider struct {
 	NetworkClientSecretCredential azcore.TokenCredential
 
 	MultiTenantCredential azcore.TokenCredential
+
+	ClientOptions *policy.ClientOptions
 }
 
 func NewAuthProvider(armConfig *ARMClientConfig, config *AzureAuthConfig, clientOptionsMutFn ...func(option *policy.ClientOptions)) (*AuthProvider, error) {
@@ -88,8 +91,7 @@ func NewAuthProvider(armConfig *ARMClientConfig, config *AzureAuthConfig, client
 	if config.UseManagedIdentityExtension && config.AuxiliaryTokenProvider != nil && IsMultiTenant(armConfig) {
 		networkTokenCredential, err = armauth.NewKeyVaultCredential(
 			managedIdentityCredential,
-			config.AuxiliaryTokenProvider.KeyVaultURL,
-			config.AuxiliaryTokenProvider.SecretName,
+			config.AuxiliaryTokenProvider.SecretResourceID(),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("create KeyVaultCredential for auxiliary token provider: %w", err)
@@ -172,6 +174,8 @@ func NewAuthProvider(armConfig *ARMClientConfig, config *AzureAuthConfig, client
 		NetworkClientSecretCredential: networkClientSecretCredential,
 		NetworkTokenCredential:        networkTokenCredential,
 		MultiTenantCredential:         multiTenantCredential,
+
+		ClientOptions: clientOption,
 	}, nil
 }
 
@@ -209,4 +213,9 @@ func (factory *AuthProvider) GetMultiTenantIdentity() azcore.TokenCredential {
 
 func (factory *AuthProvider) IsMultiTenantModeEnabled() bool {
 	return factory.MultiTenantCredential != nil
+}
+
+func (factory *AuthProvider) TokenScope() string {
+	audience := factory.ClientOptions.Cloud.Services[cloud.ResourceManager].Audience
+	return fmt.Sprintf("https://%s/.default", audience)
 }
