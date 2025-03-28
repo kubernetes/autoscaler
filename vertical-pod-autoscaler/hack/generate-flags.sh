@@ -43,7 +43,7 @@ extract_flags() {
         if [[ $line == *"-v, --v Level"* ]]; then
             # Special handling for the -v, --v Level flag
             flag="v"
-            default=$(echo "$line" | sed -n 's/.*default: \([0-9]\+\).*/\1/p')
+            default=$(echo "$line" | sed -n 's/.*default: \([0-9]\{1,\}\).*/\1/p')
             description="Set the log level verbosity"
         else
             flag=$(echo "$line" | awk '{print $1}' | sed 's/^-*//;s/=.*$//')
