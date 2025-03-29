@@ -130,7 +130,7 @@ type AutoscalingGceClient interface {
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
 	FetchZones(region string) ([]string, error)
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
-	FetchAvailableDiskTypes() (map[string][]string, error)
+	FetchAvailableDiskTypes(region string) (map[string][]string, error)
 	FetchReservations() ([]*gce.Reservation, error)
 	FetchReservationsInProject(projectId string) ([]*gce.Reservation, error)
 	FetchListManagedInstancesResults(migRef GceRef) (string, error)
@@ -753,14 +753,19 @@ func (client *autoscalingGceClientV1) FetchAvailableCpuPlatforms() (map[string][
 	return availableCpuPlatforms, nil
 }
 
-func (client *autoscalingGceClientV1) FetchAvailableDiskTypes() (map[string][]string, error) {
+// FetchAvailableDiskTypes returns a map of zone to available disk types filtered by region.
+func (client *autoscalingGceClientV1) FetchAvailableDiskTypes(region string) (map[string][]string, error) {
 	availableDiskTypes := make(map[string][]string)
 
-	req := client.gceService.DiskTypes.AggregatedList(client.projectId)
+	// We use a filter to retrieve disk types available within a specific region.
+	// This filter leverages the GCE naming convention where zone names are prefixed with their region (e.g., "us-central1-a" is in the "us-central1" region).
+	// By using the provided region, the filter effectively selects all matching zones within that region.
+	// For example, if region is "us-central1", the filter will match all zones in that region (e.g., "us-central1-a", "us-central1-b").
+	filter := fmt.Sprintf("zone eq .+%s.*", region)
+	req := client.gceService.DiskTypes.AggregatedList(client.projectId).Filter(filter).ReturnPartialSuccess(true)
 	if err := req.Pages(context.TODO(), func(page *gce.DiskTypeAggregatedList) error {
 		for _, diskTypesScopedList := range page.Items {
 			for _, diskType := range diskTypesScopedList.DiskTypes {
-				// skip data for regions
 				if diskType.Zone == "" {
 					continue
 				}
