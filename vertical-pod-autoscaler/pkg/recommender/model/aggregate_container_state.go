@@ -302,6 +302,26 @@ func AggregateStateByContainerName(aggregateContainerStateMap aggregateContainer
 	return containerNameToAggregateStateMap
 }
 
+// AggregateStateByNodeAndContainerName takes a set of AggregateContainerStates and merge them
+// grouping by the container name and node.
+func AggregateStateByNodeAndContainerName(aggregateContainerStateMap aggregateContainerStatesMap) map[string]ContainerNameToAggregateStateMap {
+	result := make(map[string]ContainerNameToAggregateStateMap)
+	for aggregationKey, aggregation := range aggregateContainerStateMap {
+		node := aggregationKey.Labels().Get("__internal_node")
+		if _, ok := result[node]; !ok {
+			result[node] = make(ContainerNameToAggregateStateMap)
+		}
+		containerName := aggregationKey.ContainerName()
+		aggregateContainerState, isInitialized := result[node][containerName]
+		if !isInitialized {
+			aggregateContainerState = NewAggregateContainerState()
+			result[node][containerName] = aggregateContainerState
+		}
+		aggregateContainerState.MergeContainerState(aggregation)
+	}
+	return result
+}
+
 // ContainerStateAggregatorProxy is a wrapper for ContainerStateAggregator
 // that creates ContainerStateAgregator for container if it is no longer
 // present in the cluster state.
