@@ -122,12 +122,18 @@ sure nothing we care about will break if we do.
 1.  [ ] Update information about newest version and K8s compatibility in
     [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation).
 
-1.  [ ] Update the yaml files:
+1.  [ ] Update the yaml and sh files:
 
     ```sh
-    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment*.yaml ./hack/vpa-process-yaml.sh
+    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|g" ./deploy/*-deployment*.yaml
+    sed -i -s "s|DEFAULT_TAG=\"[0-9]\+\.[0-9]\+\.[0-9]\+\"|DEFAULT_TAG=\"[*vpa-version*]\"|g" ./hack/*.sh
     ```
-1.  [ ] Update the default tag in  [vpa-up.sh](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/vpa-up.sh).
+
+1.  [ ] Generate the flags files:
+
+    ```sh
+    ./hack/generate-flags.sh
+    ```
 
 1.  [ ] Merge these changes into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release
     (example PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
