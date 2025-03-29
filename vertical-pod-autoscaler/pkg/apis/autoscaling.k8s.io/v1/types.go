@@ -116,7 +116,7 @@ type VerticalPodAutoscalerSpec struct {
 type VerticalPodAutoscalerScopeType string
 
 var (
-	ScopeNode VerticalPodAutoscalerScopeType = "node"
+	ScopeNode VerticalPodAutoscalerScopeType = "kubernetes.io/hostname"
 )
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
