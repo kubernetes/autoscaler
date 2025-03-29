@@ -113,25 +113,8 @@ func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
 
 // ValidateVPA checks the correctness of VPA Spec and returns an error if there is a problem.
 func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
-	if vpa.Spec.UpdatePolicy != nil {
-		mode := vpa.Spec.UpdatePolicy.UpdateMode
-		if mode == nil {
-			return fmt.Errorf("UpdateMode is required if UpdatePolicy is used")
-		}
-		if _, found := possibleUpdateModes[*mode]; !found {
-			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
-		}
-
-		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
-			return fmt.Errorf("MinReplicas has to be positive, got %v", *minReplicas)
-		}
-	}
-
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.ContainerName == "" {
-				return fmt.Errorf("ContainerPolicies.ContainerName is required")
-			}
 			mode := policy.Mode
 			if mode != nil {
 				if _, found := possibleScalingModes[*mode]; !found {
@@ -153,23 +136,8 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 					return fmt.Errorf("MaxAllowed: %v", err)
 				}
 			}
-			ControlledValues := policy.ControlledValues
-			if mode != nil && ControlledValues != nil {
-				if *mode == vpa_types.ContainerScalingModeOff && *ControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-					return fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off.")
-				}
-			}
 		}
 	}
-
-	if isCreate && vpa.Spec.TargetRef == nil {
-		return fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
-	}
-
-	if len(vpa.Spec.Recommenders) > 1 {
-		return fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders.")
-	}
-
 	return nil
 }
 
