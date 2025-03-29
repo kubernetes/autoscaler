@@ -84,8 +84,8 @@ func (c *cappingRecommendationProcessor) Apply(
 	}
 	for _, containerRecommendation := range limitAdjustedRecommendation {
 		switch {
-		case strings.HasPrefix(containerRecommendation.Scope, "node="):
-			scopeNode := strings.TrimPrefix(containerRecommendation.Scope, "node=")
+		case strings.HasPrefix(containerRecommendation.Scope, string(vpa_types.ScopeNode+"=")):
+			scopeNode := strings.TrimPrefix(containerRecommendation.Scope, string(vpa_types.ScopeNode+"="))
 			if podNode := getPodNode(pod); podNode != scopeNode {
 				klog.V(2).InfoS("Ignoring recommendation for different scope", "pod", pod.ObjectMeta.Name, "scope", containerRecommendation.Scope, "podNode", podNode)
 				continue

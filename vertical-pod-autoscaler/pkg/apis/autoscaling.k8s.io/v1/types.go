@@ -108,8 +108,16 @@ type VerticalPodAutoscalerSpec struct {
 	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
 
-	Scope string `json:"scope,omitempty" protobuf:"bytes,5,opt,name=scope"`
+	Scope VerticalPodAutoscalerScopeType `json:"scope,omitempty" protobuf:"bytes,5,opt,name=scope"`
 }
+
+// VerticalPodAutoscalerScopeType are the valid scopes of
+// a VerticalPodAutoscaler.
+type VerticalPodAutoscalerScopeType string
+
+var (
+	ScopeNode VerticalPodAutoscalerScopeType = "node"
+)
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
 // +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetLowerThanRequests

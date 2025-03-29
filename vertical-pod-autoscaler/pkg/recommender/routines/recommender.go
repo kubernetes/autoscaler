@@ -94,13 +94,13 @@ func (r *recommender) UpdateVPAs() {
 		}
 		had := vpa.HasRecommendation()
 		listOfResourceRecommendation := &v1.RecommendedPodResources{}
-		if observedVpa.Spec.Scope == "node" {
+		if observedVpa.Spec.Scope == v1.ScopeNode {
 			nodeAndContainerNameToAggregateStateMap := GetContainerNameToAggregateStateMapByNode(vpa)
 			for node, m := range nodeAndContainerNameToAggregateStateMap {
 				resources := r.podResourceRecommender.GetRecommendedPodResources(m)
 				r := logic.MapToListOfRecommendedContainerResources(resources)
 				for i := range r.ContainerRecommendations {
-					r.ContainerRecommendations[i].Scope = "node=" + node
+					r.ContainerRecommendations[i].Scope = string(v1.ScopeNode) + "=" + node
 				}
 				listOfResourceRecommendation.ContainerRecommendations = append(listOfResourceRecommendation.ContainerRecommendations, r.ContainerRecommendations...)
 			}
