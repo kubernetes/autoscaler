@@ -156,7 +156,7 @@ func (n *sksNodepoolNodeGroup) DecreaseTargetSize(_ int) error {
 
 // Id returns an unique identifier of the node group.
 func (n *sksNodepoolNodeGroup) Id() string {
-	return *n.sksNodepool.InstancePoolID
+	return *n.sksNodepool.ID
 }
 
 // Debug returns a string containing all information regarding this node group.
@@ -234,9 +234,9 @@ func (n *sksNodepoolNodeGroup) GetOptions(_ config.NodeGroupAutoscalingOptions) 
 
 func (n *sksNodepoolNodeGroup) waitUntilRunning(ctx context.Context) error {
 	return pollCmd(ctx, func() (bool, error) {
-		instancePool, err := n.m.client.GetInstancePool(ctx, n.m.zone, n.Id())
+		instancePool, err := n.m.client.GetInstancePool(ctx, n.m.zone, *n.sksNodepool.InstancePoolID)
 		if err != nil {
-			errorf("unable to retrieve Instance Pool %s: %s", n.Id(), err)
+			errorf("unable to retrieve Instance Pool %s: %s", *n.sksNodepool.InstancePoolID, err)
 			return false, err
 		}
 
