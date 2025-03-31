@@ -79,7 +79,7 @@ To create a valid configuration, follow instructions for your cloud provider:
 
 ### Templating the autoDiscovery.clusterName
 
-The cluster name can be templated in the `autoDiscovery.clusterName` variable. This is useful when the cluster name is dynamically generated based on other values coming from external systems like Argo CD or Flux. This also allows you to use global Helm values to set the cluster name, e.g., `autoDiscovery.clusterName=\{\{ .Values.global.clusterName }}`, so that you don't need to set it in more than 1 location in the values file.
+The cluster name can be templated in the `autoDiscovery.clusterName` variable. This is useful when the cluster name is dynamically generated based on other values coming from external systems like Argo CD or Flux. This also allows you to use global Helm values to set the cluster name, e.g., `autoDiscovery.clusterName={{ .Values.global.clusterName }}`, so that you don't need to set it in more than 1 location in the values file.
 
 ### AWS - Using auto-discovery of tagged instance groups
 
