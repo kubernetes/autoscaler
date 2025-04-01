@@ -29,7 +29,7 @@ type containerStatusBuilder struct {
 	memLimit   *resource.Quantity
 }
 
-// Container returns object that helps build containers for tests.
+// ContainerStatus returns object that helps build containerStatus for tests.
 func ContainerStatus() *containerStatusBuilder {
 	return &containerStatusBuilder{}
 }
