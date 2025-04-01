@@ -65,8 +65,7 @@ var (
 
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
-	gceManager GceManager
-	// This resource limiter is used if resource limits are not defined through cloud API.
+	gceManager               GceManager
 	resourceLimiterFromFlags *cloudprovider.ResourceLimiter
 	pricingModel             cloudprovider.PricingModel
 }
@@ -172,13 +171,6 @@ func (gce *GceCloudProvider) NewNodeGroup(ctx context.Context, machineType strin
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 func (gce *GceCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
-	resourceLimiter, err := gce.gceManager.GetResourceLimiter()
-	if err != nil {
-		return nil, err
-	}
-	if resourceLimiter != nil {
-		return resourceLimiter, nil
-	}
 	return gce.resourceLimiterFromFlags, nil
 }
 

@@ -89,8 +89,6 @@ type GceManager interface {
 	GetMigForInstance(ctx context.Context, instance GceRef) (Mig, error)
 	// GetMigTemplateNode returns a template node for MIG.
 	GetMigTemplateNode(ctx context.Context, mig Mig) (*apiv1.Node, error)
-	// GetResourceLimiter returns resource limiter.
-	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 	// GetMigSize gets MIG size.
 	GetMigSize(ctx context.Context, mig Mig) (int64, error)
 	// GetMigOptions returns MIG's NodeGroupAutoscalingOptions
@@ -519,11 +517,6 @@ func (m *gceManagerImpl) fetchAutoMigs(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-// GetResourceLimiter returns resource limiter from cache.
-func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	return m.cache.GetResourceLimiter()
 }
 
 func (m *gceManagerImpl) clearMachinesCache(ctx context.Context) {

@@ -18,7 +18,6 @@ package gce
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -82,11 +81,6 @@ func (m *gceManagerMock) Cleanup() error {
 func (m *gceManagerMock) GetMigs() []Mig {
 	args := m.Called()
 	return args.Get(0).([]Mig)
-}
-
-func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	args := m.Called()
-	return args.Get(0).(*cloudprovider.ResourceLimiter), args.Error(1)
 }
 
 func (m *gceManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
@@ -176,34 +170,18 @@ func TestNodeGroupForNode(t *testing.T) {
 }
 
 func TestGetResourceLimiter(t *testing.T) {
-	gceManagerMock := &gceManagerMock{}
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 	gce := &GceCloudProvider{
-		gceManager:               gceManagerMock,
+		gceManager:               nil,
 		resourceLimiterFromFlags: resourceLimiter,
 	}
 
 	// Return default.
-	gceManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), nil).Once()
 	returnedResourceLimiter, err := gce.GetResourceLimiter(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, resourceLimiter, returnedResourceLimiter)
-
-	// Return for GKE.
-	resourceLimiterGKE := cloudprovider.NewResourceLimiter(
-		map[string]int64{cloudprovider.ResourceNameCores: 2, cloudprovider.ResourceNameMemory: 20000000},
-		map[string]int64{cloudprovider.ResourceNameCores: 5, cloudprovider.ResourceNameMemory: 200000000})
-	gceManagerMock.On("GetResourceLimiter").Return(resourceLimiterGKE, nil).Once()
-	returnedResourceLimiterGKE, err := gce.GetResourceLimiter(context.Background())
-	assert.NoError(t, err)
-	assert.Equal(t, returnedResourceLimiterGKE, resourceLimiterGKE)
-
-	// Error in GceManager.
-	gceManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), fmt.Errorf("some error")).Once()
-	_, err = gce.GetResourceLimiter(context.Background())
-	assert.Error(t, err)
 }
 
 const getInstanceGroupManagerResponse = `{
