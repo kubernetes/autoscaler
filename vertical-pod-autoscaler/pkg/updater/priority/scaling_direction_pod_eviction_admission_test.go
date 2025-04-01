@@ -157,6 +157,26 @@ func TestAdmitForSingleContainer(t *testing.T) {
 		assert.Equal(t, true, sdpea.Admit(podWithoutRequests, recommendation))
 	})
 
+	t.Run("it should admit a Pod for eviction if it has non-nil ContainerStatus resources, but with no requests", func(t *testing.T) {
+		podWithContainerStatus := pod.DeepCopy()
+		podWithContainerStatus.Status.ContainerStatuses = []corev1.ContainerStatus{{
+			Name:      containerName,
+			Resources: &corev1.ResourceRequirements{},
+		}}
+		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+			podWithContainerStatus: {
+				{Resources: []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
+					ChangeRequirement: v1.TargetHigherThanRequests,
+				},
+			},
+		}
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "10Gi").Get()
+
+		assert.Equal(t, true, sdpea.Admit(podWithContainerStatus, recommendation))
+	})
+
 	t.Run("it should admit a Pod for eviction if no config is given", func(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = map[*corev1.Pod][]*v1.EvictionRequirement{pod: {}}
