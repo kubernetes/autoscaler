@@ -5,7 +5,7 @@
 - [Limits control](#limits-control)
 - [Memory Value Humanization](#memory-value-humanization)
 - [CPU Recommendation Rounding](#cpu-recommendation-rounding)
-- [In-Place Updates](#in-place-updates)
+- [In-Place Updates](#in-place-updates-inplaceorrecreate)
 
 ## Limits control
 
