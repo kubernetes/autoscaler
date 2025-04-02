@@ -54,7 +54,10 @@ To enable this feature, set the --round-cpu-millicores flag when running the VPA
 --round-cpu-millicores=50
 ```
 
-## In-Place Updates
+## In-Place Updates (`InPlaceOrRecreate`)
+
+> [!NOTE] 
+> FEATURE STATE: VPA v1.4.0 [alpha]
 
 VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (beta in 1.33) to modify container resources without requiring pod recreation.
 For more information, see [AEP-4916: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)
