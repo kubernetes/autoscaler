@@ -138,6 +138,7 @@ func main() {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 		os.Exit(255)
 	}
+	ctx := context.Background()
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
 	metrics_recommender.Register()
@@ -145,7 +146,7 @@ func main() {
 	server.Initialize(&commonFlags.EnableProfiling, healthCheck, address)
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck, commonFlags)
+		run(ctx, healthCheck, commonFlags)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -172,7 +173,7 @@ func main() {
 			os.Exit(255)
 		}
 
-		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
+		leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
 			Lock:            lock,
 			LeaseDuration:   leaderElection.LeaseDuration.Duration,
 			RenewDeadline:   leaderElection.RenewDeadline.Duration,
@@ -180,7 +181,7 @@ func main() {
 			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ context.Context) {
-					run(healthCheck, commonFlags)
+					run(ctx, healthCheck, commonFlags)
 				},
 				OnStoppedLeading: func() {
 					klog.Fatal("lost master")
@@ -209,7 +210,7 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 	}
 }
 
-func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	// Create a stop channel that will be used to signal shutdown
 	stopCh := make(chan struct{})
 	defer close(stopCh)
@@ -218,7 +219,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
-	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
+	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlag.VpaObjectNamespace, stopCh)
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
@@ -266,7 +267,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		IgnoredNamespaces:   ignoredNamespaces,
 		VpaObjectNamespace:  commonFlag.VpaObjectNamespace,
 	}.Make()
-	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
+	controllerFetcher.Start(ctx, scaleCacheLoopPeriod)
 
 	recommender := routines.RecommenderFactory{
 		ClusterState:                 clusterState,
@@ -287,7 +288,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	}
 
 	if useCheckpoints {
-		recommender.GetClusterStateFeeder().InitFromCheckpoints()
+		recommender.GetClusterStateFeeder().InitFromCheckpoints(ctx)
 	} else {
 		config := history.PrometheusHistoryProviderConfig{
 			Address:                *prometheusAddress,
