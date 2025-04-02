@@ -193,6 +193,26 @@ func TestReplicasCounter(t *testing.T) {
 			ownerRef:  ownerRef("Job", "j"),
 			expectErr: true,
 		},
+		{
+			name:      "statefulset with wrong api version",
+			ownerRef:  ownerRefWithVersion("StatefulSet", sS.Name, "apps/v1beta1"),
+			expectErr: true,
+		},
+		{
+			name:      "replicaset with wrong api version",
+			ownerRef:  ownerRefWithVersion("ReplicaSet", rs.Name, "apps/v1beta1"),
+			expectErr: true,
+		},
+		{
+			name:      "replicationcontroller with wrong api version",
+			ownerRef:  ownerRefWithVersion("ReplicationController", rC.Name, "apps/v1"),
+			expectErr: true,
+		},
+		{
+			name:      "job with wrong api version",
+			ownerRef:  ownerRefWithVersion("Job", job.Name, "batch/v1beta1"),
+			expectErr: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -220,11 +240,26 @@ func ownerRef(ownerType, ownerName string) metav1.OwnerReference {
 		api = "apps/v1"
 		strType = "statefulsets"
 	case "ReplicationController":
-		api = "core/v1"
+		api = "v1"
 		strType = "replicationcontrollers"
 	case "Job":
 		api = "batch/v1"
 		strType = "jobs"
 	}
 	return test.GenerateOwnerReferences(ownerName, ownerType, api, types.UID(fmt.Sprintf("%s/namespaces/default/%s/%s", api, strType, ownerName)))[0]
+}
+
+func ownerRefWithVersion(ownerType, ownerName, apiVersion string) metav1.OwnerReference {
+	strType := ""
+	switch ownerType {
+	case "ReplicaSet":
+		strType = "replicasets"
+	case "StatefulSet":
+		strType = "statefulsets"
+	case "ReplicationController":
+		strType = "replicationcontrollers"
+	case "Job":
+		strType = "jobs"
+	}
+	return test.GenerateOwnerReferences(ownerName, ownerType, apiVersion, types.UID(fmt.Sprintf("%s/namespaces/default/%s/%s", apiVersion, strType, ownerName)))[0]
 }

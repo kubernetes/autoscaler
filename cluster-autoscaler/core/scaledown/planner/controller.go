@@ -19,7 +19,11 @@ package planner
 import (
 	"fmt"
 
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
@@ -33,8 +37,20 @@ func newControllerReplicasCalculator(listers kubernetes.ListerRegistry) controll
 
 func (c *controllerCalculatorImpl) getReplicas(ownerRef metav1.OwnerReference, namespace string) (*replicasInfo, error) {
 	result := &replicasInfo{}
-	switch ownerRef.Kind {
-	case "StatefulSet":
+
+	groupVersion, err := schema.ParseGroupVersion(ownerRef.APIVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	gvk := schema.GroupVersionKind{
+		Group:   groupVersion.Group,
+		Version: groupVersion.Version,
+		Kind:    ownerRef.Kind,
+	}
+
+	switch gvk {
+	case appsv1.SchemeGroupVersion.WithKind("StatefulSet"):
 		sSet, err := c.listers.StatefulSetLister().StatefulSets(namespace).Get(ownerRef.Name)
 		if err != nil {
 			return nil, err
@@ -45,7 +61,7 @@ func (c *controllerCalculatorImpl) getReplicas(ownerRef metav1.OwnerReference, n
 		} else {
 			result.targetReplicas = 1
 		}
-	case "ReplicaSet":
+	case appsv1.SchemeGroupVersion.WithKind("ReplicaSet"):
 		rSet, err := c.listers.ReplicaSetLister().ReplicaSets(namespace).Get(ownerRef.Name)
 		if err != nil {
 			return nil, err
@@ -56,7 +72,7 @@ func (c *controllerCalculatorImpl) getReplicas(ownerRef metav1.OwnerReference, n
 		} else {
 			result.targetReplicas = 1
 		}
-	case "ReplicationController":
+	case apiv1.SchemeGroupVersion.WithKind("ReplicationController"):
 		rController, err := c.listers.ReplicationControllerLister().ReplicationControllers(namespace).Get(ownerRef.Name)
 		if err != nil {
 			return nil, err
@@ -67,7 +83,7 @@ func (c *controllerCalculatorImpl) getReplicas(ownerRef metav1.OwnerReference, n
 		} else {
 			result.targetReplicas = 1
 		}
-	case "Job":
+	case batchv1.SchemeGroupVersion.WithKind("Job"):
 		job, err := c.listers.JobLister().Jobs(namespace).Get(ownerRef.Name)
 		if err != nil {
 			return nil, err
@@ -82,7 +98,7 @@ func (c *controllerCalculatorImpl) getReplicas(ownerRef metav1.OwnerReference, n
 			result.targetReplicas = *job.Spec.Completions - job.Status.Succeeded
 		}
 	default:
-		return nil, fmt.Errorf("unhandled controller type: %s", ownerRef.Kind)
+		return nil, fmt.Errorf("unhandled controller type: %s", gvk.String())
 	}
 	return result, nil
 }
