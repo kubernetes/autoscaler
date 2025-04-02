@@ -57,6 +57,7 @@ To enable this feature, set the --round-cpu-millicores flag when running the VPA
 ## In-Place Updates
 
 VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (beta in 1.33) to modify container resources without requiring pod recreation.
+For more information, see [AEP-4916: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)
 
 ### Usage
 
@@ -87,9 +88,9 @@ Important Notes
 
 ### Requirements:
 
-* Kubernetes 1.33+ with in-place update feature enabled
+* Kubernetes 1.33+
 * VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
-* Cluster feature gate InPlacePodVerticalScaling enabled
+* Cluster feature gate `InPlacePodVerticalScaling` enabled
 
 ### Configuration
 
@@ -120,7 +121,7 @@ VPA will fall back to pod recreation in the following scenarios:
 
 VPA provides metrics to track in-place update operations:
 
-* vpa_in_place_updatable_pods_total: Number of pods matching in-place update criteria
-* vpa_in_place_updated_pods_total: Number of pods successfully updated in-place
-* vpa_vpas_with_in_place_updatable_pods_total: Number of VPAs with pods eligible for in-place updates
-* vpa_vpas_with_in_place_updated_pods_total: Number of VPAs with successfully in-place updated pods
+* `vpa_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+* `vpa_in_place_updated_pods_total`: Number of pods successfully updated in-place
+* `vpa_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+* `vpa_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
