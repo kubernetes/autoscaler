@@ -28,20 +28,13 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
-type resourcesInplaceUpdatesPatchCalculator struct {
+// ResourcesInplaceUpdatesPatchCalculator is a calculator for resource update patches.
+type ResourcesInplaceUpdatesPatchCalculator struct {
 	recommendationProvider recommendation.Provider
 }
 
-// NewResourceInPlaceUpdatesCalculator returns a calculator for
-// resource update patches.
-func NewResourceInPlaceUpdatesCalculator(recommendationProvider recommendation.Provider) patch.Calculator {
-	return &resourcesInplaceUpdatesPatchCalculator{
-		recommendationProvider: recommendationProvider,
-	}
-}
-
 // CalculatePatches calculates a JSON patch from a VPA's recommendation to send to the pod "resize" subresource as an in-place resize.
-func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+func (c *ResourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
 	containersResources, _, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
@@ -55,6 +48,19 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod,
 	}
 
 	return result, nil
+}
+
+// PatchResourceTarget returns the resize subresource to apply calculator patches.
+func (*ResourcesInplaceUpdatesPatchCalculator) PatchResourceTarget() patch.PatchResourceTarget {
+	return patch.Resize
+}
+
+// NewResourceInPlaceUpdatesCalculator returns a calculator for
+// resource update patches.
+func NewResourceInPlaceUpdatesCalculator(recommendationProvider recommendation.Provider) patch.Calculator {
+	return &ResourcesInplaceUpdatesPatchCalculator{
+		recommendationProvider: recommendationProvider,
+	}
 }
 
 func getContainerPatch(pod *core.Pod, i int, containerResources vpa_api_util.ContainerResources) []resource_admission.PatchRecord {

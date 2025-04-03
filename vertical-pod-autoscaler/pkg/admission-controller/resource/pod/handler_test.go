@@ -54,6 +54,10 @@ type fakePatchCalculator struct {
 	err     error
 }
 
+func (*fakePatchCalculator) PatchResourceTarget() patch.PatchResourceTarget {
+	return patch.Spec
+}
+
 func (c *fakePatchCalculator) CalculatePatches(_ *apiv1.Pod, _ *vpa_types.VerticalPodAutoscaler) (
 	[]resource_admission.PatchRecord, error) {
 	return c.patches, c.err

@@ -73,6 +73,10 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *v
 	return result, nil
 }
 
+func (*resourcesUpdatesPatchCalculator) PatchResourceTarget() PatchResourceTarget {
+	return Spec
+}
+
 func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
 	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
