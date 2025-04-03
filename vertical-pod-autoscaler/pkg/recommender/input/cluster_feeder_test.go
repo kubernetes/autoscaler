@@ -600,11 +600,12 @@ type fakeMetricsClient struct {
 	snapshots []*metrics.ContainerMetricsSnapshot
 }
 
-func (m fakeMetricsClient) GetContainersMetrics() ([]*metrics.ContainerMetricsSnapshot, error) {
+func (m fakeMetricsClient) GetContainersMetrics(_ context.Context) ([]*metrics.ContainerMetricsSnapshot, error) {
 	return m.snapshots, nil
 }
 
 func TestClusterStateFeeder_LoadRealTimeMetrics(t *testing.T) {
+	_, tctx := ktesting.NewTestContext(t)
 	namespaceName := "test-namespace"
 	podID := model.PodID{Namespace: namespaceName, PodName: "Pod"}
 	regularContainer1 := model.ContainerID{PodID: podID, ContainerName: "Container1"}
@@ -639,7 +640,7 @@ func TestClusterStateFeeder_LoadRealTimeMetrics(t *testing.T) {
 		metricsClient:  fakeMetricsClient{snapshots: containerMetricsSnapshots},
 	}
 
-	feeder.LoadRealTimeMetrics()
+	feeder.LoadRealTimeMetrics(tctx)
 
 	assert.Equal(t, 2, len(clusterState.addedSamples))
 
