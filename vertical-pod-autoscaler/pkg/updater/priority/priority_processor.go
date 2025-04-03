@@ -84,6 +84,7 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 			}
 		}
 	}
+
 	resourceDiff := 0.0
 	for resource, totalRecommended := range totalRecommendedPerResource {
 		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
