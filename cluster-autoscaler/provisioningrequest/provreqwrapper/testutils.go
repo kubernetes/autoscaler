@@ -23,7 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 // TestProvReqOptions is a helper struct to make constructing test ProvisioningRequest object easier.
@@ -144,4 +144,30 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 				},
 			},
 		})
+}
+
+// BuildTestPods builds a list of pod objects for use as existing unschedulable pods in tests.
+func BuildTestPods(namespace, name string, podCount int) []*apiv1.Pod {
+	pods := make([]*apiv1.Pod, 0, podCount)
+	for i := 0; i < podCount; i++ {
+		pods = append(pods, &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%d", name, i),
+				Namespace: namespace,
+			},
+		})
+	}
+	return pods
+}
+
+// CopyWithParameters makes a deep copy of embedded ProvReq and sets its CopyWithParameters
+func (pr *ProvisioningRequest) CopyWithParameters(params map[string]v1.Parameter) *ProvisioningRequest {
+	prCopy := pr.DeepCopy()
+	if prCopy.Spec.Parameters == nil {
+		prCopy.Spec.Parameters = make(map[string]v1.Parameter, len(params))
+	}
+	for key, val := range params {
+		prCopy.Spec.Parameters[key] = val
+	}
+	return &ProvisioningRequest{prCopy, pr.PodTemplates}
 }

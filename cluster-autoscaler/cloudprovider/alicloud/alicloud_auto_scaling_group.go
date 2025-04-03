@@ -22,8 +22,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Asg implements NodeGroup interface.
@@ -150,6 +150,11 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 	return asg.manager.DeleteInstances(nodeIds)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (asg *Asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns asg id.
 func (asg *Asg) Id() string {
 	return asg.id
@@ -179,7 +184,7 @@ func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (asg *Asg) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (asg *Asg) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	template, err := asg.manager.getAsgTemplate(asg.id)
 	if err != nil {
 		return nil, err
@@ -191,8 +196,7 @@ func (asg *Asg) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.id))
-	nodeInfo.SetNode(node)
+	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(asg.id)})
 	return nodeInfo, nil
 }
 

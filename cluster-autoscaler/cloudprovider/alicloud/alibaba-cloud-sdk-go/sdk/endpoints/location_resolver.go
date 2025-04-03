@@ -18,9 +18,11 @@ package endpoints
 
 import (
 	"encoding/json"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"sync"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -75,13 +77,25 @@ func (resolver *LocationResolver) TryResolve(param *ResolveParam) (endpoint stri
 	}
 
 	response, err := param.CommonApi(getEndpointRequest)
+	if err != nil {
+		klog.Errorf("failed to resolve endpoint, error: %v", err)
+		support = false
+		return
+	}
+
 	var getEndpointResponse GetEndpointResponse
 	if !response.IsSuccess() {
 		support = false
 		return
 	}
 
-	json.Unmarshal([]byte(response.GetHttpContentString()), &getEndpointResponse)
+	err = json.Unmarshal([]byte(response.GetHttpContentString()), &getEndpointResponse)
+	if err != nil {
+		klog.Errorf("failed to unmarshal endpoint response, error: %v", err)
+		support = false
+		return
+	}
+
 	if !getEndpointResponse.Success || getEndpointResponse.Endpoints == nil {
 		support = false
 		return

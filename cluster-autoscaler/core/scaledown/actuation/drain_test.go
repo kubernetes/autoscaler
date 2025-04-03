@@ -26,6 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -37,12 +38,13 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
-	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -57,7 +59,6 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 		evictByDefault        bool
 		extraAnnotationValue  map[string]string
 		expectNotEvicted      map[string]struct{}
-		fullDsEviction        bool
 		podPriorities         []int32
 	}{
 		{
@@ -84,57 +85,6 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			extraAnnotationValue: map[string]string{"d1": "false"},
 			expectNotEvicted:     map[string]struct{}{"d1": {}},
 		},
-		{
-			name:              "Failed to create DaemonSet eviction",
-			dsPods:            []string{"d1", "d2"},
-			dsEvictionTimeout: 5000 * time.Millisecond,
-			evictionSuccess:   false,
-			err:               fmt.Errorf("Failed to drain node /n1, due to following errors"),
-			evictByDefault:    true,
-			fullDsEviction:    true,
-			podPriorities:     []int32{0, 1000},
-		},
-		{
-			name:                  "Eviction timeout exceed",
-			dsPods:                []string{"d1", "d2", "d3"},
-			evictionTimeoutExceed: true,
-			dsEvictionTimeout:     100 * time.Millisecond,
-			evictionSuccess:       false,
-			err:                   fmt.Errorf("Failed to drain node /n1, due to following errors"),
-			evictByDefault:        true,
-			fullDsEviction:        true,
-			podPriorities:         []int32{0, 1000, 2000},
-		},
-		{
-			name:              "Successful attempt to evict DaemonSet pods",
-			dsPods:            []string{"d1", "d2"},
-			dsEvictionTimeout: 5000 * time.Millisecond,
-			evictionSuccess:   true,
-			evictByDefault:    true,
-			fullDsEviction:    true,
-			podPriorities:     []int32{0, 1000},
-		},
-		{
-			name:                 "Evict single pod due to annotation",
-			dsPods:               []string{"d1", "d2"},
-			dsEvictionTimeout:    5000 * time.Millisecond,
-			evictionSuccess:      true,
-			extraAnnotationValue: map[string]string{"d1": "true"},
-			expectNotEvicted:     map[string]struct{}{"d2": {}},
-			fullDsEviction:       true,
-			podPriorities:        []int32{0, 1000},
-		},
-		{
-			name:                 "Don't evict single pod due to annotation",
-			dsPods:               []string{"d1", "d2"},
-			dsEvictionTimeout:    5000 * time.Millisecond,
-			evictionSuccess:      true,
-			evictByDefault:       true,
-			extraAnnotationValue: map[string]string{"d1": "false"},
-			expectNotEvicted:     map[string]struct{}{"d1": {}},
-			fullDsEviction:       true,
-			podPriorities:        []int32{0, 1000},
-		},
 	}
 
 	for _, scenario := range testScenarios {
@@ -160,9 +110,6 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			for i, dsName := range scenario.dsPods {
 				ds := BuildTestPod(dsName, 100, 0, WithDSController())
 				ds.Spec.NodeName = "n1"
-				if scenario.fullDsEviction {
-					ds.Spec.Priority = &scenario.podPriorities[i]
-				}
 				if v, ok := scenario.extraAnnotationValue[dsName]; ok {
 					ds.Annotations[daemonset.EnableDsEvictionKey] = v
 				}
@@ -198,21 +145,11 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{n1}, dsPods)
 
 			drainConfig := SingleRuleDrainConfig(context.MaxGracefulTerminationSec)
-			if scenario.fullDsEviction {
-				drainConfig = []kubelet_config.ShutdownGracePeriodByPodPriority{}
-				for _, priority := range scenario.podPriorities {
-					drainConfig = append(drainConfig, kubelet_config.ShutdownGracePeriodByPodPriority{
-						Priority:                   priority,
-						ShutdownGracePeriodSeconds: int64(context.MaxGracefulTerminationSec),
-					})
-				}
-			}
 			evictor := Evictor{
 				EvictionRetryTime:                waitBetweenRetries,
 				shutdownGracePeriodByPodPriority: drainConfig,
-				fullDsEviction:                   scenario.fullDsEviction,
 			}
-			nodeInfo, err := context.ClusterSnapshot.NodeInfos().Get(n1.Name)
+			nodeInfo, err := context.ClusterSnapshot.GetNodeInfo(n1.Name)
 			assert.NoError(t, err)
 			_, err = evictor.EvictDaemonSetPods(&context, nodeInfo)
 			if scenario.err != nil {
@@ -232,11 +169,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			for i := 0; i < len(expectEvicted); i++ {
 				deleted[i] = utils.GetStringFromChan(deletedPods)
 			}
-			if scenario.fullDsEviction {
-				assert.Equal(t, expectEvicted, deleted)
-			} else {
-				assert.ElementsMatch(t, deleted, expectEvicted)
-			}
+			assert.ElementsMatch(t, deleted, expectEvicted)
 		})
 	}
 }
@@ -283,7 +216,7 @@ func TestDrainNodeWithPods(t *testing.T) {
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1})
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	_, err = evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
@@ -347,7 +280,7 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2})
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	_, err = evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
@@ -416,7 +349,7 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, d1})
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	_, err = evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
@@ -479,7 +412,7 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1, d2})
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
@@ -540,7 +473,7 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
 	assert.Error(t, err)
@@ -606,7 +539,7 @@ func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
 	}
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
 	assert.Error(t, err)
@@ -680,9 +613,9 @@ func TestPodsToEvict(t *testing.T) {
 		},
 	} {
 		t.Run(tn, func(t *testing.T) {
-			snapshot := clustersnapshot.NewBasicClusterSnapshot()
+			snapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			node := BuildTestNode("test-node", 1000, 1000)
-			err := snapshot.AddNodeWithPods(node, tc.pods)
+			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods...))
 			if err != nil {
 				t.Errorf("AddNodeWithPods unexpected error: %v", err)
 			}
@@ -696,9 +629,9 @@ func TestPodsToEvict(t *testing.T) {
 			if tc.nodeNameOverwrite != "" {
 				nodeName = tc.nodeNameOverwrite
 			}
-			nodeInfo, err := snapshot.NodeInfos().Get(nodeName)
+			nodeInfo, err := snapshot.GetNodeInfo(nodeName)
 			if err != nil {
-				t.Fatalf("NodeInfos().Get() unexpected error: %v", err)
+				t.Fatalf("GetNodeInfo() unexpected error: %v", err)
 			}
 			gotDsPods, gotNonDsPods := podsToEvict(nodeInfo, ctx.DaemonSetEvictionForOccupiedNodes)
 			if diff := cmp.Diff(tc.wantDsPods, gotDsPods, cmpopts.EquateEmpty()); diff != "" {

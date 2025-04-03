@@ -48,6 +48,8 @@ GARDEN_NAMESPACE=garden
 gardenctl target --garden sap-landscape-dev
 eval $(gardenctl kubectl-env bash)
 
+mkdir -p $KUBECONFIG_PATH
+
 #setting kubeconfig of control cluster
 
 echo "$(kubectl create -f $PROJECT_ROOT/hack/kubeconfig-request.json --raw /apis/core.gardener.cloud/v1beta1/namespaces/${GARDEN_NAMESPACE}/shoots/${SEED}/adminkubeconfig | jq -r ".status.kubeconfig" | base64 -d)" >  $KUBECONFIG_PATH/kubeconfig_control.yaml

@@ -3,13 +3,12 @@ package integration
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -164,7 +163,7 @@ func (driver *Driver) controllerTests() {
 				Expect(driver.scaleWorkload(scaleUpWorkload, 0)).To(BeNil())
 				skippedRegexp, _ := regexp.Compile(` the node is marked as no scale down`)
 				Eventually(func() bool {
-					data, _ := ioutil.ReadFile(CALogFile)
+					data, _ := os.ReadFile(CALogFile)
 					return skippedRegexp.Match(data)
 				}, pollingTimeout, pollingInterval).Should(BeTrue())
 			})
@@ -326,9 +325,9 @@ func (driver *Driver) controllerTests() {
 				By("Deploying the workload")
 				Expect(driver.deployLargeWorkload(1, scaleUpWorkload, workerWithThreeZones, false)).To(BeNil())
 				By("checking that scale up didn't trigger because of no machine satisfying the requirement")
-				skippedRegexp, _ := regexp.Compile("Pod default/large-scale-up-pod-.* can't be scheduled on .*, predicate checking error: Insufficient cpu; predicateName=NodeResourcesFit; reasons: Insufficient cpu;")
+				skippedRegexp, _ := regexp.Compile("Pod default/large-scale-up-pod-.* can't be scheduled on .*, predicate checking error: .*predicate \"NodeResourcesFit\" didn't pass .*Insufficient cpu")
 				Eventually(func() bool {
-					data, _ := ioutil.ReadFile(CALogFile)
+					data, _ := os.ReadFile(CALogFile)
 					return skippedRegexp.Match(data)
 				}, pollingTimeout, pollingInterval).Should(BeTrue())
 				flag = true
@@ -342,18 +341,18 @@ func (driver *Driver) controllerTests() {
 				By("Scaling down the MCM")
 				deployment, err := driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Get(context.Background(), "machine-controller-manager", metav1.GetOptions{})
 				Expect(err).Should(BeNil())
-				deployment.Spec.Replicas = pointer.Int32(0)
+				deployment.Spec.Replicas = ptr.To(int32(0))
 				deployment.ObjectMeta.Annotations[dwdAnnotation] = "true"
 				_, err = driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
 				Expect(err).Should(BeNil())
 				skippedRegexp, _ := regexp.Compile("machine-controller-manager is offline. Cluster autoscaler operations would be suspended.")
 				Eventually(func() bool {
-					data, _ := ioutil.ReadFile(CALogFile)
+					data, _ := os.ReadFile(CALogFile)
 					return skippedRegexp.Match(data)
 				}, pollingTimeout, pollingInterval).Should(BeTrue())
 				deployment, err = driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Get(context.Background(), "machine-controller-manager", metav1.GetOptions{})
 				Expect(err).Should(BeNil())
-				deployment.Spec.Replicas = pointer.Int32(1)
+				deployment.Spec.Replicas = ptr.To(int32(1))
 				delete(deployment.ObjectMeta.Annotations, dwdAnnotation)
 				_, err = driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
 				Expect(err).Should(BeNil())

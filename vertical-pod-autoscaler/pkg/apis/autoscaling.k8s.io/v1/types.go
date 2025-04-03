@@ -46,6 +46,7 @@ type VerticalPodAutoscalerList struct {
 // +kubebuilder:printcolumn:name="Mem",type="string",JSONPath=".status.recommendation.containerRecommendations[0].target.memory"
 // +kubebuilder:printcolumn:name="Provided",type="string",JSONPath=".status.conditions[?(@.type=='RecommendationProvided')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
 // autoscaler, which automatically manages pod resources based on historical and
@@ -207,6 +208,7 @@ type ContainerResourcePolicy struct {
 	// Specifies the type of recommendations that will be computed
 	// (and possibly applied) by VPA.
 	// If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
+	// +patchStrategy=merge
 	ControlledResources *[]v1.ResourceName `json:"controlledResources,omitempty" patchStrategy:"merge" protobuf:"bytes,5,rep,name=controlledResources"`
 
 	// Specifies which resource values should be controlled.
@@ -346,6 +348,7 @@ type VerticalPodAutoscalerCondition struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=vpacheckpoint
+// +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
 
 // VerticalPodAutoscalerCheckpoint is the checkpoint of the internal state of VPA that
 // is used for recovery after recommender's restart.

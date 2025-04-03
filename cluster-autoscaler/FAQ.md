@@ -282,6 +282,7 @@ __However, if the substantial number of nodes are tainted with `startup taints` 
 might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).__
 
 Startup taints are defined as:
+
 * all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--startup-taint` flag.
 
@@ -294,6 +295,7 @@ Cluster Autoscaler internally treats nodes tainted with `status taints` as ready
 This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur.
 
 Status taints are defined as:
+
 * all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--status-taint` flag.
 
@@ -302,38 +304,9 @@ Status taints are defined as:
 Ignore taints are now deprecated and treated as startup taints.
 
 Ignore taints are defined as:
+
 * all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--ignore-taint` flag.
-
-### Startup taints
-Startup taints are meant to be used when there is an operation that has to complete before any pods can run on the node, e.g. drivers installation.
-
-Cluster Autoscaler treats nodes tainted with `startup taints` as unready, but taken into account during scale up logic, assuming they will become ready shortly.
-
-**However, if the substantial number of nodes are tainted with `startup taints` (and therefore unready) for an extended period of time the Cluster Autoscaler
-might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).**
-
-Startup taints are defined as:
-- all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
-- all taints defined using `--startup-taint` flag.
-
-### Status taints
-Status taints are meant to be used when a given node should not be used to run pods for the time being.
-
-Cluster Autoscaler internally treats nodes tainted with `status taints` as ready, but filtered out during scale up logic.
-
-This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur. 
-
-Status taints are defined as:
-- all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
-- all taints defined using `--status-taint` flag.
-
-### Ignore taints
-Ignore taints are now deprecated and treated as startup taints.
-
-Ignore taints are defined as:
-- all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
-- all taints defined using `--ignore-taint` flag.
 ****************
 
 # How to?
@@ -589,6 +562,7 @@ This annotation has no effect on pods that are not a part of any DaemonSet.
 Kubernetes scheduler will fail to schedule a Pod to a Node if the Node's max volume count is exceeded. In such case to enable Cluster Autoscaler to scale up in a Kubernetes cluster with [CSI migration](https://github.com/kubernetes/enhancements/blob/master/keps/sig-storage/625-csi-migration/README.md) enabled, the appropriate CSI related feature gates have to be specified for the Cluster Autoscaler (if the corresponding feature gates are not enabled by default).
 
 For example:
+
 ```
 --feature-gates=CSIMigration=true,CSIMigration{Provdider}=true,InTreePlugin{Provider}Unregister=true
 ```
@@ -597,19 +571,21 @@ For a complete list of the feature gates and their default values per Kubernetes
 
 ### How can I use ProvisioningRequest to run batch workloads
 
-Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that aims to allow users to ask CA for capacity for groups of pods. For a detailed explanation of the ProvisioningRequest API, please refer to the
+Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that aims to allow users to ask CA for capacity for groups of pods.
+For a detailed explanation of the ProvisioningRequest API, please refer to the
 [original proposal](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/provisioning-request.md).
 
 #### Enabling ProvisioningRequest Support
 
-1. **Cluster Autoscaler Version**: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
+1. __Cluster Autoscaler Version__: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
 
-2. **Feature Flag**: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
+2. __Feature Flag__: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
 `--enable-provisioning-requests=true`.
 
-3. **Content Type**: This feature requires that the [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) is set to application/json: `--kube-api-content-type application/json`.
+3. __Content Type__: Set [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) to application/json in your Cluster Autoscaler configuration: `--kube-api-content-type application/json`.
 
-4. **RBAC permissions**: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
+4. __RBAC permissions__: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
+
 ```
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -640,21 +616,137 @@ subjects:
   namespace: kube-system
 ```
 
+5. Deploy the [ProvisioningRequest CRD](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/apis/config/crd/autoscaling.x-k8s.io_provisioningrequests.yaml)
+
 #### Supported ProvisioningClasses
 
 Currently, ClusterAutoscaler supports following ProvisioningClasses:
 
-* `check-capacity.autoscaling.x-k8s.io`. 
+* `check-capacity.autoscaling.x-k8s.io`.
 When using this class, Cluster Autoscaler performs following actions:
 
-  * **Capacity Check**: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
+  * __Capacity Check__: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
 
-  * **Reservation from other ProvReqs** (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes, preventing other ProvReqs from using it.
+  * __Reservation from other ProvReqs__ (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes,
+  preventing other ProvReqs from using it.
 
-  * **Condition Updates**:
+  * __Condition Updates__:
   Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler and ClusterAutoscaler will check capacity for this ProvReq.
   Adds a Provisioned=True condition to the ProvReq if capacity is available.
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+* `best-effort-atomic-scale-up.autoscaling.x-k8s.io` (supported from Cluster Autoscaler version 1.30.2 or later).
+When using this class, Cluster Autoscaler performs following actions:
+
+  * __Capacity Check__: Check which pods could be scheduled on existing capacity.
+
+  * __ScaleUp Request__: Evaluates if scaling up a node group could fulfill all remaining
+  requirements of the ProvisioningRequest. The scale-up request will use the  AtomicIncreaseSize method
+  if a given cloud provider supports it. Note that the ScaleUp result depends on the cloud provider's
+  implementation of the AtomicIncreaseSize method. If the method is not implemented, the scale-up
+  request will try to increase the node group atomically but doesn't guarantee atomicity.
+
+  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes,
+  preventing other ProvReqs from using it.
+
+  * __Condition Updates__:
+    * Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler.
+    * Adds a Provisioned=True condition to the ProvReq if the node group scale up request is successful.
+    * Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+  Note: make sure you setup --max-nodes-per-scaleup flag correctly. By default --max-nodes-per-scaleup=1000, so any scale up that
+  require more than 1000 nodes will be rejected.
+
+#### Example Usage
+
+Deploy the first 2 resources, observe the request being Approved and Provisioned,
+then deploy the Deployment and observe the Deployment using up the Request.
+
+```yaml
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: template
+template:
+  spec:
+    containers:
+    - image: ubuntu
+      name: default
+      resources:
+        requests:
+          cpu: "1"
+          memory: 600Mi
+
+---
+apiVersion: autoscaling.x-k8s.io/v1
+kind: ProvisioningRequest
+metadata:
+  name: provider
+spec:
+  provisioningClassName: "best-effort-atomic-scale-up.autoscaling.x-k8s.io"
+  podSets:
+  - podTemplateRef:
+      name: cluster-autoscaler
+    count: 10
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  annotations:
+    autoscaling.x-k8s.io/consume-provisioning-request: provider
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: default
+        image: ubuntu
+        resources:
+          requests:
+            cpu: "1"
+            memory: 600Mi
+        args: ["sleep"]
+```
+
+### How can I tune Cluster Autoscaler's performance for processing ProvisioningRequests?
+
+Cluster Autoscaler can be run in batch processing mode for CheckCapacity
+ProvisioningRequests. In this mode, Cluster Autoscaler processes multiple
+CheckCapacity ProvisioningRequests in a single iteration. This mode is useful for
+scenarios where a large number of CheckCapacity ProvisioningRequests
+need to be processed.
+
+However, enabling batch processing for CheckCapacity ProvisioningRequests can adversely
+affect the performance of processing other types of ProvisioningRequests and incoming pods
+since iterations where CheckCapacity ProvisioningRequests are processed will take longer
+and scale-ups for other types of ProvisioningRequests and incoming pods will not be processed
+during that time.
+
+#### Enabling Batch Processing
+
+1. **Cluster Autoscaler Version**: Ensure you are using Cluster Autoscaler version 1.32.0 or later.
+
+2. **Feature Flag**: Batch processing is disabled by default, it can be enabled by
+setting the following flag in your Cluster Autoscaler configuration:
+`--check-capacity-batch-processing=true`.
+
+3. **Batch Size**: Set the maximum number of CheckCapacity ProvisioningRequests
+to process in a single iteration by setting the following flag in your Cluster
+Autoscaler configuration:
+`--max-batch-size=<batch-size>`. The default value is 10.
+
+4. **Batch Timebox**: Set the maximum time in seconds that Cluster Autoscaler will
+spend processing CheckCapacity ProvisioningRequests in a single iteration by
+setting the following flag in your Cluster Autoscaler configuration:
+`--batch-timebox=<timebox>`. The default value is 10s.
 
 ****************
 
@@ -889,7 +981,8 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3 minutes
 | `scale-down-unneeded-time` | How long a node should be unneeded before it is eligible for scale down | 10 minutes
 | `scale-down-unready-time` | How long an unready node should be unneeded before it is eligible for scale down | 20 minutes
-| `scale-down-utilization-threshold` | The maximum value between the sum of cpu requests and sum of memory requests of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down. This value is a floating point number that can range between zero and one. | 0.5
+| `scale-down-utilization-threshold`       | The ratio of requested/allocatable resources below which a node can be scale down. Ratio is calculated from the maximum of sum of cpu requests and sum of memory requests of all pods running on the node, divided by node's corresponding allocatable resource. For GPU see scale-down-gpu-utilization-threshold (nodes labeled via GPULabel, see cloudprovider/*/README.md). This value is a floating point number that can range between zero and one. | 0.5
+| `scale-down-gpu-utilization-threshold`   | Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down. Utilization calculation only cares about gpu resource for accelerator node, cpu and memory utilization will be ignored. | 0.5
 | `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers." | 30
 | `scale-down-candidates-pool-ratio` | A ratio of nodes that are considered as additional non empty candidates for<br>scale down when some candidates from previous iteration are no longer valid<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.  | 0.1
 | `scale-down-candidates-pool-min-count` | Minimum number of nodes that are considered as additional non empty candidates<br>for scale down when some candidates from previous iteration are no longer valid.<br>When calculating the pool size for additional candidates we take<br>`max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count)` | 50
@@ -1348,20 +1441,20 @@ Assumption: We assume that the developer executing the below stages wants to syn
 1. Merge against the `releaseBranch` (which you had hard-reset to the `releaseCommitId` earlier): `git merge upstream-release-1.x.0`
    - This is where changes of master get merged in. advantage of merging is it won’t change the commit hashes of already existing commits.
    - Accept all vpa changes.
-   - Accept our changes in `go.mod` and `go.sum` and `vendor` directory.  (The `hack/update-vendor.sh` script which will be executed in later step expected to fix things)
-   - Accept the version in `cluster-autoscler/version/version.go` . This is the version of kubernetes autoscaler with which syncing is being done. 
+   - Accept our changes in `go.mod` and `go.sum`.  (The `hack/update-deps.sh` script which will be executed in later step expected to fix things)
+   - Accept the version in `cluster-autoscaler/version/version.go` . This is the version of kubernetes autoscaler with which syncing is being done. 
 1. In `cluster-autoscaler/go.mod`, upgrade versions of `machine-controller-manager-provider-aws`,  `machine-controller-manager-provider-azure` to the latest available release.
-1. Run update vendor script after changing to `cluster-autoscaler` directory:  `./hack/update-vendor.sh 1.x.0` 
-   - If the above still gives test issues then use `rsync` or `diff -rq` to figure out differences in `vendor` directory between upstream and our fork and synchronize them manually.
+1. Run update dependencies script after changing to `cluster-autoscaler` directory:  `./hack/update-deps.sh 1.x.0 1.x.0` (first version corresponds to k8s version for `cluster-autoscaler/go.mod` and the second one is the k8s version for `cluster-autoscaler/apis/go.mod`)
+   - There might be a need to run `go mod tidy` after a successful run of the above script.
 1. Create a new file `cluster-autoscaler/SYNC-CHANGES/SYNC_CHANGES-1.x.md` summarily describing the changes done. Follow existing convention for sync changes. Use upstream release notes as a guide when needed.
 
 #### Stage D: Verification
-1. Run Core Autoscaler Unit tests: `cd cluster-autoscaler; go test $(go list ./... | grep -v cloudprovider | grep -v vendor | grep -v integration)` 
-1. Run MCM cloud provider implementation tests: `go test $(go list ./cloudprovider/mcm/... | grep -v vendor)`
+1. Run Core Autoscaler Unit tests: `cd cluster-autoscaler; go test $(go list ./... | grep -v cloudprovider | grep -v integration)` 
+1. Run MCM cloud provider implementation tests: `go test $(go list ./cloudprovider/mcm/...)`
 1. Verify that binary can be created using: `../.ci/build`
+1. Update the image in `../.ci/pipeline_definitions` and `../.github/workflows/ci.yaml` if required.
 1. Execute Integration Tests Locally:
-   1. Follow instructions at: [IT Usage Guide](https://github.com/gardener/autoscaler/blob/machine-controller-manager-provider/cluster-autoscaler/integration/usage.md##prerequisite)
-   1. Before running `make download-kubeconfigs`, create a folder `mkdir -p dev/kubeconfigs`
+   1. Follow instructions at: [IT Usage Guide](./integration/usage.md)
    1. This target will print out a list of shell variable `EXPORT` statements. Copy-paste the printed shell commands and execute them
    1. Now run `make test-integration`
 

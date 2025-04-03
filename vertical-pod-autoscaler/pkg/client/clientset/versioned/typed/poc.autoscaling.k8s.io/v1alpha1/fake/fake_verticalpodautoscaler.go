@@ -19,123 +19,34 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
 	v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
-	testing "k8s.io/client-go/testing"
+	pocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakeVerticalPodAutoscalers implements VerticalPodAutoscalerInterface
-type FakeVerticalPodAutoscalers struct {
+// fakeVerticalPodAutoscalers implements VerticalPodAutoscalerInterface
+type fakeVerticalPodAutoscalers struct {
+	*gentype.FakeClientWithList[*v1alpha1.VerticalPodAutoscaler, *v1alpha1.VerticalPodAutoscalerList]
 	Fake *FakePocV1alpha1
-	ns   string
 }
 
-var verticalpodautoscalersResource = v1alpha1.SchemeGroupVersion.WithResource("verticalpodautoscalers")
-
-var verticalpodautoscalersKind = v1alpha1.SchemeGroupVersion.WithKind("VerticalPodAutoscaler")
-
-// Get takes name of the verticalPodAutoscaler, and returns the corresponding verticalPodAutoscaler object, and an error if there is any.
-func (c *FakeVerticalPodAutoscalers) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.VerticalPodAutoscaler, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(verticalpodautoscalersResource, c.ns, name), &v1alpha1.VerticalPodAutoscaler{})
-
-	if obj == nil {
-		return nil, err
+func newFakeVerticalPodAutoscalers(fake *FakePocV1alpha1, namespace string) pocautoscalingk8siov1alpha1.VerticalPodAutoscalerInterface {
+	return &fakeVerticalPodAutoscalers{
+		gentype.NewFakeClientWithList[*v1alpha1.VerticalPodAutoscaler, *v1alpha1.VerticalPodAutoscalerList](
+			fake.Fake,
+			namespace,
+			v1alpha1.SchemeGroupVersion.WithResource("verticalpodautoscalers"),
+			v1alpha1.SchemeGroupVersion.WithKind("VerticalPodAutoscaler"),
+			func() *v1alpha1.VerticalPodAutoscaler { return &v1alpha1.VerticalPodAutoscaler{} },
+			func() *v1alpha1.VerticalPodAutoscalerList { return &v1alpha1.VerticalPodAutoscalerList{} },
+			func(dst, src *v1alpha1.VerticalPodAutoscalerList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha1.VerticalPodAutoscalerList) []*v1alpha1.VerticalPodAutoscaler {
+				return gentype.ToPointerSlice(list.Items)
+			},
+			func(list *v1alpha1.VerticalPodAutoscalerList, items []*v1alpha1.VerticalPodAutoscaler) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1alpha1.VerticalPodAutoscaler), err
-}
-
-// List takes label and field selectors, and returns the list of VerticalPodAutoscalers that match those selectors.
-func (c *FakeVerticalPodAutoscalers) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.VerticalPodAutoscalerList, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewListAction(verticalpodautoscalersResource, verticalpodautoscalersKind, c.ns, opts), &v1alpha1.VerticalPodAutoscalerList{})
-
-	if obj == nil {
-		return nil, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha1.VerticalPodAutoscalerList{ListMeta: obj.(*v1alpha1.VerticalPodAutoscalerList).ListMeta}
-	for _, item := range obj.(*v1alpha1.VerticalPodAutoscalerList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested verticalPodAutoscalers.
-func (c *FakeVerticalPodAutoscalers) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(verticalpodautoscalersResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a verticalPodAutoscaler and creates it.  Returns the server's representation of the verticalPodAutoscaler, and an error, if there is any.
-func (c *FakeVerticalPodAutoscalers) Create(ctx context.Context, verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler, opts v1.CreateOptions) (result *v1alpha1.VerticalPodAutoscaler, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(verticalpodautoscalersResource, c.ns, verticalPodAutoscaler), &v1alpha1.VerticalPodAutoscaler{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.VerticalPodAutoscaler), err
-}
-
-// Update takes the representation of a verticalPodAutoscaler and updates it. Returns the server's representation of the verticalPodAutoscaler, and an error, if there is any.
-func (c *FakeVerticalPodAutoscalers) Update(ctx context.Context, verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (result *v1alpha1.VerticalPodAutoscaler, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(verticalpodautoscalersResource, c.ns, verticalPodAutoscaler), &v1alpha1.VerticalPodAutoscaler{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.VerticalPodAutoscaler), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeVerticalPodAutoscalers) UpdateStatus(ctx context.Context, verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (*v1alpha1.VerticalPodAutoscaler, error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(verticalpodautoscalersResource, "status", c.ns, verticalPodAutoscaler), &v1alpha1.VerticalPodAutoscaler{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.VerticalPodAutoscaler), err
-}
-
-// Delete takes name of the verticalPodAutoscaler and deletes it. Returns an error if one occurs.
-func (c *FakeVerticalPodAutoscalers) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(verticalpodautoscalersResource, c.ns, name, opts), &v1alpha1.VerticalPodAutoscaler{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeVerticalPodAutoscalers) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(verticalpodautoscalersResource, c.ns, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha1.VerticalPodAutoscalerList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched verticalPodAutoscaler.
-func (c *FakeVerticalPodAutoscalers) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.VerticalPodAutoscaler, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(verticalpodautoscalersResource, c.ns, name, pt, data, subresources...), &v1alpha1.VerticalPodAutoscaler{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.VerticalPodAutoscaler), err
 }

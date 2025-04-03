@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -31,16 +31,22 @@ type Topology interface {
 	// Lists relationships between entities in the virtual network topology.
 	GetRelationships() []TopologyEntityRelationship
 
+	// Lists entities that are limited during ingestion.
+	// The values for the items in the list are the entity type names of the limitedEntities.
+	// Example: `vcn`
+	GetLimitedEntities() []string
+
 	// Records when the virtual network topology was created, in RFC3339 (https://tools.ietf.org/html/rfc3339) format for date and time.
 	GetTimeCreated() *common.SDKTime
 }
 
 type topology struct {
-	JsonData      []byte
-	Entities      []interface{}   `mandatory:"true" json:"entities"`
-	Relationships json.RawMessage `mandatory:"true" json:"relationships"`
-	TimeCreated   *common.SDKTime `mandatory:"true" json:"timeCreated"`
-	Type          string          `json:"type"`
+	JsonData        []byte
+	Entities        []interface{}   `mandatory:"true" json:"entities"`
+	Relationships   json.RawMessage `mandatory:"true" json:"relationships"`
+	LimitedEntities []string        `mandatory:"true" json:"limitedEntities"`
+	TimeCreated     *common.SDKTime `mandatory:"true" json:"timeCreated"`
+	Type            string          `json:"type"`
 }
 
 // UnmarshalJSON unmarshals json
@@ -56,6 +62,7 @@ func (m *topology) UnmarshalJSON(data []byte) error {
 	}
 	m.Entities = s.Model.Entities
 	m.Relationships = s.Model.Relationships
+	m.LimitedEntities = s.Model.LimitedEntities
 	m.TimeCreated = s.Model.TimeCreated
 	m.Type = s.Model.Type
 
@@ -84,6 +91,7 @@ func (m *topology) UnmarshalPolymorphicJSON(data []byte) (interface{}, error) {
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for Topology: %s.", m.Type)
 		return *m, nil
 	}
 }
@@ -96,6 +104,11 @@ func (m topology) GetEntities() []interface{} {
 // GetRelationships returns Relationships
 func (m topology) GetRelationships() json.RawMessage {
 	return m.Relationships
+}
+
+// GetLimitedEntities returns LimitedEntities
+func (m topology) GetLimitedEntities() []string {
+	return m.LimitedEntities
 }
 
 // GetTimeCreated returns TimeCreated

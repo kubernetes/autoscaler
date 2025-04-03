@@ -410,7 +410,9 @@ rules:
   - apiGroups:
       - "coordination.k8s.io"
     resourceNames:
+      # TODO: Clean vpa-recommender up once vpa-recommender-lease is used everywhere. See https://github.com/kubernetes/autoscaler/issues/7461.
       - vpa-recommender
+      - vpa-recommender-lease
     resources:
       - leases
     verbs:

@@ -17,7 +17,9 @@ limitations under the License.
 package api
 
 import (
-	"k8s.io/api/core/v1"
+	"fmt"
+
+	v1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
@@ -31,11 +33,19 @@ type sequentialRecommendationProcessor struct {
 }
 
 // Apply chains calls to underlying RecommendationProcessors in order provided on object construction
-func (p *sequentialRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+func (p *sequentialRecommendationProcessor) Apply(
+	vpa *vpa_types.VerticalPodAutoscaler,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
-	recommendation := podRecommendation
+
+	if vpa == nil {
+		return nil, nil, fmt.Errorf("cannot process nil vpa")
+	}
+	if vpa.Status.Recommendation == nil {
+		return nil, nil, nil
+	}
+
+	recommendation := vpa.Status.Recommendation
+
 	accumulatedContainerToAnnotationsMap := ContainerToAnnotationsMap{}
 
 	for _, processor := range p.processors {
@@ -43,7 +53,8 @@ func (p *sequentialRecommendationProcessor) Apply(podRecommendation *vpa_types.R
 			err                       error
 			containerToAnnotationsMap ContainerToAnnotationsMap
 		)
-		recommendation, containerToAnnotationsMap, err = processor.Apply(recommendation, policy, conditions, pod)
+		recommendation, containerToAnnotationsMap, err = processor.Apply(vpa, pod)
+		vpa.Status.Recommendation = recommendation
 
 		for container, newAnnotations := range containerToAnnotationsMap {
 			annotations, found := accumulatedContainerToAnnotationsMap[container]

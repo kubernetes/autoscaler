@@ -6,13 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/shareddefaults"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/shareddefaults"
 )
 
 var resolvedOsUserHomeDir = shareddefaults.UserHomeDir

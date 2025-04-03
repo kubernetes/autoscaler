@@ -28,6 +28,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/spf13/pflag"
+
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -35,11 +37,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	"k8s.io/kubernetes/pkg/features"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
-
-	"github.com/spf13/pflag"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -66,8 +70,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/previouscandidates"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	provreqorchestrator "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/orchestrator"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -167,7 +171,7 @@ var (
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
 	maxBulkSoftTaintTime       = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
-	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
+	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time. DEPRECATED: Use --max-scale-down-parallelism instead.")
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node. "+
 		"This flag is mutually exclusion with drain-priority-config flag which allows more configuration options.")
 	maxTotalUnreadyPercentage = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
@@ -254,23 +258,30 @@ var (
 	minReplicaCount                         = flag.Int("min-replica-count", 0, "Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
 	nodeDeleteDelayAfterTaint               = flag.Duration("node-delete-delay-after-taint", 5*time.Second, "How long to wait before deleting a node after tainting it")
 	scaleDownSimulationTimeout              = flag.Duration("scale-down-simulation-timeout", 30*time.Second, "How long should we run scale down simulation.")
-	parallelDrain                           = flag.Bool("parallel-drain", true, "Whether to allow parallel drain of nodes. This flag is deprecated and will be removed in future releases.")
 	maxCapacityMemoryDifferenceRatio        = flag.Float64("memory-difference-ratio", config.DefaultMaxCapacityMemoryDifferenceRatio, "Maximum difference in memory capacity between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's memory capacity.")
 	maxFreeDifferenceRatio                  = flag.Float64("max-free-difference-ratio", config.DefaultMaxFreeDifferenceRatio, "Maximum difference in free resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's free resource.")
 	maxAllocatableDifferenceRatio           = flag.Float64("max-allocatable-difference-ratio", config.DefaultMaxAllocatableDifferenceRatio, "Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource.")
 	forceDaemonSets                         = flag.Bool("force-ds", false, "Blocks scale-up of node groups too small for all suitable Daemon Sets pods.")
 	dynamicNodeDeleteDelayAfterTaintEnabled = flag.Bool("dynamic-node-delete-delay-after-taint-enabled", false, "Enables dynamic adjustment of NodeDeleteDelayAfterTaint based of the latency between CA and api-server")
-	bypassedSchedulers                      = pflag.StringSlice("bypassed-scheduler-names", []string{}, fmt.Sprintf("Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up."))
+	bypassedSchedulers                      = pflag.StringSlice("bypassed-scheduler-names", []string{}, "Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up.")
 	drainPriorityConfig                     = flag.String("drain-priority-config", "",
 		"List of ',' separated pairs (priority:terminationGracePeriodSeconds) of integers separated by ':' enables priority evictor. Priority evictor groups pods into priority groups based on pod priority and evict pods in the ascending order of group priorities"+
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
 			"Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature)."+
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
-	provisioningRequestsEnabled = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
-	frequentLoopsEnabled        = flag.Bool("frequent-loops-enabled", false, "Whether clusterautoscaler triggers new iterations more frequently when it's needed")
-	asyncNodeGroupsEnabled      = flag.Bool("async-node-groups", false, "Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk.")
-	proactiveScaleupEnabled     = flag.Bool("enable-proactive-scaleup", false, "Whether to enable/disable proactive scale-ups, defaults to false")
-	podInjectionLimit           = flag.Int("pod-injection-limit", 5000, "Limits total number of pods while injecting fake pods. If unschedulable pods already exceeds the limit, pod injection is disabled but pods are not truncated.")
+	provisioningRequestsEnabled                  = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
+	provisioningRequestInitialBackoffTime        = flag.Duration("provisioning-request-initial-backoff-time", 1*time.Minute, "Initial backoff time for ProvisioningRequest retry after failed ScaleUp.")
+	provisioningRequestMaxBackoffTime            = flag.Duration("provisioning-request-max-backoff-time", 10*time.Minute, "Max backoff time for ProvisioningRequest retry after failed ScaleUp.")
+	provisioningRequestMaxBackoffCacheSize       = flag.Int("provisioning-request-max-backoff-cache-size", 1000, "Max size for ProvisioningRequest cache size used for retry backoff mechanism.")
+	frequentLoopsEnabled                         = flag.Bool("frequent-loops-enabled", false, "Whether clusterautoscaler triggers new iterations more frequently when it's needed")
+	asyncNodeGroupsEnabled                       = flag.Bool("async-node-groups", false, "Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk.")
+	proactiveScaleupEnabled                      = flag.Bool("enable-proactive-scaleup", false, "Whether to enable/disable proactive scale-ups, defaults to false")
+	podInjectionLimit                            = flag.Int("pod-injection-limit", 5000, "Limits total number of pods while injecting fake pods. If unschedulable pods already exceeds the limit, pod injection is disabled but pods are not truncated.")
+	checkCapacityBatchProcessing                 = flag.Bool("check-capacity-batch-processing", false, "Whether to enable batch processing for check capacity requests.")
+	checkCapacityProvisioningRequestMaxBatchSize = flag.Int("check-capacity-provisioning-request-max-batch-size", 10, "Maximum number of provisioning requests to process in a single batch.")
+	checkCapacityProvisioningRequestBatchTimebox = flag.Duration("check-capacity-provisioning-request-batch-timebox", 10*time.Second, "Maximum time to process a batch of provisioning requests.")
+	forceDeleteLongUnregisteredNodes             = flag.Bool("force-delete-unregistered-nodes", false, "Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to.")
+	enableDynamicResourceAllocation              = flag.Bool("enable-dynamic-resource-allocation", false, "Whether logic for handling DRA (Dynamic Resource Allocation) objects is enabled.")
 )
 
 func isFlagPassed(name string) bool {
@@ -299,9 +310,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
-	}
-	if *maxDrainParallelismFlag > 1 && !*parallelDrain {
-		klog.Fatalf("Invalid configuration, could not use --max-drain-parallelism > 1 if --parallel-drain is false")
 	}
 
 	// in order to avoid inconsistent deletion thresholds for the legacy planner and the new actuator, the max-empty-bulk-delete,
@@ -436,17 +444,24 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MinReplicaCount:                    *minReplicaCount,
 		NodeDeleteDelayAfterTaint:          *nodeDeleteDelayAfterTaint,
 		ScaleDownSimulationTimeout:         *scaleDownSimulationTimeout,
-		ParallelDrain:                      *parallelDrain,
 		SkipNodesWithCustomControllerPods:  *skipNodesWithCustomControllerPods,
 		NodeGroupSetRatios: config.NodeGroupDifferenceRatios{
 			MaxCapacityMemoryDifferenceRatio: *maxCapacityMemoryDifferenceRatio,
 			MaxAllocatableDifferenceRatio:    *maxAllocatableDifferenceRatio,
 			MaxFreeDifferenceRatio:           *maxFreeDifferenceRatio,
 		},
-		DynamicNodeDeleteDelayAfterTaintEnabled: *dynamicNodeDeleteDelayAfterTaintEnabled,
-		BypassedSchedulers:                      scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
-		ProvisioningRequestEnabled:              *provisioningRequestsEnabled,
-		AsyncNodeGroupsEnabled:                  *asyncNodeGroupsEnabled,
+		DynamicNodeDeleteDelayAfterTaintEnabled:      *dynamicNodeDeleteDelayAfterTaintEnabled,
+		BypassedSchedulers:                           scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
+		ProvisioningRequestEnabled:                   *provisioningRequestsEnabled,
+		AsyncNodeGroupsEnabled:                       *asyncNodeGroupsEnabled,
+		ProvisioningRequestInitialBackoffTime:        *provisioningRequestInitialBackoffTime,
+		ProvisioningRequestMaxBackoffTime:            *provisioningRequestMaxBackoffTime,
+		ProvisioningRequestMaxBackoffCacheSize:       *provisioningRequestMaxBackoffCacheSize,
+		CheckCapacityBatchProcessing:                 *checkCapacityBatchProcessing,
+		CheckCapacityProvisioningRequestMaxBatchSize: *checkCapacityProvisioningRequestMaxBatchSize,
+		CheckCapacityProvisioningRequestBatchTimebox: *checkCapacityProvisioningRequestBatchTimebox,
+		ForceDeleteLongUnregisteredNodes:             *forceDeleteLongUnregisteredNodes,
+		DynamicResourceAllocationEnabled:             *enableDynamicResourceAllocation,
 	}
 }
 
@@ -465,7 +480,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, error) {
+func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 
@@ -482,20 +497,27 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	}
 	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
 
-	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(informerFactory, autoscalingOptions.SchedulerConfig)
+	fwHandle, err := framework.NewHandle(informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
+	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore()
+	if autoscalingOptions.DynamicResourceAllocationEnabled {
+		// TODO(DRA): Remove this once DeltaSnapshotStore is integrated with DRA.
+		klog.Warningf("Using BasicSnapshotStore instead of DeltaSnapshotStore because DRA is enabled. Autoscaling performance/scalability might be decreased.")
+		snapshotStore = store.NewBasicSnapshotStore()
+	}
+
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
-		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
+		FrameworkHandle:      fwHandle,
+		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,
-		PredicateChecker:     predicateChecker,
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
 		ScaleUpOrchestrator:  orchestrator.New(),
@@ -503,33 +525,40 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
-	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker, scheduling.ScheduleAnywhere)
+	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere)
 
+	var ProvisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
 	if autoscalingOptions.ProvisioningRequestEnabled {
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
 
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
 		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+
+		ProvisioningRequestInjector, err = provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize, opts.CheckCapacityBatchProcessing)
+		if err != nil {
+			return nil, nil, err
+		}
+		podListProcessor.AddProcessor(ProvisioningRequestInjector)
+
+		var provisioningRequestPodsInjector *provreq.ProvisioningRequestPodsInjector
+		if autoscalingOptions.CheckCapacityBatchProcessing {
+			klog.Infof("Batch processing for check capacity requests is enabled. Passing provisioning request injector to check capacity processor.")
+			provisioningRequestPodsInjector = ProvisioningRequestInjector
+		}
+
 		provreqOrchestrator := provreqorchestrator.New(client, []provreqorchestrator.ProvisioningClass{
-			checkcapacity.New(client),
+			checkcapacity.New(client, provisioningRequestPodsInjector),
 			besteffortatomic.New(client),
 		})
-		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 
+		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client, opts.PredicateChecker)
-		if err != nil {
-			return nil, err
-		}
+		provreqProcesor := provreq.NewProvReqProcessor(client)
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
-		injector, err := provreq.NewProvisioningRequestPodsInjector(restConfig)
-		if err != nil {
-			return nil, err
-		}
-		podListProcessor.AddProcessor(injector)
+
 		podListProcessor.AddProcessor(provreqProcesor)
 	}
 
@@ -541,21 +570,18 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 		podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{podInjectionPodListProcessor, podListProcessor, enforceInjectedPodsLimitProcessor})
 
-		// FakePodsScaleUpStatusProcessor processor needs to be the first processor in ScaleUpStatusProcessor as it filters out fake pods from
-		// Scale Up status so that we don't emit events.
-		opts.Processors.ScaleUpStatusProcessor = podinjection.NewFakePodsScaleUpStatusProcessor(podInjectionBackoffRegistry)
+		// FakePodsScaleUpStatusProcessor processor needs to be the first processor in ScaleUpStatusProcessor before the default processor
+		// As it filters out fake pods from Scale Up status so that we don't emit events.
+		opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{podinjection.NewFakePodsScaleUpStatusProcessor(podInjectionBackoffRegistry), opts.Processors.ScaleUpStatusProcessor})
 	}
 
 	opts.Processors.PodListProcessor = podListProcessor
-	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
-	if autoscalingOptions.ParallelDrain {
-		sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
-		scaleDownCandidatesComparers = []scaledowncandidates.CandidatesComparer{
-			emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions, drainabilityRules),
-			sdCandidatesSorting,
-		}
-		opts.Processors.ScaleDownCandidatesNotifier.Register(sdCandidatesSorting)
+	sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
+	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{
+		emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions, drainabilityRules),
+		sdCandidatesSorting,
 	}
+	opts.Processors.ScaleDownCandidatesNotifier.Register(sdCandidatesSorting)
 
 	cp := scaledowncandidates.NewCombinedScaleDownCandidatesProcessor()
 	cp.Register(scaledowncandidates.NewScaleDownCandidatesSortingProcessor(scaleDownCandidatesComparers))
@@ -594,10 +620,13 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
+	// Initialize metrics.
+	metrics.InitMetrics()
+
 	// Create autoscaler.
 	autoscaler, err := core.NewAutoscaler(opts, informerFactory)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Start informers. This must come after fully constructing the autoscaler because
@@ -605,13 +634,22 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	stop := make(chan struct{})
 	informerFactory.Start(stop)
 
-	return autoscaler, nil
+	podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
+
+	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
+	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
+	// also marks the ProvisioningRequest as accepted or failed.
+	trigger := loop.NewLoopTrigger(autoscaler, ProvisioningRequestInjector, podObserver, *scanInterval)
+
+	return autoscaler, trigger, nil
 }
 
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
 	metrics.RegisterAll(*emitPerNodeGroupMetrics)
+	context, cancel := ctx.WithCancel(ctx.Background())
+	defer cancel()
 
-	autoscaler, err := buildAutoscaler(debuggingSnapshotter)
+	autoscaler, trigger, err := buildAutoscaler(context, debuggingSnapshotter)
 	if err != nil {
 		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
@@ -628,11 +666,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	}
 
 	// Autoscale ad infinitum.
-	context, cancel := ctx.WithCancel(ctx.Background())
-	defer cancel()
 	if *frequentLoopsEnabled {
-		podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(createAutoscalingOptions().KubeClientOpts))
-		trigger := loop.NewLoopTrigger(podObserver, autoscaler, *scanInterval)
 		lastRun := time.Now()
 		for {
 			trigger.Wait(lastRun)
@@ -650,10 +684,6 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 func main() {
 	klog.InitFlags(nil)
 
-	leaderElection := defaultLeaderElectionConfiguration()
-	leaderElection.LeaderElect = true
-	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
-
 	featureGate := utilfeature.DefaultMutableFeatureGate
 	loggingConfig := logsapi.NewLoggingConfiguration()
 
@@ -661,9 +691,22 @@ func main() {
 		klog.Fatalf("Failed to add logging feature flags: %v", err)
 	}
 
+	leaderElection := leaderElectionConfiguration()
+	// Must be called before kube_flag.InitFlags() to ensure leader election flags are parsed and available.
+	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
+
+	// If the DRA flag is passed, we need to set the DRA feature gate as well. The selection of scheduler plugins for the default
+	// scheduling profile depends on feature gates, and the DRA plugin is only included if the DRA feature gate is enabled. The DRA
+	// plugin itself also checks the DRA feature gate and doesn't do anything if it's not enabled.
+	if *enableDynamicResourceAllocation && !featureGate.Enabled(features.DynamicResourceAllocation) {
+		if err := featureGate.SetFromMap(map[string]bool{string(features.DynamicResourceAllocation): true}); err != nil {
+			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
+		}
+	}
 
 	logs.InitLogs()
 	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
@@ -752,9 +795,9 @@ func main() {
 	}
 }
 
-func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+func leaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
 	return componentbaseconfig.LeaderElectionConfiguration{
-		LeaderElect:   false,
+		LeaderElect:   true,
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},

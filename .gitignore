@@ -38,3 +38,9 @@ cluster-autoscaler/hack/tools/bin
 
 # gosec
 gosec-report.sarif
+
+# vertical pod autoscaler test output
+vertical-pod-autoscaler/e2e/v1*/workspace/
+
+# git mergetool created files
+*.orig

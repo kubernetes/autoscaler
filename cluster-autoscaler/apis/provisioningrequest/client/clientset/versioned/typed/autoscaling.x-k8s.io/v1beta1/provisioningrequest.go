@@ -41,7 +41,10 @@ type ProvisioningRequestInterface interface {
 	Create(ctx context.Context, provisioningRequest *v1beta1.ProvisioningRequest, opts v1.CreateOptions) (*v1beta1.ProvisioningRequest, error)
 	Update(ctx context.Context, provisioningRequest *v1beta1.ProvisioningRequest, opts v1.UpdateOptions) (*v1beta1.ProvisioningRequest, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+	UpdateStatus(ctx context.Context, provisioningRequest *v1beta1.ProvisioningRequest, opts v1.UpdateOptions) (*v1beta1.ProvisioningRequest, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1beta1.ProvisioningRequest, error)
 	List(ctx context.Context, opts v1.ListOptions) (*v1beta1.ProvisioningRequestList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.ProvisioningRequest, err error)

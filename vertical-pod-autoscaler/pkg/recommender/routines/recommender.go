@@ -107,17 +107,13 @@ func (r *recommender) UpdateVPAs() {
 		hasMatchingPods := vpa.PodCount > 0
 		vpa.UpdateConditions(hasMatchingPods)
 		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
-			klog.Warningf("%v", err)
+			klog.V(0).InfoS("", "err", err)
 			if klog.V(4).Enabled() {
-				klog.Infof("VPA dump")
-				klog.Infof("%+v", vpa)
-				klog.Infof("HasMatchingPods: %v", hasMatchingPods)
-				klog.Infof("PodCount: %v", vpa.PodCount)
 				pods := r.clusterState.GetMatchingPods(vpa)
-				klog.Infof("MatchingPods: %+v", pods)
 				if len(pods) != vpa.PodCount {
-					klog.Errorf("ClusterState pod count and matching pods disagree for VPA %s", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
+					klog.ErrorS(nil, "ClusterState pod count and matching pods disagree for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "podCount", vpa.PodCount, "matchingPods", pods)
 				}
+				klog.InfoS("VPA dump", "vpa", vpa, "hasMatchingPods", hasMatchingPods, "podCount", vpa.PodCount, "matchingPods", pods)
 			}
 		}
 		cnt.Add(vpa)
@@ -125,8 +121,7 @@ func (r *recommender) UpdateVPAs() {
 		_, err := vpa_utils.UpdateVpaStatusIfNeeded(
 			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
 		if err != nil {
-			klog.Errorf(
-				"Cannot update VPA %s object. Reason: %+v", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), err)
+			klog.ErrorS(err, "Cannot update VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
 		}
 	}
 }
@@ -135,7 +130,7 @@ func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPer
 	now := time.Now()
 	if r.useCheckpoints {
 		if err := r.checkpointWriter.StoreCheckpoints(ctx, now, minCheckpointsPerRun); err != nil {
-			klog.Warningf("Failed to store checkpoints. Reason: %+v", err)
+			klog.V(0).InfoS("Failed to store checkpoints", "err", err)
 		}
 		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now
@@ -149,12 +144,10 @@ func (r *recommender) RunOnce() {
 	defer timer.ObserveTotal()
 
 	ctx := context.Background()
-	ctx, cancelFunc := context.WithDeadline(ctx, time.Now().Add(*checkpointsWriteTimeout))
-	defer cancelFunc()
 
-	klog.V(3).Infof("Recommender Run")
+	klog.V(3).InfoS("Recommender Run")
 
-	r.clusterStateFeeder.LoadVPAs()
+	r.clusterStateFeeder.LoadVPAs(ctx)
 	timer.ObserveStep("LoadVPAs")
 
 	r.clusterStateFeeder.LoadPods()
@@ -162,17 +155,19 @@ func (r *recommender) RunOnce() {
 
 	r.clusterStateFeeder.LoadRealTimeMetrics()
 	timer.ObserveStep("LoadMetrics")
-	klog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
+	klog.V(3).InfoS("ClusterState is tracking", "pods", len(r.clusterState.Pods), "vpas", len(r.clusterState.Vpas))
 
 	r.UpdateVPAs()
 	timer.ObserveStep("UpdateVPAs")
 
-	r.MaintainCheckpoints(ctx, *minCheckpointsPerRun)
+	stepCtx, cancelFunc := context.WithDeadline(ctx, time.Now().Add(*checkpointsWriteTimeout))
+	defer cancelFunc()
+	r.MaintainCheckpoints(stepCtx, *minCheckpointsPerRun)
 	timer.ObserveStep("MaintainCheckpoints")
 
-	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(time.Now(), r.controllerFetcher)
+	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(ctx, time.Now(), r.controllerFetcher)
 	timer.ObserveStep("GarbageCollect")
-	klog.V(3).Infof("ClusterState is tracking %d aggregated container states", r.clusterState.StateMapSize())
+	klog.V(3).InfoS("ClusterState is tracking", "aggregateContainerStates", r.clusterState.StateMapSize())
 }
 
 // RecommenderFactory makes instances of Recommender.
@@ -207,6 +202,6 @@ func (c RecommenderFactory) Make() Recommender {
 		lastAggregateContainerStateGC: time.Now(),
 		lastCheckpointGC:              time.Now(),
 	}
-	klog.V(3).Infof("New Recommender created %+v", recommender)
+	klog.V(3).InfoS("New Recommender created", "recommender", recommender)
 	return recommender
 }

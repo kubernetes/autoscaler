@@ -540,7 +540,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 		nodeInfo, err := ng.TemplateNodeInfo()
 		assert.NoError(t, err)
-		assert.Equal(t, len(nodeInfo.Pods), 1, "should have one template pod")
+		assert.Equal(t, len(nodeInfo.Pods()), 1, "should have one template pod")
 		assert.Equal(t, nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), int64(1000), "should match cpu capacity ")
 		assert.Equal(t, nodeInfo.Node().Status.Capacity.Memory().ToDec().Value(), int64(1073741824), "should match memory capacity")
 		assert.Equal(t, nodeInfo.Node().Status.Capacity.StorageEphemeral().ToDec().Value(), int64(21474836480), "should match epheral storage capacity")

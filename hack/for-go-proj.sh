@@ -70,7 +70,7 @@ done;
 
 if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
-  go test -mod vendor -run=None ./...
+  go test -run=None ./...
   popd
   pushd ${CONTRIB_ROOT}/cluster-autoscaler/
   # FORK-CHANGE: do not run integration tests here

@@ -63,7 +63,7 @@ const (
 	customMetricName                = "QPS"
 	serviceInitializationTimeout    = 2 * time.Minute
 	serviceInitializationInterval   = 15 * time.Second
-	stressImage                     = "gcr.io/google-containers/stress:v1"
+	stressImage                     = "registry.k8s.io/e2e-test-images/agnhost:2.53"
 )
 
 var (
@@ -245,7 +245,7 @@ func (rc *ResourceConsumer) sendConsumeCPURequest(millicores int) {
 	ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
 	defer cancel()
 
-	err := wait.PollImmediate(serviceInitializationInterval, serviceInitializationTimeout, func() (bool, error) {
+	err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
 		proxyRequest, err := e2eservice.GetServicesProxyRequest(rc.clientSet, rc.clientSet.CoreV1().RESTClient().Post())
 		framework.ExpectNoError(err)
 		req := proxyRequest.Namespace(rc.nsName).
@@ -271,7 +271,7 @@ func (rc *ResourceConsumer) sendConsumeMemRequest(megabytes int) {
 	ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
 	defer cancel()
 
-	err := wait.PollImmediate(serviceInitializationInterval, serviceInitializationTimeout, func() (bool, error) {
+	err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
 		proxyRequest, err := e2eservice.GetServicesProxyRequest(rc.clientSet, rc.clientSet.CoreV1().RESTClient().Post())
 		framework.ExpectNoError(err)
 		req := proxyRequest.Namespace(rc.nsName).
@@ -297,7 +297,7 @@ func (rc *ResourceConsumer) sendConsumeCustomMetric(delta int) {
 	ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
 	defer cancel()
 
-	err := wait.PollImmediate(serviceInitializationInterval, serviceInitializationTimeout, func() (bool, error) {
+	err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
 		proxyRequest, err := e2eservice.GetServicesProxyRequest(rc.clientSet, rc.clientSet.CoreV1().RESTClient().Post())
 		framework.ExpectNoError(err)
 		req := proxyRequest.Namespace(rc.nsName).
@@ -439,7 +439,7 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 		Client: c,
 		Image:  stressImage,
 		// request exactly 1025 MiB, in a single chunk (1 MiB above the limit)
-		Command:     []string{"/stress", "--mem-total", "1074790400", "--logtostderr", "--mem-alloc-size", "1074790400"},
+		Command:     []string{"/agnhost", "stress", "--mem-total", "1074790400", "--mem-alloc-size", "1074790400"},
 		Name:        name,
 		Namespace:   ns,
 		Timeout:     timeoutRC,

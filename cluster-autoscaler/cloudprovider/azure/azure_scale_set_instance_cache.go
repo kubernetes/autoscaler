@@ -18,6 +18,7 @@ package azure
 
 import (
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -197,6 +198,7 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 }
 
 // instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus.
+// Suggestion: reunify this with instanceStatusFromProvisioningStateAndPowerState() in azure_scale_set.go
 func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSetVM) *cloudprovider.InstanceStatus {
 	// Prefer the proactive cache view of the instance state if we aren't in a terminal state
 	// This is because the power state may be taking longer to update and we don't want
@@ -211,6 +213,10 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 		}
 		return nil
 	}
+	powerState := vmPowerStateRunning
+	if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
+		powerState = vmPowerStateFromStatuses(*vm.InstanceView.Statuses)
+	}
 
 	status := &cloudprovider.InstanceStatus{}
 	switch *vm.ProvisioningState {
@@ -219,26 +225,26 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 	case string(compute.GalleryProvisioningStateCreating):
 		status.State = cloudprovider.InstanceCreating
 	case string(compute.GalleryProvisioningStateFailed):
-		powerState := vmPowerStateRunning
-		if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
-			powerState = vmPowerStateFromStatuses(*vm.InstanceView.Statuses)
-		}
+		status.State = cloudprovider.InstanceRunning
 
-		// Provisioning can fail both during instance creation or after the instance is running.
-		// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
-		// ProvisioningState represents the most recent provisioning state, therefore only report
-		// InstanceCreating errors when the power state indicates the instance has not yet started running
-		if !isRunningVmPowerState(powerState) {
-			klog.V(4).Infof("VM %s reports failed provisioning state with non-running power state: %s", *vm.ID, powerState)
-			status.State = cloudprovider.InstanceCreating
-			status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
-				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-				ErrorCode:    "provisioning-state-failed",
-				ErrorMessage: "Azure failed to provision a node for this node group",
+		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", to.String(vm.ID), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
+		if scaleSet.enableFastDeleteOnFailedProvisioning {
+			// Provisioning can fail both during instance creation or after the instance is running.
+			// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
+			// ProvisioningState represents the most recent provisioning state, therefore only report
+			// InstanceCreating errors when the power state indicates the instance has not yet started running
+			if !isRunningVmPowerState(powerState) {
+				// This fast deletion relies on the fact that InstanceCreating + ErrorInfo will subsequently trigger a deletion.
+				// Could be revisited to rely on something more stable/explicit.
+				status.State = cloudprovider.InstanceCreating
+				status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    "provisioning-state-failed",
+					ErrorMessage: "Azure failed to provision a node for this node group",
+				}
+			} else {
+				status.State = cloudprovider.InstanceRunning
 			}
-		} else {
-			klog.V(5).Infof("VM %s reports a failed provisioning state but is running (%s)", *vm.ID, powerState)
-			status.State = cloudprovider.InstanceRunning
 		}
 	default:
 		status.State = cloudprovider.InstanceRunning
@@ -247,6 +253,8 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 	// Add vmssCSE Provisioning Failed Message in error info body for vmssCSE Extensions if enableDetailedCSEMessage is true
 	if scaleSet.enableDetailedCSEMessage && vm.InstanceView != nil {
 		if err, failed := scaleSet.cseErrors(vm.InstanceView.Extensions); failed {
+			klog.V(3).Infof("VM %s reports CSE failure: %v, with provisioning state %s, power state %s", to.String(vm.ID), err, to.String(vm.ProvisioningState), powerState)
+			status.State = cloudprovider.InstanceCreating
 			errorInfo := &cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OtherErrorClass,
 				ErrorCode:    vmssExtensionProvisioningFailed,

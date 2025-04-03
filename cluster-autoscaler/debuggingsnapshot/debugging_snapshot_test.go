@@ -24,21 +24,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 func TestBasicSetterWorkflow(t *testing.T) {
 	snapshot := &DebuggingSnapshotImpl{}
-	pod := []*framework.PodInfo{
-		{
-			Pod: &v1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "Pod1",
-				},
-				Spec: v1.PodSpec{
-					NodeName: "testNode",
-				},
-			},
+	pod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "Pod1",
+		},
+		Spec: v1.PodSpec{
+			NodeName: "testNode",
 		},
 	}
 	node := &v1.Node{
@@ -46,18 +42,10 @@ func TestBasicSetterWorkflow(t *testing.T) {
 			Name: "testNode",
 		},
 	}
-
-	nodeInfo := &framework.NodeInfo{
-		Pods:             pod,
-		Requested:        &framework.Resource{},
-		NonZeroRequested: &framework.Resource{},
-		Allocatable:      &framework.Resource{},
-		Generation:       0,
-	}
+	nodeInfo := framework.NewTestNodeInfo(node, pod)
 
 	var nodeGroups []*framework.NodeInfo
 	nodeGroups = append(nodeGroups, nodeInfo)
-	nodeGroups[0].SetNode(node)
 	timestamp := time.Now().In(time.UTC)
 	snapshot.SetClusterNodes(nodeGroups)
 	snapshot.SetEndTimestamp(timestamp)

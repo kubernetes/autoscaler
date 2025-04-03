@@ -23,8 +23,8 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DebuggingSnapshotterState is the type for the debugging snapshot State machine

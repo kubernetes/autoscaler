@@ -24,8 +24,8 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -63,7 +63,7 @@ func newScaleUpExecutor(
 // If there were multiple concurrent errors one combined error is returned.
 func (e *scaleUpExecutor) ExecuteScaleUps(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
@@ -76,7 +76,7 @@ func (e *scaleUpExecutor) ExecuteScaleUps(
 
 func (e *scaleUpExecutor) executeScaleUpsSync(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
@@ -96,7 +96,7 @@ func (e *scaleUpExecutor) executeScaleUpsSync(
 
 func (e *scaleUpExecutor) executeScaleUpsParallel(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
@@ -156,7 +156,7 @@ func (e *scaleUpExecutor) increaseSize(nodeGroup cloudprovider.NodeGroup, increa
 
 func (e *scaleUpExecutor) executeScaleUp(
 	info nodegroupset.ScaleUpInfo,
-	nodeInfo *schedulerframework.NodeInfo,
+	nodeInfo *framework.NodeInfo,
 	availableGPUTypes map[string]struct{},
 	now time.Time,
 	atomic bool,
@@ -176,10 +176,9 @@ func (e *scaleUpExecutor) executeScaleUp(
 	if increase < 0 {
 		return errors.NewAutoscalerError(errors.InternalError, fmt.Sprintf("increase in number of nodes cannot be negative, got: %v", increase))
 	}
-	if e.asyncNodeGroupStateChecker.IsUpcoming(info.Group) {
+	if !info.Group.Exist() && e.asyncNodeGroupStateChecker.IsUpcoming(info.Group) {
 		// Don't emit scale up event for upcoming node group as it will be generated after
 		// the node group is created, during initial scale up.
-		klog.V(0).Infof("Scale-up: group %s is an upcoming node group, skipping emit scale up event", info.Group.Id())
 		return nil
 	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
@@ -254,7 +253,7 @@ func checkUniqueNodeGroups(scaleUpInfos []nodegroupset.ScaleUpInfo) errors.Autos
 	uniqueGroups := make(map[string]bool)
 	for _, info := range scaleUpInfos {
 		if uniqueGroups[info.Group.Id()] {
-			return errors.NewAutoscalerError(
+			return errors.NewAutoscalerErrorf(
 				errors.InternalError,
 				"assertion failure: detected group double scaling: %s", info.Group.Id(),
 			)

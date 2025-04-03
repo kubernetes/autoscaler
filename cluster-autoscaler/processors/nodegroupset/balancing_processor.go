@@ -21,8 +21,8 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
 )
@@ -35,13 +35,13 @@ type BalancingNodeGroupSetProcessor struct {
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the given one using the
 // BalancingNodeGroupSetProcessor's comparator function.
 func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
-	nodeInfosForGroups map[string]*schedulerframework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
+	nodeInfosForGroups map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 
 	result := []cloudprovider.NodeGroup{}
 	nodeGroupId := nodeGroup.Id()
 	nodeInfo, found := nodeInfosForGroups[nodeGroupId]
 	if !found {
-		return []cloudprovider.NodeGroup{}, errors.NewAutoscalerError(
+		return []cloudprovider.NodeGroup{}, errors.NewAutoscalerErrorf(
 			errors.InternalError,
 			"failed to find template node for node group %s",
 			nodeGroupId)
@@ -88,7 +88,7 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 	for _, ng := range groups {
 		currentSize, err := ng.TargetSize()
 		if err != nil {
-			return []ScaleUpInfo{}, errors.NewAutoscalerError(
+			return []ScaleUpInfo{}, errors.NewAutoscalerErrorf(
 				errors.CloudProviderError,
 				"failed to get node group size: %v", err)
 		}

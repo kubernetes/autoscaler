@@ -18,7 +18,7 @@ package mostpods
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 type mostpods struct {
@@ -30,7 +30,7 @@ func NewFilter() expander.Filter {
 }
 
 // BestOptions selects the expansion option that schedules the most pods
-func (m *mostpods) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) []expander.Option {
+func (m *mostpods) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	var maxPods int
 	var maxOptions []expander.Option
 

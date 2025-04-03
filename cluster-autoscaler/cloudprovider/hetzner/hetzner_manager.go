@@ -73,9 +73,10 @@ type ImageList struct {
 
 // NodeConfig holds the configuration for a single nodepool
 type NodeConfig struct {
-	CloudInit string
-	Taints    []apiv1.Taint
-	Labels    map[string]string
+	CloudInit      string
+	PlacementGroup string
+	Taints         []apiv1.Taint
+	Labels         map[string]string
 }
 
 // LegacyConfig holds the configuration in the legacy format
@@ -90,13 +91,20 @@ func newManager() (*hetznerManager, error) {
 		return nil, errors.New("`HCLOUD_TOKEN` is not specified")
 	}
 
-	client := hcloud.NewClient(
+	opts := []hcloud.ClientOption{
 		hcloud.WithToken(token),
 		hcloud.WithHTTPClient(httpClient),
 		hcloud.WithApplication("cluster-autoscaler", version.ClusterAutoscalerVersion),
 		hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, 500*time.Millisecond)),
 		hcloud.WithDebugWriter(&debugWriter{}),
-	)
+	}
+
+	endpoint := os.Getenv("HCLOUD_ENDPOINT")
+	if endpoint != "" {
+		opts = append(opts, hcloud.WithEndpoint(endpoint))
+	}
+
+	client := hcloud.NewClient(opts...)
 
 	ctx := context.Background()
 	var err error

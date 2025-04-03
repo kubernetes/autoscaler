@@ -49,6 +49,7 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 | Kubernetes Version | CA Version               | Chart Version |
 |--------------------|--------------------------|---------------|
+| 1.31.x             | 1.31.x                   |9.38.0+|
 | 1.30.x             | 1.30.x                   |9.37.0+|
 | 1.29.X             | 1.29.X                   |9.35.0+|
 | 1.28.X             | 1.28.X                   |9.34.0+|
@@ -106,6 +107,7 @@ Starting with Gardener/Autoscaler v1.20, versioning scheme has changed to match 
 
 | Kubernetes Version | CA Version | Gardener CA Version | 
 |--------------------|------------|---------------------|
+| 1.32.X             | 1.32.X     | 1.32.X              |
 | 1.31.X             | 1.31.X     | 1.31.X              |
 | 1.30.X             | 1.30.X     | 1.30.X              |
 | 1.29.X             | 1.29.X     | 1.29.X              |

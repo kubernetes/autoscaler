@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -22,7 +22,8 @@ import (
 	"strings"
 )
 
-// InstanceConfigurationAmdMilanBmGpuLaunchInstancePlatformConfig The platform configuration of a bare metal instance that uses a GPU shape on the AMD Milan platform.
+// InstanceConfigurationAmdMilanBmGpuLaunchInstancePlatformConfig The platform configuration used when launching a bare metal GPU instance with the following shape: BM.GPU.GM4.8 (also
+// named BM.GPU.A100-v2.8) (the AMD Milan platform).
 type InstanceConfigurationAmdMilanBmGpuLaunchInstancePlatformConfig struct {
 
 	// Whether Secure Boot is enabled on the instance.
@@ -55,6 +56,9 @@ type InstanceConfigurationAmdMilanBmGpuLaunchInstancePlatformConfig struct {
 
 	// Whether the input-output memory management unit is enabled.
 	IsInputOutputMemoryManagementUnitEnabled *bool `mandatory:"false" json:"isInputOutputMemoryManagementUnitEnabled"`
+
+	// Instance Platform Configuration Configuration Map for flexible setting input.
+	ConfigMap map[string]string `mandatory:"false" json:"configMap"`
 
 	// The number of NUMA nodes per socket (NPS).
 	NumaNodesPerSocket InstanceConfigurationAmdMilanBmGpuLaunchInstancePlatformConfigNumaNodesPerSocketEnum `mandatory:"false" json:"numaNodesPerSocket,omitempty"`

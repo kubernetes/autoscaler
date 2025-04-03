@@ -1,17 +1,17 @@
-With `kwok` provider you can:
+With the `kwok` provider you can:
 * Run **CA** (cluster-autoscaler) in your terminal and connect it to a cluster (like a kubebuilder controller). You don't have to run CA in an actual cluster to test things out.
 ![](./docs/images/run-kwok-locally-1.png)
 ![](./docs/images/run-kwok-locally-2.png)
-* Perform a "dry-run" to test autoscaling behavior of CA without creating actual VMs in your cloud provider.
+* Perform a "dry-run" to test the autoscaling behavior of CA without creating actual VMs in your cloud provider.
 * Run CA in your local kind cluster with nodes and workloads from a remote cluster (you can also use nodes from the same cluster).
 ![](./docs/images/kwok-as-dry-run-1.png)
 ![](./docs/images/kwok-as-dry-run-2.png)
-* Test behavior of CA against a large number of fake nodes (of your choice) with metrics.
+* Test the behavior of CA against a large number of fake nodes (of your choice) with metrics.
 ![](./docs/images/large-number-of-nodes-1.png)
 ![](./docs/images/large-number-of-nodes-2.png)
 * etc.,
 
-## What is `kwok` provider? Why `kwok` provider?
+## What is a `kwok` provider? Why `kwok` provider?
 Check the doc around [motivation](./docs/motivation.md).
 
 ## How to use `kwok` provider
@@ -26,6 +26,7 @@ Follow [the official docs to install `kwok`](https://kwok.sigs.k8s.io/docs/user/
 
 *Using helm chart*:
 ```shell
+helm repo add cluster-autoscaler https://kubernetes.github.io/autoscaler
 helm upgrade --install <release-name> charts/cluster-autoscaler  \
 --set "serviceMonitor.enabled"=true --set "serviceMonitor.namespace"=default \
 --set "cloudprovider"=kwok --set "image.tag"="<image-tag>" \
@@ -37,11 +38,11 @@ Replace `<release-name>` with the release name you want.
 Replace `<image-tag>` with the image tag you want. Replace `<image-repo>` with the image repo you want
 (check [releases](https://github.com/kubernetes/autoscaler/releases) for the official image repos and tags)
 
-Note that `kwok` provider doesn't use `autoDiscovery.clusterName`. You can use a fake value for `autoDiscovery.clusterName`.
+Note that the `kwok` provider doesn't use `autoDiscovery.clusterName`. You can use a fake value for `autoDiscovery.clusterName`.
 
 Replace `"release"="prom"` with the label selector for `ServiceMonitor` in your grafana/prometheus installation.
 
-For example, if you are using prometheus operator, you can find the service monitor label selector using
+For example, if you are using the prometheus operator, you can find the service monitor label selector using
 ```shell
 kubectl get prometheus -ojsonpath='{.items[*].spec.serviceMonitorSelector}' | jq # using jq is optional
 ```
@@ -57,14 +58,14 @@ If you already have cluster-autoscaler running and don't want to use `helm ...`,
 4. Set `--cloud-provider=kwok` in the CA Deployment
 5. That's all.
 
-For 1 and 2, you can refer to helm chart for the ConfigMaps. You can render them from the helm chart using:
+For 1 and 2, you can refer to the helm chart for the ConfigMaps. You can render them from the helm chart using:
 ```
 helm template charts/cluster-autoscaler/  --set "cloudProvider"="kwok" -s templates/configmap.yaml --namespace=default
 ```
-Replace `--namespace` with namespace where your CA pod is running.
+Replace `--namespace` with the namespace where your CA pod is running.
 
-If you want to temporarily revert back to your previous cloud provider, just change the `--cloud-provider=kwok`.
-No other provider uses `kwok-provider-config` and `kwok-provider-templates` ConfigMap (you can keep them in the cluster or delete them if you want to revert completely). `POD_NAMESPACE` is used only by kwok provider (at the time of writing this).
+If you want to temporarily revert to your previous cloud provider, just change the `--cloud-provider=kwok`.
+No other provider uses `kwok-provider-config` and `kwok-provider-templates` ConfigMap (you can keep them in the cluster or delete them if you want to revert completely). `POD_NAMESPACE` is used only by the kwok provider (at the time of writing this).
 
 #### 3. Configure `kwok` cloud provider
 Decide if you want to use static template nodes or dynamic template nodes ([check the FAQ](#3-what-is-the-difference-between-static-template-nodes-and-dynamic-template-nodes) to understand the difference).
@@ -75,22 +76,22 @@ If you want to use static template nodes,
 ```shell
 # delete the existing configmap
 kubectl delete configmap kwok-provider-templates
-# create a new configmap with your own node yamls
+# create a new configmap with your node yamls
 kubectl create configmap kwok-provider-templates --from-file=templates=template-nodes.yaml
 ```
-Replace `template-nodes.yaml` with path to your template nodes file.
+Replace `template-nodes.yaml` with the path to your template nodes file.
 
-If you are using your own template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotation`. Not doing so will make CA not scale up nodes (it won't throw any error either).
+If you are using your template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotation`. Not doing so will make CA not scale up nodes (it won't throw any error either).
 
 If you want to use dynamic template nodes,
 
-Set `readNodesFrom` in `kwok-provider-config` ConfigMap to `cluster`. This tells kwok provider to use live nodes from the cluster as template nodes.
+Set `readNodesFrom` in `kwok-provider-config` ConfigMap to `cluster`. This tells the kwok provider to use live nodes from the cluster as template nodes.
 
-If you are using live nodes from cluster as template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotation`. Not doing so will make CA not scale up nodes (it won't throw any error either).
+If you are using live nodes from the cluster as template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotation`. Not doing so will make CA not scale up nodes (it won't throw any error either).
 
 ### For local development
 1. Point your kubeconfig to the cluster where you want to test your changes
-Using [`kubectx`](https://github.com/ahmetb/kubectx):
+using [`kubectx`](https://github.com/ahmetb/kubectx):
 ```
 kubectx <cluster-name>
 ```
@@ -101,7 +102,7 @@ kubectl config get-contexts
 ```
 2. Create `kwok-provider-config` and `kwok-provider-templates` ConfigMap in the cluster you want to test your changes.
 
-This is important because even if you run CA locally with kwok provider, kwok provider still searches for the `kwok-provider-config` ConfigMap and `kwok-provider-templates` (because by default `kwok-provider-config` has `readNodesFrom` set to `configmap`) in the cluster it connects to.
+This is important because even if you run CA locally with the kwok provider, the kwok provider still searches for the `kwok-provider-config` ConfigMap and `kwok-provider-templates` (because by default `kwok-provider-config` has `readNodesFrom` set to `configmap`) in the cluster it connects to.
 
 You can create both the ConfigMap resources from the helm chart like this:
 
@@ -125,7 +126,7 @@ export KUBERNETES_SERVICE_PORT=36357
 # POD_NAMESPACE is the namespace where you want to look for
 # your `kwok-provider-config` and `kwok-provider-templates` ConfigMap
 export POD_NAMESPACE=default
-# KWOK_PROVIDER_MODE tells kwok provider that we are running CA locally
+# KWOK_PROVIDER_MODE tells the kwok provider that we are running the CA locally
 export KWOK_PROVIDER_MODE=local
 # `2>&1` redirects both stdout and stderr to VS Code (remove `| code -` if you don't use VS Code)
 go run main.go --kubeconfig=/home/suraj/.kube/config --cloud-provider=kwok --namespace=default --logtostderr=true --stderrthreshold=info --v=5 2>&1 | code -
@@ -135,19 +136,19 @@ This is what it looks like in action:
 ![](./docs/images/run-kwok-locally-3.png)
 
 ## Tweaking the `kwok` provider
-You can change the behavior of `kwok` provider by tweaking the kwok provider configuration in `kwok-provider-config` ConfigMap:
+You can change the behavior of the `kwok` provider by tweaking the kwok provider configuration in `kwok-provider-config` ConfigMap:
 
 ```yaml
 # only v1alpha1 is supported right now
 apiVersion: v1alpha1
 # possible values: [cluster,configmap]
-# cluster: use nodes from cluster as template nodes
+# cluster: use nodes from the cluster as template nodes
 # configmap: use node yamls from a configmap as template nodes
 readNodesFrom: configmap
 # nodegroups specifies nodegroup level config
 nodegroups:
   # fromNodeLabelKey's value is used to group nodes together into nodegroups
-  # For example, say you want to group nodes with same value for `node.kubernetes.io/instance-type`
+  # For example, say you want to group nodes with the same value for `node.kubernetes.io/instance-type`
   # label as a nodegroup. Here are the nodes you have:
   # node1: m5.xlarge
   # node2: c5.xlarge
@@ -166,12 +167,12 @@ nodegroups:
 nodes:
   # skipTaint is used to enable/disable adding kwok provider taint on the template nodes
   # default is false so that even if you run the provider in a production cluster
-  # you don't have to worry about production workload
+  # you don't have to worry about the production workload
   # getting accidentally scheduled on the fake nodes
   skipTaint: true # default: false
   # gpuConfig is used to specify gpu config for the node
   gpuConfig:
-    # to tell kwok provider what label should be considered as GPU label
+    # to tell the kwok provider what label should be considered as GPU label
     gpuLabelKey: "k8s.amazonaws.com/accelerator"
 
 # availableGPUTypes is used to specify available GPU types
@@ -185,33 +186,33 @@ configmap:
   key: kwok-config # default: config
 ```
 
-By default, kwok provider looks for `kwok-provider-config` ConfigMap. If you want to use a different ConfigMap name, set the env variable `KWOK_PROVIDER_CONFIGMAP` (e.g., `KWOK_PROVIDER_CONFIGMAP=kpconfig`). You can set this env variable in the helm chart using `kwokConfigMapName` OR you can set it directly in the cluster-autoscaler Deployment with `kubectl edit deployment ...`.
+By default, the kwok provider looks for `kwok-provider-config` ConfigMap. If you want to use a different ConfigMap name, set the env variable `KWOK_PROVIDER_CONFIGMAP` (e.g., `KWOK_PROVIDER_CONFIGMAP=kpconfig`). You can set this env variable in the helm chart using `kwokConfigMapName` OR you can set it directly in the cluster-autoscaler Deployment with `kubectl edit deployment ...`.
 
 ### FAQ
-#### 1. What is the difference between `kwok` and `kwok` provider?
+#### 1. What is the difference between `kwok` and the `kwok` provider?
 `kwok` is an open source project under `sig-scheduling`.
-> KWOK is a toolkit that enables setting up a cluster of thousands of Nodes in seconds. Under the scene, all Nodes are simulated to behave like real ones, so the overall approach employs a pretty low resource footprint that you can easily play around on your laptop.
+> KWOK is a toolkit that enables setting up a cluster of thousands of Nodes in seconds. Under the scene, all Nodes are simulated to behave like real ones, so the overall approach employs a pretty low resource footprint that you can easily play around with on your laptop.
 
 https://kwok.sigs.k8s.io/
 
 `kwok` provider refers to the cloud provider extension/plugin in cluster-autoscaler which uses `kwok` to create fake nodes.
 
 #### 2. What does a template node exactly mean?
-Template node is the base node yaml `kwok` provider uses to create a new node in the cluster.
+A template node is the base node yaml the `kwok` provider uses to create a new node in the cluster.
 #### 3. What is the difference between static template nodes and dynamic template nodes?
 Static template nodes are template nodes created using the node yaml specified by the user in `kwok-provider-templates` ConfigMap while dynamic template nodes are template nodes based on the node yaml of the current running nodes in the cluster.
 #### 4. Can I use both static and dynamic template nodes together?
 As of now, no you can't (but it's an interesting idea). If you have a specific usecase, please create an issue and we can talk more there!
 
 
-#### 5. What is the difference between kwok provider config and template nodes config?
-kwok provider config is configuration to change the behavior of kwok provider (and not the underlying `kwok` toolkit) while template nodes config is the ConfigMap you can use to specify static node templates.
+#### 5. What is the difference between the kwok provider config and template nodes config?
+kwok provider config is a configuration to change the behavior of the kwok provider (and not the underlying `kwok` toolkit) while template nodes config is the ConfigMap you can use to specify static node templates.
 
 
 ### Gotchas
-1. kwok provider by default taints the template nodes with `kwok-provider: true` taint so that production workloads don't get scheduled on these nodes accidentally. You have to tolerate the taint to schedule your workload on the nodes created by the kwok provider. You can turn this off by setting `nodes.skipTaint: true` in the kwok provider config.
-2. Make sure the label/annotation for `fromNodeLabelKey`/`fromNodeAnnotation` in kwok provider config is actually present on the template nodes. If it isn't present on the template nodes, kwok provider will not be able to create new nodes.
-3. Note that kwok provider makes the following changes to all the template nodes:
+1. The kwok provider by default taints the template nodes with `kwok-provider: true` taint so that production workloads don't get scheduled on these nodes accidentally. You have to tolerate the taint to schedule your workload on the nodes created by the kwok provider. You can turn this off by setting `nodes.skipTaint: true` in the kwok provider config.
+2. Make sure the label/annotation for `fromNodeLabelKey`/`fromNodeAnnotation` in the kwok provider config is actually present on the template nodes. If it isn't present on the template nodes, the kwok provider will not be able to create new nodes.
+3. Note that the kwok provider makes the following changes to all the template nodes:
 (pseudocode)
 ```
 node.status.nodeInfo.kubeletVersion = "fake"
@@ -234,19 +235,19 @@ Awesome! Please:
 Please don't think too much about creating an issue. We can always close it if it doesn't make sense.
 
 ## What is not supported?
-* Creating kwok nodegroups based on `kubernetes/hostname` node label. Why? Imagine you have a `Deployment` (replicas: 2) with pod anti-affinity on the `kubernetes/hostname` label like this:
+* Creating kwok nodegroups based on the `kubernetes/hostname` node label. Why? Imagine you have a `Deployment` (replicas: 2) with pod anti-affinity on the `kubernetes/hostname` label like this:
 ![](./docs/images/kwok-provider-hostname-label.png)
-Imagine you have only 2 unique hostnames values for `kubernetes/hostname` node label in your cluster:
+Imagine you have only 2 unique hostname values for the `kubernetes/hostname` node label in your cluster:
    * `hostname1`
    * `hostname2`
 
-  If you increase the number of replicas in the `Deployment` to 3, CA creates a fake node internally and runs simulations on it to decide if it should scale up. This fake node has `kubernetes/hostname` set to the name of the fake node which looks like `template-node-xxxx-xxxx` (second `xxxx` is random). Since the value of `kubernetes/hostname` on the fake node is not `hostname1` or `hostname2`, CA thinks it can schedule the `Pending` pod on the fake node and hence keeps on scaling up to infinity (or until it can't).
+  If you increase the number of replicas in the `Deployment` to 3, CA creates a fake node internally and runs simulations on it to decide if it should scale up. This fake node has `kubernetes/hostname` set to the name of the fake node which looks like `template-node-xxxx-xxxx` (the second `xxxx` is random). Since the value of `kubernetes/hostname` on the fake node is not `hostname1` or `hostname2`, CA thinks it can schedule the `Pending` pod on the fake node and hence keeps on scaling up to infinity (or until it can't).
 
 
 
 ## Troubleshooting
 1. Pods are still stuck in `Running` even after CA has cleaned up all the kwok nodes
-    * `kwok` provider doesn't drain the nodes when it deletes them. It just deletes the nodes. You should see pods running on these nodes change from `Running` state to `Pending` state in a minute or two. But if you don't, try scaling down your workload and scaling it up again. If the issue persists, please create an issue :pray:.
+    * The `kwok` provider doesn't drain the nodes when it deletes them. It just deletes the nodes. You should see pods running on these nodes change from a `Running` state to a `Pending` state in a minute or two. But if you don't, try scaling down your workload and scaling it up again. If the issue persists, please create an issue :pray:.
 
 ## I want to contribute
 Thank you ❤️

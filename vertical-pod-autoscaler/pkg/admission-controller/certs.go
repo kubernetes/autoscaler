@@ -34,11 +34,10 @@ type certsConfig struct {
 func readFile(filePath string) []byte {
 	res, err := os.ReadFile(filePath)
 	if err != nil {
-		klog.Errorf("Error reading certificate file at %s: %v", filePath, err)
+		klog.ErrorS(err, "Error reading certificate file", "file", filePath)
 		return nil
 	}
-
-	klog.V(3).Infof("Successfully read %d bytes from %v", len(res), filePath)
+	klog.V(3).InfoS("Successfully read bytes from file", "bytes", len(res), "file", filePath)
 	return res
 }
 
@@ -67,9 +66,9 @@ func (cr *certReloader) start(stop <-chan struct{}) error {
 			select {
 			case event := <-watcher.Events:
 				if event.Has(fsnotify.Create) || event.Has(fsnotify.Write) {
-					klog.V(2).Info("New certificate found, reloading")
+					klog.V(2).InfoS("New certificate found, reloading")
 					if err := cr.load(); err != nil {
-						klog.Errorf("Failed to reload certificate: %s", err)
+						klog.ErrorS(err, "Failed to reload certificate")
 					}
 				}
 			case err := <-watcher.Errors:

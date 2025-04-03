@@ -21,6 +21,7 @@ type OciRef struct {
 	PrivateIPAddress   string
 	PublicIPAddress    string
 	Shape              string
+	IsNodeSelfManaged  bool
 }
 
 // NodeToOciRef converts a node object into an oci reference
@@ -36,6 +37,7 @@ func NodeToOciRef(n *apiv1.Node) (OciRef, error) {
 		PrivateIPAddress:   getNodeInternalAddress(n),
 		PublicIPAddress:    getNodeExternalAddress(n),
 		Shape:              getNodeShape(n),
+		IsNodeSelfManaged:  n.Labels["oci.oraclecloud.com/node.info.byon"] == "true",
 	}, nil
 }
 

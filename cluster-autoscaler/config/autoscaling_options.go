@@ -292,8 +292,6 @@ type AutoscalingOptions struct {
 	MinReplicaCount int
 	// NodeDeleteDelayAfterTaint is the duration to wait before deleting a node after tainting it
 	NodeDeleteDelayAfterTaint time.Duration
-	// ParallelDrain is whether CA can drain nodes in parallel.
-	ParallelDrain bool
 	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
 	NodeGroupSetRatios NodeGroupDifferenceRatios
 	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint
@@ -305,6 +303,22 @@ type AutoscalingOptions struct {
 	ProvisioningRequestEnabled bool
 	// AsyncNodeGroupsEnabled tells if CA creates/deletes node groups asynchronously.
 	AsyncNodeGroupsEnabled bool
+	// ProvisioningRequestInitialBackoffTime is the initial time for ProvisioningRequest be considered by CA after failed ScaleUp request.
+	ProvisioningRequestInitialBackoffTime time.Duration
+	// ProvisioningRequestMaxBackoffTime is the max time for ProvisioningRequest be considered by CA after failed ScaleUp request.
+	ProvisioningRequestMaxBackoffTime time.Duration
+	// ProvisioningRequestMaxCacheSize is the max size for ProvisioningRequest cache that is stored for retry backoff.
+	ProvisioningRequestMaxBackoffCacheSize int
+	// CheckCapacityBatchProcessing is used to enable/disable batch processing of check capacity provisioning class
+	CheckCapacityBatchProcessing bool
+	// CheckCapacityProvisioningRequestMaxBatchSize is the maximum number of provisioning requests to process in a single batch
+	CheckCapacityProvisioningRequestMaxBatchSize int
+	// CheckCapacityProvisioningRequestBatchTimebox is the maximum time to spend processing a batch of provisioning requests
+	CheckCapacityProvisioningRequestBatchTimebox time.Duration
+	// ForceDeleteLongUnregisteredNodes is used to enable/disable ignoring min size constraints during removal of long unregistered nodes
+	ForceDeleteLongUnregisteredNodes bool
+	// DynamicResourceAllocationEnabled configures whether logic for handling DRA objects is enabled.
+	DynamicResourceAllocationEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

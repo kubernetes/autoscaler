@@ -24,8 +24,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -60,7 +60,7 @@ func (p *PodInjectionPodListProcessor) Process(ctx *context.AutoscalingContext, 
 	controllers := listControllers(ctx)
 	controllers = p.skipBackedoffControllers(controllers)
 
-	nodeInfos, err := ctx.ClusterSnapshot.NodeInfos().List()
+	nodeInfos, err := ctx.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
 		klog.Errorf("Failed to list nodeInfos from cluster snapshot: %v", err)
 		return unschedulablePods, fmt.Errorf("failed to list nodeInfos from cluster snapshot: %v", err)
@@ -125,7 +125,7 @@ func (p *podGroup) fakePodCount() int {
 func podsFromNodeInfos(nodeInfos []*framework.NodeInfo) []*apiv1.Pod {
 	var pods []*apiv1.Pod
 	for _, nodeInfo := range nodeInfos {
-		for _, podInfo := range nodeInfo.Pods {
+		for _, podInfo := range nodeInfo.Pods() {
 			pods = append(pods, podInfo.Pod)
 		}
 	}

@@ -170,7 +170,7 @@ download-kubeconfigs:
 	read SHOOT; \
 	echo "enter cluster provider(gcp|aws|azure|vsphere|openstack|alicloud|metal|equinix-metal)"; \
 	read PROVIDER; \
-	echo "enter zone with zero nodes in worker pool \"three-zones\" where the PV needs to be created to perform test"; \
+	echo "enter zone with zero nodes in worker pool \"three-zones\" where the PV needs to be created to perform test (e.g.: eu-west-1a)"; \
 	read ZONE; \
 	. ./hack/local_setup.sh --SEED $$SEED --SHOOT $$SHOOT --PROJECT $$PROJECT; \
 	echo "###############################################" ; \

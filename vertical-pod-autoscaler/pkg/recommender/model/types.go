@@ -17,6 +17,8 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
@@ -79,7 +81,7 @@ func ScaleResource(amount ResourceAmount, factor float64) ResourceAmount {
 }
 
 // ResourcesAsResourceList converts internal Resources representation to ResourcesList.
-func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
+func ResourcesAsResourceList(resources Resources, humanizeMemory bool) apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
 	for key, resourceAmount := range resources {
 		var newKey apiv1.ResourceName
@@ -91,8 +93,14 @@ func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
 		case ResourceMemory:
 			newKey = apiv1.ResourceMemory
 			quantity = QuantityFromMemoryAmount(resourceAmount)
+			if humanizeMemory && !quantity.IsZero() {
+				rawValues := quantity.Value()
+				humanizedValue := HumanizeMemoryQuantity(rawValues)
+				klog.V(4).InfoS("Converting raw value to humanized value", "rawValue", rawValues, "humanizedValue", humanizedValue)
+				quantity = resource.MustParse(humanizedValue)
+			}
 		default:
-			klog.Errorf("Cannot translate %v resource name", key)
+			klog.ErrorS(nil, "Cannot translate resource name", "resourceName", key)
 			continue
 		}
 		result[newKey] = quantity
@@ -110,7 +118,7 @@ func ResourceNamesApiToModel(resources []apiv1.ResourceName) *[]ResourceName {
 		case apiv1.ResourceMemory:
 			result = append(result, ResourceMemory)
 		default:
-			klog.Errorf("Cannot translate %v resource name", resource)
+			klog.ErrorS(nil, "Cannot translate resource name", "resourceName", resource)
 			continue
 		}
 	}
@@ -138,6 +146,29 @@ func resourceAmountFromFloat(amount float64) ResourceAmount {
 		return MaxResourceAmount
 	} else {
 		return ResourceAmount(amount)
+	}
+}
+
+// HumanizeMemoryQuantity converts raw bytes to human-readable string using binary units (KiB, MiB, GiB, TiB) with no decimal places.
+func HumanizeMemoryQuantity(bytes int64) string {
+	const (
+		KiB = 1024
+		MiB = 1024 * KiB
+		GiB = 1024 * MiB
+		TiB = 1024 * GiB
+	)
+
+	switch {
+	case bytes >= TiB:
+		return fmt.Sprintf("%.2fTi", float64(bytes)/float64(TiB))
+	case bytes >= GiB:
+		return fmt.Sprintf("%.2fGi", float64(bytes)/float64(GiB))
+	case bytes >= MiB:
+		return fmt.Sprintf("%.2fMi", float64(bytes)/float64(MiB))
+	case bytes >= KiB:
+		return fmt.Sprintf("%.2fKi", float64(bytes)/float64(KiB))
+	default:
+		return fmt.Sprintf("%d", bytes)
 	}
 }
 

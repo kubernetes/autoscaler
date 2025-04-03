@@ -28,14 +28,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/gardener/machine-controller-manager/pkg/util/provider/machineutils"
-	"k8s.io/apimachinery/pkg/types"
-	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
-	v1appslister "k8s.io/client-go/listers/apps/v1"
-	"k8s.io/utils/pointer"
 	"maps"
 	"math"
 	"math/big"
@@ -46,6 +38,15 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machineutils"
+	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
+	v1appslister "k8s.io/client-go/listers/apps/v1"
+	"k8s.io/utils/ptr"
 
 	awsapis "github.com/gardener/machine-controller-manager-provider-aws/pkg/aws/apis"
 	azureapis "github.com/gardener/machine-controller-manager-provider-azure/pkg/azure/api"
@@ -779,7 +780,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(nodeGroupName string) (*no
 			}
 			region = providerSpec.Region
 			zone = getZoneValueFromMCLabels(mc.Labels)
-			architecture = pointer.String(providerSpec.Tags[apiv1.LabelArchStable])
+			architecture = ptr.To(providerSpec.Tags[apiv1.LabelArchStable])
 		case providerAzure:
 			var providerSpec *azureapis.AzureProviderSpec
 			err = json.Unmarshal(mc.ProviderSpec.Raw, &providerSpec)
@@ -802,7 +803,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(nodeGroupName string) (*no
 			if providerSpec.Properties.Zone != nil {
 				zone = providerSpec.Location + "-" + strconv.Itoa(*providerSpec.Properties.Zone)
 			}
-			architecture = pointer.String(providerSpec.Tags["kubernetes.io_arch"])
+			architecture = ptr.To(providerSpec.Tags["kubernetes.io_arch"])
 		default:
 			return nil, cloudprovider.ErrNotImplemented
 		}

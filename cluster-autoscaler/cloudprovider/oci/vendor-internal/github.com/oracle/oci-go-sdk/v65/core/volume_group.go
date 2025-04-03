@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -138,10 +138,7 @@ func (m *VolumeGroup) UnmarshalJSON(data []byte) (e error) {
 	m.IsHydrated = model.IsHydrated
 
 	m.VolumeGroupReplicas = make([]VolumeGroupReplicaInfo, len(model.VolumeGroupReplicas))
-	for i, n := range model.VolumeGroupReplicas {
-		m.VolumeGroupReplicas[i] = n
-	}
-
+	copy(m.VolumeGroupReplicas, model.VolumeGroupReplicas)
 	m.AvailabilityDomain = model.AvailabilityDomain
 
 	m.CompartmentId = model.CompartmentId
@@ -157,10 +154,7 @@ func (m *VolumeGroup) UnmarshalJSON(data []byte) (e error) {
 	m.TimeCreated = model.TimeCreated
 
 	m.VolumeIds = make([]string, len(model.VolumeIds))
-	for i, n := range model.VolumeIds {
-		m.VolumeIds[i] = n
-	}
-
+	copy(m.VolumeIds, model.VolumeIds)
 	return
 }
 

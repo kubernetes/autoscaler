@@ -21,7 +21,7 @@ spec:
       containers:
         - name: updater
           image: registry.k8s.io/autoscaling/vpa-updater:1.2.1
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: NAMESPACE
               valueFrom:

@@ -22,7 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 // ProvisioningRequest wrapper representation of the ProvisioningRequest
@@ -50,7 +50,6 @@ func NewProvisioningRequest(pr *v1.ProvisioningRequest, podTemplates []*apiv1.Po
 // SetConditions of the Provisioning Request.
 func (pr *ProvisioningRequest) SetConditions(conditions []metav1.Condition) {
 	pr.Status.Conditions = conditions
-	return
 }
 
 // PodSets of the Provisioning Request.

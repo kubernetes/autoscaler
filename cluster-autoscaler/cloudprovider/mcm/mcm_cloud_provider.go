@@ -24,14 +24,15 @@ package mcm
 import (
 	"context"
 	"fmt"
-	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machineutils"
 	apiv1 "k8s.io/api/core/v1"
@@ -39,9 +40,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -394,6 +395,12 @@ func (ngImpl *nodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	if int(size) <= ngImpl.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
+	return ngImpl.ForceDeleteNodes(nodes)
+}
+
+// ForceDeleteNodes deletes the nodes from the group without checking for minSize constraint.
+// It's expected that the method won't be called for nodes that aren't part of ANY machine deployment.
+func (ngImpl *nodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 	var toBeDeletedMachineInfos = make([]machineInfo, 0, len(nodes))
 	for _, node := range nodes {
 		belongs, mInfo, err := ngImpl.belongs(node)
@@ -542,7 +549,7 @@ func (ngImpl *nodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions)
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ngImpl *nodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ngImpl *nodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 	nodeTemplate, err := ngImpl.mcmManager.GetMachineDeploymentNodeTemplate(ngImpl.Name)
 	if err != nil {
@@ -554,7 +561,10 @@ func (ngImpl *nodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error
 		return nil, err
 	}
 
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ngImpl.Name))
+	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{
+		Pod: cloudprovider.BuildKubeProxy(ngImpl.Name),
+	})
+
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }

@@ -18,7 +18,6 @@ package planner
 
 import (
 	"fmt"
-	"math"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -73,10 +72,10 @@ type Planner struct {
 	minUpdateInterval     time.Duration
 	eligibilityChecker    eligibilityChecker
 	nodeUtilizationMap    map[string]utilization.Info
-	actuationStatus       scaledown.ActuationStatus
 	resourceLimitsFinder  *resource.LimitsFinder
 	cc                    controllerReplicasCalculator
 	scaleDownSetProcessor nodes.ScaleDownSetProcessor
+	scaleDownContext      *nodes.ScaleDownContext
 }
 
 // New creates a new Planner object.
@@ -90,13 +89,14 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 		context:               context,
 		unremovableNodes:      unremovable.NewNodes(),
 		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
-		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, simulator.NewUsageTracker(), deleteOptions, drainabilityRules, true),
-		actuationInjector:     scheduling.NewHintingSimulator(context.PredicateChecker),
+		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, deleteOptions, drainabilityRules, true),
+		actuationInjector:     scheduling.NewHintingSimulator(),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
 		nodeUtilizationMap:    make(map[string]utilization.Info),
 		resourceLimitsFinder:  resourceLimitsFinder,
 		cc:                    newControllerReplicasCalculator(context.ListerRegistry),
 		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
+		scaleDownContext:      nodes.NewDefaultScaleDownContext(),
 		minUpdateInterval:     minUpdateInterval,
 	}
 }
@@ -110,7 +110,7 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 		p.minUpdateInterval = updateInterval
 	}
 	p.latestUpdate = currentTime
-	p.actuationStatus = as
+	p.scaleDownContext.ActuationStatus = as
 	// Avoid persisting changes done by the simulation.
 	p.context.ClusterSnapshot.Fork()
 	defer p.context.ClusterSnapshot.Revert()
@@ -147,22 +147,17 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 		klog.Errorf("Nothing will scale down, failed to create resource limiter: %v", err)
 		return nil, nil
 	}
-	limitsLeft := p.resourceLimitsFinder.LimitsLeft(p.context, nodes, resourceLimiter, p.latestUpdate)
-	emptyRemovable, needDrainRemovable, unremovable := p.unneededNodes.RemovableAt(p.context, p.latestUpdate, limitsLeft, resourceLimiter.GetResources(), p.actuationStatus)
-	for _, u := range unremovable {
-		p.unremovableNodes.Add(u)
-	}
-	needDrainRemovable = sortByRisk(needDrainRemovable)
-	nodesToRemove := p.scaleDownSetProcessor.GetNodesToRemove(
-		p.context,
-		// We need to pass empty nodes first, as there might be some non-empty scale
-		// downs already in progress. If we pass the empty nodes first, they will be first
-		// to get deleted, thus we decrease chances of hitting the limit on non-empty scale down.
-		append(emptyRemovable, needDrainRemovable...),
-		// No need to limit the number of nodes, since it will happen later, in the actuation stage.
-		// It will make a more appropriate decision by using additional information about deletions
-		// in progress.
-		math.MaxInt)
+	p.scaleDownContext.ResourcesLeft = p.resourceLimitsFinder.LimitsLeft(p.context, nodes, resourceLimiter, p.latestUpdate).DeepCopy()
+	p.scaleDownContext.ResourcesWithLimits = resourceLimiter.GetResources()
+	emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes := p.unneededNodes.RemovableAt(p.context, *p.scaleDownContext, p.latestUpdate)
+	p.addUnremovableNodes(unremovableNodes)
+
+	needDrainRemovableNodes = sortByRisk(needDrainRemovableNodes)
+	candidatesToBeRemoved := append(emptyRemovableNodes, needDrainRemovableNodes...)
+
+	nodesToRemove, unremovableNodes := p.scaleDownSetProcessor.FilterUnremovableNodes(p.context, p.scaleDownContext, candidatesToBeRemoved)
+	p.addUnremovableNodes(unremovableNodes)
+
 	for _, nodeToRemove := range nodesToRemove {
 		if len(nodeToRemove.PodsToReschedule) > 0 {
 			needDrain = append(needDrain, nodeToRemove.Node)
@@ -174,8 +169,14 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	return empty, needDrain
 }
 
+func (p *Planner) addUnremovableNodes(unremovableNodes []simulator.UnremovableNode) {
+	for _, u := range unremovableNodes {
+		p.unremovableNodes.Add(&u)
+	}
+}
+
 func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {
-	nodeInfos, err := s.NodeInfos().List()
+	nodeInfos, err := s.ListNodeInfos()
 	if err != nil {
 		// This should never happen, List() returns err only because scheduler interface requires it.
 		return nil, err
@@ -212,7 +213,7 @@ func (p *Planner) NodeUtilizationMap() map[string]utilization.Info {
 // For pods that are controlled by controller known by CA, it will check whether
 // they have been recreated and will inject only not yet recreated pods.
 func (p *Planner) injectRecentlyEvictedPods() error {
-	recentlyEvictedRecreatablePods := pod_util.FilterRecreatablePods(p.actuationStatus.RecentEvictions())
+	recentlyEvictedRecreatablePods := pod_util.FilterRecreatablePods(p.scaleDownContext.ActuationStatus.RecentEvictions())
 	return p.injectPods(filterOutRecreatedPods(recentlyEvictedRecreatablePods, p.cc))
 }
 
@@ -263,7 +264,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
 	atomicScaleDownNodesCount := 0
-	p.unremovableNodes.Update(p.context.ClusterSnapshot.NodeInfos(), p.latestUpdate)
+	p.unremovableNodes.Update(p.context.ClusterSnapshot, p.latestUpdate)
 	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.context, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
 	for _, n := range ineligible {
 		p.unremovableNodes.Add(n)

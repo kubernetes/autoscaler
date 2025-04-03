@@ -17,6 +17,7 @@ limitations under the License.
 package api
 
 import (
+	"context"
 	"flag"
 	"testing"
 	"time"
@@ -32,6 +33,7 @@ import (
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -142,13 +144,15 @@ func TestPodMatchesVPA(t *testing.T) {
 type NilControllerFetcher struct{}
 
 // FindTopMostWellKnownOrScalable returns the same key for that fake implementation
-func (f NilControllerFetcher) FindTopMostWellKnownOrScalable(_ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+func (f NilControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
 	return nil, nil
 }
 
 var _ controllerfetcher.ControllerFetcher = &NilControllerFetcher{}
 
 func TestGetControllingVPAForPod(t *testing.T) {
+	ctx := context.Background()
+
 	isController := true
 	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
@@ -174,7 +178,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 		Name:       "test-sts",
 		APIVersion: "apps/v1",
 	}
-	chosen := GetControllingVPAForPod(pod, []*VpaWithSelector{
+	chosen := GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{
 		{vpaB, parseLabelSelector("app = testingApp")},
 		{vpaA, parseLabelSelector("app = testingApp")},
 		{nonMatchingVPA, parseLabelSelector("app = other")},
@@ -184,7 +188,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	// For some Pods (which are *not* under VPA), controllerFetcher.FindTopMostWellKnownOrScalable will return `nil`, e.g. when the Pod owner is a custom resource, which doesn't implement the /scale subresource
 	// See pkg/target/controller_fetcher/controller_fetcher_test.go:393 for testing this behavior
 	// This test case makes sure that GetControllingVPAForPod will just return `nil` in that case as well
-	chosen = GetControllingVPAForPod(pod, []*VpaWithSelector{{vpaA, parseLabelSelector("app = testingApp")}}, &NilControllerFetcher{})
+	chosen = GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{{vpaA, parseLabelSelector("app = testingApp")}}, &NilControllerFetcher{})
 	assert.Nil(t, chosen)
 }
 
@@ -298,6 +302,91 @@ func TestGetContainerControlledResources(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := GetContainerControlledValues(tc.containerName, tc.policy)
+			assert.Equal(t, got, tc.expected)
+		})
+	}
+}
+
+func TestFindParentControllerForPod(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		pod         *core.Pod
+		ctrlFetcher controllerfetcher.ControllerFetcher
+		expected    *controllerfetcher.ControllerKeyWithAPIVersion
+	}{
+		{
+			name: "should return nil for Pod without ownerReferences",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					OwnerReferences: nil,
+				},
+			},
+			ctrlFetcher: &NilControllerFetcher{},
+			expected:    nil,
+		},
+		{
+			name: "should return nil for Pod with ownerReference with controller=nil",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					OwnerReferences: []meta.OwnerReference{
+						{
+							APIVersion: "apps/v1",
+							Controller: nil,
+							Kind:       "ReplicaSet",
+							Name:       "foo",
+						},
+					},
+				},
+			},
+			ctrlFetcher: &controllerfetcher.FakeControllerFetcher{},
+			expected:    nil,
+		},
+		{
+			name: "should return nil for Pod with ownerReference with controller=false",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					OwnerReferences: []meta.OwnerReference{
+						{
+							APIVersion: "apps/v1",
+							Controller: ptr.To(false),
+							Kind:       "ReplicaSet",
+							Name:       "foo",
+						},
+					},
+				},
+			},
+			ctrlFetcher: &controllerfetcher.FakeControllerFetcher{},
+			expected:    nil,
+		},
+		{
+			name: "should pass the Pod ownerReference to the fake ControllerFetcher",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Namespace: "bar",
+					OwnerReferences: []meta.OwnerReference{
+						{
+							APIVersion: "apps/v1",
+							Controller: ptr.To(true),
+							Kind:       "ReplicaSet",
+							Name:       "foo",
+						},
+					},
+				},
+			},
+			ctrlFetcher: &controllerfetcher.FakeControllerFetcher{},
+			expected: &controllerfetcher.ControllerKeyWithAPIVersion{
+				ControllerKey: controllerfetcher.ControllerKey{
+					Namespace: "bar",
+					Kind:      "ReplicaSet",
+					Name:      "foo",
+				},
+				ApiVersion: "apps/v1",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := FindParentControllerForPod(context.Background(), tc.pod, tc.ctrlFetcher)
+			assert.NoError(t, err, "Unexpected error occurred.")
 			assert.Equal(t, got, tc.expected)
 		})
 	}

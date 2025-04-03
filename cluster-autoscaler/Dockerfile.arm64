@@ -13,7 +13,6 @@
 # limitations under the License.
 ARG BASEIMAGE=gcr.io/distroless/static:nonroot-arm64
 FROM $BASEIMAGE
-LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 COPY cluster-autoscaler-arm64 /cluster-autoscaler
 WORKDIR /

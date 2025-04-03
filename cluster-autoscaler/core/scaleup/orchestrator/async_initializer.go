@@ -17,22 +17,29 @@ limitations under the License.
 package orchestrator
 
 import (
+	"sync"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type asyncNodeGroupInitializer struct {
+// AsyncNodeGroupInitializer is a component of the Orchestrator responsible for initial
+// scale up of asynchronously created node groups.
+type AsyncNodeGroupInitializer struct {
+	// guards allTragetSizes
+	mutex                  sync.Mutex
+	allTargetSizes         map[string]int64
 	nodeGroup              cloudprovider.NodeGroup
 	nodeInfo               *framework.NodeInfo
 	scaleUpExecutor        *scaleUpExecutor
@@ -52,20 +59,48 @@ func newAsyncNodeGroupInitializer(
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor,
 	context *context.AutoscalingContext,
 	atomicScaleUp bool,
-) *asyncNodeGroupInitializer {
-	return &asyncNodeGroupInitializer{
-		nodeGroup,
-		nodeInfo,
-		scaleUpExecutor,
-		taintConfig,
-		daemonSets,
-		scaleUpStatusProcessor,
-		context,
-		atomicScaleUp,
+) *AsyncNodeGroupInitializer {
+	return &AsyncNodeGroupInitializer{
+		allTargetSizes:         map[string]int64{},
+		nodeGroup:              nodeGroup,
+		nodeInfo:               nodeInfo,
+		scaleUpExecutor:        scaleUpExecutor,
+		taintConfig:            taintConfig,
+		daemonSets:             daemonSets,
+		scaleUpStatusProcessor: scaleUpStatusProcessor,
+		context:                context,
+		atomicScaleUp:          atomicScaleUp,
 	}
 }
 
-func (s *asyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncNodeGroupCreationResult) {
+// GetTargetSize returns a target size of an upcoming node group.
+func (s *AsyncNodeGroupInitializer) GetTargetSize(nodeGroup string) int64 {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return s.allTargetSizes[nodeGroup]
+}
+
+// SetTargetSize sets a target size of an upcoming node group.
+func (s *AsyncNodeGroupInitializer) SetTargetSize(nodeGroup string, size int64) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.allTargetSizes[nodeGroup] = size
+}
+
+// ChangeTargetSize changes by delta a target size of an upcoming node group.
+func (s *AsyncNodeGroupInitializer) ChangeTargetSize(nodeGroup string, delta int64) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	size := s.allTargetSizes[nodeGroup] + delta
+	if size < 0 {
+		size = 0
+	}
+	s.allTargetSizes[nodeGroup] = size
+}
+
+// InitializeNodeGroup performs the initial scale up of the node group and all additionally created
+// node groups.
+func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncNodeGroupCreationResult) {
 	if result.Error != nil {
 		klog.Errorf("Async node group creation failed. Async scale-up is cancelled. %v", result.Error)
 		scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, result.Error))
@@ -75,7 +110,7 @@ func (s *asyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	mainCreatedNodeGroup := result.CreationResult.MainCreatedNodeGroup
 	// If possible replace candidate node-info with node info based on crated node group. The latter
 	// one should be more in line with nodes which will be created by node group.
-	nodeInfo, aErr := utils.GetNodeInfoFromTemplate(mainCreatedNodeGroup, s.daemonSets, s.taintConfig)
+	nodeInfo, aErr := simulator.SanitizedTemplateNodeInfoFromNodeGroup(mainCreatedNodeGroup, s.daemonSets, s.taintConfig)
 	if aErr != nil {
 		klog.Warningf("Cannot build node info for newly created main node group %s. Using fallback. Error: %v", mainCreatedNodeGroup.Id(), aErr)
 		nodeInfo = s.nodeInfo
@@ -84,12 +119,17 @@ func (s *asyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	nodeInfos := make(map[string]*framework.NodeInfo)
 	var scaleUpInfos []nodegroupset.ScaleUpInfo
 	for _, nodeGroup := range result.CreationResult.AllCreatedNodeGroups() {
-		if targetSize := result.TargetSizes[nodeGroup.Id()]; targetSize > 0 {
+		upcomingId, ok := result.CreatedToUpcomingMapping[nodeGroup.Id()]
+		if !ok {
+			klog.Errorf("Couldn't retrieve initialization data for new node group %v. It won't get initialized. Available created to upcoming node group mapping: %v", nodeGroup.Id(), result.CreatedToUpcomingMapping)
+			continue
+		}
+		if targetSize := s.GetTargetSize(upcomingId); targetSize > 0 {
 			nodeInfos[nodeGroup.Id()] = nodeInfo
 			scaleUpInfo := nodegroupset.ScaleUpInfo{
 				Group:       nodeGroup,
 				CurrentSize: 0,
-				NewSize:     targetSize,
+				NewSize:     int(targetSize),
 				MaxSize:     nodeGroup.MaxSize(),
 			}
 			scaleUpInfos = append(scaleUpInfos, scaleUpInfo)
@@ -106,12 +146,4 @@ func (s *asyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 		return
 	}
 	klog.Infof("Initial scale-up succeeded. Scale ups: %v", scaleUpInfos)
-}
-
-func nodeGroupIds(nodeGroups []cloudprovider.NodeGroup) []string {
-	var result []string
-	for _, ng := range nodeGroups {
-		result = append(result, ng.Id())
-	}
-	return result
 }

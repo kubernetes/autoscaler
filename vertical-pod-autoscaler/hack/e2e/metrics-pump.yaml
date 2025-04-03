@@ -21,7 +21,7 @@ spec:
       containers:
       - name: metrics-pump
         image: localhost:5001/write-metrics:dev
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         args:
         - /emit-metrics.py
         - --dest

@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -38,7 +39,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
 )
@@ -124,7 +124,7 @@ type ClusterStateRegistry struct {
 	scaleUpRequests                    map[string]*ScaleUpRequest // nodeGroupName -> ScaleUpRequest
 	scaleDownRequests                  []*ScaleDownRequest
 	nodes                              []*apiv1.Node
-	nodeInfosForGroups                 map[string]*schedulerframework.NodeInfo
+	nodeInfosForGroups                 map[string]*framework.NodeInfo
 	cloudProvider                      cloudprovider.CloudProvider
 	perNodeGroupReadiness              map[string]Readiness
 	totalReadiness                     Readiness
@@ -263,6 +263,9 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 	csr.backoff.RemoveStaleBackoffData(currentTime)
 
 	for nodeGroupName, scaleUpRequest := range csr.scaleUpRequests {
+		if csr.asyncNodeGroupStateChecker.IsUpcoming(scaleUpRequest.NodeGroup) {
+			continue
+		}
 		if !csr.areThereUpcomingNodesInNodeGroup(nodeGroupName) {
 			// scale up finished successfully, remove request
 			delete(csr.scaleUpRequests, nodeGroupName)
@@ -335,7 +338,7 @@ func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprov
 }
 
 // UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the stats
-func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) error {
+func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGroups map[string]*framework.NodeInfo, currentTime time.Time) error {
 	csr.updateNodeGroupMetrics()
 	targetSizes, err := getTargetSizes(csr.cloudProvider)
 	if err != nil {
@@ -417,7 +420,7 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
-		klog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
+		klog.V(5).Infof("Failed to find acceptable ranges for %v", nodeGroupName)
 		return false
 	}
 
@@ -427,7 +430,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 		if acceptable.CurrentTarget == 0 || (acceptable.MinNodes == 0 && acceptable.CurrentTarget > 0) {
 			return true
 		}
-		klog.Warningf("Failed to find readiness information for %v", nodeGroupName)
+		klog.V(5).Infof("Failed to find readiness information for %v", nodeGroupName)
 		return false
 	}
 
@@ -450,10 +453,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 	autoscaled := 0
 	autoprovisioned := 0
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
-		if !nodeGroup.Exist() {
-			continue
-		}
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		if nodeGroup.Autoprovisioned() {
 			autoprovisioned++
 		} else {
@@ -509,6 +509,12 @@ func (csr *ClusterStateRegistry) areThereUpcomingNodesInNodeGroup(nodeGroupName 
 	return target > provisioned
 }
 
+// IsNodeGroupRegistered returns true if the node group is registered in cluster state.
+func (csr *ClusterStateRegistry) IsNodeGroupRegistered(nodeGroupName string) bool {
+	_, found := csr.acceptableRanges[nodeGroupName]
+	return found
+}
+
 // IsNodeGroupAtTargetSize returns true if the number of nodes provisioned in the group is equal to the target number of nodes.
 func (csr *ClusterStateRegistry) IsNodeGroupAtTargetSize(nodeGroupName string) bool {
 	provisioned, target, ok := csr.getProvisionedAndTargetSizesForNodeGroup(nodeGroupName)
@@ -555,7 +561,7 @@ type AcceptableRange struct {
 // the expected number of ready nodes is between targetSize and targetSize + 3.
 func (csr *ClusterStateRegistry) updateAcceptableRanges(targetSize map[string]int) {
 	result := make(map[string]AcceptableRange)
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		size := targetSize[nodeGroup.Id()]
 		readiness := csr.perNodeGroupReadiness[nodeGroup.Id()]
 		result[nodeGroup.Id()] = AcceptableRange{
@@ -681,15 +687,10 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 // Calculates which node groups have incorrect size.
 func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.Time) {
 	result := make(map[string]IncorrectNodeGroupSize)
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		acceptableRange, found := csr.acceptableRanges[nodeGroup.Id()]
 		if !found {
 			klog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
-			continue
-		}
-		if csr.asyncNodeGroupStateChecker.IsUpcoming(nodeGroup) {
-			// Nodes for upcoming node groups reside in-memory and wait for node group to be fully
-			// created. There is no need to mark their sizes incorrect.
 			continue
 		}
 		readiness, found := csr.perNodeGroupReadiness[nodeGroup.Id()]
@@ -781,7 +782,7 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 	for _, nodeGroup := range csr.lastStatus.NodeGroups {
 		nodeGroupsLastStatus[nodeGroup.Name] = nodeGroup
 	}
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		nodeGroupStatus := api.NodeGroupStatus{
 			Name: nodeGroup.Id(),
 		}
@@ -1014,10 +1015,22 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 	return upcomingCounts, registeredNodeNames
 }
 
+// getRunningNodeGroups returns running node groups, filters out upcoming ones.
+func (csr *ClusterStateRegistry) getRunningNodeGroups() []cloudprovider.NodeGroup {
+	nodeGroups := csr.cloudProvider.NodeGroups()
+	result := make([]cloudprovider.NodeGroup, 0, len(nodeGroups))
+	for _, nodeGroup := range nodeGroups {
+		if !csr.asyncNodeGroupStateChecker.IsUpcoming(nodeGroup) {
+			result = append(result, nodeGroup)
+		}
+	}
+	return result
+}
+
 // getCloudProviderNodeInstances returns map keyed on node group id where value is list of node instances
 // as returned by NodeGroup.Nodes().
 func (csr *ClusterStateRegistry) getCloudProviderNodeInstances() (map[string][]cloudprovider.Instance, error) {
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		if csr.IsNodeGroupScalingUp(nodeGroup.Id()) {
 			csr.cloudProviderNodeInstancesCache.InvalidateCacheEntry(nodeGroup)
 		}
@@ -1089,7 +1102,7 @@ func (csr *ClusterStateRegistry) GetAutoscaledNodesCount() (currentSize, targetS
 }
 
 func (csr *ClusterStateRegistry) handleInstanceCreationErrors(currentTime time.Time) {
-	nodeGroups := csr.cloudProvider.NodeGroups()
+	nodeGroups := csr.getRunningNodeGroups()
 
 	for _, nodeGroup := range nodeGroups {
 		csr.handleInstanceCreationErrorsForNodeGroup(
