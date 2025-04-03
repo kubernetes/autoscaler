@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/equivalence"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -44,7 +44,7 @@ import (
 
 // ScaleUpOrchestrator implements scaleup.Orchestrator interface.
 type ScaleUpOrchestrator struct {
-	autoscalingContext   *context.AutoscalingContext
+	autoscalingContext   *ca_context.AutoscalingContext
 	processors           *ca_processors.AutoscalingProcessors
 	resourceManager      *resource.Manager
 	clusterStateRegistry *clusterstate.ClusterStateRegistry
@@ -63,7 +63,7 @@ func New() *ScaleUpOrchestrator {
 
 // Initialize initializes the orchestrator object with required fields.
 func (o *ScaleUpOrchestrator) Initialize(
-	autoscalingContext *context.AutoscalingContext,
+	autoscalingContext *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
