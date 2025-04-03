@@ -26,6 +26,7 @@ import (
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -76,8 +77,8 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *v
 func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
 	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
-	if pod.Spec.Containers[i].Resources.Limits == nil &&
-		pod.Spec.Containers[i].Resources.Requests == nil {
+	requests, limits := resourcehelpers.ContainerRequestsAndLimits(pod.Spec.Containers[i].Name, pod)
+	if limits == nil && requests == nil {
 		patches = append(patches, getPatchInitializingEmptyResources(i))
 	}
 
@@ -86,8 +87,8 @@ func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_uti
 		annotations = make([]string, 0)
 	}
 
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests", "request")
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits", "limit")
+	patches, annotations = appendPatchesAndAnnotations(patches, annotations, requests, i, containerResources.Requests, "requests", "request")
+	patches, annotations = appendPatchesAndAnnotations(patches, annotations, limits, i, containerResources.Limits, "limits", "limit")
 
 	updatesAnnotation := fmt.Sprintf("container %d: ", i) + strings.Join(annotations, ", ")
 	return patches, updatesAnnotation

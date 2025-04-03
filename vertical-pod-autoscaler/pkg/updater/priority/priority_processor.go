@@ -24,6 +24,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -65,7 +66,8 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
 			lowerBound, hasLowerBound := recommendedRequest.LowerBound[resourceName]
 			upperBound, hasUpperBound := recommendedRequest.UpperBound[resourceName]
-			if request, hasRequest := podContainer.Resources.Requests[resourceName]; hasRequest {
+			requests, _ := resourcehelpers.ContainerRequestsAndLimits(podContainer.Name, pod)
+			if request, hasRequest := requests[resourceName]; hasRequest {
 				totalRequestPerResource[resourceName] += request.MilliValue()
 				if recommended.MilliValue() > request.MilliValue() {
 					scaleUp = true

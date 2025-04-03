@@ -20,6 +20,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -50,23 +51,24 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *
 		if recommendedResources == nil {
 			continue
 		}
-		if s.admitContainer(container, recommendedResources, podEvictionRequirements) {
+		containerRequests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+		if s.admitContainer(containerRequests, recommendedResources, podEvictionRequirements) {
 			return true
 		}
 	}
 	return false
 }
 
-func (s *scalingDirectionPodEvictionAdmission) admitContainer(container apiv1.Container, recommendedResources *vpa_types.RecommendedContainerResources, podEvictionRequirements []*vpa_types.EvictionRequirement) bool {
-	_, foundCPURequests := container.Resources.Requests[apiv1.ResourceCPU]
+func (s *scalingDirectionPodEvictionAdmission) admitContainer(containerRequests apiv1.ResourceList, recommendedResources *vpa_types.RecommendedContainerResources, podEvictionRequirements []*vpa_types.EvictionRequirement) bool {
+	_, foundCPURequests := containerRequests[apiv1.ResourceCPU]
 	if !foundCPURequests {
 		return true
 	}
-	_, foundMemoryRequests := container.Resources.Requests[apiv1.ResourceMemory]
+	_, foundMemoryRequests := containerRequests[apiv1.ResourceMemory]
 	if !foundMemoryRequests {
 		return true
 	}
-	return s.checkEvictionRequirementsForContainer(container.Resources.Requests, recommendedResources.Target, podEvictionRequirements)
+	return s.checkEvictionRequirementsForContainer(containerRequests, recommendedResources.Target, podEvictionRequirements)
 }
 
 func (s *scalingDirectionPodEvictionAdmission) checkEvictionRequirementsForContainer(requestedResources apiv1.ResourceList, recommendedResources apiv1.ResourceList, evictionRequirements []*vpa_types.EvictionRequirement) bool {
