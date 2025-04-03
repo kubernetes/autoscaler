@@ -110,18 +110,15 @@ func newManager() (*hetznerManager, error) {
 	var err error
 
 	clusterConfigBase64 := os.Getenv("HCLOUD_CLUSTER_CONFIG")
+	clusterConfigFile := os.Getenv("HCLOUD_CLUSTER_CONFIG_FILE")
 	cloudInitBase64 := os.Getenv("HCLOUD_CLOUD_INIT")
 
-	if clusterConfigBase64 == "" && cloudInitBase64 == "" {
-		return nil, errors.New("`HCLOUD_CLUSTER_CONFIG` or `HCLOUD_CLOUD_INIT` is not specified")
+	if clusterConfigBase64 == "" && cloudInitBase64 == "" && clusterConfigFile == "" {
+		return nil, errors.New("neither `HCLOUD_CLUSTER_CONFIG`, `HCLOUD_CLOUD_INIT` nor `HCLOUD_CLUSTER_CONFIG_FILE` is specified")
 	}
-	var clusterConfig *ClusterConfig = &ClusterConfig{}
+	var clusterConfig = &ClusterConfig{}
 
 	if clusterConfigBase64 != "" {
-		clusterConfig.IsUsingNewFormat = true
-	}
-
-	if clusterConfig.IsUsingNewFormat {
 		clusterConfigEnv, err := base64.StdEncoding.DecodeString(clusterConfigBase64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse cluster config error: %s", err)
@@ -130,9 +127,20 @@ func newManager() (*hetznerManager, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", err)
 		}
-	}
+		clusterConfig.IsUsingNewFormat = true
 
-	if !clusterConfig.IsUsingNewFormat {
+	} else if clusterConfigFile != "" {
+		clusterConfigData, err := os.ReadFile(clusterConfigFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read cluster config file: %s", err)
+		}
+		err = json.Unmarshal(clusterConfigData, &clusterConfig)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", err)
+		}
+		clusterConfig.IsUsingNewFormat = true
+
+	} else {
 		cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
