@@ -375,6 +375,8 @@ spec:
                       type: object
                     type: array
                 type: object
+              scope:
+                type: string
               targetRef:
                 description: |-
                   TargetRef points to the controller managing the set of pods for the
@@ -532,6 +534,10 @@ spec:
                             This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
                             running with less resources is likely to have significant impact on performance/availability.
                           type: object
+                        scope:
+                          description: When running VPA for finer-grained scope than
+                            a workload, e.g. per-node.
+                          type: string
                         target:
                           additionalProperties:
                             anyOf:

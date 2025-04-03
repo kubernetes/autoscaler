@@ -38,3 +38,22 @@ func GetContainerNameToAggregateStateMap(vpa *model.Vpa) model.ContainerNameToAg
 	}
 	return filteredContainerNameToAggregateStateMap
 }
+
+func GetContainerNameToAggregateStateMapByNode(vpa *model.Vpa) map[string]model.ContainerNameToAggregateStateMap {
+	nodeAndcontainerNameToAggregateStateMap := vpa.AggregateStateByNodeAndContainerName()
+	filteredNodeAndContainerNameToAggregateStateMap := make(map[string]model.ContainerNameToAggregateStateMap)
+
+	for node, containerNameToAggregateStateMap := range nodeAndcontainerNameToAggregateStateMap {
+		filteredNodeAndContainerNameToAggregateStateMap[node] = make(model.ContainerNameToAggregateStateMap)
+		for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
+			containerResourcePolicy := api_utils.GetContainerResourcePolicy(containerName, vpa.ResourcePolicy)
+			autoscalingDisabled := containerResourcePolicy != nil && containerResourcePolicy.Mode != nil &&
+				*containerResourcePolicy.Mode == vpa_types.ContainerScalingModeOff
+			if !autoscalingDisabled {
+				aggregatedContainerState.UpdateFromPolicy(containerResourcePolicy)
+				filteredNodeAndContainerNameToAggregateStateMap[node][containerName] = aggregatedContainerState
+			}
+		}
+	}
+	return filteredNodeAndContainerNameToAggregateStateMap
+}
