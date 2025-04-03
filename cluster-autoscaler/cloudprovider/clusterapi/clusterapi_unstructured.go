@@ -18,18 +18,21 @@ package clusterapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"path"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation"
 	klog "k8s.io/klog/v2"
 )
@@ -118,17 +121,18 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 		return err
 	}
 
-	s, err := r.controller.managementScaleClient.Scales(r.Namespace()).Get(context.TODO(), gvr.GroupResource(), r.Name(), metav1.GetOptions{})
+	spec := autoscalingv1.Scale{
+		Spec: autoscalingv1.ScaleSpec{
+			Replicas: int32(nreplicas),
+		},
+	}
+
+	patch, err := json.Marshal(spec)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not marshal json patch for scaling: %w", err)
 	}
 
-	if s == nil {
-		return fmt.Errorf("unknown %s %s/%s", r.Kind(), r.Namespace(), r.Name())
-	}
-
-	s.Spec.Replicas = int32(nreplicas)
-	_, updateErr := r.controller.managementScaleClient.Scales(r.Namespace()).Update(context.TODO(), gvr.GroupResource(), s, metav1.UpdateOptions{})
+	_, updateErr := r.controller.managementScaleClient.Scales(r.Namespace()).Patch(context.TODO(), gvr, r.Name(), types.MergePatchType, patch, metav1.PatchOptions{})
 
 	if updateErr == nil {
 		updateErr = unstructured.SetNestedField(r.unstructured.UnstructuredContent(), int64(nreplicas), "spec", "replicas")
