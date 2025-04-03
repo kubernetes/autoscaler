@@ -33,6 +33,10 @@ func (*inPlaceUpdate) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAu
 	return []resource_admission.PatchRecord{patch.GetAddAnnotationPatch(annotations.VpaInPlaceUpdatedLabel, vpaInPlaceUpdatedValue)}, nil
 }
 
+func (*inPlaceUpdate) PatchResourceTarget() patch.PatchResourceTarget {
+	return patch.Pod
+}
+
 // NewInPlaceUpdatedCalculator returns calculator for
 // observed containers patches.
 func NewInPlaceUpdatedCalculator() patch.Calculator {
