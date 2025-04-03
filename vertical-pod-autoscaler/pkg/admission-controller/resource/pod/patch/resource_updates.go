@@ -46,6 +46,10 @@ func NewResourceUpdatesCalculator(recommendationProvider recommendation.Provider
 	}
 }
 
+func (*resourcesUpdatesPatchCalculator) PatchResourceTarget() PatchResourceTarget {
+	return Pod
+}
+
 func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 

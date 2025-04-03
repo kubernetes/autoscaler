@@ -33,11 +33,16 @@ type resourcesInplaceUpdatesPatchCalculator struct {
 }
 
 // NewResourceInPlaceUpdatesCalculator returns a calculator for
-// resource in-place update patches.
+// in-place resource update patches.
 func NewResourceInPlaceUpdatesCalculator(recommendationProvider recommendation.Provider) patch.Calculator {
 	return &resourcesInplaceUpdatesPatchCalculator{
 		recommendationProvider: recommendationProvider,
 	}
+}
+
+// PatchResourceTarget returns the resize subresource to apply calculator patches.
+func (*resourcesInplaceUpdatesPatchCalculator) PatchResourceTarget() patch.PatchResourceTarget {
+	return patch.Resize
 }
 
 // CalculatePatches calculates a JSON patch from a VPA's recommendation to send to the pod "resize" subresource as an in-place resize.

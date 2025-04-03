@@ -14,14 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package annotations
+package utils
+
+// InPlaceDecision is the type of decision that can be made for a pod.
+type InPlaceDecision string
 
 const (
-	// VpaInPlaceUpdatedLabel is a label used by the vpa inplace updated annotation.
-	VpaInPlaceUpdatedLabel = "vpaInPlaceUpdated"
+	// InPlaceApproved means we can in-place update the pod.
+	InPlaceApproved InPlaceDecision = "InPlaceApproved"
+	// InPlaceDeferred means we can't in-place update the pod right now, but we will wait for the next loop to check for in-placeability again
+	InPlaceDeferred InPlaceDecision = "InPlaceDeferred"
+	// InPlaceEvict means we will attempt to evict the pod.
+	InPlaceEvict InPlaceDecision = "InPlaceEvict"
 )
-
-// GetVpaInPlaceUpdatedValue creates an annotation value for a given pod.
-func GetVpaInPlaceUpdatedValue() string {
-	return "true"
-}
