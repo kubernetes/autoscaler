@@ -91,9 +91,8 @@ Important Notes
 
 ### Requirements:
 
-* Kubernetes 1.33+
+* Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
 * VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
-* Cluster feature gate `InPlacePodVerticalScaling` enabled
 
 ### Configuration
 
