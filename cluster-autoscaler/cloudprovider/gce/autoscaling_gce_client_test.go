@@ -653,18 +653,13 @@ func TestFetchAvailableDiskTypes(t *testing.T) {
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project-id", server.URL, "")
 
-	// ref: https://cloud.google.com/compute/docs/reference/rest/v1/diskTypes/aggregatedList
-	getDiskTypesAggregatedListOKResponse, _ := os.ReadFile("fixtures/diskTypes_aggregatedList.json")
-	server.On("handle", "/projects/project-id/aggregated/diskTypes").Return(string(getDiskTypesAggregatedListOKResponse)).Times(1)
+	// ref: https://cloud.google.com/compute/docs/reference/rest/v1/diskTypes/list
+	getDiskTypesListOKResponse, _ := os.ReadFile("fixtures/diskTypes_list.json")
+	server.On("handle", "/projects/project-id/zones/us-central1-b/diskTypes").Return(string(getDiskTypesListOKResponse)).Times(1)
 
 	t.Run("correctly parse a response", func(t *testing.T) {
-		want := map[string][]string{
-			// "us-central1" region should be skipped
-			"us-central1-a": {"local-ssd", "pd-balanced", "pd-ssd", "pd-standard"},
-			"us-central1-b": {"hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput", "local-ssd", "pd-balanced", "pd-extreme", "pd-ssd", "pd-standard"},
-		}
-
-		got, err := g.FetchAvailableDiskTypes()
+		want := []string{"hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput", "local-ssd", "pd-balanced", "pd-extreme", "pd-ssd", "pd-standard"}
+		got, err := g.FetchAvailableDiskTypes("us-central1-b")
 
 		assert.NoError(t, err)
 		if diff := cmp.Diff(want, got, cmpopts.EquateErrors()); diff != "" {
@@ -860,7 +855,7 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"FetchAvailableDiskTypes_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchAvailableDiskTypes()
+				_, err := client.FetchAvailableDiskTypes("")
 				return err
 			},
 			httpTimeout: instantTimeout,

@@ -130,7 +130,7 @@ type AutoscalingGceClient interface {
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
 	FetchZones(region string) ([]string, error)
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
-	FetchAvailableDiskTypes() (map[string][]string, error)
+	FetchAvailableDiskTypes(zone string) ([]string, error)
 	FetchReservations() ([]*gce.Reservation, error)
 	FetchReservationsInProject(projectId string) ([]*gce.Reservation, error)
 	FetchListManagedInstancesResults(migRef GceRef) (string, error)
@@ -753,21 +753,13 @@ func (client *autoscalingGceClientV1) FetchAvailableCpuPlatforms() (map[string][
 	return availableCpuPlatforms, nil
 }
 
-func (client *autoscalingGceClientV1) FetchAvailableDiskTypes() (map[string][]string, error) {
-	availableDiskTypes := make(map[string][]string)
+func (client *autoscalingGceClientV1) FetchAvailableDiskTypes(zone string) ([]string, error) {
+	availableDiskTypes := []string{}
 
-	req := client.gceService.DiskTypes.AggregatedList(client.projectId)
-	if err := req.Pages(context.TODO(), func(page *gce.DiskTypeAggregatedList) error {
-		for _, diskTypesScopedList := range page.Items {
-			for _, diskType := range diskTypesScopedList.DiskTypes {
-				// skip data for regions
-				if diskType.Zone == "" {
-					continue
-				}
-				// convert URL of the zone, into the short name, e.g. us-central1-a
-				zone := path.Base(diskType.Zone)
-				availableDiskTypes[zone] = append(availableDiskTypes[zone], diskType.Name)
-			}
+	req := client.gceService.DiskTypes.List(client.projectId, zone)
+	if err := req.Pages(context.TODO(), func(page *gce.DiskTypeList) error {
+		for _, diskType := range page.Items {
+			availableDiskTypes = append(availableDiskTypes, diskType.Name)
 		}
 		return nil
 	}); err != nil {
