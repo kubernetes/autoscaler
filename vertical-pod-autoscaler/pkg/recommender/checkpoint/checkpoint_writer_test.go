@@ -17,6 +17,7 @@ limitations under the License.
 package checkpoint
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"testing"
@@ -33,6 +34,8 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	core "k8s.io/client-go/testing"
+	"k8s.io/klog/v2"
+	klogtest "k8s.io/klog/v2/test"
 )
 
 // TODO: Extract these constants to a common test module.
@@ -178,6 +181,10 @@ func TestGetVpasToCheckpointSorts(t *testing.T) {
 }
 
 func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
+	klogtest.InitKlog(t)
+	tmpLogBuffer := bytes.NewBuffer(nil)
+	klog.SetOutput(tmpLogBuffer)
+
 	// immediately timeout the context to check if minCheckpoints get written
 	ctx, _ := context.WithTimeout(context.Background(), 1*time.Millisecond)
 	clusterState := model.NewClusterState(testGcPeriod)
@@ -225,10 +232,11 @@ func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
 	})
 
 	writer := NewCheckpointWriter(clusterState, checkpointClient)
-	err := writer.StoreCheckpoints(ctx, time.Now(), 2)
+	writer.StoreCheckpoints(ctx, 1, 2)
 
-	// Expect 1 VPA to get processed, which has 2 Containers and therefore we expect 2 Checkpoints to be written
-	assert.Equal(t, 2, len(patchedCheckpoints), "Expected 4 checkpoints to be written, but got) %d", len(patchedCheckpoints))
+	// Because we have 2 concurrent workers, expect 2 VPAs to get processed, which have 2 Containers each
+	// and therefore we expect 4 Checkpoints to be written
+	assert.Equal(t, 4, len(patchedCheckpoints), "Expected 4 checkpoints to be written, but got) %d", len(patchedCheckpoints))
 
-	assert.Equal(t, err.Error(), "context deadline exceeded")
+	assert.Contains(t, tmpLogBuffer.String(), "context deadline exceeded")
 }
