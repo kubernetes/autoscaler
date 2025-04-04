@@ -185,13 +185,11 @@ type PodResourcePolicy struct {
 	// +optional
 	// +patchMergeKey=containerName
 	// +patchStrategy=merge
-	// +kubebuilder:validation:MaxItems=100
 	ContainerPolicies []ContainerResourcePolicy `json:"containerPolicies,omitempty" patchStrategy:"merge" patchMergeKey:"containerName" protobuf:"bytes,1,rep,name=containerPolicies"`
 }
 
 // ContainerResourcePolicy controls how autoscaler computes the recommended
 // resources for a specific container.
-// +kubebuilder:validation:XValidation:rule="!has(self.mode) || !has(self.controlledValues) || self.mode != 'Off' || self.controlledValues != 'RequestsAndLimits'",message="ControlledValues shouldn't be specified if container scaling mode is off"
 type ContainerResourcePolicy struct {
 	// Name of the container or DefaultContainerResourcePolicy, in which
 	// case the policy is used by the containers that don't have their own

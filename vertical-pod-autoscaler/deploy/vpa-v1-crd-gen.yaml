@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
   name: verticalpodautoscalercheckpoints.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -225,7 +225,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
   name: verticalpodautoscalers.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -379,12 +379,6 @@ spec:
                           - "Off"
                           type: string
                       type: object
-                      x-kubernetes-validations:
-                      - message: ControlledValues shouldn't be specified if container
-                          scaling mode is off
-                        rule: '!has(self.mode) || !has(self.controlledValues) || self.mode
-                          != ''Off'' || self.controlledValues != ''RequestsAndLimits'''
-                    maxItems: 100
                     type: array
                 type: object
               targetRef:
