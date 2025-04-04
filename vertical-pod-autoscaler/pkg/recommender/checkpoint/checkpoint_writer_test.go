@@ -17,17 +17,22 @@ limitations under the License.
 package checkpoint
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-
-	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	core "k8s.io/client-go/testing"
 )
 
 // TODO: Extract these constants to a common test module.
@@ -170,4 +175,60 @@ func TestGetVpasToCheckpointSorts(t *testing.T) {
 	assert.Equal(t, genVpaID(1), result[1].ID)
 	assert.Equal(t, genVpaID(2), result[2].ID)
 
+}
+
+func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
+	// immediately timeout the context to check if minCheckpoints get written
+	ctx, _ := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	clusterState := model.NewClusterState(testGcPeriod)
+
+	// prepare ClusterState with 5 VPAs referencing Pods
+	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container-1").WithContainer("container-2").WithNamespace("test-namespace")
+
+	for i := 0; i < 5; i++ {
+		targetRef := &autoscalingv1.CrossVersionObjectReference{
+			Kind:       "Pod",
+			Name:       fmt.Sprintf("pod-%d", i),
+			APIVersion: "apps/v1",
+		}
+		labelSelector, _ := labels.Parse(fmt.Sprintf("app=pod-%d", i))
+		vpa := vpaBuilder.WithName(fmt.Sprintf("vpa-%d", i)).WithTargetRef(targetRef).Get()
+		clusterState.AddOrUpdateVpa(vpa, labelSelector)
+	}
+
+	// prepare ClusterState with 5 pods that have 2 containers each
+	for i := 0; i < 5; i++ {
+		podID := model.PodID{
+			Namespace: "test-namespace",
+			PodName:   fmt.Sprintf("pod-%d", i),
+		}
+		podLabels := map[string]string{"app": fmt.Sprintf("pod-%d", i)}
+		clusterState.AddOrUpdatePod(podID, podLabels, v1.PodRunning)
+		for j := 0; j < 2; j++ {
+			containerID := model.ContainerID{
+				PodID:         podID,
+				ContainerName: fmt.Sprintf("container-%d", j),
+			}
+			clusterState.AddOrUpdateContainer(containerID, testRequest)
+		}
+	}
+
+	patchedCheckpoints := []string{}
+	checkpointClient := &fakeautoscalingv1.FakeAutoscalingV1{Fake: &core.Fake{}}
+	checkpointClient.Fake.AddReactor("patch", "verticalpodautoscalercheckpoints", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+		patchAction := action.(core.PatchAction)
+		name := patchAction.GetName()
+		time.Sleep(2 * time.Millisecond) // Simulate some delay in patching, such that we can test the timeout
+		patchedCheckpoints = append(patchedCheckpoints, name)
+
+		return true, nil, nil
+	})
+
+	writer := NewCheckpointWriter(clusterState, checkpointClient)
+	err := writer.StoreCheckpoints(ctx, time.Now(), 2)
+
+	// Expect 1 VPA to get processed, which has 2 Containers and therefore we expect 2 Checkpoints to be written
+	assert.Equal(t, 2, len(patchedCheckpoints), "Expected 4 checkpoints to be written, but got) %d", len(patchedCheckpoints))
+
+	assert.Equal(t, err.Error(), "context deadline exceeded")
 }
