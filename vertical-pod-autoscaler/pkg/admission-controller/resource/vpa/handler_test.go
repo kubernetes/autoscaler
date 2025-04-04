@@ -182,7 +182,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off."),
+			expectError: fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off."),
 		},
 		{
 			name: "all valid",

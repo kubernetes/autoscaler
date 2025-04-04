@@ -34,13 +34,6 @@ import (
 )
 
 var (
-	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
-		vpa_types.UpdateModeOff:      struct{}{},
-		vpa_types.UpdateModeInitial:  struct{}{},
-		vpa_types.UpdateModeRecreate: struct{}{},
-		vpa_types.UpdateModeAuto:     struct{}{},
-	}
-
 	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{
 		vpa_types.ContainerScalingModeAuto: struct{}{},
 		vpa_types.ContainerScalingModeOff:  struct{}{},
@@ -139,7 +132,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			ControlledValues := policy.ControlledValues
 			if mode != nil && ControlledValues != nil {
 				if *mode == vpa_types.ContainerScalingModeOff && *ControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-					return fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off.")
+					return fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off.")
 				}
 			}
 		}
