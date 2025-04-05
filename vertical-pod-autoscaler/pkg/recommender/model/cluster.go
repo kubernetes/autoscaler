@@ -47,7 +47,7 @@ type ClusterState interface {
 	DeletePod(podID PodID)
 	AddOrUpdateContainer(containerID ContainerID, request Resources) error
 	AddSample(sample *ContainerUsageSampleWithKey) error
-	RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error
+	RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount, OOMBumpUpRatio *float64, OOMMinBumpUp *float64) error
 	AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler, selector labels.Selector) error
 	DeleteVpa(vpaID VpaID) error
 	MakeAggregateStateKey(pod *PodState, containerName string) AggregateStateKey
@@ -250,7 +250,7 @@ func (cluster *clusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 }
 
 // RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
-func (cluster *clusterState) RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error {
+func (cluster *clusterState) RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount, OOMBumpUpRatio *float64, OOMMinBumpUp *float64) error {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if !podExists {
 		return NewKeyError(containerID.PodID)
@@ -259,7 +259,7 @@ func (cluster *clusterState) RecordOOM(containerID ContainerID, timestamp time.T
 	if !containerExists {
 		return NewKeyError(containerID.ContainerName)
 	}
-	err := containerState.RecordOOM(timestamp, requestedMemory)
+	err := containerState.RecordOOM(timestamp, requestedMemory,OOMBumpUpRatio,OOMMinBumpUp)
 	if err != nil {
 		return fmt.Errorf("error while recording OOM for %v, Reason: %v", containerID, err)
 	}
@@ -305,6 +305,7 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	vpa.Recommendation = currentRecommendation
 	vpa.SetUpdateMode(apiObject.Spec.UpdatePolicy)
 	vpa.SetResourcePolicy(apiObject.Spec.ResourcePolicy)
+	vpa.SetRecommenderConfig(apiObject.Spec.RecommenderConfig)
 	vpa.SetAPIVersion(apiObject.GetObjectKind().GroupVersionKind().Version)
 	return nil
 }

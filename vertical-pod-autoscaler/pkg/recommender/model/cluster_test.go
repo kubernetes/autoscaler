@@ -321,7 +321,7 @@ func TestClusterRecordOOM(t *testing.T) {
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
 
 	// RecordOOM
-	assert.NoError(t, cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10)))
+	assert.NoError(t, cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10),nil,nil))
 
 	// Verify that OOM was aggregated into the aggregated stats.
 	aggregation := cluster.findOrCreateAggregateContainerState(testContainerID)
@@ -335,7 +335,7 @@ func TestMissingKeys(t *testing.T) {
 	err := cluster.AddSample(makeTestUsageSample())
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 
-	err = cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10))
+	err = cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10),nil,nil)
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 
 	err = cluster.AddOrUpdateContainer(testContainerID, testRequest)

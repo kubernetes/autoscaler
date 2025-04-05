@@ -127,7 +127,7 @@ func TestRecordOOMIncreasedByBumpUp(t *testing.T) {
 	// Bump Up factor is 20%.
 	test.mockMemoryHistogram.On("AddSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
 
-	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), nil, nil))
 }
 
 func TestRecordOOMDontRunAway(t *testing.T) {
@@ -136,16 +136,16 @@ func TestRecordOOMDontRunAway(t *testing.T) {
 
 	// Bump Up factor is 20%.
 	test.mockMemoryHistogram.On("AddSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
-	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), nil, nil))
 
 	// new smaller OOMs don't influence the sample value (oomPeak)
-	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(999*mb)))
-	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(999*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(999*mb), nil, nil))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(999*mb), nil, nil))
 
 	test.mockMemoryHistogram.On("SubtractSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
 	test.mockMemoryHistogram.On("AddSample", 2400.0*mb, 1.0, memoryAggregationWindowEnd)
 	// a larger OOM should increase the sample value
-	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(2000*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(2000*mb), nil, nil))
 }
 
 func TestRecordOOMIncreasedByMin(t *testing.T) {
@@ -154,7 +154,7 @@ func TestRecordOOMIncreasedByMin(t *testing.T) {
 	// Min grow by 100Mb.
 	test.mockMemoryHistogram.On("AddSample", 101.0*mb, 1.0, memoryAggregationWindowEnd)
 
-	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1*mb), nil, nil))
 }
 
 func TestRecordOOMMaxedWithKnownSample(t *testing.T) {
@@ -168,7 +168,7 @@ func TestRecordOOMMaxedWithKnownSample(t *testing.T) {
 	test.mockMemoryHistogram.On("SubtractSample", 3000.0*mb, 1.0, memoryAggregationWindowEnd)
 	test.mockMemoryHistogram.On("AddSample", 3600.0*mb, 1.0, memoryAggregationWindowEnd)
 
-	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), nil, nil))
 }
 
 func TestRecordOOMDiscardsOldSample(t *testing.T) {
@@ -179,7 +179,7 @@ func TestRecordOOMDiscardsOldSample(t *testing.T) {
 	assert.True(t, test.container.AddSample(newUsageSample(testTimestamp, 1000*mb, ResourceMemory)))
 
 	// OOM is stale, mem not changed.
-	assert.Error(t, test.container.RecordOOM(testTimestamp.Add(-30*time.Hour), ResourceAmount(1000*mb)))
+	assert.Error(t, test.container.RecordOOM(testTimestamp.Add(-30*time.Hour), ResourceAmount(1000*mb), nil, nil))
 }
 
 func TestRecordOOMInNewWindow(t *testing.T) {
@@ -192,5 +192,56 @@ func TestRecordOOMInNewWindow(t *testing.T) {
 
 	memoryAggregationWindowEnd = memoryAggregationWindowEnd.Add(2 * memoryAggregationInterval)
 	test.mockMemoryHistogram.On("AddSample", 2400.0*mb, 1.0, memoryAggregationWindowEnd)
-	assert.NoError(t, test.container.RecordOOM(testTimestamp.Add(2*memoryAggregationInterval), ResourceAmount(1000*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp.Add(2*memoryAggregationInterval), ResourceAmount(1000*mb), nil, nil))
+}
+
+func TestRecordOOMWithCustomBumpUpRatio(t *testing.T) {
+	test := newContainerTest()
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+
+	customBumpUpRatio := 1.5 // 50% increase
+	test.mockMemoryHistogram.On("AddSample", 1500.0*mb, 1.0, memoryAggregationWindowEnd)
+
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), &customBumpUpRatio, nil))
+}
+
+func TestRecordOOMWithCustomMinBumpUp(t *testing.T) {
+	test := newContainerTest()
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+
+	customMinBumpUp := float64(200 * mb)
+	test.mockMemoryHistogram.On("AddSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
+
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), nil, &customMinBumpUp))
+}
+
+func TestRecordOOMWithCustomBumpUpRatioAndMinBumpUp(t *testing.T) {
+	test := newContainerTest()
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+
+	customBumpUpRatio := 1.3 // 30% increase
+	customMinBumpUp := float64(500 * mb)
+	test.mockMemoryHistogram.On("AddSample", 1500.0*mb, 1.0, memoryAggregationWindowEnd)
+
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), &customBumpUpRatio, &customMinBumpUp))
+}
+
+func TestRecordOOMWithZeroBumpUpRatio(t *testing.T) {
+	test := newContainerTest()
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+
+	zeroBumpUpRatio := 0.0
+	test.mockMemoryHistogram.On("AddSample", 1100.0*mb, 1.0, memoryAggregationWindowEnd)
+
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), &zeroBumpUpRatio, nil))
+}
+
+func TestRecordOOMWithNegativeBumpUpRatio(t *testing.T) {
+	test := newContainerTest()
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+
+	negativeBumpUpRatio := -0.5
+	test.mockMemoryHistogram.On("AddSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
+
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb), &negativeBumpUpRatio, nil))
 }
