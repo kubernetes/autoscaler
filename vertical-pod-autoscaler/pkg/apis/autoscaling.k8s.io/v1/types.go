@@ -45,6 +45,7 @@ type VerticalPodAutoscalerList struct {
 // +kubebuilder:printcolumn:name="Mem",type="string",JSONPath=".status.recommendation.containerRecommendations[0].target.memory"
 // +kubebuilder:printcolumn:name="Provided",type="string",JSONPath=".status.conditions[?(@.type=='RecommendationProvided')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="RecommenderConfig",type="string",JSONPath=".spec.recommenderConfig"
 // +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
@@ -107,6 +108,23 @@ type VerticalPodAutoscalerSpec struct {
 	// recommendation) or contain exactly one recommender.
 	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
+
+	// RecommenderConfig specifies the configuration for the recommender.
+	// +optional
+	RecommenderConfig *RecommenderConfig `json:"recommenderConfig,omitempty" protobuf:"bytes,5,opt,name=recommenderConfig"`
+}
+
+// RecommenderConfig contains configuration for the recommender.
+type RecommenderConfig struct {
+	// OOMBumpUpRatio is the ratio to increase resources when OOM is detected.
+	// +kubebuilder:validation:Minimum=1.0
+	// +optional
+	OOMBumpUpRatio *float64 `json:"oomBumpUpRatio,omitempty" protobuf:"bytes,1,opt,name=oomBumpUpRatio"`
+
+	// OOMMinBumpUp is the minimum increase in resources when OOM is detected.
+	// +kubebuilder:validation:Minimum=0
+	// +optional
+	OOMMinBumpUp *float64 `json:"oomMinBumpUp,omitempty" protobuf:"bytes,2,opt,name=oomMinBumpUp"`
 }
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted

@@ -524,7 +524,9 @@ Loop:
 		select {
 		case oomInfo := <-feeder.oomChan:
 			klog.V(3).InfoS("OOM detected", "oomInfo", oomInfo)
-			if err = feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory); err != nil {
+			pod := feeder.clusterState.Pods()[oomInfo.ContainerID.PodID]
+			controlledVpa := feeder.clusterState.GetControllingVPA(pod)
+			if err = feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory,controlledVpa.RecommenderConfig.OOMBumpUpRatio,controlledVpa.RecommenderConfig.OOMMinBumpUp); err != nil {
 				klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "error", err)
 			}
 		default:

@@ -111,11 +111,13 @@ type Vpa struct {
 	TargetRef *autoscaling.CrossVersionObjectReference
 	// PodCount contains number of live Pods matching a given VPA object.
 	PodCount int
+	// RecommenderConfig specifies the configuration for the recommender.
+	RecommenderConfig *vpa_types.RecommenderConfig
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
 // links to the matched aggregations.
-func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
+func NewVpa(id VpaID, selector labels.Selector, created time.Time ) *Vpa {
 	vpa := &Vpa{
 		ID:                              id,
 		PodSelector:                     selector,
@@ -131,6 +133,7 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		// to the version requested by the client server side.
 		APIVersion: vpa_types.SchemeGroupVersion.Version,
 		PodCount:   0,
+		RecommenderConfig: nil,
 	}
 	return vpa
 }
@@ -292,4 +295,9 @@ func (vpa *Vpa) HasMatchedPods() bool {
 		return false
 	}
 	return true
+}
+
+// SetRecommenderConfig updates the recommender configuration for the VPA.
+func (vpa *Vpa) SetRecommenderConfig(config *vpa_types.RecommenderConfig) {
+    vpa.RecommenderConfig = config
 }

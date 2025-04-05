@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
   name: verticalpodautoscalercheckpoints.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -225,7 +225,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
   name: verticalpodautoscalers.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -254,6 +254,9 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
+    - jsonPath: .spec.recommenderConfig
+      name: RecommenderConfig
+      type: string
     name: v1
     schema:
       openAPIV3Schema:
@@ -284,6 +287,21 @@ spec:
               Specification of the behavior of the autoscaler.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
             properties:
+              recommenderConfig:
+                description: RecommenderConfig specifies the configuration for the
+                  recommender.
+                properties:
+                  oomBumpUpRatio:
+                    description: OOMBumpUpRatio is the ratio to increase resources
+                      when OOM is detected.
+                    minimum: 1
+                    type: number
+                  oomMinBumpUp:
+                    description: OOMMinBumpUp is the minimum increase in resources
+                      when OOM is detected.
+                    minimum: 0
+                    type: number
+                type: object
               recommenders:
                 description: |-
                   Recommender responsible for generating recommendation for this object.

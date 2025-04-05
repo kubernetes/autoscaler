@@ -181,25 +181,50 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 }
 
 // RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
-func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
-	// Discard old OOM
-	if timestamp.Before(container.WindowEnd.Add(-1 * GetAggregationsConfig().MemoryAggregationInterval)) {
-		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
-	}
-	// Get max of the request and the recent usage-based memory peak.
-	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
-	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(GetAggregationsConfig().OOMMinBumpUp),
-		ScaleResource(memoryUsed, GetAggregationsConfig().OOMBumpUpRatio))
+func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount, OOMBumpUpRatio *float64, OOMMinBumpUp *float64) error {
+	config := GetAggregationsConfig()
 
+	// Discard old OOM
+	if timestamp.Before(container.WindowEnd.Add(-config.MemoryAggregationInterval)) {
+		return fmt.Errorf("OOM event discarded: too old (timestamp: %v)", timestamp)
+	}
+
+	// Determine OOM bump up ratio
+	bumpUpRatio := config.OOMBumpUpRatio
+	if OOMBumpUpRatio != nil && *OOMBumpUpRatio >= 0 {
+		bumpUpRatio = *OOMBumpUpRatio
+		klog.V(4).InfoS("Using VPA recommended OOMBumpUpRatio", "ratio", bumpUpRatio)
+	} else {
+		klog.V(4).InfoS("Using default OOMBumpUpRatio", "ratio", bumpUpRatio)
+	}
+
+	// Determine OOM minimum bump up
+	minBumpUp := config.OOMMinBumpUp
+	if OOMMinBumpUp != nil && *OOMMinBumpUp >= 0 {
+		minBumpUp = *OOMMinBumpUp
+		klog.V(4).InfoS("Using VPA recommended OOMMinBumpUp", "minBumpUp", minBumpUp)
+	} else {
+		klog.V(4).InfoS("Using default OOMMinBumpUp", "minBumpUp", minBumpUp)
+	}
+
+	// Calculate memory needed
+	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
+	memoryNeeded := ResourceAmountMax(
+		memoryUsed+MemoryAmountFromBytes(minBumpUp),
+		ScaleResource(memoryUsed, bumpUpRatio),
+	)
+
+	// Create and add OOM memory sample
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
 		Usage:        memoryNeeded,
 		Resource:     ResourceMemory,
 	}
+
 	if !container.addMemorySample(&oomMemorySample, true) {
-		return fmt.Errorf("adding OOM sample failed")
+		return fmt.Errorf("failed to add OOM sample")
 	}
+
 	return nil
 }
 

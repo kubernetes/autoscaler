@@ -201,6 +201,23 @@ _Appears in:_
 | `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  |  |
 
 
+#### RecommenderConfig
+
+
+
+RecommenderConfig contains configuration for the recommender.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `oomBumpUpRatio` _float_ | OOMBumpUpRatio is the ratio to increase resources when OOM is detected. |  | Minimum: 1 <br /> |
+| `oomMinBumpUp` _float_ | OOMMinBumpUp is the minimum increase in resources when OOM is detected. |  | Minimum: 0 <br /> |
+
+
 #### UpdateMode
 
 _Underlying type:_ _string_
@@ -376,6 +393,7 @@ _Appears in:_
 | `updatePolicy` _[PodUpdatePolicy](#podupdatepolicy)_ | Describes the rules on how changes are applied to the pods.<br />If not specified, all fields in the `PodUpdatePolicy` are set to their<br />default values. |  |  |
 | `resourcePolicy` _[PodResourcePolicy](#podresourcepolicy)_ | Controls how the autoscaler computes recommended resources.<br />The resource policy may be used to set constraints on the recommendations<br />for individual containers.<br />If any individual containers need to be excluded from getting the VPA recommendations, then<br />it must be disabled explicitly by setting mode to "Off" under containerPolicies.<br />If not specified, the autoscaler computes recommended resources for all containers in the pod,<br />without additional constraints. |  |  |
 | `recommenders` _[VerticalPodAutoscalerRecommenderSelector](#verticalpodautoscalerrecommenderselector) array_ | Recommender responsible for generating recommendation for this object.<br />List should be empty (then the default recommender will generate the<br />recommendation) or contain exactly one recommender. |  |  |
+| `recommenderConfig` _[RecommenderConfig](#recommenderconfig)_ | RecommenderConfig specifies the configuration for the recommender. |  |  |
 
 
 #### VerticalPodAutoscalerStatus
