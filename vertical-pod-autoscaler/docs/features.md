@@ -107,7 +107,7 @@ Enable the feature by setting the following flags in VPA components ( for both u
 * All containers in a pod are updated together (partial updates not supported)
 * Memory downscaling requires careful consideration to prevent OOMs
 * Updates still respect VPA's standard update conditions and timing restrictions
-* In-place updates will fail for pods with Guaranteed QoS class (requires pod recreation)
+* In-place updates will fail if they would result in a change to the pod's QoS class
 
 ### Fallback Behavior
 
