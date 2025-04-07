@@ -61,7 +61,7 @@ func newContainerTest() ContainerTest {
 	aggregateContainerState := &AggregateContainerState{
 		AggregateCPUUsage:    mockCPUHistogram,
 		AggregateMemoryPeaks: mockMemoryHistogram,
-		OomBumpUpRatio:       1.5,  // Default value, can be adjusted as needed
+		OomBumpUpRatio:       1.5,       // Default value, can be adjusted as needed
 		OOMMinBumpUp:         104857600, // Default value (100Mi), can be adjusted as needed
 	}
 	container := &ContainerState{
