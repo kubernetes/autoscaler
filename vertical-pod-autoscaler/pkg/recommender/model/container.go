@@ -125,10 +125,14 @@ func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
 }
 
+// GetOomBumpUpRatio returns the ratio to increase resources when OOM is detected.
+// It delegates to the aggregator's implementation.
 func (container *ContainerState) GetOomBumpUpRatio() float64 {
 	return container.aggregator.GetOomBumpUpRatio()
 }
 
+// GetOOMMinBumpUp returns the minimum amount to bump up resources when OOM is detected.
+// It delegates to the aggregator's implementation.
 func (container *ContainerState) GetOOMMinBumpUp() float64 {
 	return container.aggregator.GetOOMMinBumpUp()
 }

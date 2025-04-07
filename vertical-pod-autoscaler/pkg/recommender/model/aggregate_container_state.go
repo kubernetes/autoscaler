@@ -376,10 +376,14 @@ func (p *ContainerStateAggregatorProxy) GetScalingMode() *vpa_types.ContainerSca
 	return aggregator.GetScalingMode()
 }
 
+// GetOOMMinBumpUp returns the minimum amount to bump up resources when OOM is detected.
+// This implementation returns 0 to satisfy the interface requirement.
 func (p *ContainerStateAggregatorProxy) GetOOMMinBumpUp() float64 {
 	return 0
 }
 
+// GetOomBumpUpRatio returns the ratio to increase resources when OOM is detected.
+// This implementation returns 0 to satisfy the interface requirement.
 func (p *ContainerStateAggregatorProxy) GetOomBumpUpRatio() float64 {
 	return 0
 }
