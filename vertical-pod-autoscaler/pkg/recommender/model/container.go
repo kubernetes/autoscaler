@@ -125,6 +125,14 @@ func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
 }
 
+func (container *ContainerState) GetOomBumpUpRatio() float64 {
+	return container.aggregator.GetOomBumpUpRatio()
+}
+
+func (container *ContainerState) GetOOMMinBumpUp() float64 {
+	return container.aggregator.GetOOMMinBumpUp()
+}
+
 func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, isOOM bool) bool {
 	ts := sample.MeasureStart
 	// We always process OOM samples.
@@ -183,14 +191,16 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 // RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
 func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
 	// Discard old OOM
-	if timestamp.Before(container.WindowEnd.Add(-1 * GetAggregationsConfig().MemoryAggregationInterval)) {
+	config := GetAggregationsConfig()
+	// TODO(omerap12): remove MemoryAggregationInterval to per-container configuration as well
+	if timestamp.Before(container.WindowEnd.Add(-1 * config.MemoryAggregationInterval)) {
 		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
 	}
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(GetAggregationsConfig().OOMMinBumpUp),
-		ScaleResource(memoryUsed, GetAggregationsConfig().OOMBumpUpRatio))
+	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(container.GetOOMMinBumpUp()),
+		ScaleResource(memoryUsed, container.GetOomBumpUpRatio()))
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
