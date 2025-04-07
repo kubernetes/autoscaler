@@ -186,7 +186,8 @@ func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
 	klog.SetOutput(tmpLogBuffer)
 
 	// immediately timeout the context to check if minCheckpoints get written
-	ctx, _ := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	defer cancelFunc()
 	clusterState := model.NewClusterState(testGcPeriod)
 
 	// prepare ClusterState with 5 VPAs referencing Pods
@@ -200,7 +201,8 @@ func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
 		}
 		labelSelector, _ := labels.Parse(fmt.Sprintf("app=pod-%d", i))
 		vpa := vpaBuilder.WithName(fmt.Sprintf("vpa-%d", i)).WithTargetRef(targetRef).Get()
-		clusterState.AddOrUpdateVpa(vpa, labelSelector)
+		err := clusterState.AddOrUpdateVpa(vpa, labelSelector)
+		assert.NoError(t, err)
 	}
 
 	// prepare ClusterState with 5 pods that have 2 containers each
@@ -216,7 +218,8 @@ func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
 				PodID:         podID,
 				ContainerName: fmt.Sprintf("container-%d", j),
 			}
-			clusterState.AddOrUpdateContainer(containerID, testRequest)
+			err := clusterState.AddOrUpdateContainer(containerID, testRequest)
+			assert.NoError(t, err)
 		}
 	}
 
