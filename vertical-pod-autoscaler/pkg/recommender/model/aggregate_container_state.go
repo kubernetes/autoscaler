@@ -83,8 +83,8 @@ type ContainerStateAggregator interface {
 	GetUpdateMode() *vpa_types.UpdateMode
 	// GetOomBumpUpRatio returns the OOM bump up ratio for this container
 	GetOomBumpUpRatio() float64
-	// GetOOMMinBumpUp returns the minimum OOM bump up value for this container
-	GetOOMMinBumpUp() float64
+	// GetOomMinBumpUp returns the minimum OOM bump up value for this container
+	GetOomMinBumpUp() float64
 }
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -154,8 +154,8 @@ func (a *AggregateContainerState) GetOomBumpUpRatio() float64 {
 	return a.OomBumpUpRatio
 }
 
-// GetOOMMinBumpUp returns the minimum absolute increase in memory recommendation in case of OOM
-func (a *AggregateContainerState) GetOOMMinBumpUp() float64 {
+// GetOomMinBumpUp returns the minimum absolute increase in memory recommendation in case of OOM
+func (a *AggregateContainerState) GetOomMinBumpUp() float64 {
 	return a.OOMMinBumpUp
 }
 
@@ -376,14 +376,16 @@ func (p *ContainerStateAggregatorProxy) GetScalingMode() *vpa_types.ContainerSca
 	return aggregator.GetScalingMode()
 }
 
-// GetOOMMinBumpUp returns the minimum amount to bump up resources when OOM is detected.
+// GetOomMinBumpUp returns the minimum amount to bump up resources when OOM is detected.
 // This implementation returns 0 to satisfy the interface requirement.
-func (p *ContainerStateAggregatorProxy) GetOOMMinBumpUp() float64 {
-	return 0
+func (p *ContainerStateAggregatorProxy) GetOomMinBumpUp() float64 {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetOomMinBumpUp()
 }
 
 // GetOomBumpUpRatio returns the ratio to increase resources when OOM is detected.
 // This implementation returns 0 to satisfy the interface requirement.
 func (p *ContainerStateAggregatorProxy) GetOomBumpUpRatio() float64 {
-	return 0
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetOomBumpUpRatio()
 }
