@@ -120,7 +120,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 
 	// Create a separate context for the workers. We don't simply pass the outside context,
 	// but want to only cancel the workerCtx if minCheckpoints has been reached already.
-	workerCtx, cancelWorkers := context.WithCancel(ctx)
+	workerCtx, cancelWorkers := context.WithCancel(context.Background())
 
 	go func() {
 		for updatedCheckpointsCounter := range checkpointCounterChannel {
