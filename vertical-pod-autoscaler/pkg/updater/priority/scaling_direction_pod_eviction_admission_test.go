@@ -157,12 +157,15 @@ func TestAdmitForSingleContainer(t *testing.T) {
 		assert.Equal(t, true, sdpea.Admit(podWithoutRequests, recommendation))
 	})
 
-	t.Run("it should admit a Pod for eviction if it has non-nil ContainerStatus resources, but with no requests", func(t *testing.T) {
+	t.Run("it should admit a Pod for eviction if recommendation is higher than ContainerStatus requests", func(t *testing.T) {
 		podWithContainerStatus := pod.DeepCopy()
-		podWithContainerStatus.Status.ContainerStatuses = []corev1.ContainerStatus{{
-			Name:      containerName,
-			Resources: &corev1.ResourceRequirements{},
-		}}
+		podWithContainerStatus.Status.ContainerStatuses = []corev1.ContainerStatus{
+			test.ContainerStatus().WithName(containerName).
+				WithCPURequest(resource.MustParse("100m")).
+				WithCPULimit(resource.MustParse("100m")).
+				WithMemRequest(resource.MustParse("1Gi")).
+				WithMemLimit(resource.MustParse("1Gi")).Get()}
+
 		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
 			podWithContainerStatus: {
 				{Resources: []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
@@ -172,7 +175,11 @@ func TestAdmitForSingleContainer(t *testing.T) {
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "10Gi").Get()
+		// Recommendation is higher than ContainerStatus requests, but lower than
+		// PodSpec requests. This should be admitted (eviction requirement is
+		// TargetHigherThanRequests), given that ContainerStatus has priority over
+		// PodSpec.
+		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("400m", "4Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(podWithContainerStatus, recommendation))
 	})

@@ -520,17 +520,17 @@ func TestGetContainersResources(t *testing.T) {
 			addAll:           false,
 		},
 		{
-			name:      "Memory only recommendation, request and limits only set in containerStatus, addAll true",
+			name:      "CPU and memory recommendation, request and limits only set in containerStatus, addAll true",
 			container: test.Container().WithName("container").Get(),
 			containerStatus: test.ContainerStatus().WithName("container").
-				WithCPURequest(resource.MustParse("1m")).
+				WithCPURequest(resource.MustParse("1")).
 				WithMemRequest(resource.MustParse("1M")).
-				WithCPULimit(resource.MustParse("40m")).
+				WithCPULimit(resource.MustParse("10")).
 				WithMemLimit(resource.MustParse("3M")).Get(),
-			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
-			expectedCPU:      mustParseResourcePointer("1m"),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTarget("3", "2M").Get(),
+			expectedCPU:      mustParseResourcePointer("3"),
 			expectedMem:      mustParseResourcePointer("2M"),
-			expectedCPULimit: mustParseResourcePointer("40m"),
+			expectedCPULimit: mustParseResourcePointer("30"),
 			expectedMemLimit: mustParseResourcePointer("6M"),
 			addAll:           true,
 		},
