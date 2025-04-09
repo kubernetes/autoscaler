@@ -125,10 +125,10 @@ func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
 }
 
-// GetOomBumpUpRatio returns the ratio to increase resources when OOM is detected.
+// GetOOMBumpUpRatio returns the ratio to increase resources when OOM is detected.
 // It delegates to the aggregator's implementation.
-func (container *ContainerState) GetOomBumpUpRatio() float64 {
-	return container.aggregator.GetOomBumpUpRatio()
+func (container *ContainerState) GetOOMBumpUpRatio() float64 {
+	return container.aggregator.GetOOMBumpUpRatio()
 }
 
 // GetOomMinBumpUp returns the minimum amount to bump up resources when OOM is detected.
@@ -204,7 +204,7 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
 	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(container.GetOomMinBumpUp()),
-		ScaleResource(memoryUsed, container.GetOomBumpUpRatio()))
+		ScaleResource(memoryUsed, container.GetOOMBumpUpRatio()))
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,

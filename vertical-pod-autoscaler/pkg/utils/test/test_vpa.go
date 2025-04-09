@@ -47,6 +47,8 @@ type VerticalPodAutoscalerBuilder interface {
 	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
 	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
 	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
+	WithOOMBumpUpRatio(ratio float64) VerticalPodAutoscalerBuilder
+	WithOOMMinBumpUp(minBumpUp float64) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -87,6 +89,8 @@ type verticalPodAutoscalerBuilder struct {
 	targetRef               *autoscaling.CrossVersionObjectReference
 	appendedRecommendations []vpa_types.RecommendedContainerResources
 	recommender             string
+	oomBumpUpRatio          *float64
+	oomMinBumpUp            *float64
 }
 
 func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
@@ -214,6 +218,18 @@ func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) Verti
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithOOMBumpUpRatio(ratio float64) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.oomBumpUpRatio = &ratio
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithOOMMinBumpUp(minBumpUp float64) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.oomMinBumpUp = &minBumpUp
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 	status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder {
 	c := *b
@@ -250,6 +266,8 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			MaxAllowed:       b.maxAllowed[containerName],
 			ControlledValues: b.controlledValues[containerName],
 			Mode:             &scalingModeAuto,
+			OOMBumpUpRatio:   b.oomBumpUpRatio,
+			OOMMinBumpUp:     b.oomMinBumpUp,
 		}
 		if scalingMode, ok := b.scalingMode[containerName]; ok {
 			containerResourcePolicy.Mode = scalingMode

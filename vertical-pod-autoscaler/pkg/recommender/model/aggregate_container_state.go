@@ -81,8 +81,8 @@ type ContainerStateAggregator interface {
 	// GetUpdateMode returns the update mode of VPA controlling this aggregator,
 	// nil if aggregator is not autoscaled.
 	GetUpdateMode() *vpa_types.UpdateMode
-	// GetOomBumpUpRatio returns the OOM bump up ratio for this container
-	GetOomBumpUpRatio() float64
+	// GetOOMBumpUpRatio returns the OOM bump up ratio for this container
+	GetOOMBumpUpRatio() float64
 	// GetOomMinBumpUp returns the minimum OOM bump up value for this container
 	GetOomMinBumpUp() float64
 }
@@ -113,7 +113,7 @@ type AggregateContainerState struct {
 	IsUnderVPA          bool
 	UpdateMode          *vpa_types.UpdateMode
 	ScalingMode         *vpa_types.ContainerScalingMode
-	OomBumpUpRatio      float64
+	OOMBumpUpRatio      float64
 	OOMMinBumpUp        float64
 	ControlledResources *[]ResourceName
 }
@@ -149,9 +149,9 @@ func (a *AggregateContainerState) GetControlledResources() []ResourceName {
 	return DefaultControlledResources
 }
 
-// GetOomBumpUpRatio returns the ratio by which to increase the memory recommendation in case of OOM
-func (a *AggregateContainerState) GetOomBumpUpRatio() float64 {
-	return a.OomBumpUpRatio
+// GetOOMBumpUpRatio returns the ratio by which to increase the memory recommendation in case of OOM
+func (a *AggregateContainerState) GetOOMBumpUpRatio() float64 {
+	return a.OOMBumpUpRatio
 }
 
 // GetOomMinBumpUp returns the minimum absolute increase in memory recommendation in case of OOM
@@ -191,7 +191,7 @@ func NewAggregateContainerState() *AggregateContainerState {
 		AggregateCPUUsage:    util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife),
 		AggregateMemoryPeaks: util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife),
 		CreationTime:         time.Now(),
-		OomBumpUpRatio:       config.OOMBumpUpRatio,
+		OOMBumpUpRatio:       config.OOMBumpUpRatio,
 		OOMMinBumpUp:         config.OOMMinBumpUp,
 	}
 }
@@ -295,7 +295,7 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	a.ScalingMode = &scalingModeAuto
 	if resourcePolicy != nil && resourcePolicy.OOMBumpUpRatio != nil {
-		a.OomBumpUpRatio = *resourcePolicy.OOMBumpUpRatio
+		a.OOMBumpUpRatio = *resourcePolicy.OOMBumpUpRatio
 	}
 	if resourcePolicy != nil && resourcePolicy.OOMMinBumpUp != nil {
 		a.OOMMinBumpUp = *resourcePolicy.OOMMinBumpUp
@@ -383,9 +383,9 @@ func (p *ContainerStateAggregatorProxy) GetOomMinBumpUp() float64 {
 	return aggregator.GetOomMinBumpUp()
 }
 
-// GetOomBumpUpRatio returns the ratio to increase resources when OOM is detected.
+// GetOOMBumpUpRatio returns the ratio to increase resources when OOM is detected.
 // This implementation returns 0 to satisfy the interface requirement.
-func (p *ContainerStateAggregatorProxy) GetOomBumpUpRatio() float64 {
+func (p *ContainerStateAggregatorProxy) GetOOMBumpUpRatio() float64 {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
-	return aggregator.GetOomBumpUpRatio()
+	return aggregator.GetOOMBumpUpRatio()
 }
