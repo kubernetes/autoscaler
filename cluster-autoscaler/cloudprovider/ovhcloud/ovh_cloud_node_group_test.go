@@ -522,8 +522,18 @@ func TestOVHCloudNodeGroup_IsGpu(t *testing.T) {
 	})
 
 	t.Run("not found but belong to GPU category", func(t *testing.T) {
-		ng := newTestNodeGroup(t, GPUMachineCategory+"1-123")
+		ng := newTestNodeGroup(t, "t1-123")
 		assert.True(t, ng.isGpu())
+	})
+
+	t.Run("not found but belong to GPU category", func(t *testing.T) {
+		ng := newTestNodeGroup(t, "h1-123")
+		assert.True(t, ng.isGpu())
+	})
+
+	t.Run("not found and does not belong to GPU category", func(t *testing.T) {
+		ng := newTestNodeGroup(t, "n1-123")
+		assert.False(t, ng.isGpu())
 	})
 }
 

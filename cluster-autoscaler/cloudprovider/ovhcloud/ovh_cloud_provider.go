@@ -44,10 +44,10 @@ const (
 
 	// MachineAvailableState defines the state for available flavors for node resources.
 	MachineAvailableState = "available"
-
-	// GPUMachineCategory defines the default instance category for GPU resources.
-	GPUMachineCategory = "t"
 )
+
+// GPUMachineCategoryPrefixes defines the flavors prefixes for GPU resources.
+var GPUMachineCategoryPrefixes = [4]string{"t", "h", "a", "l"}
 
 // OVHCloudProvider implements CloudProvider interface.
 type OVHCloudProvider struct {

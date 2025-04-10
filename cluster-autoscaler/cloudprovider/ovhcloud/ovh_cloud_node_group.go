@@ -352,7 +352,11 @@ func (ng *NodeGroup) isGpu() bool {
 	if err != nil {
 		// Fallback when we are unable to get the flavor: refer to the only category
 		// known to be a GPU flavor category
-		return strings.HasPrefix(ng.Flavor, GPUMachineCategory)
+		for _, gpuCategoryPrefix := range GPUMachineCategoryPrefixes {
+			if strings.HasPrefix(ng.Flavor, gpuCategoryPrefix) {
+				return true
+			}
+		}
 	}
 
 	return flavor.GPUs > 0
