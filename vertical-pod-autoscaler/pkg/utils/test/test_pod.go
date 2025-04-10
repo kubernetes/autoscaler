@@ -25,6 +25,7 @@ import (
 type PodBuilder interface {
 	WithName(name string) PodBuilder
 	AddContainer(container apiv1.Container) PodBuilder
+	AddContainerStatus(containerStatus apiv1.ContainerStatus) PodBuilder
 	WithCreator(creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) PodBuilder
 	WithLabels(labels map[string]string) PodBuilder
 	WithAnnotations(annotations map[string]string) PodBuilder
@@ -35,7 +36,8 @@ type PodBuilder interface {
 // Pod returns new PodBuilder.
 func Pod() PodBuilder {
 	return &podBuilderImpl{
-		containers: make([]apiv1.Container, 0),
+		containers:        make([]apiv1.Container, 0),
+		containerStatuses: make([]apiv1.ContainerStatus, 0),
 	}
 }
 
@@ -47,6 +49,7 @@ type podBuilderImpl struct {
 	labels            map[string]string
 	annotations       map[string]string
 	phase             apiv1.PodPhase
+	containerStatuses []apiv1.ContainerStatus
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -83,6 +86,12 @@ func (pb *podBuilderImpl) WithCreator(creatorObjectMeta *metav1.ObjectMeta, crea
 func (pb *podBuilderImpl) WithPhase(phase apiv1.PodPhase) PodBuilder {
 	r := *pb
 	r.phase = phase
+	return &r
+}
+
+func (pb *podBuilderImpl) AddContainerStatus(containerStatus apiv1.ContainerStatus) PodBuilder {
+	r := *pb
+	r.containerStatuses = append(r.containerStatuses, containerStatus)
 	return &r
 }
 
@@ -125,6 +134,10 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 	}
 	if pb.phase != "" {
 		pod.Status.Phase = pb.phase
+	}
+
+	if pb.containerStatuses != nil {
+		pod.Status.ContainerStatuses = pb.containerStatuses
 	}
 
 	return pod
