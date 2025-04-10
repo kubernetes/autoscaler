@@ -15,8 +15,8 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `--alsologtostderr` |  |                        log to standard error as well as files (no effect when -logtostderr=true) |
 | `--client-ca-file` | "/etc/tls-certs/caCert.pem" |                  Path to CA PEM file. |
 | `--ignored-vpa-object-namespaces` |  |   A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
-| `--kube-api-burst` | 10 |                   QPS burst limit when making requests to Kubernetes apiserver |
-| `--kube-api-qps` | 5 |                     QPS limit when making requests to Kubernetes apiserver |
+| `--kube-api-burst` | 100 |                   QPS burst limit when making requests to Kubernetes apiserver |
+| `--kube-api-qps` | 50 |                     QPS limit when making requests to Kubernetes apiserver |
 | `--kubeconfig` |  |                      Path to a kubeconfig. Only required if out-of-cluster. |
 | `--log-backtrace-at` | :0 |         when logging hits line file:N, emit a stack trace |
 | `--log-dir` |  |                         If non-empty, write log files in this directory (no effect when -logtostderr=true) |
@@ -71,8 +71,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--history-resolution` | "1h" |                              Resolution at which Prometheus is queried for historical metrics |
 | `--humanize-memory` |  |                                        Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
 | `--ignored-vpa-object-namespaces` |  |                   A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
-| `--kube-api-burst` | 10 |                                   QPS burst limit when making requests to Kubernetes apiserver |
-| `--kube-api-qps` | 5 |                                     QPS limit when making requests to Kubernetes apiserver |
+| `--kube-api-burst` | 100 |                                   QPS burst limit when making requests to Kubernetes apiserver |
+| `--kube-api-qps` | 50 |                                     QPS limit when making requests to Kubernetes apiserver |
 | `--kubeconfig` |  |                                      Path to a kubeconfig. Only required if out-of-cluster. |
 | `--leader-elect` |  |                                           Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. |
 | `--leader-elect-lease-duration` | 15s |                   The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. |
@@ -119,6 +119,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `--storage` |  |                                         Specifies storage mode. Supported values: prometheus, checkpoint |
 | `--target-cpu-percentile` | 0.9 |                            CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
 | `--target-memory-percentile` | 0.9 |                         Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
+| `--update-worker-count` | 10 |                       Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits (kube-api-qps and `kube-api-burst`) are either increased or turned off as well. |
 | `--use-external-metrics` |  |                                   ALPHA.  Use an external metrics provider instead of metrics_server. |
 | `--username` |  |                                        The username used in the prometheus server basic auth |
 | `--v` | 4 | Set the log level verbosity |
@@ -139,8 +140,8 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `--eviction-tolerance` | 0.5 |                                        Fraction of replica count that can be evicted for update, if more than one pod can be evicted. |
 | `--ignored-vpa-object-namespaces` |  |                            A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `--in-recommendation-bounds-eviction-lifetime-threshold` | 12h0m0s |   Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range |
-| `--kube-api-burst` | 10 |                                            QPS burst limit when making requests to Kubernetes apiserver |
-| `--kube-api-qps` | 5 |                                              QPS limit when making requests to Kubernetes apiserver |
+| `--kube-api-burst` | 100 |                                            QPS burst limit when making requests to Kubernetes apiserver |
+| `--kube-api-qps` | 50 |                                              QPS limit when making requests to Kubernetes apiserver |
 | `--kubeconfig` |  |                                               Path to a kubeconfig. Only required if out-of-cluster. |
 | `--leader-elect` |  |                                                    Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. |
 | `--leader-elect-lease-duration` | 15s |                            The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. |
