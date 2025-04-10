@@ -129,7 +129,7 @@ rules:
       - ""
     resources:
       - pods/resize
-      - pods
+      - pods # required for patching vpaInPlaceUpdated annotations onto the pod
     verbs:
       - patch
 ---
