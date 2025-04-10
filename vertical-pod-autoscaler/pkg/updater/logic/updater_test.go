@@ -22,6 +22,9 @@ import (
 	"testing"
 	"time"
 
+	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+
 	"golang.org/x/time/rate"
 	v1 "k8s.io/api/autoscaling/v1"
 
@@ -33,11 +36,12 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -55,24 +59,35 @@ func TestRunOnce_Mode(t *testing.T) {
 		updateMode            vpa_types.UpdateMode
 		expectFetchCalls      bool
 		expectedEvictionCount int
+		expectedInPlacedCount int
 	}{
 		{
 			name:                  "with Auto mode",
 			updateMode:            vpa_types.UpdateModeAuto,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
+			expectedInPlacedCount: 0,
 		},
 		{
 			name:                  "with Initial mode",
 			updateMode:            vpa_types.UpdateModeInitial,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
 		},
 		{
 			name:                  "with Off mode",
 			updateMode:            vpa_types.UpdateModeOff,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "with InPlaceOrRecreate mode",
+			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 5,
 		},
 	}
 	for _, tc := range tests {
@@ -83,6 +98,7 @@ func TestRunOnce_Mode(t *testing.T) {
 				newFakeValidator(true),
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
+				tc.expectedInPlacedCount,
 			)
 		})
 	}
@@ -94,18 +110,21 @@ func TestRunOnce_Status(t *testing.T) {
 		statusValidator       status.Validator
 		expectFetchCalls      bool
 		expectedEvictionCount int
+		expectedInPlacedCount int
 	}{
 		{
 			name:                  "with valid status",
 			statusValidator:       newFakeValidator(true),
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
+			expectedInPlacedCount: 0,
 		},
 		{
 			name:                  "with invalid status",
 			statusValidator:       newFakeValidator(false),
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
 		},
 	}
 	for _, tc := range tests {
@@ -116,6 +135,7 @@ func TestRunOnce_Status(t *testing.T) {
 				tc.statusValidator,
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
+				tc.expectedInPlacedCount,
 			)
 		})
 	}
@@ -127,7 +147,9 @@ func testRunOnceBase(
 	statusValidator status.Validator,
 	expectFetchCalls bool,
 	expectedEvictionCount int,
+	expectedInPlacedCount int,
 ) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -151,6 +173,14 @@ func testRunOnceBase(
 	}
 	pods := make([]*apiv1.Pod, livePods)
 	eviction := &test.PodsEvictionRestrictionMock{}
+	inplace := &test.PodsInPlaceRestrictionMock{}
+
+	var canInPlaceUpdate utils.InPlaceDecision
+	if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
+		canInPlaceUpdate = utils.InPlaceApproved
+	} else {
+		canInPlaceUpdate = utils.InPlaceDeferred
+	}
 
 	for i := range pods {
 		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).
@@ -159,11 +189,18 @@ func testRunOnceBase(
 			Get()
 
 		pods[i].Labels = labels
+
+		inplace.On("CanInPlaceUpdate", pods[i]).Return(canInPlaceUpdate)
+		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
+
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
 
-	factory := &fakeEvictFactory{eviction}
+	factory := &restriction.FakePodsRestrictionFactory{
+		Eviction: eviction,
+		InPlace:  inplace,
+	}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 
 	podLister := &test.PodListerMock{}
@@ -173,12 +210,14 @@ func testRunOnceBase(
 		Name:       rc.Name,
 		APIVersion: rc.APIVersion,
 	}
+
 	vpaObj := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		WithTargetRef(targetRef).Get()
+		WithTargetRef(targetRef).
+		Get()
 
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
@@ -188,8 +227,9 @@ func testRunOnceBase(
 	updater := &updater{
 		vpaLister:                    vpaLister,
 		podLister:                    podLister,
-		evictionFactory:              factory,
+		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		inPlaceRateLimiter:           rate.NewLimiter(rate.Inf, 0),
 		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		selectorFetcher:              mockSelectorFetcher,
@@ -204,11 +244,16 @@ func testRunOnceBase(
 	}
 	updater.RunOnce(context.Background())
 	eviction.AssertNumberOfCalls(t, "Evict", expectedEvictionCount)
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", expectedInPlacedCount)
 }
 
 func TestRunOnceNotingToProcess(t *testing.T) {
 	eviction := &test.PodsEvictionRestrictionMock{}
-	factory := &fakeEvictFactory{eviction}
+	inplace := &test.PodsInPlaceRestrictionMock{}
+	factory := &restriction.FakePodsRestrictionFactory{
+		Eviction: eviction,
+		InPlace:  inplace,
+	}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
 	vpaLister.On("List").Return(nil, nil).Once()
@@ -216,8 +261,9 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 	updater := &updater{
 		vpaLister:                    vpaLister,
 		podLister:                    podLister,
-		evictionFactory:              factory,
+		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		inPlaceRateLimiter:           rate.NewLimiter(rate.Inf, 0),
 		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		useAdmissionControllerStatus: true,
@@ -241,14 +287,6 @@ func TestGetRateLimiter(t *testing.T) {
 		assert.Equal(t, tc.expectedLimiter.Burst(), limiter.Burst())
 		assert.InDelta(t, float64(tc.expectedLimiter.Limit()), float64(limiter.Limit()), 1e-6)
 	}
-}
-
-type fakeEvictFactory struct {
-	evict eviction.PodsEvictionRestriction
-}
-
-func (f fakeEvictFactory) NewPodsEvictionRestriction(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) eviction.PodsEvictionRestriction {
-	return f.evict
 }
 
 type fakeValidator struct {
@@ -288,7 +326,7 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 	}
 	pods := make([]*apiv1.Pod, livePods)
 	eviction := &test.PodsEvictionRestrictionMock{}
-
+	inplace := &test.PodsInPlaceRestrictionMock{}
 	for i := range pods {
 		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).
 			AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).
@@ -300,7 +338,10 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
 
-	factory := &fakeEvictFactory{eviction}
+	factory := &restriction.FakePodsRestrictionFactory{
+		Eviction: eviction,
+		InPlace:  inplace,
+	}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 
 	podLister := &test.PodListerMock{}
@@ -310,13 +351,15 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 		Name:       rc.Name,
 		APIVersion: rc.APIVersion,
 	}
+
 	vpaObj := test.VerticalPodAutoscaler().
 		WithNamespace("default").
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		WithTargetRef(targetRef).Get()
+		WithTargetRef(targetRef).
+		Get()
 
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
@@ -326,8 +369,9 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 	updater := &updater{
 		vpaLister:                    vpaLister,
 		podLister:                    podLister,
-		evictionFactory:              factory,
+		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		inPlaceRateLimiter:           rate.NewLimiter(rate.Inf, 0),
 		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		selectorFetcher:              mockSelectorFetcher,
@@ -358,6 +402,7 @@ func TestRunOnceIgnoreNamespaceMatching(t *testing.T) {
 
 	updater.RunOnce(context.Background())
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
+	eviction.AssertNumberOfCalls(t, "InPlaceUpdate", 0)
 }
 
 func TestNewEventRecorder(t *testing.T) {

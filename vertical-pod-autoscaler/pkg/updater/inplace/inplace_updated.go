@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,29 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package patch
+package inplace
 
 import (
 	core "k8s.io/api/core/v1"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 )
 
-type observedContainers struct{}
+type inPlaceUpdate struct{}
 
-func (*observedContainers) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
-	vpaObservedContainersValue := annotations.GetVpaObservedContainersValue(pod)
-	return []resource_admission.PatchRecord{GetAddAnnotationPatch(annotations.VpaObservedContainersLabel, vpaObservedContainersValue)}, nil
+func (*inPlaceUpdate) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+	vpaInPlaceUpdatedValue := annotations.GetVpaInPlaceUpdatedValue()
+	return []resource_admission.PatchRecord{patch.GetAddAnnotationPatch(annotations.VpaInPlaceUpdatedLabel, vpaInPlaceUpdatedValue)}, nil
 }
 
-func (*observedContainers) PatchResourceTarget() PatchResourceTarget {
-	return Spec
+func (*inPlaceUpdate) PatchResourceTarget() patch.PatchResourceTarget {
+	return patch.Spec
 }
 
-// NewObservedContainersCalculator returns calculator for
+// NewInPlaceUpdatedCalculator returns calculator for
 // observed containers patches.
-func NewObservedContainersCalculator() Calculator {
-	return &observedContainers{}
+func NewInPlaceUpdatedCalculator() patch.Calculator {
+	return &inPlaceUpdate{}
 }
