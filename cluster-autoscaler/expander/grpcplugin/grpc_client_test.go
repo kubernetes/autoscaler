@@ -23,6 +23,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mocks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -58,6 +59,11 @@ var (
 		Debug:     "m4.4xlarge",
 		NodeGroup: test.NewTestNodeGroup("my-asg.m4.4xlarge", 10, 1, 1, true, false, "m4.4xlarge", nil, nil),
 	}
+	eoT2MicroWithSimilar = expander.Option{
+		Debug:             "t2.micro",
+		NodeGroup:         test.NewTestNodeGroup("my-asg.t2.micro", 10, 1, 1, true, false, "t2.micro", nil, nil),
+		SimilarNodeGroups: []cloudprovider.NodeGroup{test.NewTestNodeGroup("my-similar-asg.t2.micro", 10, 1, 1, true, false, "t2.micro", nil, nil)},
+	}
 	options = []expander.Option{eoT2Micro, eoT2Large, eoT3Large, eoM44XLarge}
 
 	grpcEoT2Micro = protos.Option{
@@ -83,6 +89,20 @@ var (
 		NodeCount:   int32(eoM44XLarge.NodeCount),
 		Debug:       eoM44XLarge.Debug,
 		Pod:         eoM44XLarge.Pods,
+	}
+	grpcEoT2MicroWithSimilar = protos.Option{
+		NodeGroupId:         eoT2Micro.NodeGroup.Id(),
+		NodeCount:           int32(eoT2Micro.NodeCount),
+		Debug:               eoT2Micro.Debug,
+		Pod:                 eoT2Micro.Pods,
+		SimilarNodeGroupIds: []string{eoT2MicroWithSimilar.SimilarNodeGroups[0].Id()},
+	}
+	grpcEoT2MicroWithSimilarWithExtraOptions = protos.Option{
+		NodeGroupId:         eoT2Micro.NodeGroup.Id(),
+		NodeCount:           int32(eoT2Micro.NodeCount),
+		Debug:               eoT2Micro.Debug,
+		Pod:                 eoT2Micro.Pods,
+		SimilarNodeGroupIds: []string{eoT2MicroWithSimilar.SimilarNodeGroups[0].Id(), "extra-ng-id"},
 	}
 )
 
@@ -116,6 +136,12 @@ func TestPopulateOptionsForGrpc(t *testing.T) {
 				eoM44XLarge.NodeGroup.Id(): eoM44XLarge,
 			},
 		},
+		{
+			desc:         "similar nodegroups are included",
+			opts:         []expander.Option{eoT2MicroWithSimilar},
+			expectedOpts: []*protos.Option{&grpcEoT2MicroWithSimilar},
+			expectedMap:  map[string]expander.Option{eoT2MicroWithSimilar.NodeGroup.Id(): eoT2MicroWithSimilar},
+		},
 	}
 	for _, tc := range testCases {
 		grpcOptionsSlice, nodeGroupIDOptionMap := populateOptionsForGRPC(tc.opts)
@@ -145,18 +171,44 @@ func TestPopulateNodeInfoForGRPC(t *testing.T) {
 }
 
 func TestValidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
-	responseOptionsSlice := []*protos.Option{&grpcEoT2Micro, &grpcEoT3Large, &grpcEoM44XLarge}
-	nodeGroupIDOptionMap := map[string]expander.Option{
-		eoT2Micro.NodeGroup.Id():   eoT2Micro,
-		eoT2Large.NodeGroup.Id():   eoT2Large,
-		eoT3Large.NodeGroup.Id():   eoT3Large,
-		eoM44XLarge.NodeGroup.Id(): eoM44XLarge,
+	testCases := []struct {
+		desc                  string
+		responseOptions       []*protos.Option
+		expectedOptions       []expander.Option
+		nodegroupIDOptionaMap map[string]expander.Option
+	}{
+		{
+			desc:            "valid transform and sanitize options",
+			responseOptions: []*protos.Option{&grpcEoT2Micro, &grpcEoT3Large, &grpcEoM44XLarge},
+			nodegroupIDOptionaMap: map[string]expander.Option{
+				eoT2Micro.NodeGroup.Id():   eoT2Micro,
+				eoT2Large.NodeGroup.Id():   eoT2Large,
+				eoT3Large.NodeGroup.Id():   eoT3Large,
+				eoM44XLarge.NodeGroup.Id(): eoM44XLarge,
+			},
+			expectedOptions: []expander.Option{eoT2Micro, eoT3Large, eoM44XLarge},
+		},
+		{
+			desc:            "similar ngs are retained in proto options are retained",
+			responseOptions: []*protos.Option{&grpcEoT2MicroWithSimilar},
+			nodegroupIDOptionaMap: map[string]expander.Option{
+				eoT2MicroWithSimilar.NodeGroup.Id(): eoT2MicroWithSimilar,
+			},
+			expectedOptions: []expander.Option{eoT2MicroWithSimilar},
+		},
+		{
+			desc:            "extra similar ngs added to expander response are ignored",
+			responseOptions: []*protos.Option{&grpcEoT2MicroWithSimilarWithExtraOptions},
+			nodegroupIDOptionaMap: map[string]expander.Option{
+				eoT2MicroWithSimilar.NodeGroup.Id(): eoT2MicroWithSimilar,
+			},
+			expectedOptions: []expander.Option{eoT2MicroWithSimilar},
+		},
 	}
-
-	expectedOptions := []expander.Option{eoT2Micro, eoT3Large, eoM44XLarge}
-
-	ret := transformAndSanitizeOptionsFromGRPC(responseOptionsSlice, nodeGroupIDOptionMap)
-	assert.Equal(t, expectedOptions, ret)
+	for _, tc := range testCases {
+		ret := transformAndSanitizeOptionsFromGRPC(tc.responseOptions, tc.nodegroupIDOptionaMap)
+		assert.Equal(t, tc.expectedOptions, ret)
+	}
 }
 
 func TestAnInvalidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
