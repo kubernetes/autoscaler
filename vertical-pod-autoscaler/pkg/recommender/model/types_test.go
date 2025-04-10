@@ -57,20 +57,20 @@ func TestResourcesAsResourceList(t *testing.T) {
 			roundCPU: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
-				apiv1.ResourceMemory: resource.MustParse("250.00Mi"),
+				apiv1.ResourceMemory: resource.MustParse("250Mi"),
 			},
 		},
 		{
 			name: "large memory value with humanize and cpu rounding to 3",
 			resources: Resources{
 				ResourceCPU:    1000,
-				ResourceMemory: 839500000, // 800.61Mi
+				ResourceMemory: 839500000, // 801Mi (rounded up from 800.61Mi)
 			},
 			humanize: true,
 			roundCPU: 3,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1002, resource.DecimalSI),
-				apiv1.ResourceMemory: resource.MustParse("800.61Mi"),
+				apiv1.ResourceMemory: resource.MustParse("801Mi"),
 			},
 		},
 		{
@@ -115,85 +115,85 @@ func TestResourcesAsResourceList(t *testing.T) {
 
 type HumanizeMemoryQuantityTestCase struct {
 	name   string
-	value  int64
+	value  ResourceAmount
 	wanted string
 }
 
 func TestHumanizeMemoryQuantity(t *testing.T) {
 	testCases := []HumanizeMemoryQuantityTestCase{
 		{
-			name:   "1.00Ki",
-			value:  1024,
-			wanted: "1.00Ki",
+			name:   "1Ki",
+			value:  ResourceAmount(1024),
+			wanted: "1Ki",
 		},
 		{
-			name:   "1.00Mi",
-			value:  1024 * 1024,
-			wanted: "1.00Mi",
+			name:   "1Mi",
+			value:  ResourceAmount(1024 * 1024),
+			wanted: "1Mi",
 		},
 		{
-			name:   "1.00Gi",
-			value:  1024 * 1024 * 1024,
-			wanted: "1.00Gi",
+			name:   "1Gi",
+			value:  ResourceAmount(1024 * 1024 * 1024),
+			wanted: "1Gi",
 		},
 		{
-			name:   "1.00Ti",
-			value:  1024 * 1024 * 1024 * 1024,
-			wanted: "1.00Ti",
+			name:   "1Ti",
+			value:  ResourceAmount(1024 * 1024 * 1024 * 1024),
+			wanted: "1Ti",
 		},
 		{
-			name:   "256.00Mi",
-			value:  256 * 1024 * 1024,
-			wanted: "256.00Mi",
+			name:   "256Mi",
+			value:  ResourceAmount(256 * 1024 * 1024),
+			wanted: "256Mi",
 		},
 		{
-			name:   "1.50Gi",
-			value:  1.5 * 1024 * 1024 * 1024,
-			wanted: "1.50Gi",
+			name:   "2Gi",
+			value:  ResourceAmount(1.5 * 1024 * 1024 * 1024),
+			wanted: "2Gi",
 		},
 		{
-			name:   "1Mi in bytes",
-			value:  1050000,
-			wanted: "1.00Mi",
+			name:   "2Mi in bytes",
+			value:  ResourceAmount(1050000),
+			wanted: "2Mi",
 		},
 		{
-			name:   "1.5Ki in bytes",
-			value:  1537,
-			wanted: "1.50Ki",
+			name:   "2Ki in bytes",
+			value:  ResourceAmount(1537),
+			wanted: "2Ki",
 		},
 		{
-			name:   "4.65Gi",
-			value:  4992073454,
-			wanted: "4.65Gi",
+			name:   "5Gi",
+			value:  ResourceAmount(4992073454),
+			wanted: "5Gi",
 		},
 		{
-			name:   "6.05Gi",
-			value:  6499152537,
-			wanted: "6.05Gi",
+			name:   "7Gi",
+			value:  ResourceAmount(6499152537),
+			wanted: "7Gi",
 		},
 		{
-			name:   "15.23Gi",
-			value:  16357476492,
-			wanted: "15.23Gi",
+			name:   "16Gi",
+			value:  ResourceAmount(16357476492),
+			wanted: "16Gi",
 		},
 		{
-			name:   "3.75Gi",
-			value:  4022251530,
-			wanted: "3.75Gi",
+			name:   "4Gi",
+			value:  ResourceAmount(4022251530),
+			wanted: "4Gi",
 		},
 		{
-			name:   "12.65Gi",
-			value:  13580968030,
-			wanted: "12.65Gi",
+			name:   "13Gi",
+			value:  ResourceAmount(13580968030),
+			wanted: "13Gi",
 		},
 		{
-			name:   "14.46Gi",
-			value:  15530468536,
-			wanted: "14.46Gi",
+			name:   "15Gi",
+			value:  ResourceAmount(15530468536),
+			wanted: "15Gi",
 		},
 	}
 	for _, tc := range testCases {
-		t.Run(tc.name, func(*testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			result := HumanizeMemoryQuantity(tc.value)
 			assert.Equal(t, tc.wanted, result)
 		})
