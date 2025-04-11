@@ -111,6 +111,11 @@ func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, _ 
 			return drainability.NewBlockedStatus(drain.ControllerNotFound, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err))
 		}
 	} else if refKind == "StatefulSet" {
+		if refGroup.Group != "apps" {
+			// We don't have a listener for the other StatefulSet group.
+			return drainability.NewUndefinedStatus()
+		}
+
 		ss, err := drainCtx.Listers.StatefulSetLister().StatefulSets(controllerNamespace).Get(controllerRef.Name)
 
 		if err != nil && ss == nil {
