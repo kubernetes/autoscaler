@@ -315,6 +315,53 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 	})
 })
 
+var _ = FullVpaE2eDescribe("OOMing pods under VPA with custom OOM settings", func() {
+	const replicas = 3
+
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		ns := f.Namespace.Name
+		ginkgo.By("Setting up a hamster deployment")
+
+		runOomingReplicationController(
+			f.ClientSet,
+			ns,
+			"hamster",
+			replicas)
+		ginkgo.By("Setting up a VPA CRD with custom OOM settings")
+		targetRef := &autoscaling.CrossVersionObjectReference{
+			APIVersion: "v1",
+			Kind:       "Deployment",
+			Name:       "hamster",
+		}
+
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(targetRef).
+			WithContainer(containerName).
+			WithOOMBumpUpRatio(2).
+			WithOOMMinBumpUp(200 * 1024 * 1024). // 200Mi in bytes
+			Get()
+
+		InstallVPA(f, vpaCRD)
+	})
+
+	ginkgo.It("have memory requests growing with OOMs according to custom settings", func() {
+		listOptions := metav1.ListOptions{
+			LabelSelector: "name=hamster",
+			FieldSelector: getPodSelectorExcludingDonePodsOrDie(),
+		}
+		err := waitForResourceRequestInRangeInPods(
+			f, oomTestTimeout, listOptions, apiv1.ResourceMemory,
+			ParseQuantityOrDie("1800Mi"), ParseQuantityOrDie("15000Mi"))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+})
+
 func waitForPodsMatch(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, matcher func(pod apiv1.Pod) bool) error {
 	return wait.PollUntilContextTimeout(context.Background(), pollInterval, timeout, true, func(ctx context.Context) (done bool, err error) {
 		ns := f.Namespace.Name
