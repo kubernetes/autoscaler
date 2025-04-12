@@ -1,5 +1,7 @@
 # AEP-8026: Allow per-VPA component configuration parameters
 
+# AEP-8026: Allow per-VPA component configuration parameters
+
 <!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
@@ -7,8 +9,13 @@
   - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
+  - [API Changes](#api-changes)
+    - [Phase 1 (Current Proposal)](#phase-1-current-proposal)
+    - [Future Extensions](#future-extensions)
+  - [Validation via CEL](#validation-via-cel)
   - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
+- [Future Work](#future-work)
 - [Alternatives](#alternatives)
   - [Multiple VPA Deployments](#multiple-vpa-deployments)
   - [Environment-Specific Configuration](#environment-specific-configuration)
@@ -74,6 +81,7 @@ spec:
 ### API Changes
 
 #### Phase 1 (Current Proposal)
+
 Extend ContainerResourcePolicy with:
 * oomBumpUpRatio
 * oomMinBumpUp
@@ -83,6 +91,7 @@ Extend PodUpdatePolicy with:
 * evictAfterOOMThreshold
 
 #### Future Extensions
+
 This AEP will be updated as additional parameters are identified for per-object configuration. Potential candidates include:
 * confidenceIntervalCPU
 * confidenceIntervalMemory
