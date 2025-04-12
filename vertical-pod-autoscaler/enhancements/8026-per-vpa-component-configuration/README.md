@@ -1,4 +1,4 @@
-# AEP-XXX: Allow per-VPA component configuration parameters
+# AEP-8026: Allow per-VPA component configuration parameters
 
 <!-- toc -->
 - [Summary](#summary)
