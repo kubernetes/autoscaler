@@ -23,7 +23,7 @@ We'd love to accept your patches! Before we can take them, we have to jump a cou
 
 All changes must be code reviewed. Coding conventions and standards are explained in the official 
 [developer docs](https://github.com/kubernetes/community/tree/master/contributors/devel). Expect 
-reviewers to request that you avoid common [go style mistakes](https://github.com/golang/go/wiki/CodeReviewComments)
+reviewers to request that you avoid common [go style mistakes](https://go.dev/wiki/CodeReviewComments)
 in your PRs.
 
 ### Merge Approval
