@@ -102,8 +102,8 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	go func() { o.channel <- result }()
 }
 
-func getVpaObserver(vpaClientSet vpa_clientset.Interface) *observer {
-	vpaListWatch := cache.NewListWatchFromClient(vpaClientSet.AutoscalingV1().RESTClient(), "verticalpodautoscalers", apiv1.NamespaceAll, fields.Everything())
+func getVpaObserver(vpaClientSet vpa_clientset.Interface, namespace string) *observer {
+	vpaListWatch := cache.NewListWatchFromClient(vpaClientSet.AutoscalingV1().RESTClient(), "verticalpodautoscalers", namespace, fields.Everything())
 	vpaObserver := observer{channel: make(chan recommendationChange)}
 	_, controller := cache.NewIndexerInformer(vpaListWatch,
 		&vpa_types.VerticalPodAutoscaler{},
@@ -232,7 +232,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 
 	ginkgo.It("doesn't drop lower/upper after recommender's restart", func() {
 
-		o := getVpaObserver(vpaClientSet)
+		o := getVpaObserver(vpaClientSet, f.Namespace.Name)
 
 		ginkgo.By("Waiting for recommendation to be filled")
 		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
