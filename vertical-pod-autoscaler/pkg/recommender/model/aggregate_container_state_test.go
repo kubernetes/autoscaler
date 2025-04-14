@@ -26,9 +26,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 
+	"k8s.io/utils/ptr"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
-	"k8s.io/utils/ptr"
 )
 
 var (
@@ -333,7 +334,7 @@ func TestParsePruningGracePeriodDuration(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			flag.Set("pruning-grace-period-duration", tc.initialFlag)
+			assert.NoError(t, flag.Set("pruning-grace-period-duration", tc.initialFlag))
 			err := ParseAndInitializePruningGracePeriodDuration()
 			cs := NewAggregateContainerState()
 			cs.UpdatePruningGracePeriod(tc.aggregateGracePeriod)
