@@ -243,6 +243,30 @@ func TestDrainable(t *testing.T) {
 			wantReason: drain.ControllerNotFound,
 			wantError:  true,
 		},
+		"SS-managed pod by a custom API Group": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences(statefulset.Name, "StatefulSet", "kruise/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+		},
+		"SS-managed pod by a custom API Group with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "StatefulSet", "kruise/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+		},
 		"RS-managed pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
