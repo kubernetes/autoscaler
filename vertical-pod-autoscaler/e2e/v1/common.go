@@ -302,6 +302,18 @@ func getVpaClientSet(f *framework.Framework) vpa_clientset.Interface {
 	return vpa_clientset.NewForConfigOrDie(config)
 }
 
+func CheckNamespaceOrCreate(f *framework.Framework, ns string) {
+	_, err := f.ClientSet.CoreV1().Namespaces().Get(context.TODO(), ns, metav1.GetOptions{})
+	if err == nil {
+		ginkgo.By(fmt.Sprintf("Namespace %v already exists", ns))
+	}
+	if err != nil {
+		ginkgo.By(fmt.Sprintf("Creating namespace %v", ns))
+		_, err = f.ClientSet.CoreV1().Namespaces().Create(context.TODO(), &apiv1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: ns}}, metav1.CreateOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error creating namespace")
+	}
+}
+
 // InstallVPA installs a VPA object in the test cluster.
 func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	vpaClientSet := getVpaClientSet(f)
