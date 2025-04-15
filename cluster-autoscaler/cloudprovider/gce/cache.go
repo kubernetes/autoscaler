@@ -47,7 +47,7 @@ type InstanceTemplateName struct {
 // - keep track of instances in the cluster,
 // - keep track of MIGs to instances mapping,
 // - keep track of MIGs configuration such as target size and basename,
-// - keep track of resource limiters and machine types,
+// - keep track of machine types,
 // - limit repetitive GCE API calls.
 //
 // Cache keeps these values and gives access to getters, setters and
@@ -68,7 +68,6 @@ type GceCache struct {
 	instancesUpdateTime              map[GceRef]time.Time
 	instancesToMig                   map[GceRef]GceRef
 	instancesFromUnknownMig          map[GceRef]bool
-	resourceLimiter                  *cloudprovider.ResourceLimiter
 	autoscalingOptionsCache          map[GceRef]map[string]string
 	machinesCache                    map[MachineTypeKey]MachineType
 	migTargetSizeCache               map[GceRef]int64
@@ -294,22 +293,6 @@ func (gc *GceCache) GetAutoscalingOptions(ref GceRef) map[string]string {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	return gc.autoscalingOptionsCache[ref]
-}
-
-// SetResourceLimiter sets resource limiter.
-func (gc *GceCache) SetResourceLimiter(resourceLimiter *cloudprovider.ResourceLimiter) {
-	gc.cacheMutex.Lock()
-	defer gc.cacheMutex.Unlock()
-
-	gc.resourceLimiter = resourceLimiter
-}
-
-// GetResourceLimiter returns resource limiter.
-func (gc *GceCache) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	gc.cacheMutex.Lock()
-	defer gc.cacheMutex.Unlock()
-
-	return gc.resourceLimiter, nil
 }
 
 // GetMigTargetSize returns the cached targetSize for a GceRef
