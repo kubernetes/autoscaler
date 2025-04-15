@@ -76,7 +76,7 @@ remove-buildx-builder:
 	docker buildx rm ${BUILDER}
 
 .PHONY: release
-release: show-git-info create-buildx-builder docker-build remove-buildx-builder docker-push
+release: create-buildx-builder docker-build remove-buildx-builder docker-push
 	@echo "Full in-docker release ${FULL_COMPONENT}:${TAG} completed"
 
 clean: $(addprefix clean-,$(ALL_ARCHITECTURES))
