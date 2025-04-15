@@ -1446,12 +1446,19 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 		nodeGroupMaxSizeAnnotationKey: "10",
 	}
 
+	type testResourceSlice struct {
+		driverName string
+		gpuCount   int
+		deviceType string
+	}
+
 	type testCaseConfig struct {
-		nodeLabels         map[string]string
-		includeNodes       bool
-		expectedErr        error
-		expectedCapacity   map[corev1.ResourceName]int64
-		expectedNodeLabels map[string]string
+		nodeLabels            map[string]string
+		includeNodes          bool
+		expectedErr           error
+		expectedCapacity      map[corev1.ResourceName]int64
+		expectedNodeLabels    map[string]string
+		expectedResourceSlice testResourceSlice
 	}
 
 	testCases := []struct {
@@ -1544,6 +1551,33 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "When the NodeGroup can scale from zero and DRA is enabled, it creates ResourceSlice derived from the annotation of DRA driver name and GPU count",
+			nodeGroupAnnotations: map[string]string{
+				memoryKey:    "2048Mi",
+				cpuKey:       "2",
+				draDriverKey: "gpu.nvidia.com",
+				gpuCountKey:  "2",
+			},
+			config: testCaseConfig{
+				expectedErr: nil,
+				expectedCapacity: map[corev1.ResourceName]int64{
+					corev1.ResourceCPU:    2,
+					corev1.ResourceMemory: 2048 * 1024 * 1024,
+					corev1.ResourcePods:   110,
+				},
+				expectedResourceSlice: testResourceSlice{
+					driverName: "gpu.nvidia.com",
+					gpuCount:   2,
+					deviceType: GpuDeviceType,
+				},
+				expectedNodeLabels: map[string]string{
+					"kubernetes.io/os":       "linux",
+					"kubernetes.io/arch":     "amd64",
+					"kubernetes.io/hostname": "random value",
+				},
+			},
+		},
 	}
 
 	test := func(t *testing.T, testConfig *testConfig, config testCaseConfig) {
@@ -1604,6 +1638,18 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					}
 				} else {
 					t.Errorf("Expected node label %q to exist in node", key)
+				}
+			}
+		}
+		for _, resourceslice := range nodeInfo.LocalResourceSlices {
+			if resourceslice.Spec.Driver != config.expectedResourceSlice.driverName {
+				t.Errorf("Expected DRA driver in ResourceSlice to have: %s, but got: %s", config.expectedResourceSlice.driverName, resourceslice.Spec.Driver)
+			} else if len(resourceslice.Spec.Devices) != config.expectedResourceSlice.gpuCount {
+				t.Errorf("Expected the number of DRA devices in ResourceSlice to have: %d, but got: %d", config.expectedResourceSlice.gpuCount, len(resourceslice.Spec.Devices))
+			}
+			for _, device := range resourceslice.Spec.Devices {
+				if *device.Basic.Attributes["type"].StringValue != config.expectedResourceSlice.deviceType {
+					t.Errorf("Expected device type to have: %s, but got: %s", config.expectedResourceSlice.deviceType, *device.Basic.Attributes["type"].StringValue)
 				}
 			}
 		}
