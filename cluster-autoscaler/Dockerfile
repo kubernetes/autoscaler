@@ -11,9 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-ARG BASEIMAGE=gcr.io/distroless/static:nonroot-s390x
-FROM $BASEIMAGE
+FROM --platform=$BUILDPLATFORM golang:1.23 as builder
 
-COPY cluster-autoscaler-s390x /cluster-autoscaler
+WORKDIR /workspace
+
+COPY . .
+
+ARG GOARCH
+ARG LDFLAGS_FLAG
+ARG TAGS_FLAG
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH $LDFLAGS_FLAG $TAGS_FLAG
+FROM gcr.io/distroless/static:nonroot
+ARG GOARCH
+COPY --from=builder /workspace/cluster-autoscaler-$GOARCH /cluster-autoscaler
+
 WORKDIR /
 CMD ["/cluster-autoscaler"]

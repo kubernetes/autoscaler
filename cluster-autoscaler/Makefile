@@ -20,7 +20,7 @@ else
   FOR_PROVIDER=
 endif
 ifdef LDFLAGS
-  LDFLAGS_FLAG=--ldflags "${LDFLAGS}"
+  LDFLAGS_FLAG=--ldflags="${LDFLAGS}"
 else
   LDFLAGS_FLAG=
 endif
@@ -64,15 +64,9 @@ dev-release-arch-%: build-arch-% make-image-arch-% push-image-arch-%
 make-image: make-image-arch-$(GOARCH)
 
 make-image-arch-%:
-ifdef BASEIMAGE
-	docker build --pull --build-arg BASEIMAGE=${BASEIMAGE} \
+	GOOS=$(GOOS) GOARCH=$* docker buildx build --pull --platform linux/$* \
 		-t ${IMAGE}-$*:${TAG} \
-		-f Dockerfile.$* .
-else
-	docker build --pull \
-		-t ${IMAGE}-$*:${TAG} \
-		-f Dockerfile.$* .
-endif
+		-f Dockerfile .
 	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
 
 push-image: push-image-arch-$(GOARCH)
