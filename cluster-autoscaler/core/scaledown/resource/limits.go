@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
@@ -61,13 +61,13 @@ func NoLimits() Limits {
 
 // LimitsLeft returns the amount of each resource that can be deleted from the
 // cluster without violating any constraints.
-func (lf *LimitsFinder) LimitsLeft(context *context.AutoscalingContext, nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, timestamp time.Time) Limits {
+func (lf *LimitsFinder) LimitsLeft(autoscalingContext *ca_context.AutoscalingContext, nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, timestamp time.Time) Limits {
 	totalCores, totalMem := coresMemoryTotal(nodes, timestamp)
 
 	var totalResources map[string]int64
 	var totalResourcesErr error
 	if cloudprovider.ContainsCustomResources(resourceLimiter.GetResources()) {
-		totalResources, totalResourcesErr = lf.customResourcesTotal(context, nodes, timestamp)
+		totalResources, totalResourcesErr = lf.customResourcesTotal(autoscalingContext, nodes, timestamp)
 	}
 
 	resultScaleDownLimits := make(Limits)
@@ -118,7 +118,7 @@ func coresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	return coresTotal, memoryTotal
 }
 
-func (lf *LimitsFinder) customResourcesTotal(context *context.AutoscalingContext, nodes []*apiv1.Node, timestamp time.Time) (map[string]int64, error) {
+func (lf *LimitsFinder) customResourcesTotal(autoscalingContext *ca_context.AutoscalingContext, nodes []*apiv1.Node, timestamp time.Time) (map[string]int64, error) {
 	result := make(map[string]int64)
 	ngCache := make(map[string][]customresources.CustomResourceTarget)
 	for _, node := range nodes {
@@ -126,7 +126,7 @@ func (lf *LimitsFinder) customResourcesTotal(context *context.AutoscalingContext
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
-		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingContext.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("cannot get node group for node %v when calculating cluster custom resource usage", node.Name)
 		}
@@ -144,7 +144,7 @@ func (lf *LimitsFinder) customResourcesTotal(context *context.AutoscalingContext
 			resourceTargets, cacheHit = ngCache[nodeGroup.Id()]
 		}
 		if !cacheHit {
-			resourceTargets, err = lf.crp.GetNodeResourceTargets(context, node, nodeGroup)
+			resourceTargets, err = lf.crp.GetNodeResourceTargets(autoscalingContext, node, nodeGroup)
 			if err != nil {
 				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("cannot get custom resource count for node %v when calculating cluster custom resource usage")
 			}
@@ -175,7 +175,7 @@ func (l Limits) DeepCopy() Limits {
 
 // DeltaForNode calculates the amount of resources that will disappear from
 // the cluster if a given node is deleted.
-func (lf *LimitsFinder) DeltaForNode(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, resourcesWithLimits []string) (Delta, errors.AutoscalerError) {
+func (lf *LimitsFinder) DeltaForNode(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, resourcesWithLimits []string) (Delta, errors.AutoscalerError) {
 	resultScaleDownDelta := make(Delta)
 
 	nodeCPU, nodeMemory := core_utils.GetNodeCoresAndMemory(node)
@@ -183,7 +183,7 @@ func (lf *LimitsFinder) DeltaForNode(context *context.AutoscalingContext, node *
 	resultScaleDownDelta[cloudprovider.ResourceNameMemory] = nodeMemory
 
 	if cloudprovider.ContainsCustomResources(resourcesWithLimits) {
-		resourceTargets, err := lf.crp.GetNodeResourceTargets(context, node, nodeGroup)
+		resourceTargets, err := lf.crp.GetNodeResourceTargets(autoscalingContext, node, nodeGroup)
 		if err != nil {
 			return Delta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get node %v custom resources: %v", node.Name)
 		}
