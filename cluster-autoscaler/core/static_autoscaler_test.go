@@ -2755,7 +2755,7 @@ func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
 		{
 			name:                          "Soft tainted nodes are cleaned in case of scale down is in cool down",
 			testNodes:                     nodesToHaveNoTaints,
-			expectedScaleDownCoolDown:     true,
+			expectedScaleDownCoolDown:     false,
 			expectedNodesWithSoftTaints:   []*apiv1.Node{},
 			expectedNodesWithNoSoftTaints: nodesToHaveNoTaints,
 		},
@@ -2784,8 +2784,8 @@ func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
 			err := autoscaler.RunOnce(time.Now())
 
 			assert.NoError(t, err)
-			candidates, _ := autoscaler.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(autoscaler.AutoscalingContext, test.testNodes)
-			assert.Equal(t, test.expectedScaleDownCoolDown, autoscaler.isScaleDownInCooldown(time.Now(), candidates))
+			_, _ = autoscaler.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(autoscaler.AutoscalingContext, test.testNodes)
+			assert.Equal(t, test.expectedScaleDownCoolDown, autoscaler.isScaleDownInCooldown(time.Now()))
 
 			assertNodesSoftTaintsStatus(t, fakeClient, test.expectedNodesWithSoftTaints, true)
 			assertNodesSoftTaintsStatus(t, fakeClient, test.expectedNodesWithNoSoftTaints, false)
