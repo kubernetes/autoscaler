@@ -10,26 +10,8 @@ package armcontainerservice
 
 const (
 	moduleName    = "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice"
-	moduleVersion = "v4.9.0-beta.1"
+	moduleVersion = "v4.8.0"
 )
-
-// AddonAutoscaling - Whether VPA add-on is enabled and configured to scale AKS-managed add-ons.
-type AddonAutoscaling string
-
-const (
-	// AddonAutoscalingDisabled - Feature to autoscale AKS-managed add-ons is disabled.
-	AddonAutoscalingDisabled AddonAutoscaling = "Disabled"
-	// AddonAutoscalingEnabled - Feature to autoscale AKS-managed add-ons is enabled. The default VPA update mode is Initial mode.
-	AddonAutoscalingEnabled AddonAutoscaling = "Enabled"
-)
-
-// PossibleAddonAutoscalingValues returns the possible values for the AddonAutoscaling const type.
-func PossibleAddonAutoscalingValues() []AddonAutoscaling {
-	return []AddonAutoscaling{
-		AddonAutoscalingDisabled,
-		AddonAutoscalingEnabled,
-	}
-}
 
 // AgentPoolMode - A cluster must have at least one 'System' Agent Pool at all times. For additional information on agent
 // pool restrictions and best practices, see: https://docs.microsoft.com/azure/aks/use-system-pools
@@ -51,24 +33,6 @@ func PossibleAgentPoolModeValues() []AgentPoolMode {
 	}
 }
 
-// AgentPoolSSHAccess - SSH access method of an agent pool.
-type AgentPoolSSHAccess string
-
-const (
-	// AgentPoolSSHAccessDisabled - SSH service will be turned off on the node.
-	AgentPoolSSHAccessDisabled AgentPoolSSHAccess = "Disabled"
-	// AgentPoolSSHAccessLocalUser - Can SSH onto the node as a local user using private key.
-	AgentPoolSSHAccessLocalUser AgentPoolSSHAccess = "LocalUser"
-)
-
-// PossibleAgentPoolSSHAccessValues returns the possible values for the AgentPoolSSHAccess const type.
-func PossibleAgentPoolSSHAccessValues() []AgentPoolSSHAccess {
-	return []AgentPoolSSHAccess{
-		AgentPoolSSHAccessDisabled,
-		AgentPoolSSHAccessLocalUser,
-	}
-}
-
 // AgentPoolType - The type of Agent Pool.
 type AgentPoolType string
 
@@ -77,8 +41,6 @@ const (
 	AgentPoolTypeAvailabilitySet AgentPoolType = "AvailabilitySet"
 	// AgentPoolTypeVirtualMachineScaleSets - Create an Agent Pool backed by a Virtual Machine Scale Set.
 	AgentPoolTypeVirtualMachineScaleSets AgentPoolType = "VirtualMachineScaleSets"
-	// AgentPoolTypeVirtualMachines - Create an Agent Pool backed by a Single Instance VM orchestration mode.
-	AgentPoolTypeVirtualMachines AgentPoolType = "VirtualMachines"
 )
 
 // PossibleAgentPoolTypeValues returns the possible values for the AgentPoolType const type.
@@ -86,25 +48,6 @@ func PossibleAgentPoolTypeValues() []AgentPoolType {
 	return []AgentPoolType{
 		AgentPoolTypeAvailabilitySet,
 		AgentPoolTypeVirtualMachineScaleSets,
-		AgentPoolTypeVirtualMachines,
-	}
-}
-
-// ArtifactSource - The source where the artifacts are downloaded from.
-type ArtifactSource string
-
-const (
-	// ArtifactSourceCache - pull images from Azure Container Registry with cache
-	ArtifactSourceCache ArtifactSource = "Cache"
-	// ArtifactSourceDirect - pull images from Microsoft Artifact Registry
-	ArtifactSourceDirect ArtifactSource = "Direct"
-)
-
-// PossibleArtifactSourceValues returns the possible values for the ArtifactSource const type.
-func PossibleArtifactSourceValues() []ArtifactSource {
-	return []ArtifactSource{
-		ArtifactSourceCache,
-		ArtifactSourceDirect,
 	}
 }
 
@@ -268,32 +211,11 @@ func PossibleGPUInstanceProfileValues() []GPUInstanceProfile {
 	}
 }
 
-// GuardrailsSupport - Whether the version is preview or stable.
-type GuardrailsSupport string
-
-const (
-	// GuardrailsSupportPreview - The version is preview. It is not recommended to use preview versions on critical production
-	// clusters. The preview version may not support all use-cases.
-	GuardrailsSupportPreview GuardrailsSupport = "Preview"
-	// GuardrailsSupportStable - The version is stable and can be used on critical production clusters.
-	GuardrailsSupportStable GuardrailsSupport = "Stable"
-)
-
-// PossibleGuardrailsSupportValues returns the possible values for the GuardrailsSupport const type.
-func PossibleGuardrailsSupportValues() []GuardrailsSupport {
-	return []GuardrailsSupport{
-		GuardrailsSupportPreview,
-		GuardrailsSupportStable,
-	}
-}
-
-// IPFamily - To determine if address belongs IPv4 or IPv6 family.
+// IPFamily - The IP version to use for cluster networking and IP assignment.
 type IPFamily string
 
 const (
-	// IPFamilyIPv4 - IPv4 family
 	IPFamilyIPv4 IPFamily = "IPv4"
-	// IPFamilyIPv6 - IPv6 family
 	IPFamilyIPv6 IPFamily = "IPv6"
 )
 
@@ -302,24 +224,6 @@ func PossibleIPFamilyValues() []IPFamily {
 	return []IPFamily{
 		IPFamilyIPv4,
 		IPFamilyIPv6,
-	}
-}
-
-// IpvsScheduler - IPVS scheduler, for more information please see http://www.linuxvirtualserver.org/docs/scheduling.html.
-type IpvsScheduler string
-
-const (
-	// IpvsSchedulerLeastConnection - Least Connection
-	IpvsSchedulerLeastConnection IpvsScheduler = "LeastConnection"
-	// IpvsSchedulerRoundRobin - Round Robin
-	IpvsSchedulerRoundRobin IpvsScheduler = "RoundRobin"
-)
-
-// PossibleIpvsSchedulerValues returns the possible values for the IpvsScheduler const type.
-func PossibleIpvsSchedulerValues() []IpvsScheduler {
-	return []IpvsScheduler{
-		IpvsSchedulerLeastConnection,
-		IpvsSchedulerRoundRobin,
 	}
 }
 
@@ -394,25 +298,6 @@ func PossibleKubernetesSupportPlanValues() []KubernetesSupportPlan {
 	return []KubernetesSupportPlan{
 		KubernetesSupportPlanAKSLongTermSupport,
 		KubernetesSupportPlanKubernetesOfficial,
-	}
-}
-
-// Level - The Safeguards level to be used. By default, Safeguards is enabled for all namespaces except those that AKS excludes
-// via systemExcludedNamespaces
-type Level string
-
-const (
-	LevelEnforcement Level = "Enforcement"
-	LevelOff         Level = "Off"
-	LevelWarning     Level = "Warning"
-)
-
-// PossibleLevelValues returns the possible values for the Level const type.
-func PossibleLevelValues() []Level {
-	return []Level{
-		LevelEnforcement,
-		LevelOff,
-		LevelWarning,
 	}
 }
 
@@ -522,24 +407,6 @@ func PossibleManagedClusterSKUTierValues() []ManagedClusterSKUTier {
 	}
 }
 
-// Mode - Specify which proxy mode to use ('IPTABLES' or 'IPVS')
-type Mode string
-
-const (
-	// ModeIPTABLES - IPTables proxy mode
-	ModeIPTABLES Mode = "IPTABLES"
-	// ModeIPVS - IPVS proxy mode. Must be using Kubernetes version >= 1.22.
-	ModeIPVS Mode = "IPVS"
-)
-
-// PossibleModeValues returns the possible values for the Mode const type.
-func PossibleModeValues() []Mode {
-	return []Mode{
-		ModeIPTABLES,
-		ModeIPVS,
-	}
-}
-
 // NetworkDataplane - Network dataplane used in the Kubernetes cluster.
 type NetworkDataplane string
 
@@ -588,8 +455,8 @@ const (
 	// NetworkPluginKubenet - Use the Kubenet network plugin. See [Kubenet (basic) networking](https://docs.microsoft.com/azure/aks/concepts-network#kubenet-basic-networking)
 	// for more information.
 	NetworkPluginKubenet NetworkPlugin = "kubenet"
-	// NetworkPluginNone - Do not use a network plugin. A custom CNI will need to be installed after cluster creation for networking
-	// functionality.
+	// NetworkPluginNone - No CNI plugin is pre-installed. See [BYO CNI](https://docs.microsoft.com/en-us/azure/aks/use-byo-cni)
+	// for more information.
 	NetworkPluginNone NetworkPlugin = "none"
 )
 
@@ -606,8 +473,8 @@ func PossibleNetworkPluginValues() []NetworkPlugin {
 type NetworkPluginMode string
 
 const (
-	// NetworkPluginModeOverlay - Pods are given IPs from the PodCIDR address space but use Azure Routing Domains rather than
-	// Kubenet reference plugins host-local and bridge.
+	// NetworkPluginModeOverlay - Used with networkPlugin=azure, pods are given IPs from the PodCIDR address space but use Azure
+	// Routing Domains rather than Kubenet's method of route tables. For more information visit https://aka.ms/aks/azure-cni-overlay.
 	NetworkPluginModeOverlay NetworkPluginMode = "overlay"
 )
 
@@ -630,8 +497,6 @@ const (
 	NetworkPolicyCalico NetworkPolicy = "calico"
 	// NetworkPolicyCilium - Use Cilium to enforce network policies. This requires networkDataplane to be 'cilium'.
 	NetworkPolicyCilium NetworkPolicy = "cilium"
-	// NetworkPolicyNone - Network policies will not be enforced. This is the default value when NetworkPolicy is not specified.
-	NetworkPolicyNone NetworkPolicy = "none"
 )
 
 // PossibleNetworkPolicyValues returns the possible values for the NetworkPolicy const type.
@@ -640,11 +505,10 @@ func PossibleNetworkPolicyValues() []NetworkPolicy {
 		NetworkPolicyAzure,
 		NetworkPolicyCalico,
 		NetworkPolicyCilium,
-		NetworkPolicyNone,
 	}
 }
 
-// NodeOSUpgradeChannel - The default is Unmanaged, but may change to either NodeImage or SecurityPatch at GA.
+// NodeOSUpgradeChannel - Manner in which the OS on your nodes is updated. The default is NodeImage.
 type NodeOSUpgradeChannel string
 
 const (
@@ -655,17 +519,11 @@ const (
 	// NodeOSUpgradeChannelNone - No attempt to update your machines OS will be made either by OS or by rolling VHDs. This means
 	// you are responsible for your security updates
 	NodeOSUpgradeChannelNone NodeOSUpgradeChannel = "None"
-	// NodeOSUpgradeChannelSecurityPatch - AKS will update the nodes VHD with patches from the image maintainer labelled "security
-	// only" on a regular basis. Where possible, patches will also be applied without reimaging to existing nodes. Some patches,
-	// such as kernel patches, cannot be applied to existing nodes without disruption. For such patches, the VHD will be updated,
-	// and machines will be rolling reimaged to that VHD following maintenance windows and surge settings. This option incurs
-	// the extra cost of hosting the VHDs in your node resource group.
-	NodeOSUpgradeChannelSecurityPatch NodeOSUpgradeChannel = "SecurityPatch"
 	// NodeOSUpgradeChannelUnmanaged - OS updates will be applied automatically through the OS built-in patching infrastructure.
-	// Newly scaled in machines will be unpatched initially, and will be patched at some later time by the OS's infrastructure.
-	// Behavior of this option depends on the OS in question. Ubuntu and Mariner apply security patches through unattended upgrade
-	// roughly once a day around 06:00 UTC. Windows does not apply security patches automatically and so for them this option
-	// is equivalent to None till further notice
+	// Newly scaled in machines will be unpatched initially and will be patched at some point by the OS's infrastructure. Behavior
+	// of this option depends on the OS in question. Ubuntu and Mariner apply security patches through unattended upgrade roughly
+	// once a day around 06:00 UTC. Windows does not apply security patches automatically and so for them this option is equivalent
+	// to None till further notice
 	NodeOSUpgradeChannelUnmanaged NodeOSUpgradeChannel = "Unmanaged"
 )
 
@@ -674,27 +532,7 @@ func PossibleNodeOSUpgradeChannelValues() []NodeOSUpgradeChannel {
 	return []NodeOSUpgradeChannel{
 		NodeOSUpgradeChannelNodeImage,
 		NodeOSUpgradeChannelNone,
-		NodeOSUpgradeChannelSecurityPatch,
 		NodeOSUpgradeChannelUnmanaged,
-	}
-}
-
-// NodeProvisioningMode - Once the mode it set to Auto, it cannot be changed back to Manual.
-type NodeProvisioningMode string
-
-const (
-	// NodeProvisioningModeAuto - Nodes are provisioned automatically by AKS using Karpenter. Fixed size Node Pools can still
-	// be created, but autoscaling Node Pools cannot be. (See aka.ms/aks/nap for more details).
-	NodeProvisioningModeAuto NodeProvisioningMode = "Auto"
-	// NodeProvisioningModeManual - Nodes are provisioned manually by the user
-	NodeProvisioningModeManual NodeProvisioningMode = "Manual"
-)
-
-// PossibleNodeProvisioningModeValues returns the possible values for the NodeProvisioningMode const type.
-func PossibleNodeProvisioningModeValues() []NodeProvisioningMode {
-	return []NodeProvisioningMode{
-		NodeProvisioningModeAuto,
-		NodeProvisioningModeManual,
 	}
 }
 
@@ -722,9 +560,8 @@ func PossibleOSDiskTypeValues() []OSDiskType {
 	}
 }
 
-// OSSKU - Specifies the OS SKU used by the agent pool. If not specified, the default is Ubuntu if OSType=Linux or Windows2019
-// if OSType=Windows. And the default Windows OSSKU will be changed to Windows2022
-// after Windows2019 is deprecated.
+// OSSKU - Specifies the OS SKU used by the agent pool. The default is Ubuntu if OSType is Linux. The default is Windows2019
+// when Kubernetes = 1.25 if OSType is Windows.
 type OSSKU string
 
 const (
@@ -733,8 +570,6 @@ const (
 	OSSKUAzureLinux OSSKU = "AzureLinux"
 	// OSSKUCBLMariner - Deprecated OSSKU. Microsoft recommends that new deployments choose 'AzureLinux' instead.
 	OSSKUCBLMariner OSSKU = "CBLMariner"
-	// OSSKUMariner - Deprecated OSSKU. Microsoft recommends that new deployments choose 'AzureLinux' instead.
-	OSSKUMariner OSSKU = "Mariner"
 	// OSSKUUbuntu - Use Ubuntu as the OS for node images.
 	OSSKUUbuntu OSSKU = "Ubuntu"
 	// OSSKUWindows2019 - Use Windows2019 as the OS for node images. Unsupported for system node pools. Windows2019 only supports
@@ -743,9 +578,6 @@ const (
 	// OSSKUWindows2022 - Use Windows2022 as the OS for node images. Unsupported for system node pools. Windows2022 only supports
 	// Windows2022 containers; it cannot run Windows2019 containers and vice versa.
 	OSSKUWindows2022 OSSKU = "Windows2022"
-	// OSSKUWindowsAnnual - Use Windows Annual Channel version as the OS for node images. Unsupported for system node pools. Details
-	// about supported container images and kubernetes versions under different AKS Annual Channel versions could be seen in https://aka.ms/aks/windows-annual-channel-details.
-	OSSKUWindowsAnnual OSSKU = "WindowsAnnual"
 )
 
 // PossibleOSSKUValues returns the possible values for the OSSKU const type.
@@ -753,11 +585,9 @@ func PossibleOSSKUValues() []OSSKU {
 	return []OSSKU{
 		OSSKUAzureLinux,
 		OSSKUCBLMariner,
-		OSSKUMariner,
 		OSSKUUbuntu,
 		OSSKUWindows2019,
 		OSSKUWindows2022,
-		OSSKUWindowsAnnual,
 	}
 }
 
@@ -807,30 +637,6 @@ func PossibleOutboundTypeValues() []OutboundType {
 	}
 }
 
-// PodIPAllocationMode - The IP allocation mode for pods in the agent pool. Must be used with podSubnetId. The default is
-// 'DynamicIndividual'.
-type PodIPAllocationMode string
-
-const (
-	// PodIPAllocationModeDynamicIndividual - Each pod gets a single IP address assigned. This is better for maximizing a small
-	// to medium subnet of size /16 or smaller. The Azure CNI cluster with dynamic IP allocation defaults to this mode if the
-	// customer does not explicitly specify a podIPAllocationMode
-	PodIPAllocationModeDynamicIndividual PodIPAllocationMode = "DynamicIndividual"
-	// PodIPAllocationModeStaticBlock - Each node is statically allocated CIDR block(s) of size /28 = 16 IPs per block to satisfy
-	// the maxPods per node. Number of CIDR blocks >= (maxPods / 16). The block, rather than a single IP, counts against the Azure
-	// Vnet Private IP limit of 65K. Therefore block mode is suitable for running larger workloads with more than the current
-	// limit of 65K pods in a cluster. This mode is better suited to scale with larger subnets of /15 or bigger
-	PodIPAllocationModeStaticBlock PodIPAllocationMode = "StaticBlock"
-)
-
-// PossiblePodIPAllocationModeValues returns the possible values for the PodIPAllocationMode const type.
-func PossiblePodIPAllocationModeValues() []PodIPAllocationMode {
-	return []PodIPAllocationMode{
-		PodIPAllocationModeDynamicIndividual,
-		PodIPAllocationModeStaticBlock,
-	}
-}
-
 // PrivateEndpointConnectionProvisioningState - The current provisioning state.
 type PrivateEndpointConnectionProvisioningState string
 
@@ -875,12 +681,8 @@ func PossibleProtocolValues() []Protocol {
 type PublicNetworkAccess string
 
 const (
-	// PublicNetworkAccessDisabled - Inbound traffic to managedCluster is disabled, traffic from managedCluster is allowed.
 	PublicNetworkAccessDisabled PublicNetworkAccess = "Disabled"
-	// PublicNetworkAccessEnabled - Inbound/Outbound to the managedCluster is allowed.
-	PublicNetworkAccessEnabled PublicNetworkAccess = "Enabled"
-	// PublicNetworkAccessSecuredByPerimeter - Inbound/Outbound traffic is managed by Microsoft.Network/NetworkSecurityPerimeters.
-	PublicNetworkAccessSecuredByPerimeter PublicNetworkAccess = "SecuredByPerimeter"
+	PublicNetworkAccessEnabled  PublicNetworkAccess = "Enabled"
 )
 
 // PossiblePublicNetworkAccessValues returns the possible values for the PublicNetworkAccess const type.
@@ -888,7 +690,6 @@ func PossiblePublicNetworkAccessValues() []PublicNetworkAccess {
 	return []PublicNetworkAccess{
 		PublicNetworkAccessDisabled,
 		PublicNetworkAccessEnabled,
-		PublicNetworkAccessSecuredByPerimeter,
 	}
 }
 
@@ -914,43 +715,6 @@ func PossibleResourceIdentityTypeValues() []ResourceIdentityType {
 		ResourceIdentityTypeNone,
 		ResourceIdentityTypeSystemAssigned,
 		ResourceIdentityTypeUserAssigned,
-	}
-}
-
-// RestrictionLevel - The restriction level applied to the cluster's node resource group
-type RestrictionLevel string
-
-const (
-	// RestrictionLevelReadOnly - Only */read RBAC permissions allowed on the managed node resource group
-	RestrictionLevelReadOnly RestrictionLevel = "ReadOnly"
-	// RestrictionLevelUnrestricted - All RBAC permissions are allowed on the managed node resource group
-	RestrictionLevelUnrestricted RestrictionLevel = "Unrestricted"
-)
-
-// PossibleRestrictionLevelValues returns the possible values for the RestrictionLevel const type.
-func PossibleRestrictionLevelValues() []RestrictionLevel {
-	return []RestrictionLevel{
-		RestrictionLevelReadOnly,
-		RestrictionLevelUnrestricted,
-	}
-}
-
-// SafeguardsSupport - Whether the version is preview or stable.
-type SafeguardsSupport string
-
-const (
-	// SafeguardsSupportPreview - The version is preview. It is not recommended to use preview versions on critical production
-	// clusters. The preview version may not support all use-cases.
-	SafeguardsSupportPreview SafeguardsSupport = "Preview"
-	// SafeguardsSupportStable - The version is stable and can be used on critical production clusters.
-	SafeguardsSupportStable SafeguardsSupport = "Stable"
-)
-
-// PossibleSafeguardsSupportValues returns the possible values for the SafeguardsSupport const type.
-func PossibleSafeguardsSupportValues() []SafeguardsSupport {
-	return []SafeguardsSupport{
-		SafeguardsSupportPreview,
-		SafeguardsSupportStable,
 	}
 }
 
@@ -1036,8 +800,6 @@ func PossibleServiceMeshModeValues() []ServiceMeshMode {
 type SnapshotType string
 
 const (
-	// SnapshotTypeManagedCluster - The snapshot is a snapshot of a managed cluster.
-	SnapshotTypeManagedCluster SnapshotType = "ManagedCluster"
 	// SnapshotTypeNodePool - The snapshot is a snapshot of a node pool.
 	SnapshotTypeNodePool SnapshotType = "NodePool"
 )
@@ -1045,7 +807,6 @@ const (
 // PossibleSnapshotTypeValues returns the possible values for the SnapshotType const type.
 func PossibleSnapshotTypeValues() []SnapshotType {
 	return []SnapshotType{
-		SnapshotTypeManagedCluster,
 		SnapshotTypeNodePool,
 	}
 }
@@ -1072,19 +833,19 @@ func PossibleTrustedAccessRoleBindingProvisioningStateValues() []TrustedAccessRo
 	}
 }
 
-// Type - Specifies on which instance of the allowed days specified in daysOfWeek the maintenance occurs.
+// Type - Specifies on which week of the month the dayOfWeek applies.
 type Type string
 
 const (
-	// TypeFirst - First.
+	// TypeFirst - First week of the month.
 	TypeFirst Type = "First"
-	// TypeFourth - Fourth.
+	// TypeFourth - Fourth week of the month.
 	TypeFourth Type = "Fourth"
-	// TypeLast - Last.
+	// TypeLast - Last week of the month.
 	TypeLast Type = "Last"
-	// TypeSecond - Second.
+	// TypeSecond - Second week of the month.
 	TypeSecond Type = "Second"
-	// TypeThird - Third.
+	// TypeThird - Third week of the month.
 	TypeThird Type = "Third"
 )
 
@@ -1165,10 +926,6 @@ func PossibleWeekDayValues() []WeekDay {
 type WorkloadRuntime string
 
 const (
-	// WorkloadRuntimeKataMshvVMIsolation - Nodes can use (Kata + Cloud Hypervisor + Hyper-V) to enable Nested VM-based pods (Preview).
-	// Due to the use Hyper-V, AKS node OS itself is a nested VM (the root OS) of Hyper-V. Thus it can only be used with VM series
-	// that support Nested Virtualization such as Dv3 series.
-	WorkloadRuntimeKataMshvVMIsolation WorkloadRuntime = "KataMshvVmIsolation"
 	// WorkloadRuntimeOCIContainer - Nodes will use Kubelet to run standard OCI container workloads.
 	WorkloadRuntimeOCIContainer WorkloadRuntime = "OCIContainer"
 	// WorkloadRuntimeWasmWasi - Nodes will use Krustlet to run WASM workloads using the WASI provider (Preview).
@@ -1178,7 +935,6 @@ const (
 // PossibleWorkloadRuntimeValues returns the possible values for the WorkloadRuntime const type.
 func PossibleWorkloadRuntimeValues() []WorkloadRuntime {
 	return []WorkloadRuntime{
-		WorkloadRuntimeKataMshvVMIsolation,
 		WorkloadRuntimeOCIContainer,
 		WorkloadRuntimeWasmWasi,
 	}
