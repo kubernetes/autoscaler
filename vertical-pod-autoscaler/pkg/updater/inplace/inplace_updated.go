@@ -28,6 +28,8 @@ import (
 
 type inPlaceUpdate struct{}
 
+// CalculatePatches returns a patch that adds a "vpaInPlaceUpdated" annotation
+// to the pod, marking it as having been requested to be updated in-place by VPA.
 func (*inPlaceUpdate) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	vpaInPlaceUpdatedValue := annotations.GetVpaInPlaceUpdatedValue()
 	return []resource_admission.PatchRecord{patch.GetAddAnnotationPatch(annotations.VpaInPlaceUpdatedLabel, vpaInPlaceUpdatedValue)}, nil

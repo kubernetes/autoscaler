@@ -252,6 +252,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 		} else {
+			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
 			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
 			}
@@ -283,7 +284,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
 			if err != nil {
 				klog.V(0).InfoS("In-place update failed", "error", err, "pod", klog.KObj(pod))
-				return
+				continue
 			}
 			withInPlaceUpdated = true
 			metrics_updater.AddInPlaceUpdatedPod(vpaSize)
