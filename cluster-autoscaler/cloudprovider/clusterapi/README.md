@@ -80,7 +80,7 @@ in the staging namespace, belonging to the purple cluster, with the label owner=
 ## Connecting cluster-autoscaler to Cluster API management and workload Clusters
 
 > [!IMPORTANT]
-> `--cloud-config` is the flag to configure the cloud provider. Here the cloud provider is "Cluster API".
+> `--cloud-config` is the flag for specifying a mount volume path to the kubernetes configuration (ie KUBECONFIG) to the cluster-autoscaler for communicating with the cluster-api management cluster for the purpose of scaling machines.
 
 > [!IMPORTANT]
 > `--kubeconfig` is the flag to configure the cluster to watch for the need of autoscaling.
