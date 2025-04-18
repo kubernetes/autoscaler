@@ -83,6 +83,7 @@ func ClearPodNodeNames(pods []*apiv1.Pod) []*apiv1.Pod {
 	return newPods
 }
 
+// PodRequests calculates Pod requests using a common resource helper shared with the scheduler
 func PodRequests(pod *apiv1.Pod) apiv1.ResourceList {
 	inPlacePodVerticalScalingEnabled := utilfeature.DefaultFeatureGate.Enabled(features.InPlacePodVerticalScaling)
 	podLevelResourcesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.PodLevelResources)
