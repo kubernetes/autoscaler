@@ -421,8 +421,7 @@ specify the command-line flag `--aws-use-static-instance-list=true` to switch
 the CA back to its original use of a statically defined set.
 
 To refresh static list, please run `go run ec2_instance_types/gen.go` under
-`cluster-autoscaler/cloudprovider/aws/` and update `staticListLastUpdateTime` in
-`aws_util.go`
+`cluster-autoscaler/cloudprovider/aws/`.
 
 ## Using the AWS SDK vendored in the AWS cloudprovider
 
