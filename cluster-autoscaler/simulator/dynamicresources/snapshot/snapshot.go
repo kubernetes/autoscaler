@@ -43,22 +43,26 @@ func GetClaimId(claim *resourceapi.ResourceClaim) ResourceClaimId {
 // in the cluster.
 type Snapshot struct {
 	resourceClaimsById         map[ResourceClaimId]*resourceapi.ResourceClaim
-	resourceSlicesByNodeName   map[string][]*resourceapi.ResourceSlice
-	nonNodeLocalResourceSlices []*resourceapi.ResourceSlice
+	resourceSlicesByNodeName   map[string]map[string]*resourceapi.ResourceSlice
+	nonNodeLocalResourceSlices map[string]*resourceapi.ResourceSlice
 	deviceClasses              map[string]*resourceapi.DeviceClass
 }
 
 // NewSnapshot returns a Snapshot created from the provided data.
-func NewSnapshot(claims map[ResourceClaimId]*resourceapi.ResourceClaim, nodeLocalSlices map[string][]*resourceapi.ResourceSlice, globalSlices []*resourceapi.ResourceSlice, deviceClasses map[string]*resourceapi.DeviceClass) Snapshot {
+func NewSnapshot(claims map[ResourceClaimId]*resourceapi.ResourceClaim, nodeLocalSlices map[string]map[string]*resourceapi.ResourceSlice, globalSlices map[string]*resourceapi.ResourceSlice, deviceClasses map[string]*resourceapi.DeviceClass) Snapshot {
 	if claims == nil {
 		claims = map[ResourceClaimId]*resourceapi.ResourceClaim{}
 	}
 	if nodeLocalSlices == nil {
-		nodeLocalSlices = map[string][]*resourceapi.ResourceSlice{}
+		nodeLocalSlices = map[string]map[string]*resourceapi.ResourceSlice{}
 	}
 	if deviceClasses == nil {
 		deviceClasses = map[string]*resourceapi.DeviceClass{}
 	}
+	if globalSlices == nil {
+		globalSlices = map[string]*resourceapi.ResourceSlice{}
+	}
+
 	return Snapshot{
 		resourceClaimsById:         claims,
 		resourceSlicesByNodeName:   nodeLocalSlices,
@@ -243,7 +247,7 @@ func (s Snapshot) AddNodeResourceSlices(nodeName string, slices []*resourceapi.R
 // RemoveNodeResourceSlices removes all node-local ResourceSlices for the Node with the given nodeName.
 // It's a no-op if there aren't any slices to remove.
 func (s Snapshot) RemoveNodeResourceSlices(nodeName string) {
-	delete(s.resourceSlicesByNodeName, nodeName)
+	s.resourceSlicesByNodeName[nodeName] = nil
 }
 
 func (s Snapshot) claimForPod(pod *apiv1.Pod, claimRef apiv1.PodResourceClaim) (*resourceapi.ResourceClaim, error) {
