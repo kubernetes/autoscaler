@@ -21,6 +21,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
@@ -73,11 +74,8 @@ func getHours(startTime time.Time, endTime time.Time) float64 {
 // PodPrice returns a theoretical minimum price of running a pod for a given
 // period of time on a perfectly matching machine.
 func (model *Price) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
-	price := 0.0
-	for _, container := range pod.Spec.Containers {
-		price += getBasePrice(container.Resources.Requests, startTime, endTime)
-	}
-	return price, nil
+	podRequests := podutils.PodRequests(pod)
+	return getBasePrice(podRequests, startTime, endTime), nil
 }
 
 func getBasePrice(resources apiv1.ResourceList, startTime time.Time, endTime time.Time) float64 {
