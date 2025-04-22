@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 const (
@@ -88,12 +89,9 @@ func calculateNodeSelectorStats(pods []*apiv1.Pod) []nodeSelectorStats {
 	stats := make([]nodeSelectorStats, 0)
 	for _, pod := range pods {
 		var podCpu resource.Quantity
-		for _, container := range pod.Spec.Containers {
-			if container.Resources.Requests != nil {
-				containerCpu := container.Resources.Requests[apiv1.ResourceCPU]
-				podCpu.Add(containerCpu)
-			}
-		}
+		podRequests := podutils.PodRequests(pod)
+		podCpu.Add(podRequests[apiv1.ResourceCPU])
+
 		if podCpu.MilliValue() == 0 {
 			podCpu = defaultMinCPU
 		}
