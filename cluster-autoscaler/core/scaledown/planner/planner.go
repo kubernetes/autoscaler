@@ -17,6 +17,7 @@ limitations under the License.
 package planner
 
 import (
+	ctx "context"
 	"fmt"
 	"time"
 
@@ -301,6 +302,19 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 		}
 	}
 	p.unneededNodes.Update(removableList, p.latestUpdate)
+	for _, node := range p.unneededNodes.AsList() {
+		updatedNode := node.DeepCopy()
+		nodeAnnotations := node.GetAnnotations()
+		if _, ok := nodeAnnotations[unneeded.NODE_COOLDOWN_SINCE_ANNOTATION]; !ok {
+			if nodeAnnotations == nil {
+				nodeAnnotations = make(map[string]string)
+			}
+			nodeAnnotations[unneeded.NODE_COOLDOWN_SINCE_ANNOTATION] = p.latestUpdate.Format(time.RFC3339)
+			updatedNode.SetAnnotations(nodeAnnotations)
+			p.context.AutoscalingKubeClients.ClientSet.CoreV1().Nodes().Update(ctx.TODO(), updatedNode, metav1.UpdateOptions{})
+		}
+	}
+
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
 	}

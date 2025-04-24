@@ -201,6 +201,8 @@ github.com/golang-jwt/jwt/v4 v4.5.0/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w
 github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=
 github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
+github.com/golang/glog v1.2.1 h1:OptwRhECazUx5ix5TTWC3EZhsZEHWcYWY4FQHTIubm4=
+github.com/golang/glog v1.2.1/go.mod h1:6AhwSGph0fcJtXVM/PEHPqZlFeoLxhs7/t5UDAwmO+w=
 github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
 github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da h1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=
 github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
@@ -610,6 +612,8 @@ k8s.io/apimachinery v0.33.0-alpha.0 h1:UEr11OY9sG+9Zizy6qPpyhLwOMhhs4c6+RLcUOjn5
 k8s.io/apimachinery v0.33.0-alpha.0/go.mod h1:HqhdaJUgQqky29T1V0o2yFkt/pZqLFIDyn9Zi/8rxoY=
 k8s.io/apiserver v0.33.0-alpha.0 h1:HosVRDe2RdTPBy8yoAkcmAjhWLqOYl6HXCmHFGmAgnY=
 k8s.io/apiserver v0.33.0-alpha.0/go.mod h1:TAJEFMyz+/aZ66Lg7EYt3a20yf+j1EJGtBnA4RH7dSY=
+k8s.io/autoscaler v0.0.0-20250227193630-a58d346c09f2 h1:g4GzTD0MfIVCpw+vNI+TLZUyly37ZnzzBiIqGEu2ODE=
+k8s.io/autoscaler v0.0.0-20250227193630-a58d346c09f2/go.mod h1:QEXezc9uKPT91dwqhSJq3GNI3B1HxFRQHiku9kmrsSA=
 k8s.io/client-go v0.33.0-alpha.0 h1:j/1m4ocOzykgF7Mx/xSX5rk5EiOghaCMtbIfVnIl2Gw=
 k8s.io/client-go v0.33.0-alpha.0/go.mod h1:tKjHOpArmmeuq+J+ahsZ1LbZi4YFK5uwqn9HNq2++G4=
 k8s.io/cloud-provider v0.33.0-alpha.0 h1:qRyypRtxtuglrsyMnWiFq6iTfq3GnyLzFAsTw/SkAV0=
