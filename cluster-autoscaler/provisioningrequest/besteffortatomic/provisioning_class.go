@@ -90,6 +90,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 	pr := prs[0]
 
 	o.context.ClusterSnapshot.Fork()
+	// TODO(mfuhol): revert no error handled
 	defer o.context.ClusterSnapshot.Revert()
 
 	// For provisioning requests, unschedulablePods are actually all injected pods. Some may even be schedulable!

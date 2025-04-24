@@ -25,30 +25,20 @@ import (
 	"k8s.io/dynamic-resource-allocation/structured"
 )
 
-type snapshotClaimTracker Snapshot
+type snapshotClaimTracker struct {
+	snapshot Interface
+}
 
 func (s snapshotClaimTracker) List() ([]*resourceapi.ResourceClaim, error) {
-	var result []*resourceapi.ResourceClaim
-	for _, claim := range s.resourceClaimsById {
-		result = append(result, claim)
-	}
-	return result, nil
+	return s.snapshot.ListResourceClaims()
 }
 
 func (s snapshotClaimTracker) Get(namespace, claimName string) (*resourceapi.ResourceClaim, error) {
-	claim, found := s.resourceClaimsById[ResourceClaimId{Name: claimName, Namespace: namespace}]
-	if !found {
-		return nil, fmt.Errorf("claim %s/%s not found", namespace, claimName)
-	}
-	return claim, nil
+	return s.snapshot.GetResourceClaim(namespace, claimName)
 }
 
 func (s snapshotClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.DeviceID], error) {
-	result := sets.New[structured.DeviceID]()
-	for _, claim := range s.resourceClaimsById {
-		result = result.Union(claimAllocatedDevices(claim))
-	}
-	return result, nil
+	return s.snapshot.ListAllAllocatedDevices()
 }
 
 func (s snapshotClaimTracker) SignalClaimPendingAllocation(claimUid types.UID, allocatedClaim *resourceapi.ResourceClaim) error {
@@ -57,16 +47,16 @@ func (s snapshotClaimTracker) SignalClaimPendingAllocation(claimUid types.UID, a
 	//
 	// In Cluster Autoscaler only the scheduling phase is run, so SignalClaimPendingAllocation() is used to obtain the allocation
 	// and persist it in-memory in the snapshot.
-	ref := ResourceClaimId{Name: allocatedClaim.Name, Namespace: allocatedClaim.Namespace}
-	claim, found := s.resourceClaimsById[ref]
-	if !found {
-		return fmt.Errorf("claim %s/%s not found", allocatedClaim.Namespace, allocatedClaim.Name)
+	resourceClaim, err := s.snapshot.GetResourceClaim(allocatedClaim.Namespace, allocatedClaim.Name)
+	if err != nil {
+		return err
 	}
-	if claim.UID != claimUid {
-		return fmt.Errorf("claim %s/%s: snapshot has UID %q, allocation came for UID %q - shouldn't happenn", allocatedClaim.Namespace, allocatedClaim.Name, claim.UID, claimUid)
+
+	if claimUid != resourceClaim.UID {
+		return fmt.Errorf("claim %s/%s: snapshot has UID %q, allocation came for UID %q - shouldn't happenn", allocatedClaim.Namespace, allocatedClaim.Name, resourceClaim.UID, claimUid)
 	}
-	s.resourceClaimsById[ref] = allocatedClaim
-	return nil
+
+	return s.snapshot.ConfigureClaim(resourceClaim, allocatedClaim)
 }
 
 func (s snapshotClaimTracker) ClaimHasPendingAllocation(claimUid types.UID) bool {

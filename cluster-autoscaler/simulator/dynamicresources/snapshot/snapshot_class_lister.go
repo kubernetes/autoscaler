@@ -17,25 +17,17 @@ limitations under the License.
 package snapshot
 
 import (
-	"fmt"
-
 	resourceapi "k8s.io/api/resource/v1beta1"
 )
 
-type snapshotClassLister Snapshot
+type snapshotClassLister struct {
+	snapshot Interface
+}
 
 func (s snapshotClassLister) List() ([]*resourceapi.DeviceClass, error) {
-	var result []*resourceapi.DeviceClass
-	for _, class := range s.deviceClasses {
-		result = append(result, class)
-	}
-	return result, nil
+	return s.snapshot.ListDeviceClasses()
 }
 
 func (s snapshotClassLister) Get(className string) (*resourceapi.DeviceClass, error) {
-	class, found := s.deviceClasses[className]
-	if !found {
-		return nil, fmt.Errorf("DeviceClass %q not found", className)
-	}
-	return class, nil
+	return s.snapshot.GetDeviceClass(className)
 }

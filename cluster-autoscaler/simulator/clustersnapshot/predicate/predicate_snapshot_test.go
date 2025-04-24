@@ -71,7 +71,7 @@ func extractNodes(nodeInfos []*framework.NodeInfo) []*apiv1.Node {
 type snapshotState struct {
 	nodes       []*apiv1.Node
 	podsByNode  map[string][]*apiv1.Pod
-	draSnapshot drasnapshot.Snapshot
+	draSnapshot *drasnapshot.Snapshot
 }
 
 func compareStates(t *testing.T, a, b snapshotState) {
@@ -82,11 +82,11 @@ func compareStates(t *testing.T, a, b snapshotState) {
 		t.Errorf("Pods: unexpected diff (-want +got): %s", diff)
 	}
 
-	aClaims, err := a.draSnapshot.ResourceClaims().List()
+	aClaims, err := a.draSnapshot.ResourceClaimTracker().List()
 	if err != nil {
 		t.Errorf("ResourceClaims().List(): unexpected error: %v", err)
 	}
-	bClaims, err := b.draSnapshot.ResourceClaims().List()
+	bClaims, err := b.draSnapshot.ResourceClaimTracker().List()
 	if err != nil {
 		t.Errorf("ResourceClaims().List(): unexpected error: %v", err)
 	}
@@ -99,31 +99,31 @@ func compareStates(t *testing.T, a, b snapshotState) {
 		cmpopts.IgnoreFields(metav1.ObjectMeta{}, "Finalizers"),
 	}
 	if diff := cmp.Diff(aClaims, bClaims, claimDiffOpts...); diff != "" {
-		t.Errorf("ResourceClaims().List(): unexpected diff (-want +got): %s", diff)
+		t.Errorf("ResourceClaimTracker().List(): unexpected diff (-want +got): %s", diff)
 	}
 
-	aSlices, err := a.draSnapshot.ResourceSlices().List()
+	aSlices, err := a.draSnapshot.ResourceSliceLister().List()
 	if err != nil {
-		t.Errorf("ResourceSlices().List(): unexpected error: %v", err)
+		t.Errorf("ResourceSliceLister().List(): unexpected error: %v", err)
 	}
-	bSlices, err := b.draSnapshot.ResourceSlices().List()
+	bSlices, err := b.draSnapshot.ResourceSliceLister().List()
 	if err != nil {
-		t.Errorf("ResourceSlices().List(): unexpected error: %v", err)
+		t.Errorf("ResourceSliceLister().List(): unexpected error: %v", err)
 	}
 	if diff := cmp.Diff(aSlices, bSlices, cmpopts.EquateEmpty(), IgnoreObjectOrder[*resourceapi.ResourceSlice]()); diff != "" {
-		t.Errorf("ResourceSlices().List(): unexpected diff (-want +got): %s", diff)
+		t.Errorf("ResourceSliceLister().List(): unexpected diff (-want +got): %s", diff)
 	}
 
-	aClasses, err := a.draSnapshot.DeviceClasses().List()
+	aClasses, err := a.draSnapshot.DeviceClassLister().List()
 	if err != nil {
-		t.Errorf("DeviceClasses().List(): unexpected error: %v", err)
+		t.Errorf("DeviceClassLister().List(): unexpected error: %v", err)
 	}
-	bClasses, err := b.draSnapshot.DeviceClasses().List()
+	bClasses, err := b.draSnapshot.DeviceClassLister().List()
 	if err != nil {
-		t.Errorf("DeviceClasses().List(): unexpected error: %v", err)
+		t.Errorf("DeviceClassLister().List(): unexpected error: %v", err)
 	}
 	if diff := cmp.Diff(aClasses, bClasses, cmpopts.EquateEmpty(), IgnoreObjectOrder[*resourceapi.DeviceClass]()); diff != "" {
-		t.Errorf("DeviceClasses().List(): unexpected diff (-want +got): %s", diff)
+		t.Errorf("DeviceClassLister().List(): unexpected diff (-want +got): %s", diff)
 	}
 }
 
@@ -136,7 +136,10 @@ func getSnapshotState(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) sn
 			pods[nodeInfo.Node().Name] = append(pods[nodeInfo.Node().Name], podInfo.Pod)
 		}
 	}
-	return snapshotState{nodes: extractNodes(nodes), podsByNode: pods, draSnapshot: snapshot.DraSnapshot()}
+	// DRA Snapshot interface doesn't expose .Clone() method, assertion is required
+	draSnapshot, ok := snapshot.DraSnapshot().(*drasnapshot.Snapshot)
+	assert.True(t, ok, "Failed to cast drasnapshot.Interface to *drasnapshot.Snapshot")
+	return snapshotState{nodes: extractNodes(nodes), podsByNode: pods, draSnapshot: draSnapshot.Clone()}
 }
 
 func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.ClusterSnapshot, error), state snapshotState) clustersnapshot.ClusterSnapshot {
@@ -148,7 +151,15 @@ func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.Cluster
 			pods = append(pods, pod)
 		}
 	}
-	err = snapshot.SetClusterState(state.nodes, pods, state.draSnapshot.Clone())
+
+	var draSnapshot *drasnapshot.Snapshot
+	if state.draSnapshot != nil {
+		draSnapshot = state.draSnapshot
+	} else {
+		panic("shouldn't happen DONOTSUBMIT")
+	}
+
+	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot.Clone())
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -479,6 +490,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 	}
 
 	// Only the Basic store is compatible with DRA for now.
+	// TODO(mfuhol): uncomment
 	if snapshotName == "basic" {
 		// Uncomment to get logs from the DRA plugin.
 		// var fs flag.FlagSet
@@ -1168,6 +1180,15 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 		}...)
 	}
 
+	for i := range testCases {
+		if testCases[i].modifiedState.draSnapshot == nil {
+			testCases[i].modifiedState.draSnapshot = drasnapshot.NewEmptySnapshot()
+		}
+		if testCases[i].state.draSnapshot == nil {
+			testCases[i].state.draSnapshot = drasnapshot.NewEmptySnapshot()
+		}
+	}
+
 	return testCases
 }
 
@@ -1200,7 +1221,8 @@ func TestForking(t *testing.T) {
 
 				tc.runAndValidateOp(t, snapshot)
 
-				snapshot.Revert()
+				err := snapshot.Revert()
+				assert.NoError(t, err)
 
 				// Modifications should no longer be applied.
 				compareStates(t, tc.state, getSnapshotState(t, snapshot))
@@ -1214,8 +1236,10 @@ func TestForking(t *testing.T) {
 
 				snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 
-				snapshot.Revert()
-				snapshot.Revert()
+				err := snapshot.Revert()
+				assert.NoError(t, err)
+				err = snapshot.Revert()
+				assert.NoError(t, err)
 
 				// Modifications should no longer be applied.
 				compareStates(t, tc.state, getSnapshotState(t, snapshot))
@@ -1245,7 +1269,8 @@ func TestForking(t *testing.T) {
 				// Modifications should be applied.
 				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
 
-				snapshot.Revert()
+				err = snapshot.Revert()
+				assert.NoError(t, err)
 				// Modifications should no longer be applied.
 				compareStates(t, tc.state, getSnapshotState(t, snapshot))
 
@@ -1257,8 +1282,9 @@ func TestForking(t *testing.T) {
 				tc.runAndValidateOp(t, snapshot)
 				snapshot.Fork()
 				snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
-				snapshot.Revert()
-				err := snapshot.Commit()
+				err := snapshot.Revert()
+				assert.NoError(t, err)
+				err = snapshot.Commit()
 				assert.NoError(t, err)
 
 				// Modifications should be applied.
@@ -1323,7 +1349,7 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, &drasnapshot.Snapshot{}))
 
 				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
 			})
@@ -1334,7 +1360,7 @@ func TestSetClusterState(t *testing.T) {
 
 				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
 				newPodsByNode := clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, drasnapshot.Snapshot{}))
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, &drasnapshot.Snapshot{}))
 
 				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode}, getSnapshotState(t, snapshot))
 			})
@@ -1357,7 +1383,7 @@ func TestSetClusterState(t *testing.T) {
 
 				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode}, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, &drasnapshot.Snapshot{}))
 
 				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
 
@@ -1753,7 +1779,8 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, true, volumeExists)
 
-			snapshot.Revert()
+			err = snapshot.Revert()
+			assert.NoError(t, err)
 
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, false, volumeExists)
@@ -1768,7 +1795,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
+			assert.NoError(t, snapshot.SetClusterState(nil, nil, &drasnapshot.Snapshot{}))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 

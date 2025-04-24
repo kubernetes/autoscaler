@@ -38,6 +38,12 @@ func ClaimOwningPod(claim *resourceapi.ResourceClaim) (string, types.UID) {
 	return "", ""
 }
 
+// TODO(mfuhol)
+func PodOwnsClaim(pod *apiv1.Pod, claim *resourceapi.ResourceClaim) bool {
+	ownerPodName, ownerPodUid := ClaimOwningPod(claim)
+	return ownerPodName == pod.Name && ownerPodUid == pod.UID
+}
+
 // ClaimAllocated returns whether the provided claim is allocated.
 func ClaimAllocated(claim *resourceapi.ResourceClaim) bool {
 	return claim.Status.Allocation != nil

@@ -113,6 +113,7 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	p.scaleDownContext.ActuationStatus = as
 	// Avoid persisting changes done by the simulation.
 	p.context.ClusterSnapshot.Fork()
+	// TODO(mfuhol): revert no error handled
 	defer p.context.ClusterSnapshot.Revert()
 	err := p.injectRecentlyEvictedPods()
 	if err != nil {

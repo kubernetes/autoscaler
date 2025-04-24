@@ -87,7 +87,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1, ready7, readyToBeDeleted6}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
+	err := snapshot.SetClusterState(nodes, nil, &drasnapshot.Snapshot{})
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{
@@ -176,7 +176,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 
 	nodes := []*apiv1.Node{unready4, unready3, ready2, ready1}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
+	err := snapshot.SetClusterState(nodes, nil, &drasnapshot.Snapshot{})
 	assert.NoError(t, err)
 
 	// Fill cache
@@ -267,7 +267,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 
 	nodes := []*apiv1.Node{ready1}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
+	err := snapshot.SetClusterState(nodes, nil, &drasnapshot.Snapshot{})
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{

@@ -101,6 +101,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 	e.clusterSnapshot.Fork()
 	defer func() {
+		// TODO(mfuhol): revert no error handled
 		e.clusterSnapshot.Revert()
 	}()
 

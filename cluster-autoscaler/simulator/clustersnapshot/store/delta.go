@@ -47,6 +47,7 @@ import (
 //		so basic caching doesn't help.
 type DeltaSnapshotStore struct {
 	data        *internalDeltaSnapshotData
+	draSnapshot drasnapshot.Interface
 	parallelism int
 }
 
@@ -396,17 +397,17 @@ func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerframework.StorageInf
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
 func (snapshot *DeltaSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
-	return snapshot.DraSnapshot().ResourceClaims()
+	return snapshot.DraSnapshot().ResourceClaimTracker()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
 func (snapshot *DeltaSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
-	return snapshot.DraSnapshot().ResourceSlices()
+	return snapshot.DraSnapshot().ResourceSliceLister()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
 func (snapshot *DeltaSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
-	return snapshot.DraSnapshot().DeviceClasses()
+	return snapshot.DraSnapshot().DeviceClassLister()
 }
 
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.
@@ -419,9 +420,8 @@ func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 }
 
 // DraSnapshot returns the DRA snapshot.
-func (snapshot *DeltaSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
-	// TODO(DRA): Return DRA snapshot.
-	return drasnapshot.Snapshot{}
+func (snapshot *DeltaSnapshotStore) DraSnapshot() drasnapshot.Interface {
+	return snapshot.draSnapshot
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
@@ -469,7 +469,7 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error {
+func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Interface) error {
 	snapshot.clear()
 
 	nodeNameToIdx := make(map[string]int, len(nodes))
@@ -494,7 +494,7 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 	// Clear caches after adding pods.
 	snapshot.data.clearCaches()
 
-	// TODO(DRA): Save DRA snapshot.
+	snapshot.draSnapshot = draSnapshot
 	return nil
 }
 
@@ -526,20 +526,31 @@ func (snapshot *DeltaSnapshotStore) Fork() {
 
 // Revert reverts snapshot state to moment of forking.
 // Time: O(1)
-func (snapshot *DeltaSnapshotStore) Revert() {
+func (snapshot *DeltaSnapshotStore) Revert() error {
+	if err := snapshot.draSnapshot.Revert(); err != nil {
+		return err
+	}
+
 	if snapshot.data.baseData != nil {
 		snapshot.data = snapshot.data.baseData
 	}
+
+	return nil
 }
 
 // Commit commits changes done after forking.
 // Time: O(n), where n = size of delta (number of nodes added, modified or deleted since forking)
 func (snapshot *DeltaSnapshotStore) Commit() error {
+	if err := snapshot.draSnapshot.Commit(); err != nil {
+		return err
+	}
+
 	newData, err := snapshot.data.commit()
 	if err != nil {
 		return err
 	}
 	snapshot.data = newData
+
 	return nil
 }
 
@@ -547,4 +558,5 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 // Time: O(1)
 func (snapshot *DeltaSnapshotStore) clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
+	snapshot.draSnapshot = &drasnapshot.Snapshot{}
 }

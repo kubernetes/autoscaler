@@ -336,7 +336,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	}
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 
-	var draSnapshot drasnapshot.Snapshot
+	var draSnapshot drasnapshot.Interface
 	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.draProvider != nil {
 		draSnapshot, err = a.draProvider.Snapshot()
 		if err != nil {

@@ -90,6 +90,7 @@ func (o *provReqOrchestrator) ScaleUp(
 	}
 
 	o.context.ClusterSnapshot.Fork()
+	// TODO(mfuhol): revert no error handled
 	defer o.context.ClusterSnapshot.Revert()
 
 	// unschedulablePods pods should belong to one ProvisioningClass, so only one provClass should try to ScaleUp.
