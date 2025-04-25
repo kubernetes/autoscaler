@@ -79,6 +79,9 @@ func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 		}
 
 		nodeAnnotations := nn.Node.GetAnnotations()
+		if nodeAnnotations == nil {
+			nodeAnnotations = make(map[string]string)
+		}
 		if v, ok := nodeAnnotations[NODE_COOLDOWN_SINCE_ANNOTATION]; ok {
 			if t, err := time.Parse(time.RFC3339, v); err == nil {
 				updated[name].since = t
@@ -87,9 +90,12 @@ func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 			}
 		} else if val, found := n.byName[name]; found {
 			updated[name].since = val.since
+			nodeAnnotations[NODE_COOLDOWN_SINCE_ANNOTATION] = val.since.Format(time.RFC3339)
 		} else {
 			updated[name].since = ts
+			nodeAnnotations[NODE_COOLDOWN_SINCE_ANNOTATION] = ts.Format(time.RFC3339)
 		}
+		nn.Node.SetAnnotations(nodeAnnotations)
 	}
 	n.byName = updated
 	n.cachedList = nil

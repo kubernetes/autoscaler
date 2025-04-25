@@ -34,6 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
@@ -702,9 +703,21 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
 			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
 			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
+			for _, n := range p.unneededNodes.AsList() {
+				nodeAnnotations := n.GetAnnotations()
+				v, ok := nodeAnnotations[unneeded.NODE_COOLDOWN_SINCE_ANNOTATION]
+				assert.True(t, ok, "unneeded node should have annotation")
+				cooldownStart, err := time.Parse(time.RFC3339, v)
+				assert.NoError(t, err, "annotation value should be a valid RFC3339 timestamp")
+				// Check that the timestamp is recent, indicating it was likely set in this test run.
+				assert.WithinDuration(t, time.Now(), cooldownStart, 5*time.Second, "cooldown timestamp should be recent")
+			}
+
 		})
 	}
 }
+
+
 
 func TestNodesToDelete(t *testing.T) {
 	testCases := []struct {
@@ -994,4 +1007,13 @@ func (r *fakeRemovalSimulator) SimulateNodeRemoval(name string, _ map[string]boo
 		}
 	}
 	return &simulator.NodeToBeRemoved{Node: node}, nil
+}
+
+func BuildTestUneededNode(name string, cpu, memory int64, unneededDuration time.Duration) *apiv1.Node {
+	node := BuildTestNode(name, cpu, memory)
+	nodeAnnotations := map[string]string{
+		unneeded.NODE_COOLDOWN_SINCE_ANNOTATION: time.Now().Add(-unneededDuration).Format(time.RFC3339),
+	}
+	node.SetAnnotations(nodeAnnotations)
+	return node
 }
