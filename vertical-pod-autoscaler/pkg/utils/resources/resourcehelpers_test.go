@@ -59,10 +59,53 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 			},
 		},
 		{
+			desc:          "Prefer resource requests from initContainer status",
+			containerName: "init-container",
+			pod: test.Pod().AddInitContainer(
+				test.Container().WithName("init-container").
+					WithCPURequest(resource.MustParse("1")).
+					WithMemRequest(resource.MustParse("1Mi")).
+					WithCPULimit(resource.MustParse("1")).
+					WithMemLimit(resource.MustParse("1Mi")).Get()).
+				AddInitContainerStatus(
+					test.ContainerStatus().WithName("init-container").
+						WithCPURequest(resource.MustParse("5")).
+						WithMemRequest(resource.MustParse("50Mi")).
+						WithCPULimit(resource.MustParse("6")).
+						WithMemLimit(resource.MustParse("60Mi")).Get()).
+				Get(),
+			wantRequests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("5"),
+				apiv1.ResourceMemory: resource.MustParse("50Mi"),
+			},
+			wantLimits: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("6"),
+				apiv1.ResourceMemory: resource.MustParse("60Mi"),
+			},
+		},
+		{
 			desc:          "No container status, get resources from pod spec",
 			containerName: "container",
 			pod: test.Pod().AddContainer(
 				test.Container().WithName("container").
+					WithCPURequest(resource.MustParse("1")).
+					WithMemRequest(resource.MustParse("10Mi")).
+					WithCPULimit(resource.MustParse("2")).
+					WithMemLimit(resource.MustParse("20Mi")).Get()).Get(),
+			wantRequests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("1"),
+				apiv1.ResourceMemory: resource.MustParse("10Mi"),
+			},
+			wantLimits: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("2"),
+				apiv1.ResourceMemory: resource.MustParse("20Mi"),
+			},
+		},
+		{
+			desc:          "No initContainer status, get resources from pod spec",
+			containerName: "init-container",
+			pod: test.Pod().AddInitContainer(
+				test.Container().WithName("init-container").
 					WithCPURequest(resource.MustParse("1")).
 					WithMemRequest(resource.MustParse("10Mi")).
 					WithCPULimit(resource.MustParse("2")).
@@ -95,6 +138,24 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 			},
 		},
 		{
+			desc:          "Only initContainerStatus, get resources from initContainerStatus",
+			containerName: "init-container",
+			pod: test.Pod().AddInitContainerStatus(
+				test.ContainerStatus().WithName("init-container").
+					WithCPURequest(resource.MustParse("0")).
+					WithMemRequest(resource.MustParse("30Mi")).
+					WithCPULimit(resource.MustParse("4")).
+					WithMemLimit(resource.MustParse("40Mi")).Get()).Get(),
+			wantRequests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("0"),
+				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			},
+			wantLimits: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("4"),
+				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			},
+		},
+		{
 			desc:          "Inexistent container",
 			containerName: "inexistent-container",
 			pod: test.Pod().AddContainer(
@@ -102,16 +163,17 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 					WithCPURequest(resource.MustParse("1")).
 					WithMemRequest(resource.MustParse("10Mi")).
 					WithCPULimit(resource.MustParse("2")).
-					WithMemLimit(resource.MustParse("20Mi")).Get()).Get(),
+					WithMemLimit(resource.MustParse("20Mi")).Get()).
+				AddInitContainer(test.Container().WithName("init-container").Get()).Get(),
 			wantRequests: nil,
 			wantLimits:   nil,
 		},
 		{
-			desc:          "Container with no requests or limits",
-			containerName: "inexistent-container",
+			desc:          "Container with no requests or limits returns non-nil resources",
+			containerName: "container",
 			pod:           test.Pod().AddContainer(test.Container().WithName("container").Get()).Get(),
-			wantRequests:  nil,
-			wantLimits:    nil,
+			wantRequests:  apiv1.ResourceList{},
+			wantLimits:    apiv1.ResourceList{},
 		},
 		{
 			desc:          "2 containers",
@@ -140,6 +202,8 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 						WithMemRequest(resource.MustParse("5Mi")).
 						WithCPULimit(resource.MustParse("5")).
 						WithMemLimit(resource.MustParse("5Mi")).Get()).
+				AddInitContainer(
+					test.Container().WithName("init-container").Get()).
 				Get(),
 			wantRequests: apiv1.ResourceList{
 				apiv1.ResourceCPU:    resource.MustParse("3"),

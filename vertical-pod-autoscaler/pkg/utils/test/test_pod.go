@@ -25,7 +25,9 @@ import (
 type PodBuilder interface {
 	WithName(name string) PodBuilder
 	AddContainer(container apiv1.Container) PodBuilder
+	AddInitContainer(initContainer apiv1.Container) PodBuilder
 	AddContainerStatus(containerStatus apiv1.ContainerStatus) PodBuilder
+	AddInitContainerStatus(initContainerStatus apiv1.ContainerStatus) PodBuilder
 	WithCreator(creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) PodBuilder
 	WithLabels(labels map[string]string) PodBuilder
 	WithAnnotations(annotations map[string]string) PodBuilder
@@ -42,14 +44,16 @@ func Pod() PodBuilder {
 }
 
 type podBuilderImpl struct {
-	name              string
-	containers        []apiv1.Container
-	creatorObjectMeta *metav1.ObjectMeta
-	creatorTypeMeta   *metav1.TypeMeta
-	labels            map[string]string
-	annotations       map[string]string
-	phase             apiv1.PodPhase
-	containerStatuses []apiv1.ContainerStatus
+	name                  string
+	containers            []apiv1.Container
+	initContainers        []apiv1.Container
+	creatorObjectMeta     *metav1.ObjectMeta
+	creatorTypeMeta       *metav1.TypeMeta
+	labels                map[string]string
+	annotations           map[string]string
+	phase                 apiv1.PodPhase
+	containerStatuses     []apiv1.ContainerStatus
+	initContainerStatuses []apiv1.ContainerStatus
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -76,6 +80,12 @@ func (pb *podBuilderImpl) AddContainer(container apiv1.Container) PodBuilder {
 	return &r
 }
 
+func (pb *podBuilderImpl) AddInitContainer(initContainer apiv1.Container) PodBuilder {
+	r := *pb
+	r.initContainers = append(r.initContainers, initContainer)
+	return &r
+}
+
 func (pb *podBuilderImpl) WithCreator(creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) PodBuilder {
 	r := *pb
 	r.creatorObjectMeta = creatorObjectMeta
@@ -95,6 +105,12 @@ func (pb *podBuilderImpl) AddContainerStatus(containerStatus apiv1.ContainerStat
 	return &r
 }
 
+func (pb *podBuilderImpl) AddInitContainerStatus(initContainerStatus apiv1.ContainerStatus) PodBuilder {
+	r := *pb
+	r.initContainerStatuses = append(r.initContainerStatuses, initContainerStatus)
+	return &r
+}
+
 func (pb *podBuilderImpl) Get() *apiv1.Pod {
 	startTime := metav1.Time{
 		Time: testTimestamp,
@@ -105,7 +121,8 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 			Name:      pb.name,
 		},
 		Spec: apiv1.PodSpec{
-			Containers: pb.containers,
+			Containers:     pb.containers,
+			InitContainers: pb.initContainers,
 		},
 		Status: apiv1.PodStatus{
 			StartTime: &startTime,
@@ -138,6 +155,9 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 
 	if pb.containerStatuses != nil {
 		pod.Status.ContainerStatuses = pb.containerStatuses
+	}
+	if pb.initContainerStatuses != nil {
+		pod.Status.InitContainerStatuses = pb.initContainerStatuses
 	}
 
 	return pod

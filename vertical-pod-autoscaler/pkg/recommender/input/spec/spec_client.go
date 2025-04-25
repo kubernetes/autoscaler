@@ -22,6 +22,7 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 )
 
 // BasicPodSpec contains basic information defining a pod and its containers.
@@ -80,15 +81,10 @@ func (client *specClient) GetPodSpecs() ([]*BasicPodSpec, error) {
 	return podSpecs, nil
 }
 func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
-	podId := model.PodID{
-		PodName:   pod.Name,
-		Namespace: pod.Namespace,
-	}
-	containerSpecs := newContainerSpecs(podId, pod.Spec.Containers)
-	initContainerSpecs := newContainerSpecs(podId, pod.Spec.InitContainers)
+	containerSpecs, initContainerSpecs := newContainerSpecs(pod)
 
 	basicPodSpec := &BasicPodSpec{
-		ID:             podId,
+		ID:             podID(pod),
 		PodLabels:      pod.Labels,
 		Containers:     containerSpecs,
 		InitContainers: initContainerSpecs,
@@ -97,34 +93,39 @@ func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
 	return basicPodSpec
 }
 
-func newContainerSpecs(podID model.PodID, containers []v1.Container) []BasicContainerSpec {
-	var containerSpecs []BasicContainerSpec
-
-	for _, container := range containers {
-		containerSpec := newContainerSpec(podID, container)
+func newContainerSpecs(pod *v1.Pod) (containerSpecs []BasicContainerSpec, initContainerSpecs []BasicContainerSpec) {
+	for _, container := range pod.Spec.Containers {
+		containerSpec := newContainerSpec(pod, container)
 		containerSpecs = append(containerSpecs, containerSpec)
 	}
 
-	return containerSpecs
+	for _, initContainer := range pod.Spec.InitContainers {
+		initContainerSpec := newContainerSpec(pod, initContainer)
+		initContainerSpecs = append(initContainerSpecs, initContainerSpec)
+	}
+
+	return containerSpecs, initContainerSpecs
 }
 
-func newContainerSpec(podID model.PodID, container v1.Container) BasicContainerSpec {
+func newContainerSpec(pod *v1.Pod, container v1.Container) BasicContainerSpec {
 	containerSpec := BasicContainerSpec{
 		ID: model.ContainerID{
-			PodID:         podID,
+			PodID:         podID(pod),
 			ContainerName: container.Name,
 		},
 		Image:   container.Image,
-		Request: calculateRequestedResources(container),
+		Request: calculateRequestedResources(pod, container),
 	}
 	return containerSpec
 }
 
-func calculateRequestedResources(container v1.Container) model.Resources {
-	cpuQuantity := container.Resources.Requests[v1.ResourceCPU]
+func calculateRequestedResources(pod *v1.Pod, container v1.Container) model.Resources {
+	requests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+
+	cpuQuantity := requests[v1.ResourceCPU]
 	cpuMillicores := cpuQuantity.MilliValue()
 
-	memoryQuantity := container.Resources.Requests[v1.ResourceMemory]
+	memoryQuantity := requests[v1.ResourceMemory]
 	memoryBytes := memoryQuantity.Value()
 
 	return model.Resources{
@@ -132,4 +133,11 @@ func calculateRequestedResources(container v1.Container) model.Resources {
 		model.ResourceMemory: model.ResourceAmount(memoryBytes),
 	}
 
+}
+
+func podID(pod *v1.Pod) model.PodID {
+	return model.PodID{
+		PodName:   pod.Name,
+		Namespace: pod.Namespace,
+	}
 }

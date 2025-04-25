@@ -22,10 +22,10 @@ import (
 )
 
 // ContainerRequestsAndLimits returns a copy of the actual resource requests and
-// limits of a given container:
+// limits of a given container or initContainer:
 //
 //   - If in-place pod updates feature [1] is enabled, the actual resource requests
-//     are stored in the container status field.
+//     are stored in the container/initContainer status field.
 //   - Otherwise, fallback to the resource requests defined in the pod spec.
 //
 // [1] https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
@@ -50,6 +50,12 @@ func findContainer(containerName string, pod *v1.Pod) *v1.Container {
 			return &pod.Spec.Containers[i]
 		}
 	}
+
+	for i, initContainer := range pod.Spec.InitContainers {
+		if initContainer.Name == containerName {
+			return &pod.Spec.InitContainers[i]
+		}
+	}
 	return nil
 }
 
@@ -57,6 +63,12 @@ func containerStatusForContainer(containerName string, pod *v1.Pod) *v1.Containe
 	for i, containerStatus := range pod.Status.ContainerStatuses {
 		if containerStatus.Name == containerName {
 			return &pod.Status.ContainerStatuses[i]
+		}
+	}
+
+	for i, initContainerStatus := range pod.Status.InitContainerStatuses {
+		if initContainerStatus.Name == containerName {
+			return &pod.Status.InitContainerStatuses[i]
 		}
 	}
 	return nil
