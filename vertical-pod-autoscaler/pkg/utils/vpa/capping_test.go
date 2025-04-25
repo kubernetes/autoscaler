@@ -152,8 +152,10 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 		}, {
 			name: "capping for RequestsOnly policy for limits defined in containerStatus",
 			pod: func() *apiv1.Pod {
-				pod := pod.DeepCopy()
-
+				pod := test.Pod().WithName("pod1").AddContainer(
+					test.Container().WithName(containerName).
+						WithCPULimit(*resource.NewScaledQuantity(3, 1)).
+						WithMemLimit(*resource.NewScaledQuantity(7000, 1)).Get()).Get()
 				pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
 					test.ContainerStatus().WithName(containerName).
 						WithCPULimit(resource.MustParse("2.5")).
@@ -1284,7 +1286,7 @@ func TestApplyLimitRangeMinToRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "caps to pod limit in containerStatus if below pod limit",
+			name: "Should use container status limits when lower than both recommendation and pod limit range",
 			resources: vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					{
@@ -1298,6 +1300,8 @@ func TestApplyLimitRangeMinToRequest(t *testing.T) {
 			},
 			pod: *test.Pod().
 				AddContainer(test.Container().WithName("container").
+					// Requests and Limits defined in the pod spec are ignored because
+					// the values in container status have higher priority.
 					WithCPURequest(resource.MustParse("10")).
 					WithMemRequest(resource.MustParse("1G")).
 					WithCPULimit(resource.MustParse("10")).
