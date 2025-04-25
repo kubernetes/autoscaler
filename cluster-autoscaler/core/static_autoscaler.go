@@ -93,7 +93,6 @@ type StaticAutoscaler struct {
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	taintConfig             taints.TaintConfig
-	draProvider             *draprovider.Provider
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -167,7 +166,8 @@ func NewStaticAutoscaler(
 		processorCallbacks,
 		debuggingSnapshotter,
 		remainingPdbTracker,
-		clusterStateRegistry)
+		clusterStateRegistry,
+		draProvider)
 
 	taintConfig := taints.NewTaintConfig(opts)
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
@@ -179,7 +179,7 @@ func NewStaticAutoscaler(
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor, draProvider)
+	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingContext.ScaleDownActuator = scaleDownActuator
 
 	if scaleUpOrchestrator == nil {
@@ -203,7 +203,6 @@ func NewStaticAutoscaler(
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		taintConfig:             taintConfig,
-		draProvider:             draProvider,
 	}
 }
 
@@ -337,8 +336,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 
 	var draSnapshot drasnapshot.Snapshot
-	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.draProvider != nil {
-		draSnapshot, err = a.draProvider.Snapshot()
+	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.AutoscalingContext.DraProvider != nil {
+		draSnapshot, err = a.AutoscalingContext.DraProvider.Snapshot()
 		if err != nil {
 			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 		}
