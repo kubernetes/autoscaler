@@ -37,7 +37,7 @@ import (
 
 const (
 	// NODE_COOLDOWN_SINCE_ANNOTATION is the annotation used to store the time when a node was found to be unneeded.
-	NODE_COOLDOWN_SINCE_ANNOTATION = "cluster-autoscaler.kubernetes.io/since"
+	NODE_COOLDOWN_SINCE_ANNOTATION = "cluster-autoscaler.kubernetes.io/unneeded-since"
 )
 
 // Nodes tracks the state of cluster nodes that are not needed.

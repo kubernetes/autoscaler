@@ -17,14 +17,14 @@ limitations under the License.
 package planner
 
 import (
-	ctx "context"
+	"context"
 	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
@@ -45,7 +45,7 @@ import (
 )
 
 type eligibilityChecker interface {
-	FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
+	FilterOutUnremovable(context *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
 }
 
 type removalSimulator interface {
@@ -64,7 +64,7 @@ type replicasInfo struct {
 
 // Planner is responsible for deciding which nodes should be deleted during scale down.
 type Planner struct {
-	context               *context.AutoscalingContext
+	context               *ca_context.AutoscalingContext
 	unremovableNodes      *unremovable.Nodes
 	unneededNodes         *unneeded.Nodes
 	rs                    removalSimulator
@@ -80,7 +80,7 @@ type Planner struct {
 }
 
 // New creates a new Planner object.
-func New(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules) *Planner {
+func New(context *ca_context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules) *Planner {
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
 	minUpdateInterval := context.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime
 	if minUpdateInterval == 0*time.Nanosecond {
@@ -311,7 +311,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			}
 			nodeAnnotations[unneeded.NODE_COOLDOWN_SINCE_ANNOTATION] = p.latestUpdate.Format(time.RFC3339)
 			updatedNode.SetAnnotations(nodeAnnotations)
-			p.context.AutoscalingKubeClients.ClientSet.CoreV1().Nodes().Update(ctx.TODO(), updatedNode, metav1.UpdateOptions{})
+			p.context.AutoscalingKubeClients.ClientSet.CoreV1().Nodes().Update(context.TODO(), updatedNode, metav1.UpdateOptions{})
 		}
 	}
 
