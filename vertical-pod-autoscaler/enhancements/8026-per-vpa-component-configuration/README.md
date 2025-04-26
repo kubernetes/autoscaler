@@ -41,7 +41,7 @@ Currently, supporting these different needs requires running multiple VPA compon
   - oomBumpUpRatio
   - oomMinBumpUp
   - memoryAggregationInterval
-  - evictAfterOOMThreshold
+  - evictAfterOomThreshold
 
 ### Non-Goals
 
@@ -65,7 +65,7 @@ spec:
     name: oom-test
   updatePolicy:
     updateMode: Auto
-    evictAfterOOMThreshold: "5m"
+    evictAfterOomThreshold: "5m"
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
@@ -86,7 +86,7 @@ Extend ContainerResourcePolicy with:
 * memoryAggregationInterval
 
 Extend PodUpdatePolicy with:
-* evictAfterOOMThreshold
+* evictAfterOomThreshold
 
 #### Future Extensions
 
@@ -102,7 +102,7 @@ Initial validation rules:
 * oomBumpUpRatio > 1.0
 * oomMinBumpUp > 0
 * memoryAggregationInterval > 0
-* evictAfterOOMThreshold > 0
+* evictAfterOomThreshold > 0
 
 Additional validation rules will be added as new parameters are introduced.
 
