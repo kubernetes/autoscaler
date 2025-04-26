@@ -6,6 +6,9 @@
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
+  - [Parameter Descriptions](#parameter-descriptions)
+    - [Container Policy Parameters](#container-policy-parameters)
+    - [Update Policy Parameters](#update-policy-parameters)
 - [Design Details](#design-details)
   - [API Changes](#api-changes)
     - [Phase 1 (Current Proposal)](#phase-1-current-proposal)
@@ -73,6 +76,28 @@ spec:
       oomMinBumpUp: 104857600
       memoryAggregationInterval: "12h"
 ```
+
+### Parameter Descriptions
+
+#### Container Policy Parameters
+* `oomBumpUpRatio` (float): 
+  - Multiplier applied to memory recommendations after OOM events
+  - Controls how aggressively memory is increased after container crashes
+
+* `oomMinBumpUp` (bytes): 
+  - Minimum absolute memory increase after OOM events
+  - Ensures meaningful increases even for small containers
+
+* `memoryAggregationInterval` (duration):
+  - Time window for aggregating memory usage data
+  - Affects how quickly VPA responds to memory usage changes
+
+#### Update Policy Parameters
+* `evictAfterOomThreshold` (duration):
+  - Time to wait after OOM before considering pod eviction
+  - Helps prevent rapid eviction cycles while maintaining stability
+
+Each parameter can be configured independently, falling back to global defaults if not specified. Values should be chosen based on workload characteristics and stability requirements.
 
 ## Design Details
 
