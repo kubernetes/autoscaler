@@ -10,7 +10,7 @@
   - [API Changes](#api-changes)
     - [Phase 1 (Current Proposal)](#phase-1-current-proposal)
     - [Future Extensions](#future-extensions)
-  - [Validation via CEL](#validation-via-cel)
+  - [Validation via CEL and Testing](#validation-via-cel-and-testing)
   - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
 - [Future Work](#future-work)
@@ -96,7 +96,7 @@ This AEP will be updated as additional parameters are identified for per-object 
 * recommendationMarginFraction
 * Other parameters that benefit from workload-specific tuning
 
-### Validation via CEL
+### Validation via CEL and Testing
 
 Initial validation rules:
 * oomBumpUpRatio > 1.0
@@ -105,6 +105,10 @@ Initial validation rules:
 * evictAfterOomThreshold > 0
 
 Additional validation rules will be added as new parameters are introduced.
+E2E tests will be included to verify:
+* Different configurations are properly applied and respected by VPA components
+* VPA behavior matches expected outcomes for different parameter combinations
+* Proper fallback to global configuration when parameters are not specified
 
 ### Test Plan
 
