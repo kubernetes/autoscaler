@@ -162,7 +162,7 @@ func getDeviceRequestResult(claim *resourceapi.ResourceClaim, devicerequest *res
 		return nil
 	}
 	for _, deviceRequestResult := range claim.Status.Allocation.Devices.Results {
-		if deviceRequestResult.Request == devicerequest.Name{
+		if deviceRequestResult.Request == devicerequest.Name {
 			return deviceRequestResult.DeepCopy()
 		}
 	}
