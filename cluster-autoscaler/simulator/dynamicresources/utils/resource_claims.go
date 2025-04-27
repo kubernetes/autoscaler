@@ -140,32 +140,32 @@ func claimConsumerReferenceMatchesPod(pod *apiv1.Pod, ref resourceapi.ResourceCl
 // ClaimWithoutAdminAccessRequests returns a copy of the claim without admin access requests, and their results.
 func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
 	claimCopy := claim.DeepCopy()
-	deviceRequests := make([]resourceapi.DeviceRequest, 0)
+	if claimCopy.Status.Allocation == nil {
+		return claimCopy
+	}
 	deviceRequestAllocationResults := make([]resourceapi.DeviceRequestAllocationResult, 0)
-	for _, deviceRequest := range claimCopy.Spec.Devices.Requests {
+	for _, deviceRequestAllocationResult := range claimCopy.Status.Allocation.Devices.Results {
 		// Device requests with AdminAccess don't reserve their allocated resources, and are ignored when scheuling.
-		if deviceRequest.AdminAccess != nil && *deviceRequest.AdminAccess {
+		devReq := getDeviceResultRequest(claim, &deviceRequestAllocationResult)
+		if devReq != nil && devReq.AdminAccess != nil && *devReq.AdminAccess {
 			continue
 		}
-		if deviceRequestResult := getDeviceRequestResult(claim, &deviceRequest); deviceRequestResult != nil {
-			deviceRequestAllocationResults = append(deviceRequestAllocationResults, *deviceRequestResult)
-		}
+		deviceRequestAllocationResults = append(deviceRequestAllocationResults, deviceRequestAllocationResult)
 	}
-	claimCopy.Spec.Devices.Requests = deviceRequests
 	if claimCopy.Status.Allocation != nil {
 		claimCopy.Status.Allocation.Devices.Results = deviceRequestAllocationResults
 	}
 	return claimCopy
 }
 
-// getDeviceRequestResult returns the DeviceRequestAllocationResult for the provided DeviceRequest in the provided ResourceClaim. If no result is found, nil is returned.
-func getDeviceRequestResult(claim *resourceapi.ResourceClaim, devicerequest *resourceapi.DeviceRequest) *resourceapi.DeviceRequestAllocationResult {
+// getDeviceResultRequest returns the DeviceRequest for the provided DeviceRequestAllocationResult in the provided ResourceClaim. If no result is found, nil is returned.
+func getDeviceResultRequest(claim *resourceapi.ResourceClaim, deviceRequestAllocationResult *resourceapi.DeviceRequestAllocationResult) *resourceapi.DeviceRequest {
 	if claim.Status.Allocation == nil {
 		return nil
 	}
-	for _, deviceRequestResult := range claim.Status.Allocation.Devices.Results {
-		if deviceRequestResult.Request == devicerequest.Name {
-			return deviceRequestResult.DeepCopy()
+	for _, deviceRequest := range claim.Spec.Devices.Requests {
+		if deviceRequest.Name == deviceRequestAllocationResult.Request {
+			return &deviceRequest
 		}
 	}
 	return nil
