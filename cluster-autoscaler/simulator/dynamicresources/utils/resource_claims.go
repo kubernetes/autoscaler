@@ -118,8 +118,8 @@ func claimConsumerReferenceMatchesPod(pod *apiv1.Pod, ref resourceapi.ResourceCl
 // ClaimWithoutAdminAccessRequests returns a copy of the claim without admin access requests, and their results.
 func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
 	claimCopy := claim.DeepCopy()
-	deviceRequests := make([]resourceapi.DeviceRequest, 0, len(claimCopy.Spec.Devices.Requests))
-	deviceRequestAllocationResults := make([]resourceapi.DeviceRequestAllocationResult, 0, len(claimCopy.Status.Allocation.Devices.Results))
+	deviceRequests := make([]resourceapi.DeviceRequest, 0)
+	deviceRequestAllocationResults := make([]resourceapi.DeviceRequestAllocationResult, 0)
 	for _, deviceRequest := range claimCopy.Spec.Devices.Requests {
 		// Device requests with AdminAccess don't reserve their allocated resources, and are ignored when scheuling.
 		if deviceRequest.AdminAccess != nil && *deviceRequest.AdminAccess {
@@ -130,7 +130,9 @@ func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resource
 		}
 	}
 	claimCopy.Spec.Devices.Requests = deviceRequests
-	claimCopy.Status.Allocation.Devices.Results = deviceRequestAllocationResults
+	if claimCopy.Status.Allocation != nil {
+		claimCopy.Status.Allocation.Devices.Results = deviceRequestAllocationResults
+	}
 	return claimCopy
 }
 
