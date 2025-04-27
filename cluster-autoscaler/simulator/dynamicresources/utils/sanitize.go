@@ -72,8 +72,9 @@ func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceap
 		claimCopy.UID = uuid.NewUUID()
 		claimCopy.Name = fmt.Sprintf("%s-%s", claim.Name, nameSuffix)
 		claimCopy.OwnerReferences = []metav1.OwnerReference{PodClaimOwnerReference(newOwner)}
-
-		if claimCopy.Status.Allocation == nil {
+		claimCopy = ClaimWithoutAdminAccessRequests(claimCopy)
+		
+		if claimCopy.Status.Allocation == nil || len(claimCopy.Status.Allocation.Devices.Results) == 0 {
 			// Unallocated claim - just clear the consumer reservations to be sure, and we're done.
 			claimCopy.Status.ReservedFor = []resourceapi.ResourceClaimConsumerReference{}
 			result = append(result, claimCopy)

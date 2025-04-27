@@ -136,3 +136,35 @@ func PodClaimOwnerReference(pod *apiv1.Pod) metav1.OwnerReference {
 func claimConsumerReferenceMatchesPod(pod *apiv1.Pod, ref resourceapi.ResourceClaimConsumerReference) bool {
 	return ref.APIGroup == "" && ref.Resource == "pods" && ref.Name == pod.Name && ref.UID == pod.UID
 }
+
+// ClaimWithoutAdminAccessRequests returns a copy of the claim without admin access requests, and their results.
+func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
+	claimCopy := claim.DeepCopy()
+	deviceRequests := make([]resourceapi.DeviceRequest, 0, len(claimCopy.Spec.Devices.Requests))
+	deviceRequestAllocationResults := make([]resourceapi.DeviceRequestAllocationResult, 0, len(claimCopy.Status.Allocation.Devices.Results))
+	for _, deviceRequest := range claimCopy.Spec.Devices.Requests {
+		// Device requests with AdminAccess don't reserve their allocated resources, and are ignored when scheuling.
+		if deviceRequest.AdminAccess != nil && *deviceRequest.AdminAccess {
+			continue
+		}
+		if deviceRequestResult := getDeviceRequestResult(claim, &deviceRequest); deviceRequestResult != nil {
+			deviceRequestAllocationResults = append(deviceRequestAllocationResults, *deviceRequestResult)
+		}
+	}
+	claimCopy.Spec.Devices.Requests = deviceRequests
+	claimCopy.Status.Allocation.Devices.Results = deviceRequestAllocationResults
+	return claimCopy
+}
+
+// getDeviceRequestResult returns the DeviceRequestAllocationResult for the provided DeviceRequest in the provided ResourceClaim. If no result is found, nil is returned.
+func getDeviceRequestResult(claim *resourceapi.ResourceClaim, devicerequest *resourceapi.DeviceRequest) *resourceapi.DeviceRequestAllocationResult {
+	if claim.Status.Allocation == nil {
+		return nil
+	}
+	for _, deviceRequestResult := range claim.Status.Allocation.Devices.Results {
+		if deviceRequestResult.Request == devicerequest.Name{
+			return deviceRequestResult.DeepCopy()
+		}
+	}
+	return nil
+}
