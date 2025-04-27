@@ -104,9 +104,10 @@ func getAllDevices(slices []*resourceapi.ResourceSlice) []resourceapi.Device {
 func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[string][]string, error) {
 	result := map[string]map[string][]string{}
 	for _, claim := range claims {
-		alloc := claim.Status.Allocation
+		claimCopy := ClaimWithoutAdminAccessRequests(claim)
+		alloc := claimCopy.Status.Allocation
 		if alloc == nil {
-			return nil, fmt.Errorf("claim %s/%s not allocated", claim.Namespace, claim.Name)
+			return nil, fmt.Errorf("claim %s/%s not allocated", claimCopy.Namespace, claimCopy.Name)
 		}
 
 		for _, deviceAlloc := range alloc.Devices.Results {
