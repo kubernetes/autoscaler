@@ -19,6 +19,7 @@ steps:
       - TAG=$_GIT_TAG
     args:
       - release
+    waitFor: ['-']  # The '-' indicates that this step begins immediately.
   - name: "gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest"
     dir: pkg/updater
     entrypoint: make
@@ -26,5 +27,6 @@ steps:
       - TAG=$_GIT_TAG
     args:
       - release
+    waitFor: ['-']  # The '-' indicates that this step begins immediately.
 substitutions:
   _GIT_TAG: "0.0.0" # default value, this is substituted at build time
