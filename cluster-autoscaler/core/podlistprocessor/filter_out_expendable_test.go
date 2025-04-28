@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
-	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -111,7 +110,7 @@ func TestFilterOutExpendable(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
 			snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			err := snapshot.SetClusterState(tc.nodes, nil, drasnapshot.Snapshot{})
+			err := snapshot.SetClusterState(tc.nodes, nil, nil)
 			assert.NoError(t, err)
 
 			pods, err := processor.Process(&context.AutoscalingContext{

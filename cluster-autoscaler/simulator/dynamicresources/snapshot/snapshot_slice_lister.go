@@ -20,15 +20,10 @@ import (
 	resourceapi "k8s.io/api/resource/v1beta1"
 )
 
-type snapshotSliceLister Snapshot
+type snapshotSliceLister struct {
+	snapshot *Snapshot
+}
 
-func (s snapshotSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
-	var result []*resourceapi.ResourceSlice
-	for _, slices := range s.resourceSlicesByNodeName {
-		for _, slice := range slices {
-			result = append(result, slice)
-		}
-	}
-	result = append(result, s.nonNodeLocalResourceSlices...)
-	return result, nil
+func (sl snapshotSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
+	return sl.snapshot.listResourceSlices(), nil
 }
