@@ -48,10 +48,10 @@ func NewProvider(claims allObjectsLister[*resourceapi.ResourceClaim], slices all
 }
 
 // Snapshot returns a snapshot of all DRA resources at a ~single point in time.
-func (p *Provider) Snapshot() (drasnapshot.Snapshot, error) {
+func (p *Provider) Snapshot() (*drasnapshot.Snapshot, error) {
 	claims, err := p.resourceClaims.ListAll()
 	if err != nil {
-		return drasnapshot.Snapshot{}, err
+		return nil, err
 	}
 	claimMap := make(map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim)
 	for _, claim := range claims {
@@ -60,7 +60,7 @@ func (p *Provider) Snapshot() (drasnapshot.Snapshot, error) {
 
 	slices, err := p.resourceSlices.ListAll()
 	if err != nil {
-		return drasnapshot.Snapshot{}, err
+		return nil, err
 	}
 	slicesMap := make(map[string][]*resourceapi.ResourceSlice)
 	var nonNodeLocalSlices []*resourceapi.ResourceSlice
@@ -74,7 +74,7 @@ func (p *Provider) Snapshot() (drasnapshot.Snapshot, error) {
 
 	classes, err := p.deviceClasses.ListAll()
 	if err != nil {
-		return drasnapshot.Snapshot{}, err
+		return nil, err
 	}
 	classMap := make(map[string]*resourceapi.DeviceClass)
 	for _, class := range classes {
