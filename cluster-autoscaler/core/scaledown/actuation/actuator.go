@@ -406,7 +406,7 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 	scheduledPods := kube_util.ScheduledPods(pods)
 	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
-	var draSnapshot drasnapshot.Snapshot
+	var draSnapshot *drasnapshot.Snapshot
 	if a.ctx.DynamicResourceAllocationEnabled && a.ctx.DraProvider != nil {
 		draSnapshot, err = a.ctx.DraProvider.Snapshot()
 		if err != nil {
