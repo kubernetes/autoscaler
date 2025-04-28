@@ -499,6 +499,7 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
 	sampleCount := 0
 	droppedSampleCount := 0
 	for _, containerMetrics := range containersMetrics {
+		// Container metrics are fetched for all pods, however, not all pod states are tracked in memory saver mode.
 		if pod, exists := feeder.clusterState.Pods()[containerMetrics.ID.PodID]; exists && pod != nil {
 			if slices.Contains(pod.InitContainers, containerMetrics.ID.ContainerName) {
 				klog.V(3).InfoS("Skipping metric samples for init container", "pod", klog.KRef(containerMetrics.ID.PodID.Namespace, containerMetrics.ID.PodID.PodName), "container", containerMetrics.ID.ContainerName)
@@ -508,7 +509,7 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
 		}
 		for _, sample := range newContainerUsageSamplesWithKey(containerMetrics) {
 			if err := feeder.clusterState.AddSample(sample); err != nil {
-				// Not all pod states are tracked in memory saver mode
+				// Not all pod states are tracked in memory saver mode.
 				if _, isKeyError := err.(model.KeyError); isKeyError && feeder.memorySaveMode {
 					continue
 				}
