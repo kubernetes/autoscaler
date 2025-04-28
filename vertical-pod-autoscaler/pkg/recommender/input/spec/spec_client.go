@@ -80,8 +80,10 @@ func (client *specClient) GetPodSpecs() ([]*BasicPodSpec, error) {
 	}
 	return podSpecs, nil
 }
+
 func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
-	containerSpecs, initContainerSpecs := newContainerSpecs(pod)
+	containerSpecs := newContainerSpecs(pod, pod.Spec.Containers, false /* isInitContainer */)
+	initContainerSpecs := newContainerSpecs(pod, pod.Spec.InitContainers, true /* isInitContainer */)
 
 	basicPodSpec := &BasicPodSpec{
 		ID:             podID(pod),
@@ -93,34 +95,33 @@ func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
 	return basicPodSpec
 }
 
-func newContainerSpecs(pod *v1.Pod) (containerSpecs []BasicContainerSpec, initContainerSpecs []BasicContainerSpec) {
-	for _, container := range pod.Spec.Containers {
-		containerSpec := newContainerSpec(pod, container)
+func newContainerSpecs(pod *v1.Pod, containers []v1.Container, isInitContainer bool) []BasicContainerSpec {
+	var containerSpecs []BasicContainerSpec
+	for _, container := range containers {
+		containerSpec := newContainerSpec(pod, container, isInitContainer)
 		containerSpecs = append(containerSpecs, containerSpec)
 	}
-
-	for _, initContainer := range pod.Spec.InitContainers {
-		initContainerSpec := newContainerSpec(pod, initContainer)
-		initContainerSpecs = append(initContainerSpecs, initContainerSpec)
-	}
-
-	return containerSpecs, initContainerSpecs
+	return containerSpecs
 }
 
-func newContainerSpec(pod *v1.Pod, container v1.Container) BasicContainerSpec {
+func newContainerSpec(pod *v1.Pod, container v1.Container, isInitContainer bool) BasicContainerSpec {
 	containerSpec := BasicContainerSpec{
 		ID: model.ContainerID{
 			PodID:         podID(pod),
 			ContainerName: container.Name,
 		},
 		Image:   container.Image,
-		Request: calculateRequestedResources(pod, container),
+		Request: calculateRequestedResources(pod, container, isInitContainer),
 	}
 	return containerSpec
 }
 
-func calculateRequestedResources(pod *v1.Pod, container v1.Container) model.Resources {
-	requests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+func calculateRequestedResources(pod *v1.Pod, container v1.Container, isInitContainer bool) model.Resources {
+	requestsAndLimitsFn := resourcehelpers.ContainerRequestsAndLimits
+	if isInitContainer {
+		requestsAndLimitsFn = resourcehelpers.InitContainerRequestsAndLimits
+	}
+	requests, _ := requestsAndLimitsFn(container.Name, pod)
 
 	cpuQuantity := requests[v1.ResourceCPU]
 	cpuMillicores := cpuQuantity.MilliValue()

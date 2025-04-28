@@ -22,15 +22,15 @@ import (
 )
 
 // ContainerRequestsAndLimits returns a copy of the actual resource requests and
-// limits of a given container or initContainer:
+// limits of a given container:
 //
 //   - If in-place pod updates feature [1] is enabled, the actual resource requests
-//     are stored in the container/initContainer status field.
+//     are stored in the container status field.
 //   - Otherwise, fallback to the resource requests defined in the pod spec.
 //
 // [1] https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
 func ContainerRequestsAndLimits(containerName string, pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
-	cs := containerStatusForContainer(containerName, pod)
+	cs := containerStatusFor(containerName, pod)
 	if cs != nil && cs.Resources != nil {
 		return cs.Resources.Requests.DeepCopy(), cs.Resources.Limits.DeepCopy()
 	}
@@ -44,30 +44,59 @@ func ContainerRequestsAndLimits(containerName string, pod *v1.Pod) (v1.ResourceL
 	return nil, nil
 }
 
+// InitContainerRequestsAndLimits returns a copy of the actual resource requests
+// and limits of a given initContainer:
+//
+//   - If in-place pod updates feature [1] is enabled, the actual resource requests
+//     are stored in the initContainer status field.
+//   - Otherwise, fallback to the resource requests defined in the pod spec.
+//
+// [1] https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
+func InitContainerRequestsAndLimits(initContainerName string, pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
+	cs := initContainerStatusFor(initContainerName, pod)
+	if cs != nil && cs.Resources != nil {
+		return cs.Resources.Requests.DeepCopy(), cs.Resources.Limits.DeepCopy()
+	}
+
+	klog.V(6).InfoS("initContainer resources not found in initContainerStatus for initContainer. Falling back to resources defined in the pod spec. This is expected for clusters with in-place pod updates feature disabled.", "initContainer", initContainerName, "initContainerStatus", cs)
+	initContainer := findInitContainer(initContainerName, pod)
+	if initContainer != nil {
+		return initContainer.Resources.Requests.DeepCopy(), initContainer.Resources.Limits.DeepCopy()
+	}
+
+	return nil, nil
+}
+
 func findContainer(containerName string, pod *v1.Pod) *v1.Container {
 	for i, container := range pod.Spec.Containers {
 		if container.Name == containerName {
 			return &pod.Spec.Containers[i]
 		}
 	}
+	return nil
+}
 
+func findInitContainer(initContainerName string, pod *v1.Pod) *v1.Container {
 	for i, initContainer := range pod.Spec.InitContainers {
-		if initContainer.Name == containerName {
+		if initContainer.Name == initContainerName {
 			return &pod.Spec.InitContainers[i]
 		}
 	}
 	return nil
 }
 
-func containerStatusForContainer(containerName string, pod *v1.Pod) *v1.ContainerStatus {
+func containerStatusFor(containerName string, pod *v1.Pod) *v1.ContainerStatus {
 	for i, containerStatus := range pod.Status.ContainerStatuses {
 		if containerStatus.Name == containerName {
 			return &pod.Status.ContainerStatuses[i]
 		}
 	}
+	return nil
+}
 
+func initContainerStatusFor(initContainerName string, pod *v1.Pod) *v1.ContainerStatus {
 	for i, initContainerStatus := range pod.Status.InitContainerStatuses {
-		if initContainerStatus.Name == containerName {
+		if initContainerStatus.Name == initContainerName {
 			return &pod.Status.InitContainerStatuses[i]
 		}
 	}
