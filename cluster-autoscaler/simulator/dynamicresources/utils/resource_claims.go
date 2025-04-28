@@ -22,9 +22,28 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/component-helpers/scheduling/corev1"
-	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
+	"k8s.io/utils/ptr"
 )
+
+// ClaimOwningPod returns the name and UID of the Pod owner of the provided claim. If the claim isn't
+// owned by a Pod, empty strings are returned.
+func ClaimOwningPod(claim *resourceapi.ResourceClaim) (string, types.UID) {
+	for _, owner := range claim.OwnerReferences {
+		if ptr.Deref(owner.Controller, false) && owner.APIVersion == "v1" && owner.Kind == "Pod" {
+			return owner.Name, owner.UID
+		}
+	}
+	return "", ""
+}
+
+// PodOwnsClaim determines if the provided pod is the controller of the given claim.
+func PodOwnsClaim(pod *apiv1.Pod, claim *resourceapi.ResourceClaim) bool {
+	ownerPodName, ownerPodUid := ClaimOwningPod(claim)
+	return ownerPodName == pod.Name && ownerPodUid == pod.UID
+}
 
 // ClaimAllocated returns whether the provided claim is allocated.
 func ClaimAllocated(claim *resourceapi.ResourceClaim) bool {

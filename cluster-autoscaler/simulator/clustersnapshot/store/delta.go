@@ -41,12 +41,18 @@ import (
 //
 // Watch out for:
 //
-//	node deletions, pod additions & deletions - invalidates cache of current snapshot
-//		(when forked affects delta, but not base.)
-//	pod affinity - causes scheduler framework to list pods with non-empty selector,
-//		so basic caching doesn't help.
+// * Node deletions, pod additions & deletions - invalidates cache of current snapshot
+// (when forked affects delta, but not base.)
+//
+// * Pod affinity - causes scheduler framework to list pods with non-empty selector,
+// so basic caching doesn't help.
+//
+// * DRA objects are tracked in the separate snapshot and while they don't exactly share
+// memory and time complexities of DeltaSnapshotStore - they are optimized for
+// cluster autoscaler operations
 type DeltaSnapshotStore struct {
 	data        *internalDeltaSnapshotData
+	draSnapshot *drasnapshot.Snapshot
 	parallelism int
 }
 
@@ -64,8 +70,6 @@ type internalDeltaSnapshotData struct {
 	havePodsWithAffinity             []*schedulerframework.NodeInfo
 	havePodsWithRequiredAntiAffinity []*schedulerframework.NodeInfo
 	pvcNamespaceMap                  map[string]int
-
-	draSnapshot drasnapshot.Snapshot
 }
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
@@ -296,7 +300,6 @@ func (data *internalDeltaSnapshotData) isPVCUsedByPods(key string) bool {
 
 func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 	forkedData := newInternalDeltaSnapshotData()
-	forkedData.draSnapshot = data.draSnapshot.Clone()
 	forkedData.baseData = data
 	return forkedData
 }
@@ -325,7 +328,6 @@ func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, err
 		}
 	}
 
-	data.baseData.draSnapshot = data.draSnapshot
 	return data.baseData, nil
 }
 
@@ -424,8 +426,8 @@ func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 }
 
 // DraSnapshot returns the DRA snapshot.
-func (snapshot *DeltaSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
-	return snapshot.data.draSnapshot
+func (snapshot *DeltaSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
+	return snapshot.draSnapshot
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
@@ -473,7 +475,7 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error {
+func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
 	snapshot.clear()
 
 	nodeNameToIdx := make(map[string]int, len(nodes))
@@ -498,7 +500,12 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 	// Clear caches after adding pods.
 	snapshot.data.clearCaches()
 
-	// TODO(DRA): Save DRA snapshot.
+	if draSnapshot == nil {
+		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.draSnapshot = draSnapshot
+	}
+
 	return nil
 }
 
@@ -526,6 +533,7 @@ func (snapshot *DeltaSnapshotStore) IsPVCUsedByPods(key string) bool {
 // Time: O(1)
 func (snapshot *DeltaSnapshotStore) Fork() {
 	snapshot.data = snapshot.data.fork()
+	snapshot.draSnapshot.Fork()
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -534,6 +542,7 @@ func (snapshot *DeltaSnapshotStore) Revert() {
 	if snapshot.data.baseData != nil {
 		snapshot.data = snapshot.data.baseData
 	}
+	snapshot.draSnapshot.Revert()
 }
 
 // Commit commits changes done after forking.
@@ -544,6 +553,7 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 		return err
 	}
 	snapshot.data = newData
+	snapshot.draSnapshot.Commit()
 	return nil
 }
 
@@ -551,4 +561,5 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 // Time: O(1)
 func (snapshot *DeltaSnapshotStore) clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
+	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
 }
