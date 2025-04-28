@@ -1,8 +1,8 @@
 # See https://cloud.google.com/cloud-build/docs/build-config
 timeout: 3600s
-# this prevents errors if you don't use both _GIT_TAG and _PULL_BASE_REF,
-# or any new substitutions added in the future.
 options:
+  # this prevents errors if you don't use both _GIT_TAG and _PULL_BASE_REF,
+  # or any new substitutions added in the future.
   substitution_option: ALLOW_LOOSE
 steps:
   - name: "gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest"
