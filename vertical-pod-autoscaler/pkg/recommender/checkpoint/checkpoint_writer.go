@@ -128,7 +128,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 			select {
 			case <-ctx.Done():
 				if minCheckpoints <= 0 {
-					klog.V(0).InfoS("Failed to store checkpoints", "err", ctx.Err())
+					klog.V(0).InfoS("Failed to store all checkpoints within the configured `checkpoints-timeout`", "err", ctx.Err())
 					cancelWorkers()
 					return
 				}
