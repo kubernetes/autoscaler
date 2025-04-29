@@ -32,3 +32,7 @@ func (s snapshotSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
 	result = append(result, s.nonNodeLocalResourceSlices...)
 	return result, nil
 }
+
+func (s snapshotSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
+	return s.List()
+}

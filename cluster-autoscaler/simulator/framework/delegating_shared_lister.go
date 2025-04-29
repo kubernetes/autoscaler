@@ -149,6 +149,10 @@ func (u unsetResourceSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
+func (u unsetResourceSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
 func (u unsetDeviceClassLister) List() ([]*resourceapi.DeviceClass, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
