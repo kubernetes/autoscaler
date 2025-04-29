@@ -64,6 +64,8 @@ type internalDeltaSnapshotData struct {
 	havePodsWithAffinity             []*schedulerframework.NodeInfo
 	havePodsWithRequiredAntiAffinity []*schedulerframework.NodeInfo
 	pvcNamespaceMap                  map[string]int
+
+	draSnapshot drasnapshot.Snapshot
 }
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
@@ -294,6 +296,7 @@ func (data *internalDeltaSnapshotData) isPVCUsedByPods(key string) bool {
 
 func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 	forkedData := newInternalDeltaSnapshotData()
+	forkedData.draSnapshot = data.draSnapshot.Clone()
 	forkedData.baseData = data
 	return forkedData
 }
@@ -321,6 +324,8 @@ func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, err
 			return nil, err
 		}
 	}
+
+	data.baseData.draSnapshot = data.draSnapshot
 	return data.baseData, nil
 }
 
@@ -420,8 +425,7 @@ func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 
 // DraSnapshot returns the DRA snapshot.
 func (snapshot *DeltaSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
-	// TODO(DRA): Return DRA snapshot.
-	return drasnapshot.Snapshot{}
+	return snapshot.data.draSnapshot
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
