@@ -353,9 +353,6 @@ func TestCalculateWithDynamicResources(t *testing.T) {
 			wantErr:      cmpopts.AnyError,
 		},
 	} {
-		if tc.testName != "DRA slices and claims present, DRA enabled -> DRA util returned despite being lower than CPU" {
-			continue
-		}
 		t.Run(tc.testName, func(t *testing.T) {
 			utilInfo, err := Calculate(tc.nodeInfo, false, false, tc.draEnabled, tc.gpuConfig, now)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {

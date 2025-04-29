@@ -29,6 +29,10 @@ import (
 func CalculateDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (map[string]map[string]float64, error) {
 	result := map[string]map[string]float64{}
 	claims := nodeInfo.ResourceClaims()
+	for i, claim := range claims {
+		// remove AdminAccessRequests from the claim before calculating utilization
+		claims[i] = ClaimWithoutAdminAccessRequests(claim)
+	}
 	allocatedDevices, err := groupAllocatedDevices(claims)
 	if err != nil {
 		return nil, err
@@ -104,10 +108,9 @@ func getAllDevices(slices []*resourceapi.ResourceSlice) []resourceapi.Device {
 func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[string][]string, error) {
 	result := map[string]map[string][]string{}
 	for _, claim := range claims {
-		claimCopy := ClaimWithoutAdminAccessRequests(claim)
-		alloc := claimCopy.Status.Allocation
+		alloc := claim.Status.Allocation
 		if alloc == nil {
-			return nil, fmt.Errorf("claim %s/%s not allocated", claimCopy.Namespace, claimCopy.Name)
+			return nil, fmt.Errorf("claim %s/%s not allocated", claim.Namespace, claim.Name)
 		}
 
 		for _, deviceAlloc := range alloc.Devices.Results {
