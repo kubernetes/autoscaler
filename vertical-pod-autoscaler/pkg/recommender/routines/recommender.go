@@ -37,7 +37,8 @@ import (
 
 var (
 	checkpointsWriteTimeout = flag.Duration("checkpoints-timeout", time.Minute, `Timeout for writing checkpoints since the start of the recommender's main loop`)
-	minCheckpointsPerRun    = flag.Int("min-checkpoints", 10, "Minimum number of checkpoints to write per recommender's main loop")
+	// MinCheckpointsPerRun is exported to allow displaying a deprecation warning. TODO (voelzmo): remove this flag and the warning in a future release.
+	MinCheckpointsPerRun = flag.Int("min-checkpoints", 10, "Minimum number of checkpoints to write per recommender's main loop. WARNING: this flag is deprecated and doesn't have any effect. It will be removed in a future release. Refer to update-worker-count to influence the minimum number of checkpoints written per loop.")
 )
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
@@ -51,9 +52,9 @@ type Recommender interface {
 	// UpdateVPAs computes recommendations and sends VPAs status updates to API Server
 	UpdateVPAs()
 	// MaintainCheckpoints stores current checkpoints in API Server and garbage collect old ones
-	// MaintainCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
+	// MaintainCheckpoints writes checkpoints for at least `update-worker-count` number of VPAs.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
-	MaintainCheckpoints(ctx context.Context, minCheckpoints int)
+	MaintainCheckpoints(ctx context.Context)
 }
 
 type recommender struct {
@@ -157,9 +158,9 @@ func (r *recommender) UpdateVPAs() {
 	wg.Wait()
 }
 
-func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPerRun int) {
+func (r *recommender) MaintainCheckpoints(ctx context.Context) {
 	if r.useCheckpoints {
-		r.checkpointWriter.StoreCheckpoints(ctx, minCheckpointsPerRun, r.updateWorkerCount)
+		r.checkpointWriter.StoreCheckpoints(ctx, r.updateWorkerCount)
 
 		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = time.Now()
@@ -191,7 +192,7 @@ func (r *recommender) RunOnce() {
 
 	stepCtx, cancelFunc := context.WithDeadline(ctx, time.Now().Add(*checkpointsWriteTimeout))
 	defer cancelFunc()
-	r.MaintainCheckpoints(stepCtx, *minCheckpointsPerRun)
+	r.MaintainCheckpoints(stepCtx)
 	timer.ObserveStep("MaintainCheckpoints")
 
 	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(ctx, time.Now(), r.controllerFetcher)

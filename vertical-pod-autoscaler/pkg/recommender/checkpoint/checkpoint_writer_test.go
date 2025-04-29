@@ -181,12 +181,14 @@ func TestGetVpasToCheckpointSorts(t *testing.T) {
 
 }
 
-func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
+func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {
 	klogtest.InitKlog(t)
 	tmpLogBuffer := bytes.NewBuffer(nil)
 	klog.SetOutput(tmpLogBuffer)
 
-	// immediately cancel the context to check if minCheckpoints get written
+	concurrentWorkers := 2
+
+	// immediately cancel the context to check if at least checkpoints for `concurrentWorkers` number of VPAs get written
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	cancelFunc()
 	clusterState := model.NewClusterState(testGcPeriod)
@@ -236,11 +238,11 @@ func TestStoreCheckpointsWaitsForMinCheckpointUpdates(t *testing.T) {
 	})
 
 	writer := NewCheckpointWriter(clusterState, checkpointClient)
-	writer.StoreCheckpoints(ctx, 1, 2)
+	writer.StoreCheckpoints(ctx, concurrentWorkers)
 
-	// Because we have 2 concurrent workers, expect 3 VPAs to get processed. The first worker to finish picks a new VPA to process before minCheckpoints have been decreased and worker context has been cancelled.
-	// Each VPA has 2 Containers, therefore we expect 6 Checkpoints to be written
-	assert.Equal(t, 6, len(patchedCheckpoints), "Expected 6 checkpoints to be written, but got %d", len(patchedCheckpoints))
+	// Because we have 2 concurrent workers, expect 2 VPAs to get processed. Each worker picks a VPA to process before checking if the context has been cancelled.
+	// Each VPA has 2 Containers, therefore we expect 4 Checkpoints to be written
+	assert.Equal(t, 4, len(patchedCheckpoints), "Expected 4 checkpoints to be written, but got %d", len(patchedCheckpoints))
 
 	assert.Contains(t, tmpLogBuffer.String(), "context canceled")
 }
