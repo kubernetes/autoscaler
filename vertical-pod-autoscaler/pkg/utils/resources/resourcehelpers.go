@@ -18,8 +18,9 @@ package resourcehelpers
 
 import (
 	v1 "k8s.io/api/core/v1"
-	metrics_resources "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/resources"
 	"k8s.io/klog/v2"
+
+	metrics_resources "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/resources"
 )
 
 // ContainerRequestsAndLimits returns a copy of the actual resource requests and

@@ -30,9 +30,17 @@ const (
 type resourcesSource string
 
 const (
-	ContainerStatus      resourcesSource = "Pod.Status.ContainerStatuses"
-	InitContainerStatus  resourcesSource = "Pod.Status.InitContainerStatuses"
-	PodSpecContainer     resourcesSource = "Pod.Spec.Containers"
+	// ContainerStatus indicates that resources were fetched from the
+	// containerStatuses pod field.
+	ContainerStatus resourcesSource = "Pod.Status.ContainerStatuses"
+	// InitContainerStatus indicates that resources were fetched from the
+	// initContainerStatuses pod field.
+	InitContainerStatus resourcesSource = "Pod.Status.InitContainerStatuses"
+	// PodSpecContainer indicates that resources were fetched from the
+	// containers field in the pod spec.
+	PodSpecContainer resourcesSource = "Pod.Spec.Containers"
+	// PodSpecInitContainer indicates that resources were fetched from the
+	// initContainers field in the pod spec.
 	PodSpecInitContainer resourcesSource = "Pod.Spec.InitContainers"
 )
 
