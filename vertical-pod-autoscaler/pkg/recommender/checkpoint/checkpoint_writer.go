@@ -36,9 +36,9 @@ import (
 // CheckpointWriter persistently stores aggregated historical usage of containers
 // controlled by VPA objects. This state can be restored to initialize the model after restart.
 type CheckpointWriter interface {
-	// StoreCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
+	// StoreCheckpoints writes checkpoints for at least `concurrentWorkers` number of VPAs.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
-	StoreCheckpoints(ctx context.Context, minCheckpoints int, concurrentWorkers int)
+	StoreCheckpoints(ctx context.Context, concurrentWorkers int)
 }
 
 type checkpointWriter struct {
@@ -77,8 +77,7 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	return vpas
 }
 
-func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) int {
-	checkpointsWritten := 0
+func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
 	now := time.Now()
 	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
 	for container, aggregatedContainerState := range aggregateContainerStateMap {
@@ -103,54 +102,29 @@ func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) int
 			klog.V(3).InfoS("Saved checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
 			vpa.CheckpointWritten = now
 		}
-		checkpointsWritten++
 	}
-	return checkpointsWritten
 }
 
-func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpoints int, concurrentWorkers int) {
+func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrentWorkers int) {
 	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
 
 	// Create a channel to send VPA updates to workers
 	vpaCheckpointUpdates := make(chan *model.Vpa, len(vpas))
 
-	// Create a channel to receive the number of checkpoints written
-	checkpointCounterChannel := make(chan int, len(vpas))
-	defer close(checkpointCounterChannel)
-
-	// Create a separate context for the workers. We don't simply pass the outside context,
-	// but want to only cancel the workerCtx if minCheckpoints has been reached already.
-	workerCtx, cancelWorkers := context.WithCancel(context.Background())
-
-	go func() {
-		for updatedCheckpointsCounter := range checkpointCounterChannel {
-			minCheckpoints -= updatedCheckpointsCounter
-			select {
-			case <-ctx.Done():
-				if minCheckpoints <= 0 {
-					klog.V(0).InfoS("Failed to store all checkpoints within the configured `checkpoints-timeout`", "err", ctx.Err())
-					cancelWorkers()
-					return
-				}
-			default:
-			}
-		}
-	}()
-
 	// Create a wait group to wait for all workers to finish
 	var wg sync.WaitGroup
-	// Start workers
+	// Start workers. Each worker processes at least one checkpoint before checking for a cancelled context.
 	for i := 0; i < concurrentWorkers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for vpaToCheckpoint := range vpaCheckpointUpdates {
+				processCheckpointUpdateForVPA(vpaToCheckpoint, writer)
 				select {
-				case <-workerCtx.Done():
+				case <-ctx.Done():
 					return
 				default:
 				}
-				checkpointCounterChannel <- processCheckpointUpdateForVPA(vpaToCheckpoint, writer)
 			}
 		}()
 	}
@@ -165,6 +139,10 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, minCheckpo
 
 	// Wait for all workers to finish
 	wg.Wait()
+
+	if ctx.Err() != nil {
+		klog.V(0).InfoS("Failed to store all checkpoints within the configured `checkpoints-timeout`", "err", ctx.Err())
+	}
 }
 
 // Build the AggregateContainerState for the purpose of the checkpoint. This is an aggregation of state of all
