@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"slices"
 	"sync"
 	"time"
@@ -89,6 +88,10 @@ type Config struct {
 	OpenStackPassword string `json:"openstack_password"`
 	OpenStackDomain   string `json:"openstack_domain"`
 
+	// OpenStack application credentials if authentication type is set to openstack_application.
+	OpenStackApplicationCredentialID     string `json:"openstack_application_credential_id"`
+	OpenStackApplicationCredentialSecret string `json:"openstack_application_credential_secret"`
+
 	// Application credentials if CA is run as API consumer without using OpenStack keystone.
 	// Tokens can be created here: https://api.ovh.com/createToken/
 	ApplicationEndpoint    string `json:"application_endpoint"`
@@ -101,6 +104,9 @@ type Config struct {
 const (
 	// OpenStackAuthenticationType to request a keystone token credentials.
 	OpenStackAuthenticationType = "openstack"
+
+	// OpenStackApplicationCredentialsAuthenticationType to request a keystone token credentials using keystone application credentials.
+	OpenStackApplicationCredentialsAuthenticationType = "openstack_application"
 
 	// ApplicationConsumerAuthenticationType to consume an application key credentials.
 	ApplicationConsumerAuthenticationType = "consumer"
@@ -127,6 +133,13 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 	switch cfg.AuthenticationType {
 	case OpenStackAuthenticationType:
 		openStackProvider, err = sdk.NewOpenStackProvider(cfg.OpenStackAuthUrl, cfg.OpenStackUsername, cfg.OpenStackPassword, cfg.OpenStackDomain, cfg.ProjectID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create OpenStack provider: %w", err)
+		}
+
+		client, err = sdk.NewDefaultClientWithToken(openStackProvider.AuthUrl, openStackProvider.Token)
+	case OpenStackApplicationCredentialsAuthenticationType:
+		openStackProvider, err = sdk.NewOpenstackApplicationProvider(cfg.OpenStackAuthUrl, cfg.OpenStackApplicationCredentialID, cfg.OpenStackApplicationCredentialSecret, cfg.OpenStackDomain)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create OpenStack provider: %w", err)
 		}
@@ -271,7 +284,7 @@ func (m *OvhCloudManager) setNodePoolsState(pools []sdk.NodePool) {
 func readConfig(configFile io.Reader) (*Config, error) {
 	cfg := &Config{}
 	if configFile != nil {
-		body, err := ioutil.ReadAll(configFile)
+		body, err := io.ReadAll(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read content: %w", err)
 		}
@@ -295,8 +308,8 @@ func validatePayload(cfg *Config) error {
 		return fmt.Errorf("`project_id` not found in config file")
 	}
 
-	if cfg.AuthenticationType != OpenStackAuthenticationType && cfg.AuthenticationType != ApplicationConsumerAuthenticationType {
-		return fmt.Errorf("`authentication_type` should only be `openstack` or `consumer`")
+	if cfg.AuthenticationType != OpenStackAuthenticationType && cfg.AuthenticationType != OpenStackApplicationCredentialsAuthenticationType && cfg.AuthenticationType != ApplicationConsumerAuthenticationType {
+		return fmt.Errorf("`authentication_type` should only be `openstack`, `openstack_application` or `consumer`")
 	}
 
 	if cfg.AuthenticationType == OpenStackAuthenticationType {
@@ -314,6 +327,20 @@ func validatePayload(cfg *Config) error {
 
 		if cfg.OpenStackDomain == "" {
 			return fmt.Errorf("`openstack_domain` not found in config file")
+		}
+	}
+
+	if cfg.AuthenticationType == OpenStackApplicationCredentialsAuthenticationType {
+		if cfg.OpenStackAuthUrl == "" {
+			return fmt.Errorf("`openstack_auth_url` not found in config file")
+		}
+
+		if cfg.OpenStackApplicationCredentialID == "" {
+			return fmt.Errorf("`openstack_application_credential_id` not found in config file")
+		}
+
+		if cfg.OpenStackApplicationCredentialSecret == "" {
+			return fmt.Errorf("`openstack_application_credential_secret` not found in config file")
 		}
 	}
 

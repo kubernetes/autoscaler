@@ -78,6 +78,26 @@ func newTestManager(t *testing.T) *OvhCloudManager {
 	return manager
 }
 
+func TestOvhCloudManager_validateConfig(t *testing.T) {
+	tests := []struct {
+		name                 string
+		configContent        string
+		expectedErrorMessage string
+	}{
+		{
+			name:                 "New entry",
+			configContent:        "{}",
+			expectedErrorMessage: "config content validation failed: `cluster_id` not found in config file",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewManager(bytes.NewBufferString(tt.configContent))
+			assert.ErrorContains(t, err, tt.expectedErrorMessage)
+		})
+	}
+}
+
 func TestOvhCloudManager_getFlavorsByName(t *testing.T) {
 	expectedFlavorsByNameFromAPICall := map[string]sdk.Flavor{
 		"b2-7": {
