@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
-// DynamicResourcesProcessor handles dynamic resource. 
+// DynamicResourcesProcessor handles dynamic resource.
 // dynamic resources may not be allocatable immediately after the node creation.
 // It compares the expected resourceslices with the existing resourceslices to assess node readiness.
 type DynamicResourcesProcessor interface {
