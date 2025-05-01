@@ -22,6 +22,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/binpacking"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
@@ -62,6 +63,8 @@ type AutoscalingProcessors struct {
 	NodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor
 	// CustomResourcesProcessor is interface defining handling custom resources
 	CustomResourcesProcessor customresources.CustomResourcesProcessor
+	// DynamicResourcesProcessor is interface defining handling dynamic resources
+	DynamicResourcesProcessor dynamicresources.DynamicResourcesProcessor
 	// ActionableClusterProcessor is interface defining whether the cluster is in an actionable state
 	ActionableClusterProcessor actionablecluster.ActionableClusterProcessor
 	// ScaleDownCandidatesNotifier  is used to Update and Register new scale down candidates observer.
@@ -98,6 +101,7 @@ func DefaultProcessors(options config.AutoscalingOptions) *AutoscalingProcessors
 		AsyncNodeGroupStateChecker:  asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
 		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
+		DynamicResourcesProcessor:   dynamicresources.NewDefaultDynamicResourcesProcessor(),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
@@ -119,6 +123,7 @@ func (ap *AutoscalingProcessors) CleanUp() {
 	ap.ScaleDownNodeProcessor.CleanUp()
 	ap.NodeGroupConfigProcessor.CleanUp()
 	ap.CustomResourcesProcessor.CleanUp()
+	ap.DynamicResourcesProcessor.CleanUp()
 	ap.TemplateNodeInfoProvider.CleanUp()
 	ap.ActionableClusterProcessor.CleanUp()
 }
