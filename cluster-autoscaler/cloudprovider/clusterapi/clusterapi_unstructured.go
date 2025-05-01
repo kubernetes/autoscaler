@@ -301,14 +301,16 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 }
 
 func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([]*resourceapi.ResourceSlice, error) {
+	var result []*resourceapi.ResourceSlice
 	driver := r.InstanceDRADriver()
+	if driver == "" {
+		return nil, nil
+	}
 	gpuCount, err := r.InstanceGPUCapacityAnnotation()
 	if err != nil {
 		return nil, err
 	}
-
-	var result []*resourceapi.ResourceSlice
-	if driver != "" && !gpuCount.IsZero() {
+	if !gpuCount.IsZero() {
 		resourceslice := &resourceapi.ResourceSlice{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: nodeName + "-" + driver,

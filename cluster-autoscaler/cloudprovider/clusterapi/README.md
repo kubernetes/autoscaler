@@ -225,9 +225,11 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk: "100Gi"
     capacity.cluster-autoscaler.kubernetes.io/maxPods: "200"
     // Device Plugin
+    // Comment out the below annotation if DRA is enabled on your cluster running k8s v1.32.0 or greater
     capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
     // Dynamic Resource Allocation (DRA)
-    capacity.cluster-autoscaler.kubernetes.io/dra-driver: "gpu.nvidia.com"
+    // Uncomment the below annotation if DRA is enabled on your cluster running k8s v1.32.0 or greater
+    // capacity.cluster-autoscaler.kubernetes.io/dra-driver: "gpu.nvidia.com"
     // Common in Device Plugin and DRA
     capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
 ```
