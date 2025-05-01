@@ -26,7 +26,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
+// DynamicResourcesProcessor handles dynamic resource. 
+// dynamic resources may not be allocatable immediately after the node creation.
+// It compares the expected resourceslices with the existing resourceslices to assess node readiness.
 type DynamicResourcesProcessor interface {
+	// FilterOutNodesWithUnreadyResources removes nodes that should have dynamic resources, but have not published resourceslices yet.
 	FilterOutNodesWithUnreadyResources(
 		context *ca_context.AutoscalingContext,
 		allNodes, readyNodes []*apiv1.Node,
@@ -35,12 +39,14 @@ type DynamicResourcesProcessor interface {
 	CleanUp()
 }
 
+// NewDefaultDynamicResourcesProcessor returns a default instance of DynamicResourcesProcessor.
 func NewDefaultDynamicResourcesProcessor() DynamicResourcesProcessor {
 	return &dynamicResourcesProcessor{}
 }
 
 type dynamicResourcesProcessor struct{}
 
+// FilterOutNodesWithUnreadyResources removes nodes that should have dynamic resources, but have not published resourceslices yet.
 func (p *dynamicResourcesProcessor) FilterOutNodesWithUnreadyResources(
 	context *ca_context.AutoscalingContext,
 	allNodes, readyNodes []*apiv1.Node,
