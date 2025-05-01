@@ -19,11 +19,6 @@ type AgentPoolsClientCreateOrUpdateResponse struct {
 	AgentPool
 }
 
-// AgentPoolsClientDeleteMachinesResponse contains the response from method AgentPoolsClient.BeginDeleteMachines.
-type AgentPoolsClientDeleteMachinesResponse struct {
-	// placeholder for future response values
-}
-
 // AgentPoolsClientDeleteResponse contains the response from method AgentPoolsClient.BeginDelete.
 type AgentPoolsClientDeleteResponse struct {
 	// placeholder for future response values
@@ -59,19 +54,6 @@ type AgentPoolsClientUpgradeNodeImageVersionResponse struct {
 	AgentPool
 }
 
-// MachinesClientGetResponse contains the response from method MachinesClient.Get.
-type MachinesClientGetResponse struct {
-	// A machine. Contains details about the underlying virtual machine. A machine may be visible here but not in kubectl get
-	// nodes; if so it may be because the machine has not been registered with the Kubernetes API Server yet.
-	Machine
-}
-
-// MachinesClientListResponse contains the response from method MachinesClient.NewListPager.
-type MachinesClientListResponse struct {
-	// The response from the List Machines operation.
-	MachineListResult
-}
-
 // MaintenanceConfigurationsClientCreateOrUpdateResponse contains the response from method MaintenanceConfigurationsClient.CreateOrUpdate.
 type MaintenanceConfigurationsClientCreateOrUpdateResponse struct {
 	// See [planned maintenance](https://docs.microsoft.com/azure/aks/planned-maintenance) for more information about planned
@@ -95,41 +77,6 @@ type MaintenanceConfigurationsClientGetResponse struct {
 type MaintenanceConfigurationsClientListByManagedClusterResponse struct {
 	// The response from the List maintenance configurations operation.
 	MaintenanceConfigurationListResult
-}
-
-// ManagedClusterSnapshotsClientCreateOrUpdateResponse contains the response from method ManagedClusterSnapshotsClient.CreateOrUpdate.
-type ManagedClusterSnapshotsClientCreateOrUpdateResponse struct {
-	// A managed cluster snapshot resource.
-	ManagedClusterSnapshot
-}
-
-// ManagedClusterSnapshotsClientDeleteResponse contains the response from method ManagedClusterSnapshotsClient.Delete.
-type ManagedClusterSnapshotsClientDeleteResponse struct {
-	// placeholder for future response values
-}
-
-// ManagedClusterSnapshotsClientGetResponse contains the response from method ManagedClusterSnapshotsClient.Get.
-type ManagedClusterSnapshotsClientGetResponse struct {
-	// A managed cluster snapshot resource.
-	ManagedClusterSnapshot
-}
-
-// ManagedClusterSnapshotsClientListByResourceGroupResponse contains the response from method ManagedClusterSnapshotsClient.NewListByResourceGroupPager.
-type ManagedClusterSnapshotsClientListByResourceGroupResponse struct {
-	// The response from the List Managed Cluster Snapshots operation.
-	ManagedClusterSnapshotListResult
-}
-
-// ManagedClusterSnapshotsClientListResponse contains the response from method ManagedClusterSnapshotsClient.NewListPager.
-type ManagedClusterSnapshotsClientListResponse struct {
-	// The response from the List Managed Cluster Snapshots operation.
-	ManagedClusterSnapshotListResult
-}
-
-// ManagedClusterSnapshotsClientUpdateTagsResponse contains the response from method ManagedClusterSnapshotsClient.UpdateTags.
-type ManagedClusterSnapshotsClientUpdateTagsResponse struct {
-	// A managed cluster snapshot resource.
-	ManagedClusterSnapshot
 }
 
 // ManagedClustersClientAbortLatestOperationResponse contains the response from method ManagedClustersClient.BeginAbortLatestOperation.
@@ -163,12 +110,6 @@ type ManagedClustersClientGetCommandResultResponse struct {
 	Location *string
 }
 
-// ManagedClustersClientGetGuardrailsVersionsResponse contains the response from method ManagedClustersClient.GetGuardrailsVersions.
-type ManagedClustersClientGetGuardrailsVersionsResponse struct {
-	// Available Guardrails Version
-	GuardrailsAvailableVersion
-}
-
 // ManagedClustersClientGetMeshRevisionProfileResponse contains the response from method ManagedClustersClient.GetMeshRevisionProfile.
 type ManagedClustersClientGetMeshRevisionProfileResponse struct {
 	// Mesh revision profile for a mesh.
@@ -191,12 +132,6 @@ type ManagedClustersClientGetOSOptionsResponse struct {
 type ManagedClustersClientGetResponse struct {
 	// Managed cluster.
 	ManagedCluster
-}
-
-// ManagedClustersClientGetSafeguardsVersionsResponse contains the response from method ManagedClustersClient.GetSafeguardsVersions.
-type ManagedClustersClientGetSafeguardsVersionsResponse struct {
-	// Available Safeguards Version
-	SafeguardsAvailableVersion
 }
 
 // ManagedClustersClientGetUpgradeProfileResponse contains the response from method ManagedClustersClient.GetUpgradeProfile.
@@ -229,12 +164,6 @@ type ManagedClustersClientListClusterUserCredentialsResponse struct {
 	CredentialResults
 }
 
-// ManagedClustersClientListGuardrailsVersionsResponse contains the response from method ManagedClustersClient.NewListGuardrailsVersionsPager.
-type ManagedClustersClientListGuardrailsVersionsResponse struct {
-	// Hold values properties, which is array of GuardrailsVersions
-	GuardrailsAvailableVersionsList
-}
-
 // ManagedClustersClientListKubernetesVersionsResponse contains the response from method ManagedClustersClient.ListKubernetesVersions.
 type ManagedClustersClientListKubernetesVersionsResponse struct {
 	// Hold values properties, which is array of KubernetesVersion
@@ -263,12 +192,6 @@ type ManagedClustersClientListOutboundNetworkDependenciesEndpointsResponse struc
 type ManagedClustersClientListResponse struct {
 	// The response from the List Managed Clusters operation.
 	ManagedClusterListResult
-}
-
-// ManagedClustersClientListSafeguardsVersionsResponse contains the response from method ManagedClustersClient.NewListSafeguardsVersionsPager.
-type ManagedClustersClientListSafeguardsVersionsResponse struct {
-	// Hold values properties, which is array of SafeguardsVersions
-	SafeguardsAvailableVersionsList
 }
 
 // ManagedClustersClientResetAADProfileResponse contains the response from method ManagedClustersClient.BeginResetAADProfile.
@@ -311,24 +234,6 @@ type ManagedClustersClientStopResponse struct {
 type ManagedClustersClientUpdateTagsResponse struct {
 	// Managed cluster.
 	ManagedCluster
-}
-
-// OperationStatusResultClientGetByAgentPoolResponse contains the response from method OperationStatusResultClient.GetByAgentPool.
-type OperationStatusResultClientGetByAgentPoolResponse struct {
-	// The current status of an async operation.
-	OperationStatusResult
-}
-
-// OperationStatusResultClientGetResponse contains the response from method OperationStatusResultClient.Get.
-type OperationStatusResultClientGetResponse struct {
-	// The current status of an async operation.
-	OperationStatusResult
-}
-
-// OperationStatusResultClientListResponse contains the response from method OperationStatusResultClient.NewListPager.
-type OperationStatusResultClientListResponse struct {
-	// The operations list. It contains an URL link to get the next set of results.
-	OperationStatusResultList
 }
 
 // OperationsClientListResponse contains the response from method OperationsClient.NewListPager.
