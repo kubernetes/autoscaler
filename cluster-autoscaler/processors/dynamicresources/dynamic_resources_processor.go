@@ -170,6 +170,7 @@ func (m *mockDynamicResourcesProcessor) FilterOutNodesWithUnreadyResources(
 func (m *mockDynamicResourcesProcessor) CleanUp() {
 }
 
+// NewMockDynamicResourcesProcessor returns a mock instance of DynamicResourcesProcessor.
 func NewMockDynamicResourcesProcessor() DynamicResourcesProcessor {
 	return &mockDynamicResourcesProcessor{}
 }
