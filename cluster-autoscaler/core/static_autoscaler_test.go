@@ -56,6 +56,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
@@ -2853,6 +2854,7 @@ func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
 			autoscaler := buildStaticAutoscaler(t, provider, test.testNodes, test.testNodes, fakeClient)
 			autoscaler.processorCallbacks.disableScaleDownForLoop = test.scaleDownInCoolDown
 			assert.Equal(t, autoscaler.isScaleDownInCooldown(time.Now()), test.scaleDownInCoolDown)
+			autoscaler.processors.DynamicResourcesProcessor = dynamicresources.NewMockDynamicResourcesProcessor()
 
 			err := autoscaler.RunOnce(time.Now())
 

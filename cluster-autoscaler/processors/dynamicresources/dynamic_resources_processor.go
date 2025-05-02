@@ -155,3 +155,21 @@ func compareResourceSlices(
 // CleanUp cleans up processor's internal structures.
 func (p *dynamicResourcesProcessor) CleanUp() {
 }
+
+type mockDynamicResourcesProcessor struct {
+}
+
+func (m *mockDynamicResourcesProcessor) FilterOutNodesWithUnreadyResources(
+	context *ca_context.AutoscalingContext,
+	allNodes, readyNodes []*apiv1.Node,
+	resourceSlices []*resourceapi.ResourceSlice,
+) ([]*apiv1.Node, []*apiv1.Node, error) {
+	return allNodes, readyNodes, nil
+}
+
+func (m *mockDynamicResourcesProcessor) CleanUp() {
+}
+
+func NewMockDynamicResourcesProcessor() DynamicResourcesProcessor {
+	return &mockDynamicResourcesProcessor{}
+}
