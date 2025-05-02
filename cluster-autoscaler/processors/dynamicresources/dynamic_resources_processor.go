@@ -154,22 +154,23 @@ func compareResourceSlices(
 	devices2 := resourceSlice2.Spec.Devices
 	if len(devices1) != len(devices2) {
 		return false
-	} else {
-		matched2 := make([]bool, len(devices2))
-		for _, d1 := range devices1 {
-			foundMatch := false
-			for j, d2 := range devices2 {
-				if !matched2[j] && compareDevicesIgnoringName(d1, d2) {
-					matched2[j] = true
-					foundMatch = true
-					break
-				}
-			}
-			if !foundMatch {
-				return false
+	}
+
+	matched2 := make([]bool, len(devices2))
+	for _, d1 := range devices1 {
+		foundMatch := false
+		for j, d2 := range devices2 {
+			if !matched2[j] && compareDevicesIgnoringName(d1, d2) {
+				matched2[j] = true
+				foundMatch = true
+				break
 			}
 		}
+		if !foundMatch {
+			return false
+		}
 	}
+
 	if !reflect.DeepEqual(resourceSlice1.Spec.AllNodes, resourceSlice2.Spec.AllNodes) {
 		return false
 	}
