@@ -45,7 +45,7 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 containing the JSON structure described above. The file will be read and the contents will be used as the configuration.
 Can be useful when you have many different node pools and run into issues of the env var becoming too long.
 
-**NOTE**: In contrast to `HCLOUD_CLUSTER_CONFIG`, this file will not be base64 encoded.
+**NOTE**: In contrast to `HCLOUD_CLUSTER_CONFIG`, this file is not base64 encoded.
 
 
 `HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
