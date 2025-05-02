@@ -291,6 +291,7 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 		},
 		"scale-up: pods requesting a shared, unallocated claim": {
 			extraResourceClaims: []*resourceapi.ResourceClaim{sharedGpuBClaim},
+			extraResourceSlices: node1GpuB1slice.slicesTemplateFunc(node1GpuB1slice.name + "-template"),
 			nodeGroups:          map[*testNodeGroupDef]int{node1GpuB1slice: 1},
 			pods: append(
 				unscheduledPods(baseSmallPod, "unschedulable", 13, nil, sharedGpuBClaim),

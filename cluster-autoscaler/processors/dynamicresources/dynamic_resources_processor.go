@@ -119,11 +119,9 @@ func (p *dynamicResourcesProcessor) checkNodeReadiness(
 	for _, templateResourceSlice := range templateResourceSlices {
 		var matched bool = false
 		for _, nodeResourceSlice := range nodeResourceSlices {
-			if templateResourceSlice.Name == nodeResourceSlice.Name {
-				if compareResourceSlices(templateResourceSlice, nodeResourceSlice) {
-					matched = true
-					break
-				}
+			if compareResourceSlices(templateResourceSlice, nodeResourceSlice) {
+				matched = true
+				break
 			}
 			if !matched {
 				return false, nil // No match was found for this template slice on the node
@@ -146,9 +144,39 @@ func compareResourceSlices(
 	if resourceSlice1 == nil || resourceSlice2 == nil {
 		return false
 	}
-	if !reflect.DeepEqual(resourceSlice1.Spec, resourceSlice2.Spec) {
+	if resourceSlice1.Spec.Driver != resourceSlice2.Spec.Driver {
 		return false
 	}
+	if resourceSlice1.Spec.NodeName != resourceSlice2.Spec.NodeName {
+		return false
+	}
+	devices1 := resourceSlice1.Spec.Devices
+	devices2 := resourceSlice2.Spec.Devices
+	if len(devices1) != len(devices2) {
+		return false
+	} else {
+		matched2 := make([]bool, len(devices2))
+		for _, d1 := range devices1 {
+			foundMatch := false
+			for j, d2 := range devices2 {
+				if !matched2[j] && compareDevicesIgnoringName(d1, d2) {
+					matched2[j] = true
+					foundMatch = true
+					break
+				}
+			}
+			if !foundMatch {
+				return false
+			}
+		}
+	}
+	if !reflect.DeepEqual(resourceSlice1.Spec.AllNodes, resourceSlice2.Spec.AllNodes) {
+		return false
+	}
+	if !reflect.DeepEqual(resourceSlice1.Spec.NodeSelector, resourceSlice2.Spec.NodeSelector) {
+		return false
+	}
+
 	return true
 }
 
@@ -173,4 +201,8 @@ func (m *mockDynamicResourcesProcessor) CleanUp() {
 // NewMockDynamicResourcesProcessor returns a mock instance of DynamicResourcesProcessor.
 func NewMockDynamicResourcesProcessor() DynamicResourcesProcessor {
 	return &mockDynamicResourcesProcessor{}
+}
+
+func compareDevicesIgnoringName(d1, d2 resourceapi.Device) bool {
+	return reflect.DeepEqual(d1.Basic, d2.Basic)
 }
