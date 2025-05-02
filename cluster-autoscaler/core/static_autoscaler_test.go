@@ -1599,6 +1599,23 @@ func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 			autoscaler, err := setupAutoscaler(tc.setupConfig)
 			assert.NoError(t, err)
 
+			provider := testprovider.NewTestAutoprovisioningCloudProvider(
+				func(id string, delta int) error {
+					return tc.setupConfig.mocks.onScaleUp.ScaleUp(id, delta)
+				}, func(id string, name string) error {
+					return tc.setupConfig.mocks.onScaleDown.ScaleDown(id, name)
+				},
+				func(id string) error {
+					return nil
+				}, func(id string) error {
+					return nil
+				},
+				[]string{"ng1"}, map[string]*framework.NodeInfo{"ng1": framework.NewTestNodeInfo(n1)},
+			)
+			provider.AddAutoprovisionedNodeGroup("ng1", 0, 10, 1, "ng1")
+			provider.AddNode("ng1", n1)
+			autoscaler.CloudProvider = provider
+
 			tc.setupConfig.mocks.readyNodeLister.SetNodes([]*apiv1.Node{n1})
 			tc.setupConfig.mocks.allNodeLister.SetNodes([]*apiv1.Node{n1})
 			tc.setupConfig.mocks.allPodLister.On("List").Return(tc.pods, nil).Once()

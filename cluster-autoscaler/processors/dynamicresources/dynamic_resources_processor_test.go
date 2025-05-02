@@ -90,12 +90,25 @@ func TestDynamicResourcesProcessor(t *testing.T) {
 			LastHeartbeatTime: metav1.NewTime(later),
 		},
 	}
+	tn5 := testutils.BuildTestNode(
+		"nodenothandledbyautoscaler",
+		1000,
+		1000,
+	)
+	tn5.Status.Conditions = []apiv1.NodeCondition{
+		{
+			Type:              apiv1.NodeReady,
+			Status:            apiv1.ConditionTrue,
+			LastHeartbeatTime: metav1.NewTime(later),
+		},
+	}
 
 	expectedReadiness := make(map[string]bool)
 	expectedReadiness["readynodewithreadyresources"] = true
 	expectedReadiness["readynodewithunreadyresources"] = false
 	expectedReadiness["readynodewithoutresources"] = true
 	expectedReadiness["unreadynodewithoutresources"] = false
+	expectedReadiness["nodenothandledbyautoscaler"] = true
 
 	testResourceSlices := []*resourceapi.ResourceSlice{
 		{
@@ -144,8 +157,8 @@ func TestDynamicResourcesProcessor(t *testing.T) {
 
 	newAllNodes, newReadyNodes, err := processor.FilterOutNodesWithUnreadyResources(
 		&autoscalingContext,
-		[]*apiv1.Node{tn1, tn2, tn3, tn4},
-		[]*apiv1.Node{tn1, tn2, tn3},
+		[]*apiv1.Node{tn1, tn2, tn3, tn4, tn5},
+		[]*apiv1.Node{tn1, tn2, tn3, tn5},
 		testResourceSlices,
 	)
 
