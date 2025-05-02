@@ -24,6 +24,7 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/klog/v2"
 )
 
 // DynamicResourcesProcessor handles dynamic resource.
@@ -90,7 +91,9 @@ func (p *dynamicResourcesProcessor) checkNodeReadiness(
 	}
 	nodeTemplate, err := nodegroup.TemplateNodeInfo()
 	if err != nil {
-		return false, err
+		// should not happen, but if it does, we assume the node is ready, because it is probably handled by CA
+		klog.V(4).Infof("nodegroup template is not available for node %s: %v", node.Name, err)
+		return true, nil
 	}
 	templateResourceSlices, _, err := drautils.SanitizedNodeResourceSlices(nodeTemplate.LocalResourceSlices, node.Name, "")
 	if err != nil {

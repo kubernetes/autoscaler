@@ -56,7 +56,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
@@ -906,6 +905,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	for _, forceDeleteLongUnregisteredNodes := range []bool{false, true} {
 		t.Run(fmt.Sprintf("forceDeleteLongUnregisteredNodes=%v", forceDeleteLongUnregisteredNodes), func(t *testing.T) {
+			readyNodeLister := kubernetes.NewTestNodeLister(nil)
+			allNodeLister := kubernetes.NewTestNodeLister(nil)
 			allPodListerMock := &podListerMock{}
 			podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
 			daemonSetListerMock := &daemonSetListerMock{}
@@ -921,29 +922,19 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 			n2 := BuildTestNode("n2", 1000, 1000)
 			SetNodeReadyState(n2, true, time.Now())
 
-			readyNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n1, n2})
-			allNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n1, n2})
-
 			p1 := BuildTestPod("p1", 600, 100)
 			p1.Spec.NodeName = "n1"
 			p2 := BuildTestPod("p2", 600, 100, MarkUnschedulable())
 
-			provider := testprovider.NewTestAutoprovisioningCloudProvider(
+			provider := testprovider.NewTestCloudProvider(
 				func(id string, delta int) error {
 					return onScaleUpMock.ScaleUp(id, delta)
 				}, func(id string, name string) error {
 					ret := onScaleDownMock.ScaleDown(id, name)
 					deleteFinished <- true
 					return ret
-				},
-				func(id string) error {
-					return nil
-				}, func(id string) error {
-					return nil
-				},
-				[]string{"ng1"}, map[string]*framework.NodeInfo{"ng1": framework.NewTestNodeInfo(n1)},
-			)
-			provider.AddAutoprovisionedNodeGroup("ng1", 2, 10, 2, "ng1")
+				})
+			provider.AddNodeGroup("ng1", 2, 10, 2)
 			provider.AddNode("ng1", n1)
 
 			// broken node, that will be just hanging out there during
@@ -1053,6 +1044,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 }
 
 func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
+	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
 	daemonSetListerMock := &daemonSetListerMock{}
@@ -1066,9 +1059,6 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	SetNodeReadyState(n2, true, time.Now())
 	n3 := BuildTestNode("n3", 1000, 1000)
 	SetNodeReadyState(n3, true, time.Now())
-
-	readyNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n1, n2, n3})
-	allNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n1, n2, n3})
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
@@ -1103,23 +1093,16 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	p6.OwnerReferences = ownerRef
 	p6.Spec.Priority = &priority100
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+	provider := testprovider.NewTestCloudProvider(
 		func(id string, delta int) error {
 			return onScaleUpMock.ScaleUp(id, delta)
 		}, func(id string, name string) error {
 			ret := onScaleDownMock.ScaleDown(id, name)
 			deleteFinished <- true
 			return ret
-		},
-		func(id string) error {
-			return nil
-		}, func(id string) error {
-			return nil
-		},
-		[]string{"ng1", "ng2"}, map[string]*framework.NodeInfo{"ng1": framework.NewTestNodeInfo(n1), "ng2": framework.NewTestNodeInfo(n2)},
-	)
-	provider.AddAutoprovisionedNodeGroup("ng1", 0, 10, 1, "ng1")
-	provider.AddAutoprovisionedNodeGroup("ng2", 0, 10, 2, "ng2")
+		})
+	provider.AddNodeGroup("ng1", 0, 10, 1)
+	provider.AddNodeGroup("ng2", 0, 10, 2)
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 	provider.AddNode("ng2", n3)
@@ -1223,6 +1206,8 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 }
 
 func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T) {
+	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
 	daemonSetListerMock := &daemonSetListerMock{}
@@ -1233,9 +1218,6 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	SetNodeReadyState(n1, true, time.Now())
 	n2 := BuildTestNode("n2", 2000, 1000)
 	SetNodeReadyState(n2, true, time.Now())
-
-	readyNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n1, n2})
-	allNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n1, n2})
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
@@ -1249,24 +1231,16 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	p4.Spec.NodeName = "n2"
 	p4.OwnerReferences = ownerRef
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+	provider := testprovider.NewTestCloudProvider(
 		func(id string, delta int) error {
 			return onScaleUpMock.ScaleUp(id, delta)
 		}, func(id string, name string) error {
 			return onScaleDownMock.ScaleDown(id, name)
-		},
-		func(id string) error {
-			return nil
-		}, func(id string) error {
-			return nil
-		},
-		[]string{"ng1", "ng2"}, map[string]*framework.NodeInfo{"ng1": framework.NewTestNodeInfo(n1), "ng2": framework.NewTestNodeInfo(n2)},
-	)
-
-	provider.AddAutoprovisionedNodeGroup("ng1", 0, 10, 2, "ng1")
+		})
+	provider.AddNodeGroup("ng1", 0, 10, 2)
 	provider.AddNode("ng1", n1)
 
-	provider.AddAutoprovisionedNodeGroup("ng2", 0, 10, 1, "ng2")
+	provider.AddNodeGroup("ng2", 0, 10, 1)
 	provider.AddNode("ng2", n2)
 
 	assert.NotNil(t, provider)
@@ -1331,6 +1305,8 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 }
 
 func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *testing.T) {
+	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
 	daemonSetListerMock := &daemonSetListerMock{}
@@ -1341,9 +1317,6 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	SetNodeReadyState(n2, true, time.Now())
 	n3 := BuildTestNode("n3", 2000, 1000)
 	SetNodeReadyState(n3, true, time.Now())
-
-	readyNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n2, n3})
-	allNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{n2, n3})
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
@@ -1357,23 +1330,16 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	p3.Spec.NodeName = "n3"
 	p3.OwnerReferences = ownerRef
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+	provider := testprovider.NewTestCloudProvider(
 		func(id string, delta int) error {
 			return onScaleUpMock.ScaleUp(id, delta)
 		}, func(id string, name string) error {
 			return onScaleDownMock.ScaleDown(id, name)
-		},
-		func(id string) error {
-			return nil
-		}, func(id string) error {
-			return nil
-		},
-		[]string{"ng1", "ng2"}, map[string]*framework.NodeInfo{"ng1": framework.NewTestNodeInfo(n2), "ng2": framework.NewTestNodeInfo(n3)},
-	)
-	provider.AddAutoprovisionedNodeGroup("ng1", 0, 10, 2, "ng1")
+		})
+	provider.AddNodeGroup("ng1", 0, 10, 2)
 	provider.AddNode("ng1", n2)
 
-	provider.AddAutoprovisionedNodeGroup("ng2", 0, 10, 1, "ng2")
+	provider.AddNodeGroup("ng2", 0, 10, 1)
 	provider.AddNode("ng2", n3)
 
 	assert.NotNil(t, provider)
@@ -1439,8 +1405,6 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 // We should not touch taints from unselected node groups.
 func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
-	onScaleUpMock := &onScaleUpMock{}
-	onScaleDownMock := &onScaleDownMock{}
 	n1 := BuildTestNode("n1", 1000, 1000)
 	n1.Spec.Taints = append(n1.Spec.Taints, apiv1.Taint{
 		Key:    taints.DeletionCandidateTaint,
@@ -1460,20 +1424,8 @@ func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
 	p1.Spec.NodeName = n1.Name
 
 	// set minimal cloud provider where only ng1 is defined as selected node group
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
-		func(id string, delta int) error {
-			return onScaleUpMock.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			return onScaleDownMock.ScaleDown(id, name)
-		},
-		func(id string) error {
-			return nil
-		}, func(id string) error {
-			return nil
-		},
-		[]string{"ng1"}, map[string]*framework.NodeInfo{"ng1": framework.NewTestNodeInfo(n1)},
-	)
-	provider.AddAutoprovisionedNodeGroup("ng1", 1, 10, 1, "ng1")
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	assert.NotNil(t, provider)
 
@@ -1599,23 +1551,6 @@ func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 		t.Run(tcName, func(t *testing.T) {
 			autoscaler, err := setupAutoscaler(tc.setupConfig)
 			assert.NoError(t, err)
-
-			provider := testprovider.NewTestAutoprovisioningCloudProvider(
-				func(id string, delta int) error {
-					return tc.setupConfig.mocks.onScaleUp.ScaleUp(id, delta)
-				}, func(id string, name string) error {
-					return tc.setupConfig.mocks.onScaleDown.ScaleDown(id, name)
-				},
-				func(id string) error {
-					return nil
-				}, func(id string) error {
-					return nil
-				},
-				[]string{"ng1"}, map[string]*framework.NodeInfo{"ng1": framework.NewTestNodeInfo(n1)},
-			)
-			provider.AddAutoprovisionedNodeGroup("ng1", 0, 10, 1, "ng1")
-			provider.AddNode("ng1", n1)
-			autoscaler.CloudProvider = provider
 
 			tc.setupConfig.mocks.readyNodeLister.SetNodes([]*apiv1.Node{n1})
 			tc.setupConfig.mocks.allNodeLister.SetNodes([]*apiv1.Node{n1})
@@ -2148,7 +2083,6 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	assert.NoError(t, err)
 
 	processors := processorstest.NewTestProcessors(&ctx)
-	processors.DynamicResourcesProcessor = dynamicresources.NewMockDynamicResourcesProcessor()
 
 	// Create CSR with unhealthy cluster protection effectively disabled, to guarantee we reach the tested logic.
 	csrConfig := clusterstate.ClusterStateRegistryConfig{OkTotalUnreadyCount: nodeGroupCount * unreadyNodesCount}
@@ -2666,7 +2600,6 @@ func TestStaticAutoscalerRunOnceInvokesScaleDownStatusProcessor(t *testing.T) {
 
 			statusProcessor := &scaleDownStatusProcessorMock{}
 			autoscaler.processors.ScaleDownStatusProcessor = statusProcessor
-			autoscaler.processors.DynamicResourcesProcessor = dynamicresources.NewMockDynamicResourcesProcessor()
 
 			setupConfig.mocks.readyNodeLister.SetNodes(test.nodes)
 			setupConfig.mocks.allNodeLister.SetNodes(test.nodes)
@@ -2856,7 +2789,6 @@ func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
 			autoscaler := buildStaticAutoscaler(t, provider, test.testNodes, test.testNodes, fakeClient)
 			autoscaler.processorCallbacks.disableScaleDownForLoop = test.scaleDownInCoolDown
 			assert.Equal(t, autoscaler.isScaleDownInCooldown(time.Now()), test.scaleDownInCoolDown)
-			autoscaler.processors.DynamicResourcesProcessor = dynamicresources.NewMockDynamicResourcesProcessor()
 
 			err := autoscaler.RunOnce(time.Now())
 

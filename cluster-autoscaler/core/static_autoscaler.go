@@ -995,6 +995,14 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caer
 	}
 	a.reportTaintsCount(allNodes)
 
+	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
+	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
+	// Treat those nodes as unready until GPU actually becomes available and let
+	// our normal handling for booting up nodes deal with this.
+	// TODO: Remove this call when we handle dynamically provisioned resources.
+	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
+	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
+
 	if a.draProvider != nil {
 		resourceSliceSnapshot, err := a.draProvider.Snapshot()
 		if err != nil {
@@ -1009,19 +1017,12 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caer
 			}
 		}
 		allNodes, readyNodes, err = a.processors.DynamicResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, resourceSlices)
+		if err != nil {
+			klog.Errorf("Failed to filter out nodes with unready resources: %v", err)
+			return nil, nil, caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
+		}
 	}
 
-	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
-	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
-	// Treat those nodes as unready until GPU actually becomes available and let
-	// our normal handling for booting up nodes deal with this.
-	// TODO: Remove this call when we handle dynamically provisioned resources.
-	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
-	if err != nil {
-		klog.Errorf("Failed to filter out nodes with unready resources: %v", err)
-		return nil, nil, caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
-	}
-	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }
 
