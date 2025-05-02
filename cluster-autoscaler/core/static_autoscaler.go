@@ -995,17 +995,20 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caer
 	}
 	a.reportTaintsCount(allNodes)
 
-	resourceSliceSnapshot, err := a.draProvider.Snapshot()
-	if err != nil {
-		klog.Errorf("Failed to filter out nodes with unready resources: %v", err)
-		return nil, nil, caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
-	}
-	resourceSlices := make([]*resourceapi.ResourceSlice, 0)
-	for _, node := range allNodes {
-		nodeResourceSlices, ok := resourceSliceSnapshot.NodeResourceSlices(node.Name)
-		if ok {
-			resourceSlices = append(resourceSlices, nodeResourceSlices...)
+	if a.draProvider != nil {
+		resourceSliceSnapshot, err := a.draProvider.Snapshot()
+		if err != nil {
+			klog.Errorf("Failed to filter out nodes with unready resources: %v", err)
+			return nil, nil, caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 		}
+		resourceSlices := make([]*resourceapi.ResourceSlice, 0)
+		for _, node := range allNodes {
+			nodeResourceSlices, ok := resourceSliceSnapshot.NodeResourceSlices(node.Name)
+			if ok {
+				resourceSlices = append(resourceSlices, nodeResourceSlices...)
+			}
+		}
+		allNodes, readyNodes, err = a.processors.DynamicResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, resourceSlices)
 	}
 
 	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
@@ -1014,7 +1017,6 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caer
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
 	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
-	allNodes, readyNodes, err = a.processors.DynamicResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, resourceSlices)
 	if err != nil {
 		klog.Errorf("Failed to filter out nodes with unready resources: %v", err)
 		return nil, nil, caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
