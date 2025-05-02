@@ -118,32 +118,30 @@ func newManager() (*hetznerManager, error) {
 	}
 	var clusterConfig = &ClusterConfig{}
 
+	var clusterConfigJsonData []byte
+	var readErr error
 	if clusterConfigBase64 != "" {
-		clusterConfigEnv, err := base64.StdEncoding.DecodeString(clusterConfigBase64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse cluster config error: %s", err)
+		clusterConfigJsonData, readErr = base64.StdEncoding.DecodeString(clusterConfigBase64)
+		if readErr != nil {
+			return nil, fmt.Errorf("failed to parse cluster config error: %s", readErr)
 		}
-		err = json.Unmarshal(clusterConfigEnv, &clusterConfig)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", err)
-		}
-		clusterConfig.IsUsingNewFormat = true
-
 	} else if clusterConfigFile != "" {
-		clusterConfigData, err := os.ReadFile(clusterConfigFile)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read cluster config file: %s", err)
+		clusterConfigJsonData, readErr = os.ReadFile(clusterConfigFile)
+		if readErr != nil {
+			return nil, fmt.Errorf("failed to read cluster config file: %s", readErr)
 		}
-		err = json.Unmarshal(clusterConfigData, &clusterConfig)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", err)
+	}
+
+	if clusterConfigJsonData != nil {
+		unmarshalErr := json.Unmarshal(clusterConfigJsonData, &clusterConfig)
+		if unmarshalErr != nil {
+			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", unmarshalErr)
 		}
 		clusterConfig.IsUsingNewFormat = true
-
 	} else {
-		cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
+		cloudInit, decErr := base64.StdEncoding.DecodeString(cloudInitBase64)
+		if decErr != nil {
+			return nil, fmt.Errorf("failed to parse cloud init error: %s", decErr)
 		}
 
 		imageName := os.Getenv("HCLOUD_IMAGE")
