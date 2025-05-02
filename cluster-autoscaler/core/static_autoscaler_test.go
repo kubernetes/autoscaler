@@ -2148,6 +2148,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	assert.NoError(t, err)
 
 	processors := processorstest.NewTestProcessors(&ctx)
+	processors.DynamicResourcesProcessor = dynamicresources.NewMockDynamicResourcesProcessor()
 
 	// Create CSR with unhealthy cluster protection effectively disabled, to guarantee we reach the tested logic.
 	csrConfig := clusterstate.ClusterStateRegistryConfig{OkTotalUnreadyCount: nodeGroupCount * unreadyNodesCount}
@@ -2665,6 +2666,7 @@ func TestStaticAutoscalerRunOnceInvokesScaleDownStatusProcessor(t *testing.T) {
 
 			statusProcessor := &scaleDownStatusProcessorMock{}
 			autoscaler.processors.ScaleDownStatusProcessor = statusProcessor
+			autoscaler.processors.DynamicResourcesProcessor = dynamicresources.NewMockDynamicResourcesProcessor()
 
 			setupConfig.mocks.readyNodeLister.SetNodes(test.nodes)
 			setupConfig.mocks.allNodeLister.SetNodes(test.nodes)
