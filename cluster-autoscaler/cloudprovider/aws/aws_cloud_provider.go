@@ -117,7 +117,9 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	}
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
-		return nil, err
+		// Dropping this into V as it will be noisy with many Hybrid Nodes
+		klog.V(6).Infof("Node %v has unrecognized providerId: %v", node.Name, node.Spec.ProviderID)
+		return nil, nil
 	}
 	asg := aws.awsManager.GetAsgForInstance(*ref)
 
