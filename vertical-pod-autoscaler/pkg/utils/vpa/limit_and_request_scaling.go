@@ -61,11 +61,11 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 	}
 	// originalLimit not set, don't set limit.
 	if originalLimit == nil || originalLimit.Value() == 0 {
-		return nil, ""
+		return nil, fmt.Sprintf("%v: limit NOT set since originalLimit is nil or 0", resourceName)
 	}
 	// recommendedRequest not set, don't set limit.
 	if recommendedRequest == nil || recommendedRequest.Value() == 0 {
-		return nil, ""
+		return nil, fmt.Sprintf("%v: limit NOT set since recommendedRequest is nil or 0", resourceName)
 	}
 	// originalLimit set but originalRequest not set - K8s will treat the pod as if they were equal,
 	// recommend limit equal to request
