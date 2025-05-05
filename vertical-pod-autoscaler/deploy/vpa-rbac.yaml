@@ -29,13 +29,16 @@ rules:
       - watch
   - apiGroups:
       - ""
+      - events.k8s.io
     resources:
       - events
     verbs:
+      - create
       - get
       - list
       - watch
-      - create
+      - patch
+      - update
   - apiGroups:
       - "poc.autoscaling.k8s.io"
     resources:
