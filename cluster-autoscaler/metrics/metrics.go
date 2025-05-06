@@ -418,6 +418,15 @@ var (
 			Help:      "Number of migs where instance count according to InstanceGroupManagers.List() differs from the results of Instances.List(). This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.",
 		},
 	)
+
+	binpackingHeterogeneity = k8smetrics.NewHistogramVec(
+		&k8smetrics.HistogramOpts{
+			Namespace: caNamespace,
+			Name:      "binpacking_heterogeneity",
+			Help:      "Number of groups of equivalent pods being processed as a part of the same binpacking simulation.",
+			Buckets:   []float64{1, 2, 4, 6, 10},
+		}, []string{"instance_type", "cpu_count", "namespace_count"},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -453,6 +462,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(pendingNodeDeletions)
 	legacyregistry.MustRegister(nodeTaintsCount)
 	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
+	legacyregistry.MustRegister(binpackingHeterogeneity)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -735,4 +745,10 @@ func ObserveNodeTaintsCount(taintType string, count float64) {
 // This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.
 func UpdateInconsistentInstancesMigsCount(migCount int) {
 	inconsistentInstancesMigsCount.Set(float64(migCount))
+}
+
+// ObserveBinpackingHeterogeneity records the number of pod equivalence groups
+// considered in a single binpacking estimation.
+func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount string, pegCount int) {
+	binpackingHeterogeneity.WithLabelValues(instanceType, cpuCount, namespaceCount).Observe(float64(pegCount))
 }
