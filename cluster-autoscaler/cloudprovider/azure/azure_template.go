@@ -24,7 +24,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/go-autorest/autorest/to"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -84,8 +86,122 @@ const (
 	clusterLabelKey = AKSLabelKeyPrefixValue + "cluster"
 )
 
-func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, inputTaints string,
-	template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
+// VMPoolNodeTemplate holds properties for node from VMPool
+type VMPoolNodeTemplate struct {
+	AgentPoolName string
+	Taints        []string
+	Labels        map[string]*string
+	OSDiskType    *armcontainerservice.OSDiskType
+}
+
+// VMSSNodeTemplate holds properties for node from VMSS
+type VMSSNodeTemplate struct {
+	InputLabels map[string]string
+	InputTaints string
+	Tags        map[string]*string
+	OSDisk      *compute.VirtualMachineScaleSetOSDisk
+}
+
+// NodeTemplate represents a template for an Azure node
+type NodeTemplate struct {
+	SkuName            string
+	InstanceOS         string
+	Location           string
+	Zones              []string
+	VMPoolNodeTemplate *VMPoolNodeTemplate
+	VMSSNodeTemplate   *VMSSNodeTemplate
+}
+
+func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels map[string]string, inputTaints string) (NodeTemplate, error) {
+	instanceOS := cloudprovider.DefaultOS
+	if vmss.VirtualMachineProfile != nil &&
+		vmss.VirtualMachineProfile.OsProfile != nil &&
+		vmss.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
+		instanceOS = "windows"
+	}
+
+	var osDisk *compute.VirtualMachineScaleSetOSDisk
+	if vmss.VirtualMachineProfile != nil &&
+		vmss.VirtualMachineProfile.StorageProfile != nil &&
+		vmss.VirtualMachineProfile.StorageProfile.OsDisk != nil {
+		osDisk = vmss.VirtualMachineProfile.StorageProfile.OsDisk
+	}
+
+	if vmss.Sku == nil || vmss.Sku.Name == nil {
+		return NodeTemplate{}, fmt.Errorf("VMSS %s has no SKU", to.String(vmss.Name))
+	}
+
+	if vmss.Location == nil {
+		return NodeTemplate{}, fmt.Errorf("VMSS %s has no location", to.String(vmss.Name))
+	}
+
+	zones := []string{}
+	if vmss.Zones != nil {
+		zones = *vmss.Zones
+	}
+
+	return NodeTemplate{
+		SkuName: *vmss.Sku.Name,
+
+		Location:   *vmss.Location,
+		Zones:      zones,
+		InstanceOS: instanceOS,
+		VMSSNodeTemplate: &VMSSNodeTemplate{
+			InputLabels: inputLabels,
+			InputTaints: inputTaints,
+			OSDisk:      osDisk,
+			Tags:        vmss.Tags,
+		},
+	}, nil
+}
+
+func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location string, skuName string) (NodeTemplate, error) {
+	if vmsPool.Properties == nil {
+		return NodeTemplate{}, fmt.Errorf("vmsPool %s has nil properties", to.String(vmsPool.Name))
+	}
+	var labels map[string]*string
+	if vmsPool.Properties.NodeLabels != nil {
+		labels = vmsPool.Properties.NodeLabels
+	}
+
+	var taints []string
+	if vmsPool.Properties.NodeTaints != nil {
+		for _, taint := range vmsPool.Properties.NodeTaints {
+			if taint != nil {
+				taints = append(taints, *taint)
+			}
+		}
+	}
+
+	var zones []string
+	if vmsPool.Properties.AvailabilityZones != nil {
+		for _, zone := range vmsPool.Properties.AvailabilityZones {
+			if zone != nil {
+				zones = append(zones, *zone)
+			}
+		}
+	}
+
+	var instanceOS string
+	if vmsPool.Properties.OSType != nil {
+		instanceOS = strings.ToLower(string(*vmsPool.Properties.OSType))
+	}
+
+	return NodeTemplate{
+		SkuName:    skuName,
+		Zones:      zones,
+		InstanceOS: instanceOS,
+		Location:   location,
+		VMPoolNodeTemplate: &VMPoolNodeTemplate{
+			AgentPoolName: to.String(vmsPool.Name),
+			OSDiskType:    vmsPool.Properties.OSDiskType,
+			Taints:        taints,
+			Labels:        labels,
+		},
+	}, nil
+}
+
+func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
@@ -104,28 +220,28 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	// Fetching SKU information from SKU API if enableDynamicInstanceList is true.
 	var dynamicErr error
 	if enableDynamicInstanceList {
-		var vmssTypeDynamic InstanceType
-		klog.V(1).Infof("Fetching instance information for SKU: %s from SKU API", *template.Sku.Name)
-		vmssTypeDynamic, dynamicErr = GetVMSSTypeDynamically(template, manager.azureCache)
+		var instanceTypeDynamic InstanceType
+		klog.V(1).Infof("Fetching instance information for SKU: %s from SKU API", template.SkuName)
+		instanceTypeDynamic, dynamicErr = GetInstanceTypeDynamically(template, manager.azureCache)
 		if dynamicErr == nil {
-			vcpu = vmssTypeDynamic.VCPU
-			gpuCount = vmssTypeDynamic.GPU
-			memoryMb = vmssTypeDynamic.MemoryMb
+			vcpu = instanceTypeDynamic.VCPU
+			gpuCount = instanceTypeDynamic.GPU
+			memoryMb = instanceTypeDynamic.MemoryMb
 		} else {
 			klog.Errorf("Dynamically fetching of instance information from SKU api failed with error: %v", dynamicErr)
 		}
 	}
 	if !enableDynamicInstanceList || dynamicErr != nil {
-		klog.V(1).Infof("Falling back to static SKU list for SKU: %s", *template.Sku.Name)
+		klog.V(1).Infof("Falling back to static SKU list for SKU: %s", template.SkuName)
 		// fall-back on static list of vmss if dynamic workflow fails.
-		vmssTypeStatic, staticErr := GetVMSSTypeStatically(template)
+		instanceTypeStatic, staticErr := GetInstanceTypeStatically(template)
 		if staticErr == nil {
-			vcpu = vmssTypeStatic.VCPU
-			gpuCount = vmssTypeStatic.GPU
-			memoryMb = vmssTypeStatic.MemoryMb
+			vcpu = instanceTypeStatic.VCPU
+			gpuCount = instanceTypeStatic.GPU
+			memoryMb = instanceTypeStatic.MemoryMb
 		} else {
 			// return error if neither of the workflows results with vmss data.
-			klog.V(1).Infof("Instance type %q not supported, err: %v", *template.Sku.Name, staticErr)
+			klog.V(1).Infof("Instance type %q not supported, err: %v", template.SkuName, staticErr)
 			return nil, staticErr
 		}
 	}
@@ -134,7 +250,7 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vcpu, resource.DecimalSI)
 	// isNPSeries returns if a SKU is an NP-series SKU
 	// SKU API reports GPUs for NP-series but it's actually FPGAs
-	if isNPSeries(*template.Sku.Name) {
+	if isNPSeries(template.SkuName) {
 		node.Status.Capacity[xilinxFpgaResourceName] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
 	} else {
 		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
@@ -145,9 +261,38 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	// TODO: set real allocatable.
 	node.Status.Allocatable = node.Status.Capacity
 
+	if template.VMSSNodeTemplate != nil {
+		node = processVMSSTemplate(template, nodeName, node)
+	} else if template.VMPoolNodeTemplate != nil {
+		node = processVMPoolTemplate(template, nodeName, node)
+	} else {
+		return nil, fmt.Errorf("invalid node template: missing both VMSS and VMPool templates")
+	}
+
+	klog.V(4).Infof("Setting node %s labels to: %s", nodeName, node.Labels)
+	klog.V(4).Infof("Setting node %s taints to: %s", nodeName, node.Spec.Taints)
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+	return &node, nil
+}
+
+func processVMPoolTemplate(template NodeTemplate, nodeName string, node apiv1.Node) apiv1.Node {
+	labels := buildGenericLabels(template, nodeName)
+	labels[agentPoolNodeLabelKey] = template.VMPoolNodeTemplate.AgentPoolName
+	if template.VMPoolNodeTemplate.Labels != nil {
+		for k, v := range template.VMPoolNodeTemplate.Labels {
+			labels[k] = to.String(v)
+		}
+	}
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
+	taints := buildNodeTaintsForVMPool(template.VMPoolNodeTemplate.Taints)
+	node.Spec.Taints = taints
+	return node
+}
+
+func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node) apiv1.Node {
 	// NodeLabels
-	if template.Tags != nil {
-		for k, v := range template.Tags {
+	if template.VMSSNodeTemplate.Tags != nil {
+		for k, v := range template.VMSSNodeTemplate.Tags {
 			if v != nil {
 				node.Labels[k] = *v
 			} else {
@@ -164,10 +309,10 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	labels := make(map[string]string)
 
 	// Prefer the explicit labels in spec coming from RP over the VMSS template
-	if len(inputLabels) > 0 {
-		labels = inputLabels
+	if len(template.VMSSNodeTemplate.InputLabels) > 0 {
+		labels = template.VMSSNodeTemplate.InputLabels
 	} else {
-		labels = extractLabelsFromScaleSet(template.Tags)
+		labels = extractLabelsFromTags(template.VMSSNodeTemplate.Tags)
 	}
 
 	// Add the agentpool label, its value should come from the VMSS poolName tag
@@ -182,87 +327,74 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 		labels[agentPoolNodeLabelKey] = node.Labels[poolNameTag]
 	}
 
-	// Add the storage profile and storage tier labels
-	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.StorageProfile != nil && template.VirtualMachineProfile.StorageProfile.OsDisk != nil {
+	// Add the storage profile and storage tier labels for vmss node
+	if template.VMSSNodeTemplate.OSDisk != nil {
 		// ephemeral
-		if template.VirtualMachineProfile.StorageProfile.OsDisk.DiffDiskSettings != nil && template.VirtualMachineProfile.StorageProfile.OsDisk.DiffDiskSettings.Option == compute.Local {
+		if template.VMSSNodeTemplate.OSDisk.DiffDiskSettings != nil && template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option == compute.Local {
 			labels[legacyStorageProfileNodeLabelKey] = "ephemeral"
 			labels[storageProfileNodeLabelKey] = "ephemeral"
 		} else {
 			labels[legacyStorageProfileNodeLabelKey] = "managed"
 			labels[storageProfileNodeLabelKey] = "managed"
 		}
-		if template.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk != nil {
-			labels[legacyStorageTierNodeLabelKey] = string(template.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType)
-			labels[storageTierNodeLabelKey] = string(template.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType)
+		if template.VMSSNodeTemplate.OSDisk.ManagedDisk != nil {
+			labels[legacyStorageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
+			labels[storageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
 		}
 		// Add ephemeral-storage value
-		if template.VirtualMachineProfile.StorageProfile.OsDisk.DiskSizeGB != nil {
-			node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VirtualMachineProfile.StorageProfile.OsDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
-			klog.V(4).Infof("OS Disk Size from template is: %d", *template.VirtualMachineProfile.StorageProfile.OsDisk.DiskSizeGB)
+		if template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
+			node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
+			klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
 			klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
 		}
 	}
 
 	// If we are on GPU-enabled SKUs, append the accelerator
 	// label so that CA makes better decision when scaling from zero for GPU pools
-	if isNvidiaEnabledSKU(*template.Sku.Name) {
+	if isNvidiaEnabledSKU(template.SkuName) {
 		labels[GPULabel] = "nvidia"
 		labels[legacyGPULabel] = "nvidia"
 	}
 
 	// Extract allocatables from tags
-	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.Tags)
+	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.VMSSNodeTemplate.Tags)
 	for resourceName, val := range resourcesFromTags {
 		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
 	}
 
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
-	klog.V(4).Infof("Setting node %s labels to: %s", nodeName, node.Labels)
 
 	var taints []apiv1.Taint
-	// Prefer the explicit taints in spec over the VMSS template
-	if inputTaints != "" {
-		taints = extractTaintsFromSpecString(inputTaints)
+	// Prefer the explicit taints in spec over the tags from vmss or vm
+	if template.VMSSNodeTemplate.InputTaints != "" {
+		taints = extractTaintsFromSpecString(template.VMSSNodeTemplate.InputTaints)
 	} else {
-		taints = extractTaintsFromScaleSet(template.Tags)
+		taints = extractTaintsFromTags(template.VMSSNodeTemplate.Tags)
 	}
 
 	// Taints from the Scale Set's Tags
 	node.Spec.Taints = taints
-	klog.V(4).Infof("Setting node %s taints to: %s", nodeName, node.Spec.Taints)
-
-	node.Status.Conditions = cloudprovider.BuildReadyConditions()
-	return &node, nil
+	return node
 }
 
-func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
-	instanceOS := cloudprovider.DefaultOS
-	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
-		instanceOS = "windows"
-	}
-
-	return instanceOS
-}
-
-func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
+func buildGenericLabels(template NodeTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
 
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
 
-	result[kubeletapis.LabelOS] = buildInstanceOS(template)
-	result[apiv1.LabelOSStable] = buildInstanceOS(template)
+	result[kubeletapis.LabelOS] = template.InstanceOS
+	result[apiv1.LabelOSStable] = template.InstanceOS
 
-	result[apiv1.LabelInstanceType] = *template.Sku.Name
-	result[apiv1.LabelInstanceTypeStable] = *template.Sku.Name
-	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
-	result[apiv1.LabelTopologyRegion] = strings.ToLower(*template.Location)
+	result[apiv1.LabelInstanceType] = template.SkuName
+	result[apiv1.LabelInstanceTypeStable] = template.SkuName
+	result[apiv1.LabelZoneRegion] = strings.ToLower(template.Location)
+	result[apiv1.LabelTopologyRegion] = strings.ToLower(template.Location)
 
-	if template.Zones != nil && len(*template.Zones) > 0 {
-		failureDomains := make([]string, len(*template.Zones))
-		for k, v := range *template.Zones {
-			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
+	if len(template.Zones) > 0 {
+		failureDomains := make([]string, len(template.Zones))
+		for k, v := range template.Zones {
+			failureDomains[k] = strings.ToLower(template.Location) + "-" + v
 		}
 		//Picks random zones for Multi-zone nodepool when scaling from zero.
 		//This random zone will not be the same as the zone of the VMSS that is being created, the purpose of creating
@@ -283,7 +415,7 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 	return result
 }
 
-func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {
+func extractLabelsFromTags(tags map[string]*string) map[string]string {
 	result := make(map[string]string)
 
 	for tagName, tagValue := range tags {
@@ -300,7 +432,7 @@ func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {
 	return result
 }
 
-func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
+func extractTaintsFromTags(tags map[string]*string) []apiv1.Taint {
 	taints := make([]apiv1.Taint, 0)
 
 	for tagName, tagValue := range tags {
@@ -327,6 +459,7 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 	return taints
 }
 
+// extractTaintsFromSpecString is for VMSS nodepool taints
 // Example of a valid taints string, is the same argument to kubelet's `--register-with-taints`
 // "dedicated=foo:NoSchedule,group=bar:NoExecute,app=fizz:PreferNoSchedule"
 func extractTaintsFromSpecString(taintsString string) []apiv1.Taint {
@@ -334,28 +467,48 @@ func extractTaintsFromSpecString(taintsString string) []apiv1.Taint {
 	// First split the taints at the separator
 	splits := strings.Split(taintsString, ",")
 	for _, split := range splits {
-		taintSplit := strings.Split(split, "=")
-		if len(taintSplit) != 2 {
-			continue
+		valid, taint := constructTaintFromString(split)
+		if valid {
+			taints = append(taints, taint)
 		}
+	}
+	return taints
+}
 
-		taintKey := taintSplit[0]
-		taintValue := taintSplit[1]
-
-		r, _ := regexp.Compile("(.*):(?:NoSchedule|NoExecute|PreferNoSchedule)")
-		if !r.MatchString(taintValue) {
-			continue
+// buildNodeTaintsForVMPool is for VMPool taints, it looks for the taints in the format
+// []string{zone=dmz:NoSchedule, usage=monitoring:NoSchedule}
+func buildNodeTaintsForVMPool(taintStrs []string) []apiv1.Taint {
+	taints := make([]apiv1.Taint, 0)
+	for _, taintStr := range taintStrs {
+		valid, taint := constructTaintFromString(taintStr)
+		if valid {
+			taints = append(taints, taint)
 		}
+	}
+	return taints
+}
 
-		values := strings.SplitN(taintValue, ":", 2)
-		taints = append(taints, apiv1.Taint{
-			Key:    taintKey,
-			Value:  values[0],
-			Effect: apiv1.TaintEffect(values[1]),
-		})
+// constructTaintFromString constructs a taint from a string in the format <key>=<value>:<effect>
+// if the input string is not in the correct format, it returns false and an empty taint
+func constructTaintFromString(taintString string) (bool, apiv1.Taint) {
+	taintSplit := strings.Split(taintString, "=")
+	if len(taintSplit) != 2 {
+		return false, apiv1.Taint{}
+	}
+	taintKey := taintSplit[0]
+	taintValue := taintSplit[1]
+
+	r, _ := regexp.Compile("(.*):(?:NoSchedule|NoExecute|PreferNoSchedule)")
+	if !r.MatchString(taintValue) {
+		return false, apiv1.Taint{}
 	}
 
-	return taints
+	values := strings.SplitN(taintValue, ":", 2)
+	return true, apiv1.Taint{
+		Key:    taintKey,
+		Value:  values[0],
+		Effect: apiv1.TaintEffect(values[1]),
+	}
 }
 
 func extractAutoscalingOptionsFromScaleSetTags(tags map[string]*string) map[string]string {
