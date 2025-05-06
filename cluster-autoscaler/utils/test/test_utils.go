@@ -194,6 +194,29 @@ func WithDeletionTimestamp(deletionTimestamp time.Time) func(*apiv1.Pod) {
 	}
 }
 
+// WithNodeNamesAffinity sets pod's affinity for specific nodes.
+func WithNodeNamesAffinity(nodeNames ...string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.Affinity = &apiv1.Affinity{
+			NodeAffinity: &apiv1.NodeAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: &apiv1.NodeSelector{
+					NodeSelectorTerms: []apiv1.NodeSelectorTerm{
+						{
+							MatchFields: []apiv1.NodeSelectorRequirement{
+								{
+									Key:      metav1.ObjectNameField,
+									Operator: apiv1.NodeSelectorOpIn,
+									Values:   nodeNames,
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
