@@ -49,7 +49,7 @@ type AutoscalingContext struct {
 	FrameworkHandle *framework.Handle
 	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
 	ClusterSnapshot clustersnapshot.ClusterSnapshot
-	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
+	// DraSnapShot denotes the snapshot of dra resources
 	ExpanderStrategy expander.Strategy
 	// ProcessorCallbacks is interface defining extra callback methods which can be called by processors used in extension points.
 	ProcessorCallbacks processor_callbacks.ProcessorCallbacks
