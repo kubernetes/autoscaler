@@ -43,6 +43,9 @@ type CustomResourcesProcessor interface {
 }
 
 // NewDefaultCustomResourcesProcessor returns a default instance of CustomResourcesProcessor.
-func NewDefaultCustomResourcesProcessor() CustomResourcesProcessor {
+func NewDefaultCustomResourcesProcessor(draEnabled bool) CustomResourcesProcessor {
+	if draEnabled {
+		return &MultipleCustomResourcesProcessor{[]CustomResourcesProcessor{&DraCustomResourcesProcessor{}, &GpuCustomResourcesProcessor{}}}
+	}
 	return &GpuCustomResourcesProcessor{}
 }

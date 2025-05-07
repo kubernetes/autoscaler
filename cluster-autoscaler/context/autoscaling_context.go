@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/informers"
@@ -48,6 +49,8 @@ type AutoscalingContext struct {
 	FrameworkHandle *framework.Handle
 	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
 	ClusterSnapshot clustersnapshot.ClusterSnapshot
+	// DraSnapShot denotes the snapshot of dra resources
+	DraSnapShot drasnapshot.Snapshot
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
 	// ProcessorCallbacks is interface defining extra callback methods which can be called by processors used in extension points.
