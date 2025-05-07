@@ -18,9 +18,11 @@ package estimator
 
 import (
 	"fmt"
+	"strconv"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -93,6 +95,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	nodeTemplate *framework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
 ) (int, []*apiv1.Pod) {
+	observeBinpackingHeterogeneity(podsEquivalenceGroups, nodeTemplate)
 
 	e.limiter.StartEstimation(podsEquivalenceGroups, nodeGroup, e.context)
 	defer e.limiter.EndEstimation()
@@ -230,4 +233,32 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState.lastNodeName = newNodeInfo.Node().Name
 	estimationState.newNodeNames[estimationState.lastNodeName] = true
 	return nil
+}
+
+func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) {
+	node := nodeTemplate.Node()
+	var instanceType, cpuCount string
+	if node != nil {
+		if node.Labels != nil {
+			instanceType = node.Labels[apiv1.LabelInstanceTypeStable]
+		}
+		cpuCount = node.Status.Capacity.Cpu().String()
+	}
+	namespaces := make(map[string]bool)
+	for _, peg := range podsEquivalenceGroups {
+		e := peg.Exemplar()
+		if e != nil {
+			namespaces[e.Namespace] = true
+		}
+	}
+	// Quantize # of namespaces to limit metric cardinality.
+	nsCountBucket := ""
+	if len(namespaces) <= 5 {
+		nsCountBucket = strconv.Itoa(len(namespaces))
+	} else if len(namespaces) <= 10 {
+		nsCountBucket = "6-10"
+	} else {
+		nsCountBucket = "11+"
+	}
+	metrics.ObserveBinpackingHeterogeneity(instanceType, cpuCount, nsCountBucket, len(podsEquivalenceGroups))
 }
