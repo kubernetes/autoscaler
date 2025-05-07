@@ -61,12 +61,10 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
-	ginkgo.Describe("with InPlaceOrRecreate update mode [InPlaceOrRecreate]", ginkgo.Ordered, func() {
-		ginkgo.BeforeAll(func() {
-			checkInPlaceOrRecreateTestsEnabled(f, true, false)
-		})
-
+	ginkgo.Describe("with InPlaceOrRecreate update mode", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
 		ginkgo.BeforeEach(func() {
+			checkInPlaceOrRecreateTestsEnabled(f, true, false)
+
 			ns := f.Namespace.Name
 			ginkgo.By("Setting up a hamster deployment")
 			rc = NewDynamicResourceConsumer("hamster", ns, KindDeployment,

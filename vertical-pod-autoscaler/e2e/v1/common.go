@@ -75,38 +75,35 @@ var hamsterTargetRef = &autoscaling.CrossVersionObjectReference{
 var hamsterLabels = map[string]string{"app": "hamster"}
 
 // SIGDescribe adds sig-autoscaling tag to test description.
-func SIGDescribe(text string, body func()) bool {
-	return ginkgo.Describe(fmt.Sprintf("[sig-autoscaling] %v", text), body)
-}
-
-// E2eDescribe describes a VPA e2e test.
-func E2eDescribe(scenario, name string, body func()) bool {
-	return SIGDescribe(fmt.Sprintf("[VPA] [%s] [v1] %s", scenario, name), body)
+// Takes args that are passed to ginkgo.Describe.
+func SIGDescribe(scenario, name string, args ...interface{}) bool {
+	full := fmt.Sprintf("[sig-autoscaling] [VPA] [%s] [v1] %s", scenario, name)
+	return ginkgo.Describe(full, args...)
 }
 
 // RecommenderE2eDescribe describes a VPA recommender e2e test.
-func RecommenderE2eDescribe(name string, body func()) bool {
-	return E2eDescribe(recommenderComponent, name, body)
+func RecommenderE2eDescribe(name string, args ...interface{}) bool {
+	return SIGDescribe(recommenderComponent, name, args...)
 }
 
 // UpdaterE2eDescribe describes a VPA updater e2e test.
-func UpdaterE2eDescribe(name string, body func()) bool {
-	return E2eDescribe(updateComponent, name, body)
+func UpdaterE2eDescribe(name string, args ...interface{}) bool {
+	return SIGDescribe(updateComponent, name, args...)
 }
 
 // AdmissionControllerE2eDescribe describes a VPA admission controller e2e test.
-func AdmissionControllerE2eDescribe(name string, body func()) bool {
-	return E2eDescribe(admissionControllerComponent, name, body)
+func AdmissionControllerE2eDescribe(name string, args ...interface{}) bool {
+	return SIGDescribe(admissionControllerComponent, name, args...)
 }
 
 // FullVpaE2eDescribe describes a VPA full stack e2e test.
-func FullVpaE2eDescribe(name string, body func()) bool {
-	return E2eDescribe(fullVpaSuite, name, body)
+func FullVpaE2eDescribe(name string, args ...interface{}) bool {
+	return SIGDescribe(fullVpaSuite, name, args...)
 }
 
 // ActuationSuiteE2eDescribe describes a VPA actuation e2e test.
-func ActuationSuiteE2eDescribe(name string, body func()) bool {
-	return E2eDescribe(actuationSuite, name, body)
+func ActuationSuiteE2eDescribe(name string, args ...interface{}) bool {
+	return SIGDescribe(actuationSuite, name, args...)
 }
 
 // GetHamsterContainerNameByIndex returns name of i-th hamster container.
