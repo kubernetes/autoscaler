@@ -140,7 +140,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 	})
 })
 
-var _ = UpdaterE2eDescribe("Updater [InPlaceOrRecreate]", func() {
+var _ = UpdaterE2eDescribe("Updater", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 

@@ -51,7 +51,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = ActuationSuiteE2eDescribe("Actuation [InPlaceOrRecreate]", func() {
+var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
