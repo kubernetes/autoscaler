@@ -424,7 +424,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "binpacking_heterogeneity",
 			Help:      "Number of groups of equivalent pods being processed as a part of the same binpacking simulation.",
-			Buckets:   []float64{1, 2, 4, 6, 10},
+			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 6), // 1, 2, 4, ..., 32
 		}, []string{"instance_type", "cpu_count", "namespace_count"},
 	)
 )
