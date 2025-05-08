@@ -2651,28 +2651,35 @@ func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
 	tests := []struct {
 		name                          string
 		testNodes                     []*apiv1.Node
-		expectedScaleDownCoolDown     bool
+		scaleDownInCoolDown           bool
 		expectedNodesWithSoftTaints   []*apiv1.Node
 		expectedNodesWithNoSoftTaints []*apiv1.Node
 	}{
 		{
-			name:                          "Soft tainted nodes are cleaned in case of scale down is in cool down",
+			name:                          "Soft tainted nodes are cleaned when scale down skipped",
 			testNodes:                     nodesToHaveNoTaints,
-			expectedScaleDownCoolDown:     true,
+			scaleDownInCoolDown:           false,
 			expectedNodesWithSoftTaints:   []*apiv1.Node{},
 			expectedNodesWithNoSoftTaints: nodesToHaveNoTaints,
 		},
 		{
-			name:                          "Soft tainted nodes are not cleaned in case of scale down isn't in cool down",
+			name:                          "Soft tainted nodes are cleaned when scale down in cooldown",
+			testNodes:                     nodesToHaveNoTaints,
+			scaleDownInCoolDown:           true,
+			expectedNodesWithSoftTaints:   []*apiv1.Node{},
+			expectedNodesWithNoSoftTaints: nodesToHaveNoTaints,
+		},
+		{
+			name:                          "Soft tainted nodes are not cleaned when scale down requested",
 			testNodes:                     nodesToHaveTaints,
-			expectedScaleDownCoolDown:     false,
+			scaleDownInCoolDown:           false,
 			expectedNodesWithSoftTaints:   nodesToHaveTaints,
 			expectedNodesWithNoSoftTaints: []*apiv1.Node{},
 		},
 		{
-			name:                          "Soft tainted nodes are cleaned only from min sized node group in case of scale down isn't in cool down",
+			name:                          "Soft tainted nodes are cleaned only from min sized node group when scale down requested",
 			testNodes:                     append(nodesToHaveNoTaints, nodesToHaveTaints...),
-			expectedScaleDownCoolDown:     false,
+			scaleDownInCoolDown:           false,
 			expectedNodesWithSoftTaints:   nodesToHaveTaints,
 			expectedNodesWithNoSoftTaints: nodesToHaveNoTaints,
 		},
@@ -2683,12 +2690,12 @@ func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
 			fakeClient := buildFakeClient(t, test.testNodes...)
 
 			autoscaler := buildStaticAutoscaler(t, provider, test.testNodes, test.testNodes, fakeClient)
+			autoscaler.processorCallbacks.disableScaleDownForLoop = test.scaleDownInCoolDown
+			assert.Equal(t, autoscaler.isScaleDownInCooldown(time.Now()), test.scaleDownInCoolDown)
 
 			err := autoscaler.RunOnce(time.Now())
 
 			assert.NoError(t, err)
-			candidates, _ := autoscaler.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(autoscaler.AutoscalingContext, test.testNodes)
-			assert.Equal(t, test.expectedScaleDownCoolDown, autoscaler.isScaleDownInCooldown(time.Now(), candidates))
 
 			assertNodesSoftTaintsStatus(t, fakeClient, test.expectedNodesWithSoftTaints, true)
 			assertNodesSoftTaintsStatus(t, fakeClient, test.expectedNodesWithNoSoftTaints, false)

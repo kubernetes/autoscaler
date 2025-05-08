@@ -619,7 +619,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime, scaleDownCandidates)
+		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime)
 		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
 			"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
 			a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
@@ -727,8 +727,8 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 	return nil
 }
 
-func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time, scaleDownCandidates []*apiv1.Node) bool {
-	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop || len(scaleDownCandidates) == 0
+func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time) bool {
+	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop
 
 	if a.ScaleDownDelayTypeLocal {
 		return scaleDownInCooldown
