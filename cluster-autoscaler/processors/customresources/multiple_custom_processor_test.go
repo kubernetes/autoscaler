@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,26 +21,25 @@ import (
 	"testing"
 	"time"
 
+	resourceapi "k8s.io/api/resource/v1beta1"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
-const (
-	GPULabel = "TestGPULabel/accelerator"
-)
-
-func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
+func TestFilterOutNodesForGPULabledAndDra(t *testing.T) {
 	start := time.Now()
 	later := start.Add(10 * time.Minute)
 	expectedReadiness := make(map[string]bool)
 	gpuLabels := map[string]string{
 		GPULabel: "nvidia-tesla-k80",
 	}
+
 	readyCondition := apiv1.NodeCondition{
 		Type:               apiv1.NodeReady,
 		Status:             apiv1.ConditionTrue,
@@ -52,9 +51,26 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		LastTransitionTime: metav1.NewTime(later),
 	}
 
-	nodeGpuReady := &apiv1.Node{
+	nodeDraReady := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeGpuReady",
+			Name:              "node_1_Dra_Ready",
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+			Conditions:  []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	nodeDraReady.Status.Allocatable[NvidiaDriverName] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeDraReady.Status.Allocatable[SomeOtherDriverName] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeDraReady.Status.Capacity[NvidiaDriverName] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeDraReady.Status.Capacity[SomeOtherDriverName] = *resource.NewQuantity(1, resource.DecimalSI)
+	expectedReadiness[nodeDraReady.Name] = true
+
+	nodeDraUnready := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node_2_GPU_Unready",
 			Labels:            gpuLabels,
 			CreationTimestamp: metav1.NewTime(start),
 		},
@@ -64,115 +80,69 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 			Conditions:  []apiv1.NodeCondition{readyCondition},
 		},
 	}
-	nodeGpuReady.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeGpuReady.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	expectedReadiness[nodeGpuReady.Name] = true
 
-	nodeGpuUnready := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeGpuUnready",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Capacity:    apiv1.ResourceList{},
-			Allocatable: apiv1.ResourceList{},
-			Conditions:  []apiv1.NodeCondition{readyCondition},
-		},
-	}
-	nodeGpuUnready.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
-	nodeGpuUnready.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
-	expectedReadiness[nodeGpuUnready.Name] = false
+	nodeDraUnready.Status.Allocatable[NvidiaDriverName] = *resource.NewQuantity(0, resource.DecimalSI)
+	nodeDraUnready.Status.Capacity[NvidiaDriverName] = *resource.NewQuantity(0, resource.DecimalSI)
 
-	nodeDirectXReady := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeDirectXReady",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Capacity:    apiv1.ResourceList{},
-			Allocatable: apiv1.ResourceList{},
-			Conditions:  []apiv1.NodeCondition{readyCondition},
-		},
-	}
-	nodeDirectXReady.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeDirectXReady.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
-	expectedReadiness[nodeDirectXReady.Name] = true
+	expectedReadiness[nodeDraUnready.Name] = false
 
-	nodeDirectXUnready := &apiv1.Node{
+	nodeDraUnready2 := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeDirectXUnready",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Capacity:    apiv1.ResourceList{},
-			Allocatable: apiv1.ResourceList{},
-			Conditions:  []apiv1.NodeCondition{readyCondition},
-		},
-	}
-	nodeDirectXUnready.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
-	nodeDirectXUnready.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
-	expectedReadiness[nodeDirectXUnready.Name] = false
-
-	nodeGpuUnready2 := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeGpuUnready2",
-			Labels:            gpuLabels,
+			Name:              "node_3_Dra_Unready2",
 			CreationTimestamp: metav1.NewTime(start),
 		},
 		Status: apiv1.NodeStatus{
 			Conditions: []apiv1.NodeCondition{readyCondition},
 		},
 	}
-	expectedReadiness[nodeGpuUnready2.Name] = false
+	expectedReadiness[nodeDraUnready2.Name] = false
 
-	nodeNoGpuReady := &apiv1.Node{
+	nodeNoDraReady := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeNoGpuReady",
-			Labels:            make(map[string]string),
+			Name:              "node_4_NonDra_Ready",
 			CreationTimestamp: metav1.NewTime(start),
 		},
 		Status: apiv1.NodeStatus{
 			Conditions: []apiv1.NodeCondition{readyCondition},
 		},
 	}
-	expectedReadiness[nodeNoGpuReady.Name] = true
+	expectedReadiness[nodeNoDraReady.Name] = true
 
-	nodeNoGpuUnready := &apiv1.Node{
+	nodeNoDraUnready := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeNoGpuUnready",
-			Labels:            make(map[string]string),
+			Name:              "node_5_NonDra_Unready",
 			CreationTimestamp: metav1.NewTime(start),
 		},
 		Status: apiv1.NodeStatus{
 			Conditions: []apiv1.NodeCondition{unreadyCondition},
 		},
 	}
-	expectedReadiness[nodeNoGpuUnready.Name] = false
+	expectedReadiness[nodeNoDraUnready.Name] = false
 
 	initialReadyNodes := []*apiv1.Node{
-		nodeGpuReady,
-		nodeGpuUnready,
-		nodeGpuUnready2,
-		nodeDirectXReady,
-		nodeDirectXUnready,
-		nodeNoGpuReady,
+		nodeDraReady,
+		nodeDraUnready,
+		nodeDraUnready2,
+		nodeNoDraReady,
 	}
 	initialAllNodes := []*apiv1.Node{
-		nodeGpuReady,
-		nodeGpuUnready,
-		nodeGpuUnready2,
-		nodeDirectXReady,
-		nodeDirectXUnready,
-		nodeNoGpuReady,
-		nodeNoGpuUnready,
+		nodeDraReady,
+		nodeDraUnready,
+		nodeDraUnready2,
+		nodeNoDraReady,
+		nodeNoDraUnready,
 	}
 
-	processor := NewDefaultCustomResourcesProcessor(false)
+	localSlices := map[string][]*resourceapi.ResourceSlice{
+		"node_1_Dra_Ready":    {node1Slice1, node1Slice2},
+		"node_3_Dra_Unready2": {node3Slice1, node3Slice2},
+	}
+
+	processor := NewDefaultCustomResourcesProcessor(true)
 	provider := testprovider.NewTestCloudProvider(nil, nil)
-	ctx := &context.AutoscalingContext{CloudProvider: provider}
+	snapshot := drasnapshot.NewSnapshot(nil, localSlices, nil, nil)
+
+	ctx := &context.AutoscalingContext{CloudProvider: provider, DraSnapShot: snapshot}
 	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes)
 
 	foundInReady := make(map[string]bool)
