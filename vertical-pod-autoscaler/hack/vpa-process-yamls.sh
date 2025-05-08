@@ -70,7 +70,7 @@ for i in $COMPONENTS; do
     elif [ ${ACTION} == delete ] ; then
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/rmcerts.sh || true)
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/delete-webhook.sh || true)
-      kubectl delete -f ${SCRIPT_ROOT}/deploy/admission-controller-service.yaml
+      kubectl delete -f ${SCRIPT_ROOT}/deploy/admission-controller-service.yaml --ignore-not-found
     fi
   fi
   if [[ ${ACTION} == print ]]; then
