@@ -18,7 +18,7 @@ package nodes
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	klog "k8s.io/klog/v2"
@@ -38,13 +38,13 @@ func NewCompositeScaleDownSetProcessor(orderedProcessorList []ScaleDownSetProces
 }
 
 // FilterUnremovableNodes filters the passed removable candidates from unremovable nodes by calling orderedProcessorList in order
-func (p *CompositeScaleDownSetProcessor) FilterUnremovableNodes(ctx *context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode) {
+func (p *CompositeScaleDownSetProcessor) FilterUnremovableNodes(autoscalingContext *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode) {
 	unremovableNodes := []simulator.UnremovableNode{}
 	nodesToBeRemoved := []simulator.NodeToBeRemoved{}
 	nodesToBeRemoved = append(nodesToBeRemoved, candidates...)
 
 	for indx, p := range p.orderedProcessorList {
-		processorRemovableNodes, processorUnremovableNodes := p.FilterUnremovableNodes(ctx, scaleDownCtx, nodesToBeRemoved)
+		processorRemovableNodes, processorUnremovableNodes := p.FilterUnremovableNodes(autoscalingContext, scaleDownCtx, nodesToBeRemoved)
 
 		if len(processorRemovableNodes)+len(processorUnremovableNodes) != len(candidates) {
 			klog.Errorf("Scale down set composite processor failed with processor at index %d: removable nodes (%d) + unremovable nodes (%d) != candidates nodes (%d)",
@@ -73,7 +73,7 @@ type AtomicResizeFilteringProcessor struct {
 }
 
 // FilterUnremovableNodes marks all candidate nodes as unremovable if ZeroOrMaxNodeScaling is enabled and number of nodes to remove are not equal to target size
-func (p *AtomicResizeFilteringProcessor) FilterUnremovableNodes(ctx *context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode) {
+func (p *AtomicResizeFilteringProcessor) FilterUnremovableNodes(autoscalingContext *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode) {
 	nodesToBeRemoved := []simulator.NodeToBeRemoved{}
 	unremovableNodes := []simulator.UnremovableNode{}
 
@@ -81,13 +81,13 @@ func (p *AtomicResizeFilteringProcessor) FilterUnremovableNodes(ctx *context.Aut
 	standardQuota := klogx.NodesLoggingQuota()
 	nodesByGroup := map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{}
 	for _, node := range candidates {
-		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node.Node)
+		nodeGroup, err := autoscalingContext.CloudProvider.NodeGroupForNode(node.Node)
 		if err != nil {
 			klog.Errorf("Node %v will not scale down, failed to get node info: %s", node.Node.Name, err)
 			unremovableNodes = append(unremovableNodes, simulator.UnremovableNode{Node: node.Node, Reason: simulator.UnexpectedError})
 			continue
 		}
-		autoscalingOptions, err := nodeGroup.GetOptions(ctx.NodeGroupDefaults)
+		autoscalingOptions, err := nodeGroup.GetOptions(autoscalingContext.NodeGroupDefaults)
 		if err != nil && err != cloudprovider.ErrNotImplemented {
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 			unremovableNodes = append(unremovableNodes, simulator.UnremovableNode{Node: node.Node, Reason: simulator.UnexpectedError})

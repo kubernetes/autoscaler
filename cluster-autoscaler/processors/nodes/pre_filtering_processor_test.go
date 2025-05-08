@@ -23,18 +23,18 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestPreFilteringScaleDownNodeProcessor_GetPodDestinationCandidates(t *testing.T) {
 	n1 := BuildTestNode("n1", 100, 1000)
 	n2 := BuildTestNode("n2", 100, 1000)
-	ctx := &context.AutoscalingContext{}
+	autoscalingContext := &ca_context.AutoscalingContext{}
 	defaultProcessor := NewPreFilteringScaleDownNodeProcessor()
 	expectedNodes := []*apiv1.Node{n1, n2}
 	nodes := []*apiv1.Node{n1, n2}
-	nodes, err := defaultProcessor.GetPodDestinationCandidates(ctx, nodes)
+	nodes, err := defaultProcessor.GetPodDestinationCandidates(autoscalingContext, nodes)
 
 	assert.NoError(t, err)
 	assert.Equal(t, nodes, expectedNodes)
@@ -52,14 +52,14 @@ func TestPreFilteringScaleDownNodeProcessor_GetScaleDownCandidateNodes(t *testin
 	provider.AddNode("ng1", ng1_2)
 	provider.AddNode("ng2", ng2_1)
 
-	ctx := &context.AutoscalingContext{
+	autoscalingContext := &ca_context.AutoscalingContext{
 		CloudProvider: provider,
 	}
 
 	expectedNodes := []*apiv1.Node{ng1_1, ng1_2}
 	defaultProcessor := NewPreFilteringScaleDownNodeProcessor()
 	inputNodes := []*apiv1.Node{ng1_1, ng1_2, ng2_1, noNg}
-	result, err := defaultProcessor.GetScaleDownCandidates(ctx, inputNodes)
+	result, err := defaultProcessor.GetScaleDownCandidates(autoscalingContext, inputNodes)
 
 	assert.NoError(t, err)
 	assert.Equal(t, result, expectedNodes)

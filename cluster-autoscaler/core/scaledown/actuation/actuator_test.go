@@ -1275,7 +1275,7 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
 	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, shutdownGracePeriodByPodPriority: legacyFlagDrainConfig, fullDsEviction: force}
 	actuator := Actuator{
-		ctx: &ctx, nodeDeletionTracker: ndt,
+		autoscalingContext: &ctx, nodeDeletionTracker: ndt,
 		nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
 		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 		configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(ctx.NodeGroupDefaults),
@@ -1542,21 +1542,21 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 			pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
 			registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, nil, nil, nil, nil, nil)
-			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
+			autoscalingContext, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingContext.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 			scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
 			scaleStateNotifier.Register(csr)
 			ndt := deletiontracker.NewNodeDeletionTracker(0)
-			ndb := NewNodeDeletionBatcher(&ctx, scaleStateNotifier, ndt, deleteInterval)
-			legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+			ndb := NewNodeDeletionBatcher(&autoscalingContext, scaleStateNotifier, ndt, deleteInterval)
+			legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingContext.MaxGracefulTerminationSec)
 			evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, shutdownGracePeriodByPodPriority: legacyFlagDrainConfig}
 			actuator := Actuator{
-				ctx: &ctx, nodeDeletionTracker: ndt,
-				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
-				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
+				autoscalingContext: &autoscalingContext, nodeDeletionTracker: ndt,
+				nodeDeletionScheduler: NewGroupDeletionScheduler(&autoscalingContext, ndt, ndb, evictor),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&autoscalingContext),
 			}
 
 			for _, nodes := range deleteNodes {
