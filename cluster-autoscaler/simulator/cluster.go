@@ -205,6 +205,7 @@ func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
 				klog.Fatalf("Got error when calling ClusterSnapshot.Commit(); %v", cleanupErr)
 			}
 		} else {
+			// TODO(mfuhol): revert no error handled
 			r.clusterSnapshot.Revert()
 		}
 	}()

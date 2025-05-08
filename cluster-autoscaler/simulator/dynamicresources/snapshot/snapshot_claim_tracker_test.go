@@ -86,7 +86,7 @@ func TestSnapshotClaimTrackerList(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			snapshot := NewSnapshot(tc.claims, nil, nil, nil)
-			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaims()
+			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaimTracker()
 			claims, err := resourceClaimTracker.List()
 			if err != nil {
 				t.Fatalf("snapshotClaimTracker.List(): got unexpected error: %v", err)
@@ -132,7 +132,7 @@ func TestSnapshotClaimTrackerGet(t *testing.T) {
 				GetClaimId(claim3): claim3,
 			}
 			snapshot := NewSnapshot(claims, nil, nil, nil)
-			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaims()
+			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaimTracker()
 			claim, err := resourceClaimTracker.Get(tc.claimNamespace, tc.claimName)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("snapshotClaimTracker.Get(): unexpected error (-want +got): %s", diff)
@@ -170,7 +170,7 @@ func TestSnapshotClaimTrackerListAllAllocatedDevices(t *testing.T) {
 				GetClaimId(allocatedClaim2): allocatedClaim2,
 				GetClaimId(claim3):          claim3,
 			},
-			wantDevices: sets.New[structured.DeviceID](
+			wantDevices: sets.New(
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-1"),
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-2"),
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-3"),
@@ -180,7 +180,7 @@ func TestSnapshotClaimTrackerListAllAllocatedDevices(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			snapshot := NewSnapshot(tc.claims, nil, nil, nil)
-			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaims()
+			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaimTracker()
 			devices, err := resourceClaimTracker.ListAllAllocatedDevices()
 			if err != nil {
 				t.Fatalf("snapshotClaimTracker.ListAllAllocatedDevices(): got unexpected error: %v", err)
@@ -224,7 +224,7 @@ func TestSnapshotClaimTrackerSignalClaimPendingAllocation(t *testing.T) {
 				GetClaimId(claim3): claim3,
 			}
 			snapshot := NewSnapshot(claims, nil, nil, nil)
-			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaims()
+			var resourceClaimTracker schedulerframework.ResourceClaimTracker = snapshot.ResourceClaimTracker()
 
 			err := resourceClaimTracker.SignalClaimPendingAllocation(tc.claimUid, tc.allocatedClaim)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {

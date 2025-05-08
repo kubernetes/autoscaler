@@ -77,7 +77,7 @@ type ClusterSnapshotStore interface {
 
 	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
-	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error
+	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Interface) error
 
 	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
 	ForceAddPod(pod *apiv1.Pod, nodeName string) error
@@ -93,13 +93,13 @@ type ClusterSnapshotStore interface {
 	RemoveSchedulerNodeInfo(nodeName string) error
 
 	// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
-	DraSnapshot() drasnapshot.Snapshot
+	DraSnapshot() drasnapshot.Interface
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.
 	Fork()
 	// Revert reverts snapshot state to moment of forking.
-	Revert()
+	Revert() error
 	// Commit commits changes done after forking.
 	Commit() error
 }
@@ -121,6 +121,7 @@ func WithForkedSnapshot(snapshot ClusterSnapshot, f func() (bool, error)) (error
 			}
 		}
 		if !commit || cleanupErr != nil {
+			// TODO(mfuhol): revert no error handled
 			snapshot.Revert()
 		}
 	}()

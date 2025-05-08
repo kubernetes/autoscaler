@@ -281,7 +281,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				}
 
 				clusterSnapshot := snapshotFactory()
-				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, drasnapshot.Snapshot{}); err != nil {
+				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, &drasnapshot.Snapshot{}); err != nil {
 					assert.NoError(b, err)
 				}
 

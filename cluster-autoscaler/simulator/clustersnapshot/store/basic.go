@@ -29,13 +29,13 @@ import (
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.
 // It is inefficient. But hopefully bug-free and good for initial testing.
 type BasicSnapshotStore struct {
-	data []*internalBasicSnapshotData
+	data        []*internalBasicSnapshotData
+	draSnapshot drasnapshot.Interface
 }
 
 type internalBasicSnapshotData struct {
 	nodeInfoMap        map[string]*schedulerframework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
-	draSnapshot        drasnapshot.Snapshot
 }
 
 func (data *internalBasicSnapshotData) listNodeInfos() []*schedulerframework.NodeInfo {
@@ -142,7 +142,6 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        clonedNodeInfoMap,
 		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
-		draSnapshot:        data.draSnapshot.Clone(),
 	}
 }
 
@@ -208,8 +207,8 @@ func (snapshot *BasicSnapshotStore) getInternalData() *internalBasicSnapshotData
 }
 
 // DraSnapshot returns the DRA snapshot.
-func (snapshot *BasicSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
-	return snapshot.getInternalData().draSnapshot
+func (snapshot *BasicSnapshotStore) DraSnapshot() drasnapshot.Interface {
+	return snapshot.draSnapshot
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
@@ -226,7 +225,7 @@ func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo *schedulerfram
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error {
+func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Interface) error {
 	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
@@ -243,7 +242,7 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 			}
 		}
 	}
-	snapshot.getInternalData().draSnapshot = draSnapshot
+	snapshot.draSnapshot = draSnapshot
 	return nil
 }
 
@@ -270,19 +269,30 @@ func (snapshot *BasicSnapshotStore) IsPVCUsedByPods(key string) bool {
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
 func (snapshot *BasicSnapshotStore) Fork() {
 	forkData := snapshot.getInternalData().clone()
+	snapshot.draSnapshot.Fork()
 	snapshot.data = append(snapshot.data, forkData)
 }
 
 // Revert reverts snapshot state to moment of forking.
-func (snapshot *BasicSnapshotStore) Revert() {
-	if len(snapshot.data) == 1 {
-		return
+func (snapshot *BasicSnapshotStore) Revert() error {
+	if err := snapshot.draSnapshot.Revert(); err != nil {
+		return err
 	}
+
+	if len(snapshot.data) == 1 {
+		return nil
+	}
+
 	snapshot.data = snapshot.data[:len(snapshot.data)-1]
+	return nil
 }
 
 // Commit commits changes done after forking.
 func (snapshot *BasicSnapshotStore) Commit() error {
+	if err := snapshot.draSnapshot.Commit(); err != nil {
+		return err
+	}
+
 	if len(snapshot.data) <= 1 {
 		// do nothing
 		return nil
@@ -295,6 +305,7 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 func (snapshot *BasicSnapshotStore) clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
+	snapshot.draSnapshot = &drasnapshot.Snapshot{}
 }
 
 // implementation of SharedLister interface
@@ -314,17 +325,17 @@ func (snapshot *BasicSnapshotStore) StorageInfos() schedulerframework.StorageInf
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
 func (snapshot *BasicSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
-	return snapshot.DraSnapshot().ResourceClaims()
+	return snapshot.DraSnapshot().ResourceClaimTracker()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
 func (snapshot *BasicSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
-	return snapshot.DraSnapshot().ResourceSlices()
+	return snapshot.DraSnapshot().ResourceSliceLister()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
 func (snapshot *BasicSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
-	return snapshot.DraSnapshot().DeviceClasses()
+	return snapshot.DraSnapshot().DeviceClassLister()
 }
 
 // List returns the list of nodes in the snapshot.

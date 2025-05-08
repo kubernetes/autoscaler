@@ -52,7 +52,7 @@ func TestSnapshotClassListerList(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			snapshot := NewSnapshot(nil, nil, nil, tc.classes)
-			var deviceClassLister schedulerframework.DeviceClassLister = snapshot.DeviceClasses()
+			var deviceClassLister schedulerframework.DeviceClassLister = snapshot.DeviceClassLister()
 			classes, err := deviceClassLister.List()
 			if err != nil {
 				t.Fatalf("snapshotClassLister.List(): got unexpected error: %v", err)
@@ -86,7 +86,7 @@ func TestSnapshotClassListerGet(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			classes := map[string]*resourceapi.DeviceClass{"class-1": class1, "class-2": class2, "class-3": class3}
 			snapshot := NewSnapshot(nil, nil, nil, classes)
-			var deviceClassLister schedulerframework.DeviceClassLister = snapshot.DeviceClasses()
+			var deviceClassLister schedulerframework.DeviceClassLister = snapshot.DeviceClassLister()
 			class, err := deviceClassLister.Get(tc.className)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("snapshotClassLister.Get(): unexpected error (-want +got): %s", diff)

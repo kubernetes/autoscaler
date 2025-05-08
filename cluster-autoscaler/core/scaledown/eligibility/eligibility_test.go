@@ -42,7 +42,7 @@ type testCase struct {
 	desc                        string
 	nodes                       []*apiv1.Node
 	pods                        []*apiv1.Pod
-	draSnapshot                 drasnapshot.Snapshot
+	draSnapshot                 *drasnapshot.Snapshot
 	draEnabled                  bool
 	wantUnneeded                []string
 	wantUnremovable             []*simulator.UnremovableNode

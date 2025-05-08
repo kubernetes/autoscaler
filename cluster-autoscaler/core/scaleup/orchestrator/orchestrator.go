@@ -587,6 +587,7 @@ func (o *ScaleUpOrchestrator) SchedulablePodGroups(
 	nodeInfo *framework.NodeInfo,
 ) []estimator.PodEquivalenceGroup {
 	o.autoscalingContext.ClusterSnapshot.Fork()
+	// TODO(mfuhol): revert no error handled
 	defer o.autoscalingContext.ClusterSnapshot.Revert()
 
 	// Add test node to snapshot.

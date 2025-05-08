@@ -75,7 +75,7 @@ func TestSnapshotSliceListerList(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			snapshot := NewSnapshot(nil, tc.localSlices, tc.globalSlices, nil)
-			var resourceSliceLister schedulerframework.ResourceSliceLister = snapshot.ResourceSlices()
+			var resourceSliceLister schedulerframework.ResourceSliceLister = snapshot.ResourceSliceLister()
 			slices, err := resourceSliceLister.List()
 			if err != nil {
 				t.Fatalf("snapshotSliceLister.List(): got unexpected error: %v", err)

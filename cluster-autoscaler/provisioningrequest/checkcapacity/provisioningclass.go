@@ -98,6 +98,7 @@ func (o *checkCapacityProvClass) Provision(
 	startTime := time.Now()
 
 	o.context.ClusterSnapshot.Fork()
+	// TODO(mfuhol): revert no error handled
 	defer o.context.ClusterSnapshot.Revert()
 
 	// Gather ProvisioningRequests.
@@ -179,6 +180,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	if err == nil && len(scheduled) == len(unschedulablePods) {
 		commitError := o.context.ClusterSnapshot.Commit()
 		if commitError != nil {
+			// TODO(mfuhol): revert no error handled
 			o.context.ClusterSnapshot.Revert()
 			return commitError
 		}
@@ -187,6 +189,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 		return nil
 	}
 	// Case 2: Capacity doesn't fit.
+	// TODO(mfuhol): revert no error handled
 	o.context.ClusterSnapshot.Revert()
 	combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable})
 	if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry == "true" {

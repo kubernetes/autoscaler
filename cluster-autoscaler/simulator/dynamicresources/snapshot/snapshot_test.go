@@ -79,7 +79,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 
 		claims map[ResourceClaimId]*resourceapi.ResourceClaim
 
-		claimsModFun        func(snapshot Snapshot) error
+		claimsModFun        func(snapshot BasicSnapshot) error
 		wantClaimsModFunErr error
 
 		pod              *apiv1.Pod
@@ -141,7 +141,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(sharedClaim1):  sharedClaim1.DeepCopy(),
 				GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				return snapshot.AddClaims([]*resourceapi.ResourceClaim{sharedClaim2.DeepCopy(), sharedClaim1.DeepCopy()})
 			},
 			wantClaimsModFunErr: cmpopts.AnyError,
@@ -153,7 +153,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(sharedClaim1):  sharedClaim1.DeepCopy(),
 				GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				if err := snapshot.AddClaims([]*resourceapi.ResourceClaim{sharedClaim2.DeepCopy(), pod2OwnClaim1.DeepCopy()}); err != nil {
 					return err
 				}
@@ -171,7 +171,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				snapshot.RemovePodOwnedClaims(pod1)
 				return nil
 			},
@@ -189,7 +189,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				snapshot.RemovePodOwnedClaims(pod1)
 				return nil
 			},
@@ -211,7 +211,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): drautils.TestClaimWithPodReservations(pod1OwnClaim1, pod1),
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				// sharedClaim2 is missing, so this should be an error.
 				return snapshot.ReservePodClaims(pod1)
 			},
@@ -234,7 +234,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): drautils.TestClaimWithPodReservations(pod1OwnClaim1, pod1),
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				// sharedClaim2 is missing in claims above, so this should be an error.
 				return snapshot.ReservePodClaims(pod1)
 			},
@@ -258,7 +258,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): drautils.TestClaimWithPodReservations(pod1OwnClaim1, pod1),
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				return snapshot.ReservePodClaims(pod1)
 			},
 			pod: pod1,
@@ -286,7 +286,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): drautils.TestClaimWithPodReservations(pod1OwnClaim1, pod1),
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				// sharedClaim2 is missing in claims above, so this should be an error.
 				return snapshot.UnreservePodClaims(pod1)
 			},
@@ -309,7 +309,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): drautils.TestClaimWithPodReservations(pod1OwnClaim1, pod1),
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				return snapshot.UnreservePodClaims(pod1)
 			},
 			pod: pod1,
@@ -338,7 +338,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim1): drautils.TestClaimWithAllocation(drautils.TestClaimWithPodReservations(pod1OwnClaim1, pod1), nil),
 				GetClaimId(pod1OwnClaim2): drautils.TestClaimWithAllocation(pod1OwnClaim2.DeepCopy(), nil),
 			},
-			claimsModFun: func(snapshot Snapshot) error {
+			claimsModFun: func(snapshot BasicSnapshot) error {
 				return snapshot.UnreservePodClaims(pod1)
 			},
 			pod: pod1,
@@ -359,7 +359,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
-			snapshot := NewSnapshot(tc.claims, nil, nil, nil)
+			snapshot := NewBasicSnapshot(tc.claims, nil, nil, nil)
 
 			if tc.claimsModFun != nil {
 				err := tc.claimsModFun(snapshot)
@@ -379,9 +379,9 @@ func TestSnapshotResourceClaims(t *testing.T) {
 			}
 
 			if tc.wantAllClaims != nil {
-				allClaims, err := snapshot.ResourceClaims().List()
+				allClaims, err := snapshot.ListResourceClaims()
 				if err != nil {
-					t.Fatalf("ResourceClaims().List(): unexpected error: %v", err)
+					t.Fatalf("ListResourceClaims(): unexpected error: %v", err)
 				}
 				if diff := cmp.Diff(tc.wantAllClaims, allClaims, cmpopts.EquateEmpty(), test.IgnoreObjectOrder[*resourceapi.ResourceClaim]()); diff != "" {
 					t.Errorf("Snapshot: unexpected ResourceClaim state (-want +got): %s", diff)
@@ -404,7 +404,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 	for _, tc := range []struct {
 		testName string
 
-		slicesModFun        func(snapshot Snapshot) error
+		slicesModFun        func(snapshot BasicSnapshot) error
 		wantSlicesModFunErr error
 
 		nodeName            string
@@ -426,7 +426,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 		},
 		{
 			testName: "AddNodeResourceSlices(): adding slices for a Node that already has slices tracked is an error",
-			slicesModFun: func(snapshot Snapshot) error {
+			slicesModFun: func(snapshot BasicSnapshot) error {
 				return snapshot.AddNodeResourceSlices("node1", []*resourceapi.ResourceSlice{node1Slice1})
 			},
 			wantSlicesModFunErr: cmpopts.AnyError,
@@ -434,7 +434,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 		},
 		{
 			testName: "AddNodeResourceSlices(): adding slices for a new Node works correctly",
-			slicesModFun: func(snapshot Snapshot) error {
+			slicesModFun: func(snapshot BasicSnapshot) error {
 				return snapshot.AddNodeResourceSlices("node3", []*resourceapi.ResourceSlice{extraNode3Slice1, extraNode3Slice2})
 			},
 			nodeName:            "node3",
@@ -444,7 +444,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 		},
 		{
 			testName: "RemoveNodeResourceSlices(): removing slices for a non-existing Node is a no-op",
-			slicesModFun: func(snapshot Snapshot) error {
+			slicesModFun: func(snapshot BasicSnapshot) error {
 				snapshot.RemoveNodeResourceSlices("node3")
 				return nil
 			},
@@ -452,7 +452,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 		},
 		{
 			testName: "RemoveNodeResourceSlices(): removing slices for an existing Node works correctly",
-			slicesModFun: func(snapshot Snapshot) error {
+			slicesModFun: func(snapshot BasicSnapshot) error {
 				snapshot.RemoveNodeResourceSlices("node2")
 				return nil
 			},
@@ -460,7 +460,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
-			snapshot := NewSnapshot(nil, localSlices, globalSlices, nil)
+			snapshot := NewBasicSnapshot(nil, localSlices, globalSlices, nil)
 
 			if tc.slicesModFun != nil {
 				err := tc.slicesModFun(snapshot)
@@ -480,9 +480,9 @@ func TestSnapshotResourceSlices(t *testing.T) {
 			}
 
 			if tc.wantAllSlices != nil {
-				allSlices, err := snapshot.ResourceSlices().List()
+				allSlices, err := snapshot.ListResourceSlices()
 				if err != nil {
-					t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
+					t.Fatalf("ListResourceSlices(): unexpected error: %v", err)
 				}
 				if diff := cmp.Diff(tc.wantAllSlices, allSlices, cmpopts.EquateEmpty(), test.IgnoreObjectOrder[*resourceapi.ResourceSlice]()); diff != "" {
 					t.Errorf("Snapshot: unexpected ResourceSlice state (-want +got): %s", diff)
@@ -566,7 +566,7 @@ func TestSnapshotWrapSchedulerNodeInfo(t *testing.T) {
 				"node2": {node2Slice1, node2Slice2},
 			}
 			globalSlices := []*resourceapi.ResourceSlice{globalSlice1, globalSlice2}
-			snapshot := NewSnapshot(claims, localSlices, globalSlices, nil)
+			snapshot := NewBasicSnapshot(claims, localSlices, globalSlices, nil)
 			nodeInfo, err := snapshot.WrapSchedulerNodeInfo(tc.schedNodeInfo)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("Snapshot.WrapSchedulerNodeInfo(): unexpected error (-want +got): %s", diff)
@@ -584,15 +584,15 @@ func TestSnapshotWrapSchedulerNodeInfo(t *testing.T) {
 func TestSnapshotClone(t *testing.T) {
 	for _, tc := range []struct {
 		testName           string
-		snapshot           Snapshot
-		cloneModFun        func(snapshot Snapshot) error
+		snapshot           BasicSnapshot
+		cloneModFun        func(snapshot BasicSnapshot) error
 		wantModifiedClaims []*resourceapi.ResourceClaim
 		wantModifiedSlices []*resourceapi.ResourceSlice
 	}{
 		{
 			testName: "empty snapshot",
-			snapshot: Snapshot{},
-			cloneModFun: func(snapshot Snapshot) error {
+			snapshot: BasicSnapshot{},
+			cloneModFun: func(snapshot BasicSnapshot) error {
 				if err := snapshot.AddClaims([]*resourceapi.ResourceClaim{pod1OwnClaim1.DeepCopy(), pod1OwnClaim2.DeepCopy()}); err != nil {
 					return err
 				}
@@ -603,7 +603,7 @@ func TestSnapshotClone(t *testing.T) {
 		},
 		{
 			testName: "non-empty snapshot",
-			snapshot: NewSnapshot(
+			snapshot: NewBasicSnapshot(
 				map[ResourceClaimId]*resourceapi.ResourceClaim{
 					GetClaimId(sharedClaim1):  drautils.TestClaimWithPodReservations(sharedClaim1, pod2),
 					GetClaimId(sharedClaim2):  sharedClaim2.DeepCopy(),
@@ -615,7 +615,7 @@ func TestSnapshotClone(t *testing.T) {
 					"node2": {node2Slice1, node2Slice2},
 				},
 				[]*resourceapi.ResourceSlice{globalSlice1, globalSlice2}, nil),
-			cloneModFun: func(snapshot Snapshot) error {
+			cloneModFun: func(snapshot BasicSnapshot) error {
 				if err := snapshot.AddNodeResourceSlices("node3", []*resourceapi.ResourceSlice{node3Slice1, node3Slice2}); err != nil {
 					return err
 				}
@@ -641,18 +641,18 @@ func TestSnapshotClone(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			// Grab the initial state of the snapshot to verify that it doesn't change when the clone is modified.
-			initialClaims, err := tc.snapshot.ResourceClaims().List()
+			initialClaims, err := tc.snapshot.ListResourceClaims()
 			if err != nil {
-				t.Fatalf("ResourceClaims().List(): unexpected error: %v", err)
+				t.Fatalf("ListResourceClaims(): unexpected error: %v", err)
 			}
-			initialSlices, err := tc.snapshot.ResourceSlices().List()
+			initialSlices, err := tc.snapshot.ListResourceSlices()
 			if err != nil {
-				t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
+				t.Fatalf("ListResourceSlices(): unexpected error: %v", err)
 			}
 
 			// Clone and verify that the clone is identical to the original.
 			snapshotClone := tc.snapshot.Clone()
-			if diff := cmp.Diff(tc.snapshot, snapshotClone, cmpopts.EquateEmpty(), cmp.AllowUnexported(Snapshot{}, framework.NodeInfo{}, schedulerframework.NodeInfo{})); diff != "" {
+			if diff := cmp.Diff(tc.snapshot, snapshotClone, cmpopts.EquateEmpty(), cmp.AllowUnexported(BasicSnapshot{}, framework.NodeInfo{}, schedulerframework.NodeInfo{})); diff != "" {
 				t.Fatalf("Snapshot.Clone(): snapshot not identical after cloning (-want +got): %s", diff)
 			}
 
@@ -662,13 +662,13 @@ func TestSnapshotClone(t *testing.T) {
 			}
 
 			// Verify that the clone changed as expected.
-			modifiedClaims, err := snapshotClone.ResourceClaims().List()
+			modifiedClaims, err := snapshotClone.ListResourceClaims()
 			if err != nil {
-				t.Fatalf("ResourceClaims().List(): unexpected error: %v", err)
+				t.Fatalf("ListResourceClaims(): unexpected error: %v", err)
 			}
-			modifiedSlices, err := snapshotClone.ResourceSlices().List()
+			modifiedSlices, err := snapshotClone.ListResourceSlices()
 			if err != nil {
-				t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
+				t.Fatalf("ListResourceSlices(): unexpected error: %v", err)
 			}
 			if diff := cmp.Diff(tc.wantModifiedClaims, modifiedClaims, cmpopts.EquateEmpty(), test.IgnoreObjectOrder[*resourceapi.ResourceClaim]()); diff != "" {
 				t.Errorf("Snapshot: unexpected ResourceClaim state after modifications (-want +got): %s", diff)
@@ -678,13 +678,13 @@ func TestSnapshotClone(t *testing.T) {
 			}
 
 			// Verify that the original hasn't changed during clone modifications.
-			initialClaimsAfterCloneMod, err := tc.snapshot.ResourceClaims().List()
+			initialClaimsAfterCloneMod, err := tc.snapshot.ListResourceClaims()
 			if err != nil {
-				t.Fatalf("ResourceClaims().List(): unexpected error: %v", err)
+				t.Fatalf("ListResourceClaims(): unexpected error: %v", err)
 			}
-			initialSlicesAfterCloneMod, err := tc.snapshot.ResourceSlices().List()
+			initialSlicesAfterCloneMod, err := tc.snapshot.ListResourceSlices()
 			if err != nil {
-				t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
+				t.Fatalf("ListResourceSlices(): unexpected error: %v", err)
 			}
 			if diff := cmp.Diff(initialClaims, initialClaimsAfterCloneMod, cmpopts.EquateEmpty(), test.IgnoreObjectOrder[*resourceapi.ResourceClaim]()); diff != "" {
 				t.Errorf("Snapshot: ResourceClaim state changed in original snapshot during modifications on Clone (-want +got): %s", diff)
