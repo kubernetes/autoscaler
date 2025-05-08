@@ -164,7 +164,7 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 
 func setUpScaleDownActuator(ctx *context.AutoscalingContext, autoscalingOptions config.AutoscalingOptions) {
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
-	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(deleteOptions), processorstest.NewTestProcessors(ctx).NodeGroupConfigProcessor, nil)
+	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(deleteOptions), processorstest.NewTestProcessors(ctx).NodeGroupConfigProcessor)
 }
 
 type nodeGroup struct {
@@ -316,12 +316,12 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 
 	deleteOptions := options.NewNodeDeleteOptions(ctx.AutoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
-	draProvider := draprovider.NewProvider(config.mocks.resourceClaimLister, config.mocks.resourceSliceLister, config.mocks.deviceClassLister)
+	ctx.DraProvider = draprovider.NewProvider(config.mocks.resourceClaimLister, config.mocks.resourceSliceLister, config.mocks.deviceClassLister)
 	nodeDeletionTracker := config.mocks.nodeDeletionTracker
 	if nodeDeletionTracker == nil {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	ctx.ScaleDownActuator = actuation.NewActuator(&ctx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor, draProvider)
+	ctx.ScaleDownActuator = actuation.NewActuator(&ctx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules)
 
 	processorCallbacks.scaleDownPlanner = sdPlanner
@@ -335,7 +335,6 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 		processors:           processors,
 		loopStartNotifier:    loopstart.NewObserversList(nil),
 		processorCallbacks:   processorCallbacks,
-		draProvider:          draProvider,
 	}
 
 	return autoscaler, nil
@@ -2089,7 +2088,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	csr := clusterstate.NewClusterStateRegistry(provider, csrConfig, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
 
 	// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
-	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processorstest.NewTestProcessors(&ctx).NodeGroupConfigProcessor, nil)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processorstest.NewTestProcessors(&ctx).NodeGroupConfigProcessor)
 	ctx.ScaleDownActuator = actuator
 
 	// Fake planner that keeps track of the scale-down candidates passed to UpdateClusterState.
@@ -2720,7 +2719,7 @@ func newScaleDownPlannerAndActuator(ctx *context.AutoscalingContext, p *ca_proce
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	planner := planner.New(ctx, p, deleteOptions, nil)
-	actuator := actuation.NewActuator(ctx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor, nil)
+	actuator := actuation.NewActuator(ctx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor)
 	return planner, actuator
 }
 
@@ -2836,7 +2835,7 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 	processors.ScaleDownNodeProcessor = cp
 
 	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{OkTotalUnreadyCount: 1}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
-	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor, nil)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor)
 	ctx.ScaleDownActuator = actuator
 
 	deleteOptions := options.NewNodeDeleteOptions(ctx.AutoscalingOptions)
