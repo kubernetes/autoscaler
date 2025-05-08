@@ -22,18 +22,8 @@ type AgentPoolsClientBeginCreateOrUpdateOptions struct {
 	ResumeToken string
 }
 
-// AgentPoolsClientBeginDeleteMachinesOptions contains the optional parameters for the AgentPoolsClient.BeginDeleteMachines
-// method.
-type AgentPoolsClientBeginDeleteMachinesOptions struct {
-	// Resumes the LRO from the provided token.
-	ResumeToken string
-}
-
 // AgentPoolsClientBeginDeleteOptions contains the optional parameters for the AgentPoolsClient.BeginDelete method.
 type AgentPoolsClientBeginDeleteOptions struct {
-	// ignore-pod-disruption-budget=true to delete those pods on a node without considering Pod Disruption Budget
-	IgnorePodDisruptionBudget *bool
-
 	// Resumes the LRO from the provided token.
 	ResumeToken string
 }
@@ -66,16 +56,6 @@ type AgentPoolsClientListOptions struct {
 	// placeholder for future optional parameters
 }
 
-// MachinesClientGetOptions contains the optional parameters for the MachinesClient.Get method.
-type MachinesClientGetOptions struct {
-	// placeholder for future optional parameters
-}
-
-// MachinesClientListOptions contains the optional parameters for the MachinesClient.NewListPager method.
-type MachinesClientListOptions struct {
-	// placeholder for future optional parameters
-}
-
 // MaintenanceConfigurationsClientCreateOrUpdateOptions contains the optional parameters for the MaintenanceConfigurationsClient.CreateOrUpdate
 // method.
 type MaintenanceConfigurationsClientCreateOrUpdateOptions struct {
@@ -100,41 +80,6 @@ type MaintenanceConfigurationsClientListByManagedClusterOptions struct {
 	// placeholder for future optional parameters
 }
 
-// ManagedClusterSnapshotsClientCreateOrUpdateOptions contains the optional parameters for the ManagedClusterSnapshotsClient.CreateOrUpdate
-// method.
-type ManagedClusterSnapshotsClientCreateOrUpdateOptions struct {
-	// placeholder for future optional parameters
-}
-
-// ManagedClusterSnapshotsClientDeleteOptions contains the optional parameters for the ManagedClusterSnapshotsClient.Delete
-// method.
-type ManagedClusterSnapshotsClientDeleteOptions struct {
-	// placeholder for future optional parameters
-}
-
-// ManagedClusterSnapshotsClientGetOptions contains the optional parameters for the ManagedClusterSnapshotsClient.Get method.
-type ManagedClusterSnapshotsClientGetOptions struct {
-	// placeholder for future optional parameters
-}
-
-// ManagedClusterSnapshotsClientListByResourceGroupOptions contains the optional parameters for the ManagedClusterSnapshotsClient.NewListByResourceGroupPager
-// method.
-type ManagedClusterSnapshotsClientListByResourceGroupOptions struct {
-	// placeholder for future optional parameters
-}
-
-// ManagedClusterSnapshotsClientListOptions contains the optional parameters for the ManagedClusterSnapshotsClient.NewListPager
-// method.
-type ManagedClusterSnapshotsClientListOptions struct {
-	// placeholder for future optional parameters
-}
-
-// ManagedClusterSnapshotsClientUpdateTagsOptions contains the optional parameters for the ManagedClusterSnapshotsClient.UpdateTags
-// method.
-type ManagedClusterSnapshotsClientUpdateTagsOptions struct {
-	// placeholder for future optional parameters
-}
-
 // ManagedClustersClientBeginAbortLatestOperationOptions contains the optional parameters for the ManagedClustersClient.BeginAbortLatestOperation
 // method.
 type ManagedClustersClientBeginAbortLatestOperationOptions struct {
@@ -151,9 +96,6 @@ type ManagedClustersClientBeginCreateOrUpdateOptions struct {
 
 // ManagedClustersClientBeginDeleteOptions contains the optional parameters for the ManagedClustersClient.BeginDelete method.
 type ManagedClustersClientBeginDeleteOptions struct {
-	// ignore-pod-disruption-budget=true to delete those pods on a node without considering Pod Disruption Budget
-	IgnorePodDisruptionBudget *bool
-
 	// Resumes the LRO from the provided token.
 	ResumeToken string
 }
@@ -224,12 +166,6 @@ type ManagedClustersClientGetCommandResultOptions struct {
 	// placeholder for future optional parameters
 }
 
-// ManagedClustersClientGetGuardrailsVersionsOptions contains the optional parameters for the ManagedClustersClient.GetGuardrailsVersions
-// method.
-type ManagedClustersClientGetGuardrailsVersionsOptions struct {
-	// placeholder for future optional parameters
-}
-
 // ManagedClustersClientGetMeshRevisionProfileOptions contains the optional parameters for the ManagedClustersClient.GetMeshRevisionProfile
 // method.
 type ManagedClustersClientGetMeshRevisionProfileOptions struct {
@@ -250,12 +186,6 @@ type ManagedClustersClientGetOSOptionsOptions struct {
 
 // ManagedClustersClientGetOptions contains the optional parameters for the ManagedClustersClient.Get method.
 type ManagedClustersClientGetOptions struct {
-	// placeholder for future optional parameters
-}
-
-// ManagedClustersClientGetSafeguardsVersionsOptions contains the optional parameters for the ManagedClustersClient.GetSafeguardsVersions
-// method.
-type ManagedClustersClientGetSafeguardsVersionsOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -297,12 +227,6 @@ type ManagedClustersClientListClusterUserCredentialsOptions struct {
 	ServerFqdn *string
 }
 
-// ManagedClustersClientListGuardrailsVersionsOptions contains the optional parameters for the ManagedClustersClient.NewListGuardrailsVersionsPager
-// method.
-type ManagedClustersClientListGuardrailsVersionsOptions struct {
-	// placeholder for future optional parameters
-}
-
 // ManagedClustersClientListKubernetesVersionsOptions contains the optional parameters for the ManagedClustersClient.ListKubernetesVersions
 // method.
 type ManagedClustersClientListKubernetesVersionsOptions struct {
@@ -329,29 +253,6 @@ type ManagedClustersClientListOptions struct {
 // ManagedClustersClientListOutboundNetworkDependenciesEndpointsOptions contains the optional parameters for the ManagedClustersClient.NewListOutboundNetworkDependenciesEndpointsPager
 // method.
 type ManagedClustersClientListOutboundNetworkDependenciesEndpointsOptions struct {
-	// placeholder for future optional parameters
-}
-
-// ManagedClustersClientListSafeguardsVersionsOptions contains the optional parameters for the ManagedClustersClient.NewListSafeguardsVersionsPager
-// method.
-type ManagedClustersClientListSafeguardsVersionsOptions struct {
-	// placeholder for future optional parameters
-}
-
-// OperationStatusResultClientGetByAgentPoolOptions contains the optional parameters for the OperationStatusResultClient.GetByAgentPool
-// method.
-type OperationStatusResultClientGetByAgentPoolOptions struct {
-	// placeholder for future optional parameters
-}
-
-// OperationStatusResultClientGetOptions contains the optional parameters for the OperationStatusResultClient.Get method.
-type OperationStatusResultClientGetOptions struct {
-	// placeholder for future optional parameters
-}
-
-// OperationStatusResultClientListOptions contains the optional parameters for the OperationStatusResultClient.NewListPager
-// method.
-type OperationStatusResultClientListOptions struct {
 	// placeholder for future optional parameters
 }
 
