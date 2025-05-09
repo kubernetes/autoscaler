@@ -28,6 +28,7 @@ We use the issue to communicate what is state of the release.
    To see what code was actually tested, look for `===== last commit =====`
    entries in the full `build-log.txt` of a given test run.
 3. [ ] Make sure the end to end VPA tests are green.
+4. [ ] Make sure the [continuous image builds](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-images) are green.
 
 ### New minor release
 
@@ -45,6 +46,46 @@ We use the issue to communicate what is state of the release.
     Create a commit and merge by making a PR to the `vpa-release-1.${minor}` branch.
 
 ## Build and stage images
+
+Select either the Automatic and Manual process below.
+
+### Option 1: (Preferred) Automatic
+
+NOTE: Currently this process can only be used for new minor releases. Patch
+releases need to follow the manual process below.
+
+Images are continuously built as part of the PR release process and are listed
+in the following repository:
+[gcr.io/k8s-staging-autoscaling](http://gcr.io/k8s-staging-autoscaling). Also
+see the
+[dashboard](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-images)
+for build status.
+
+To stage an image:
+
+1. Pick an image to promote from the latest automatically built images in the
+repository. Make note of the automatically generated tag (the tag will contain
+the date, the name of the latest tag in the repository and a commit hash). For
+example `v20250430-cluster-autoscaler-chart-9.46.6-81-g6a6a912b4`.
+
+2. Set the `BUILD_TAG` variable to this tag in your shell:
+
+```sh
+BUILD_TAG=<tag>
+```
+
+3. Now tag this image with the latest version tag:
+
+```sh
+cd vertical-pod-autoscaler/
+TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
+echo "Adding tag $TAG based on built tag $BUILD_TAG"
+gcloud artifacts docker tags add gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$TAG --project=k8s-staging-autoscaling
+gcloud artifacts docker tags add gcr.io/k8s-staging-autoscaling/vpa-recommender:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-recommender:$TAG --project=k8s-staging-autoscaling
+gcloud artifacts docker tags add gcr.io/k8s-staging-autoscaling/vpa-updater:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-updater:$TAG --project=k8s-staging-autoscaling
+```
+
+### Option 2: Manual
 
 Create a fresh clone of the repo and switch to the `vpa-release-1.${minor}`
 branch. This makes sure you have no local changes while building the images.
