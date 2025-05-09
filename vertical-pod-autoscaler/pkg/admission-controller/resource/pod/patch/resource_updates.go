@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
@@ -46,6 +45,10 @@ func NewResourceUpdatesCalculator(recommendationProvider recommendation.Provider
 	return &resourcesUpdatesPatchCalculator{
 		recommendationProvider: recommendationProvider,
 	}
+}
+
+func (*resourcesUpdatesPatchCalculator) PatchResourceTarget() PatchResourceTarget {
+	return Pod
 }
 
 func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
@@ -79,7 +82,7 @@ func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_uti
 	// Add empty resources object if missing.
 	requests, limits := resourcehelpers.ContainerRequestsAndLimits(pod.Spec.Containers[i].Name, pod)
 	if limits == nil && requests == nil {
-		patches = append(patches, getPatchInitializingEmptyResources(i))
+		patches = append(patches, GetPatchInitializingEmptyResources(i))
 	}
 
 	annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
@@ -97,34 +100,11 @@ func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_uti
 func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annotations []string, current core.ResourceList, containerIndex int, resources core.ResourceList, fieldName, resourceName string) ([]resource_admission.PatchRecord, []string) {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
-		patches = append(patches, getPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
+		patches = append(patches, GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
 	}
 	for resource, request := range resources {
-		patches = append(patches, getAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
+		patches = append(patches, GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
 		annotations = append(annotations, fmt.Sprintf("%s %s", resource, resourceName))
 	}
 	return patches, annotations
-}
-
-func getAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
-	return resource_admission.PatchRecord{
-		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
-		Value: quantity.String()}
-}
-
-func getPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
-	return resource_admission.PatchRecord{
-		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
-		Value: core.ResourceRequirements{},
-	}
-}
-
-func getPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_admission.PatchRecord {
-	return resource_admission.PatchRecord{
-		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
-		Value: core.ResourceList{},
-	}
 }

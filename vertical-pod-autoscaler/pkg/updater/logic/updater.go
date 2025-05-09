@@ -31,6 +31,8 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+
 	corescheme "k8s.io/client-go/kubernetes/scheme"
 	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -38,14 +40,16 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
+	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -61,11 +65,12 @@ type updater struct {
 	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
 	podLister                    v1lister.PodLister
 	eventRecorder                record.EventRecorder
-	evictionFactory              eviction.PodsEvictionRestrictionFactory
+	restrictionFactory           restriction.PodsRestrictionFactory
 	recommendationProcessor      vpa_api_util.RecommendationProcessor
 	evictionAdmission            priority.PodEvictionAdmission
 	priorityProcessor            priority.PriorityProcessor
 	evictionRateLimiter          *rate.Limiter
+	inPlaceRateLimiter           *rate.Limiter
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
@@ -77,7 +82,7 @@ type updater struct {
 func NewUpdater(
 	kubeClient kube_client.Interface,
 	vpaClient *vpa_clientset.Clientset,
-	minReplicasForEvicition int,
+	minReplicasForEviction int,
 	evictionRateLimit float64,
 	evictionRateBurst int,
 	evictionToleranceFraction float64,
@@ -90,19 +95,29 @@ func NewUpdater(
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
 	ignoredNamespaces []string,
+	patchCalculators []patch.Calculator,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
-	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
+	// TODO: Create in-place rate limits for the in-place rate limiter
+	inPlaceRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
+	factory, err := restriction.NewPodsRestrictionFactory(
+		kubeClient,
+		minReplicasForEviction,
+		evictionToleranceFraction,
+		patchCalculators,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create eviction restriction factory: %v", err)
+		return nil, fmt.Errorf("Failed to create restriction factory: %v", err)
 	}
+
 	return &updater{
 		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
 		podLister:                    newPodLister(kubeClient, namespace),
 		eventRecorder:                newEventRecorder(kubeClient),
-		evictionFactory:              factory,
+		restrictionFactory:           factory,
 		recommendationProcessor:      recommendationProcessor,
 		evictionRateLimiter:          evictionRateLimiter,
+		inPlaceRateLimiter:           inPlaceRateLimiter,
 		evictionAdmission:            evictionAdmission,
 		priorityProcessor:            priorityProcessor,
 		selectorFetcher:              selectorFetcher,
@@ -149,8 +164,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 			continue
 		}
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
-			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto {
-			klog.V(3).InfoS("Skipping VPA object because its mode is not \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
+			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
+			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
@@ -198,32 +213,89 @@ func (u *updater) RunOnce(ctx context.Context) {
 	// wrappers for metrics which are computed every loop run
 	controlledPodsCounter := metrics_updater.NewControlledPodsCounter()
 	evictablePodsCounter := metrics_updater.NewEvictablePodsCounter()
+	inPlaceUpdatablePodsCounter := metrics_updater.NewInPlaceUpdtateablePodsCounter()
 	vpasWithEvictablePodsCounter := metrics_updater.NewVpasWithEvictablePodsCounter()
 	vpasWithEvictedPodsCounter := metrics_updater.NewVpasWithEvictedPodsCounter()
+
+	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdtateablePodsCounter()
+	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdtatedPodsCounter()
 
 	// using defer to protect against 'return' after evictionRateLimiter.Wait
 	defer controlledPodsCounter.Observe()
 	defer evictablePodsCounter.Observe()
 	defer vpasWithEvictablePodsCounter.Observe()
 	defer vpasWithEvictedPodsCounter.Observe()
+	// separate counters for in-place
+	defer inPlaceUpdatablePodsCounter.Observe()
+	defer vpasWithInPlaceUpdatablePodsCounter.Observe()
+	defer vpasWithInPlaceUpdatedPodsCounter.Observe()
 
 	// NOTE: this loop assumes that controlledPods are filtered
-	// to contain only Pods controlled by a VPA in auto or recreate mode
+	// to contain only Pods controlled by a VPA in auto, recreate, or inPlaceOrRecreate mode
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
 		controlledPodsCounter.Add(vpaSize, vpaSize)
-		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods, vpa)
-		podsForUpdate := u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
-		evictablePodsCounter.Add(vpaSize, len(podsForUpdate))
+		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := u.restrictionFactory.GetCreatorMaps(livePods, vpa)
+		if err != nil {
+			klog.ErrorS(err, "Failed to get creator maps")
+			continue
+		}
 
+		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+		inPlaceLimiter := u.restrictionFactory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+		podsForInPlace := make([]*apiv1.Pod, 0)
+		podsForEviction := make([]*apiv1.Pod, 0)
+		updateMode := vpa_api_util.GetUpdateMode(vpa)
+
+		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && features.Enabled(features.InPlaceOrRecreate) {
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
+			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
+		} else {
+			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
+			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
+				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
+			}
+			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
+			evictablePodsCounter.Add(vpaSize, len(podsForEviction))
+		}
+
+		withInPlaceUpdatable := false
+		withInPlaceUpdated := false
 		withEvictable := false
 		withEvicted := false
-		for _, pod := range podsForUpdate {
+
+		for _, pod := range podsForInPlace {
+			withInPlaceUpdatable = true
+			decision := inPlaceLimiter.CanInPlaceUpdate(pod)
+
+			if decision == utils.InPlaceDeferred {
+				klog.V(0).InfoS("In-place update deferred", "pod", klog.KObj(pod))
+				continue
+			} else if decision == utils.InPlaceEvict {
+				podsForEviction = append(podsForEviction, pod)
+				continue
+			}
+			err = u.inPlaceRateLimiter.Wait(ctx)
+			if err != nil {
+				klog.V(0).InfoS("In-place rate limiter wait failed for in-place resize", "error", err)
+				return
+			}
+			err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
+			if err != nil {
+				klog.V(0).InfoS("In-place update failed", "error", err, "pod", klog.KObj(pod))
+				continue
+			}
+			withInPlaceUpdated = true
+			metrics_updater.AddInPlaceUpdatedPod(vpaSize)
+		}
+
+		for _, pod := range podsForEviction {
 			withEvictable = true
 			if !evictionLimiter.CanEvict(pod) {
 				continue
 			}
-			err := u.evictionRateLimiter.Wait(ctx)
+			err = u.evictionRateLimiter.Wait(ctx)
 			if err != nil {
 				klog.V(0).InfoS("Eviction rate limiter wait failed", "error", err)
 				return
@@ -238,6 +310,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 			}
 		}
 
+		if withInPlaceUpdatable {
+			vpasWithInPlaceUpdatablePodsCounter.Add(vpaSize, 1)
+		}
+		if withInPlaceUpdated {
+			vpasWithInPlaceUpdatedPodsCounter.Add(vpaSize, 1)
+		}
 		if withEvictable {
 			vpasWithEvictablePodsCounter.Add(vpaSize, 1)
 		}
@@ -248,17 +326,17 @@ func (u *updater) RunOnce(ctx context.Context) {
 	timer.ObserveStep("EvictPods")
 }
 
-func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate.Limiter {
-	var evictionRateLimiter *rate.Limiter
-	if evictionRateLimit <= 0 {
+func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
+	var rateLimiter *rate.Limiter
+	if rateLimit <= 0 {
 		// As a special case if the rate is set to rate.Inf, the burst rate is ignored
 		// see https://github.com/golang/time/blob/master/rate/rate.go#L37
-		evictionRateLimiter = rate.NewLimiter(rate.Inf, 0)
+		rateLimiter = rate.NewLimiter(rate.Inf, 0)
 		klog.V(1).InfoS("Rate limit disabled")
 	} else {
-		evictionRateLimiter = rate.NewLimiter(rate.Limit(evictionRateLimit), evictionRateLimitBurst)
+		rateLimiter = rate.NewLimiter(rate.Limit(rateLimit), rateLimitBurst)
 	}
-	return evictionRateLimiter
+	return rateLimiter
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
@@ -276,24 +354,30 @@ func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalP
 	return priorityCalculator.GetSortedPods(u.evictionAdmission)
 }
 
-func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriction eviction.PodsEvictionRestriction) []*apiv1.Pod {
+func filterPods(pods []*apiv1.Pod, predicate func(*apiv1.Pod) bool) []*apiv1.Pod {
 	result := make([]*apiv1.Pod, 0)
 	for _, pod := range pods {
-		if evictionRestriction.CanEvict(pod) {
+		if predicate(pod) {
 			result = append(result, pod)
 		}
 	}
 	return result
 }
 
+func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction) []*apiv1.Pod {
+	return filterPods(pods, func(pod *apiv1.Pod) bool {
+		return inplaceRestriction.CanInPlaceUpdate(pod) != utils.InPlaceDeferred
+	})
+}
+
+func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriction restriction.PodsEvictionRestriction) []*apiv1.Pod {
+	return filterPods(pods, evictionRestriction.CanEvict)
+}
+
 func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
-	result := make([]*apiv1.Pod, 0)
-	for _, pod := range pods {
-		if pod.DeletionTimestamp == nil {
-			result = append(result, pod)
-		}
-	}
-	return result
+	return filterPods(pods, func(pod *apiv1.Pod) bool {
+		return pod.DeletionTimestamp == nil
+	})
 }
 
 func newPodLister(kubeClient kube_client.Interface, namespace string) v1lister.PodLister {

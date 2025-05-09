@@ -40,6 +40,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
@@ -131,6 +132,8 @@ func main() {
 
 	leaderElection := defaultLeaderElectionConfiguration()
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
+	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
 
 	kube_flag.InitFlags()
 	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion(), "recommenderName", *recommenderName)

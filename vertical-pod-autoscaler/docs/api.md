@@ -155,7 +155,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `updateMode` _[UpdateMode](#updatemode)_ | Controls when autoscaler applies changes to the pod resources.<br />The default is 'Auto'. |  | Enum: [Off Initial Recreate Auto] <br /> |
+| `updateMode` _[UpdateMode](#updatemode)_ | Controls when autoscaler applies changes to the pod resources.<br />The default is 'Auto'. |  | Enum: [Off Initial Recreate InPlaceOrRecreate Auto] <br /> |
 | `minReplicas` _integer_ | Minimal number of replicas which need to be alive for Updater to attempt<br />pod eviction (pending other checks like PDB). Only positive values are<br />allowed. Overrides global '--min-replicas' flag. |  |  |
 | `evictionRequirements` _[EvictionRequirement](#evictionrequirement) array_ | EvictionRequirements is a list of EvictionRequirements that need to<br />evaluate to true in order for a Pod to be evicted. If more than one<br />EvictionRequirement is specified, all of them need to be fulfilled to allow eviction. |  |  |
 
@@ -208,7 +208,7 @@ _Underlying type:_ _string_
 UpdateMode controls when autoscaler applies changes to the pod resources.
 
 _Validation:_
-- Enum: [Off Initial Recreate Auto]
+- Enum: [Off Initial Recreate InPlaceOrRecreate Auto]
 
 _Appears in:_
 - [PodUpdatePolicy](#podupdatepolicy)
@@ -218,7 +218,8 @@ _Appears in:_
 | `Off` | UpdateModeOff means that autoscaler never changes Pod resources.<br />The recommender still sets the recommended resources in the<br />VerticalPodAutoscaler object. This can be used for a "dry run".<br /> |
 | `Initial` | UpdateModeInitial means that autoscaler only assigns resources on pod<br />creation and does not change them during the lifetime of the pod.<br /> |
 | `Recreate` | UpdateModeRecreate means that autoscaler assigns resources on pod<br />creation and additionally can update them during the lifetime of the<br />pod by deleting and recreating the pod.<br /> |
-| `Auto` | UpdateModeAuto means that autoscaler assigns resources on pod creation<br />and additionally can update them during the lifetime of the pod,<br />using any available update method. Currently this is equivalent to<br />Recreate, which is the only available update method.<br /> |
+| `Auto` | UpdateModeAuto means that autoscaler assigns resources on pod creation<br />and additionally can update them during the lifetime of the pod,<br />using any available update method. Currently this is equivalent to<br />Recreate.<br /> |
+| `InPlaceOrRecreate` | UpdateModeInPlaceOrRecreate means that autoscaler tries to assign resources in-place.<br />If this is not possible (e.g., resizing takes too long or is infeasible), it falls back to the<br />"Recreate" update mode.<br />Requires VPA level feature gate "InPlaceOrRecreate" to be enabled<br />on the admission and updater pods.<br />Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.<br /> |
 
 
 #### VerticalPodAutoscaler
