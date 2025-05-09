@@ -342,12 +342,23 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			vpa:               getIPORVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:                  generatePod().WithResizeStatus(apiv1.PodResizeStatusInfeasible).Get(),
+					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+						{
+							Type:   apiv1.PodResizePending,
+							Status: apiv1.ConditionTrue,
+							Reason: apiv1.PodReasonInfeasible,
+						},
+					}).Get(),
 					canInPlaceUpdate:     utils.InPlaceEvict,
 					inPlaceUpdateSuccess: false,
 				},
 				{
-					pod:                  generatePod().WithResizeStatus(apiv1.PodResizeStatusInProgress).Get(),
+					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+						{
+							Type:   apiv1.PodResizeInProgress,
+							Status: apiv1.ConditionTrue,
+						},
+					}).Get(),
 					canInPlaceUpdate:     utils.InPlaceDeferred,
 					inPlaceUpdateSuccess: false,
 				},
@@ -400,12 +411,24 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().WithResizeStatus(apiv1.PodResizeStatusInfeasible).Get(),
+					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+						{
+							Type:   apiv1.PodResizePending,
+							Status: apiv1.ConditionTrue,
+							Reason: apiv1.PodReasonInfeasible,
+						},
+					}).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().WithResizeStatus(apiv1.PodResizeStatusInfeasible).Get(),
+					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+						{
+							Type:   apiv1.PodResizePending,
+							Status: apiv1.ConditionTrue,
+							Reason: apiv1.PodReasonInfeasible,
+						},
+					}).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
@@ -423,7 +446,13 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().WithResizeStatus(apiv1.PodResizeStatusInfeasible).Get(),
+					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+						{
+							Type:   apiv1.PodResizePending,
+							Status: apiv1.ConditionTrue,
+							Reason: apiv1.PodReasonInfeasible,
+						},
+					}).Get(),
 					canEvict:        false,
 					evictionSuccess: false,
 				},
@@ -446,7 +475,13 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().WithResizeStatus(apiv1.PodResizeStatusInfeasible).Get(),
+					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+						{
+							Type:   apiv1.PodResizePending,
+							Status: apiv1.ConditionTrue,
+							Reason: apiv1.PodReasonInfeasible,
+						},
+					}).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
@@ -477,25 +512,25 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			updateMode := vpa_api_util.GetUpdateMode(testCase.vpa)
 			for i, p := range testCase.pods {
 				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
-					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod), "TC %v - unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
+					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod), "unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
 				} else {
-					assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", testCase.name, i, p.pod)
+					assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "unexpected CanEvict result for pod-%v %#v", i, p.pod)
 				}
 			}
 			for i, p := range testCase.pods {
 				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
 					err := inplace.InPlaceUpdate(p.pod, testCase.vpa, test.FakeEventRecorder())
 					if p.inPlaceUpdateSuccess {
-						assert.NoErrorf(t, err, "TC %v - unexpected InPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
+						assert.NoErrorf(t, err, "unexpected InPlaceUpdate result for pod-%v %#v", i, p.pod)
 					} else {
-						assert.Errorf(t, err, "TC %v - unexpected InPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
+						assert.Errorf(t, err, "unexpected InPlaceUpdate result for pod-%v %#v", i, p.pod)
 					}
 				} else {
 					err := eviction.Evict(p.pod, testCase.vpa, test.FakeEventRecorder())
 					if p.evictionSuccess {
-						assert.NoErrorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", testCase.name, i, p.pod)
+						assert.NoErrorf(t, err, "unexpected Evict result for pod-%v %#v", i, p.pod)
 					} else {
-						assert.Errorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", testCase.name, i, p.pod)
+						assert.Errorf(t, err, "unexpected Evict result for pod-%v %#v", i, p.pod)
 					}
 				}
 			}

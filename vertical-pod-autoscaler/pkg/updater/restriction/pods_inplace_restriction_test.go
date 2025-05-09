@@ -113,7 +113,13 @@ func TestCanInPlaceUpdate(t *testing.T) {
 		{
 			name: "CanInPlaceUpdate=InPlaceDeferred - resize Deferred, conditions not met to fallback",
 			pods: []*apiv1.Pod{
-				generatePod().WithResizeStatus(apiv1.PodResizeStatusDeferred).Get(),
+				generatePod().WithPodConditions([]apiv1.PodCondition{
+					{
+						Type:   apiv1.PodResizePending,
+						Status: apiv1.ConditionTrue,
+						Reason: apiv1.PodReasonDeferred,
+					},
+				}).Get(),
 				generatePod().Get(),
 				generatePod().Get(),
 			},
@@ -125,7 +131,12 @@ func TestCanInPlaceUpdate(t *testing.T) {
 		{
 			name: ("CanInPlaceUpdate=InPlaceEvict - resize inProgress for more too long"),
 			pods: []*apiv1.Pod{
-				generatePod().WithResizeStatus(apiv1.PodResizeStatusInProgress).Get(),
+				generatePod().WithPodConditions([]apiv1.PodCondition{
+					{
+						Type:   apiv1.PodResizeInProgress,
+						Status: apiv1.ConditionTrue,
+					},
+				}).Get(),
 				generatePod().Get(),
 				generatePod().Get(),
 			},
@@ -137,7 +148,12 @@ func TestCanInPlaceUpdate(t *testing.T) {
 		{
 			name: "CanInPlaceUpdate=InPlaceDeferred - resize InProgress, conditions not met to fallback",
 			pods: []*apiv1.Pod{
-				generatePod().WithResizeStatus(apiv1.PodResizeStatusInProgress).Get(),
+				generatePod().WithPodConditions([]apiv1.PodCondition{
+					{
+						Type:   apiv1.PodResizeInProgress,
+						Status: apiv1.ConditionTrue,
+					},
+				}).Get(),
 				generatePod().Get(),
 				generatePod().Get(),
 			},
@@ -149,7 +165,13 @@ func TestCanInPlaceUpdate(t *testing.T) {
 		{
 			name: "CanInPlaceUpdate=InPlaceEvict - infeasible",
 			pods: []*apiv1.Pod{
-				generatePod().WithResizeStatus(apiv1.PodResizeStatusInfeasible).Get(),
+				generatePod().WithPodConditions([]apiv1.PodCondition{
+					{
+						Type:   apiv1.PodResizePending,
+						Status: apiv1.ConditionTrue,
+						Reason: apiv1.PodReasonInfeasible,
+					},
+				}).Get(),
 				generatePod().Get(),
 				generatePod().Get(),
 			},

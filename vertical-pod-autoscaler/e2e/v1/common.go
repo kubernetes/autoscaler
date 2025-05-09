@@ -563,6 +563,7 @@ func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimi
 
 // WaitForPodsUpdatedWithoutEviction waits for pods to be updated without any evictions taking place over the polling
 // interval.
+// TODO: Use events to track in-place resizes instead of polling when ready: https://github.com/kubernetes/kubernetes/issues/127172
 func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv1.PodList) error {
 	framework.Logf("waiting for at least one pod to be updated without eviction")
 	err := wait.PollUntilContextTimeout(context.TODO(), pollInterval, VpaInPlaceTimeout, false, func(context.Context) (bool, error) {
@@ -617,18 +618,6 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 // Use this in a "beforeEach" call before any suites that use InPlaceOrRecreate featuregate.
 func checkInPlaceOrRecreateTestsEnabled(f *framework.Framework, checkAdmission, checkUpdater bool) {
 	ginkgo.By("Checking InPlacePodVerticalScaling cluster feature gate is on")
-
-	podList, err := f.ClientSet.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{
-		LabelSelector: "component=kube-apiserver",
-	})
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	apiServerPod := podList.Items[0]
-	gomega.Expect(apiServerPod.Spec.Containers).To(gomega.HaveLen(1))
-	apiServerContainer := apiServerPod.Spec.Containers[0]
-	gomega.Expect(apiServerContainer.Name).To(gomega.Equal("kube-apiserver"))
-	if !anyContainsSubstring(apiServerContainer.Command, "InPlacePodVerticalScaling=true") {
-		ginkgo.Skip("Skipping suite: InPlacePodVerticalScaling feature gate is not enabled on the cluster level")
-	}
 
 	if checkUpdater {
 		ginkgo.By("Checking InPlaceOrRecreate VPA feature gate is enabled for updater")

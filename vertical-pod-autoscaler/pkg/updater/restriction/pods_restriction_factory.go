@@ -348,5 +348,10 @@ func (s *singleGroupStats) isPodDisruptable() bool {
 
 // isInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update
 func isInPlaceUpdating(podToCheck *apiv1.Pod) bool {
-	return podToCheck.Status.Resize != ""
+	for _, c := range podToCheck.Status.Conditions {
+		if c.Type == apiv1.PodResizePending || c.Type == apiv1.PodResizeInProgress {
+			return c.Status == apiv1.ConditionTrue
+		}
+	}
+	return false
 }

@@ -188,28 +188,40 @@ func CanEvictInPlacingPod(pod *apiv1.Pod, singleGroupStats singleGroupStats, las
 	}
 
 	if singleGroupStats.isPodDisruptable() {
-		// TODO(maxcao13): fix this after 1.33 KEP changes
 		// if currently inPlaceUpdating, we should only fallback to eviction if the update has failed. i.e: one of the following conditions:
-		// 1. .status.resize: Infeasible
-		// 2. .status.resize: Deferred + more than 5 minutes has elapsed since the lastInPlaceUpdateTime
-		// 3. .status.resize: InProgress + more than 1 hour has elapsed since the lastInPlaceUpdateTime
-		switch pod.Status.Resize {
-		case apiv1.PodResizeStatusDeferred:
-			if clock.Since(lastUpdate) > DeferredResizeUpdateTimeout {
-				klog.V(4).InfoS(fmt.Sprintf("In-place update deferred for more than %v, falling back to eviction", DeferredResizeUpdateTimeout), "pod", klog.KObj(pod))
+		// - Infeasible
+		// - Deferred + more than 5 minutes has elapsed since the lastInPlaceUpdateTime
+		// - InProgress + more than 1 hour has elapsed since the lastInPlaceUpdateTime
+		resizePendingCondition, ok := utils.GetPodCondition(pod, apiv1.PodResizePending)
+		if ok {
+			if resizePendingCondition.Reason == apiv1.PodReasonDeferred {
+				if clock.Since(lastUpdate) > DeferredResizeUpdateTimeout {
+					klog.V(4).InfoS(fmt.Sprintf("In-place update deferred for more than %v, falling back to eviction", DeferredResizeUpdateTimeout), "pod", klog.KObj(pod))
+					return true
+				}
+			} else if resizePendingCondition.Reason == apiv1.PodReasonInfeasible {
+				klog.V(4).InfoS("In-place update infeasible, falling back to eviction", "pod", klog.KObj(pod))
+				return true
+			} else {
+				klog.V(4).InfoS("In-place update condition unknown, falling back to eviction", "pod", klog.KObj(pod), "condition", resizePendingCondition)
 				return true
 			}
-		case apiv1.PodResizeStatusInProgress:
-			if clock.Since(lastUpdate) > InProgressResizeUpdateTimeout {
-				klog.V(4).InfoS(fmt.Sprintf("In-place update in progress for more than %v, falling back to eviction", InProgressResizeUpdateTimeout), "pod", klog.KObj(pod))
-				return true
+		} else {
+			resizeInProgressCondition, ok := utils.GetPodCondition(pod, apiv1.PodResizeInProgress)
+			if ok {
+				if resizeInProgressCondition.Reason == "" && resizeInProgressCondition.Message == "" {
+					if clock.Since(lastUpdate) > InProgressResizeUpdateTimeout {
+						klog.V(4).InfoS(fmt.Sprintf("In-place update in progress for more than %v, falling back to eviction", InProgressResizeUpdateTimeout), "pod", klog.KObj(pod))
+						return true
+					}
+				} else if resizeInProgressCondition.Reason == apiv1.PodReasonError {
+					klog.V(4).InfoS("In-place update error, falling back to eviction", "pod", klog.KObj(pod), "message", resizeInProgressCondition.Message)
+					return true
+				} else {
+					klog.V(4).InfoS("In-place update condition unknown, falling back to eviction", "pod", klog.KObj(pod), "condition", resizeInProgressCondition)
+					return true
+				}
 			}
-		case apiv1.PodResizeStatusInfeasible:
-			klog.V(4).InfoS("In-place update infeasible, falling back to eviction", "pod", klog.KObj(pod))
-			return true
-		default:
-			klog.V(4).InfoS("In-place update status unknown, falling back to eviction", "pod", klog.KObj(pod))
-			return true
 		}
 		return false
 	}

@@ -36,6 +36,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	updaterutils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -252,8 +253,11 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 				return err
 			}
 			for _, pod := range updatedPodList.Items {
-				if pod.Status.Resize == apiv1.PodResizeStatusDeferred {
-					return nil
+				cond, ok := updaterutils.GetPodCondition(&pod, apiv1.PodResizePending)
+				if ok {
+					if cond.Reason == apiv1.PodReasonDeferred && cond.Status == apiv1.ConditionTrue {
+						return nil
+					}
 				}
 			}
 			return fmt.Errorf("status not deferred")
