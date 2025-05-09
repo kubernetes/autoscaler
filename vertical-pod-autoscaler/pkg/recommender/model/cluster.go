@@ -60,6 +60,7 @@ type ClusterState interface {
 	SetObservedVPAs([]*vpa_types.VerticalPodAutoscaler)
 	ObservedVPAs() []*vpa_types.VerticalPodAutoscaler
 	Pods() map[PodID]*PodState
+	SetVPAContainersPerPod(pod *PodState, addPodToItsVpa bool)
 }
 
 type clusterState struct {
@@ -154,29 +155,46 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 	}
 
 	newlabelSetKey := cluster.getLabelSetKey(newLabels)
-	if podExists && pod.labelSetKey != newlabelSetKey {
-		// This Pod is already counted in the old VPA, remove the link.
-		cluster.removePodFromItsVpa(pod)
-	}
 	if !podExists || pod.labelSetKey != newlabelSetKey {
+		if podExists {
+			// This Pod is already counted in the old VPA, remove the link.
+			cluster.removePodFromItsVpa(pod)
+		}
 		pod.labelSetKey = newlabelSetKey
 		// Set the links between the containers and aggregations based on the current pod labels.
 		for containerName, container := range pod.Containers {
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
-
-		cluster.addPodToItsVpa(pod)
+		cluster.SetVPAContainersPerPod(pod, true)
+	} else if len(pod.Containers) > 1 {
+		// Tally the number of containers for later when we're averaging the recommendations if there's more than one container
+		cluster.SetVPAContainersPerPod(pod, false)
 	}
 	pod.Phase = phase
 }
 
-// addPodToItsVpa increases the count of Pods associated with a VPA object.
-// Does a scan similar to findOrCreateAggregateContainerState so could be optimized if needed.
-func (cluster *clusterState) addPodToItsVpa(pod *PodState) {
+// SetVPAContainersPerPod sets the number of containers per pod seen for pods connected to this VPA
+// so that later when we're splitting the minimum recommendations over containers,  we're splitting them over
+// the correct number and not just the number of aggregates that have *ever* been present. (We don't want minimum resources
+// to erroneously shrink, either)
+// If addPodToItsVpa is true, it also increments the pod count for the VPA.
+// TODO: Instead of looping over all VPAs, we should implement a VPA to pod map and manage the state and trade memory for time.
+// This would help speed up other functions as well such as removePodFromItsVpa, GetMatchingPods, etc.
+func (cluster *clusterState) SetVPAContainersPerPod(pod *PodState, addPodToItsVpa bool) {
+	if !addPodToItsVpa && len(pod.Containers) <= 1 {
+		return
+	}
 	for _, vpa := range cluster.vpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
-			vpa.PodCount++
+			// We want the "high water mark" of the most containers in the pod in the event
+			// that we're rolling out a pod that has an additional container
+			if len(pod.Containers) > vpa.ContainersPerPod {
+				vpa.ContainersPerPod = len(pod.Containers)
+			}
+			if addPodToItsVpa {
+				vpa.PodCount++
+			}
 		}
 	}
 }
@@ -221,12 +239,16 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	if !podExists {
 		return NewKeyError(containerID.PodID)
 	}
+	aggregateState := cluster.findOrCreateAggregateContainerState(containerID)
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
-		cluster.findOrCreateAggregateContainerState(containerID)
 		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
+		// Mark this container as still managed so the aggregates don't get pruned
+		aggregateState.IsUnderVPA = true
+		// Update the last update time so we potentially don't prune it too soon
+		aggregateState.LastUpdateTime = time.Now()
 	}
 	return nil
 }
@@ -283,22 +305,41 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 
 	vpa, vpaExists := cluster.vpas[vpaID]
-	if vpaExists && (vpa.PodSelector.String() != selector.String()) {
-		// Pod selector was changed. Delete the VPA object and recreate
-		// it with the new selector.
-		if err := cluster.DeleteVpa(vpaID); err != nil {
-			return err
+	if vpaExists {
+		if vpa.PodSelector.String() != selector.String() {
+			// Pod selector was changed. Delete the VPA object and recreate
+			// it with the new selector.
+			if err := cluster.DeleteVpa(vpaID); err != nil {
+				return err
+			}
+			vpaExists = false
+		} else {
+			// Always update the pruningGracePeriod to ensure a potential new grace period is applied.
+			// This prevents an old, excessively long grace period from persisting and
+			// potentially causing the VPA to keep stale aggregates with an outdated grace period.
+			vpa.PruningGracePeriod = vpa_utils.ParsePruningGracePeriodFromAnnotations(annotationsMap)
+			for _, containerState := range vpa.AggregateContainerStates() {
+				containerState.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
+			}
+			for _, containerState := range vpa.ContainersInitialAggregateState {
+				containerState.UpdatePruningGracePeriod(vpa.PruningGracePeriod)
+			}
 		}
-		vpaExists = false
 	}
 	if !vpaExists {
 		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
+		vpa.PruningGracePeriod = vpa_utils.ParsePruningGracePeriodFromAnnotations(annotationsMap)
 		cluster.vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
 		}
 		vpa.PodCount = len(cluster.GetMatchingPods(vpa))
+		klog.V(3).InfoS("Created a new VPA in the cluster state", "vpa", vpaID)
 	}
+
+	// Default this to the minimum, we will tally the true number when we load the pods later.
+	// Note; this depends on the order the updater currently loads things in, but that might not be the case someday.
+	vpa.ContainersPerPod = 1
 	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Annotations = annotationsMap
 	vpa.Conditions = conditionsMap

@@ -435,6 +435,98 @@ func TestDeleteAggregation(t *testing.T) {
 	}
 }
 
+func TestDeleteAllAggregatesByContainerName(t *testing.T) {
+	cases := []struct {
+		name                          string
+		toDelete                      string
+		aggregateContainerStates      aggregateContainerStatesMap
+		initialContainerAggregates    ContainerNameToAggregateStateMap
+		expectedAggregatesLeft        int
+		expectedInitialAggregatesLeft int
+	}{
+		{
+			name:     "Deletes all aggregates since it's the only container name",
+			toDelete: "container",
+			aggregateContainerStates: aggregateContainerStatesMap{
+				aggregateStateKey{
+					namespace:     "ns",
+					containerName: "container",
+					labelSetKey:   "labelSetKey",
+					labelSetMap:   nil,
+				}: &AggregateContainerState{},
+				aggregateStateKey{
+					namespace:     "ns",
+					containerName: "container",
+					labelSetKey:   "labelSetKey2",
+					labelSetMap:   nil,
+				}: &AggregateContainerState{},
+			},
+			initialContainerAggregates: ContainerNameToAggregateStateMap{
+				"container": &AggregateContainerState{},
+			},
+			expectedAggregatesLeft:        0,
+			expectedInitialAggregatesLeft: 0,
+		},
+		{
+			name:     "Deletes only the aggregates with the specified container name",
+			toDelete: "container",
+			aggregateContainerStates: aggregateContainerStatesMap{
+				aggregateStateKey{
+					namespace:     "ns",
+					containerName: "container",
+					labelSetKey:   "labelSetKey",
+					labelSetMap:   nil,
+				}: &AggregateContainerState{},
+				aggregateStateKey{
+					namespace:     "ns",
+					containerName: "container2",
+					labelSetKey:   "labelSetKey2",
+					labelSetMap:   nil,
+				}: &AggregateContainerState{},
+			},
+			initialContainerAggregates: ContainerNameToAggregateStateMap{
+				"container":  &AggregateContainerState{},
+				"container2": &AggregateContainerState{},
+			},
+			expectedAggregatesLeft:        1,
+			expectedInitialAggregatesLeft: 1,
+		},
+		{
+			name:     "Deletes none of the aggregates since the container name doesn't match",
+			toDelete: "nonexistent",
+			aggregateContainerStates: aggregateContainerStatesMap{
+				aggregateStateKey{
+					namespace:     "ns",
+					containerName: "container",
+					labelSetKey:   "labelSetKey",
+					labelSetMap:   nil,
+				}: &AggregateContainerState{},
+				aggregateStateKey{
+					namespace:     "ns",
+					containerName: "container2",
+					labelSetKey:   "labelSetKey2",
+					labelSetMap:   nil,
+				}: &AggregateContainerState{},
+			},
+			initialContainerAggregates: ContainerNameToAggregateStateMap{
+				"container":  &AggregateContainerState{},
+				"container2": &AggregateContainerState{},
+			},
+			expectedAggregatesLeft:        2,
+			expectedInitialAggregatesLeft: 2,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			vpa := Vpa{
+				aggregateContainerStates: tc.aggregateContainerStates,
+			}
+			vpa.DeleteAllAggregatesByContainerName(tc.toDelete)
+			assert.Equal(t, tc.expectedAggregatesLeft, len(vpa.aggregateContainerStates))
+		})
+	}
+}
+
 func TestSetResourcePolicy(t *testing.T) {
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff

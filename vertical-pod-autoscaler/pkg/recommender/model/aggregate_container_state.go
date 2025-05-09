@@ -36,6 +36,7 @@ limitations under the License.
 package model
 
 import (
+	"flag"
 	"fmt"
 	"time"
 
@@ -45,6 +46,26 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
+
+var (
+	globalPruningGracePeriodDuration = flag.String("pruning-grace-period-duration", "", `The grace period for deleting stale aggregates and recommendations. An empty duration will disable the grace period for all containers by default.`)
+	parsedPruningGracePeriodDuration *time.Duration
+)
+
+// ParseAndInitializePruningGracePeriodDuration parses and sets the global pruning grace period duration.
+func ParseAndInitializePruningGracePeriodDuration() error {
+	if globalPruningGracePeriodDuration == nil || *globalPruningGracePeriodDuration == "" {
+		parsedPruningGracePeriodDuration = nil // in tests, global variable does not reset, so nil it explicitly
+		return nil
+	}
+	duration, err := time.ParseDuration(*globalPruningGracePeriodDuration)
+	if err != nil {
+		parsedPruningGracePeriodDuration = nil
+		return err
+	}
+	parsedPruningGracePeriodDuration = &duration
+	return nil
+}
 
 // ContainerNameToAggregateStateMap maps a container name to AggregateContainerState
 // that aggregates state of containers with that name.
@@ -110,6 +131,8 @@ type AggregateContainerState struct {
 	UpdateMode          *vpa_types.UpdateMode
 	ScalingMode         *vpa_types.ContainerScalingMode
 	ControlledResources *[]ResourceName
+	LastUpdateTime      time.Time
+	PruningGracePeriod  *time.Duration
 }
 
 // GetLastRecommendation returns last recorded recommendation.
@@ -143,6 +166,14 @@ func (a *AggregateContainerState) GetControlledResources() []ResourceName {
 	return DefaultControlledResources
 }
 
+// IsAggregateStale returns true if the last update time is past its grace period and the aggregate should be pruned.
+func (a *AggregateContainerState) IsAggregateStale(now time.Time) bool {
+	if a.PruningGracePeriod == nil {
+		return false
+	}
+	return now.After(a.LastUpdateTime.Add(*a.PruningGracePeriod))
+}
+
 // MarkNotAutoscaled registers that this container state is not controlled by
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
@@ -166,6 +197,15 @@ func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerS
 		a.LastSampleStart = other.LastSampleStart
 	}
 	a.TotalSamplesCount += other.TotalSamplesCount
+	// if at least one aggregateContainerState is underVPA, then the aggregated state will contribute to a recommendation
+	if other.IsUnderVPA {
+		a.IsUnderVPA = true
+	}
+	// The merged state should use the pruningGracePeriod of the aggregate with the latest updateTime
+	if other.LastUpdateTime.After(a.LastUpdateTime) {
+		a.PruningGracePeriod = other.PruningGracePeriod
+		a.LastUpdateTime = other.LastUpdateTime
+	}
 }
 
 // NewAggregateContainerState returns a new, empty AggregateContainerState.
@@ -282,6 +322,15 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	a.ControlledResources = &DefaultControlledResources
 	if resourcePolicy != nil && resourcePolicy.ControlledResources != nil {
 		a.ControlledResources = ResourceNamesApiToModel(*resourcePolicy.ControlledResources)
+	}
+}
+
+// UpdatePruningGracePeriod updates an AggregateContainerState with a containerPruningGracePeriod or the global pruning-grace-period-duration if nil.
+func (a *AggregateContainerState) UpdatePruningGracePeriod(containerPruningGracePeriod *time.Duration) {
+	if containerPruningGracePeriod != nil {
+		a.PruningGracePeriod = containerPruningGracePeriod
+	} else {
+		a.PruningGracePeriod = parsedPruningGracePeriodDuration
 	}
 }
 
