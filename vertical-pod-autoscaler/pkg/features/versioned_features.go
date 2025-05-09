@@ -28,6 +28,6 @@ import (
 // Entries are alphabetized.
 var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.VersionedSpecs{
 	InPlaceOrRecreate: {
-		{Version: version.MustParse("1.4.0"), Default: false, PreRelease: featuregate.Alpha},
+		{Version: version.MustParse("1.4"), Default: false, PreRelease: featuregate.Alpha},
 	},
 }
