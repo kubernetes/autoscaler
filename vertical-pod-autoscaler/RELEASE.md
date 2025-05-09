@@ -49,7 +49,7 @@ We use the issue to communicate what is state of the release.
 
 Select either the Automatic and Manual process below.
 
-### Option 1: (Preffered) Automatic
+### Option 1: (Preferred) Automatic
 
 NOTE: Currently this process can only be used for new minor releases. Patch
 releases need to follow the manual process below.
