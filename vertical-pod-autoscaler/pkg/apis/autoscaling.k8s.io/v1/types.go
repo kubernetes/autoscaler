@@ -214,6 +214,16 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// OOMBumpUpRatio is the ratio to increase resources when OOM is detected.
+	// +kubebuilder:validation:Minimum=1.0
+	// +optional
+	OOMBumpUpRatio *float64 `json:"oomBumpUpRatio,omitempty" protobuf:"bytes,7,opt,name=oomBumpUpRatio"`
+
+	// OOMMinBumpUp is the minimum increase in resources when OOM is detected.
+	// +kubebuilder:validation:Minimum=0
+	// +optional
+	OOMMinBumpUp *float64 `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
 }
 
 const (
