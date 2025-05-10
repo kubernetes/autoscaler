@@ -58,7 +58,7 @@ func (nodeGroup *NodeGroup) TargetSize() (int, error) {
 // IncreaseSize increases NodeGroup size.
 func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 	if delta <= 0 {
-		return fmt.Errorf(sizeIncreaseMustBePositiveErr)
+		return fmt.Errorf("%s", sizeIncreaseMustBePositiveErr)
 	}
 	size := nodeGroup.targetSize
 	newSize := int(size) + delta
@@ -100,11 +100,11 @@ func (nodeGroup *NodeGroup) AtomicIncreaseSize(delta int) error {
 func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	size := nodeGroup.targetSize
 	if size <= nodeGroup.MinSize() {
-		return fmt.Errorf(minSizeReachedErr)
+		return fmt.Errorf("%s", minSizeReachedErr)
 	}
 
 	if size-len(nodes) < nodeGroup.MinSize() {
-		return fmt.Errorf(belowMinSizeErr)
+		return fmt.Errorf("%s", belowMinSizeErr)
 	}
 
 	for _, node := range nodes {
@@ -134,7 +134,7 @@ func (nodeGroup *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 func (nodeGroup *NodeGroup) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
-		return fmt.Errorf(sizeDecreaseMustBeNegativeErr)
+		return fmt.Errorf("%s", sizeDecreaseMustBeNegativeErr)
 	}
 	size := nodeGroup.targetSize
 	nodes, err := nodeGroup.getNodeNamesForNodeGroup()

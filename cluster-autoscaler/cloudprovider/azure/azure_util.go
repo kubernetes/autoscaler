@@ -259,7 +259,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 		if ok && resourceType == nsgResourceType {
 			if nsgIndex != -1 {
 				err := fmt.Errorf("found 2 resources with type %s in the template. There should only be 1", nsgResourceType)
-				klog.Errorf(err.Error())
+				klog.Error(err.Error())
 				return err
 			}
 			nsgIndex = index
@@ -267,7 +267,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 		if ok && resourceType == rtResourceType {
 			if rtIndex != -1 {
 				err := fmt.Errorf("found 2 resources with type %s in the template. There should only be 1", rtResourceType)
-				klog.Warningf(err.Error())
+				klog.Warning(err.Error())
 				return err
 			}
 			rtIndex = index
@@ -296,7 +296,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 	indexesToRemove := []int{}
 	if nsgIndex == -1 {
 		err := fmt.Errorf("found no resources with type %s in the template. There should have been 1", nsgResourceType)
-		klog.Errorf(err.Error())
+		klog.Error(err.Error())
 		return err
 	}
 	if rtIndex == -1 {

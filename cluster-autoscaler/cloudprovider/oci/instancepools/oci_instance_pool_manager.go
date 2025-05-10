@@ -310,7 +310,7 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails ocicommon.OciRef) (*InstancePoolNodeGroup, error) {
 	if m.cfg.Global.UseNonMemberAnnotation && instanceDetails.InstancePoolID == consts.OciInstancePoolIDNonPoolMember {
 		// Instance is not part of a configured pool. Return early and avoid additional API calls.
-		klog.V(4).Infof(instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
+		klog.V(4).Info(instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
 			consts.OciInstancePoolIDNonPoolMember)
 		return nil, errInstanceInstancePoolNotFound
 	}

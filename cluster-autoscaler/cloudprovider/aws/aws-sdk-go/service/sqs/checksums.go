@@ -37,7 +37,7 @@ func verifySendMessage(r *request.Request) {
 		out := r.Data.(*SendMessageOutput)
 		err := checksumsMatch(in.MessageBody, out.MD5OfMessageBody)
 		if err != nil {
-			setChecksumError(r, err.Error())
+			setChecksumError(r, "%s", err.Error())
 		}
 	}
 }
