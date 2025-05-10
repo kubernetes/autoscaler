@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
 package common
@@ -138,10 +138,18 @@ const (
 	RegionEUCrissier1 Region = "eu-crissier-1"
 	//RegionMEAbudhabi3 region Abudhabi
 	RegionMEAbudhabi3 Region = "me-abudhabi-3"
+	//RegionMEAlain1 region Alain
+	RegionMEAlain1 Region = "me-alain-1"
 	//RegionMEAbudhabi2 region Abudhabi
 	RegionMEAbudhabi2 Region = "me-abudhabi-2"
 	//RegionMEAbudhabi4 region Abudhabi
 	RegionMEAbudhabi4 Region = "me-abudhabi-4"
+	//RegionAPSeoul2 region Seoul
+	RegionAPSeoul2 Region = "ap-seoul-2"
+	//RegionAPSuwon1 region Suwon
+	RegionAPSuwon1 Region = "ap-suwon-1"
+	//RegionAPChuncheon2 region Chuncheon
+	RegionAPChuncheon2 Region = "ap-chuncheon-2"
 )
 
 var shortNameRegion = map[string]Region{
@@ -212,8 +220,12 @@ var shortNameRegion = map[string]Region{
 	"avz": RegionEUDccZurich1,
 	"avf": RegionEUCrissier1,
 	"ahu": RegionMEAbudhabi3,
+	"rba": RegionMEAlain1,
 	"rkt": RegionMEAbudhabi2,
 	"shj": RegionMEAbudhabi4,
+	"dtz": RegionAPSeoul2,
+	"dln": RegionAPSuwon1,
+	"bno": RegionAPChuncheon2,
 }
 
 var realm = map[string]string{
@@ -233,6 +245,7 @@ var realm = map[string]string{
 	"oc24": "oraclecloud24.com",
 	"oc26": "oraclecloud26.com",
 	"oc29": "oraclecloud29.com",
+	"oc35": "oraclecloud35.com",
 }
 
 var regionRealm = map[Region]string{
@@ -317,7 +330,12 @@ var regionRealm = map[Region]string{
 	RegionEUCrissier1:  "oc24",
 
 	RegionMEAbudhabi3: "oc26",
+	RegionMEAlain1:    "oc26",
 
 	RegionMEAbudhabi2: "oc29",
 	RegionMEAbudhabi4: "oc29",
+
+	RegionAPSeoul2:     "oc35",
+	RegionAPSuwon1:     "oc35",
+	RegionAPChuncheon2: "oc35",
 }
