@@ -70,7 +70,7 @@ func (request ListVirtualCircuitPublicPrefixesRequest) ValidateEnumValue() (bool
 		errMessage = append(errMessage, fmt.Sprintf("unsupported enum value for VerificationState: %s. Supported values are: %s.", request.VerificationState, strings.Join(GetVirtualCircuitPublicPrefixVerificationStateEnumStringValues(), ",")))
 	}
 	if len(errMessage) > 0 {
-		return true, fmt.Errorf(strings.Join(errMessage, "\n"))
+		return true, fmt.Errorf("%s", strings.Join(errMessage, "\n"))
 	}
 	return false, nil
 }

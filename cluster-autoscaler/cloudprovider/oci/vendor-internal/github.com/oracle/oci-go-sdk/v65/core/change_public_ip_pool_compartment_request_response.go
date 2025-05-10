@@ -72,7 +72,7 @@ func (request ChangePublicIpPoolCompartmentRequest) RetryPolicy() *common.RetryP
 func (request ChangePublicIpPoolCompartmentRequest) ValidateEnumValue() (bool, error) {
 	errMessage := []string{}
 	if len(errMessage) > 0 {
-		return true, fmt.Errorf(strings.Join(errMessage, "\n"))
+		return true, fmt.Errorf("%s", strings.Join(errMessage, "\n"))
 	}
 	return false, nil
 }

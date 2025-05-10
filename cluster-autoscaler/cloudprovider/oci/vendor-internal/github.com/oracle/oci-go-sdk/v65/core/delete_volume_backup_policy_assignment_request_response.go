@@ -67,7 +67,7 @@ func (request DeleteVolumeBackupPolicyAssignmentRequest) RetryPolicy() *common.R
 func (request DeleteVolumeBackupPolicyAssignmentRequest) ValidateEnumValue() (bool, error) {
 	errMessage := []string{}
 	if len(errMessage) > 0 {
-		return true, fmt.Errorf(strings.Join(errMessage, "\n"))
+		return true, fmt.Errorf("%s", strings.Join(errMessage, "\n"))
 	}
 	return false, nil
 }

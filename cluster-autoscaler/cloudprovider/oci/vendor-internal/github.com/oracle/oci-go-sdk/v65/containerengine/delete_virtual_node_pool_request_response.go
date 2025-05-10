@@ -74,7 +74,7 @@ func (request DeleteVirtualNodePoolRequest) RetryPolicy() *common.RetryPolicy {
 func (request DeleteVirtualNodePoolRequest) ValidateEnumValue() (bool, error) {
 	errMessage := []string{}
 	if len(errMessage) > 0 {
-		return true, fmt.Errorf(strings.Join(errMessage, "\n"))
+		return true, fmt.Errorf("%s", strings.Join(errMessage, "\n"))
 	}
 	return false, nil
 }
