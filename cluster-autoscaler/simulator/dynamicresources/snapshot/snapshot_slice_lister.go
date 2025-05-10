@@ -22,7 +22,7 @@ import (
 
 type snapshotSliceLister Snapshot
 
-func (s snapshotSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
+func (s snapshotSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
 	var result []*resourceapi.ResourceSlice
 	for _, slices := range s.resourceSlicesByNodeName {
 		for _, slice := range slices {

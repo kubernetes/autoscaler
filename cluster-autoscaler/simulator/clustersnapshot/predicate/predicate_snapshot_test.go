@@ -102,11 +102,11 @@ func compareStates(t *testing.T, a, b snapshotState) {
 		t.Errorf("ResourceClaims().List(): unexpected diff (-want +got): %s", diff)
 	}
 
-	aSlices, err := a.draSnapshot.ResourceSlices().List()
+	aSlices, err := a.draSnapshot.ResourceSlices().ListWithDeviceTaintRules()
 	if err != nil {
 		t.Errorf("ResourceSlices().List(): unexpected error: %v", err)
 	}
-	bSlices, err := b.draSnapshot.ResourceSlices().List()
+	bSlices, err := b.draSnapshot.ResourceSlices().ListWithDeviceTaintRules()
 	if err != nil {
 		t.Errorf("ResourceSlices().List(): unexpected error: %v", err)
 	}

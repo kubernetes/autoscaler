@@ -480,7 +480,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 			}
 
 			if tc.wantAllSlices != nil {
-				allSlices, err := snapshot.ResourceSlices().List()
+				allSlices, err := snapshot.ResourceSlices().ListWithDeviceTaintRules()
 				if err != nil {
 					t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
 				}
@@ -645,7 +645,7 @@ func TestSnapshotClone(t *testing.T) {
 			if err != nil {
 				t.Fatalf("ResourceClaims().List(): unexpected error: %v", err)
 			}
-			initialSlices, err := tc.snapshot.ResourceSlices().List()
+			initialSlices, err := tc.snapshot.ResourceSlices().ListWithDeviceTaintRules()
 			if err != nil {
 				t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
 			}
@@ -666,7 +666,7 @@ func TestSnapshotClone(t *testing.T) {
 			if err != nil {
 				t.Fatalf("ResourceClaims().List(): unexpected error: %v", err)
 			}
-			modifiedSlices, err := snapshotClone.ResourceSlices().List()
+			modifiedSlices, err := snapshotClone.ResourceSlices().ListWithDeviceTaintRules()
 			if err != nil {
 				t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
 			}
@@ -682,7 +682,7 @@ func TestSnapshotClone(t *testing.T) {
 			if err != nil {
 				t.Fatalf("ResourceClaims().List(): unexpected error: %v", err)
 			}
-			initialSlicesAfterCloneMod, err := tc.snapshot.ResourceSlices().List()
+			initialSlicesAfterCloneMod, err := tc.snapshot.ResourceSlices().ListWithDeviceTaintRules()
 			if err != nil {
 				t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
 			}
