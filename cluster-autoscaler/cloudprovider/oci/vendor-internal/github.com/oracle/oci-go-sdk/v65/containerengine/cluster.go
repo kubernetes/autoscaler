@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,7 +6,7 @@
 //
 // API for the Kubernetes Engine service (also known as the Container Engine for Kubernetes service). Use this API to build, deploy,
 // and manage cloud-native applications. For more information, see
-// Overview of Kubernetes Engine (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
+// Overview of Kubernetes Engine (https://docs.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
 //
 
 package containerengine
@@ -43,12 +43,12 @@ type Cluster struct {
 	KmsKeyId *string `mandatory:"false" json:"kmsKeyId"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no predefined name, type, or namespace.
-	// For more information, see Resource Tags (https://docs.cloud.oracle.com/Content/General/Concepts/resourcetags.htm).
+	// For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a namespace.
-	// For more information, see Resource Tags (https://docs.cloud.oracle.com/Content/General/Concepts/resourcetags.htm).
+	// For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 
@@ -62,7 +62,7 @@ type Cluster struct {
 	// Metadata about the cluster.
 	Metadata *ClusterMetadata `mandatory:"false" json:"metadata"`
 
-	// The state of the cluster masters. For more information, see Monitoring Clusters (https://docs.cloud.oracle.com/Content/ContEng/Tasks/contengmonitoringclusters.htm)
+	// The state of the cluster masters. For more information, see Monitoring Clusters (https://docs.oracle.com/iaas/Content/ContEng/Tasks/contengmonitoringclusters.htm)
 	LifecycleState ClusterLifecycleStateEnum `mandatory:"false" json:"lifecycleState,omitempty"`
 
 	// Details about the state of the cluster masters.
@@ -82,6 +82,9 @@ type Cluster struct {
 
 	// Type of cluster
 	Type ClusterTypeEnum `mandatory:"false" json:"type,omitempty"`
+
+	// The cluster-specific OpenID Connect Discovery endpoint
+	OpenIdConnectDiscoveryEndpoint *string `mandatory:"false" json:"openIdConnectDiscoveryEndpoint"`
 }
 
 func (m Cluster) String() string {
@@ -109,25 +112,26 @@ func (m Cluster) ValidateEnumValue() (bool, error) {
 // UnmarshalJSON unmarshals from json
 func (m *Cluster) UnmarshalJSON(data []byte) (e error) {
 	model := struct {
-		Id                          *string                           `json:"id"`
-		Name                        *string                           `json:"name"`
-		CompartmentId               *string                           `json:"compartmentId"`
-		EndpointConfig              *ClusterEndpointConfig            `json:"endpointConfig"`
-		VcnId                       *string                           `json:"vcnId"`
-		KubernetesVersion           *string                           `json:"kubernetesVersion"`
-		KmsKeyId                    *string                           `json:"kmsKeyId"`
-		FreeformTags                map[string]string                 `json:"freeformTags"`
-		DefinedTags                 map[string]map[string]interface{} `json:"definedTags"`
-		SystemTags                  map[string]map[string]interface{} `json:"systemTags"`
-		Options                     *ClusterCreateOptions             `json:"options"`
-		Metadata                    *ClusterMetadata                  `json:"metadata"`
-		LifecycleState              ClusterLifecycleStateEnum         `json:"lifecycleState"`
-		LifecycleDetails            *string                           `json:"lifecycleDetails"`
-		Endpoints                   *ClusterEndpoints                 `json:"endpoints"`
-		AvailableKubernetesUpgrades []string                          `json:"availableKubernetesUpgrades"`
-		ImagePolicyConfig           *ImagePolicyConfig                `json:"imagePolicyConfig"`
-		ClusterPodNetworkOptions    []clusterpodnetworkoptiondetails  `json:"clusterPodNetworkOptions"`
-		Type                        ClusterTypeEnum                   `json:"type"`
+		Id                             *string                           `json:"id"`
+		Name                           *string                           `json:"name"`
+		CompartmentId                  *string                           `json:"compartmentId"`
+		EndpointConfig                 *ClusterEndpointConfig            `json:"endpointConfig"`
+		VcnId                          *string                           `json:"vcnId"`
+		KubernetesVersion              *string                           `json:"kubernetesVersion"`
+		KmsKeyId                       *string                           `json:"kmsKeyId"`
+		FreeformTags                   map[string]string                 `json:"freeformTags"`
+		DefinedTags                    map[string]map[string]interface{} `json:"definedTags"`
+		SystemTags                     map[string]map[string]interface{} `json:"systemTags"`
+		Options                        *ClusterCreateOptions             `json:"options"`
+		Metadata                       *ClusterMetadata                  `json:"metadata"`
+		LifecycleState                 ClusterLifecycleStateEnum         `json:"lifecycleState"`
+		LifecycleDetails               *string                           `json:"lifecycleDetails"`
+		Endpoints                      *ClusterEndpoints                 `json:"endpoints"`
+		AvailableKubernetesUpgrades    []string                          `json:"availableKubernetesUpgrades"`
+		ImagePolicyConfig              *ImagePolicyConfig                `json:"imagePolicyConfig"`
+		ClusterPodNetworkOptions       []clusterpodnetworkoptiondetails  `json:"clusterPodNetworkOptions"`
+		Type                           ClusterTypeEnum                   `json:"type"`
+		OpenIdConnectDiscoveryEndpoint *string                           `json:"openIdConnectDiscoveryEndpoint"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -182,6 +186,8 @@ func (m *Cluster) UnmarshalJSON(data []byte) (e error) {
 		}
 	}
 	m.Type = model.Type
+
+	m.OpenIdConnectDiscoveryEndpoint = model.OpenIdConnectDiscoveryEndpoint
 
 	return
 }

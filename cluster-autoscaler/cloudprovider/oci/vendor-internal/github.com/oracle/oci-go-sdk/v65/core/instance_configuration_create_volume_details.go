@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -45,7 +45,7 @@ type InstanceConfigurationCreateVolumeDetails struct {
 	BlockVolumeReplicas []InstanceConfigurationBlockVolumeReplicaDetails `mandatory:"false" json:"blockVolumeReplicas"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
-	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 
@@ -54,7 +54,7 @@ type InstanceConfigurationCreateVolumeDetails struct {
 	DisplayName *string `mandatory:"false" json:"displayName"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
-	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
@@ -64,7 +64,7 @@ type InstanceConfigurationCreateVolumeDetails struct {
 
 	// The number of volume performance units (VPUs) that will be applied to this volume per GB,
 	// representing the Block Volume service's elastic performance options.
-	// See Block Volume Performance Levels (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/blockvolumeperformance.htm#perf_levels) for more information.
+	// See Block Volume Performance Levels (https://docs.oracle.com/iaas/Content/Block/Concepts/blockvolumeperformance.htm#perf_levels) for more information.
 	// Allowed values:
 	//   * `0`: Represents Lower Cost option.
 	//   * `10`: Represents Balanced option.
@@ -83,6 +83,15 @@ type InstanceConfigurationCreateVolumeDetails struct {
 
 	// The list of autotune policies enabled for this volume.
 	AutotunePolicies []InstanceConfigurationAutotunePolicy `mandatory:"false" json:"autotunePolicies"`
+
+	// The OCID of the Vault service key which is the master encryption key for the block volume cross region backups, which will be used in the destination region to encrypt the backup's encryption keys.
+	// For more information about the Vault service and encryption keys, see
+	// Overview of Vault service (https://docs.oracle.com/iaas/Content/KeyManagement/Concepts/keyoverview.htm) and
+	// Using Keys (https://docs.oracle.com/iaas/Content/KeyManagement/Tasks/usingkeys.htm).
+	XrcKmsKeyId *string `mandatory:"false" json:"xrcKmsKeyId"`
+
+	// Reservations-enabled is a boolean field that allows to enable PR (Persistent Reservation) on a volume.
+	IsReservationsEnabled *bool `mandatory:"false" json:"isReservationsEnabled"`
 }
 
 func (m InstanceConfigurationCreateVolumeDetails) String() string {
@@ -118,6 +127,8 @@ func (m *InstanceConfigurationCreateVolumeDetails) UnmarshalJSON(data []byte) (e
 		SizeInGBs               *int64                                           `json:"sizeInGBs"`
 		SourceDetails           instanceconfigurationvolumesourcedetails         `json:"sourceDetails"`
 		AutotunePolicies        []instanceconfigurationautotunepolicy            `json:"autotunePolicies"`
+		XrcKmsKeyId             *string                                          `json:"xrcKmsKeyId"`
+		IsReservationsEnabled   *bool                                            `json:"isReservationsEnabled"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -171,5 +182,9 @@ func (m *InstanceConfigurationCreateVolumeDetails) UnmarshalJSON(data []byte) (e
 			m.AutotunePolicies[i] = nil
 		}
 	}
+	m.XrcKmsKeyId = model.XrcKmsKeyId
+
+	m.IsReservationsEnabled = model.IsReservationsEnabled
+
 	return
 }
