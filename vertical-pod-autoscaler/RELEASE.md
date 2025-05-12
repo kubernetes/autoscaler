@@ -80,9 +80,9 @@ BUILD_TAG=<tag>
 cd vertical-pod-autoscaler/
 TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
 echo "Adding tag $TAG based on built tag $BUILD_TAG"
-gcloud artifacts docker tags add gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$TAG --project=k8s-staging-autoscaling
-gcloud artifacts docker tags add gcr.io/k8s-staging-autoscaling/vpa-recommender:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-recommender:$TAG --project=k8s-staging-autoscaling
-gcloud artifacts docker tags add gcr.io/k8s-staging-autoscaling/vpa-updater:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-updater:$TAG --project=k8s-staging-autoscaling
+gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$TAG --project=k8s-staging-autoscaling
+gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-recommender:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-recommender:$TAG --project=k8s-staging-autoscaling
+gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-updater:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-updater:$TAG --project=k8s-staging-autoscaling
 ```
 
 ### Option 2: Manual
