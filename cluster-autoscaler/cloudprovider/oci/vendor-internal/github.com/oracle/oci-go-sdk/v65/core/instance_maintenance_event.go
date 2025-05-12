@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -24,7 +24,7 @@ import (
 // InstanceMaintenanceEvent It is the event in which the maintenance action will be be performed on the customer instance on the scheduled date and time.
 type InstanceMaintenanceEvent struct {
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the maintenance event.
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the maintenance event.
 	Id *string `mandatory:"true" json:"id"`
 
 	// The OCID of the instance.
@@ -36,11 +36,11 @@ type InstanceMaintenanceEvent struct {
 	// This indicates the priority and allowed actions for this Maintenance. Higher priority forms of Maintenance have
 	// tighter restrictions and may not be rescheduled, while lower priority/severity Maintenance can be rescheduled,
 	// deferred, or even cancelled. Please see the
-	// Instance Maintenance (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/placeholder.htm) documentation for details.
+	// Instance Maintenance (https://docs.oracle.com/iaas/Content/Compute/Tasks/placeholder.htm) documentation for details.
 	MaintenanceCategory InstanceMaintenanceEventMaintenanceCategoryEnum `mandatory:"true" json:"maintenanceCategory"`
 
 	// This is the reason that Maintenance is being performed. See
-	// Instance Maintenance (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/placeholder.htm) documentation for details.
+	// Instance Maintenance (https://docs.oracle.com/iaas/Content/Compute/Tasks/placeholder.htm) documentation for details.
 	MaintenanceReason InstanceMaintenanceEventMaintenanceReasonEnum `mandatory:"true" json:"maintenanceReason"`
 
 	// This is the action that will be performed on the Instance by OCI when the Maintenance begins.
@@ -71,12 +71,12 @@ type InstanceMaintenanceEvent struct {
 	DisplayName *string `mandatory:"false" json:"displayName"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
-	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
-	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
