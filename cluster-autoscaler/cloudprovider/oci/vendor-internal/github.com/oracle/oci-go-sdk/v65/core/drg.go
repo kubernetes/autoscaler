@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -23,25 +23,25 @@ import (
 
 // Drg A dynamic routing gateway (DRG) is a virtual router that provides a path for private
 // network traffic between networks. You use it with other Networking
-// Service components to create a connection to your on-premises network using Site-to-Site VPN (https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/managingIPsec.htm) or a connection that uses
-// FastConnect (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/fastconnect.htm). For more information, see
-// Networking Overview (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm).
+// Service components to create a connection to your on-premises network using Site-to-Site VPN (https://docs.oracle.com/iaas/Content/Network/Tasks/managingIPsec.htm) or a connection that uses
+// FastConnect (https://docs.oracle.com/iaas/Content/Network/Concepts/fastconnect.htm). For more information, see
+// Networking Overview (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm).
 // To use any of the API operations, you must be authorized in an IAM policy. If you're not authorized,
 // talk to an administrator. If you're an administrator who needs to write policies to give users access, see
-// Getting Started with Policies (https://docs.cloud.oracle.com/iaas/Content/Identity/Concepts/policygetstarted.htm).
+// Getting Started with Policies (https://docs.oracle.com/iaas/Content/Identity/Concepts/policygetstarted.htm).
 type Drg struct {
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment containing the DRG.
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment containing the DRG.
 	CompartmentId *string `mandatory:"true" json:"compartmentId"`
 
-	// The DRG's Oracle ID (OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm)).
+	// The DRG's Oracle ID (OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm)).
 	Id *string `mandatory:"true" json:"id"`
 
 	// The DRG's current state.
 	LifecycleState DrgLifecycleStateEnum `mandatory:"true" json:"lifecycleState"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
-	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 
@@ -50,7 +50,7 @@ type Drg struct {
 	DisplayName *string `mandatory:"false" json:"displayName"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
-	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
@@ -60,7 +60,7 @@ type Drg struct {
 
 	DefaultDrgRouteTables *DefaultDrgRouteTables `mandatory:"false" json:"defaultDrgRouteTables"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of this DRG's default export route distribution for the DRG attachments.
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of this DRG's default export route distribution for the DRG attachments.
 	DefaultExportDrgRouteDistributionId *string `mandatory:"false" json:"defaultExportDrgRouteDistributionId"`
 }
 

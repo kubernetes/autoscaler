@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -31,32 +31,32 @@ import (
 //
 // After creating an NSG, you can add VNICs and security rules to it. For example, when you create
 // an instance, you can specify one or more NSGs to add the instance to (see
-// `CreateVnicDetails)`. Or you can add an existing
-// instance to an NSG with `UpdateVnic`.
+// CreateVnicDetails). Or you can add an existing
+// instance to an NSG with UpdateVnic.
 // To add security rules to an NSG, see
-// `AddNetworkSecurityGroupSecurityRules`.
+// AddNetworkSecurityGroupSecurityRules.
 // To list the VNICs in an NSG, see
-// `ListNetworkSecurityGroupVnics`.
+// ListNetworkSecurityGroupVnics.
 // To list the security rules in an NSG, see
-// `ListNetworkSecurityGroupSecurityRules`.
+// ListNetworkSecurityGroupSecurityRules.
 // For more information about network security groups, see
-// `Network Security Groups (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/networksecuritygroups.htm)`.
+// Network Security Groups (https://docs.oracle.com/iaas/Content/Network/Concepts/networksecuritygroups.htm).
 // **Important:** Oracle Cloud Infrastructure Compute service images automatically include firewall rules (for example,
 // Linux iptables, Windows firewall). If there are issues with some type of access to an instance,
 // make sure all of the following are set correctly:
 //   - Any security rules in any NSGs the instance's VNIC belongs to
-//   - Any `SecurityList` associated with the instance's subnet
+//   - Any SecurityList associated with the instance's subnet
 //   - The instance's OS firewall rules
 //
 // To use any of the API operations, you must be authorized in an IAM policy. If you're not authorized,
 // talk to an administrator. If you're an administrator who needs to write policies to give users access, see
-// Getting Started with Policies (https://docs.cloud.oracle.com/iaas/Content/Identity/Concepts/policygetstarted.htm).
+// Getting Started with Policies (https://docs.oracle.com/iaas/Content/Identity/Concepts/policygetstarted.htm).
 type NetworkSecurityGroup struct {
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment the network security group is in.
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment the network security group is in.
 	CompartmentId *string `mandatory:"true" json:"compartmentId"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the network security group.
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the network security group.
 	Id *string `mandatory:"true" json:"id"`
 
 	// The network security group's current state.
@@ -66,11 +66,11 @@ type NetworkSecurityGroup struct {
 	// Example: `2016-08-25T21:10:29.600Z`
 	TimeCreated *common.SDKTime `mandatory:"true" json:"timeCreated"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the network security group's VCN.
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the network security group's VCN.
 	VcnId *string `mandatory:"true" json:"vcnId"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
-	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 
@@ -79,7 +79,7 @@ type NetworkSecurityGroup struct {
 	DisplayName *string `mandatory:"false" json:"displayName"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
-	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 }

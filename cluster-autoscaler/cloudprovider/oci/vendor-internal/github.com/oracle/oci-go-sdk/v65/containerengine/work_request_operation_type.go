@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,7 +6,7 @@
 //
 // API for the Kubernetes Engine service (also known as the Container Engine for Kubernetes service). Use this API to build, deploy,
 // and manage cloud-native applications. For more information, see
-// Overview of Kubernetes Engine (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
+// Overview of Kubernetes Engine (https://docs.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
 //
 
 package containerengine
@@ -20,66 +20,72 @@ type WorkRequestOperationTypeEnum string
 
 // Set of constants representing the allowable values for WorkRequestOperationTypeEnum
 const (
-	WorkRequestOperationTypeClusterCreate         WorkRequestOperationTypeEnum = "CLUSTER_CREATE"
-	WorkRequestOperationTypeClusterUpdate         WorkRequestOperationTypeEnum = "CLUSTER_UPDATE"
-	WorkRequestOperationTypeClusterDelete         WorkRequestOperationTypeEnum = "CLUSTER_DELETE"
-	WorkRequestOperationTypeCreateNamespace       WorkRequestOperationTypeEnum = "CREATE_NAMESPACE"
-	WorkRequestOperationTypeNodepoolCreate        WorkRequestOperationTypeEnum = "NODEPOOL_CREATE"
-	WorkRequestOperationTypeNodepoolUpdate        WorkRequestOperationTypeEnum = "NODEPOOL_UPDATE"
-	WorkRequestOperationTypeNodepoolDelete        WorkRequestOperationTypeEnum = "NODEPOOL_DELETE"
-	WorkRequestOperationTypeNodepoolReconcile     WorkRequestOperationTypeEnum = "NODEPOOL_RECONCILE"
-	WorkRequestOperationTypeNodepoolCycling       WorkRequestOperationTypeEnum = "NODEPOOL_CYCLING"
-	WorkRequestOperationTypeWorkrequestCancel     WorkRequestOperationTypeEnum = "WORKREQUEST_CANCEL"
-	WorkRequestOperationTypeVirtualnodepoolCreate WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_CREATE"
-	WorkRequestOperationTypeVirtualnodepoolUpdate WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_UPDATE"
-	WorkRequestOperationTypeVirtualnodepoolDelete WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_DELETE"
-	WorkRequestOperationTypeVirtualnodeDelete     WorkRequestOperationTypeEnum = "VIRTUALNODE_DELETE"
-	WorkRequestOperationTypeEnableAddon           WorkRequestOperationTypeEnum = "ENABLE_ADDON"
-	WorkRequestOperationTypeUpdateAddon           WorkRequestOperationTypeEnum = "UPDATE_ADDON"
-	WorkRequestOperationTypeDisableAddon          WorkRequestOperationTypeEnum = "DISABLE_ADDON"
-	WorkRequestOperationTypeReconcileAddon        WorkRequestOperationTypeEnum = "RECONCILE_ADDON"
+	WorkRequestOperationTypeClusterCreate                WorkRequestOperationTypeEnum = "CLUSTER_CREATE"
+	WorkRequestOperationTypeClusterUpdate                WorkRequestOperationTypeEnum = "CLUSTER_UPDATE"
+	WorkRequestOperationTypeClusterDelete                WorkRequestOperationTypeEnum = "CLUSTER_DELETE"
+	WorkRequestOperationTypeCreateNamespace              WorkRequestOperationTypeEnum = "CREATE_NAMESPACE"
+	WorkRequestOperationTypeNodepoolCreate               WorkRequestOperationTypeEnum = "NODEPOOL_CREATE"
+	WorkRequestOperationTypeNodepoolUpdate               WorkRequestOperationTypeEnum = "NODEPOOL_UPDATE"
+	WorkRequestOperationTypeNodepoolDelete               WorkRequestOperationTypeEnum = "NODEPOOL_DELETE"
+	WorkRequestOperationTypeNodepoolReconcile            WorkRequestOperationTypeEnum = "NODEPOOL_RECONCILE"
+	WorkRequestOperationTypeNodepoolCycling              WorkRequestOperationTypeEnum = "NODEPOOL_CYCLING"
+	WorkRequestOperationTypeWorkrequestCancel            WorkRequestOperationTypeEnum = "WORKREQUEST_CANCEL"
+	WorkRequestOperationTypeVirtualnodepoolCreate        WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_CREATE"
+	WorkRequestOperationTypeVirtualnodepoolUpdate        WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_UPDATE"
+	WorkRequestOperationTypeVirtualnodepoolDelete        WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_DELETE"
+	WorkRequestOperationTypeVirtualnodeDelete            WorkRequestOperationTypeEnum = "VIRTUALNODE_DELETE"
+	WorkRequestOperationTypeEnableAddon                  WorkRequestOperationTypeEnum = "ENABLE_ADDON"
+	WorkRequestOperationTypeUpdateAddon                  WorkRequestOperationTypeEnum = "UPDATE_ADDON"
+	WorkRequestOperationTypeDisableAddon                 WorkRequestOperationTypeEnum = "DISABLE_ADDON"
+	WorkRequestOperationTypeReconcileAddon               WorkRequestOperationTypeEnum = "RECONCILE_ADDON"
+	WorkRequestOperationTypeClusterNodeReboot            WorkRequestOperationTypeEnum = "CLUSTER_NODE_REBOOT"
+	WorkRequestOperationTypeClusterNodeReplaceBootVolume WorkRequestOperationTypeEnum = "CLUSTER_NODE_REPLACE_BOOT_VOLUME"
 )
 
 var mappingWorkRequestOperationTypeEnum = map[string]WorkRequestOperationTypeEnum{
-	"CLUSTER_CREATE":         WorkRequestOperationTypeClusterCreate,
-	"CLUSTER_UPDATE":         WorkRequestOperationTypeClusterUpdate,
-	"CLUSTER_DELETE":         WorkRequestOperationTypeClusterDelete,
-	"CREATE_NAMESPACE":       WorkRequestOperationTypeCreateNamespace,
-	"NODEPOOL_CREATE":        WorkRequestOperationTypeNodepoolCreate,
-	"NODEPOOL_UPDATE":        WorkRequestOperationTypeNodepoolUpdate,
-	"NODEPOOL_DELETE":        WorkRequestOperationTypeNodepoolDelete,
-	"NODEPOOL_RECONCILE":     WorkRequestOperationTypeNodepoolReconcile,
-	"NODEPOOL_CYCLING":       WorkRequestOperationTypeNodepoolCycling,
-	"WORKREQUEST_CANCEL":     WorkRequestOperationTypeWorkrequestCancel,
-	"VIRTUALNODEPOOL_CREATE": WorkRequestOperationTypeVirtualnodepoolCreate,
-	"VIRTUALNODEPOOL_UPDATE": WorkRequestOperationTypeVirtualnodepoolUpdate,
-	"VIRTUALNODEPOOL_DELETE": WorkRequestOperationTypeVirtualnodepoolDelete,
-	"VIRTUALNODE_DELETE":     WorkRequestOperationTypeVirtualnodeDelete,
-	"ENABLE_ADDON":           WorkRequestOperationTypeEnableAddon,
-	"UPDATE_ADDON":           WorkRequestOperationTypeUpdateAddon,
-	"DISABLE_ADDON":          WorkRequestOperationTypeDisableAddon,
-	"RECONCILE_ADDON":        WorkRequestOperationTypeReconcileAddon,
+	"CLUSTER_CREATE":                   WorkRequestOperationTypeClusterCreate,
+	"CLUSTER_UPDATE":                   WorkRequestOperationTypeClusterUpdate,
+	"CLUSTER_DELETE":                   WorkRequestOperationTypeClusterDelete,
+	"CREATE_NAMESPACE":                 WorkRequestOperationTypeCreateNamespace,
+	"NODEPOOL_CREATE":                  WorkRequestOperationTypeNodepoolCreate,
+	"NODEPOOL_UPDATE":                  WorkRequestOperationTypeNodepoolUpdate,
+	"NODEPOOL_DELETE":                  WorkRequestOperationTypeNodepoolDelete,
+	"NODEPOOL_RECONCILE":               WorkRequestOperationTypeNodepoolReconcile,
+	"NODEPOOL_CYCLING":                 WorkRequestOperationTypeNodepoolCycling,
+	"WORKREQUEST_CANCEL":               WorkRequestOperationTypeWorkrequestCancel,
+	"VIRTUALNODEPOOL_CREATE":           WorkRequestOperationTypeVirtualnodepoolCreate,
+	"VIRTUALNODEPOOL_UPDATE":           WorkRequestOperationTypeVirtualnodepoolUpdate,
+	"VIRTUALNODEPOOL_DELETE":           WorkRequestOperationTypeVirtualnodepoolDelete,
+	"VIRTUALNODE_DELETE":               WorkRequestOperationTypeVirtualnodeDelete,
+	"ENABLE_ADDON":                     WorkRequestOperationTypeEnableAddon,
+	"UPDATE_ADDON":                     WorkRequestOperationTypeUpdateAddon,
+	"DISABLE_ADDON":                    WorkRequestOperationTypeDisableAddon,
+	"RECONCILE_ADDON":                  WorkRequestOperationTypeReconcileAddon,
+	"CLUSTER_NODE_REBOOT":              WorkRequestOperationTypeClusterNodeReboot,
+	"CLUSTER_NODE_REPLACE_BOOT_VOLUME": WorkRequestOperationTypeClusterNodeReplaceBootVolume,
 }
 
 var mappingWorkRequestOperationTypeEnumLowerCase = map[string]WorkRequestOperationTypeEnum{
-	"cluster_create":         WorkRequestOperationTypeClusterCreate,
-	"cluster_update":         WorkRequestOperationTypeClusterUpdate,
-	"cluster_delete":         WorkRequestOperationTypeClusterDelete,
-	"create_namespace":       WorkRequestOperationTypeCreateNamespace,
-	"nodepool_create":        WorkRequestOperationTypeNodepoolCreate,
-	"nodepool_update":        WorkRequestOperationTypeNodepoolUpdate,
-	"nodepool_delete":        WorkRequestOperationTypeNodepoolDelete,
-	"nodepool_reconcile":     WorkRequestOperationTypeNodepoolReconcile,
-	"nodepool_cycling":       WorkRequestOperationTypeNodepoolCycling,
-	"workrequest_cancel":     WorkRequestOperationTypeWorkrequestCancel,
-	"virtualnodepool_create": WorkRequestOperationTypeVirtualnodepoolCreate,
-	"virtualnodepool_update": WorkRequestOperationTypeVirtualnodepoolUpdate,
-	"virtualnodepool_delete": WorkRequestOperationTypeVirtualnodepoolDelete,
-	"virtualnode_delete":     WorkRequestOperationTypeVirtualnodeDelete,
-	"enable_addon":           WorkRequestOperationTypeEnableAddon,
-	"update_addon":           WorkRequestOperationTypeUpdateAddon,
-	"disable_addon":          WorkRequestOperationTypeDisableAddon,
-	"reconcile_addon":        WorkRequestOperationTypeReconcileAddon,
+	"cluster_create":                   WorkRequestOperationTypeClusterCreate,
+	"cluster_update":                   WorkRequestOperationTypeClusterUpdate,
+	"cluster_delete":                   WorkRequestOperationTypeClusterDelete,
+	"create_namespace":                 WorkRequestOperationTypeCreateNamespace,
+	"nodepool_create":                  WorkRequestOperationTypeNodepoolCreate,
+	"nodepool_update":                  WorkRequestOperationTypeNodepoolUpdate,
+	"nodepool_delete":                  WorkRequestOperationTypeNodepoolDelete,
+	"nodepool_reconcile":               WorkRequestOperationTypeNodepoolReconcile,
+	"nodepool_cycling":                 WorkRequestOperationTypeNodepoolCycling,
+	"workrequest_cancel":               WorkRequestOperationTypeWorkrequestCancel,
+	"virtualnodepool_create":           WorkRequestOperationTypeVirtualnodepoolCreate,
+	"virtualnodepool_update":           WorkRequestOperationTypeVirtualnodepoolUpdate,
+	"virtualnodepool_delete":           WorkRequestOperationTypeVirtualnodepoolDelete,
+	"virtualnode_delete":               WorkRequestOperationTypeVirtualnodeDelete,
+	"enable_addon":                     WorkRequestOperationTypeEnableAddon,
+	"update_addon":                     WorkRequestOperationTypeUpdateAddon,
+	"disable_addon":                    WorkRequestOperationTypeDisableAddon,
+	"reconcile_addon":                  WorkRequestOperationTypeReconcileAddon,
+	"cluster_node_reboot":              WorkRequestOperationTypeClusterNodeReboot,
+	"cluster_node_replace_boot_volume": WorkRequestOperationTypeClusterNodeReplaceBootVolume,
 }
 
 // GetWorkRequestOperationTypeEnumValues Enumerates the set of values for WorkRequestOperationTypeEnum
@@ -112,6 +118,8 @@ func GetWorkRequestOperationTypeEnumStringValues() []string {
 		"UPDATE_ADDON",
 		"DISABLE_ADDON",
 		"RECONCILE_ADDON",
+		"CLUSTER_NODE_REBOOT",
+		"CLUSTER_NODE_REPLACE_BOOT_VOLUME",
 	}
 }
 

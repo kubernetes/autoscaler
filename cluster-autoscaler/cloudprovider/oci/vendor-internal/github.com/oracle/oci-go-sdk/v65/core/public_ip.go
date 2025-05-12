@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -27,10 +27,10 @@ import (
 // 1. Ephemeral
 // 2. Reserved
 // For more information and comparison of the two types,
-// see Public IP Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/managingpublicIPs.htm).
+// see Public IP Addresses (https://docs.oracle.com/iaas/Content/Network/Tasks/managingpublicIPs.htm).
 type PublicIp struct {
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the entity the public IP is assigned to, or in the process of
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the entity the public IP is assigned to, or in the process of
 	// being assigned to.
 	AssignedEntityId *string `mandatory:"false" json:"assignedEntityId"`
 
@@ -44,14 +44,14 @@ type PublicIp struct {
 	// Example: `Uocm:PHX-AD-1`
 	AvailabilityDomain *string `mandatory:"false" json:"availabilityDomain"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment containing the public IP. For an ephemeral public IP, this is
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment containing the public IP. For an ephemeral public IP, this is
 	// the compartment of its assigned entity (which can be a private IP or a regional entity such
 	// as a NAT gateway). For a reserved public IP that is currently assigned,
 	// its compartment can be different from the assigned private IP's.
 	CompartmentId *string `mandatory:"false" json:"compartmentId"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
-	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 
@@ -60,11 +60,11 @@ type PublicIp struct {
 	DisplayName *string `mandatory:"false" json:"displayName"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
-	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
-	// The public IP's Oracle ID (OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm)).
+	// The public IP's Oracle ID (OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm)).
 	Id *string `mandatory:"false" json:"id"`
 
 	// The public IP address of the `publicIp` object.
@@ -84,11 +84,11 @@ type PublicIp struct {
 	// * `RESERVED`: You control the public IP's lifetime. You can delete a reserved public IP
 	// whenever you like. It does not need to be assigned to a private IP at all times.
 	// For more information and comparison of the two types,
-	// see Public IP Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/managingpublicIPs.htm).
+	// see Public IP Addresses (https://docs.oracle.com/iaas/Content/Network/Tasks/managingpublicIPs.htm).
 	Lifetime PublicIpLifetimeEnum `mandatory:"false" json:"lifetime,omitempty"`
 
 	// Deprecated. Use `assignedEntityId` instead.
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the private IP that the public IP is currently assigned to, or in the
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the private IP that the public IP is currently assigned to, or in the
 	// process of being assigned to.
 	// **Note:** This is `null` if the public IP is not assigned to a private IP, or is
 	// in the process of being assigned to one.
@@ -108,7 +108,7 @@ type PublicIp struct {
 	// Example: `2016-08-25T21:10:29.600Z`
 	TimeCreated *common.SDKTime `mandatory:"false" json:"timeCreated"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the pool object created in the current tenancy.
+	// The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the pool object created in the current tenancy.
 	PublicIpPoolId *string `mandatory:"false" json:"publicIpPoolId"`
 }
 
