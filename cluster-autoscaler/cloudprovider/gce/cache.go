@@ -432,6 +432,25 @@ func (gc *GceCache) InvalidateAllMigInstanceTemplates() {
 	gc.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{}
 }
 
+// DropInstanceTemplatesForMissingMigs clears the instance template
+// cache intended MIGs which are no longer present in the cluster
+func (gc *GceCache) DropInstanceTemplatesForMissingMigs(currentMigs []Mig) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	requiredKeys := make(map[GceRef]struct{}, len(currentMigs))
+	for _, mig := range currentMigs {
+		requiredKeys[mig.GceRef()] = struct{}{}
+	}
+
+	klog.V(5).Infof("Instance template cache partially invalidated")
+	for key := range gc.instanceTemplatesCache {
+		if _, exists := requiredKeys[key]; !exists {
+			delete(gc.instanceTemplatesCache, key)
+		}
+	}
+}
+
 // GetMigKubeEnv returns the cached KubeEnv for a mig GceRef
 func (gc *GceCache) GetMigKubeEnv(ref GceRef) (KubeEnv, bool) {
 	gc.cacheMutex.Lock()
