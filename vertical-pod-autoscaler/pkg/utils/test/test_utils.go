@@ -33,6 +33,7 @@ import (
 	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 )
 
 var (
@@ -119,6 +120,23 @@ func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, vpa *vpa_types.Verti
 func (m *PodsEvictionRestrictionMock) CanEvict(pod *apiv1.Pod) bool {
 	args := m.Called(pod)
 	return args.Bool(0)
+}
+
+// PodsInPlaceRestrictionMock is a mock of PodsInPlaceRestriction
+type PodsInPlaceRestrictionMock struct {
+	mock.Mock
+}
+
+// InPlaceUpdate is a mock implementation of PodsInPlaceRestriction.InPlaceUpdate
+func (m *PodsInPlaceRestrictionMock) InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+	args := m.Called(pod, eventRecorder)
+	return args.Error(0)
+}
+
+// CanInPlaceUpdate is a mock implementation of PodsInPlaceRestriction.CanInPlaceUpdate
+func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision {
+	args := m.Called(pod)
+	return args.Get(0).(utils.InPlaceDecision)
 }
 
 // PodListerMock is a mock of PodLister

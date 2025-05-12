@@ -23,7 +23,22 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
+// PatchResourceTarget is the type of resource that can be patched.
+type PatchResourceTarget string
+
+const (
+	// Pod refers to the pod resource itself.
+	Pod PatchResourceTarget = "Pod"
+	// Resize refers to the resize subresource of the pod.
+	Resize PatchResourceTarget = "Resize"
+
+	// Future subresources can be added here.
+	//  e.g. Status PatchResourceTarget = "Status"
+)
+
 // Calculator is capable of calculating required patches for pod.
 type Calculator interface {
 	CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource.PatchRecord, error)
+	// PatchResourceTarget returns the resource this calculator should calculate patches for.
+	PatchResourceTarget() PatchResourceTarget
 }
