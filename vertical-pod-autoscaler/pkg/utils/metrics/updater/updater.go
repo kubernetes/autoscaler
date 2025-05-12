@@ -79,7 +79,7 @@ var (
 	inPlaceUpdatableCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
-			Name:      "in_place_Updatable_pods_total",
+			Name:      "in_place_updatable_pods_total",
 			Help:      "Number of Pods matching in place update criteria.",
 		}, []string{"vpa_size_log2"},
 	)
@@ -95,7 +95,7 @@ var (
 	vpasWithInPlaceUpdatablePodsCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
-			Name:      "vpas_with_in_place_Updatable_pods_total",
+			Name:      "vpas_with_in_place_updatable_pods_total",
 			Help:      "Number of VPA objects with at least one Pod matching in place update criteria.",
 		}, []string{"vpa_size_log2"},
 	)
