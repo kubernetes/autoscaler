@@ -38,7 +38,6 @@ const (
 func TestValidateVPA(t *testing.T) {
 	validUpdateMode := vpa_types.UpdateModeOff
 	validMinReplicas := int32(1)
-	badScalingMode := vpa_types.ContainerScalingMode("bad")
 	badCPUResource := resource.MustParse("187500u")
 	validScalingMode := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
