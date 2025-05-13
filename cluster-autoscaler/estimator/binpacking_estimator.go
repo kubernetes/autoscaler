@@ -108,6 +108,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	}()
 
 	estimationState := newEstimationState()
+	newNodesAvailable := true
 	for _, podsEquivalenceGroup := range podsEquivalenceGroups {
 		var err error
 		var remainingPods []*apiv1.Pod
@@ -118,10 +119,12 @@ func (e *BinpackingNodeEstimator) Estimate(
 			return 0, nil
 		}
 
-		err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
-		if err != nil {
-			klog.Error(err.Error())
-			return 0, nil
+		if newNodesAvailable {
+			newNodesAvailable, err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
+			if err != nil {
+				klog.Error(err.Error())
+				return 0, nil
+			}
 		}
 	}
 
@@ -156,11 +159,13 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 	return pods[index:], nil
 }
 
+// Returns whether it is worth retrying adding new nodes and error in unexpected
+// situations where whole estimation should be stopped.
 func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 	estimationState *estimationState,
 	nodeTemplate *framework.NodeInfo,
 	pods []*apiv1.Pod,
-) error {
+) (bool, error) {
 	for _, pod := range pods {
 		found := false
 
@@ -172,7 +177,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 				estimationState.trackScheduledPod(pod, estimationState.lastNodeName)
 			} else if err.Type() == clustersnapshot.SchedulingInternalError {
 				// Unexpected error.
-				return err
+				return false, err
 			}
 			// The pod can't be scheduled on the newly created node because of scheduling predicates.
 		}
@@ -182,7 +187,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// on a new node either. There is no point adding more nodes to snapshot in such case, especially because of
 			// performance cost each extra node adds to future FitsAnyNodeMatching calls.
 			if estimationState.lastNodeName != "" && !estimationState.newNodesWithPods[estimationState.lastNodeName] {
-				break
+				return true, nil
 			}
 
 			// Stop binpacking if we reach the limit of nodes we can add.
@@ -192,12 +197,12 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// each call that returns true, one node gets added. Therefore this
 			// must be the last check right before really adding a node.
 			if !e.limiter.PermissionToAddNode() {
-				break
+				return false, nil
 			}
 
 			// Add new node
 			if err := e.addNewNodeToSnapshot(estimationState, nodeTemplate); err != nil {
-				return fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
+				return false, fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
 			}
 
 			// And try to schedule pod to it.
@@ -206,7 +211,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// adding and removing node to snapshot for each such pod.
 			if err := e.clusterSnapshot.SchedulePod(pod, estimationState.lastNodeName); err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 				// Unexpected error.
-				return err
+				return false, err
 			} else if err != nil {
 				// The pod can't be scheduled on the new node because of scheduling predicates.
 				break
@@ -215,7 +220,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			estimationState.trackScheduledPod(pod, estimationState.lastNodeName)
 		}
 	}
-	return nil
+	return true, nil
 }
 
 func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
