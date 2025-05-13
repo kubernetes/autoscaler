@@ -983,6 +983,24 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					}
 				}
 			}`),
+			`spec.resourcePolicy.containerPolicies[0].mode: Unsupported value: "bad": supported values: "Auto", "Off"`: []byte(`{
+				"kind": "VerticalPodAutoscaler",
+				"apiVersion": "autoscaling.k8s.io/v1",
+				"metadata": {"name": "hamster-vpa-invalid-mode"},
+				"spec": {
+					"targetRef": {
+						"apiVersion": "apps/v1",
+						"kind": "Deployment",
+						"name": "hamster"
+					},
+					"resourcePolicy": {
+						"containerPolicies": [{
+							"containerName": "loot box",
+							"mode": "bad"
+						}]
+					},
+				}
+			}`),
 		}
 
 		var err2 error

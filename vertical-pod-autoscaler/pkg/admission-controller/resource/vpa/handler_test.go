@@ -88,22 +88,6 @@ func TestValidateVPA(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid scaling mode",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					ResourcePolicy: &vpa_types.PodResourcePolicy{
-						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
-							{
-								ContainerName: "loot box",
-								Mode:          &badScalingMode,
-							},
-						},
-					},
-				},
-			},
-			expectError: fmt.Errorf("unexpected Mode value bad"),
-		},
-		{
 			name: "bad limits",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
