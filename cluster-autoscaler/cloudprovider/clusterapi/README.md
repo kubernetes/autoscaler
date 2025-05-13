@@ -186,6 +186,13 @@ There are two annotations that control how a cluster resource should be scaled:
 The autoscaler will monitor any `MachineSet`, `MachineDeployment`, or `MachinePool` containing
 both of these annotations.
 
+> Note: The cluster autoscaler does not enforce the node group sizes. If a node group is
+> below the minimum number of nodes, or above the maximum number of nodes, the cluster
+> autoscaler will not scale that node group up or down. The cluster autoscaler can be configured
+> to enforce the minimum node group size by enabling the `--enforce-node-group-min-size` flag.
+> Please see [this entry in the Cluster Autoscaler FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
+> for more information.
+
 > Note: `MachinePool` support in cluster-autoscaler requires a provider implementation
 > that supports the new "MachinePool Machines" feature. MachinePools in Cluster API are
 > considered an [experimental feature](https://cluster-api.sigs.k8s.io/tasks/experimental-features/experimental-features.html#active-experimental-features) and are not enabled by default.
