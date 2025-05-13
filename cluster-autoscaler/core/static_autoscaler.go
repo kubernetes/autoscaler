@@ -93,7 +93,6 @@ type StaticAutoscaler struct {
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	taintConfig             taints.TaintConfig
-	draProvider             *draprovider.Provider
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -167,7 +166,8 @@ func NewStaticAutoscaler(
 		processorCallbacks,
 		debuggingSnapshotter,
 		remainingPdbTracker,
-		clusterStateRegistry)
+		clusterStateRegistry,
+		draProvider)
 
 	taintConfig := taints.NewTaintConfig(opts)
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
@@ -179,7 +179,7 @@ func NewStaticAutoscaler(
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor, draProvider)
+	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingContext.ScaleDownActuator = scaleDownActuator
 
 	if scaleUpOrchestrator == nil {
@@ -203,7 +203,6 @@ func NewStaticAutoscaler(
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		taintConfig:             taintConfig,
-		draProvider:             draProvider,
 	}
 }
 
@@ -337,8 +336,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 
 	var draSnapshot drasnapshot.Snapshot
-	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.draProvider != nil {
-		draSnapshot, err = a.draProvider.Snapshot()
+	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.AutoscalingContext.DraProvider != nil {
+		draSnapshot, err = a.AutoscalingContext.DraProvider.Snapshot()
 		if err != nil {
 			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 		}
@@ -606,7 +605,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime, scaleDownCandidates)
+		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime)
 		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
 			"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
 			a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
@@ -627,6 +626,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
+			a.updateSoftDeletionTaints(allNodes)
+		} else if len(scaleDownCandidates) == 0 {
+			klog.V(4).Infof("Starting scale down: no scale down candidates. skipping...")
+			scaleDownStatus.Result = scaledownstatus.ScaleDownNoCandidates
+			metrics.UpdateLastTime(metrics.ScaleDown, time.Now())
 			a.updateSoftDeletionTaints(allNodes)
 		} else {
 			klog.V(4).Infof("Starting scale down")
@@ -712,8 +716,8 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 	return nil
 }
 
-func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time, scaleDownCandidates []*apiv1.Node) bool {
-	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop || len(scaleDownCandidates) == 0
+func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time) bool {
+	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop
 
 	if a.ScaleDownDelayTypeLocal {
 		return scaleDownInCooldown

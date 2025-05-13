@@ -412,5 +412,29 @@
         "realmKey": "oc23",
         "regionIdentifier": "us-thames-1",
         "realmDomainComponent": "oraclecloud23.com"
+    },
+    {
+        "regionKey": "dtz",
+        "realmKey": "oc35",
+        "regionIdentifier": "ap-seoul-2",
+        "realmDomainComponent": "oraclecloud35.com"
+    },
+    {
+        "regionKey": "dln",
+        "realmKey": "oc35",
+        "regionIdentifier": "ap-suwon-1",
+        "realmDomainComponent": "oraclecloud35.com"
+    },
+    {
+        "regionKey": "bno",
+        "realmKey": "oc35",
+        "regionIdentifier": "ap-chuncheon-2",
+        "realmDomainComponent": "oraclecloud35.com"
+    },
+    {
+        "regionKey": "rba",
+        "realmKey": "oc26",
+        "regionIdentifier": "me-alain-1",
+        "realmDomainComponent": "oraclecloud26.com"
     }
 ]

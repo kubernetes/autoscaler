@@ -25,6 +25,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 
 	"k8s.io/klog/v2"
 )
@@ -156,7 +157,11 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
 				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
 				if oldSpec != nil {
-					memory := oldSpec.Resources.Requests[apiv1.ResourceMemory]
+					requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
+					var memory resource.Quantity
+					if requests != nil {
+						memory = requests[apiv1.ResourceMemory]
+					}
 					oomInfo := OomInfo{
 						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
 						Memory:    model.ResourceAmount(memory.Value()),

@@ -100,18 +100,85 @@ func TestOOMReceived(t *testing.T) {
 	assert.NoError(t, err)
 	p2, err := newPod(pod2Yaml)
 	assert.NoError(t, err)
-	observer := NewObserver()
-	go observer.OnUpdate(p1, p2)
-
-	info := <-observer.observedOomsChannel
-	container := info.ContainerID
-	assert.Equal(t, "mockNamespace", container.PodID.Namespace)
-	assert.Equal(t, "Pod1", container.PodID.PodName)
-	assert.Equal(t, "Name11", container.ContainerName)
-	assert.Equal(t, model.ResourceAmount(int64(1024)), info.Memory)
 	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
 	assert.NoError(t, err)
-	assert.Equal(t, timestamp.Unix(), info.Timestamp.Unix())
+
+	testCases := []struct {
+		desc        string
+		oldPod      *v1.Pod
+		newPod      *v1.Pod
+		wantOOMInfo OomInfo
+	}{
+		{
+			desc:   "OK",
+			oldPod: p1,
+			newPod: p2,
+			wantOOMInfo: OomInfo{
+				ContainerID: model.ContainerID{
+					ContainerName: "Name11",
+					PodID: model.PodID{
+						Namespace: "mockNamespace",
+						PodName:   "Pod1",
+					},
+				},
+				Memory:    model.ResourceAmount(int64(1024)),
+				Timestamp: timestamp,
+			},
+		},
+		{
+			desc: "Old pod does not set memory requests",
+			oldPod: func() *v1.Pod {
+				oldPod := p1.DeepCopy()
+				oldPod.Spec.Containers[0].Resources.Requests = nil
+				oldPod.Status.ContainerStatuses[0].Resources = nil
+				return oldPod
+			}(),
+			newPod: p2,
+			wantOOMInfo: OomInfo{
+				ContainerID: model.ContainerID{
+					ContainerName: "Name11",
+					PodID: model.PodID{
+						Namespace: "mockNamespace",
+						PodName:   "Pod1",
+					},
+				},
+				Memory:    model.ResourceAmount(int64(0)),
+				Timestamp: timestamp,
+			},
+		},
+		{
+			desc: "Old pod also set memory request in containerStatus, prefer info from containerStatus",
+			oldPod: func() *v1.Pod {
+				oldPod := p1.DeepCopy()
+				oldPod.Status.ContainerStatuses[0].Resources = &v1.ResourceRequirements{
+					Requests: v1.ResourceList{
+						v1.ResourceMemory: resource.MustParse("2048"),
+					},
+				}
+				return oldPod
+			}(),
+			newPod: p2,
+			wantOOMInfo: OomInfo{
+				ContainerID: model.ContainerID{
+					ContainerName: "Name11",
+					PodID: model.PodID{
+						Namespace: "mockNamespace",
+						PodName:   "Pod1",
+					},
+				},
+				Memory:    model.ResourceAmount(int64(2048)),
+				Timestamp: timestamp,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			observer := NewObserver()
+			observer.OnUpdate(tc.oldPod, tc.newPod)
+			info := <-observer.observedOomsChannel
+			assert.Equal(t, tc.wantOOMInfo, info)
+		})
+	}
 }
 
 func TestMalformedPodReceived(t *testing.T) {

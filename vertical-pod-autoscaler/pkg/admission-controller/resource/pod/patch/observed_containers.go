@@ -31,6 +31,10 @@ func (*observedContainers) CalculatePatches(pod *core.Pod, _ *vpa_types.Vertical
 	return []resource_admission.PatchRecord{GetAddAnnotationPatch(annotations.VpaObservedContainersLabel, vpaObservedContainersValue)}, nil
 }
 
+func (*observedContainers) PatchResourceTarget() PatchResourceTarget {
+	return Pod
+}
+
 // NewObservedContainersCalculator returns calculator for
 // observed containers patches.
 func NewObservedContainersCalculator() Calculator {

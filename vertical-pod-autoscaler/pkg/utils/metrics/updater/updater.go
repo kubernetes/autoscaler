@@ -76,13 +76,47 @@ var (
 		}, []string{"vpa_size_log2"},
 	)
 
+	inPlaceUpdatableCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "in_place_updatable_pods_total",
+			Help:      "Number of Pods matching in place update criteria.",
+		}, []string{"vpa_size_log2"},
+	)
+
+	inPlaceUpdatedCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "in_place_updated_pods_total",
+			Help:      "Number of Pods updated in-place by Updater to apply a new recommendation.",
+		}, []string{"vpa_size_log2"},
+	)
+
+	vpasWithInPlaceUpdatablePodsCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "vpas_with_in_place_updatable_pods_total",
+			Help:      "Number of VPA objects with at least one Pod matching in place update criteria.",
+		}, []string{"vpa_size_log2"},
+	)
+
+	vpasWithInPlaceUpdatedPodsCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "vpas_with_in_place_updated_pods_total",
+			Help:      "Number of VPA objects with at least one in-place updated Pod.",
+		}, []string{"vpa_size_log2"},
+	)
+
+	// TODO: Add metrics for failed in-place update attempts
+
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
 )
 
 // Register initializes all metrics for VPA Updater
 func Register() {
-	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, functionLatency)
+	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, inPlaceUpdatableCount, inPlaceUpdatedCount, vpasWithInPlaceUpdatablePodsCount, vpasWithInPlaceUpdatedPodsCount, functionLatency)
 }
 
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
@@ -122,6 +156,27 @@ func NewVpasWithEvictedPodsCounter() *SizeBasedGauge {
 func AddEvictedPod(vpaSize int) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	evictedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
+}
+
+// NewInPlaceUpdtateablePodsCounter returns a wrapper for counting Pods which are matching in-place update criteria
+func NewInPlaceUpdtateablePodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(evictableCount)
+}
+
+// NewVpasWithInPlaceUpdtateablePodsCounter returns a wrapper for counting VPA objects with Pods matching in-place update criteria
+func NewVpasWithInPlaceUpdtateablePodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(vpasWithEvictablePodsCount)
+}
+
+// NewVpasWithInPlaceUpdtatedPodsCounter returns a wrapper for counting VPA objects with evicted Pods
+func NewVpasWithInPlaceUpdtatedPodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(vpasWithEvictedPodsCount)
+}
+
+// AddInPlaceUpdatedPod increases the counter of pods updated in place by Updater, by given VPA size
+func AddInPlaceUpdatedPod(vpaSize int) {
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
+	inPlaceUpdatedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
 }
 
 // Add increases the counter for the given VPA size

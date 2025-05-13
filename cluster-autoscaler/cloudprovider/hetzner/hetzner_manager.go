@@ -110,32 +110,38 @@ func newManager() (*hetznerManager, error) {
 	var err error
 
 	clusterConfigBase64 := os.Getenv("HCLOUD_CLUSTER_CONFIG")
+	clusterConfigFile := os.Getenv("HCLOUD_CLUSTER_CONFIG_FILE")
 	cloudInitBase64 := os.Getenv("HCLOUD_CLOUD_INIT")
 
-	if clusterConfigBase64 == "" && cloudInitBase64 == "" {
-		return nil, errors.New("`HCLOUD_CLUSTER_CONFIG` or `HCLOUD_CLOUD_INIT` is not specified")
+	if clusterConfigBase64 == "" && cloudInitBase64 == "" && clusterConfigFile == "" {
+		return nil, errors.New("neither `HCLOUD_CLUSTER_CONFIG`, `HCLOUD_CLOUD_INIT` nor `HCLOUD_CLUSTER_CONFIG_FILE` is specified")
 	}
-	var clusterConfig *ClusterConfig = &ClusterConfig{}
+	var clusterConfig = &ClusterConfig{}
 
+	var clusterConfigJsonData []byte
+	var readErr error
 	if clusterConfigBase64 != "" {
+		clusterConfigJsonData, readErr = base64.StdEncoding.DecodeString(clusterConfigBase64)
+		if readErr != nil {
+			return nil, fmt.Errorf("failed to parse cluster config error: %s", readErr)
+		}
+	} else if clusterConfigFile != "" {
+		clusterConfigJsonData, readErr = os.ReadFile(clusterConfigFile)
+		if readErr != nil {
+			return nil, fmt.Errorf("failed to read cluster config file: %s", readErr)
+		}
+	}
+
+	if clusterConfigJsonData != nil {
+		unmarshalErr := json.Unmarshal(clusterConfigJsonData, &clusterConfig)
+		if unmarshalErr != nil {
+			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", unmarshalErr)
+		}
 		clusterConfig.IsUsingNewFormat = true
-	}
-
-	if clusterConfig.IsUsingNewFormat {
-		clusterConfigEnv, err := base64.StdEncoding.DecodeString(clusterConfigBase64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse cluster config error: %s", err)
-		}
-		err = json.Unmarshal(clusterConfigEnv, &clusterConfig)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", err)
-		}
-	}
-
-	if !clusterConfig.IsUsingNewFormat {
-		cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
+	} else {
+		cloudInit, decErr := base64.StdEncoding.DecodeString(cloudInitBase64)
+		if decErr != nil {
+			return nil, fmt.Errorf("failed to parse cloud init error: %s", decErr)
 		}
 
 		imageName := os.Getenv("HCLOUD_IMAGE")

@@ -365,6 +365,7 @@ func TestGetContainersResources(t *testing.T) {
 	testCases := []struct {
 		name             string
 		container        apiv1.Container
+		containerStatus  apiv1.ContainerStatus
 		vpa              *vpa_types.VerticalPodAutoscaler
 		expectedCPU      *resource.Quantity
 		expectedMem      *resource.Quantity
@@ -518,11 +519,26 @@ func TestGetContainersResources(t *testing.T) {
 			expectedMemLimit: mustParseResourcePointer("20M"),
 			addAll:           false,
 		},
+		{
+			name:      "CPU and memory recommendation, request and limits only set in containerStatus, addAll true",
+			container: test.Container().WithName("container").Get(),
+			containerStatus: test.ContainerStatus().WithName("container").
+				WithCPURequest(resource.MustParse("1")).
+				WithMemRequest(resource.MustParse("1M")).
+				WithCPULimit(resource.MustParse("10")).
+				WithMemLimit(resource.MustParse("3M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTarget("3", "2M").Get(),
+			expectedCPU:      mustParseResourcePointer("3"),
+			expectedMem:      mustParseResourcePointer("2M"),
+			expectedCPULimit: mustParseResourcePointer("30"),
+			expectedMemLimit: mustParseResourcePointer("6M"),
+			addAll:           true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			pod := test.Pod().WithName("pod").AddContainer(tc.container).Get()
+			pod := test.Pod().WithName("pod").AddContainer(tc.container).AddContainerStatus(tc.containerStatus).Get()
 			resources := GetContainersResources(pod, tc.vpa.Spec.ResourcePolicy, *tc.vpa.Status.Recommendation, nil, tc.addAll, vpa_api_util.ContainerToAnnotationsMap{})
 
 			cpu, cpuPresent := resources[0].Requests[apiv1.ResourceCPU]

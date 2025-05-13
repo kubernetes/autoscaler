@@ -30,10 +30,19 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 )
 
 var (
+	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
+		vpa_types.UpdateModeOff:               struct{}{},
+		vpa_types.UpdateModeInitial:           struct{}{},
+		vpa_types.UpdateModeRecreate:          struct{}{},
+		vpa_types.UpdateModeAuto:              struct{}{},
+		vpa_types.UpdateModeInPlaceOrRecreate: struct{}{},
+	}
+
 	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{
 		vpa_types.ContainerScalingModeAuto: struct{}{},
 		vpa_types.ContainerScalingModeOff:  struct{}{},
@@ -106,6 +115,16 @@ func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
 
 // ValidateVPA checks the correctness of VPA Spec and returns an error if there is a problem.
 func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
+	if vpa.Spec.UpdatePolicy != nil {
+		mode := vpa.Spec.UpdatePolicy.UpdateMode
+		if mode == nil {
+			return fmt.Errorf("UpdateMode is required if UpdatePolicy is used")
+		}
+		if (*mode == vpa_types.UpdateModeInPlaceOrRecreate) && !features.Enabled(features.InPlaceOrRecreate) && isCreate {
+			return fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate)
+		}
+	}
+
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
 			mode := policy.Mode

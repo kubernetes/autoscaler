@@ -24,7 +24,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 )
 
 const (
@@ -40,12 +43,50 @@ func TestValidateVPA(t *testing.T) {
 	validScalingMode := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
+	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
 	tests := []struct {
-		name        string
-		vpa         vpa_types.VerticalPodAutoscaler
-		isCreate    bool
-		expectError error
+		name                                 string
+		vpa                                  vpa_types.VerticalPodAutoscaler
+		isCreate                             bool
+		expectError                          error
+		inPlaceOrRecreateFeatureGateDisabled bool
 	}{
+		{
+			name: "creating VPA with InPlaceOrRecreate update mode not allowed by disabled feature gate",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceOrRecreateUpdateMode,
+					},
+				},
+			},
+			isCreate:                             true,
+			inPlaceOrRecreateFeatureGateDisabled: true,
+			expectError:                          fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate),
+		},
+		{
+			name: "updating VPA with InPlaceOrRecreate update mode allowed by disabled feature gate",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceOrRecreateUpdateMode,
+					},
+				},
+			},
+			isCreate:                             false,
+			inPlaceOrRecreateFeatureGateDisabled: true,
+			expectError:                          nil,
+		},
+		{
+			name: "InPlaceOrRecreate update mode enabled by feature gate",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceOrRecreateUpdateMode,
+					},
+				},
+			},
+		},
 		{
 			name: "invalid scaling mode",
 			vpa: vpa_types.VerticalPodAutoscaler{
@@ -212,6 +253,9 @@ func TestValidateVPA(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			if !tc.inPlaceOrRecreateFeatureGateDisabled {
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+			}
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)

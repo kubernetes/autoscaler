@@ -29,13 +29,16 @@ rules:
       - watch
   - apiGroups:
       - ""
+      - events.k8s.io
     resources:
       - events
     verbs:
+      - create
       - get
       - list
       - watch
-      - create
+      - patch
+      - update
   - apiGroups:
       - "poc.autoscaling.k8s.io"
     resources:
@@ -119,6 +122,32 @@ rules:
       - pods/eviction
     verbs:
       - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:vpa-updater-in-place
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods/resize
+      - pods # required for patching vpaInPlaceUpdated annotations onto the pod
+    verbs:
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:vpa-updater-in-place-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:vpa-updater-in-place
+subjects:
+  - kind: ServiceAccount
+    name: vpa-updater
+    namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

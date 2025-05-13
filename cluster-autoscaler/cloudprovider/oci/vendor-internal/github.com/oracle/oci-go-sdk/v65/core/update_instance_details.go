@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -27,15 +27,17 @@ type UpdateInstanceDetails struct {
 
 	// The OCID of the compute capacity reservation this instance is launched under.
 	// You can remove the instance from a reservation by specifying an empty string as input for this field.
-	// For more information, see Capacity Reservations (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/reserve-capacity.htm#default).
+	// For more information, see Capacity Reservations (https://docs.oracle.com/iaas/Content/Compute/Tasks/reserve-capacity.htm#default).
 	CapacityReservationId *string `mandatory:"false" json:"capacityReservationId"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
-	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
 	DefinedTags map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 
-	// Security Attributes for this resource. This is unique to ZPR, and helps identify which resources are allowed to be accessed by what permission controls.
+	// Security attributes (https://docs.oracle.com/iaas/Content/zero-trust-packet-routing/zpr-artifacts.htm#security-attributes) are labels
+	// for a resource that can be referenced in a Zero Trust Packet Routing (https://docs.oracle.com/iaas/Content/zero-trust-packet-routing/overview.htm)
+	// (ZPR) policy to control access to ZPR-supported resources.
 	// Example: `{"Oracle-DataSecurity-ZPR": {"MaxEgressCount": {"value":"42","mode":"audit"}}}`
 	SecurityAttributes map[string]map[string]interface{} `mandatory:"false" json:"securityAttributes"`
 
@@ -44,7 +46,7 @@ type UpdateInstanceDetails struct {
 	DisplayName *string `mandatory:"false" json:"displayName"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
-	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
+	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
@@ -76,9 +78,9 @@ type UpdateInstanceDetails struct {
 	// The shape of the instance. The shape determines the number of CPUs and the amount of memory
 	// allocated to the instance. For more information about how to change shapes, and a list of
 	// shapes that are supported, see
-	// Editing an Instance (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/resizinginstances.htm).
+	// Editing an Instance (https://docs.oracle.com/iaas/Content/Compute/Tasks/resizinginstances.htm).
 	// For details about the CPUs, memory, and other properties of each shape, see
-	// Compute Shapes (https://docs.cloud.oracle.com/iaas/Content/Compute/References/computeshapes.htm).
+	// Compute Shapes (https://docs.oracle.com/iaas/Content/Compute/References/computeshapes.htm).
 	// The new shape must be compatible with the image that was used to launch the instance. You
 	// can enumerate all available shapes and determine image compatibility by calling
 	// ListShapes.
@@ -128,7 +130,7 @@ type UpdateInstanceDetails struct {
 	// Stopped state.
 	// To reboot migrate a bare metal instance, use the InstanceAction operation.
 	// For more information, see
-	// Infrastructure Maintenance (https://docs.cloud.oracle.com/iaas/Content/Compute/References/infrastructure-maintenance.htm).
+	// Infrastructure Maintenance (https://docs.oracle.com/iaas/Content/Compute/References/infrastructure-maintenance.htm).
 	// Example: `2018-05-25T21:10:29.600Z`
 	TimeMaintenanceRebootDue *common.SDKTime `mandatory:"false" json:"timeMaintenanceRebootDue"`
 
@@ -139,6 +141,9 @@ type UpdateInstanceDetails struct {
 	DedicatedVmHostId *string `mandatory:"false" json:"dedicatedVmHostId"`
 
 	PlatformConfig UpdateInstancePlatformConfig `mandatory:"false" json:"platformConfig"`
+
+	// The list of liscensing configurations with target update values.
+	LicensingConfigs []UpdateInstanceLicensingConfig `mandatory:"false" json:"licensingConfigs"`
 }
 
 func (m UpdateInstanceDetails) String() string {
@@ -182,6 +187,7 @@ func (m *UpdateInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 		TimeMaintenanceRebootDue  *common.SDKTime                                    `json:"timeMaintenanceRebootDue"`
 		DedicatedVmHostId         *string                                            `json:"dedicatedVmHostId"`
 		PlatformConfig            updateinstanceplatformconfig                       `json:"platformConfig"`
+		LicensingConfigs          []updateinstancelicensingconfig                    `json:"licensingConfigs"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -243,6 +249,18 @@ func (m *UpdateInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 		m.PlatformConfig = nil
 	}
 
+	m.LicensingConfigs = make([]UpdateInstanceLicensingConfig, len(model.LicensingConfigs))
+	for i, n := range model.LicensingConfigs {
+		nn, e = n.UnmarshalPolymorphicJSON(n.JsonData)
+		if e != nil {
+			return e
+		}
+		if nn != nil {
+			m.LicensingConfigs[i] = nn.(UpdateInstanceLicensingConfig)
+		} else {
+			m.LicensingConfigs[i] = nil
+		}
+	}
 	return
 }
 
