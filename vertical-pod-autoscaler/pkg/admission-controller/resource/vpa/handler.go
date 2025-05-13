@@ -34,21 +34,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 )
 
-var (
-	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
-		vpa_types.UpdateModeOff:               struct{}{},
-		vpa_types.UpdateModeInitial:           struct{}{},
-		vpa_types.UpdateModeRecreate:          struct{}{},
-		vpa_types.UpdateModeAuto:              struct{}{},
-		vpa_types.UpdateModeInPlaceOrRecreate: struct{}{},
-	}
-
-	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{
-		vpa_types.ContainerScalingModeAuto: struct{}{},
-		vpa_types.ContainerScalingModeOff:  struct{}{},
-	}
-)
-
 // resourceHandler builds patches for VPAs.
 type resourceHandler struct {
 	preProcessor PreProcessor
@@ -127,12 +112,6 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
-			mode := policy.Mode
-			if mode != nil {
-				if _, found := possibleScalingModes[*mode]; !found {
-					return fmt.Errorf("unexpected Mode value %s", *mode)
-				}
-			}
 			for resource, min := range policy.MinAllowed {
 				if err := validateResourceResolution(resource, min); err != nil {
 					return fmt.Errorf("MinAllowed: %v", err)
@@ -149,6 +128,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				}
 			}
 			ControlledValues := policy.ControlledValues
+			mode := policy.Mode
 			if mode != nil && ControlledValues != nil {
 				if *mode == vpa_types.ContainerScalingModeOff && *ControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
 					return fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off.")
