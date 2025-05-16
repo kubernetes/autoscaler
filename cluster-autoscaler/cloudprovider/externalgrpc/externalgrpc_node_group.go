@@ -283,6 +283,8 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 			MaxNodeProvisionTime: &metav1.Duration{
 				Duration: defaults.MaxNodeProvisionTime,
 			},
+			ZeroOrMaxNodeScaling:        defaults.ZeroOrMaxNodeScaling,
+			IgnoreDaemonSetsUtilization: defaults.IgnoreDaemonSetsUtilization,
 		},
 	})
 	if err != nil {
@@ -303,6 +305,8 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 		ScaleDownUnneededTime:            pbOpts.GetScaleDownUnneededTime().Duration,
 		ScaleDownUnreadyTime:             pbOpts.GetScaleDownUnreadyTime().Duration,
 		MaxNodeProvisionTime:             pbOpts.GetMaxNodeProvisionTime().Duration,
+		ZeroOrMaxNodeScaling:             pbOpts.GetZeroOrMaxNodeScaling(),
+		IgnoreDaemonSetsUtilization:      pbOpts.GetIgnoreDaemonSetsUtilization(),
 	}
 	return opts, nil
 }

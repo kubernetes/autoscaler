@@ -19,10 +19,12 @@ package recommender
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -88,6 +90,23 @@ var (
 			Help:      "Count of responses to queries to metrics server",
 		}, []string{"is_error", "client_name"},
 	)
+
+	prometheusClientRequestsCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "prometheus_client_api_requests_count",
+			Help:      "Number of requests to a Prometheus API",
+		}, []string{"code", "method"},
+	)
+
+	prometheusClientRequestsDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "prometheus_client_api_requests_duration_seconds",
+			Help:      "Duration of requests to a Prometheus API",
+			Buckets:   []float64{0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0},
+		}, []string{"code", "method"},
+	)
 )
 
 type objectCounterKey struct {
@@ -105,7 +124,7 @@ type ObjectCounter struct {
 
 // Register initializes all metrics for VPA Recommender
 func Register() {
-	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount, metricServerResponses)
+	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount, metricServerResponses, prometheusClientRequestsCount, prometheusClientRequestsDuration)
 }
 
 // NewExecutionTimer provides a timer for Recommender's RunOnce execution
@@ -184,4 +203,14 @@ func (oc *ObjectCounter) Observe() {
 			fmt.Sprintf("%v", k.unsupportedConfig),
 		).Set(float64(v))
 	}
+}
+
+// NewPrometheusRoundTripperCounter creates a RoundTripper that counts Prometheus client API requests
+func NewPrometheusRoundTripperCounter(roundTripper http.RoundTripper) promhttp.RoundTripperFunc {
+	return promhttp.InstrumentRoundTripperCounter(prometheusClientRequestsCount, roundTripper)
+}
+
+// NewPrometheusRoundTripperDuration creates a RoundTripper that measures Prometheus client API requests duration
+func NewPrometheusRoundTripperDuration(roundTripper http.RoundTripper) promhttp.RoundTripperFunc {
+	return promhttp.InstrumentRoundTripperDuration(prometheusClientRequestsDuration, roundTripper)
 }

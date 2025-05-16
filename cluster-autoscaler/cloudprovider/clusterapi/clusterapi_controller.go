@@ -55,6 +55,7 @@ const (
 	resourceNameMachineSet        = "machinesets"
 	resourceNameMachineDeployment = "machinedeployments"
 	resourceNameMachinePool       = "machinepools"
+	deletingMachinePrefix         = "deleting-machine-"
 	failedMachinePrefix           = "failed-machine-"
 	pendingMachinePrefix          = "pending-machine-"
 	machineTemplateKind           = "MachineTemplate"
@@ -314,6 +315,9 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 		return u.DeepCopy(), nil
 	}
 
+	if isDeletingMachineProviderID(providerID) {
+		return c.findMachine(machineKeyFromDeletingMachineProviderID(providerID))
+	}
 	if isFailedMachineProviderID(providerID) {
 		return c.findMachine(machineKeyFromFailedProviderID(providerID))
 	}
@@ -339,6 +343,24 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 	return c.findMachine(path.Join(ns, machineID))
 }
 
+func createDeletingMachineNormalizedProviderID(namespace, name string) string {
+	return fmt.Sprintf("%s%s_%s", deletingMachinePrefix, namespace, name)
+}
+
+func isDeletingMachineProviderID(providerID normalizedProviderID) bool {
+	return strings.HasPrefix(string(providerID), deletingMachinePrefix)
+}
+
+func machineKeyFromDeletingMachineProviderID(providerID normalizedProviderID) string {
+	namespaceName := strings.TrimPrefix(string(providerID), deletingMachinePrefix)
+	return strings.Replace(namespaceName, "_", "/", 1)
+}
+
+// createPendingMachineProviderID creates a providerID for a machine that is pending
+func createPendingMachineProviderID(namespace, name string) string {
+	return fmt.Sprintf("%s%s_%s", pendingMachinePrefix, namespace, name)
+}
+
 func isPendingMachineProviderID(providerID normalizedProviderID) bool {
 	return strings.HasPrefix(string(providerID), pendingMachinePrefix)
 }
@@ -348,6 +370,10 @@ func machineKeyFromPendingMachineProviderID(providerID normalizedProviderID) str
 	return strings.Replace(namespaceName, "_", "/", 1)
 }
 
+func createFailedMachineNormalizedProviderID(namespace, name string) string {
+	return fmt.Sprintf("%s%s_%s", failedMachinePrefix, namespace, name)
+}
+
 func isFailedMachineProviderID(providerID normalizedProviderID) bool {
 	return strings.HasPrefix(string(providerID), failedMachinePrefix)
 }
@@ -355,6 +381,15 @@ func isFailedMachineProviderID(providerID normalizedProviderID) bool {
 func machineKeyFromFailedProviderID(providerID normalizedProviderID) string {
 	namespaceName := strings.TrimPrefix(string(providerID), failedMachinePrefix)
 	return strings.Replace(namespaceName, "_", "/", 1)
+}
+
+// isProviderIDNormalized determines whether a node's providerID is the standard
+// providerID assigned by the cloud provider, or if it has
+// been modified by the CAS CAPI provider to indicate deleting, pending, or failed
+func isProviderIDNormalized(providerID normalizedProviderID) bool {
+	return !isDeletingMachineProviderID(providerID) &&
+		!isPendingMachineProviderID(providerID) &&
+		!isFailedMachineProviderID(providerID)
 }
 
 // findNodeByNodeName finds the Node object keyed by name.. Returns
@@ -603,36 +638,46 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 	}
 
 	for _, machine := range machines {
-		providerID, found, err := unstructured.NestedString(machine.UnstructuredContent(), "spec", "providerID")
-		if err != nil {
-			return nil, err
-		}
-
-		if found {
-			if providerID != "" {
-				providerIDs = append(providerIDs, providerID)
-				continue
-			}
-		}
-
-		klog.Warningf("Machine %q has no providerID", machine.GetName())
-
+		// Failed Machines
+		// In some cases it is possible for a machine to have acquired a provider ID from the infrastructure and
+		// then become failed later. We want to ensure that a failed machine is not counted towards the total
+		// number of nodes in the cluster, for this reason we will detect a failed machine first, regardless
+		// of provider ID, and give it a normalized provider ID with failure message prepended.
 		failureMessage, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "failureMessage")
 		if err != nil {
 			return nil, err
 		}
 
 		if found {
-			klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
-			// Provide a fake ID to allow the autoscaler to track machines that will never
+			// Provide a normalized ID to allow the autoscaler to track machines that will never
 			// become nodes and mark the nodegroup unhealthy after maxNodeProvisionTime.
 			// Fake ID needs to be recognised later and converted into a machine key.
 			// Use an underscore as a separator between namespace and name as it is not a
 			// valid character within a namespace name.
-			providerIDs = append(providerIDs, fmt.Sprintf("%s%s_%s", failedMachinePrefix, machine.GetNamespace(), machine.GetName()))
+			klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
+			providerIDs = append(providerIDs, createFailedMachineNormalizedProviderID(machine.GetNamespace(), machine.GetName()))
 			continue
 		}
 
+		// Deleting Machines
+		// Machines that are in deleting state should be identified so that in scenarios where the core
+		// autoscaler would like to adjust the size of a node group, we can give a proper count and
+		// be able to filter machines in that state, regardless of whether they are still active nodes in the cluster.
+		// We give these machines normalized provider IDs to aid in the filtering process.
+		if !machine.GetDeletionTimestamp().IsZero() {
+			klog.V(4).Infof("Machine %q has a non-zero deletion timestamp", machine.GetName())
+			providerIDs = append(providerIDs, createDeletingMachineNormalizedProviderID(machine.GetNamespace(), machine.GetName()))
+			continue
+		}
+
+		// Pending Machines
+		// Machines that do not yet have an associated node reference are considering to be pending. These
+		// nodes need to be filtered so that in a case where a machine is not becoming a node, or the instance
+		// lifecycle has changed during provisioning (eg spot instance going away), or the core autoscaler has
+		// decided that the node is not needed.
+		// Look for a node reference in the status, a machine without a node reference, and that is also not
+		// in failed or deleting state, has not yet become a node, and should be marked as pending.
+		// We give these machines normalized provider IDs to aid in the filtering process.
 		_, found, err = unstructured.NestedFieldCopy(machine.UnstructuredContent(), "status", "nodeRef")
 		if err != nil {
 			return nil, err
@@ -640,10 +685,33 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 
 		if !found {
 			klog.V(4).Infof("Status.NodeRef of machine %q is currently nil", machine.GetName())
-			providerIDs = append(providerIDs, fmt.Sprintf("%s%s_%s", pendingMachinePrefix, machine.GetNamespace(), machine.GetName()))
+			providerIDs = append(providerIDs, createPendingMachineProviderID(machine.GetNamespace(), machine.GetName()))
 			continue
 		}
 
+		// Running Machines
+		// We have filtered out the machines in failed, deleting, and pending states. We now check the provider
+		// ID and potentially the node reference details. It is ok for a machine not to have a provider ID as
+		// not all CAPI provider implement this field, but a machine in running state should have a valid
+		// node reference. If a provider ID is present, we add that to the list as we know it is not failed,
+		// deleting, or pending. If an empty provider ID is present, we check the node details to ensure that
+		// the machine references a valid node.
+		providerID, found, err := unstructured.NestedString(machine.UnstructuredContent(), "spec", "providerID")
+		if err != nil {
+			return nil, err
+		}
+
+		if found {
+			if providerID != "" {
+				// Machine has a provider ID, add it to the list
+				providerIDs = append(providerIDs, providerID)
+				continue
+			}
+		}
+
+		klog.Warningf("Machine %q has no providerID", machine.GetName())
+
+		// Begin checking to determine if the node reference is valid
 		nodeRefKind, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "nodeRef", "kind")
 		if err != nil {
 			return nil, err
@@ -665,6 +733,8 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 				return nil, fmt.Errorf("unknown node %q", nodeRefName)
 			}
 
+			// A node has been found that corresponds to this machine, since we know that this machine has
+			// an empty provider ID, we add the provider ID from the node to the list.
 			if node != nil {
 				providerIDs = append(providerIDs, node.Spec.ProviderID)
 			}

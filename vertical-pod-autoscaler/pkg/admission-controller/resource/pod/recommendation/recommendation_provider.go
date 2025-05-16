@@ -24,6 +24,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -53,6 +54,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
 	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
+		containerRequests, containerLimits := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
 		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
 		if recommendation == nil {
 			if !addAll {
@@ -60,7 +62,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 				continue
 			}
 			klog.V(2).InfoS("No match found for container, using Pod request", "container", container.Name)
-			resources[i].Requests = container.Resources.Requests
+			resources[i].Requests = containerRequests
 		} else {
 			resources[i].Requests = recommendation.Target
 		}
@@ -70,7 +72,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		}
 		containerControlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpaResourcePolicy)
 		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(container.Resources.Limits, container.Resources.Requests, resources[i].Requests, defaultLimit)
+			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(containerLimits, containerRequests, resources[i].Requests, defaultLimit)
 			if proportionalLimits != nil {
 				resources[i].Limits = proportionalLimits
 				if len(limitAnnotations) > 0 {
@@ -88,19 +90,19 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 				resources[i].Limits = core.ResourceList{}
 			}
 
-			cpuRequest, hasCpuRequest := container.Resources.Requests[core.ResourceCPU]
+			cpuRequest, hasCpuRequest := containerRequests[core.ResourceCPU]
 			if _, ok := resources[i].Requests[core.ResourceCPU]; !ok && hasCpuRequest {
 				resources[i].Requests[core.ResourceCPU] = cpuRequest
 			}
-			memRequest, hasMemRequest := container.Resources.Requests[core.ResourceMemory]
+			memRequest, hasMemRequest := containerRequests[core.ResourceMemory]
 			if _, ok := resources[i].Requests[core.ResourceMemory]; !ok && hasMemRequest {
 				resources[i].Requests[core.ResourceMemory] = memRequest
 			}
-			cpuLimit, hasCpuLimit := container.Resources.Limits[core.ResourceCPU]
+			cpuLimit, hasCpuLimit := containerLimits[core.ResourceCPU]
 			if _, ok := resources[i].Limits[core.ResourceCPU]; !ok && hasCpuLimit {
 				resources[i].Limits[core.ResourceCPU] = cpuLimit
 			}
-			memLimit, hasMemLimit := container.Resources.Limits[core.ResourceMemory]
+			memLimit, hasMemLimit := containerLimits[core.ResourceMemory]
 			if _, ok := resources[i].Limits[core.ResourceMemory]; !ok && hasMemLimit {
 				resources[i].Limits[core.ResourceMemory] = memLimit
 			}

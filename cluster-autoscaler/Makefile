@@ -7,7 +7,7 @@ LDFLAGS?=-s
 ENVVAR=CGO_ENABLED=0
 GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
-REGISTRY?=staging-k8s.gcr.io
+REGISTRY?=gcr.io/k8s-staging-autoscaling
 DOCKER_NETWORK?=default
 SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/builder/ | grep -e '^builder_.*\.go' | sed 's/builder_\(.*\)\.go/\1/')
 ifdef BUILD_TAGS
@@ -20,7 +20,7 @@ else
   FOR_PROVIDER=
 endif
 ifdef LDFLAGS
-  LDFLAGS_FLAG=--ldflags "${LDFLAGS}"
+  LDFLAGS_FLAG=--ldflags="${LDFLAGS}"
 else
   LDFLAGS_FLAG=
 endif
@@ -64,15 +64,10 @@ dev-release-arch-%: build-arch-% make-image-arch-% push-image-arch-%
 make-image: make-image-arch-$(GOARCH)
 
 make-image-arch-%:
-ifdef BASEIMAGE
-	docker build --pull --build-arg BASEIMAGE=${BASEIMAGE} \
+	GOOS=$(GOOS) docker buildx build --pull --platform linux/$* \
+		--build-arg "GOARCH=$*" \
 		-t ${IMAGE}-$*:${TAG} \
-		-f Dockerfile.$* .
-else
-	docker build --pull \
-		-t ${IMAGE}-$*:${TAG} \
-		-f Dockerfile.$* .
-endif
+		-f Dockerfile .
 	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
 
 push-image: push-image-arch-$(GOARCH)
@@ -80,12 +75,15 @@ push-image: push-image-arch-$(GOARCH)
 push-image-arch-%:
 	./push_image.sh ${IMAGE}-$*:${TAG}
 
+push-release-image-arch-%:
+	docker push ${IMAGE}-$*:${TAG}
+
 push-manifest:
 	docker manifest create ${IMAGE}:${TAG} \
 	    $(addprefix $(REGISTRY)/cluster-autoscaler$(PROVIDER)-, $(addsuffix :$(TAG), $(ALL_ARCH)))
 	docker manifest push --purge ${IMAGE}:${TAG}
 
-execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-image-arch-,$(ALL_ARCH)) push-manifest
+execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-release-image-arch-,$(ALL_ARCH)) push-manifest
 	@echo "Release ${TAG}${FOR_PROVIDER} completed"
 
 clean: clean-arch-$(GOARCH)

@@ -103,7 +103,7 @@ func (w *Wrapper) NodeGroupForNode(_ context.Context, req *protos.NodeGroupForNo
 	// Checks if ng is nil interface or contains nil value
 	if ng == nil || reflect.ValueOf(ng).IsNil() {
 		return &protos.NodeGroupForNodeResponse{
-			NodeGroup: &protos.NodeGroup{}, //NodeGroup with id = "", meaning the node should not be processed by cluster autoscaler
+			NodeGroup: &protos.NodeGroup{}, // NodeGroup with id = "", meaning the node should not be processed by cluster autoscaler
 		}, nil
 	}
 	return &protos.NodeGroupForNodeResponse{
@@ -365,6 +365,8 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 		ScaleDownUnneededTime:            pbDefaults.GetScaleDownUnneededTime().Duration,
 		ScaleDownUnreadyTime:             pbDefaults.GetScaleDownUnneededTime().Duration,
 		MaxNodeProvisionTime:             pbDefaults.GetMaxNodeProvisionTime().Duration,
+		ZeroOrMaxNodeScaling:             pbDefaults.GetZeroOrMaxNodeScaling(),
+		IgnoreDaemonSetsUtilization:      pbDefaults.GetIgnoreDaemonSetsUtilization(),
 	}
 	opts, err := ng.GetOptions(defaults)
 	if err != nil {
@@ -374,7 +376,7 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 		return nil, err
 	}
 	if opts == nil {
-		return nil, fmt.Errorf("GetOptions not implemented") //make this explicitly so that grpc response is discarded
+		return nil, fmt.Errorf("GetOptions not implemented") // make this explicitly so that grpc response is discarded
 	}
 	return &protos.NodeGroupAutoscalingOptionsResponse{
 		NodeGroupAutoscalingOptions: &protos.NodeGroupAutoscalingOptions{
@@ -389,6 +391,8 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 			MaxNodeProvisionTime: &metav1.Duration{
 				Duration: opts.MaxNodeProvisionTime,
 			},
+			ZeroOrMaxNodeScaling:        opts.ZeroOrMaxNodeScaling,
+			IgnoreDaemonSetsUtilization: opts.IgnoreDaemonSetsUtilization,
 		},
 	}, nil
 }

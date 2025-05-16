@@ -31,6 +31,7 @@ import (
 	prommodel "github.com/prometheus/common/model"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 )
 
 // PrometheusBasicAuthTransport contains the username and password of prometheus server
@@ -75,7 +76,7 @@ func newEmptyHistory() *PodHistory {
 
 // HistoryProvider gives history of all pods in a cluster.
 // TODO(schylek): this interface imposes how history is represented which doesn't work well with checkpoints.
-// Consider refactoring to passing ClusterState and create history provider working with checkpoints.
+// Consider refactoring to passing clusterState and create history provider working with checkpoints.
 type HistoryProvider interface {
 	GetClusterHistory() (map[model.PodID]*PodHistory, error)
 }
@@ -91,7 +92,8 @@ type prometheusHistoryProvider struct {
 // NewPrometheusHistoryProvider constructs a history provider that gets data from Prometheus.
 func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (HistoryProvider, error) {
 	promConfig := promapi.Config{
-		Address: config.Address,
+		Address:      config.Address,
+		RoundTripper: promapi.DefaultRoundTripper,
 	}
 
 	if config.Username != "" && config.Password != "" {
@@ -101,6 +103,11 @@ func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (Histo
 		}
 		promConfig.RoundTripper = transport
 	}
+
+	roundTripper := metrics_recommender.NewPrometheusRoundTripperCounter(
+		metrics_recommender.NewPrometheusRoundTripperDuration(promConfig.RoundTripper),
+	)
+	promConfig.RoundTripper = roundTripper
 
 	promClient, err := promapi.NewClient(promConfig)
 	if err != nil {

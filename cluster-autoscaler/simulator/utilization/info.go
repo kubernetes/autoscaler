@@ -29,7 +29,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
-	resourcehelper "k8s.io/kubernetes/pkg/api/v1/resource"
 )
 
 // Info contains utilization information for a node.
@@ -108,7 +107,8 @@ func CalculateUtilizationOfResource(nodeInfo *framework.NodeInfo, resourceName a
 	podsRequest := resource.MustParse("0")
 	daemonSetAndMirrorPodsUtilization := resource.MustParse("0")
 	for _, podInfo := range nodeInfo.Pods() {
-		resourceValue := resourcehelper.GetResourceRequestQuantity(podInfo.Pod, resourceName)
+		podRequests := podutils.PodRequests(podInfo.Pod)
+		resourceValue := podRequests[resourceName]
 
 		// factor daemonset pods out of the utilization calculations
 		if skipDaemonSetPods && podutils.IsDaemonSetPod(podInfo.Pod) {

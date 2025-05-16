@@ -67,6 +67,10 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   go test -run=None ./...
   popd
   pushd ${CONTRIB_ROOT}/cluster-autoscaler/
-  go test ./...
+  # TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
+  # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
+  # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
+  ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
+  go test ./... -vet="${ANALYZERS}"
   popd
 fi

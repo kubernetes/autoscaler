@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,7 +6,7 @@
 //
 // API for the Kubernetes Engine service (also known as the Container Engine for Kubernetes service). Use this API to build, deploy,
 // and manage cloud-native applications. For more information, see
-// Overview of Kubernetes Engine (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
+// Overview of Kubernetes Engine (https://docs.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
 //
 
 package containerengine
@@ -26,6 +26,9 @@ type NodeEvictionNodePoolSettings struct {
 
 	// If the underlying compute instance should be deleted if you cannot evict all the pods in grace period
 	IsForceDeleteAfterGraceDuration *bool `mandatory:"false" json:"isForceDeleteAfterGraceDuration"`
+
+	// If the node action should be performed if not all the pods can be evicted in the grace period
+	IsForceActionAfterGraceDuration *bool `mandatory:"false" json:"isForceActionAfterGraceDuration"`
 }
 
 func (m NodeEvictionNodePoolSettings) String() string {

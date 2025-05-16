@@ -203,11 +203,26 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	if size+delta < len(nodes) {
-		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
-			size, delta, len(nodes))
+	// we want to filter out machines that are not nodes (eg failed or pending)
+	// so that the node group size can be set properly. this affects situations
+	// where an instance is created, but cannot become a node due to cloud provider
+	// issues such as quota limitations, and thus the autoscaler needs to properly
+	// set the size of the node group. without this adjustment, the core autoscaler
+	// will become confused about the state of nodes and instances in the clusterapi
+	// provider.
+	actualNodes := 0
+	for _, node := range nodes {
+		if isProviderIDNormalized(normalizedProviderID(node.Id)) {
+			actualNodes += 1
+		}
 	}
 
+	if size+delta < actualNodes {
+		return fmt.Errorf("node group %s: attempt to delete existing nodes currentReplicas:%d delta:%d existingNodes: %d",
+			ng.scalableResource.Name(), size, delta, actualNodes)
+	}
+
+	klog.V(4).Infof("%s: DecreaseTargetSize: scaling down: currentReplicas: %d, delta: %d, existingNodes: %d", ng.scalableResource.Name(), size, delta, len(nodes))
 	return ng.scalableResource.SetSize(size + delta)
 }
 
@@ -238,9 +253,82 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 	// must match the ID on the Node object itself.
 	// https://github.com/kubernetes/autoscaler/blob/a973259f1852303ba38a3a61eeee8489cf4e1b13/cluster-autoscaler/clusterstate/clusterstate.go#L967-L985
 	instances := make([]cloudprovider.Instance, len(providerIDs))
-	for i := range providerIDs {
+	for i, providerID := range providerIDs {
+		providerIDNormalized := normalizedProviderID(providerID)
+
+		// Add instance Status to report instance state to cluster-autoscaler.
+		// This helps cluster-autoscaler make better scaling decisions.
+		//
+		// Machine can be Failed for a variety of reasons, here we are looking for a specific errors:
+		// - Failed to provision
+		// - Failed to delete.
+		// Other reasons for a machine to be in a Failed state are not forwarding Status to the autoscaler.
+		var status *cloudprovider.InstanceStatus
+		switch {
+		case isFailedMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine failed in node group %s (%s)", ng.Id(), providerID)
+
+			machine, err := ng.machineController.findMachineByProviderID(providerIDNormalized)
+			if err != nil {
+				return nil, err
+			}
+
+			if machine != nil {
+				if !machine.GetDeletionTimestamp().IsZero() {
+					klog.V(4).Infof("Machine failed in node group %s (%s) is being deleted", ng.Id(), providerID)
+					status = &cloudprovider.InstanceStatus{
+						State: cloudprovider.InstanceDeleting,
+						ErrorInfo: &cloudprovider.InstanceErrorInfo{
+							ErrorClass:   cloudprovider.OtherErrorClass,
+							ErrorCode:    "DeletingFailed",
+							ErrorMessage: "Machine deletion failed",
+						},
+					}
+				} else {
+					_, nodeFound, err := unstructured.NestedFieldCopy(machine.UnstructuredContent(), "status", "nodeRef")
+					if err != nil {
+						return nil, err
+					}
+
+					// Machine failed without a nodeRef, this indicates that the machine failed to provision.
+					// This is a special case where the machine is in a Failed state and the node is not created.
+					// Machine controller will not reconcile this machine, so we need to report this to the autoscaler.
+					if !nodeFound {
+						klog.V(4).Infof("Machine failed in node group %s (%s) was being created", ng.Id(), providerID)
+						status = &cloudprovider.InstanceStatus{
+							State: cloudprovider.InstanceCreating,
+							ErrorInfo: &cloudprovider.InstanceErrorInfo{
+								ErrorClass:   cloudprovider.OtherErrorClass,
+								ErrorCode:    "ProvisioningFailed",
+								ErrorMessage: "Machine provisioning failed",
+							},
+						}
+					}
+				}
+			}
+
+		case isPendingMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine pending in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+			}
+
+		case isDeletingMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine deleting in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceDeleting,
+			}
+
+		default:
+			klog.V(4).Infof("Machine running in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceRunning,
+			}
+		}
+
 		instances[i] = cloudprovider.Instance{
-			Id: providerIDs[i],
+			Id:     providerID,
+			Status: status,
 		}
 	}
 
@@ -283,7 +371,12 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
+	resourceSlices, err := ng.scalableResource.InstanceResourceSlices(nodeName)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
 	return nodeInfo, nil
 }
 

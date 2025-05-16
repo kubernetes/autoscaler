@@ -26,7 +26,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -113,6 +112,13 @@ func WithResourceClaim(refName, claimName, templateName string) func(*apiv1.Pod)
 	}
 }
 
+// WithControllerOwnerRef sets an owner reference to the pod.
+func WithControllerOwnerRef(name, kind string, uid types.UID) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.OwnerReferences = GenerateOwnerReferences(name, kind, "apps/v1", uid)
+	}
+}
+
 // WithDSController creates a daemonSet owner ref for the pod.
 func WithDSController() func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
@@ -174,10 +180,40 @@ func WithMaxSkew(maxSkew int32, topologySpreadingKey string) func(*apiv1.Pod) {
 	}
 }
 
+// WithCreationTimestamp sets creation timestamp to the pod.
+func WithCreationTimestamp(timestamp time.Time) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.CreationTimestamp = metav1.Time{Time: timestamp}
+	}
+}
+
 // WithDeletionTimestamp sets deletion timestamp to the pod.
 func WithDeletionTimestamp(deletionTimestamp time.Time) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		pod.DeletionTimestamp = &metav1.Time{Time: deletionTimestamp}
+	}
+}
+
+// WithNodeNamesAffinity sets pod's affinity for specific nodes.
+func WithNodeNamesAffinity(nodeNames ...string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.Affinity = &apiv1.Affinity{
+			NodeAffinity: &apiv1.NodeAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: &apiv1.NodeSelector{
+					NodeSelectorTerms: []apiv1.NodeSelectorTerm{
+						{
+							MatchFields: []apiv1.NodeSelectorRequirement{
+								{
+									Key:      metav1.ObjectNameField,
+									Operator: apiv1.NodeSelectorOpIn,
+									Values:   nodeNames,
+								},
+							},
+						},
+					},
+				},
+			},
+		}
 	}
 }
 

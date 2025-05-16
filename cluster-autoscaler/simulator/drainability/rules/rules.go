@@ -65,7 +65,7 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 
 		// Blocking checks
 		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods)},
-		{rule: system.New(), skip: !deleteOptions.SkipNodesWithSystemPods},
+		{rule: system.New(deleteOptions.BspDisruptionTimeout), skip: !deleteOptions.SkipNodesWithSystemPods},
 		{rule: notsafetoevict.New()},
 		{rule: localstorage.New(), skip: !deleteOptions.SkipNodesWithLocalStorage},
 		{rule: pdbrule.New()},

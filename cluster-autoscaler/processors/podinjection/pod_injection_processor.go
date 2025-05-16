@@ -93,6 +93,7 @@ func makeFakePods(ownerUid types.UID, samplePod *apiv1.Pod, podCount int) []*api
 		newPod := withFakePodAnnotation(samplePod.DeepCopy())
 		newPod.Name = fmt.Sprintf("%s-copy-%d", samplePod.Name, i)
 		newPod.UID = types.UID(fmt.Sprintf("%s-%d", string(ownerUid), i))
+		newPod.Spec.NodeName = ""
 		fakePods = append(fakePods, newPod)
 	}
 	return fakePods

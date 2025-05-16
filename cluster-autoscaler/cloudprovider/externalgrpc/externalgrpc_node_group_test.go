@@ -244,7 +244,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
 
-	// test correct call
+	// test correct call, NodeGroupAutoscalingOptionsResponse will override default options
 	m.On(
 		"NodeGroupGetOptions", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupAutoscalingOptionsRequest) bool {
 			return req.Id == "nodeGroup1"
@@ -257,6 +257,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 				ScaleDownUnneededTime:            &v1.Duration{Duration: time.Minute},
 				ScaleDownUnreadyTime:             &v1.Duration{Duration: time.Hour},
 				MaxNodeProvisionTime:             &v1.Duration{Duration: time.Minute},
+				ZeroOrMaxNodeScaling:             true,
+				IgnoreDaemonSetsUtilization:      true,
 			},
 		},
 		nil,
@@ -267,12 +269,15 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		client:      client,
 		grpcTimeout: defaultGRPCTimeout,
 	}
+
 	defaultsOpts := config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    0.6,
 		ScaleDownGpuUtilizationThreshold: 0.7,
 		ScaleDownUnneededTime:            time.Minute,
 		ScaleDownUnreadyTime:             time.Hour,
 		MaxNodeProvisionTime:             time.Minute,
+		ZeroOrMaxNodeScaling:             false,
+		IgnoreDaemonSetsUtilization:      false,
 	}
 
 	opts, err := ng1.GetOptions(defaultsOpts)
@@ -282,6 +287,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	assert.Equal(t, time.Minute, opts.ScaleDownUnneededTime)
 	assert.Equal(t, time.Hour, opts.ScaleDownUnreadyTime)
 	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
+	assert.Equal(t, true, opts.ZeroOrMaxNodeScaling)
+	assert.Equal(t, true, opts.IgnoreDaemonSetsUtilization)
 
 	// test grpc error
 	m.On(
@@ -289,9 +296,11 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 			return req.Id == "nodeGroup2"
 		}),
 	).Return(
-		&protos.NodeGroupAutoscalingOptionsResponse{},
+		&protos.NodeGroupAutoscalingOptionsResponse{
+			NodeGroupAutoscalingOptions: &protos.NodeGroupAutoscalingOptions{},
+		},
 		fmt.Errorf("mock error"),
-	)
+	).Once()
 
 	ng2 := NodeGroup{
 		id:          "nodeGroup2",
@@ -342,6 +351,40 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	_, err = ng4.GetOptions(defaultsOpts)
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
+	// test with default options
+	m.On(
+		"NodeGroupGetOptions", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupAutoscalingOptionsRequest) bool {
+			return req.Id == "nodeGroup5"
+		}),
+	).Return(
+		&protos.NodeGroupAutoscalingOptionsResponse{
+			NodeGroupAutoscalingOptions: &protos.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold:    0.6,
+				ScaleDownGpuUtilizationThreshold: 0.7,
+				ScaleDownUnneededTime:            &v1.Duration{Duration: time.Minute},
+				ScaleDownUnreadyTime:             &v1.Duration{Duration: time.Hour},
+				MaxNodeProvisionTime:             &v1.Duration{Duration: time.Minute},
+			},
+		},
+		nil,
+	)
+
+	ng5 := NodeGroup{
+		id:          "nodeGroup5",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
+	}
+
+	opts, err = ng5.GetOptions(defaultsOpts)
+	assert.NoError(t, err)
+	assert.Equal(t, 0.6, opts.ScaleDownUtilizationThreshold)
+	assert.Equal(t, 0.7, opts.ScaleDownGpuUtilizationThreshold)
+	assert.Equal(t, time.Minute, opts.ScaleDownUnneededTime)
+	assert.Equal(t, time.Hour, opts.ScaleDownUnreadyTime)
+	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
+	assert.Equal(t, false, opts.ZeroOrMaxNodeScaling)
+	assert.Equal(t, false, opts.IgnoreDaemonSetsUtilization)
 
 }
 

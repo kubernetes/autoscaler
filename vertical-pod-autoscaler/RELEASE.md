@@ -9,7 +9,7 @@ Before doing the release for the first time check if you have all the necessary 
 There are the following steps of the release process:
 
 1. [ ] Open issue to track the release.
-2. [ ] Update VPA version const.
+2. [ ] Rollup all changes.
 3. [ ] Build and stage images.
 4. [ ] Test the release.
 5. [ ] Promote image.
@@ -20,7 +20,7 @@ There are the following steps of the release process:
 Open a new issue to track the release, use the [vpa_release](https://github.com/kubernetes/autoscaler/issues/new?&template=vpa_release.md) template.
 We use the issue to communicate what is state of the release.
 
-## Update VPA version const
+## Rollup all changes
 
 1. [ ] Wait for all VPA changes that will be in the release to merge.
 2. [ ] Wait for [the end to end tests](https://testgrid.k8s.io/sig-autoscaling-vpa) to run with all VPA changes
@@ -28,16 +28,16 @@ We use the issue to communicate what is state of the release.
    To see what code was actually tested, look for `===== last commit =====`
    entries in the full `build-log.txt` of a given test run.
 3. [ ] Make sure the end to end VPA tests are green.
+4. [ ] Make sure the [continuous image builds](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-images) are green.
 
 ### New minor release
 
-1. [ ] Change the version in
-    [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
-    to `1.${next-minor}.0`,
-2. [ ] Commit and merge the change,
-3. [ ] Go to the merged change,
-4. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-1.${next-minor}` from the
+1. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-1.${next-minor}` from the
     merged change.
+2. [ ] In the **main branch**, change the version in
+    [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
+    to `1.${next-minor}.0`.
+3. [ ] Commit and merge the change.
 
 ### New patch release
 
@@ -46,6 +46,46 @@ We use the issue to communicate what is state of the release.
     Create a commit and merge by making a PR to the `vpa-release-1.${minor}` branch.
 
 ## Build and stage images
+
+Select either the Automatic and Manual process below.
+
+### Option 1: (Preferred) Automatic
+
+NOTE: Currently this process can only be used for new minor releases. Patch
+releases need to follow the manual process below.
+
+Images are continuously built as part of the PR release process and are listed
+in the following repository:
+[gcr.io/k8s-staging-autoscaling](http://gcr.io/k8s-staging-autoscaling). Also
+see the
+[dashboard](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-images)
+for build status.
+
+To stage an image:
+
+1. Pick an image to promote from the latest automatically built images in the
+repository. Make note of the automatically generated tag (the tag will contain
+the date, the name of the latest tag in the repository and a commit hash). For
+example `v20250430-cluster-autoscaler-chart-9.46.6-81-g6a6a912b4`.
+
+2. Set the `BUILD_TAG` variable to this tag in your shell:
+
+```sh
+BUILD_TAG=<tag>
+```
+
+3. Now tag this image with the latest version tag:
+
+```sh
+cd vertical-pod-autoscaler/
+TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
+echo "Adding tag $TAG based on built tag $BUILD_TAG"
+gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$TAG --project=k8s-staging-autoscaling
+gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-recommender:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-recommender:$TAG --project=k8s-staging-autoscaling
+gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-updater:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-updater:$TAG --project=k8s-staging-autoscaling
+```
+
+### Option 2: Manual
 
 Create a fresh clone of the repo and switch to the `vpa-release-1.${minor}`
 branch. This makes sure you have no local changes while building the images.
@@ -123,12 +163,18 @@ sure nothing we care about will break if we do.
 1.  [ ] Update information about newest version and K8s compatibility in
     [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation).
 
-1.  [ ] Update the yaml files:
+1.  [ ] Update the yaml and sh files:
 
     ```sh
-    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment*.yaml ./hack/vpa-process-yaml.sh
+    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|g" ./deploy/*-deployment*.yaml
+    sed -i -s "s|DEFAULT_TAG=\"[0-9]\+\.[0-9]\+\.[0-9]\+\"|DEFAULT_TAG=\"[*vpa-version*]\"|g" ./hack/*.sh
     ```
-1.  [ ] Update the default tag in  [vpa-up.sh](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/vpa-up.sh).
+
+1.  [ ] Generate the flags files:
+
+    ```sh
+    ./hack/generate-flags.sh
+    ```
 
 1.  [ ] Merge these changes into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release
     (example PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).

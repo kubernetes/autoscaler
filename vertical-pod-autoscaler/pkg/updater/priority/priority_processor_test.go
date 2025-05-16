@@ -47,6 +47,16 @@ func TestGetUpdatePriority(t *testing.T) {
 				ScaleUp:                 true,
 			},
 		}, {
+			name: "simple scale up, resources from containerStatus have higher priority",
+			pod: test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("10000")).Get()).
+				AddContainerStatus(test.ContainerStatus().WithName(containerName).WithCPURequest(resource.MustParse("2")).Get()).Get(),
+			vpa: test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            4.0,
+				ScaleUp:                 true,
+			},
+		}, {
 			name: "simple scale down",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "").Get(),
