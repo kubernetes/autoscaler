@@ -1,6 +1,7 @@
 module k8s.io/autoscaler/addon-resizer
 
 go 1.24.0
+
 toolchain go1.24.1
 
 require (
@@ -11,7 +12,7 @@ require (
 	github.com/spf13/pflag v1.0.6
 	gopkg.in/inf.v0 v0.9.1
 	k8s.io/api v0.33.0
-	k8s.io/apimachinery v0.33.0
+	k8s.io/apimachinery v0.33.1
 	k8s.io/client-go v0.33.0
 	k8s.io/component-base v0.33.0
 	k8s.io/klog/v2 v2.130.1
