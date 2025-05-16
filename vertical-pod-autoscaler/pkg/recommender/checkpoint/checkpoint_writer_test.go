@@ -17,17 +17,26 @@ limitations under the License.
 package checkpoint
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	core "k8s.io/client-go/testing"
+	"k8s.io/klog/v2"
+	klogtest "k8s.io/klog/v2/test"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-
-	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
 // TODO: Extract these constants to a common test module.
@@ -170,4 +179,70 @@ func TestGetVpasToCheckpointSorts(t *testing.T) {
 	assert.Equal(t, genVpaID(1), result[1].ID)
 	assert.Equal(t, genVpaID(2), result[2].ID)
 
+}
+
+func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {
+	klogtest.InitKlog(t)
+	tmpLogBuffer := bytes.NewBuffer(nil)
+	klog.SetOutput(tmpLogBuffer)
+
+	concurrentWorkers := 2
+
+	// immediately cancel the context to check if at least checkpoints for `concurrentWorkers` number of VPAs get written
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	cancelFunc()
+	clusterState := model.NewClusterState(testGcPeriod)
+
+	// prepare ClusterState with 5 VPAs referencing Pods
+	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container-1").WithContainer("container-2").WithNamespace("test-namespace")
+
+	for i := 0; i < 5; i++ {
+		targetRef := &autoscalingv1.CrossVersionObjectReference{
+			Kind:       "Pod",
+			Name:       fmt.Sprintf("pod-%d", i),
+			APIVersion: "apps/v1",
+		}
+		labelSelector, _ := labels.Parse(fmt.Sprintf("app=pod-%d", i))
+		vpa := vpaBuilder.WithName(fmt.Sprintf("vpa-%d", i)).WithTargetRef(targetRef).Get()
+		err := clusterState.AddOrUpdateVpa(vpa, labelSelector)
+		assert.NoError(t, err)
+	}
+
+	// prepare ClusterState with 5 pods that have 2 containers each
+	for i := 0; i < 5; i++ {
+		podID := model.PodID{
+			Namespace: "test-namespace",
+			PodName:   fmt.Sprintf("pod-%d", i),
+		}
+		podLabels := map[string]string{"app": fmt.Sprintf("pod-%d", i)}
+		clusterState.AddOrUpdatePod(podID, podLabels, v1.PodRunning)
+		for j := 0; j < 2; j++ {
+			containerID := model.ContainerID{
+				PodID:         podID,
+				ContainerName: fmt.Sprintf("container-%d", j),
+			}
+			err := clusterState.AddOrUpdateContainer(containerID, testRequest)
+			assert.NoError(t, err)
+		}
+	}
+
+	patchedCheckpoints := []string{}
+	checkpointClient := &fakeautoscalingv1.FakeAutoscalingV1{Fake: &core.Fake{}}
+	checkpointClient.Fake.AddReactor("patch", "verticalpodautoscalercheckpoints", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+		patchAction := action.(core.PatchAction)
+		name := patchAction.GetName()
+		time.Sleep(2 * time.Millisecond) // Simulate some delay in patching, such that we can test the timeout
+		patchedCheckpoints = append(patchedCheckpoints, name)
+
+		return true, nil, nil
+	})
+
+	writer := NewCheckpointWriter(clusterState, checkpointClient)
+	writer.StoreCheckpoints(ctx, concurrentWorkers)
+
+	// Because we have 2 concurrent workers, expect 2 VPAs to get processed. Each worker picks a VPA to process before checking if the context has been cancelled.
+	// Each VPA has 2 Containers, therefore we expect 4 Checkpoints to be written
+	assert.Equal(t, 4, len(patchedCheckpoints), "Expected 4 checkpoints to be written, but got %d", len(patchedCheckpoints))
+
+	assert.Contains(t, tmpLogBuffer.String(), "context canceled")
 }
