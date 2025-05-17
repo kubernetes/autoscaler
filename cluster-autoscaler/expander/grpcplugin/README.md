@@ -17,11 +17,11 @@ There are a wide variety of use cases here. Some examples are as follows:
 As using this expander requires communication with another service, users must specify a few options as CLI arguments.
 
 ```yaml
---grpcExpanderUrl
+--grpc-expander-url
 ```
 URL of the gRPC Expander server, for CA to communicate with.
 ```yaml
---grpcExpanderCert
+--grpc-expander-cert
 ```
 Location of the volume mounted certificate of the gRPC server if it is configured to communicate over TLS
 
