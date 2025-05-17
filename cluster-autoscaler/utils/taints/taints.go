@@ -170,6 +170,7 @@ func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode 
 	return AddTaints(node, client, []apiv1.Taint{taint}, cordonNode)
 }
 
+// GetDeletionCandidateTaint returns a taint that marks the node as a DeletionCandidate for Cluster Autoscaler.
 func GetDeletionCandidateTaint() apiv1.Taint {
 	return apiv1.Taint{
 		Key:    DeletionCandidateTaint,

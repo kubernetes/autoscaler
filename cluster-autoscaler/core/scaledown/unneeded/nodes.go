@@ -96,7 +96,7 @@ func (n *Nodes) Initialize(nodes []simulator.NodeToBeRemoved, maxDeletionCandida
 	}
 }
 
-// InitializeWithTaints initializes unneeded nodes with state offloaded from the kubernetes cluster, using the existing DeletionCandidateTaint taints.
+// NewWithTaints initializes unneeded nodes with state offloaded from the kubernetes cluster, using the existing DeletionCandidateTaint taints.
 func NewWithTaints(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, listerRegistry kube_util.ListerRegistry, maxDeletionCandidateStaleness time.Duration, ts time.Time) *Nodes {
 	unneededNodes := NewNodes(sdtg, limitsFinder)
 	allNodes, err := listerRegistry.AllNodeLister().List()
