@@ -33,6 +33,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 var (
@@ -449,6 +450,41 @@ func TestUpdatePodSelector(t *testing.T) {
 	// Update the VPA selector to match the Pod again.
 	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 = value-1", testTargetRef)
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
+}
+
+// Creates a VPA without a pruning grace period annotation along with a matching pod and container.
+// Then add a VPA pruningGracePeriod annotation such that the related containerAggregateState would
+// now be considered stale. Finally, update the VPA to a long grace period to make the aggregate
+// active again. Verifies that stale aggregates can be pruned by applying and removing the annotation.
+func TestUpdatePruningGracePeriod(t *testing.T) {
+	shortGracePeriodAnnotations := vpaAnnotationsMap{vpa_api_util.VpaPruningGracePeriodAnnotation: "0"}
+	longGracePeriodAnnotations := vpaAnnotationsMap{vpa_api_util.VpaPruningGracePeriodAnnotation: "1000000"}
+	now := time.Now()
+
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+	addTestPod(cluster)
+	addTestContainer(t, cluster)
+	testAggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+
+	// Make sure aggregate was created.
+	aggregateContainerState, aggregateStateExists := cluster.aggregateStateMap[testAggregateStateKey]
+	assert.True(t, aggregateStateExists)
+	assert.Contains(t, vpa.aggregateContainerStates, testAggregateStateKey)
+	// Check that the aggregate is not stale.
+	assert.False(t, aggregateContainerState.IsAggregateStale(now))
+
+	vpaObject := test.VerticalPodAutoscaler().WithNamespace(testVpaID.Namespace).
+		WithName(testVpaID.VpaName).WithContainer(testContainerID.ContainerName).WithAnnotations(shortGracePeriodAnnotations).WithTargetRef(testTargetRef).Get()
+	addVpaObject(cluster, testVpaID, vpaObject, testSelectorStr)
+	// Check that the aggregate is stale.
+	assert.True(t, aggregateContainerState.IsAggregateStale(now))
+
+	vpaObject = test.VerticalPodAutoscaler().WithNamespace(testVpaID.Namespace).
+		WithName(testVpaID.VpaName).WithContainer(testContainerID.ContainerName).WithAnnotations(longGracePeriodAnnotations).WithTargetRef(testTargetRef).Get()
+	addVpaObject(cluster, testVpaID, vpaObject, testSelectorStr)
+	// Check that the aggregate is not stale.
+	assert.False(t, aggregateContainerState.IsAggregateStale(now))
 }
 
 // Test setting ResourcePolicy and UpdatePolicy on adding or updating VPA object
@@ -940,4 +976,94 @@ func TestVPAWithMatchingPods(t *testing.T) {
 			assert.Equal(t, tc.expectedMatch, cluster.vpas[vpa.ID].PodCount)
 		})
 	}
+}
+
+func TestSetVPAContainersPerPod(t *testing.T) {
+	cases := []struct {
+		name                     string
+		containers               []ContainerID
+		expectedContainersPerPod int
+	}{
+		{
+			name: "Single container",
+			containers: []ContainerID{
+				{testPodID, "container-1"},
+			},
+			expectedContainersPerPod: 1,
+		}, {
+			name: "Two containers",
+			containers: []ContainerID{
+				{testPodID, "container-1"},
+				{testPodID, "container-2"},
+			},
+			expectedContainersPerPod: 2,
+		}, {
+			name: "Three containers",
+			containers: []ContainerID{
+				{testPodID, "container-1"},
+				{testPodID, "container-2"},
+				{testPodID, "container-3"},
+			},
+			expectedContainersPerPod: 3,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := NewClusterState(testGcPeriod)
+			vpa := addTestVpa(cluster)
+			pod := addTestPod(cluster)
+			for _, container := range tc.containers {
+				assert.NoError(t, cluster.AddOrUpdateContainer(container, testRequest))
+			}
+			cluster.SetVPAContainersPerPod(pod, true)
+			assert.Equal(t, tc.expectedContainersPerPod, vpa.ContainersPerPod)
+		})
+	}
+}
+
+func TestSetVPAContainersPerPodIsHighWatermark(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+	pod := addTestPod(cluster)
+	containers := []ContainerID{
+		{testPodID, "container-1"},
+		{testPodID, "container-2"},
+		{testPodID, "container-3"},
+	}
+	expectedLen := len(containers)
+	for _, container := range containers {
+		assert.NoError(t, cluster.AddOrUpdateContainer(container, testRequest))
+	}
+	cluster.SetVPAContainersPerPod(pod, true)
+	assert.Equal(t, len(containers), vpa.ContainersPerPod)
+
+	// It's possible we could be in the middle of a rollout, and the new ReplicaSet could contain pods could have 2 containers.
+	// We should not update the container per pod (high watermark) in this case to preserve the recommendation splitting.
+	cluster.AddOrUpdatePod(testPodID3, testLabels, apiv1.PodRunning)
+	pod3 := cluster.pods[testPodID3]
+	containers = []ContainerID{
+		{testPodID3, "container-1"},
+		{testPodID3, "container-2"},
+	}
+	for _, container := range containers {
+		assert.NoError(t, cluster.AddOrUpdateContainer(container, testRequest))
+	}
+	cluster.SetVPAContainersPerPod(pod3, true)
+	assert.Equal(t, expectedLen, vpa.ContainersPerPod)
+
+	// But if we add more than the high watermark, we should update it.
+	cluster.AddOrUpdatePod(testPodID4, testLabels, apiv1.PodRunning)
+	pod4 := cluster.pods[testPodID4]
+	containers = []ContainerID{
+		{testPodID4, "container-1"},
+		{testPodID4, "container-2"},
+		{testPodID4, "container-3"},
+		{testPodID4, "container-4"},
+	}
+	for _, container := range containers {
+		assert.NoError(t, cluster.AddOrUpdateContainer(container, testRequest))
+	}
+	cluster.SetVPAContainersPerPod(pod4, true)
+	assert.Equal(t, len(containers), vpa.ContainersPerPod)
 }

@@ -357,6 +357,14 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 
+// PatchDeployment patches a deployment with a given patch.
+func PatchDeployment(f *framework.Framework, deployment *appsv1.Deployment, patch *patchRecord) {
+	patchBytes, err := json.Marshal([]patchRecord{*patch})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	_, err = f.ClientSet.AppsV1().Deployments(f.Namespace.Name).Patch(context.TODO(), deployment.Name, types.JSONPatchType, patchBytes, metav1.PatchOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error patching deployment")
+}
+
 // AnnotatePod adds annotation for an existing pod.
 func AnnotatePod(f *framework.Framework, podName, annotationName, annotationValue string) {
 	bytes, err := json.Marshal([]patchRecord{{
@@ -501,6 +509,29 @@ func WaitForUncappedCPURecommendationAbove(c vpa_clientset.Interface, vpa *vpa_t
 		uncappedCpu := vpa.Status.Recommendation.ContainerRecommendations[0].UncappedTarget[apiv1.ResourceCPU]
 		return uncappedCpu.MilliValue() > minMilliCPU
 	})
+}
+
+// WaitForNumberOfCheckpoints polls until the specified number of VerticalPodAutoscalerCheckpoints is present.
+// Returns the list of checkpoints. On timeout returns error.
+func WaitForNumberOfCheckpoints(c vpa_clientset.Interface, namespace string, count int) (*vpa_types.VerticalPodAutoscalerCheckpointList, error) {
+	var checkpoints *vpa_types.VerticalPodAutoscalerCheckpointList
+	err := wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
+		checkpoints, err = c.AutoscalingV1().VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return false, err
+		}
+
+		if len(checkpoints.Items) == count {
+			return true, nil
+		}
+
+		return false, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for %v checkpoints: %v", count, err)
+	}
+	return checkpoints, nil
 }
 
 func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity, lrType apiv1.LimitType) {

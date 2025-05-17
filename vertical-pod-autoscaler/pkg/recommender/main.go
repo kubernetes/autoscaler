@@ -144,6 +144,12 @@ func main() {
 	}
 	ctx := context.Background()
 
+	err := model.ParseAndInitializePruningGracePeriodDuration()
+	if err != nil {
+		klog.ErrorS(err, "Failed to parse --pruning-grace-period-duration")
+		os.Exit(255)
+	}
+
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
 	metrics_recommender.Register()
 	metrics_quality.Register()

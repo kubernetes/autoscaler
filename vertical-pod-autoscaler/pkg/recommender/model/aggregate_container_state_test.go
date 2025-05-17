@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"flag"
 	"testing"
 	"time"
 
@@ -24,6 +25,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
+
+	"k8s.io/utils/ptr"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
@@ -290,6 +293,57 @@ func TestUpdateFromPolicyControlledResources(t *testing.T) {
 			cs := NewAggregateContainerState()
 			cs.UpdateFromPolicy(tc.policy)
 			assert.Equal(t, tc.expected, cs.GetControlledResources())
+		})
+	}
+}
+
+func TestParsePruningGracePeriodDuration(t *testing.T) {
+
+	testCases := []struct {
+		name                 string
+		initialFlag          string
+		aggregateGracePeriod *time.Duration
+		expected             *time.Duration
+		expectError          bool
+	}{
+		{
+			name:                 "PruningGracePeriod set from aggregate container state - ignores global flag",
+			initialFlag:          "10m",
+			aggregateGracePeriod: ptr.To(20 * time.Minute),
+			expected:             ptr.To(20 * time.Minute),
+			expectError:          false,
+		}, {
+			name:                 "PruningGracePeriod not set from aggregate container state - default to set global flag",
+			initialFlag:          "10m",
+			aggregateGracePeriod: nil,
+			expected:             ptr.To(10 * time.Minute),
+			expectError:          false,
+		}, {
+			name:                 "PruningGracePeriod not set from aggregate container state - default to nil global flag",
+			initialFlag:          "",
+			aggregateGracePeriod: nil,
+			expected:             nil,
+			expectError:          false,
+		}, {
+			name:                 "Invalid global PruningGracePeriod flag - error",
+			initialFlag:          "badDuration",
+			aggregateGracePeriod: nil,
+			expected:             nil,
+			expectError:          true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.NoError(t, flag.Set("pruning-grace-period-duration", tc.initialFlag))
+			err := ParseAndInitializePruningGracePeriodDuration()
+			cs := NewAggregateContainerState()
+			cs.UpdatePruningGracePeriod(tc.aggregateGracePeriod)
+			assert.Equal(t, tc.expected, cs.PruningGracePeriod)
+			if tc.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }
