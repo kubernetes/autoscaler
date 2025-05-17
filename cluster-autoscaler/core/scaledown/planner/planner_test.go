@@ -463,7 +463,7 @@ func TestUpdateClusterState(t *testing.T) {
 			wantUnremovable: []string{"n1", "n2", "n3", "n4"},
 		},
 		{
-			name: "Simulation timeout is hitted",
+			name: "Simulation timeout is hit",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 1000, 10),
 				BuildTestNode("n2", 1000, 10),
