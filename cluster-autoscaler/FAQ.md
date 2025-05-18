@@ -378,6 +378,10 @@ For example, for a node label of `foo=bar`, you would tag the ASG with:
 }
 ```
 
+When a node group is scaled down to 0, Cluster Autoscaler also removes any cached
+node information for that group. The template will be regenerated once new nodes
+are created.
+
 ### How can I prevent Cluster Autoscaler from scaling down a particular node?
 
 From CA 1.0, node will be excluded from scale-down if it has the
