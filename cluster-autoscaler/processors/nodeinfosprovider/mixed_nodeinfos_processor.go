@@ -118,7 +118,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		}
 	}
 
-	// Invalidate cache entries for node groups scaled down to zero
+	// Invalidate cache entries for node groups that were scaled down to zero and have no nodes
 	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
 		size, err := nodeGroup.TargetSize()
 		if err != nil {
@@ -128,8 +128,13 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 				continue
 			}
 		}
+		// We should only invalidate if both target size is 0 and there are no nodes
 		if size == 0 && p.nodeInfoCache != nil {
-			delete(p.nodeInfoCache, nodeGroup.Id())
+			// Check if there are any nodes in this group
+			instances, err := nodeGroup.Nodes()
+			if err == nil && len(instances) == 0 {
+				delete(p.nodeInfoCache, nodeGroup.Id())
+			}
 		}
 	}
 
