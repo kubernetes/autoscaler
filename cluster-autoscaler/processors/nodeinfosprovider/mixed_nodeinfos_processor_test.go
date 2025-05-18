@@ -306,6 +306,51 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 
 }
 
+func TestCacheEntryRemovedWhenGroupScaledToZero(t *testing.T) {
+	now := time.Now()
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, now.Add(-2*time.Minute))
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
+	provider.AddNodeGroup("ng1", 0, 10, 1)
+	provider.AddNode("ng1", n1)
+
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+
+	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
+	err := snapshot.SetClusterState([]*apiv1.Node{n1}, nil, drasnapshot.Snapshot{})
+	assert.NoError(t, err)
+
+	ctx := context.AutoscalingContext{
+		CloudProvider:   provider,
+		ClusterSnapshot: snapshot,
+		AutoscalingKubeClients: context.AutoscalingKubeClients{
+			ListerRegistry: registry,
+		},
+	}
+
+	niProcessor := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
+	_, err = niProcessor.Process(&ctx, []*apiv1.Node{n1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	assert.NoError(t, err)
+	_, found := niProcessor.nodeInfoCache["ng1"]
+	assert.True(t, found)
+
+	// scale node group to zero
+	provider.GetNodeGroup("ng1").(*testprovider.TestNodeGroup).SetTargetSize(0)
+	provider.DeleteNode(n1)
+
+	snapshot = testsnapshot.NewTestSnapshotOrDie(t)
+	err = snapshot.SetClusterState([]*apiv1.Node{}, nil, drasnapshot.Snapshot{})
+	assert.NoError(t, err)
+	ctx.ClusterSnapshot = snapshot
+
+	_, err = niProcessor.Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	assert.NoError(t, err)
+	_, found = niProcessor.nodeInfoCache["ng1"]
+	assert.False(t, found)
+}
+
 func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {
 	t.Helper()
 	assert.NotEqual(t, actual.Status, nil, "")

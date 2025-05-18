@@ -117,6 +117,22 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
 		}
 	}
+
+	// Invalidate cache entries for node groups scaled down to zero
+	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
+		size, err := nodeGroup.TargetSize()
+		if err != nil {
+			if instances, errN := nodeGroup.Nodes(); errN == nil {
+				size = len(instances)
+			} else {
+				continue
+			}
+		}
+		if size == 0 && p.nodeInfoCache != nil {
+			delete(p.nodeInfoCache, nodeGroup.Id())
+		}
+	}
+
 	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
 		id := nodeGroup.Id()
 		seenGroups[id] = true
