@@ -7,6 +7,7 @@
 - [Getting started](#getting-started)
 - [Components and Architecture](#components-and-architecture)
 - [Features and Known limitations](#features-and-known-limitations)
+- [Recommender metrics](#recommender-metrics)
 - [Related links](#related-links)
 
 ## Intro
@@ -44,6 +45,10 @@ The Vertical Pod Autoscaler consists of three parts. The recommender, updater an
 ## Features and Known limitations
 
 You can also read about the [features](./docs/features.md) and [known limitations](./docs/known-limitations.md) of the VPA.
+
+## Recommender metrics
+
+See [Recommender metrics](./docs/recommender-metrics.md) for details about the Prometheus metrics exported by the VPA recommender.
 
 ## Related links
 
