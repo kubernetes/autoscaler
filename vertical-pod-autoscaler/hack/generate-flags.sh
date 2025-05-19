@@ -27,12 +27,12 @@ DEFAULT_TAG="1.3.1"
 extract_flags() {
     local binary=$1
     local component=$2
-    
+
     if [ ! -f "$binary" ]; then
         echo "Error: Binary not found for ${component} at ${binary}"
         return 1
     fi
-    
+
     echo "# What are the parameters to VPA ${component}?"
     echo "This document is auto-generated from the flag definitions in the VPA ${component} code."
     echo
@@ -45,13 +45,17 @@ extract_flags() {
             flag="v"
             default=$(echo "$line" | sed -n 's/.*default: \([0-9]\{1,\}\).*/\1/p')
             description="Set the log level verbosity"
+        elif [[ $line == *"--feature-gates"* ]]; then
+                    flag="feature-gates"
+                    default=""
+                    description="A set of key=value pairs that describe feature gates for alpha/experimental features. Options are: InPlaceOrRecreate=true/false (ALPHA - default=false)"
         else
             flag=$(echo "$line" | awk '{print $1}' | sed 's/^-*//;s/=.*$//')
             default=$(echo "$line" | sed -n 's/.*default \([^)]*\).*/\1/p')
             description=$(echo "$line" | sed -E 's/^\s*-[^[:space:]]+ [^[:space:]]+ //;s/ \(default.*\)//')
             description=$(echo "$description" | sed -E "s/^--?${flag}[[:space:]]?//")
         fi
-        
+
         echo "| \`--${flag}\` | ${default:-} | ${description} |"
     done
     echo
