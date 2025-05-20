@@ -99,7 +99,7 @@ func main() {
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		klog.FlushAndExit(10 * time.Second, 255)
+		klog.FlushAndExit(10*time.Second, 255)
 	}
 
 	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
@@ -113,7 +113,7 @@ func main() {
 		id, err := os.Hostname()
 		if err != nil {
 			klog.ErrorS(err, "Unable to get hostname")
-			klog.FlushAndExit(10 * time.Second, 255)
+			klog.FlushAndExit(10*time.Second, 255)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -132,7 +132,7 @@ func main() {
 		)
 		if err != nil {
 			klog.ErrorS(err, "Unable to create leader election lock")
-			klog.FlushAndExit(10 * time.Second, 255)
+			klog.FlushAndExit(10*time.Second, 255)
 		}
 
 		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
@@ -216,7 +216,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create updater")
-		klog.FlushAndExit(10 * time.Second, 255)
+		klog.FlushAndExit(10*time.Second, 255)
 	}
 
 	// Start updating health check endpoint.
