@@ -210,6 +210,11 @@ func (vpa *Vpa) AggregateStateByContainerName() ContainerNameToAggregateStateMap
 	return containerNameToAggregateStateMap
 }
 
+func (vpa *Vpa) AggregateStateByNodeAndContainerName() map[string]ContainerNameToAggregateStateMap {
+	result := AggregateStateByNodeAndContainerName(vpa.aggregateContainerStates)
+	return result
+}
+
 // HasRecommendation returns if the VPA object contains any recommendation
 func (vpa *Vpa) HasRecommendation() bool {
 	return (vpa.Recommendation != nil) && len(vpa.Recommendation.ContainerRecommendations) > 0
