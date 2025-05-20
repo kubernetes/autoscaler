@@ -74,6 +74,12 @@ type ClusterStateFeeder interface {
 
 	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
 	GarbageCollectCheckpoints(ctx context.Context)
+
+	// MarkAggregates marks all aggregates in all VPAs as not under VPAs
+	MarkAggregates()
+
+	// SweepAggregates garbage collects all aggregates in all VPAs aggregate lists that are no longer under VPAs
+	SweepAggregates()
 }
 
 // ClusterStateFeederFactory makes instances of ClusterStateFeeder.
@@ -225,6 +231,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	}
 	for podID, podHistory := range clusterHistory {
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
+		_, existedBefore := feeder.clusterState.Pods()[podID]
 		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, apiv1.PodUnknown)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
@@ -243,6 +250,14 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 					}); err != nil {
 					klog.V(0).InfoS("Failed to add sample", "sample", sample, "error", err)
 				}
+			}
+		}
+		// If the pod never existed before, we did not set VPAContainersPerPod in AddOrUpdatePod because podState.Containers
+		// has not initialized yet from AddOrUpdateContainer. So we explicitly set it here the first time we see the pod.
+		if !existedBefore {
+			podState, podExists := feeder.clusterState.Pods()[podID]
+			if podExists && len(podHistory.Samples) > 1 {
+				feeder.clusterState.SetVPAContainersPerPod(podState, false)
 			}
 		}
 	}
@@ -359,6 +374,23 @@ func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(ctx context.Con
 			}
 			klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
 		}
+
+		// Also clean up a checkpoint if the VPA is still there, but the container is gone. AggregateStateByContainerName
+		// merges in the initial aggregates so we can use it to check "both lists" (initial, aggregates) at once.
+		// Aggregates will be considered stale as per it's pruning policy by the VPA annotation VpaPruningGracePeriodAnnotation
+		// or the pruning-grace-period-duration flag. If none are set (default), we won't prune to not break existing behavior.
+		vpa, vpaExists := feeder.clusterState.VPAs()[vpaID]
+		if vpaExists {
+			_, aggregateExists := vpa.AggregateStateByContainerName()[checkpoint.Spec.ContainerName]
+			if !aggregateExists {
+				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
+				if err == nil {
+					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
+				} else {
+					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
+				}
+			}
+		}
 	}
 	return err
 }
@@ -456,6 +488,38 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 	feeder.clusterState.SetObservedVPAs(vpaCRDs)
 }
 
+// MarkAggregates marks all aggregates IsUnderVPA=false, so when we go
+// through LoadPods(), the valid ones will get marked back to true, and
+// we can garbage collect the false ones from the VPAs' aggregate lists.
+func (feeder *clusterStateFeeder) MarkAggregates() {
+	for _, vpa := range feeder.clusterState.VPAs() {
+		for _, container := range vpa.AggregateContainerStates() {
+			container.IsUnderVPA = false
+		}
+		for _, container := range vpa.ContainersInitialAggregateState {
+			container.IsUnderVPA = false
+		}
+	}
+}
+
+// SweepAggregates prunes all aggregates/initial aggregates from the VPA where the
+// all containers related to an initial or aggregate state are no longer present.
+func (feeder *clusterStateFeeder) SweepAggregates() {
+	now := time.Now()
+	for _, vpa := range feeder.clusterState.VPAs() {
+		// use merged aggregate state to check both initial and aggregates
+		for containerName, container := range vpa.AggregateStateByContainerName() {
+			if !container.IsUnderVPA && container.IsAggregateStale(now) {
+				klog.V(4).InfoS("Deleting stale aggregate container states; container no longer present",
+					"namespace", vpa.ID.Namespace,
+					"vpaName", vpa.ID.VpaName,
+					"containerName", containerName)
+				vpa.DeleteAllAggregatesByContainerName(containerName)
+			}
+		}
+	}
+}
+
 // LoadPods loads pod into the cluster state.
 func (feeder *clusterStateFeeder) LoadPods() {
 	podSpecs, err := feeder.specClient.GetPodSpecs()
@@ -476,6 +540,8 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		if feeder.memorySaveMode && !feeder.matchesVPA(pod) {
 			continue
 		}
+		_, existedBefore := feeder.clusterState.Pods()[pod.ID]
+
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
 			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request); err != nil {
@@ -485,7 +551,15 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		for _, initContainer := range pod.InitContainers {
 			podInitContainers := feeder.clusterState.Pods()[pod.ID].InitContainers
 			feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
+		}
 
+		// If the pod never existed before, we did not set VPAContainersPerPod in AddOrUpdatePod because podState.Containers
+		// has not initialized yet from AddOrUpdateContainer. So we explicitly set it here the first time we see the pod.
+		if !existedBefore {
+			podState, podExists := feeder.clusterState.Pods()[pod.ID]
+			if podExists && len(pod.Containers) > 1 {
+				feeder.clusterState.SetVPAContainersPerPod(podState, false)
+			}
 		}
 	}
 }

@@ -53,6 +53,9 @@ type patchRecord struct {
 	Value interface{} `json:"value"`
 }
 
+// VpaPruningGracePeriodAnnotation is the annotation key for the aggregate pruning grace period.
+const VpaPruningGracePeriodAnnotation = "vpaPruningGracePeriod"
+
 func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	bytes, err := json.Marshal(patches)
 	if err != nil {
@@ -237,6 +240,22 @@ func GetContainerControlledValues(name string, vpaResourcePolicy *vpa_types.PodR
 		return vpa_types.ContainerControlledValuesRequestsAndLimits
 	}
 	return *containerPolicy.ControlledValues
+}
+
+// ParsePruningGracePeriodFromAnnotations returns the pruning grace period from a pod's annotations.
+func ParsePruningGracePeriodFromAnnotations(annotations map[string]string) (gracePeriod *time.Duration) {
+	if annotations == nil {
+		return nil
+	}
+	if gracePeriodStr, ok := annotations[VpaPruningGracePeriodAnnotation]; ok {
+		parsed, err := time.ParseDuration(gracePeriodStr)
+		if err != nil {
+			klog.V(4).ErrorS(err, "Failed to parse pruning grace period", "gracePeriod", gracePeriodStr)
+			return nil
+		}
+		return &parsed
+	}
+	return nil
 }
 
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.
