@@ -18,7 +18,6 @@ package metrics
 
 import (
 	"context"
-	"os"
 	"time"
 
 	k8sapiv1 "k8s.io/api/core/v1"
@@ -73,7 +72,7 @@ func NewExternalClient(c *rest.Config, clusterState model.ClusterState, options 
 	extClient, err := external_metrics.NewForConfig(c)
 	if err != nil {
 		klog.ErrorS(err, "Failed initializing external metrics client")
-		klog.FlushAndExit(255)
+		klog.FlushAndExit(10*time.Second, 255)
 	}
 	return &externalMetricsClient{
 		externalClient: extClient,

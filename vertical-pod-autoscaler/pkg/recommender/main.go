@@ -140,7 +140,7 @@ func main() {
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		klog.FlushAndExit(255)
+		klog.FlushAndExit(10 * time.Second, 255)
 	}
 	ctx := context.Background()
 
@@ -156,7 +156,7 @@ func main() {
 		id, err := os.Hostname()
 		if err != nil {
 			klog.ErrorS(err, "Unable to get hostname")
-			klog.FlushAndExit(255)
+			klog.FlushAndExit(10 * time.Second, 255)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -175,7 +175,7 @@ func main() {
 		)
 		if err != nil {
 			klog.ErrorS(err, "Unable to create leader election lock")
-			klog.FlushAndExit(255)
+			klog.FlushAndExit(10 * time.Second, 255)
 		}
 
 		leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
@@ -289,7 +289,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
 		klog.ErrorS(err, "Could not parse --prometheus-query-timeout as a time.Duration")
-		klog.FlushAndExit(255)
+		klog.FlushAndExit(10 * time.Second, 255)
 	}
 
 	if useCheckpoints {
@@ -317,7 +317,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
 			klog.ErrorS(err, "Could not initialize history provider")
-			klog.FlushAndExit(255)
+			klog.FlushAndExit(10 * time.Second, 255)
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}

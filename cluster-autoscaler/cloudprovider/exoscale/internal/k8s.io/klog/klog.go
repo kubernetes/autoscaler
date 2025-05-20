@@ -118,6 +118,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"k8s.io/klog/v2"
 )
 
 // severity identifies the sort of log: info, warning etc. It also implements
@@ -868,8 +870,7 @@ func (l *loggingT) output(s severity, buf *buffer, file string, line int, alsoTo
 			}
 		}
 		l.mu.Unlock()
-		timeoutFlush(10 * time.Second)
-		klog.FlushAndExit(255) // C++ uses -1, which is silly because it's anded with 255 anyway.
+		klog.FlushAndExit(10 * time.Second, 255) // C++ uses -1, which is silly because it's anded with 255 anyway.
 	}
 	l.putBuffer(buf)
 	l.mu.Unlock()

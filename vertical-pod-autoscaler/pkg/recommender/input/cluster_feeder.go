@@ -19,7 +19,6 @@ package input
 import (
 	"context"
 	"fmt"
-	"os"
 	"slices"
 	"time"
 
@@ -183,7 +182,7 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	indexer, ok := store.(cache.Indexer)
 	if !ok {
 		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
-		klog.FlushAndExit(255)
+		klog.FlushAndExit(10*time.Second, 255)
 	}
 	podLister := v1lister.NewPodLister(indexer)
 	go controller.Run(stopCh)

@@ -89,7 +89,7 @@ func main() {
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		klog.FlushAndExit(255)
+		klog.FlushAndExit(10 * time.Second, 255)
 
 	}
 
@@ -119,7 +119,7 @@ func main() {
 	hostname, err := os.Hostname()
 	if err != nil {
 		klog.ErrorS(err, "Unable to get hostname")
-		klog.FlushAndExit(255)
+		klog.FlushAndExit(10 * time.Second, 255)
 	}
 
 	statusNamespace := status.AdmissionControllerStatusNamespace
@@ -158,6 +158,6 @@ func main() {
 
 	if err = server.ListenAndServeTLS("", ""); err != nil {
 		klog.ErrorS(err, "Failed to start HTTPS server")
-		klog.FlushAndExit(255)
+		klog.FlushAndExit(10 * time.Second, 255)
 	}
 }
