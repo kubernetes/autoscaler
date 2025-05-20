@@ -187,9 +187,10 @@ updates.
 This AEP proposes extending the Vertical Pod Autoscaler (VPA) to support use
 cases where each pod under a DaemonSet should have different resource requests
 and limits. This is implemented by adding a `Scope` field to the
-VerticalPodAutoscaler API, which initially supports a value of `node`,
-indicating that the VPA recommendation should be calculated and applied
-independently for pods scheuled to the same node.
+VerticalPodAutoscaler API, which supports a node label key (e.g.
+`kubernetes.io/hostname`), indicating that the VPA recommendation should be
+calculated and applied independently for pods scheduled to nodes with different
+values for the specified label.
 
 ## Motivation
 
@@ -233,12 +234,11 @@ What is out of scope for this AEP? Listing non-goals helps to focus discussion
 and make progress.
 -->
 
--   Consider
-    [node metadata](https://github.com/kubernetes/autoscaler/issues/5928).
+-   Consider [node metadata
+    values](https://github.com/kubernetes/autoscaler/issues/5928).
 -   Change autoscaling behavior for pods that are not run under a DaemonSet.
--   Use data from other nodes to make an informed recommendation when a pod is
-    added to a DaemonSet with VPA enabled after a new node is added to a
-    cluster.
+-   Make an initial recommendation when there is no data available for the
+    designated scope.
 
 ## Proposal
 
@@ -252,11 +252,9 @@ nitty-gritty.
 -->
 
 We propose adding a `Scope` field to the VerticalPodAutoscaler API. When the
-TargetRef is a DaemonSet, this field can be set to the value `node`, which will
-cause the vertical pod autoscaler to handle the pods under the DaemonSet
-independently of one another, with the pod on each node receiving its own
-recommendation based on the history of the pod on that node, rather than an
-aggregation of all of the pods under the DaemonSet.
+TargetRef is a DaemonSet, this field can be set to any node label key, which
+will cause the vertical pod autoscaler to handle each set of pods that share the
+same label value for the specified label key as an independently scalable group.
 
 When this feature is successfully applied, the problems of vertically scaling
 DaemonSets with inconsistent load across nodes will be addressed, and both
@@ -315,14 +313,12 @@ Hortizonal Pod Autoscaling.
 One similar problem considered in the past was
 [scaling based on node metadata](https://github.com/kubernetes/autoscaler/issues/5928).
 That issue broadly suggests that workloads be given more capacity on larger
-nodes. That heuristic may be good enough for some use cases, and this proposal
-implicitly allows for the possibility of extending the "scope" field to support
-such a feature in the future. However, this proposal may also address the same
-underlying need more precisely. Conversely, scaling based on node metadata alone
-would not meet the needs of some of the motivating use cases for this proposal,
-because the underlying assumption of scaling based on node metadata is that the
-workload scales directly proportionally to the node. We know this is not the
-case in all circumstances.
+nodes. That heuristic may be good enough for some use cases. However, this
+proposal addresses the same underlying need more precisely. Conversely, scaling
+based on node metadata alone would not meet the needs of some of the motivating
+use cases for this proposal, because the underlying assumption of scaling based
+on node metadata is that the workload scales directly proportionally to the
+node. We know this is not the case in all circumstances.
 
 ### Risks and Mitigations
 
@@ -340,15 +336,15 @@ Consider including folks who also work outside the SIG or subproject.
 
 One significant risk is scaling this feature. While VPA generally scales in a
 sublinear way because only a single recommendation is calculated, a VPA with a
-node scope will scale linerarly, requiring separate metrics queries for each
-node and separate recommendation calculations. Care will be taken to ensure this
-is handled efficiently.
+`kubernetes.io/hostname` scope will scale linerarly, requiring separate metrics
+queries for each node and separate recommendation calculations. Care will be
+taken to ensure this is handled efficiently.
 
 As of Kubernetes V1.32,
 [up to 5,000 nodes are supported](https://kubernetes.io/docs/setup/best-practices/cluster-large/)
 per cluster. There is no official recommendation on the maximum number of
 VerticalPodAutoscalers that are supported. However, this proposal does increase
-the load for VerticalPodAutoscalers that use the new node scope option.
+the load for VerticalPodAutoscalers that use the new scope option.
 
 ## Design Details
 
@@ -369,48 +365,38 @@ type VerticalPodAutoscalerSpec struct {
 
     ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
 
-+   // Scope indicates at what level the recommendations should be calculated and applied.
-+   // By default, the scope is all pods under the controller specified in `TargetRef`. Scope
-+   // may also be set to "node" when the TargetRef is a DaemonSet, to apply recommendations
-+   // independently to the pod scheduled to each node under the DaemonSet.
-+   // +kubebuilder:validation:Enum=;node
-+   Scope VPAScope `json:"scope,omitzero" protobuf:"bytes,4,opt,name=scope"`
++   // Scope designates a node label key that will used to divide recommendations into groups
++   // based on the corresponding value of the label. For instance, setting this
++   // field to `kubernetes.io/hostname` will cause the VPA to create
++   // independent recommentations for each pod or set of pods scheduled to a
++   // node with a different hostname.
++   // When the scope is empty, the referenced label does not exist on any node, 
++   // or the node label has the same value on all of the nodes in the cluster
++   // there will be one common recommendation for all pods under the TargetRef.
++   Scope VPAScope `json:"scope,omitempty" protobuf:"bytes,4,opt,name=scope"`
 }
 ```
 
-The VPAScope type will allow "Default" and "Node" options: ``` // +enum type
-VPAScope string
-
-const ( ScopeDefault = "" ScopeNode = "node" ) ```
-
 An empty string in the scope field maintains existing functionality for the
 VerticalPodAutoscaler. The implied scope when the field is left empty is the
-entire TargetRef. Making scope a string type keeps the door open for different
-scopes to be supported in the future. For instance, although they are not
-supported in Kubernetes natively, several major cloud providers support the
-concept of NodePools. If a provider decides to support VPA at the NodePool
-level, they would be able to offer such a feature with minimal modification to
-the canoncial API.
-
-In addition, validation rules using OpenAPI schema and CEL will be added to the
-API to ensure that Scope is not set to an invalid value.
+entire TargetRef. 
 
 When this feature is enabled, the internal representation of the
 VerticalPodAutoscaler will be divided into N objects, where N is the number of
-Nodes with a pod scheduled. When the recommendation is produced and exposed on
-the VerticalPodAutoscaler, the recommendation will include the recommendation
-generated for each node. Aside from these differences, the mechanics of
-VerticalPodAutoscaling will remain fundamentally unchanged.
+unique values for the specified node label key. When the recommendation is
+produced and exposed on the VerticalPodAutoscaler, the recommendation will
+include the recommendation generated for each grouping. Aside from these
+differences, the mechanics of VerticalPodAutoscaling will remain fundamentally
+unchanged.
 
 When using Metrics Server, the VerticalPodAutoscalerCheckpoints will also be
-divided into separate resources, by the node scope. When the storage is
-Prometheus, VerticalPodAutoscalerCheckpoints are not created.
+divided into separate resources, by the scope. When the storage is Prometheus,
+VerticalPodAutoscalerCheckpoints are not created.
 
 Internally, the
 [ClusterState](https://github.com/kubernetes/autoscaler/blob/vpa-release-1.3/vertical-pod-autoscaler/pkg/recommender/model/cluster.go#L38-L63)
-will track a separate VPA for each schedulable node of the DaemonSet. Nodes that
-with taints that are not tolerated or that otherwise do not meet the
-nodeSelector criteria for the DaemonSet in the TargetRef will be ignored.
+will track a separate VPA for each scope grouping. Groupings without any pods
+scheduled will not be tracked.
 
 ### Test Plan
 
