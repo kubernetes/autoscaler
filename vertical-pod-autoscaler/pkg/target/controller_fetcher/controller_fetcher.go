@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -117,7 +116,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.ErrorS(err, "Could not create discoveryClient")
-		os.Exit(255)
+		klog.FlushAndExit(10*time.Second, 255)
 	}
 	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
 	restClient := kubeClient.CoreV1().RESTClient()
