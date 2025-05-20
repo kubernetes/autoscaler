@@ -95,13 +95,13 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	indexer, ok := store.(cache.Indexer)
 	if !ok {
 		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	}
 	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
 	if !cache.WaitForCacheSync(stopChannel, controller.HasSynced) {
 		klog.ErrorS(nil, "Failed to sync VPA cache during initialization")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	} else {
 		klog.InfoS("Initial VPA synced successfully")
 	}

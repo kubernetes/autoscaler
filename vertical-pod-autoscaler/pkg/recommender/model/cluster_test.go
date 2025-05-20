@@ -354,7 +354,7 @@ func addVpaObject(cluster ClusterState, id VpaID, vpa *vpa_types.VerticalPodAuto
 	err := cluster.AddOrUpdateVpa(vpa, parsedSelector)
 	if err != nil {
 		klog.ErrorS(err, "AddOrUpdateVpa() failed")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	}
 	return cluster.VPAs()[id]
 }

@@ -183,7 +183,7 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	indexer, ok := store.(cache.Indexer)
 	if !ok {
 		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	}
 	podLister := v1lister.NewPodLister(indexer)
 	go controller.Run(stopCh)

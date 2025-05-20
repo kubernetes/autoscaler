@@ -73,7 +73,7 @@ func NewExternalClient(c *rest.Config, clusterState model.ClusterState, options 
 	extClient, err := external_metrics.NewForConfig(c)
 	if err != nil {
 		klog.ErrorS(err, "Failed initializing external metrics client")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	}
 	return &externalMetricsClient{
 		externalClient: extClient,

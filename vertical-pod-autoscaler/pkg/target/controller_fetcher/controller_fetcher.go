@@ -117,7 +117,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.ErrorS(err, "Could not create discoveryClient")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	}
 	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
 	restClient := kubeClient.CoreV1().RESTClient()

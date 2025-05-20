@@ -152,7 +152,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
 		klog.ErrorS(err, "Failed to get VPA list")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	}
 	timer.ObserveStep("ListVPAs")
 
@@ -406,7 +406,7 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	vpascheme := scheme.Scheme
 	if err := corescheme.AddToScheme(vpascheme); err != nil {
 		klog.ErrorS(err, "Error adding core scheme")
-		os.Exit(255)
+		klog.FlushAndExit(255)
 	}
 
 	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
