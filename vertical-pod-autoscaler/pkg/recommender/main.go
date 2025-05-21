@@ -65,6 +65,7 @@ var (
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	memorySaver            = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+	updateWorkerCount      = flag.Int("update-worker-count", 10, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits (`kube-api-qps` and `kube-api-burst`) are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
 )
 
 // Prometheus history provider flags
@@ -142,6 +143,11 @@ func main() {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 		os.Exit(255)
 	}
+
+	if *routines.MinCheckpointsPerRun != 10 { // Default value is 10
+		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
+	}
+
 	ctx := context.Background()
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
@@ -284,6 +290,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        *checkpointsGCInterval,
 		UseCheckpoints:               useCheckpoints,
+		UpdateWorkerCount:            *updateWorkerCount,
 	}.Make()
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
