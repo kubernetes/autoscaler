@@ -160,8 +160,23 @@ we've been using them since `vertical-pod-autoscaler-0.1` and tags with the
 other pattern start only with `vertical-pod-autoscaler/v0.9.0` so we should make
 sure nothing we care about will break if we do.
 
+1.  [ ] Tag the commit that was used to cut the image. This can be fetched from the [build dashboard](https://testgrid.k8s.io/sig-autoscaling-vpa-images).
+
+    ```sh
+    git checkout <commit hash>
+    git tag -a vertical-pod-autoscaler-[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
+    git tag -a vertical-pod-autoscaler/v[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
+    ```
+
+1.  [ ] Push tag
+
+    ```sh
+    git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler-[*vpa-version*]
+    git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler/v[*vpa-version*]
+    ```
+
 1.  [ ] Update information about newest version and K8s compatibility in
-    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation).
+    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/installation.md#compatibility).
 
 1.  [ ] Update the yaml and sh files:
 
@@ -179,19 +194,7 @@ sure nothing we care about will break if we do.
 1.  [ ] Merge these changes into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release
     (example PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
 
-1.  [ ] Tag the commit with version const change
-
-    ```sh
-    git tag -a vertical-pod-autoscaler-[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
-    git tag -a vertical-pod-autoscaler/v[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
-    ```
-
-1.  [ ] Push tag
-
-    ```sh
-    git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler-[*vpa-version*]
-    git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler/v[*vpa-version*]
-    ```
+    IMPORTANT: Make sure the tags created above exist before merging into the main branch!
 
 1.  [ ] To create and publish a github release from pushed tag go to
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
