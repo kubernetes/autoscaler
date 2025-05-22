@@ -61,45 +61,84 @@ type TestCloudProvider struct {
 	resourceLimiter   *cloudprovider.ResourceLimiter
 }
 
-// NewTestCloudProvider builds new TestCloudProvider
-func NewTestCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc) *TestCloudProvider {
-	return &TestCloudProvider{
-		nodes:           make(map[string]string),
-		groups:          make(map[string]cloudprovider.NodeGroup),
-		onScaleUp:       onScaleUp,
-		onScaleDown:     onScaleDown,
-		resourceLimiter: cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
-	}
+// TestCloudProviderBuilder is used to create CloudProvider
+type TestCloudProviderBuilder struct {
+	builders []func(p *TestCloudProvider)
 }
 
-// NewTestAutoprovisioningCloudProvider builds new TestCloudProvider with autoprovisioning support
-func NewTestAutoprovisioningCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc,
-	onNodeGroupCreate OnNodeGroupCreateFunc, onNodeGroupDelete OnNodeGroupDeleteFunc,
-	machineTypes []string, machineTemplates map[string]*framework.NodeInfo) *TestCloudProvider {
-	return &TestCloudProvider{
-		nodes:             make(map[string]string),
-		groups:            make(map[string]cloudprovider.NodeGroup),
-		onScaleUp:         onScaleUp,
-		onScaleDown:       onScaleDown,
-		onNodeGroupCreate: onNodeGroupCreate,
-		onNodeGroupDelete: onNodeGroupDelete,
-		machineTypes:      machineTypes,
-		machineTemplates:  machineTemplates,
-		resourceLimiter:   cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
-	}
+// NewTestCloudProviderBuilder returns a new test cloud provider builder
+func NewTestCloudProviderBuilder() *TestCloudProviderBuilder {
+	return &TestCloudProviderBuilder{}
 }
 
-// NewTestNodeDeletionDetectionCloudProvider builds new TestCloudProvider with deletion detection support
-func NewTestNodeDeletionDetectionCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc,
-	hasInstance HasInstance) *TestCloudProvider {
-	return &TestCloudProvider{
+// WithOnScaleUp adds scale-up handle function to provider
+func (b *TestCloudProviderBuilder) WithOnScaleUp(onScaleUp OnScaleUpFunc) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.onScaleUp = onScaleUp
+	})
+	return b
+}
+
+// WithOnScaleDown adds scale-down handle function to provider
+func (b *TestCloudProviderBuilder) WithOnScaleDown(onScaleDown OnScaleDownFunc) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.onScaleDown = onScaleDown
+	})
+	return b
+}
+
+// WithOnNodeGroupCreate adds node group creation handle function to provider
+func (b *TestCloudProviderBuilder) WithOnNodeGroupCreate(onNodeGroupCreate OnNodeGroupCreateFunc) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.onNodeGroupCreate = onNodeGroupCreate
+	})
+	return b
+}
+
+// WithOnNodeGroupDelete adds node group deletion handle function to provider
+func (b *TestCloudProviderBuilder) WithOnNodeGroupDelete(onNodeGroupDelete OnNodeGroupDeleteFunc) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.onNodeGroupDelete = onNodeGroupDelete
+	})
+	return b
+}
+
+// WithMachineTypes adds machine types to provider
+func (b *TestCloudProviderBuilder) WithMachineTypes(machineTypes []string) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.machineTypes = machineTypes
+	})
+	return b
+}
+
+// WithMachineTemplates adds machine templates for provider
+func (b *TestCloudProviderBuilder) WithMachineTemplates(machineTemplates map[string]*framework.NodeInfo) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.machineTemplates = machineTemplates
+	})
+	return b
+}
+
+// WithHasInstance adds has instance handler to provider
+func (b *TestCloudProviderBuilder) WithHasInstance(hasInstance HasInstance) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.hasInstance = hasInstance
+	})
+	return b
+}
+
+// Build returns a built test cloud provider
+func (b *TestCloudProviderBuilder) Build() *TestCloudProvider {
+	p := &TestCloudProvider{
 		nodes:           make(map[string]string),
 		groups:          make(map[string]cloudprovider.NodeGroup),
-		onScaleUp:       onScaleUp,
-		onScaleDown:     onScaleDown,
-		hasInstance:     hasInstance,
 		resourceLimiter: cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
 	}
+
+	for _, builder := range b.builders {
+		builder(p)
+	}
+	return p
 }
 
 // Name returns name of the cloud provider.

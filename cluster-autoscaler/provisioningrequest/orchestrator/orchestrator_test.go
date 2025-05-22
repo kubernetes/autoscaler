@@ -459,7 +459,7 @@ func TestScaleUp(t *testing.T) {
 }
 
 func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, nodes []*apiv1.Node, onScaleUpFunc func(string, int) error, autoprovisioning bool, batchProcessing bool, maxBatchSize int, batchTimebox time.Duration) (*provReqOrchestrator, map[string]*framework.NodeInfo) {
-	provider := testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(onScaleUpFunc).Build()
 	clock := clocktesting.NewFakePassiveClock(time.Now())
 	now := clock.Now()
 	if autoprovisioning {
@@ -471,7 +471,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 			"large-machine": nodeInfoTemplate,
 		}
 		onNodeGroupCreateFunc := func(name string) error { return nil }
-		provider = testprovider.NewTestAutoprovisioningCloudProvider(onScaleUpFunc, nil, onNodeGroupCreateFunc, nil, machineTypes, machineTemplates)
+		provider = testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(onScaleUpFunc).WithOnNodeGroupCreate(onNodeGroupCreateFunc).WithMachineTypes(machineTypes).WithMachineTemplates(machineTemplates).Build()
 	}
 
 	provider.AddNodeGroup("test-cpu", 50, 150, 100)

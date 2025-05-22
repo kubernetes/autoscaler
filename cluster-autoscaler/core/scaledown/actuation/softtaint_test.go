@@ -54,10 +54,10 @@ func TestSoftTaintUpdate(t *testing.T) {
 	_, err = fakeClient.CoreV1().Nodes().Create(ctx, n2000, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
-	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 		t.Fatalf("Unexpected deletion of %s", node)
 		return nil
-	})
+	}).Build()
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNode("ng1", n1000)
 	provider.AddNode("ng1", n2000)
@@ -141,7 +141,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 		return false, nil, nil
 	})
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng1", n2)

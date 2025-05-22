@@ -44,7 +44,7 @@ func TestCloudProviderNodeInstancesCache(t *testing.T) {
 	nodeNg4_1 := BuildTestNode("ng4-1", 1000, 1000)
 	instanceNg4_1 := buildRunningInstance(nodeNg4_1.Name)
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNodeGroup("ng3", 1, 10, 1)

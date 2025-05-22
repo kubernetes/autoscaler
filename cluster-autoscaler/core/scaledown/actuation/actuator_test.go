@@ -1185,13 +1185,13 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 
 	// Hook node deletion at the level of cloud provider, to gather which nodes were deleted, and to fail the deletion for
 	// certain nodes to simulate errors.
-	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 		if tc.failedNodeDeletion[node] {
 			return fmt.Errorf("SIMULATED ERROR: won't remove node")
 		}
 		deletedNodes <- node
 		return nil
-	})
+	}).Build()
 	for _, bucket := range emptyNodeGroupViews {
 		bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
 		provider.InsertNodeGroup(bucket.Group)
@@ -1497,13 +1497,13 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			}
 			deletedResult := make(chan string)
 			fakeClient := &fake.Clientset{}
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroupId string, node string) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroupId string, node string) error {
 				if gotFailedRequest(nodeGroupId) {
 					return fmt.Errorf("SIMULATED ERROR: won't remove node")
 				}
 				deletedResult <- nodeGroupId
 				return nil
-			})
+			}).Build()
 			// 2d array represent the waves of pushing nodes to delete.
 			deleteNodes := [][]*apiv1.Node{}
 
