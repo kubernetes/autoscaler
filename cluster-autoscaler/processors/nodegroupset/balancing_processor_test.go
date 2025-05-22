@@ -33,7 +33,7 @@ func buildBasicNodeGroups(context *context.AutoscalingContext) (*framework.NodeI
 	n1 := BuildTestNode("n1", 1000, 1000)
 	n2 := BuildTestNode("n2", 1000, 1000)
 	n3 := BuildTestNode("n3", 2000, 2000)
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNodeGroup("ng3", 1, 10, 1)
@@ -112,7 +112,7 @@ func TestBalanceSingleGroup(t *testing.T) {
 	processor := NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{})
 	context := &context.AutoscalingContext{}
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 
 	// just one node
@@ -132,7 +132,7 @@ func TestBalanceUnderMaxSize(t *testing.T) {
 	processor := NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{})
 	context := &context.AutoscalingContext{}
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 3)
 	provider.AddNodeGroup("ng3", 1, 10, 5)
@@ -182,7 +182,7 @@ func TestBalanceHittingMaxSize(t *testing.T) {
 	processor := NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{})
 	context := &context.AutoscalingContext{}
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 1, 1)
 	provider.AddNodeGroup("ng2", 1, 3, 1)
 	provider.AddNodeGroup("ng3", 1, 10, 3)

@@ -223,7 +223,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 			}
 			s := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults)
 			c := NewChecker(s)
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.AddNodeGroup("ng1", 1, 10, 2)
 			for _, n := range tc.nodes {
 				provider.AddNode("ng1", n)
