@@ -21,6 +21,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
@@ -70,9 +71,46 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 }
 
 func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
-	numAllocated := float64(len(allocated))
-	numUnallocated := float64(len(unallocated))
-	return numAllocated / (numAllocated + numUnallocated)
+	TotalConsumedCounters := calculateConsumedCounters(append(allocated, unallocated...))
+	allocatedConsumedCounters := calculateConsumedCounters(allocated)
+
+	// we want to find the counter that is most utilized, since it is the "bottleneck"
+	maxUtilization := 0.0
+	for counterSet, counters := range TotalConsumedCounters {
+		for counterName, totalValue := range counters {
+			if allocatedSet, exists := allocatedConsumedCounters[counterSet]; exists {
+				if allocatedValue, exists := allocatedSet[counterName]; exists && !totalValue.IsZero() {
+					utilization := float64(allocatedValue.MilliValue()) / float64(totalValue.MilliValue())
+					if utilization > maxUtilization {
+						maxUtilization = utilization
+					}
+				}
+			}
+		}
+	}
+	return maxUtilization
+}
+
+// calculateConsumedCounters calculates the total counters consumed by a list of devices
+func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[string]resource.Quantity {
+	countersConsumed := map[string]map[string]resource.Quantity{}
+	for _, device := range devices {
+		for _, consumedCounter := range device.Basic.ConsumesCounters {
+			if _, ok := countersConsumed[consumedCounter.CounterSet]; !ok {
+				countersConsumed[consumedCounter.CounterSet] = map[string]resource.Quantity{}
+			}
+			for counter, value := range consumedCounter.Counters {
+				if _, ok := countersConsumed[consumedCounter.CounterSet][counter]; !ok {
+					countersConsumed[consumedCounter.CounterSet][counter] = resource.Quantity{}
+				}
+				v := countersConsumed[consumedCounter.CounterSet][counter]
+				v.Add(value.Value)
+				countersConsumed[consumedCounter.CounterSet][counter] = v
+			}
+		}
+	}
+	return countersConsumed
+
 }
 
 func splitDevicesByAllocation(devices []resourceapi.Device, allocatedNames []string) (unallocated, allocated []resourceapi.Device) {
