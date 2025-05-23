@@ -19,7 +19,6 @@ package target
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -72,7 +71,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.ErrorS(err, "Could not create discoveryClient")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
 	restClient := kubeClient.CoreV1().RESTClient()
@@ -98,7 +97,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
 		if !synced {
 			klog.ErrorS(nil, "Could not sync cache for "+string(kind))
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		} else {
 			klog.InfoS("Initial sync completed", "kind", kind)
 		}
