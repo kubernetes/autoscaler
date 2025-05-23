@@ -61,9 +61,8 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	tni := framework.NewTestNodeInfo(tn)
 
 	// Cloud provider with TemplateNodeInfo implemented.
-	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
-		nil, nil, nil, nil, nil,
-		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni, "ng5": tni, "ng6": tni})
+	provider1 := testprovider.NewTestCloudProviderBuilder().WithMachineTemplates(
+		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni, "ng5": tni, "ng6": tni}).Build()
 	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
 	provider1.AddNode("ng1", ready1)
 	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
@@ -79,7 +78,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	provider1.AddNode("ng6", ready7)
 
 	// Cloud provider with TemplateNodeInfo not implemented.
-	provider2 := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
+	provider2 := testprovider.NewTestCloudProviderBuilder().Build()
 	provider2.AddNodeGroup("ng7", 1, 10, 1) // Nodegroup without nodes.
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
@@ -157,9 +156,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	}
 
 	// Cloud provider with TemplateNodeInfo implemented.
-	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
-		nil, nil, nil, onDeleteGroup, nil,
-		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni})
+	provider1 := testprovider.NewTestCloudProviderBuilder().WithOnNodeGroupDelete(onDeleteGroup).WithMachineTemplates(map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni}).Build()
 	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
 	provider1.AddNode("ng1", ready1)
 	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
@@ -261,7 +258,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))
 
 	// Cloud provider with TemplateNodeInfo not implemented.
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 

@@ -125,7 +125,7 @@ func TestGetScaleDownCandidates(t *testing.T) {
 
 	for description, testCase := range testCases {
 		t.Run(description, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 
 			p := NewScaleDownCandidatesDelayProcessor()
 

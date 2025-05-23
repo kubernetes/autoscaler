@@ -187,7 +187,7 @@ func TestRemovableAt(t *testing.T) {
 			}
 
 			removableNodes := append(empty, drain...)
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.InsertNodeGroup(ng)
 			for _, node := range removableNodes {
 				provider.AddNode("ng", node.Node)

@@ -104,7 +104,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n1 := BuildTestNode("n1", 1000, 1000)
 	n2 := BuildTestNode("n2", 2000, 2000)
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", n1)
