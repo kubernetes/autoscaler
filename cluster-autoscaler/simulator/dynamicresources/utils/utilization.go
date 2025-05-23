@@ -74,13 +74,29 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
 	TotalConsumedCounters := calculateConsumedCounters(append(allocated, unallocated...))
 	allocatedConsumedCounters := calculateConsumedCounters(allocated)
 
-	// we want to find the counter that is most utilized, since it is the "bottleneck"
-	maxUtilization := 0.0
+	// not all devices are partitionable, so fallback to the ratio of non-partionable devices
+	allocatedDevicesWithoutCounters := 0
+	devicesWithoutCounters := 0
+
+	for _, device := range allocated {
+		if device.Basic.ConsumesCounters == nil {
+			devicesWithoutCounters++
+			allocatedDevicesWithoutCounters++
+		}
+	}
+	for _, device := range unallocated {
+		if device.Basic.ConsumesCounters == nil {
+			devicesWithoutCounters++
+		}
+	}
+
+	// we want to find the counter that is most utilized, since it is the "bottleneck" of the pool
+	maxUtilization := float64(allocatedDevicesWithoutCounters) / (float64(allocatedDevicesWithoutCounters) + float64(devicesWithoutCounters))
 	for counterSet, counters := range TotalConsumedCounters {
 		for counterName, totalValue := range counters {
 			if allocatedSet, exists := allocatedConsumedCounters[counterSet]; exists {
 				if allocatedValue, exists := allocatedSet[counterName]; exists && !totalValue.IsZero() {
-					utilization := float64(allocatedValue.MilliValue()) / float64(totalValue.MilliValue())
+					utilization := float64(allocatedValue.Value()) / float64(totalValue.Value())
 					if utilization > maxUtilization {
 						maxUtilization = utilization
 					}
@@ -95,6 +111,9 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
 func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[string]resource.Quantity {
 	countersConsumed := map[string]map[string]resource.Quantity{}
 	for _, device := range devices {
+		if device.Basic.ConsumesCounters == nil {
+			continue
+		}
 		for _, consumedCounter := range device.Basic.ConsumesCounters {
 			if _, ok := countersConsumed[consumedCounter.CounterSet]; !ok {
 				countersConsumed[consumedCounter.CounterSet] = map[string]resource.Quantity{}
@@ -110,7 +129,6 @@ func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[stri
 		}
 	}
 	return countersConsumed
-
 }
 
 func splitDevicesByAllocation(devices []resourceapi.Device, allocatedNames []string) (unallocated, allocated []resourceapi.Device) {
