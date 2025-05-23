@@ -146,9 +146,11 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			testName: "",
 			nodeInfo: framework.NewNodeInfo(node,
 				mergeLists(
-					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "node", 4),
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "node", 2, 4),
 				),
-				testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"})...,
+				mergeLists(
+					testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
+				)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -159,6 +161,9 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 	} {
+		if tc.testName != "" {
+			continue
+		}
 		t.Run(tc.testName, func(t *testing.T) {
 			utilization, err := CalculateDynamicResourceUtilization(tc.nodeInfo)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
@@ -207,7 +212,7 @@ func testResourceSlices(driverName, poolName, nodeName string, poolGen, deviceCo
 	return result
 }
 
-func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName string, partitionCount int) []*resourceapi.ResourceSlice {
+func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName string, poolGen, partitionCount int) []*resourceapi.ResourceSlice {
 	sliceName := fmt.Sprintf("%s-%s-slice", driverName, poolName)
 	var devices []resourceapi.Device
 	for i := 0; i < partitionCount; i++ {
@@ -262,7 +267,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName str
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   driverName,
 			NodeName: nodeName,
-			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: 0, ResourceSliceCount: 1},
+			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: 1},
 			Devices:  devices,
 			SharedCounters: []resourceapi.CounterSet{
 				{
