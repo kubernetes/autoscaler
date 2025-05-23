@@ -132,9 +132,9 @@ func TestScheduleDeletion(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 				return nil
-			})
+			}).Build()
 
 			batcher := &countingBatcher{}
 			tracker := deletiontracker.NewNodeDeletionTracker(0)

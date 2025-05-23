@@ -485,7 +485,7 @@ func TestUpdateClusterState(t *testing.T) {
 			rsLister, err := kube_util.NewTestReplicaSetLister(tc.replicasSets)
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.AddNodeGroup("ng1", 0, 0, 0)
 			for _, node := range tc.nodes {
 				provider.AddNode("ng1", node)
@@ -681,7 +681,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			for i := 0; i < tc.previouslyUnneeded; i++ {
 				previouslyUnneeded[i] = simulator.NodeToBeRemoved{Node: nodes[i]}
 			}
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.AddNodeGroupWithCustomOptions("ng1", 0, 0, 0, tc.opts)
 			for _, node := range nodes {
 				provider.AddNode("ng1", node)
@@ -844,7 +844,7 @@ func TestNodesToDelete(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			allNodes := []*apiv1.Node{}
 			allRemovables := []simulator.NodeToBeRemoved{}
 			for ng, nodes := range tc.nodes {
