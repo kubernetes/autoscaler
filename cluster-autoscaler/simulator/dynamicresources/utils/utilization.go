@@ -44,7 +44,7 @@ func CalculateDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (map[stri
 			poolDevices := getAllDevices(currentSlices)
 			allocatedDeviceNames := allocatedDevices[driverName][poolName]
 			unallocated, allocated := splitDevicesByAllocation(poolDevices, allocatedDeviceNames)
-			result[driverName][poolName] = calculatePoolUtil(unallocated, allocated)
+			result[driverName][poolName] = calculatePoolUtil(unallocated, allocated, currentSlices)
 		}
 	}
 	return result, nil
@@ -70,8 +70,18 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 	return highestResourceName, highestUtil, nil
 }
 
-func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
-	TotalConsumedCounters := calculateConsumedCounters(append(allocated, unallocated...))
+func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
+	TotalConsumedCounters := map[string]map[string]resource.Quantity{}
+	for _, resourceSlice := range resourceSlices {
+		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
+			if _, ok := TotalConsumedCounters[sharedCounter.Name]; !ok {
+				TotalConsumedCounters[sharedCounter.Name] = map[string]resource.Quantity{}
+			}
+			for counter, value := range sharedCounter.Counters {
+				TotalConsumedCounters[sharedCounter.Name][counter] = value.Value
+			}
+		}
+	}
 	allocatedConsumedCounters := calculateConsumedCounters(allocated)
 
 	// not all devices are partitionable, so fallback to the ratio of non-partionable devices
@@ -79,19 +89,24 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
 	devicesWithoutCounters := 0
 
 	for _, device := range allocated {
-		if device.Basic.ConsumesCounters == nil {
+		if device.Basic == nil || device.Basic.ConsumesCounters == nil {
 			devicesWithoutCounters++
 			allocatedDevicesWithoutCounters++
 		}
 	}
 	for _, device := range unallocated {
-		if device.Basic.ConsumesCounters == nil {
+		if device.Basic == nil || device.Basic.ConsumesCounters == nil {
 			devicesWithoutCounters++
 		}
 	}
 
 	// we want to find the counter that is most utilized, since it is the "bottleneck" of the pool
-	maxUtilization := float64(allocatedDevicesWithoutCounters) / (float64(allocatedDevicesWithoutCounters) + float64(devicesWithoutCounters))
+	var maxUtilization float64
+	if devicesWithoutCounters == 0 {
+		maxUtilization = 0
+	} else {
+		maxUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
+	}
 	for counterSet, counters := range TotalConsumedCounters {
 		for counterName, totalValue := range counters {
 			if allocatedSet, exists := allocatedConsumedCounters[counterSet]; exists {
@@ -111,6 +126,9 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
 func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[string]resource.Quantity {
 	countersConsumed := map[string]map[string]resource.Quantity{}
 	for _, device := range devices {
+		if device.Basic == nil {
+			continue
+		}
 		if device.Basic.ConsumesCounters == nil {
 			continue
 		}

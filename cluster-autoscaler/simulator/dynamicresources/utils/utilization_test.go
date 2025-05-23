@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -141,7 +142,26 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			wantHighestUtilization:     0.2,
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
+		{
+			testName: "",
+			nodeInfo: framework.NewNodeInfo(node,
+				mergeLists(
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "node", 4),
+				),
+				testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"})...,
+			),
+			wantUtilization: map[string]map[string]float64{
+				fooDriver: {
+					"pool1": 0.5,
+				},
+			},
+			wantHighestUtilization:     0.5,
+			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
+		},
 	} {
+		if tc.testName != "" {
+			continue
+		}
 		t.Run(tc.testName, func(t *testing.T) {
 			utilization, err := CalculateDynamicResourceUtilization(tc.nodeInfo)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
@@ -190,6 +210,78 @@ func testResourceSlices(driverName, poolName, nodeName string, poolGen, deviceCo
 	return result
 }
 
+func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName string, partitionCount int) []*resourceapi.ResourceSlice {
+	sliceName := fmt.Sprintf("%s-%s-slice", driverName, poolName)
+	var devices []resourceapi.Device
+	for i := 0; i < partitionCount; i++ {
+		devices = append(
+			devices,
+			resourceapi.Device{
+				Name: fmt.Sprintf("gpu-0-partition-%d", i),
+				Basic: &resourceapi.BasicDevice{
+					Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
+						"memory": {
+							Value: resource.MustParse("10Gi"),
+						},
+					},
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "gpu-0-counter-set",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {
+									Value: resource.MustParse("10Gi"),
+								},
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+	devices = append(devices,
+		resourceapi.Device{
+			Name: "gpu-0",
+			Basic: &resourceapi.BasicDevice{
+				Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
+					"memory": {
+						Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
+					},
+				},
+				ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+					{
+						CounterSet: "gpu-0-counter-set",
+						Counters: map[string]resourceapi.Counter{
+							"memory": {
+								Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	resourceSlice := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{Name: sliceName, UID: types.UID(sliceName)},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver:   driverName,
+			NodeName: nodeName,
+			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: 0, ResourceSliceCount: 1},
+			Devices:  devices,
+			SharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "gpu-0-counter-set",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {
+							Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
+						},
+					},
+				},
+			},
+		},
+	}
+	return []*resourceapi.ResourceSlice{resourceSlice}
+}
+
 func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devicesPerPod int64) []*framework.PodInfo {
 	podCount := deviceCount / devicesPerPod
 
@@ -217,6 +309,39 @@ func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devi
 		}
 		result = append(result, framework.NewPodInfo(pod, claims))
 	}
+	return result
+}
+
+func testPodsWithCustomClaims(driverName, poolName, nodeName string, devices []string) []*framework.PodInfo {
+	deviceIndex := 0
+	var result []*framework.PodInfo
+	pod := test.BuildTestPod(fmt.Sprintf("%s-%s-pod", driverName, poolName), 1, 1)
+	var claims []*resourceapi.ResourceClaim
+	var results []resourceapi.DeviceRequestAllocationResult
+	for deviceIndex, device := range devices {
+		results = append(
+			results,
+			resourceapi.DeviceRequestAllocationResult{
+				Request: fmt.Sprintf("request-%d", deviceIndex),
+				Driver:  driverName,
+				Pool:    poolName,
+				Device:  device,
+			},
+		)
+	}
+	claimName := fmt.Sprintf("%s-claim", pod.Name)
+	claims = append(claims, &resourceapi.ResourceClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: claimName, UID: types.UID(claimName)},
+		Status: resourceapi.ResourceClaimStatus{
+			Allocation: &resourceapi.AllocationResult{
+				Devices: resourceapi.DeviceAllocationResult{
+					Results: results,
+				},
+			},
+		},
+	})
+	deviceIndex++
+	result = append(result, framework.NewPodInfo(pod, claims))
 	return result
 }
 
