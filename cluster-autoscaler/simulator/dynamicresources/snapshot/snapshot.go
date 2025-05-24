@@ -178,7 +178,7 @@ func (s Snapshot) RemovePodOwnedClaims(pod *apiv1.Pod) {
 			// The claim isn't tracked in the snapshot for some reason. Nothing to remove/modify, so continue to the next claim.
 			continue
 		}
-		if ownerName, ownerUid := drautils.ClaimOwningPod(claim); ownerName == pod.Name && ownerUid == pod.UID {
+		if err := resourceclaim.IsForPod(pod, claim); err == nil {
 			delete(s.resourceClaimsById, claimId)
 		} else {
 			drautils.ClearPodReservationInPlace(claim, pod)
@@ -214,9 +214,7 @@ func (s Snapshot) UnreservePodClaims(pod *apiv1.Pod) error {
 		return err
 	}
 	for _, claim := range claims {
-		ownerPodName, ownerPodUid := drautils.ClaimOwningPod(claim)
-		podOwnedClaim := ownerPodName == pod.Name && ownerPodUid == ownerPodUid
-
+		podOwnedClaim := resourceclaim.IsForPod(pod, claim) == nil
 		drautils.ClearPodReservationInPlace(claim, pod)
 		if podOwnedClaim || !drautils.ClaimInUse(claim) {
 			drautils.DeallocateClaimInPlace(claim)
