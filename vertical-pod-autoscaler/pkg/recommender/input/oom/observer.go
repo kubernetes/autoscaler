@@ -149,12 +149,10 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	}
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
-		if containerStatus.RestartCount > 0 &&
-			containerStatus.LastTerminationState.Terminated != nil &&
-			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
+		if containerStatus.State.Terminated != nil && containerStatus.State.Terminated.Reason == "OOMKilled" {
 
 			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
-			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
+			if oldStatus != nil && oldStatus.State.Terminated == nil {
 				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
 				if oldSpec != nil {
 					requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
@@ -163,7 +161,7 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 						memory = requests[apiv1.ResourceMemory]
 					}
 					oomInfo := OomInfo{
-						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
+						Timestamp: containerStatus.State.Terminated.FinishedAt.Time.UTC(),
 						Memory:    model.ResourceAmount(memory.Value()),
 						ContainerID: model.ContainerID{
 							PodID: model.PodID{
