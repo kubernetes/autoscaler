@@ -227,6 +227,7 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}
 	}
+	r.clusterSnapshot.RemoveNodeInfo(removedNode)
 
 	newpods := make([]*apiv1.Pod, 0, len(pods))
 	for _, podptr := range pods {
