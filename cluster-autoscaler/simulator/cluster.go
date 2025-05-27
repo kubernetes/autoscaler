@@ -227,6 +227,7 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}
 	}
+	// Remove the node from the snapshot, so that it doesn't interfere with topology spread constraint scheduling.
 	r.clusterSnapshot.RemoveNodeInfo(removedNode)
 
 	newpods := make([]*apiv1.Pod, 0, len(pods))
