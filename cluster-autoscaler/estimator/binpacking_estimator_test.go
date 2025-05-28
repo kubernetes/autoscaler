@@ -184,12 +184,29 @@ func TestBinpackingEstimate(t *testing.T) {
 					WithLabels(map[string]string{
 						"app": "estimatee",
 					}),
-					WithMaxSkew(2, "kubernetes.io/hostname")), 8)},
-			expectNodeCount: 4,
+					WithMaxSkew(2, "kubernetes.io/hostname", 1)), 8)},
+			expectNodeCount: 2,
 			expectPodCount:  8,
 		},
 		{
 			name:       "zonal topology spreading with maxSkew=2 only allows 2 pods to schedule",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					200,
+					200,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					}),
+					WithMaxSkew(2, "topology.kubernetes.io/zone", 1)), 8)},
+			expectNodeCount: 1,
+			expectPodCount:  2,
+		},
+		{
+			name:       "hostname topology spreading with maxSkew=1 with a large scaleup",
 			millicores: 1000,
 			memory:     5000,
 			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
@@ -201,9 +218,9 @@ func TestBinpackingEstimate(t *testing.T) {
 					WithLabels(map[string]string{
 						"app": "estimatee",
 					}),
-					WithMaxSkew(2, "topology.kubernetes.io/zone")), 8)},
-			expectNodeCount: 1,
-			expectPodCount:  2,
+					WithMaxSkew(1, "kubernetes.io/hostname", 3)), 12)},
+			expectNodeCount: 3,
+			expectPodCount:  12,
 		},
 	}
 	for _, tc := range testCases {
