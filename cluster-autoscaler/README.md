@@ -92,12 +92,12 @@ target ETA and the actual releases.
 
 | Date       | Maintainer Preparing Release | Backup Maintainer | Type  |
 |------------|------------------------------|-------------------|-------|
-| 2025-06-11 | gjtempleton                  | jackfrancis       | 1.33  |
-| 2025-07-16 | jackfrancis                  | towca             | patch |
+| 2025-06-11 | jackfrancis                  | gjtempleton       | 1.33  |
+| 2025-07-16 | gjtempleton                  | towca             | patch |
 | 2025-08-20 | towca                        | BigDarkClown      | patch |
 | 2025-09-17 | BigDarkClown                 | x13n              | 1.34  |
-| 2025-10-22 | x13n                         | gjtempleton       | patch |
-| 2025-11-19 | gjtempleton                  | jackfrancis       | patch |
+| 2025-10-22 | x13n                         | jackfrancis       | patch |
+| 2025-11-19 | jackfrancis                  | gjtempleton       | patch |
 
 Additional patch releases may happen outside of the schedule in case of critical
 bugs or vulnerabilities.
