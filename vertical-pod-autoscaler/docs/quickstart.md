@@ -16,9 +16,7 @@ There are four modes in which *VPAs* operate:
 
 - `"Auto"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods using the preferred update mechanism. Currently, this is
-  equivalent to `"Recreate"` (see below). Once restart free ("in-place") update
-  of pod requests is available, it may be used as the preferred update mechanism by
-  the `"Auto"` mode.
+  equivalent to `"Recreate"` (see below).
 - `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by evicting them when the requested resources differ significantly
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
