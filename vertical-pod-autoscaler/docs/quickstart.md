@@ -21,8 +21,7 @@ There are four modes in which *VPAs* operate:
   them on existing pods by evicting them when the requested resources differ significantly
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
   This mode should be used rarely, only if you need to ensure that the pods are restarted
-  whenever the resource request changes. Otherwise, prefer the `"Auto"` mode which may take
-  advantage of restart-free updates once they are available.
+  whenever the resource request changes.
 - `"InPlaceOrRecreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by leveraging [Kubernetes `in-place` update](https://kubernetes.io/blog/2025/05/16/kubernetes-v1-33-in-place-pod-resize-beta/) capability.
   If `in-place` update fails, it falls back to evicting the pods, performing a _recreation_.
