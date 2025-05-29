@@ -12,7 +12,7 @@ resource requests for your pods.
 In order to use it, you need to insert a *Vertical Pod Autoscaler* resource for
 each controller that you want to have automatically computed resource requirements.
 This will be most commonly a **Deployment**.
-There are four modes in which *VPAs* operate:
+There are five modes in which *VPAs* operate:
 
 - `"Auto"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods using the preferred update mechanism. Currently, this is
