@@ -194,8 +194,7 @@ both of these annotations.
 > for more information.
 
 > Note: `MachinePool` support in cluster-autoscaler requires a provider implementation
-> that supports the new "MachinePool Machines" feature. MachinePools in Cluster API are
-> considered an [experimental feature](https://cluster-api.sigs.k8s.io/tasks/experimental-features/experimental-features.html#active-experimental-features) and are not enabled by default.
+> that supports the "MachinePool Machines" feature.
 
 ### Scale from zero support
 
