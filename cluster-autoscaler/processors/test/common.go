@@ -52,7 +52,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
 		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.NodeGroupDefaults),
-		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
+		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(true),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 		ScaleStateNotifier:          nodegroupchange.NewNodeGroupChangeObserversList(),

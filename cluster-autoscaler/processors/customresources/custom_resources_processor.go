@@ -41,8 +41,3 @@ type CustomResourcesProcessor interface {
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
-
-// NewDefaultCustomResourcesProcessor returns a default instance of CustomResourcesProcessor.
-func NewDefaultCustomResourcesProcessor() CustomResourcesProcessor {
-	return &GpuCustomResourcesProcessor{}
-}
