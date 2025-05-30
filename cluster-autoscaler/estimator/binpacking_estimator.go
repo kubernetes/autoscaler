@@ -186,7 +186,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// The pod can't be scheduled on the newly created node because of scheduling predicates.
 
 			// Check if node failed because of topology constraints.
-			if hasTopologyConstraintError(err) {
+			if isPodUsingHostNameTopologyKey(pod) && hasTopologyConstraintError(err) {
 				// If the pod can't be scheduled on the last node because of topology constraints, we can stop binpacking.
 				// The pod can't be scheduled on any new node either, because it has the same topology constraints.
 				nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, func(nodeInfo *framework.NodeInfo) bool {
@@ -271,6 +271,22 @@ func hasTopologyConstraintError(err clustersnapshot.SchedulingError) bool {
 
 	// Check reasons for mentions of topology or constraints
 	return slices.Contains(err.FailingPredicateReasons(), podtopologyspread.ErrReasonConstraintsNotMatch)
+}
+
+// isPodUsingHostNameTopoKey returns true if the pod has any topology spread
+// constraint that uses the kubernetes.io/hostname topology key
+func isPodUsingHostNameTopologyKey(pod *apiv1.Pod) bool {
+	if pod == nil || pod.Spec.TopologySpreadConstraints == nil {
+		return false
+	}
+
+	for _, constraint := range pod.Spec.TopologySpreadConstraints {
+		if constraint.TopologyKey == apiv1.LabelHostname {
+			return true
+		}
+	}
+
+	return false
 }
 
 func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) {
