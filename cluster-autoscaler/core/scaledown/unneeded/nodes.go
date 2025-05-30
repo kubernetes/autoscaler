@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
@@ -61,6 +62,70 @@ func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *No
 		sdtg:         sdtg,
 		limitsFinder: limitsFinder,
 	}
+}
+
+// Initialize initializes the Nodes object with the given node list.
+// It sets the initial state of unneeded nodes reflect the taint status of nodes in the cluster.
+// This is in order the avoid state loss between deployment restarts.
+func (n *Nodes) Initialize(nodes []simulator.NodeToBeRemoved, maxDeletionCandidateStaleness time.Duration, ts time.Time) {
+	updated := make(map[string]*node, len(nodes))
+	for _, nn := range nodes {
+		name := nn.Node.Name
+		if since, err := taints.GetDeletionCandidateTime(nn.Node); err == nil {
+			if since.Add(maxDeletionCandidateStaleness).Before(ts) {
+				klog.V(4).Infof("Skipping %s - deletion candidate time is too old", name)
+				continue
+			}
+			updated[name] = &node{
+				ntbr: nn,
+			}
+			updated[name].since = *since
+		} else {
+			updated[name] = &node{
+				ntbr: nn,
+			}
+			updated[name].since = ts
+		}
+	}
+	n.byName = updated
+	n.cachedList = nil
+	if klog.V(4).Enabled() {
+		for k, v := range n.byName {
+			klog.Infof("%s is unneeded since %s duration %s", k, v.since, ts.Sub(v.since))
+		}
+	}
+}
+
+// NewWithTaints initializes unneeded nodes with state offloaded from the kubernetes cluster, using the existing DeletionCandidateTaint taints.
+func NewWithTaints(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, listerRegistry kube_util.ListerRegistry, maxDeletionCandidateStaleness time.Duration, ts time.Time) *Nodes {
+	unneededNodes := NewNodes(sdtg, limitsFinder)
+	allNodes, err := listerRegistry.AllNodeLister().List()
+	if err != nil {
+		klog.Errorf("Failed to list nodes when initializing unneeded nodes: %v", err)
+		return nil
+	}
+
+	var nodesWithTaints []simulator.NodeToBeRemoved
+	for _, node := range allNodes {
+		if since, err := taints.GetDeletionCandidateTime(node); err == nil {
+			if err != nil {
+				klog.Errorf("Failed to get pods to move for node %s: %v", node.Name, err)
+				continue
+			}
+			nodeToBeRemoved := simulator.NodeToBeRemoved{
+				Node: node,
+			}
+			nodesWithTaints = append(nodesWithTaints, nodeToBeRemoved)
+			klog.V(4).Infof("Found node %s with deletion candidate taint from %s", node.Name, since.String())
+		}
+	}
+
+	if len(nodesWithTaints) > 0 {
+		klog.V(1).Infof("Initializing unneeded nodes with %d nodes that have deletion candidate taints", len(nodesWithTaints))
+		unneededNodes.Initialize(nodesWithTaints, maxDeletionCandidateStaleness, ts)
+	}
+
+	return unneededNodes
 }
 
 // Update stores nodes along with a time at which they were found to be
