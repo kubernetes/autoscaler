@@ -29,6 +29,10 @@ import (
 func CalculateDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (map[string]map[string]float64, error) {
 	result := map[string]map[string]float64{}
 	claims := nodeInfo.ResourceClaims()
+	for i, claim := range claims {
+		// remove AdminAccessRequests from the claim before calculating utilization
+		claims[i] = ClaimWithoutAdminAccessRequests(claim)
+	}
 	allocatedDevices, err := groupAllocatedDevices(claims)
 	if err != nil {
 		return nil, err
