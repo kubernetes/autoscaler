@@ -172,20 +172,20 @@ func TestBinpackingEstimate(t *testing.T) {
 			expectProcessedPods: highResourcePodGroup.Pods,
 		},
 		{
-			name:       "hostname topology spreading with maxSkew=2 allows 8 pods to schedule retroactively",
+			name:       "hostname topology spreading with maxSkew=2 forces 2 pods/node",
 			millicores: 1000,
 			memory:     5000,
 			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
 				BuildTestPod(
 					"estimatee",
-					20,
-					100,
+					200,
+					200,
 					WithNamespace("universe"),
 					WithLabels(map[string]string{
 						"app": "estimatee",
 					}),
 					WithMaxSkew(2, "kubernetes.io/hostname", 1)), 8)},
-			expectNodeCount: 2,
+			expectNodeCount: 4,
 			expectPodCount:  8,
 		},
 		{
@@ -206,7 +206,7 @@ func TestBinpackingEstimate(t *testing.T) {
 			expectPodCount:  2,
 		},
 		{
-			name:       "hostname topology spreading with maxSkew=1 with a large scaleup",
+			name:       "hostname topology spreading with maxSkew=1 with a large scaleup handles scheduling pods retroactively",
 			millicores: 1000,
 			memory:     5000,
 			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
