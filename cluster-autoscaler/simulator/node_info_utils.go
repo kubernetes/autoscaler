@@ -49,9 +49,12 @@ func SanitizedTemplateNodeInfoFromNodeGroup(nodeGroup nodeGroupTemplateNodeInfoG
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to obtain template NodeInfo from node group %q: ", nodeGroup.Id())
 	}
-	labels.UpdateDeprecatedLabels(baseNodeInfo.Node().ObjectMeta.Labels)
-
-	return SanitizedTemplateNodeInfoFromNodeInfo(baseNodeInfo, nodeGroup.Id(), daemonsets, true, taintConfig)
+	sanitizedNodeInfo, aErr := SanitizedTemplateNodeInfoFromNodeInfo(baseNodeInfo, nodeGroup.Id(), daemonsets, true, taintConfig)
+	if aErr != nil {
+		return nil, aErr
+	}
+	labels.UpdateDeprecatedLabels(sanitizedNodeInfo.Node().Labels)
+	return sanitizedNodeInfo, nil
 }
 
 // SanitizedTemplateNodeInfoFromNodeInfo returns a template NodeInfo object based on a real example NodeInfo from the cluster. The template is sanitized, and only
