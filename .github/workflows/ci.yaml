@@ -16,9 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5.1.0
+        uses: actions/setup-go@v5.5.0
         with:
           go-version: '1.22.2'
+          cache-dependency-path: |
+             cluster-autoscaler/go.sum
+             vertical-pod-autoscaler/go.sum
+             vertical-pod-autoscaler/e2e/go.sum
 
       - uses: actions/checkout@v4.2.2
         with:
