@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
 )
 
 var (
@@ -601,7 +602,7 @@ func verifySanitizedPods(initialPods, sanitizedPods []*framework.PodInfo, wantNo
 			return fmt.Errorf("sanitized Pod unexpected diff (-want +got): %s", diff)
 		}
 
-		if err := verifySanitizedPodResourceClaims(initialPod.NeededResourceClaims, sanitizedPod.NeededResourceClaims, nameSuffix); err != nil {
+		if err := verifySanitizedPodResourceClaims(initialPod, sanitizedPod, nameSuffix); err != nil {
 			return err
 		}
 	}
@@ -633,7 +634,11 @@ func verifySanitizedNodeResourceSlices(initialSlices, sanitizedSlices []*resourc
 	return nil
 }
 
-func verifySanitizedPodResourceClaims(initialClaims, sanitizedClaims []*resourceapi.ResourceClaim, nameSuffix string) error {
+func verifySanitizedPodResourceClaims(initialPod, sanitizedPod *framework.PodInfo, nameSuffix string) error {
+	initialClaims := initialPod.NeededResourceClaims
+	sanitizedClaims := sanitizedPod.NeededResourceClaims
+	owningPod := initialPod.Pod
+
 	if len(initialClaims) != len(sanitizedClaims) {
 		return fmt.Errorf("want %d NeededResourceClaims in sanitized NodeInfo, got %d", len(initialClaims), len(sanitizedClaims))
 	}
@@ -642,7 +647,9 @@ func verifySanitizedPodResourceClaims(initialClaims, sanitizedClaims []*resource
 		initialClaim := initialClaims[i]
 
 		// Pod-owned claims should be sanitized, other claims shouldn't.
-		if owningPod, _ := drautils.ClaimOwningPod(initialClaim); owningPod != "" {
+		err := resourceclaim.IsForPod(owningPod, initialClaim)
+		isPodOwned := err == nil
+		if isPodOwned {
 			// Pod-owned claim, verify that it was sanitized.
 			if sanitizedClaim.Name == initialClaim.Name || !strings.HasSuffix(sanitizedClaim.Name, nameSuffix) {
 				return fmt.Errorf("sanitized ResourceClaim name unexpected: want (different than %q, ending in %q), got %q", initialClaim.Name, nameSuffix, sanitizedClaim.Name)
