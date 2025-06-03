@@ -62,9 +62,8 @@ type IServerClient interface {
 	AttachISO(ctx context.Context, server *Server, iso *ISO) (*Action, *Response, error)
 	// DetachISO detaches the currently attached ISO from a server.
 	DetachISO(ctx context.Context, server *Server) (*Action, *Response, error)
-	// EnableBackup enables backup for a server. Pass in an empty backup window to let the
-	// API pick a window for you. See the API documentation at docs.hetzner.cloud for a list
-	// of valid backup windows.
+	// EnableBackup enables backup for a server.
+	// The window parameter is deprecated and will be ignored.
 	EnableBackup(ctx context.Context, server *Server, window string) (*Action, *Response, error)
 	// DisableBackup disables backup for a server.
 	DisableBackup(ctx context.Context, server *Server) (*Action, *Response, error)
