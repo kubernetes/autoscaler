@@ -3,15 +3,19 @@ package hcloud
 import (
 	"context"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/exp/ctxutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
 )
 
 // Pricing specifies pricing information for various resources.
 type Pricing struct {
-	Image             ImagePricing
-	FloatingIP        FloatingIPPricing
-	FloatingIPs       []FloatingIPTypePricing
-	PrimaryIPs        []PrimaryIPPricing
+	Image ImagePricing
+	// Deprecated: [Pricing.FloatingIP] is deprecated, use [Pricing.FloatingIPs] instead.
+	FloatingIP  FloatingIPPricing
+	FloatingIPs []FloatingIPTypePricing
+	PrimaryIPs  []PrimaryIPPricing
+	// Deprecated: [Pricing.Traffic] is deprecated and will report 0 after 2024-08-05.
+	// Use traffic pricing from [Pricing.ServerTypes] or [Pricing.LoadBalancerTypes] instead.
 	Traffic           TrafficPricing
 	ServerBackup      ServerBackupPricing
 	ServerTypes       []ServerTypePricing
@@ -102,6 +106,10 @@ type ServerTypeLocationPricing struct {
 	Location *Location
 	Hourly   Price
 	Monthly  Price
+
+	// IncludedTraffic is the free traffic per month in bytes
+	IncludedTraffic uint64
+	PerTBTraffic    Price
 }
 
 // LoadBalancerTypePricing provides pricing information for a Load Balancer type.
@@ -116,6 +124,10 @@ type LoadBalancerTypeLocationPricing struct {
 	Location *Location
 	Hourly   Price
 	Monthly  Price
+
+	// IncludedTraffic is the free traffic per month in bytes
+	IncludedTraffic uint64
+	PerTBTraffic    Price
 }
 
 // PricingClient is a client for the pricing API.
@@ -125,15 +137,15 @@ type PricingClient struct {
 
 // Get retrieves pricing information.
 func (c *PricingClient) Get(ctx context.Context) (Pricing, *Response, error) {
-	req, err := c.client.NewRequest(ctx, "GET", "/pricing", nil)
+	const opPath = "/pricing"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := opPath
+
+	respBody, resp, err := getRequest[schema.PricingGetResponse](ctx, c.client, reqPath)
 	if err != nil {
-		return Pricing{}, nil, err
+		return Pricing{}, resp, err
 	}
 
-	var body schema.PricingGetResponse
-	resp, err := c.client.Do(req, &body)
-	if err != nil {
-		return Pricing{}, nil, err
-	}
-	return PricingFromSchema(body.Pricing), resp, nil
+	return PricingFromSchema(respBody.Pricing), resp, nil
 }

@@ -16,11 +16,14 @@ type ActionWaiter interface {
 var _ ActionWaiter = (*ActionClient)(nil)
 
 // WaitForFunc waits until all actions are completed by polling the API at the interval
-// defined by [WithPollBackoffFunc]. An action is considered as complete when its status is
+// defined by [WithPollOpts]. An action is considered as complete when its status is
 // either [ActionStatusSuccess] or [ActionStatusError].
 //
 // The handleUpdate callback is called every time an action is updated.
 func (c *ActionClient) WaitForFunc(ctx context.Context, handleUpdate func(update *Action) error, actions ...*Action) error {
+	// Filter out nil actions
+	actions = slices.DeleteFunc(actions, func(a *Action) bool { return a == nil })
+
 	running := make(map[int64]struct{}, len(actions))
 	for _, action := range actions {
 		if action.Status == ActionStatusRunning {
@@ -48,18 +51,19 @@ func (c *ActionClient) WaitForFunc(ctx context.Context, handleUpdate func(update
 			retries++
 		}
 
-		opts := ActionListOpts{
-			Sort: []string{"status", "id"},
-			ID:   make([]int64, 0, len(running)),
-		}
-		for actionID := range running {
-			opts.ID = append(opts.ID, actionID)
-		}
-		slices.Sort(opts.ID)
+		updates := make([]*Action, 0, len(running))
+		for runningIDsChunk := range slices.Chunk(slices.Sorted(maps.Keys(running)), 25) {
+			opts := ActionListOpts{
+				Sort: []string{"status", "id"},
+				ID:   runningIDsChunk,
+			}
 
-		updates, err := c.AllWithOpts(ctx, opts)
-		if err != nil {
-			return err
+			updatesChunk, err := c.AllWithOpts(ctx, opts)
+			if err != nil {
+				return err
+			}
+
+			updates = append(updates, updatesChunk...)
 		}
 
 		if len(updates) != len(running) {
@@ -95,7 +99,7 @@ func (c *ActionClient) WaitForFunc(ctx context.Context, handleUpdate func(update
 }
 
 // WaitFor waits until all actions succeed by polling the API at the interval defined by
-// [WithPollBackoffFunc]. An action is considered as succeeded when its status is either
+// [WithPollOpts]. An action is considered as succeeded when its status is either
 // [ActionStatusSuccess].
 //
 // If a single action fails, the function will stop waiting and the error set in the

@@ -64,7 +64,7 @@ type ILoadBalancerClient interface {
 	// ChangeType changes a Load Balancer's type.
 	ChangeType(ctx context.Context, loadBalancer *LoadBalancer, opts LoadBalancerChangeTypeOpts) (*Action, *Response, error)
 	// GetMetrics obtains metrics for a Load Balancer.
-	GetMetrics(ctx context.Context, lb *LoadBalancer, opts LoadBalancerGetMetricsOpts) (*LoadBalancerMetrics, *Response, error)
+	GetMetrics(ctx context.Context, loadBalancer *LoadBalancer, opts LoadBalancerGetMetricsOpts) (*LoadBalancerMetrics, *Response, error)
 	// ChangeDNSPtr changes or resets the reverse DNS pointer for a Load Balancer.
 	// Pass a nil ptr to reset the reverse DNS pointer to its default value.
 	ChangeDNSPtr(ctx context.Context, lb *LoadBalancer, ip string, ptr *string) (*Action, *Response, error)
