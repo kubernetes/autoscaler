@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -30,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func TestExtractLabelsFromScaleSet(t *testing.T) {
+func TestExtractLabelsFromTags(t *testing.T) {
 	expectedNodeLabelKey := "zip"
 	expectedNodeLabelValue := "zap"
 	extraNodeLabelValue := "buzz"
@@ -52,14 +53,14 @@ func TestExtractLabelsFromScaleSet(t *testing.T) {
 		fmt.Sprintf("%s%s", nodeLabelTagName, escapedUnderscoreNodeLabelKey): &escapedUnderscoreNodeLabelValue,
 	}
 
-	labels := extractLabelsFromScaleSet(tags)
+	labels := extractLabelsFromTags(tags)
 	assert.Len(t, labels, 3)
 	assert.Equal(t, expectedNodeLabelValue, labels[expectedNodeLabelKey])
 	assert.Equal(t, escapedSlashNodeLabelValue, labels[expectedSlashEscapedNodeLabelKey])
 	assert.Equal(t, escapedUnderscoreNodeLabelValue, labels[expectedUnderscoreEscapedNodeLabelKey])
 }
 
-func TestExtractTaintsFromScaleSet(t *testing.T) {
+func TestExtractTaintsFromTags(t *testing.T) {
 	noScheduleTaintValue := "foo:NoSchedule"
 	noExecuteTaintValue := "bar:NoExecute"
 	preferNoScheduleTaintValue := "fizz:PreferNoSchedule"
@@ -100,7 +101,7 @@ func TestExtractTaintsFromScaleSet(t *testing.T) {
 		},
 	}
 
-	taints := extractTaintsFromScaleSet(tags)
+	taints := extractTaintsFromTags(tags)
 	assert.Len(t, taints, 4)
 	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
 }
@@ -136,6 +137,11 @@ func TestExtractTaintsFromSpecString(t *testing.T) {
 			Key:    "k8s.io/testing/underscore/to/slash",
 			Value:  "fizz",
 			Effect: apiv1.TaintEffectPreferNoSchedule,
+		},
+		{
+			Key:    "dedicated", // duplicate key, should be ignored
+			Value:  "foo",
+			Effect: apiv1.TaintEffectNoSchedule,
 		},
 	}
 
@@ -176,8 +182,9 @@ func TestTopologyFromScaleSet(t *testing.T) {
 		Location: to.StringPtr("westus"),
 	}
 	expectedZoneValues := []string{"westus-1", "westus-2", "westus-3"}
-
-	labels := buildGenericLabels(testVmss, testNodeName)
+	template, err := buildNodeTemplateFromVMSS(testVmss, map[string]string{}, "")
+	assert.NoError(t, err)
+	labels := buildGenericLabels(template, testNodeName)
 	failureDomain, ok := labels[apiv1.LabelZoneFailureDomain]
 	assert.True(t, ok)
 	topologyZone, ok := labels[apiv1.LabelTopologyZone]
@@ -205,7 +212,9 @@ func TestEmptyTopologyFromScaleSet(t *testing.T) {
 	expectedFailureDomain := "0"
 	expectedTopologyZone := "0"
 	expectedAzureDiskTopology := ""
-	labels := buildGenericLabels(testVmss, testNodeName)
+	template, err := buildNodeTemplateFromVMSS(testVmss, map[string]string{}, "")
+	assert.NoError(t, err)
+	labels := buildGenericLabels(template, testNodeName)
 
 	failureDomain, ok := labels[apiv1.LabelZoneFailureDomain]
 	assert.True(t, ok)
@@ -218,6 +227,61 @@ func TestEmptyTopologyFromScaleSet(t *testing.T) {
 	azureDiskTopology, ok := labels[azureDiskTopologyKey]
 	assert.True(t, ok)
 	assert.Equal(t, expectedAzureDiskTopology, azureDiskTopology)
+}
+func TestBuildNodeTemplateFromVMPool(t *testing.T) {
+	agentPoolName := "testpool"
+	location := "eastus"
+	skuName := "Standard_DS2_v2"
+	labelKey := "foo"
+	labelVal := "bar"
+	taintStr := "dedicated=foo:NoSchedule,boo=fizz:PreferNoSchedule,group=bar:NoExecute"
+
+	osType := armcontainerservice.OSTypeLinux
+	osDiskType := armcontainerservice.OSDiskTypeEphemeral
+	zone1 := "1"
+	zone2 := "2"
+
+	vmpool := armcontainerservice.AgentPool{
+		Name: to.StringPtr(agentPoolName),
+		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			NodeLabels: map[string]*string{
+				"existing":   to.StringPtr("label"),
+				"department": to.StringPtr("engineering"),
+			},
+			NodeTaints:        []*string{to.StringPtr("group=bar:NoExecute")},
+			OSType:            &osType,
+			OSDiskType:        &osDiskType,
+			AvailabilityZones: []*string{&zone1, &zone2},
+		},
+	}
+
+	labelsFromSpec := map[string]string{labelKey: labelVal}
+	taintsFromSpec := taintStr
+
+	template, err := buildNodeTemplateFromVMPool(vmpool, location, skuName, labelsFromSpec, taintsFromSpec)
+	assert.NoError(t, err)
+	assert.Equal(t, skuName, template.SkuName)
+	assert.Equal(t, location, template.Location)
+	assert.ElementsMatch(t, []string{zone1, zone2}, template.Zones)
+	assert.Equal(t, "linux", template.InstanceOS)
+	assert.NotNil(t, template.VMPoolNodeTemplate)
+	assert.Equal(t, agentPoolName, template.VMPoolNodeTemplate.AgentPoolName)
+	assert.Equal(t, &osDiskType, template.VMPoolNodeTemplate.OSDiskType)
+	// Labels: should include both from NodeLabels and labelsFromSpec
+	assert.Contains(t, template.VMPoolNodeTemplate.Labels, "existing")
+	assert.Equal(t, "label", *template.VMPoolNodeTemplate.Labels["existing"])
+	assert.Contains(t, template.VMPoolNodeTemplate.Labels, "department")
+	assert.Equal(t, "engineering", *template.VMPoolNodeTemplate.Labels["department"])
+	assert.Contains(t, template.VMPoolNodeTemplate.Labels, labelKey)
+	assert.Equal(t, labelVal, *template.VMPoolNodeTemplate.Labels[labelKey])
+	// Taints: should include both from NodeTaints and taintsFromSpec
+	taintSet := makeTaintSet(template.VMPoolNodeTemplate.Taints)
+	expectedTaints := []apiv1.Taint{
+		{Key: "group", Value: "bar", Effect: apiv1.TaintEffectNoExecute},
+		{Key: "dedicated", Value: "foo", Effect: apiv1.TaintEffectNoSchedule},
+		{Key: "boo", Value: "fizz", Effect: apiv1.TaintEffectPreferNoSchedule},
+	}
+	assert.Equal(t, makeTaintSet(expectedTaints), taintSet)
 }
 
 func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
