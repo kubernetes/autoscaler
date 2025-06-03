@@ -1,15 +1,12 @@
 package hcloud
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
-	"strconv"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/exp/ctxutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
 )
 
@@ -57,41 +54,33 @@ const (
 
 // GetByID retrieves a volume by its ID. If the volume does not exist, nil is returned.
 func (c *VolumeClient) GetByID(ctx context.Context, id int64) (*Volume, *Response, error) {
-	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/volumes/%d", id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
+	const opPath = "/volumes/%d"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	var body schema.VolumeGetResponse
-	resp, err := c.client.Do(req, &body)
+	reqPath := fmt.Sprintf(opPath, id)
+
+	respBody, resp, err := getRequest[schema.VolumeGetResponse](ctx, c.client, reqPath)
 	if err != nil {
 		if IsError(err, ErrorCodeNotFound) {
 			return nil, resp, nil
 		}
-		return nil, nil, err
+		return nil, resp, err
 	}
-	return VolumeFromSchema(body.Volume), resp, nil
+
+	return VolumeFromSchema(respBody.Volume), resp, nil
 }
 
 // GetByName retrieves a volume by its name. If the volume does not exist, nil is returned.
 func (c *VolumeClient) GetByName(ctx context.Context, name string) (*Volume, *Response, error) {
-	if name == "" {
-		return nil, nil, nil
-	}
-	volumes, response, err := c.List(ctx, VolumeListOpts{Name: name})
-	if len(volumes) == 0 {
-		return nil, response, err
-	}
-	return volumes[0], response, err
+	return firstByName(name, func() ([]*Volume, *Response, error) {
+		return c.List(ctx, VolumeListOpts{Name: name})
+	})
 }
 
 // Get retrieves a volume by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a volume by its name. If the volume does not exist, nil is returned.
 func (c *VolumeClient) Get(ctx context.Context, idOrName string) (*Volume, *Response, error) {
-	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
-		return c.GetByID(ctx, id)
-	}
-	return c.GetByName(ctx, idOrName)
+	return getByIDOrName(ctx, c.GetByID, c.GetByName, idOrName)
 }
 
 // VolumeListOpts specifies options for listing volumes.
@@ -121,22 +110,17 @@ func (l VolumeListOpts) values() url.Values {
 // Please note that filters specified in opts are not taken into account
 // when their value corresponds to their zero value or when they are empty.
 func (c *VolumeClient) List(ctx context.Context, opts VolumeListOpts) ([]*Volume, *Response, error) {
-	path := "/volumes?" + opts.values().Encode()
-	req, err := c.client.NewRequest(ctx, "GET", path, nil)
+	const opPath = "/volumes?%s"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+
+	respBody, resp, err := getRequest[schema.VolumeListResponse](ctx, c.client, reqPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
 
-	var body schema.VolumeListResponse
-	resp, err := c.client.Do(req, &body)
-	if err != nil {
-		return nil, nil, err
-	}
-	volumes := make([]*Volume, 0, len(body.Volumes))
-	for _, s := range body.Volumes {
-		volumes = append(volumes, VolumeFromSchema(s))
-	}
-	return volumes, resp, nil
+	return allFromSchemaFunc(respBody.Volumes, VolumeFromSchema), resp, nil
 }
 
 // All returns all volumes.
@@ -146,22 +130,10 @@ func (c *VolumeClient) All(ctx context.Context) ([]*Volume, error) {
 
 // AllWithOpts returns all volumes with the given options.
 func (c *VolumeClient) AllWithOpts(ctx context.Context, opts VolumeListOpts) ([]*Volume, error) {
-	allVolumes := []*Volume{}
-
-	err := c.client.all(func(page int) (*Response, error) {
+	return iterPages(func(page int) ([]*Volume, *Response, error) {
 		opts.Page = page
-		volumes, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allVolumes = append(allVolumes, volumes...)
-		return resp, nil
+		return c.List(ctx, opts)
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allVolumes, nil
 }
 
 // VolumeCreateOpts specifies parameters for creating a volume.
@@ -178,19 +150,19 @@ type VolumeCreateOpts struct {
 // Validate checks if options are valid.
 func (o VolumeCreateOpts) Validate() error {
 	if o.Name == "" {
-		return errors.New("missing name")
+		return missingField(o, "Name")
 	}
 	if o.Size <= 0 {
-		return errors.New("size must be greater than 0")
+		return invalidFieldValue(o, "Size", o.Size)
 	}
 	if o.Server == nil && o.Location == nil {
-		return errors.New("one of server or location must be provided")
+		return missingOneOfFields(o, "Server", "Location")
 	}
 	if o.Server != nil && o.Location != nil {
-		return errors.New("only one of server or location must be provided")
+		return mutuallyExclusiveFields(o, "Server", "Location")
 	}
 	if o.Server == nil && (o.Automount != nil && *o.Automount) {
-		return errors.New("server must be provided when automount is true")
+		return missingRequiredTogetherFields(o, "Automount", "Server")
 	}
 	return nil
 }
@@ -204,8 +176,15 @@ type VolumeCreateResult struct {
 
 // Create creates a new volume with the given options.
 func (c *VolumeClient) Create(ctx context.Context, opts VolumeCreateOpts) (VolumeCreateResult, *Response, error) {
+	const opPath = "/volumes"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	result := VolumeCreateResult{}
+
+	reqPath := opPath
+
 	if err := opts.Validate(); err != nil {
-		return VolumeCreateResult{}, nil, err
+		return result, nil, err
 	}
 	reqBody := schema.VolumeCreateRequest{
 		Name:      opts.Name,
@@ -220,48 +199,33 @@ func (c *VolumeClient) Create(ctx context.Context, opts VolumeCreateOpts) (Volum
 		reqBody.Server = Ptr(opts.Server.ID)
 	}
 	if opts.Location != nil {
-		if opts.Location.ID != 0 {
-			reqBody.Location = opts.Location.ID
-		} else {
-			reqBody.Location = opts.Location.Name
+		if opts.Location.ID != 0 || opts.Location.Name != "" {
+			reqBody.Location = &schema.IDOrName{ID: opts.Location.ID, Name: opts.Location.Name}
 		}
 	}
 
-	reqBodyData, err := json.Marshal(reqBody)
+	respBody, resp, err := postRequest[schema.VolumeCreateResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
-		return VolumeCreateResult{}, nil, err
+		return result, resp, err
 	}
 
-	req, err := c.client.NewRequest(ctx, "POST", "/volumes", bytes.NewReader(reqBodyData))
-	if err != nil {
-		return VolumeCreateResult{}, nil, err
-	}
-
-	var respBody schema.VolumeCreateResponse
-	resp, err := c.client.Do(req, &respBody)
-	if err != nil {
-		return VolumeCreateResult{}, resp, err
-	}
-
-	var action *Action
+	result.Volume = VolumeFromSchema(respBody.Volume)
 	if respBody.Action != nil {
-		action = ActionFromSchema(*respBody.Action)
+		result.Action = ActionFromSchema(*respBody.Action)
 	}
+	result.NextActions = ActionsFromSchema(respBody.NextActions)
 
-	return VolumeCreateResult{
-		Volume:      VolumeFromSchema(respBody.Volume),
-		Action:      action,
-		NextActions: ActionsFromSchema(respBody.NextActions),
-	}, resp, nil
+	return result, resp, nil
 }
 
 // Delete deletes a volume.
 func (c *VolumeClient) Delete(ctx context.Context, volume *Volume) (*Response, error) {
-	req, err := c.client.NewRequest(ctx, "DELETE", fmt.Sprintf("/volumes/%d", volume.ID), nil)
-	if err != nil {
-		return nil, err
-	}
-	return c.client.Do(req, nil)
+	const opPath = "/volumes/%d"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, volume.ID)
+
+	return deleteRequestNoResult(ctx, c.client, reqPath)
 }
 
 // VolumeUpdateOpts specifies options for updating a volume.
@@ -272,28 +236,23 @@ type VolumeUpdateOpts struct {
 
 // Update updates a volume.
 func (c *VolumeClient) Update(ctx context.Context, volume *Volume, opts VolumeUpdateOpts) (*Volume, *Response, error) {
+	const opPath = "/volumes/%d"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, volume.ID)
+
 	reqBody := schema.VolumeUpdateRequest{
 		Name: opts.Name,
 	}
 	if opts.Labels != nil {
 		reqBody.Labels = &opts.Labels
 	}
-	reqBodyData, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, nil, err
-	}
 
-	path := fmt.Sprintf("/volumes/%d", volume.ID)
-	req, err := c.client.NewRequest(ctx, "PUT", path, bytes.NewReader(reqBodyData))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	respBody := schema.VolumeUpdateResponse{}
-	resp, err := c.client.Do(req, &respBody)
+	respBody, resp, err := putRequest[schema.VolumeUpdateResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
 		return nil, resp, err
 	}
+
 	return VolumeFromSchema(respBody.Volume), resp, nil
 }
 
@@ -305,27 +264,21 @@ type VolumeAttachOpts struct {
 
 // AttachWithOpts attaches a volume to a server.
 func (c *VolumeClient) AttachWithOpts(ctx context.Context, volume *Volume, opts VolumeAttachOpts) (*Action, *Response, error) {
+	const opPath = "/volumes/%d/actions/attach"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, volume.ID)
+
 	reqBody := schema.VolumeActionAttachVolumeRequest{
 		Server:    opts.Server.ID,
 		Automount: opts.Automount,
 	}
 
-	reqBodyData, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	path := fmt.Sprintf("/volumes/%d/actions/attach", volume.ID)
-	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var respBody schema.VolumeActionAttachVolumeResponse
-	resp, err := c.client.Do(req, &respBody)
+	respBody, resp, err := postRequest[schema.VolumeActionAttachVolumeResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
 		return nil, resp, err
 	}
+
 	return ActionFromSchema(respBody.Action), resp, nil
 }
 
@@ -336,23 +289,18 @@ func (c *VolumeClient) Attach(ctx context.Context, volume *Volume, server *Serve
 
 // Detach detaches a volume from a server.
 func (c *VolumeClient) Detach(ctx context.Context, volume *Volume) (*Action, *Response, error) {
+	const opPath = "/volumes/%d/actions/detach"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, volume.ID)
+
 	var reqBody schema.VolumeActionDetachVolumeRequest
-	reqBodyData, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, nil, err
-	}
 
-	path := fmt.Sprintf("/volumes/%d/actions/detach", volume.ID)
-	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var respBody schema.VolumeActionDetachVolumeResponse
-	resp, err := c.client.Do(req, &respBody)
+	respBody, resp, err := postRequest[schema.VolumeActionDetachVolumeResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
 		return nil, resp, err
 	}
+
 	return ActionFromSchema(respBody.Action), resp, nil
 }
 
@@ -363,48 +311,38 @@ type VolumeChangeProtectionOpts struct {
 
 // ChangeProtection changes the resource protection level of a volume.
 func (c *VolumeClient) ChangeProtection(ctx context.Context, volume *Volume, opts VolumeChangeProtectionOpts) (*Action, *Response, error) {
+	const opPath = "/volumes/%d/actions/change_protection"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, volume.ID)
+
 	reqBody := schema.VolumeActionChangeProtectionRequest{
 		Delete: opts.Delete,
 	}
-	reqBodyData, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, nil, err
-	}
 
-	path := fmt.Sprintf("/volumes/%d/actions/change_protection", volume.ID)
-	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	respBody := schema.VolumeActionChangeProtectionResponse{}
-	resp, err := c.client.Do(req, &respBody)
+	respBody, resp, err := postRequest[schema.VolumeActionChangeProtectionResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
 		return nil, resp, err
 	}
-	return ActionFromSchema(respBody.Action), resp, err
+
+	return ActionFromSchema(respBody.Action), resp, nil
 }
 
 // Resize changes the size of a volume.
 func (c *VolumeClient) Resize(ctx context.Context, volume *Volume, size int) (*Action, *Response, error) {
+	const opPath = "/volumes/%d/actions/resize"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, volume.ID)
+
 	reqBody := schema.VolumeActionResizeVolumeRequest{
 		Size: size,
 	}
-	reqBodyData, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, nil, err
-	}
 
-	path := fmt.Sprintf("/volumes/%d/actions/resize", volume.ID)
-	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	respBody := schema.VolumeActionResizeVolumeResponse{}
-	resp, err := c.client.Do(req, &respBody)
+	respBody, resp, err := postRequest[schema.VolumeActionResizeVolumeResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
 		return nil, resp, err
 	}
+
 	return ActionFromSchema(respBody.Action), resp, err
 }

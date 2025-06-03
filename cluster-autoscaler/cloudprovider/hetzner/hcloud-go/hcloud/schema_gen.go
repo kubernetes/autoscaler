@@ -69,7 +69,6 @@ You can find a documentation of goverter here: https://goverter.jmattheis.de/
 // goverter:extend durationFromIntSeconds
 // goverter:extend intSecondsFromDuration
 // goverter:extend serverFromImageCreatedFromSchema
-// goverter:extend anyFromLoadBalancerType
 // goverter:extend serverMetricsTimeSeriesFromSchema
 // goverter:extend loadBalancerMetricsTimeSeriesFromSchema
 // goverter:extend stringPtrFromLoadBalancerServiceProtocol
@@ -107,6 +106,12 @@ type converter interface {
 	// goverter:map . IP | primaryIPToIPString
 	// goverter:map AssigneeID | mapZeroInt64ToNil
 	SchemaFromPrimaryIP(*PrimaryIP) schema.PrimaryIP
+
+	SchemaFromPrimaryIPCreateOpts(PrimaryIPCreateOpts) schema.PrimaryIPCreateRequest
+	SchemaFromPrimaryIPUpdateOpts(PrimaryIPUpdateOpts) schema.PrimaryIPUpdateRequest
+	SchemaFromPrimaryIPChangeDNSPtrOpts(PrimaryIPChangeDNSPtrOpts) schema.PrimaryIPActionChangeDNSPtrRequest
+	SchemaFromPrimaryIPChangeProtectionOpts(PrimaryIPChangeProtectionOpts) schema.PrimaryIPActionChangeProtectionRequest
+	SchemaFromPrimaryIPAssignOpts(PrimaryIPAssignOpts) schema.PrimaryIPActionAssignRequest
 
 	ISOFromSchema(schema.ISO) *ISO
 
@@ -207,10 +212,12 @@ type converter interface {
 
 	// goverter:map PriceHourly Hourly
 	// goverter:map PriceMonthly Monthly
+	// goverter:map PricePerTBTraffic PerTBTraffic
 	LoadBalancerTypeLocationPricingFromSchema(schema.PricingLoadBalancerTypePrice) LoadBalancerTypeLocationPricing
 
 	// goverter:map Hourly PriceHourly
 	// goverter:map Monthly PriceMonthly
+	// goverter:map PerTBTraffic PricePerTBTraffic
 	SchemaFromLoadBalancerTypeLocationPricing(LoadBalancerTypeLocationPricing) schema.PricingLoadBalancerTypePrice
 
 	LoadBalancerServiceFromSchema(schema.LoadBalancerService) LoadBalancerService
@@ -263,6 +270,7 @@ type converter interface {
 
 	// goverter:map PriceHourly Hourly
 	// goverter:map PriceMonthly Monthly
+	// goverter:map PricePerTBTraffic PerTBTraffic
 	serverTypePricingFromSchema(schema.PricingServerTypePrice) ServerTypeLocationPricing
 
 	// goverter:map Image.PerGBMonth.Currency Currency
@@ -306,6 +314,7 @@ type converter interface {
 
 	// goverter:map Monthly PriceMonthly
 	// goverter:map Hourly PriceHourly
+	// goverter:map PerTBTraffic PricePerTBTraffic
 	schemaFromServerTypeLocationPricing(ServerTypeLocationPricing) schema.PricingServerTypePrice
 
 	FirewallFromSchema(schema.Firewall) *Firewall
@@ -606,37 +615,48 @@ func intSecondsFromDuration(d time.Duration) int {
 }
 
 func errorDetailsFromSchema(d interface{}) interface{} {
-	if d, ok := d.(schema.ErrorDetailsInvalidInput); ok {
+	switch typed := d.(type) {
+	case schema.ErrorDetailsInvalidInput:
 		details := ErrorDetailsInvalidInput{
-			Fields: make([]ErrorDetailsInvalidInputField, len(d.Fields)),
+			Fields: make([]ErrorDetailsInvalidInputField, len(typed.Fields)),
 		}
-		for i, field := range d.Fields {
+		for i, field := range typed.Fields {
 			details.Fields[i] = ErrorDetailsInvalidInputField{
 				Name:     field.Name,
 				Messages: field.Messages,
 			}
 		}
 		return details
+
+	case schema.ErrorDetailsDeprecatedAPIEndpoint:
+		return ErrorDetailsDeprecatedAPIEndpoint{
+			Announcement: typed.Announcement,
+		}
 	}
 	return nil
 }
 
 func schemaFromErrorDetails(d interface{}) interface{} {
-	if d, ok := d.(ErrorDetailsInvalidInput); ok {
+	switch typed := d.(type) {
+	case ErrorDetailsInvalidInput:
 		details := schema.ErrorDetailsInvalidInput{
 			Fields: make([]struct {
 				Name     string   `json:"name"`
 				Messages []string `json:"messages"`
-			}, len(d.Fields)),
+			}, len(typed.Fields)),
 		}
-		for i, field := range d.Fields {
+		for i, field := range typed.Fields {
 			details.Fields[i] = struct {
 				Name     string   `json:"name"`
 				Messages []string `json:"messages"`
 			}{Name: field.Name, Messages: field.Messages}
 		}
 		return details
+
+	case ErrorDetailsDeprecatedAPIEndpoint:
+		return schema.ErrorDetailsDeprecatedAPIEndpoint{Announcement: typed.Announcement}
 	}
+
 	return nil
 }
 
@@ -654,8 +674,8 @@ func imagePricingFromSchema(s schema.Pricing) ImagePricing {
 func floatingIPPricingFromSchema(s schema.Pricing) FloatingIPPricing {
 	return FloatingIPPricing{
 		Monthly: Price{
-			Net:      s.FloatingIP.PriceMonthly.Net,
-			Gross:    s.FloatingIP.PriceMonthly.Gross,
+			Net:      s.FloatingIP.PriceMonthly.Net,   // nolint:staticcheck // Field is deprecated, but removal is not planned
+			Gross:    s.FloatingIP.PriceMonthly.Gross, // nolint:staticcheck // Field is deprecated, but removal is not planned
 			Currency: s.Currency,
 			VATRate:  s.VATRate,
 		},
@@ -707,8 +727,8 @@ func primaryIPPricingFromSchema(s schema.Pricing) []PrimaryIPPricing {
 func trafficPricingFromSchema(s schema.Pricing) TrafficPricing {
 	return TrafficPricing{
 		PerTB: Price{
-			Net:      s.Traffic.PricePerTB.Net,
-			Gross:    s.Traffic.PricePerTB.Gross,
+			Net:      s.Traffic.PricePerTB.Net,   // nolint:staticcheck // Field is deprecated, but we still need to map it as long as it is available
+			Gross:    s.Traffic.PricePerTB.Gross, // nolint:staticcheck // Field is deprecated, but we still need to map it as long as it is available
 			Currency: s.Currency,
 			VATRate:  s.VATRate,
 		},
@@ -733,6 +753,13 @@ func serverTypePricingFromSchema(s schema.Pricing) []ServerTypePricing {
 					VATRate:  s.VATRate,
 					Net:      price.PriceMonthly.Net,
 					Gross:    price.PriceMonthly.Gross,
+				},
+				IncludedTraffic: price.IncludedTraffic,
+				PerTBTraffic: Price{
+					Currency: s.Currency,
+					VATRate:  s.VATRate,
+					Net:      price.PricePerTBTraffic.Net,
+					Gross:    price.PricePerTBTraffic.Gross,
 				},
 			}
 		}
@@ -766,6 +793,13 @@ func loadBalancerTypePricingFromSchema(s schema.Pricing) []LoadBalancerTypePrici
 					Net:      price.PriceMonthly.Net,
 					Gross:    price.PriceMonthly.Gross,
 				},
+				IncludedTraffic: price.IncludedTraffic,
+				PerTBTraffic: Price{
+					Currency: s.Currency,
+					VATRate:  s.VATRate,
+					Net:      price.PricePerTBTraffic.Net,
+					Gross:    price.PricePerTBTraffic.Gross,
+				},
 			}
 		}
 		p[i] = LoadBalancerTypePricing{
@@ -788,16 +822,6 @@ func volumePricingFromSchema(s schema.Pricing) VolumePricing {
 			VATRate:  s.VATRate,
 		},
 	}
-}
-
-func anyFromLoadBalancerType(t *LoadBalancerType) interface{} {
-	if t == nil {
-		return nil
-	}
-	if t.ID != 0 {
-		return t.ID
-	}
-	return t.Name
 }
 
 func serverMetricsTimeSeriesFromSchema(s schema.ServerTimeSeriesVals) ([]ServerMetricsValue, error) {
@@ -922,7 +946,10 @@ func rawSchemaFromErrorDetails(v interface{}) json.RawMessage {
 	if v == nil {
 		return nil
 	}
-	msg, _ := json.Marshal(d)
+	msg, err := json.Marshal(d)
+	if err != nil {
+		return nil
+	}
 	return msg
 }
 
