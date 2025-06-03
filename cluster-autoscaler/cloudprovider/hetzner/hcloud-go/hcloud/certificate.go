@@ -1,15 +1,12 @@
 package hcloud
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
-	"strconv"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/exp/ctxutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
 )
 
@@ -98,41 +95,32 @@ type CertificateClient struct {
 
 // GetByID retrieves a Certificate by its ID. If the Certificate does not exist, nil is returned.
 func (c *CertificateClient) GetByID(ctx context.Context, id int64) (*Certificate, *Response, error) {
-	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/certificates/%d", id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
+	const opPath = "/certificates/%d"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	var body schema.CertificateGetResponse
-	resp, err := c.client.Do(req, &body)
+	reqPath := fmt.Sprintf(opPath, id)
+
+	respBody, resp, err := getRequest[schema.CertificateGetResponse](ctx, c.client, reqPath)
 	if err != nil {
 		if IsError(err, ErrorCodeNotFound) {
 			return nil, resp, nil
 		}
-		return nil, nil, err
+		return nil, resp, err
 	}
-	return CertificateFromSchema(body.Certificate), resp, nil
+	return CertificateFromSchema(respBody.Certificate), resp, nil
 }
 
 // GetByName retrieves a Certificate by its name. If the Certificate does not exist, nil is returned.
 func (c *CertificateClient) GetByName(ctx context.Context, name string) (*Certificate, *Response, error) {
-	if name == "" {
-		return nil, nil, nil
-	}
-	Certificate, response, err := c.List(ctx, CertificateListOpts{Name: name})
-	if len(Certificate) == 0 {
-		return nil, response, err
-	}
-	return Certificate[0], response, err
+	return firstByName(name, func() ([]*Certificate, *Response, error) {
+		return c.List(ctx, CertificateListOpts{Name: name})
+	})
 }
 
 // Get retrieves a Certificate by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a Certificate by its name. If the Certificate does not exist, nil is returned.
 func (c *CertificateClient) Get(ctx context.Context, idOrName string) (*Certificate, *Response, error) {
-	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
-		return c.GetByID(ctx, id)
-	}
-	return c.GetByName(ctx, idOrName)
+	return getByIDOrName(ctx, c.GetByID, c.GetByName, idOrName)
 }
 
 // CertificateListOpts specifies options for listing Certificates.
@@ -158,22 +146,17 @@ func (l CertificateListOpts) values() url.Values {
 // Please note that filters specified in opts are not taken into account
 // when their value corresponds to their zero value or when they are empty.
 func (c *CertificateClient) List(ctx context.Context, opts CertificateListOpts) ([]*Certificate, *Response, error) {
-	path := "/certificates?" + opts.values().Encode()
-	req, err := c.client.NewRequest(ctx, "GET", path, nil)
+	const opPath = "/certificates?%s"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+
+	respBody, resp, err := getRequest[schema.CertificateListResponse](ctx, c.client, reqPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
 
-	var body schema.CertificateListResponse
-	resp, err := c.client.Do(req, &body)
-	if err != nil {
-		return nil, nil, err
-	}
-	Certificates := make([]*Certificate, 0, len(body.Certificates))
-	for _, s := range body.Certificates {
-		Certificates = append(Certificates, CertificateFromSchema(s))
-	}
-	return Certificates, resp, nil
+	return allFromSchemaFunc(respBody.Certificates, CertificateFromSchema), resp, nil
 }
 
 // All returns all Certificates.
@@ -183,22 +166,10 @@ func (c *CertificateClient) All(ctx context.Context) ([]*Certificate, error) {
 
 // AllWithOpts returns all Certificates for the given options.
 func (c *CertificateClient) AllWithOpts(ctx context.Context, opts CertificateListOpts) ([]*Certificate, error) {
-	allCertificates := []*Certificate{}
-
-	err := c.client.all(func(page int) (*Response, error) {
+	return iterPages(func(page int) ([]*Certificate, *Response, error) {
 		opts.Page = page
-		Certificates, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allCertificates = append(allCertificates, Certificates...)
-		return resp, nil
+		return c.List(ctx, opts)
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allCertificates, nil
 }
 
 // CertificateCreateOpts specifies options for creating a new Certificate.
@@ -214,7 +185,7 @@ type CertificateCreateOpts struct {
 // Validate checks if options are valid.
 func (o CertificateCreateOpts) Validate() error {
 	if o.Name == "" {
-		return errors.New("missing name")
+		return missingField(o, "Name")
 	}
 	switch o.Type {
 	case "", CertificateTypeUploaded:
@@ -222,23 +193,23 @@ func (o CertificateCreateOpts) Validate() error {
 	case CertificateTypeManaged:
 		return o.validateManaged()
 	default:
-		return fmt.Errorf("invalid type: %s", o.Type)
+		return invalidFieldValue(o, "Type", o.Type)
 	}
 }
 
 func (o CertificateCreateOpts) validateManaged() error {
 	if len(o.DomainNames) == 0 {
-		return errors.New("no domain names")
+		return missingField(o, "DomainNames")
 	}
 	return nil
 }
 
 func (o CertificateCreateOpts) validateUploaded() error {
 	if o.Certificate == "" {
-		return errors.New("missing certificate")
+		return missingField(o, "Certificate")
 	}
 	if o.PrivateKey == "" {
-		return errors.New("missing private key")
+		return missingField(o, "PrivateKey")
 	}
 	return nil
 }
@@ -249,7 +220,7 @@ func (o CertificateCreateOpts) validateUploaded() error {
 // CreateCertificate to create such certificates.
 func (c *CertificateClient) Create(ctx context.Context, opts CertificateCreateOpts) (*Certificate, *Response, error) {
 	if !(opts.Type == "" || opts.Type == CertificateTypeUploaded) {
-		return nil, nil, fmt.Errorf("invalid certificate type: %s", opts.Type)
+		return nil, nil, invalidFieldValue(opts, "Type", opts.Type)
 	}
 	result, resp, err := c.CreateCertificate(ctx, opts)
 	if err != nil {
@@ -262,16 +233,20 @@ func (c *CertificateClient) Create(ctx context.Context, opts CertificateCreateOp
 func (c *CertificateClient) CreateCertificate(
 	ctx context.Context, opts CertificateCreateOpts,
 ) (CertificateCreateResult, *Response, error) {
-	var (
-		action  *Action
-		reqBody schema.CertificateCreateRequest
-	)
+	const opPath = "/certificates"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := opPath
+
+	result := CertificateCreateResult{}
 
 	if err := opts.Validate(); err != nil {
-		return CertificateCreateResult{}, nil, err
+		return result, nil, err
 	}
 
-	reqBody.Name = opts.Name
+	reqBody := schema.CertificateCreateRequest{
+		Name: opts.Name,
+	}
 
 	switch opts.Type {
 	case "", CertificateTypeUploaded:
@@ -282,32 +257,24 @@ func (c *CertificateClient) CreateCertificate(
 		reqBody.Type = string(CertificateTypeManaged)
 		reqBody.DomainNames = opts.DomainNames
 	default:
-		return CertificateCreateResult{}, nil, fmt.Errorf("invalid certificate type: %v", opts.Type)
+		return result, nil, invalidFieldValue(opts, "Type", opts.Type)
 	}
 
 	if opts.Labels != nil {
 		reqBody.Labels = &opts.Labels
 	}
-	reqBodyData, err := json.Marshal(reqBody)
+
+	respBody, resp, err := postRequest[schema.CertificateCreateResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
-		return CertificateCreateResult{}, nil, err
-	}
-	req, err := c.client.NewRequest(ctx, "POST", "/certificates", bytes.NewReader(reqBodyData))
-	if err != nil {
-		return CertificateCreateResult{}, nil, err
+		return result, resp, err
 	}
 
-	respBody := schema.CertificateCreateResponse{}
-	resp, err := c.client.Do(req, &respBody)
-	if err != nil {
-		return CertificateCreateResult{}, resp, err
-	}
-	cert := CertificateFromSchema(respBody.Certificate)
+	result.Certificate = CertificateFromSchema(respBody.Certificate)
 	if respBody.Action != nil {
-		action = ActionFromSchema(*respBody.Action)
+		result.Action = ActionFromSchema(*respBody.Action)
 	}
 
-	return CertificateCreateResult{Certificate: cert, Action: action}, resp, nil
+	return result, resp, nil
 }
 
 // CertificateUpdateOpts specifies options for updating a Certificate.
@@ -318,6 +285,11 @@ type CertificateUpdateOpts struct {
 
 // Update updates a Certificate.
 func (c *CertificateClient) Update(ctx context.Context, certificate *Certificate, opts CertificateUpdateOpts) (*Certificate, *Response, error) {
+	const opPath = "/certificates/%d"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, certificate.ID)
+
 	reqBody := schema.CertificateUpdateRequest{}
 	if opts.Name != "" {
 		reqBody.Name = &opts.Name
@@ -325,46 +297,36 @@ func (c *CertificateClient) Update(ctx context.Context, certificate *Certificate
 	if opts.Labels != nil {
 		reqBody.Labels = &opts.Labels
 	}
-	reqBodyData, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, nil, err
-	}
 
-	path := fmt.Sprintf("/certificates/%d", certificate.ID)
-	req, err := c.client.NewRequest(ctx, "PUT", path, bytes.NewReader(reqBodyData))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	respBody := schema.CertificateUpdateResponse{}
-	resp, err := c.client.Do(req, &respBody)
+	respBody, resp, err := putRequest[schema.CertificateUpdateResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
 		return nil, resp, err
 	}
+
 	return CertificateFromSchema(respBody.Certificate), resp, nil
 }
 
 // Delete deletes a certificate.
 func (c *CertificateClient) Delete(ctx context.Context, certificate *Certificate) (*Response, error) {
-	req, err := c.client.NewRequest(ctx, "DELETE", fmt.Sprintf("/certificates/%d", certificate.ID), nil)
-	if err != nil {
-		return nil, err
-	}
-	return c.client.Do(req, nil)
+	const opPath = "/certificates/%d"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	reqPath := fmt.Sprintf(opPath, certificate.ID)
+
+	return deleteRequestNoResult(ctx, c.client, reqPath)
 }
 
 // RetryIssuance retries the issuance of a failed managed certificate.
 func (c *CertificateClient) RetryIssuance(ctx context.Context, certificate *Certificate) (*Action, *Response, error) {
-	var respBody schema.CertificateIssuanceRetryResponse
+	const opPath = "/certificates/%d/actions/retry"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	req, err := c.client.NewRequest(ctx, "POST", fmt.Sprintf("/certificates/%d/actions/retry", certificate.ID), nil)
+	reqPath := fmt.Sprintf(opPath, certificate.ID)
+
+	respBody, resp, err := postRequest[schema.CertificateIssuanceRetryResponse](ctx, c.client, reqPath, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
-	resp, err := c.client.Do(req, &respBody)
-	if err != nil {
-		return nil, nil, err
-	}
-	action := ActionFromSchema(respBody.Action)
-	return action, resp, nil
+
+	return ActionFromSchema(respBody.Action), resp, nil
 }

@@ -95,7 +95,9 @@ func newManager() (*hetznerManager, error) {
 		hcloud.WithToken(token),
 		hcloud.WithHTTPClient(httpClient),
 		hcloud.WithApplication("cluster-autoscaler", version.ClusterAutoscalerVersion),
-		hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, 500*time.Millisecond)),
+		hcloud.WithPollOpts(hcloud.PollOpts{
+			BackoffFunc: hcloud.ExponentialBackoff(2, 500*time.Millisecond),
+		}),
 		hcloud.WithDebugWriter(&debugWriter{}),
 	}
 
@@ -252,7 +254,7 @@ func (m *hetznerManager) deleteByNode(node *apiv1.Node) error {
 }
 
 func (m *hetznerManager) deleteServer(server *hcloud.Server) error {
-	_, err := m.client.Server.Delete(m.apiCallContext, server)
+	_, _, err := m.client.Server.DeleteWithResult(m.apiCallContext, server)
 	return err
 }
 

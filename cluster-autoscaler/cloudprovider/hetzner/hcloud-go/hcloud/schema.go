@@ -49,6 +49,26 @@ func SchemaFromPrimaryIP(p *PrimaryIP) schema.PrimaryIP {
 	return c.SchemaFromPrimaryIP(p)
 }
 
+func SchemaFromPrimaryIPCreateOpts(o PrimaryIPCreateOpts) schema.PrimaryIPCreateRequest {
+	return c.SchemaFromPrimaryIPCreateOpts(o)
+}
+
+func SchemaFromPrimaryIPUpdateOpts(o PrimaryIPUpdateOpts) schema.PrimaryIPUpdateRequest {
+	return c.SchemaFromPrimaryIPUpdateOpts(o)
+}
+
+func SchemaFromPrimaryIPChangeDNSPtrOpts(o PrimaryIPChangeDNSPtrOpts) schema.PrimaryIPActionChangeDNSPtrRequest {
+	return c.SchemaFromPrimaryIPChangeDNSPtrOpts(o)
+}
+
+func SchemaFromPrimaryIPChangeProtectionOpts(o PrimaryIPChangeProtectionOpts) schema.PrimaryIPActionChangeProtectionRequest {
+	return c.SchemaFromPrimaryIPChangeProtectionOpts(o)
+}
+
+func SchemaFromPrimaryIPAssignOpts(o PrimaryIPAssignOpts) schema.PrimaryIPActionAssignRequest {
+	return c.SchemaFromPrimaryIPAssignOpts(o)
+}
+
 // ISOFromSchema converts a schema.ISO to an ISO.
 func ISOFromSchema(s schema.ISO) *ISO {
 	return c.ISOFromSchema(s)

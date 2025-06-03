@@ -16,8 +16,12 @@ type IActionClient interface {
 	// when their value corresponds to their zero value or when they are empty.
 	List(ctx context.Context, opts ActionListOpts) ([]*Action, *Response, error)
 	// All returns all actions.
+	//
+	// Deprecated: It is required to pass in a list of IDs since 30 January 2025. Please use [ActionClient.AllWithOpts] instead.
 	All(ctx context.Context) ([]*Action, error)
 	// AllWithOpts returns all actions for the given options.
+	//
+	// It is required to set [ActionListOpts.ID]. Any other fields set in the opts are ignored.
 	AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error)
 	// WatchOverallProgress watches several actions' progress until they complete
 	// with success or error. This watching happens in a goroutine and updates are
@@ -35,7 +39,7 @@ type IActionClient interface {
 	// timeout, use the [context.Context]. Once the method has stopped watching,
 	// both returned channels are closed.
 	//
-	// WatchOverallProgress uses the [WithPollBackoffFunc] of the [Client] to wait
+	// WatchOverallProgress uses the [WithPollOpts] of the [Client] to wait
 	// until sending the next request.
 	//
 	// Deprecated: WatchOverallProgress is deprecated, use [WaitForFunc] instead.
@@ -56,19 +60,19 @@ type IActionClient interface {
 	// timeout, use the [context.Context]. Once the method has stopped watching,
 	// both returned channels are closed.
 	//
-	// WatchProgress uses the [WithPollBackoffFunc] of the [Client] to wait until
+	// WatchProgress uses the [WithPollOpts] of the [Client] to wait until
 	// sending the next request.
 	//
 	// Deprecated: WatchProgress is deprecated, use [WaitForFunc] instead.
 	WatchProgress(ctx context.Context, action *Action) (<-chan int, <-chan error)
 	// WaitForFunc waits until all actions are completed by polling the API at the interval
-	// defined by [WithPollBackoffFunc]. An action is considered as complete when its status is
+	// defined by [WithPollOpts]. An action is considered as complete when its status is
 	// either [ActionStatusSuccess] or [ActionStatusError].
 	//
 	// The handleUpdate callback is called every time an action is updated.
 	WaitForFunc(ctx context.Context, handleUpdate func(update *Action) error, actions ...*Action) error
 	// WaitFor waits until all actions succeed by polling the API at the interval defined by
-	// [WithPollBackoffFunc]. An action is considered as succeeded when its status is either
+	// [WithPollOpts]. An action is considered as succeeded when its status is either
 	// [ActionStatusSuccess].
 	//
 	// If a single action fails, the function will stop waiting and the error set in the
