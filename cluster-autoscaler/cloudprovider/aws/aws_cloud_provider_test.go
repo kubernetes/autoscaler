@@ -725,8 +725,21 @@ func TestHasInstance(t *testing.T) {
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 	assert.True(t, present)
 
-	// Case 3: correct node - not present in AWS
+	// Case 3: incorrect node - sagemaker hyperpod is unsupported
 	node3 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "hyperpod-node-1",
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///use1-az2/sagemaker/cluster/hyperpod-abc123-i-abc123",
+		},
+	}
+	present, err = provider.HasInstance(node3)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+	assert.True(t, present)
+
+	// Case 4: correct node - not present in AWS
+	node4 := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "node-2",
 		},
@@ -734,12 +747,12 @@ func TestHasInstance(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id-2",
 		},
 	}
-	present, err = provider.HasInstance(node3)
+	present, err = provider.HasInstance(node4)
 	assert.ErrorContains(t, err, nodeNotPresentErr)
 	assert.False(t, present)
 
-	// Case 4: correct node - not autoscaled -> not present in AWS -> no warning
-	node4 := &apiv1.Node{
+	// Case 5: correct node - not autoscaled -> not present in AWS -> no warning
+	node5 := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "node-2",
 			Annotations: map[string]string{
@@ -750,7 +763,7 @@ func TestHasInstance(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id-2",
 		},
 	}
-	present, err = provider.HasInstance(node4)
+	present, err = provider.HasInstance(node5)
 	assert.NoError(t, err)
 	assert.False(t, present)
 }

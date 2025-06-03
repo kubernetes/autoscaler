@@ -115,6 +115,13 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 		klog.Warningf("Node %v has no providerId", node.Name)
 		return nil, nil
 	}
+
+	// Skip SageMaker instances
+	if strings.Contains(node.Spec.ProviderID, "/sagemaker") {
+		klog.V(4).Infof("Skipping SageMaker node %s", node.Name)
+		return nil, nil
+	}
+
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		// Dropping this into V as it will be noisy with many Hybrid Nodes
@@ -140,6 +147,11 @@ func (aws *awsCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	// returning 'true' because we are assuming the node exists in AWS
 	// this is the default behavior if the check is unimplemented
 	if strings.HasPrefix(node.GetName(), "fargate") {
+		return true, cloudprovider.ErrNotImplemented
+	}
+
+	// Skip SageMaker instances
+	if strings.Contains(node.Spec.ProviderID, "/sagemaker") {
 		return true, cloudprovider.ErrNotImplemented
 	}
 
@@ -209,6 +221,14 @@ var validAwsRefIdRegex = regexp.MustCompile(fmt.Sprintf(`^aws\:\/\/\/[-0-9a-z]*\
 // AwsRefFromProviderId creates AwsInstanceRef object from provider id which
 // must be in format: aws:///zone/name
 func AwsRefFromProviderId(id string) (*AwsInstanceRef, error) {
+	// Special case for SageMaker format: aws:///<region>/sagemaker/...
+	if strings.HasPrefix(id, "aws:///") && strings.Contains(id, "/sagemaker") {
+		return &AwsInstanceRef{
+			ProviderID: id,
+			Name:       "sagemaker-node",
+		}, nil
+	}
+
 	if validAwsRefIdRegex.FindStringSubmatch(id) == nil {
 		return nil, fmt.Errorf("wrong id: expected format aws:///<zone>/<name>, got %v", id)
 	}
@@ -313,6 +333,11 @@ func (ng *AwsNodeGroup) DecreaseTargetSize(delta int) error {
 
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (ng *AwsNodeGroup) Belongs(node *apiv1.Node) (bool, error) {
+	// Skip SageMaker instances
+	if strings.Contains(node.Spec.ProviderID, "/sagemaker") {
+		return false, nil
+	}
+
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
