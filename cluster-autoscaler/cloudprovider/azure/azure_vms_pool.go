@@ -460,7 +460,9 @@ func (vmPool *VMPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 		return nil, err
 	}
 
-	template, err := buildNodeTemplateFromVMPool(ap, vmPool.manager.config.Location, vmPool.sku)
+	inputLabels := map[string]string{}
+	inputTaints := ""
+	template, err := buildNodeTemplateFromVMPool(ap, vmPool.manager.config.Location, vmPool.sku, inputLabels, inputTaints)
 	if err != nil {
 		return nil, err
 	}
