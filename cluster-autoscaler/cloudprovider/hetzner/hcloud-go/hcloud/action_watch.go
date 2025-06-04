@@ -21,7 +21,7 @@ import (
 // timeout, use the [context.Context]. Once the method has stopped watching,
 // both returned channels are closed.
 //
-// WatchOverallProgress uses the [WithPollBackoffFunc] of the [Client] to wait
+// WatchOverallProgress uses the [WithPollOpts] of the [Client] to wait
 // until sending the next request.
 //
 // Deprecated: WatchOverallProgress is deprecated, use [WaitForFunc] instead.
@@ -86,7 +86,7 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 // timeout, use the [context.Context]. Once the method has stopped watching,
 // both returned channels are closed.
 //
-// WatchProgress uses the [WithPollBackoffFunc] of the [Client] to wait until
+// WatchProgress uses the [WithPollOpts] of the [Client] to wait until
 // sending the next request.
 //
 // Deprecated: WatchProgress is deprecated, use [WaitForFunc] instead.

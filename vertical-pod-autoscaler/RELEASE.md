@@ -71,18 +71,15 @@ example `v20250430-cluster-autoscaler-chart-9.46.6-81-g6a6a912b4`.
 2. Set the `BUILD_TAG` variable to this tag in your shell:
 
 ```sh
-BUILD_TAG=<tag>
+export BUILD_TAG=<tag>
 ```
 
-3. Now tag this image with the latest version tag:
+3. Now tag this image with the latest version tag and run the script:
 
 ```sh
 cd vertical-pod-autoscaler/
-TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
-echo "Adding tag $TAG based on built tag $BUILD_TAG"
-gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-admission-controller:$TAG --project=k8s-staging-autoscaling
-gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-recommender:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-recommender:$TAG --project=k8s-staging-autoscaling
-gcloud container images add-tag gcr.io/k8s-staging-autoscaling/vpa-updater:$BUILD_TAG gcr.io/k8s-staging-autoscaling/vpa-updater:$TAG --project=k8s-staging-autoscaling
+export TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
+./hack/tag-release.sh
 ```
 
 ### Option 2: Manual
@@ -160,43 +157,56 @@ we've been using them since `vertical-pod-autoscaler-0.1` and tags with the
 other pattern start only with `vertical-pod-autoscaler/v0.9.0` so we should make
 sure nothing we care about will break if we do.
 
-1.  [ ] Update information about newest version and K8s compatibility in
-    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation).
+1.  [ ] Make the following changes in the release branch:
 
-1.  [ ] Update the yaml and sh files:
+    ```sh
+    git switch vpa-release-1.${minor}
+    ```
+
+2.  [ ] Update information about newest version and K8s compatibility in
+    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/installation.md#compatibility).
+
+3.  [ ] Update the yaml and sh files:
 
     ```sh
     sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|g" ./deploy/*-deployment*.yaml
     sed -i -s "s|DEFAULT_TAG=\"[0-9]\+\.[0-9]\+\.[0-9]\+\"|DEFAULT_TAG=\"[*vpa-version*]\"|g" ./hack/*.sh
     ```
 
-1.  [ ] Generate the flags files:
+4.  [ ] Generate the flags files:
 
     ```sh
     ./hack/generate-flags.sh
     ```
 
-1.  [ ] Merge these changes into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release
-    (example PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
+5.  [ ] Merge these changes into branch vpa-release-1.{$minor}. Make note of the commit hash and use it in the next step.
 
-1.  [ ] Tag the commit with version const change
+    See https://github.com/kubernetes/autoscaler/pull/8154 as an example.
+
+6.  [ ] Tag the commit corresponding to the changes from above in the release branch.
 
     ```sh
+    git checkout <commit hash>
     git tag -a vertical-pod-autoscaler-[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
     git tag -a vertical-pod-autoscaler/v[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
     ```
 
-1.  [ ] Push tag
+7.  [ ] Push tag
 
     ```sh
     git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler-[*vpa-version*]
     git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler/v[*vpa-version*]
     ```
 
-1.  [ ] To create and publish a github release from pushed tag go to
+8.  [ ] Create and publish a github release from pushed tag go to
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
-    press `Create release from tag`, complete release title and release notes, tick the
-    `This is a pre-release` box and press `Publish release`.
+    press `Create release from tag`, complete release title and release notes and press `Publish release`.
+
+9.  Repeat steps 2-5 above in the **main branch**.
+
+    After submitting, users who use `vpa-up.sh` will now start using the latest version.
+
+    IMPORTANT: Make sure the tags created above exist before merging into the main branch!
 
 ## Permissions
 

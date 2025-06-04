@@ -66,7 +66,7 @@ func TestDeltaForNode(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		cp := testprovider.NewTestCloudProvider(nil, nil)
+		cp := testprovider.NewTestCloudProviderBuilder().Build()
 		ctx := newContext(t, cp)
 		processors := processorstest.NewTestProcessors(&ctx)
 
@@ -162,7 +162,7 @@ func TestApplyLimits(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		cp := testprovider.NewTestCloudProvider(nil, nil)
+		cp := testprovider.NewTestCloudProviderBuilder().Build()
 		ctx := newContext(t, cp)
 		processors := processorstest.NewTestProcessors(&ctx)
 
@@ -216,7 +216,7 @@ func TestCheckDeltaWithinLimits(t *testing.T) {
 }
 
 func TestResourceManagerWithGpuResource(t *testing.T) {
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 0, cloudprovider.ResourceNameMemory: 0, "gpu": 0},
 		map[string]int64{cloudprovider.ResourceNameCores: 320, cloudprovider.ResourceNameMemory: 640, "gpu": 16},
@@ -259,7 +259,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 }
 
 func newCloudProvider(t *testing.T, cpu, mem int64) *testprovider.TestCloudProvider {
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	assert.NotNil(t, provider)
 
 	resourceLimiter := cloudprovider.NewResourceLimiter(

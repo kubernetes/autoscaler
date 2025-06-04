@@ -194,8 +194,7 @@ both of these annotations.
 > for more information.
 
 > Note: `MachinePool` support in cluster-autoscaler requires a provider implementation
-> that supports the new "MachinePool Machines" feature. MachinePools in Cluster API are
-> considered an [experimental feature](https://cluster-api.sigs.k8s.io/tasks/experimental-features/experimental-features.html#active-experimental-features) and are not enabled by default.
+> that supports the "MachinePool Machines" feature.
 
 ### Scale from zero support
 
@@ -241,11 +240,12 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
 ```
 
-*Note* the `maxPods` annotation will default to `110` if it is not supplied.
-This value is inspired by the Kubernetes best practices
-[Considerations for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
+> Note: the `maxPods` annotation will default to `110` if it is not supplied.
+> This value is inspired by the Kubernetes best practices
+> [Considerations for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
 
-*Note* User should select the annotation for GPU either `gpu-type` or `dra-driver` depends on whether using Device Plugin or Dynamic Resource Allocation(DRA). `gpu-count` is a common parameter in both.
+> Note: User should select the annotation for GPU either `gpu-type` or `dra-driver` depends on whether using
+> Device Plugin or Dynamic Resource Allocation(DRA). `gpu-count` is a common parameter in both.
 
 #### RBAC changes for scaling from zero
 

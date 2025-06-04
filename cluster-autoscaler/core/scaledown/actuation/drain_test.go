@@ -135,7 +135,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				deletedPods <- eviction.Name
 				return true, nil, nil
 			})
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.AddNodeGroup("ng1", 1, 10, 1)
 			provider.AddNode("ng1", n1)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)

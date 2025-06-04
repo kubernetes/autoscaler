@@ -19,7 +19,6 @@ package metrics
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -77,7 +76,7 @@ func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write([]byte("OK"))
 		if err != nil {
 			klog.ErrorS(err, "Failed to write response message")
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 	}
 }
