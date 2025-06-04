@@ -89,7 +89,7 @@ const (
 // VMPoolNodeTemplate holds properties for node from VMPool
 type VMPoolNodeTemplate struct {
 	AgentPoolName string
-	Taints        []string
+	Taints        []apiv1.Taint
 	Labels        map[string]*string
 	OSDiskType    *armcontainerservice.OSDiskType
 }
@@ -155,23 +155,33 @@ func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels 
 	}, nil
 }
 
-func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location string, skuName string) (NodeTemplate, error) {
+func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location string, skuName string, labelsFromSpec map[string]string, taintsFromSpec string) (NodeTemplate, error) {
 	if vmsPool.Properties == nil {
 		return NodeTemplate{}, fmt.Errorf("vmsPool %s has nil properties", to.String(vmsPool.Name))
 	}
-	var labels map[string]*string
-	if vmsPool.Properties.NodeLabels != nil {
-		labels = vmsPool.Properties.NodeLabels
+	// labels from the agentpool
+	labels := vmsPool.Properties.NodeLabels
+	// labels from spec
+	for k, v := range labelsFromSpec {
+		if labels == nil {
+			labels = make(map[string]*string)
+		}
+		labels[k] = to.StringPtr(v)
 	}
 
-	var taints []string
-	if vmsPool.Properties.NodeTaints != nil {
-		for _, taint := range vmsPool.Properties.NodeTaints {
-			if taint != nil {
-				taints = append(taints, *taint)
-			}
+	// taints from the agentpool
+	taintsList := []string{}
+	for _, taint := range vmsPool.Properties.NodeTaints {
+		if to.String(taint) != "" {
+			taintsList = append(taintsList, to.String(taint))
 		}
 	}
+	// taints from spec
+	if taintsFromSpec != "" {
+		taintsList = append(taintsList, taintsFromSpec)
+	}
+	taintsStr := strings.Join(taintsList, ",")
+	taints := extractTaintsFromSpecString(taintsStr)
 
 	var zones []string
 	if vmsPool.Properties.AvailabilityZones != nil {
@@ -284,8 +294,7 @@ func processVMPoolTemplate(template NodeTemplate, nodeName string, node apiv1.No
 		}
 	}
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
-	taints := buildNodeTaintsForVMPool(template.VMPoolNodeTemplate.Taints)
-	node.Spec.Taints = taints
+	node.Spec.Taints = template.VMPoolNodeTemplate.Taints
 	return node
 }
 
@@ -459,14 +468,19 @@ func extractTaintsFromTags(tags map[string]*string) []apiv1.Taint {
 	return taints
 }
 
-// extractTaintsFromSpecString is for VMSS nodepool taints
+// extractTaintsFromSpecString is for nodepool taints
 // Example of a valid taints string, is the same argument to kubelet's `--register-with-taints`
 // "dedicated=foo:NoSchedule,group=bar:NoExecute,app=fizz:PreferNoSchedule"
 func extractTaintsFromSpecString(taintsString string) []apiv1.Taint {
 	taints := make([]apiv1.Taint, 0)
+	dedupMap := make(map[string]interface{})
 	// First split the taints at the separator
 	splits := strings.Split(taintsString, ",")
 	for _, split := range splits {
+		if dedupMap[split] != nil {
+			continue
+		}
+		dedupMap[split] = struct{}{}
 		valid, taint := constructTaintFromString(split)
 		if valid {
 			taints = append(taints, taint)
