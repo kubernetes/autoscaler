@@ -94,6 +94,11 @@ func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
 	exampleNode.Spec.Taints = []apiv1.Taint{
 		{Key: taints.ToBeDeletedTaint, Value: "2312532423", Effect: apiv1.TaintEffectNoSchedule},
 	}
+	exampleNode.Labels = map[string]string{
+		"custom":                      "label",
+		apiv1.LabelInstanceTypeStable: "some-instance",
+		apiv1.LabelTopologyRegion:     "some-region",
+	}
 
 	for _, tc := range []struct {
 		testName  string
@@ -156,7 +161,7 @@ func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
 			// Pass empty string as nameSuffix so that it's auto-determined from the sanitized templateNodeInfo, because
 			// TemplateNodeInfoFromNodeGroupTemplate randomizes the suffix.
 			// Pass non-empty expectedPods to verify that the set of pods is changed as expected (e.g. DS pods added, non-DS/deleted pods removed).
-			if err := verifyNodeInfoSanitization(tc.nodeGroup.templateNodeInfoResult, templateNodeInfo, tc.wantPods, "template-node-for-"+tc.nodeGroup.id, "", nil); err != nil {
+			if err := verifyNodeInfoSanitization(tc.nodeGroup.templateNodeInfoResult, templateNodeInfo, tc.wantPods, "template-node-for-"+tc.nodeGroup.id, "", true, nil); err != nil {
 				t.Fatalf("TemplateNodeInfoFromExampleNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 			}
 		})
@@ -167,6 +172,11 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 	exampleNode := BuildTestNode("n", 1000, 10)
 	exampleNode.Spec.Taints = []apiv1.Taint{
 		{Key: taints.ToBeDeletedTaint, Value: "2312532423", Effect: apiv1.TaintEffectNoSchedule},
+	}
+	exampleNode.Labels = map[string]string{
+		"custom":                      "label",
+		apiv1.LabelInstanceTypeStable: "some-instance",
+		apiv1.LabelTopologyRegion:     "some-region",
 	}
 
 	testCases := []struct {
@@ -318,7 +328,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			// Pass empty string as nameSuffix so that it's auto-determined from the sanitized templateNodeInfo, because
 			// TemplateNodeInfoFromExampleNodeInfo randomizes the suffix.
 			// Pass non-empty expectedPods to verify that the set of pods is changed as expected (e.g. DS pods added, non-DS/deleted pods removed).
-			if err := verifyNodeInfoSanitization(exampleNodeInfo, templateNodeInfo, tc.wantPods, "template-node-for-"+nodeGroupId, "", nil); err != nil {
+			if err := verifyNodeInfoSanitization(exampleNodeInfo, templateNodeInfo, tc.wantPods, "template-node-for-"+nodeGroupId, "", false, nil); err != nil {
 				t.Fatalf("TemplateNodeInfoFromExampleNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 			}
 		})
@@ -333,6 +343,12 @@ func TestSanitizedNodeInfo(t *testing.T) {
 		{Key: taints.ToBeDeletedTaint, Value: "2312532423", Effect: apiv1.TaintEffectNoSchedule},
 		{Key: "a", Value: "b", Effect: apiv1.TaintEffectNoSchedule},
 	}
+	templateNode.Labels = map[string]string{
+		"custom":                      "label",
+		apiv1.LabelInstanceTypeStable: "some-instance",
+		apiv1.LabelTopologyRegion:     "some-region",
+	}
+
 	pods := []*framework.PodInfo{
 		{Pod: BuildTestPod("p1", 80, 0, WithNodeName(nodeName))},
 		{Pod: BuildTestPod("p2", 80, 0, WithNodeName(nodeName))},
@@ -347,7 +363,7 @@ func TestSanitizedNodeInfo(t *testing.T) {
 	// Verify that the taints are not sanitized (they should be sanitized in the template already).
 	// Verify that the NodeInfo is sanitized using the template Node name as base.
 	initialTaints := templateNodeInfo.Node().Spec.Taints
-	if err := verifyNodeInfoSanitization(templateNodeInfo, freshNodeInfo, nil, templateNodeInfo.Node().Name, suffix, initialTaints); err != nil {
+	if err := verifyNodeInfoSanitization(templateNodeInfo, freshNodeInfo, nil, templateNodeInfo.Node().Name, suffix, false, initialTaints); err != nil {
 		t.Fatalf("FreshNodeInfoFromTemplateNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 	}
 }
@@ -358,9 +374,11 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 
 	labelsNode := basicNode.DeepCopy()
 	labelsNode.Labels = map[string]string{
-		apiv1.LabelHostname: oldNodeName,
-		"a":                 "b",
-		"x":                 "y",
+		apiv1.LabelHostname:           oldNodeName,
+		"a":                           "b",
+		"x":                           "y",
+		apiv1.LabelInstanceTypeStable: "some-instance",
+		apiv1.LabelTopologyRegion:     "some-region",
 	}
 
 	taintsNode := basicNode.DeepCopy()
@@ -492,7 +510,7 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 			if err != nil {
 				t.Fatalf("sanitizeNodeInfo(): want nil error, got %v", err)
 			}
-			if err := verifyNodeInfoSanitization(tc.nodeInfo, nodeInfo, nil, newNameBase, suffix, tc.wantTaints); err != nil {
+			if err := verifyNodeInfoSanitization(tc.nodeInfo, nodeInfo, nil, newNameBase, suffix, false, tc.wantTaints); err != nil {
 				t.Fatalf("sanitizeNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 			}
 		})
@@ -507,7 +525,7 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 //
 // If expectedPods is nil, the set of pods is expected not to change between initialNodeInfo and sanitizedNodeInfo. If the sanitization is
 // expected to change the set of pods, the expected set should be passed to expectedPods.
-func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.NodeInfo, expectedPods []*apiv1.Pod, nameBase, nameSuffix string, wantTaints []apiv1.Taint) error {
+func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.NodeInfo, expectedPods []*apiv1.Pod, nameBase, nameSuffix string, wantDeprecatedLabels bool, wantTaints []apiv1.Taint) error {
 	if nameSuffix == "" {
 		// Determine the suffix from the provided sanitized NodeInfo - it should be the last part of a dash-separated name.
 		nameParts := strings.Split(sanitizedNodeInfo.Node().Name, "-")
@@ -527,7 +545,7 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 
 	// Verification below assumes the same set of pods between initialNodeInfo and sanitizedNodeInfo.
 	wantNodeName := fmt.Sprintf("%s-%s", nameBase, nameSuffix)
-	if err := verifySanitizedNode(initialNodeInfo.Node(), sanitizedNodeInfo.Node(), wantNodeName, wantTaints); err != nil {
+	if err := verifySanitizedNode(initialNodeInfo.Node(), sanitizedNodeInfo.Node(), wantNodeName, wantDeprecatedLabels, wantTaints); err != nil {
 		return err
 	}
 	if err := verifySanitizedNodeResourceSlices(initialNodeInfo.LocalResourceSlices, sanitizedNodeInfo.LocalResourceSlices, nameSuffix); err != nil {
@@ -540,7 +558,7 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 	return nil
 }
 
-func verifySanitizedNode(initialNode, sanitizedNode *apiv1.Node, wantNodeName string, wantTaints []apiv1.Taint) error {
+func verifySanitizedNode(initialNode, sanitizedNode *apiv1.Node, wantNodeName string, wantDeprecatedLabels bool, wantTaints []apiv1.Taint) error {
 	if gotName := sanitizedNode.Name; gotName != wantNodeName {
 		return fmt.Errorf("want sanitized Node name %q, got %q", wantNodeName, gotName)
 	}
@@ -553,6 +571,9 @@ func verifySanitizedNode(initialNode, sanitizedNode *apiv1.Node, wantNodeName st
 		wantLabels[k] = v
 	}
 	wantLabels[apiv1.LabelHostname] = wantNodeName
+	if wantDeprecatedLabels {
+		labels.UpdateDeprecatedLabels(wantLabels)
+	}
 	if diff := cmp.Diff(wantLabels, sanitizedNode.Labels); diff != "" {
 		return fmt.Errorf("sanitized Node labels unexpected, diff (-want +got): %s", diff)
 	}
