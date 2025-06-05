@@ -87,10 +87,10 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 	}
 
 	var unneededNodes *unneeded.Nodes
-	if context.AutoscalingOptions.MaxDeletionCandidateStaleness == 0 {
+	if context.AutoscalingOptions.NodeDeletionCandidateTTL == 0 {
 		unneededNodes = unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
 	} else {
-		unneededNodes = unneeded.NewWithTaints(processors.NodeGroupConfigProcessor, resourceLimitsFinder, context.ListerRegistry, context.MaxDeletionCandidateStaleness, time.Now())
+		unneededNodes = unneeded.NewWithTaints(processors.NodeGroupConfigProcessor, resourceLimitsFinder, context.ListerRegistry, context.NodeDeletionCandidateTTL, time.Now())
 	}
 
 	return &Planner{

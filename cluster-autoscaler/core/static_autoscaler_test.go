@@ -1406,14 +1406,14 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
 	n1 := BuildTestNode("n1", 1000, 1000)
 	n1.Spec.Taints = append(n1.Spec.Taints, apiv1.Taint{
-		Key:    taints.DeletionCandidateTaint,
+		Key:    taints.DeletionCandidateTaintKey,
 		Value:  fmt.Sprint(time.Now().Unix()),
 		Effect: apiv1.TaintEffectPreferNoSchedule,
 	})
 	SetNodeReadyState(n1, true, time.Now())
 	n2 := BuildTestNode("n2", 1000, 1000)
 	n2.Spec.Taints = append(n2.Spec.Taints, apiv1.Taint{
-		Key:    taints.DeletionCandidateTaint,
+		Key:    taints.DeletionCandidateTaintKey,
 		Value:  fmt.Sprint(time.Now().Unix()),
 		Effect: apiv1.TaintEffectPreferNoSchedule,
 	})
@@ -1581,7 +1581,7 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 	onScaleDownMock := &onScaleDownMock{}
 	deleteFinished := make(chan bool, 1)
 
-	deletionCandidateTaint := taints.GetDeletionCandidateTaint()
+	deletionCandidateTaint := taints.DeletionCandidateTaint()
 
 	// Node that should be deleted
 	n1 := BuildTestNode("n1", 1000, 1000)
@@ -1646,13 +1646,13 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:                 estimator.BinpackingEstimatorName,
-		EnforceNodeGroupMinSize:       true,
-		ScaleDownEnabled:              true,
-		MaxNodesTotal:                 100,
-		MaxCoresTotal:                 100,
-		MaxMemoryTotal:                100000,
-		MaxDeletionCandidateStaleness: time.Minute * 5,
+		EstimatorName:            estimator.BinpackingEstimatorName,
+		EnforceNodeGroupMinSize:  true,
+		ScaleDownEnabled:         true,
+		MaxNodesTotal:            100,
+		MaxCoresTotal:            100,
+		MaxMemoryTotal:           100000,
+		NodeDeletionCandidateTTL: time.Minute * 5,
 	}
 
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
@@ -3022,7 +3022,7 @@ func createNodeGroupWithSoftTaintedNodes(provider *testprovider.TestCloudProvide
 		node := BuildTestNode(fmt.Sprintf("%s-node-%d", name, i), 2000, 1000)
 		node.CreationTimestamp = metav1.NewTime(nodesCreationTime)
 		node.Spec.Taints = []apiv1.Taint{{
-			Key:    taints.DeletionCandidateTaint,
+			Key:    taints.DeletionCandidateTaintKey,
 			Value:  "1",
 			Effect: apiv1.TaintEffectNoSchedule,
 		}}

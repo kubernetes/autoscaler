@@ -338,9 +338,9 @@ type AutoscalingOptions struct {
 	ProactiveScaleupEnabled bool
 	// PodInjectionLimit limits total number of pods while injecting fake pods.
 	PodInjectionLimit int
-	// MaxDeletionCandidateStaleness is the maximum time a node can be marked as removable without being deleted.
+	// NodeDeletionCandidateTTL is the maximum time a node can be marked as removable without being deleted.
 	// This is used to prevent nodes from being stuck in the removable state during if the CA deployment becomes inactive.
-	MaxDeletionCandidateStaleness time.Duration
+	NodeDeletionCandidateTTL time.Duration
 }
 
 // KubeClientOptions specify options for kube client

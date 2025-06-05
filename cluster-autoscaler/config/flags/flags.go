@@ -407,7 +407,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeInfoCacheExpireTime:                      *nodeInfoCacheExpireTime,
 		ProactiveScaleupEnabled:                      *proactiveScaleupEnabled,
 		PodInjectionLimit:                            *podInjectionLimit,
-		MaxDeletionCandidateStaleness:                *maxDeletionCandidateStaleness,
+		NodeDeletionCandidateTTL:                     *maxDeletionCandidateStaleness,
 	}
 }
 
