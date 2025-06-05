@@ -387,7 +387,7 @@ func CleanAllToBeDeleted(nodes []*apiv1.Node, client kube_client.Interface, reco
 	CleanAllTaints(nodes, client, recorder, ToBeDeletedTaint, cordonNode)
 }
 
-// CleanAllDeletionCandidates cleans DeletionCandidate taints from given nodes.
+// CleanStaleDeletionCandidates cleans DeletionCandidate taints from given nodes.
 func CleanStaleDeletionCandidates(nodes []*apiv1.Node, client kube_client.Interface, recorder kube_record.EventRecorder, deletionCandidateTTL time.Duration) {
 	CleanAllTaints(nodes, client, recorder, DeletionCandidateTaintKey, false, getDeletionCandidateTTLCondition(deletionCandidateTTL))
 }
