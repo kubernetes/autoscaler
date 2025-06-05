@@ -308,7 +308,7 @@ func TestCleanAllDeletionCandidates(t *testing.T) {
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
-	CleanAllDeletionCandidates([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, time.Duration(0))
+	CleanStaleDeletionCandidates([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, time.Duration(0))
 
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n1").Spec.Taints))
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n2").Spec.Taints))

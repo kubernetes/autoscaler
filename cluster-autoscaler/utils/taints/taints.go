@@ -39,7 +39,7 @@ import (
 const (
 	// ToBeDeletedTaint is a taint used to make the node unschedulable.
 	ToBeDeletedTaint = "ToBeDeletedByClusterAutoscaler"
-	// DeletionCandidateTaint is a taint used to mark unneeded node as preferably unschedulable.
+	// DeletionCandidateTaintKey is a taint used to mark unneeded node as preferably unschedulable.
 	DeletionCandidateTaintKey = "DeletionCandidateOfClusterAutoscaler"
 
 	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
