@@ -75,7 +75,7 @@ func NewWithTaints(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder
 
 	var nodesWithTaints []simulator.NodeToBeRemoved
 	for _, node := range allNodes {
-		if since, err := taints.GetDeletionCandidateTime(node); err == nil {
+		if since, err := taints.GetDeletionCandidateTime(node); err == nil && since != nil {
 			if err != nil {
 				klog.Errorf("Failed to get pods to move for node %s: %v", node.Name, err)
 				continue
