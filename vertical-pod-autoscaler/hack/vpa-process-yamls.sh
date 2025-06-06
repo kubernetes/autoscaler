@@ -40,7 +40,7 @@ if [ $# -gt 2 ]; then
 fi
 
 ACTION=$1
-COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment admission-controller-service"
 
 function script_path {
   # Regular components have deployment yaml files under /deploy/.  But some components only have
