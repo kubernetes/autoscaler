@@ -34,7 +34,7 @@ import (
 )
 
 func TestAddNodeToBucket(t *testing.T) {
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, provider, nil, nil)
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
@@ -142,14 +142,14 @@ func TestRemove(t *testing.T) {
 			notDeletedNodes := make(chan string, 10)
 			// Hook node deletion at the level of cloud provider, to gather which nodes were deleted, and to fail the deletion for
 			// certain nodes to simulate errors.
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 				if failedNodeDeletion[node] {
 					notDeletedNodes <- node
 					return fmt.Errorf("SIMULATED ERROR: won't remove node")
 				}
 				deletedNodes <- node
 				return nil
-			})
+			}).Build()
 
 			fakeClient.Fake.AddReactor("update", "nodes",
 				func(action core.Action) (bool, runtime.Object, error) {

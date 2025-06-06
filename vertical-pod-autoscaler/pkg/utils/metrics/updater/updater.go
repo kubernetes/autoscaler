@@ -108,7 +108,13 @@ var (
 		}, []string{"vpa_size_log2"},
 	)
 
-	// TODO: Add metrics for failed in-place update attempts
+	failedInPlaceUpdateAttempts = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "failed_in_place_update_attempts_total",
+			Help:      "Number of failed attempts to update Pods in-place.",
+		}, []string{"vpa_size_log2", "reason"},
+	)
 
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
@@ -116,7 +122,7 @@ var (
 
 // Register initializes all metrics for VPA Updater
 func Register() {
-	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, inPlaceUpdatableCount, inPlaceUpdatedCount, vpasWithInPlaceUpdatablePodsCount, vpasWithInPlaceUpdatedPodsCount, functionLatency)
+	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, inPlaceUpdatableCount, inPlaceUpdatedCount, vpasWithInPlaceUpdatablePodsCount, vpasWithInPlaceUpdatedPodsCount, failedInPlaceUpdateAttempts, functionLatency)
 }
 
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
@@ -177,6 +183,12 @@ func NewVpasWithInPlaceUpdtatedPodsCounter() *SizeBasedGauge {
 func AddInPlaceUpdatedPod(vpaSize int) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	inPlaceUpdatedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
+}
+
+// RecordFailedInPlaceUpdate increases the counter of failed in-place update attempts by given VPA size and reason
+func RecordFailedInPlaceUpdate(vpaSize int, reason string) {
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
+	failedInPlaceUpdateAttempts.WithLabelValues(strconv.Itoa(log2), reason).Inc()
 }
 
 // Add increases the counter for the given VPA size

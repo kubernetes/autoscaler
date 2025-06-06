@@ -13,7 +13,7 @@ require (
 	k8s.io/api v0.33.0
 	k8s.io/apimachinery v0.33.0
 	k8s.io/autoscaler/vertical-pod-autoscaler v1.3.0
-	k8s.io/client-go v1.5.2
+	k8s.io/client-go v0.33.0
 	k8s.io/component-base v0.33.0
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kubernetes v1.33.0

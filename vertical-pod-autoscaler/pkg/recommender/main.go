@@ -65,6 +65,7 @@ var (
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	memorySaver            = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+	updateWorkerCount      = flag.Int("update-worker-count", 10, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits (`kube-api-qps` and `kube-api-burst`) are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
 )
 
 // Prometheus history provider flags
@@ -140,8 +141,13 @@ func main() {
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
+
+	if *routines.MinCheckpointsPerRun != 10 { // Default value is 10
+		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
+	}
+
 	ctx := context.Background()
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
@@ -156,7 +162,7 @@ func main() {
 		id, err := os.Hostname()
 		if err != nil {
 			klog.ErrorS(err, "Unable to get hostname")
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -175,7 +181,7 @@ func main() {
 		)
 		if err != nil {
 			klog.ErrorS(err, "Unable to create leader election lock")
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 
 		leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
@@ -284,12 +290,13 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        *checkpointsGCInterval,
 		UseCheckpoints:               useCheckpoints,
+		UpdateWorkerCount:            *updateWorkerCount,
 	}.Make()
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
 		klog.ErrorS(err, "Could not parse --prometheus-query-timeout as a time.Duration")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	if useCheckpoints {
@@ -317,7 +324,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
 			klog.ErrorS(err, "Could not initialize history provider")
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}

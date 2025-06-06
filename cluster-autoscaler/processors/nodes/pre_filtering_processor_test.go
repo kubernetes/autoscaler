@@ -45,7 +45,7 @@ func TestPreFilteringScaleDownNodeProcessor_GetScaleDownCandidateNodes(t *testin
 	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
 	noNg := BuildTestNode("no-ng", 1000, 1000)
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
