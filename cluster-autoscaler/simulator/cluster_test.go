@@ -140,6 +140,59 @@ func TestFindNodesToRemove(t *testing.T) {
 
 	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 
+	topoNode1 := BuildTestNode("topo-n1", 1000, 2000000)
+	topoNode2 := BuildTestNode("topo-n2", 1000, 2000000)
+	topoNode3 := BuildTestNode("topo-n3", 1000, 2000000)
+	topoNode1.Labels = map[string]string{"kubernetes.io/hostname": "topo-n1"}
+	topoNode2.Labels = map[string]string{"kubernetes.io/hostname": "topo-n2"}
+	topoNode3.Labels = map[string]string{"kubernetes.io/hostname": "topo-n3"}
+
+	SetNodeReadyState(topoNode1, true, time.Time{})
+	SetNodeReadyState(topoNode2, true, time.Time{})
+	SetNodeReadyState(topoNode3, true, time.Time{})
+
+	minDomains := int32(2)
+	maxSkew := int32(1)
+	topoConstraint := apiv1.TopologySpreadConstraint{
+		MaxSkew:           maxSkew,
+		TopologyKey:       "kubernetes.io/hostname",
+		WhenUnsatisfiable: apiv1.DoNotSchedule,
+		MinDomains:        &minDomains,
+		LabelSelector: &metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"app": "topo-app",
+			},
+		},
+	}
+
+	pod5 := BuildTestPod("p5", 100, 100000)
+	pod5.Labels = map[string]string{"app": "topo-app"}
+	pod5.OwnerReferences = ownerRefs
+	pod5.Spec.NodeName = "topo-n1"
+	pod5.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{topoConstraint}
+
+	pod6 := BuildTestPod("p6", 100, 100000)
+	pod6.Labels = map[string]string{"app": "topo-app"}
+	pod6.OwnerReferences = ownerRefs
+	pod6.Spec.NodeName = "topo-n2"
+	pod6.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{topoConstraint}
+
+	pod7 := BuildTestPod("p7", 100, 100000)
+	pod7.Labels = map[string]string{"app": "topo-app"}
+	pod7.OwnerReferences = ownerRefs
+	pod7.Spec.NodeName = "topo-n3"
+	pod7.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{topoConstraint}
+
+	blocker1 := BuildTestPod("blocker1", 100, 100000)
+	blocker1.Spec.NodeName = "topo-n2"
+	blocker2 := BuildTestPod("blocker2", 100, 100000)
+	blocker2.Spec.NodeName = "topo-n3"
+
+	topoNodeToRemove := NodeToBeRemoved{
+		Node:             topoNode1,
+		PodsToReschedule: []*apiv1.Pod{pod5},
+	}
+
 	tests := []findNodesToRemoveTestConfig{
 		{
 			name:       "just an empty node, should be removed",
@@ -175,6 +228,17 @@ func TestFindNodesToRemove(t *testing.T) {
 			candidates: []string{emptyNode.Name, drainableNode.Name},
 			allNodes:   []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
 			toRemove:   []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
+		},
+		{
+			name:       "topology spread constraint test - one node should be removable",
+			pods:       []*apiv1.Pod{pod5, pod6, pod7, blocker1, blocker2},
+			allNodes:   []*apiv1.Node{topoNode1, topoNode2, topoNode3},
+			candidates: []string{topoNode1.Name, topoNode2.Name, topoNode3.Name},
+			toRemove:   []NodeToBeRemoved{topoNodeToRemove},
+			unremovable: []*UnremovableNode{
+				{Node: topoNode2, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker1, Reason: drain.NotReplicated}},
+				{Node: topoNode3, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker2, Reason: drain.NotReplicated}},
+			},
 		},
 	}
 

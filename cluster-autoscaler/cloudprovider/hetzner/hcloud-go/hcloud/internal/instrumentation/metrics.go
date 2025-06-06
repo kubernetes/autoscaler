@@ -1,6 +1,7 @@
 package instrumentation
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/exp/ctxutil"
 )
 
 type Instrumenter struct {
@@ -22,7 +25,12 @@ func New(subsystemIdentifier string, instrumentationRegistry prometheus.Register
 }
 
 // InstrumentedRoundTripper returns an instrumented round tripper.
-func (i *Instrumenter) InstrumentedRoundTripper() http.RoundTripper {
+func (i *Instrumenter) InstrumentedRoundTripper(transport http.RoundTripper) http.RoundTripper {
+	// By default, http client would use DefaultTransport on nil, but we internally are relying on it being configured
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+
 	inFlightRequestsGauge := registerOrReuse(
 		i.instrumentationRegistry,
 		prometheus.NewGauge(prometheus.GaugeOpts{
@@ -57,7 +65,7 @@ func (i *Instrumenter) InstrumentedRoundTripper() http.RoundTripper {
 	return promhttp.InstrumentRoundTripperInFlight(inFlightRequestsGauge,
 		promhttp.InstrumentRoundTripperDuration(requestLatencyHistogram,
 			i.instrumentRoundTripperEndpoint(requestsPerEndpointCounter,
-				http.DefaultTransport,
+				transport,
 			),
 		),
 	)
@@ -73,8 +81,17 @@ func (i *Instrumenter) instrumentRoundTripperEndpoint(counter *prometheus.Counte
 	return func(r *http.Request) (*http.Response, error) {
 		resp, err := next.RoundTrip(r)
 		if err == nil {
-			statusCode := strconv.Itoa(resp.StatusCode)
-			counter.WithLabelValues(statusCode, strings.ToLower(resp.Request.Method), preparePathForLabel(resp.Request.URL.Path)).Inc()
+			apiEndpoint := ctxutil.OpPath(r.Context())
+			// If the request does not set the operation path, we must construct it. Happens e.g. for
+			// user crafted requests.
+			if apiEndpoint == "" {
+				apiEndpoint = preparePathForLabel(resp.Request.URL.Path)
+			}
+			counter.WithLabelValues(
+				strconv.Itoa(resp.StatusCode),
+				strings.ToLower(resp.Request.Method),
+				apiEndpoint,
+			).Inc()
 		}
 
 		return resp, err
@@ -87,9 +104,10 @@ func (i *Instrumenter) instrumentRoundTripperEndpoint(counter *prometheus.Counte
 func registerOrReuse[C prometheus.Collector](registry prometheus.Registerer, collector C) C {
 	err := registry.Register(collector)
 	if err != nil {
+		var arErr prometheus.AlreadyRegisteredError
 		// If we get a AlreadyRegisteredError we can return the existing collector
-		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			if existingCollector, ok := are.ExistingCollector.(C); ok {
+		if errors.As(err, &arErr) {
+			if existingCollector, ok := arErr.ExistingCollector.(C); ok {
 				collector = existingCollector
 			} else {
 				panic("received incompatible existing collector")
@@ -102,16 +120,16 @@ func registerOrReuse[C prometheus.Collector](registry prometheus.Registerer, col
 	return collector
 }
 
+var pathLabelRegexp = regexp.MustCompile("[^a-z/_]+")
+
 func preparePathForLabel(path string) string {
 	path = strings.ToLower(path)
 
+	// replace the /v1/ that indicated the API version
+	path, _ = strings.CutPrefix(path, "/v1")
+
 	// replace all numbers and chars that are not a-z, / or _
-	reg := regexp.MustCompile("[^a-z/_]+")
-	path = reg.ReplaceAllString(path, "")
+	path = pathLabelRegexp.ReplaceAllString(path, "-")
 
-	// replace all artifacts of number replacement (//)
-	path = strings.ReplaceAll(path, "//", "/")
-
-	// replace the /v/ that indicated the API version
-	return strings.Replace(path, "/v/", "/", 1)
+	return path
 }
