@@ -1648,18 +1648,15 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 			tn := BuildTestNode("tn", 1000, 1000)
 			tni := framework.NewTestNodeInfo(tn)
 
-			provider := testprovider.NewTestAutoprovisioningCloudProvider(
-				func(id string, delta int) error {
-					return onScaleUpMock.ScaleUp(id, delta)
-				}, func(id string, name string) error {
-					ret := onScaleDownMock.ScaleDown(id, name)
-					deleteFinished <- true
-					return ret
-				},
-				nil, nil,
-				nil, map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni})
-			provider.AddNodeGroup("ng1", 1, 10, len(tc.allNodes))
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+				return onScaleUpMock.ScaleUp(id, delta)
+			}).WithOnScaleDown(func(id string, name string) error {
+				ret := onScaleDownMock.ScaleDown(id, name)
+				deleteFinished <- true
+				return ret
+			}).WithMachineTemplates(map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni}).Build()
 
+			provider.AddNodeGroup("ng1", 1, 10, len(tc.allNodes))
 			for _, node := range tc.allNodes {
 				provider.AddNode("ng1", node)
 			}
