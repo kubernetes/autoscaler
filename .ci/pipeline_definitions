@@ -28,6 +28,13 @@ autoscaler:
                 build: ~
             image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/autoscaler/cluster-autoscaler
             dockerfile: './cluster-autoscaler/Dockerfile'
+            resource_labels:
+            - name: 'cloud.gardener.cnudie/responsibles'
+              value:
+              - type: 'githubUser'
+                username: 'aaronfern'
+              - type: 'githubUser'
+                username: 'elankath'
     steps:
       test:
         image: 'golang:1.23.2'
