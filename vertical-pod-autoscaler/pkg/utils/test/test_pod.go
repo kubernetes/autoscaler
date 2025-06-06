@@ -147,16 +147,16 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 	}
 
 	if pb.labels != nil {
-		pod.ObjectMeta.Labels = pb.labels
+		pod.Labels = pb.labels
 	}
 
 	if pb.annotations != nil {
-		pod.ObjectMeta.Annotations = pb.annotations
+		pod.Annotations = pb.annotations
 	}
 
 	if pb.creatorObjectMeta != nil && pb.creatorTypeMeta != nil {
 		isController := true
-		pod.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+		pod.OwnerReferences = []metav1.OwnerReference{
 			{
 				UID:        pb.creatorObjectMeta.UID,
 				Name:       pb.creatorObjectMeta.Name,

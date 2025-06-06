@@ -62,7 +62,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 	case "tls1_3":
 		tlsVersion = tls.VersionTLS13
 	default:
-		klog.Fatal(fmt.Errorf("Unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
+		klog.Fatal(fmt.Errorf("unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
 	}
 
 	config := &tls.Config{

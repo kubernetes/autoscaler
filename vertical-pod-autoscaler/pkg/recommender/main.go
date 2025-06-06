@@ -341,10 +341,10 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 
 func initGlobalMaxAllowed() apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
-	if !maxAllowedCPU.Quantity.IsZero() {
+	if !maxAllowedCPU.IsZero() {
 		result[apiv1.ResourceCPU] = maxAllowedCPU.Quantity
 	}
-	if !maxAllowedMemory.Quantity.IsZero() {
+	if !maxAllowedMemory.IsZero() {
 		result[apiv1.ResourceMemory] = maxAllowedMemory.Quantity
 	}
 

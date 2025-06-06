@@ -228,7 +228,7 @@ func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {
 
 	patchedCheckpoints := []string{}
 	checkpointClient := &fakeautoscalingv1.FakeAutoscalingV1{Fake: &core.Fake{}}
-	checkpointClient.Fake.AddReactor("patch", "verticalpodautoscalercheckpoints", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+	checkpointClient.AddReactor("patch", "verticalpodautoscalercheckpoints", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		patchAction := action.(core.PatchAction)
 		name := patchAction.GetName()
 		time.Sleep(2 * time.Millisecond) // Simulate some delay in patching, such that we can test the timeout

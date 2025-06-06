@@ -19,15 +19,13 @@ package limitrange
 import (
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
-	core "k8s.io/api/core/v1"
+	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const testNamespace = "test-namespace"
@@ -52,7 +50,7 @@ func TestNoLimitRange(t *testing.T) {
 }
 
 func TestGetContainerLimitRangeItem(t *testing.T) {
-	baseContainerLimitRange := test.LimitRange().WithName("test-lr").WithNamespace(testNamespace).WithType(apiv1.LimitTypeContainer)
+	baseContainerLimitRange := test.LimitRange().WithName("test-lr").WithNamespace(testNamespace).WithType(corev1.LimitTypeContainer)
 	containerLimitRangeWithMax := baseContainerLimitRange.WithMax(test.Resources("2", "2")).Get()
 	containerLimitRangeWithDefault := baseContainerLimitRange.WithDefault(test.Resources("2", "2")).Get()
 	containerLimitRangeWithMin := baseContainerLimitRange.WithMin(test.Resources("2", "2")).Get()
@@ -60,13 +58,13 @@ func TestGetContainerLimitRangeItem(t *testing.T) {
 		name           string
 		limitRanges    []runtime.Object
 		expectedErr    error
-		expectedLimits *apiv1.LimitRangeItem
+		expectedLimits *corev1.LimitRangeItem
 	}{
 		{
 			name: "no matching limit ranges",
 			limitRanges: []runtime.Object{
-				test.LimitRange().WithName("different-namespace").WithNamespace("different").WithType(apiv1.LimitTypeContainer).WithMax(test.Resources("2", "2")).Get(),
-				test.LimitRange().WithName("different-type").WithNamespace(testNamespace).WithType(apiv1.LimitTypePersistentVolumeClaim).WithMax(test.Resources("2", "2")).Get(),
+				test.LimitRange().WithName("different-namespace").WithNamespace("different").WithType(corev1.LimitTypeContainer).WithMax(test.Resources("2", "2")).Get(),
+				test.LimitRange().WithName("different-type").WithNamespace(testNamespace).WithType(corev1.LimitTypePersistentVolumeClaim).WithMax(test.Resources("2", "2")).Get(),
 			},
 			expectedErr:    nil,
 			expectedLimits: nil,
@@ -102,8 +100,8 @@ func TestGetContainerLimitRangeItem(t *testing.T) {
 					WithMin(test.Resources("1", "1")).Get(),
 			},
 			expectedErr: nil,
-			expectedLimits: &core.LimitRangeItem{
-				Type:    core.LimitTypeContainer,
+			expectedLimits: &corev1.LimitRangeItem{
+				Type:    corev1.LimitTypeContainer,
 				Min:     test.Resources("1", "1"),
 				Max:     test.Resources("2", "2"),
 				Default: test.Resources("1.5", "1.5"),
@@ -115,8 +113,8 @@ func TestGetContainerLimitRangeItem(t *testing.T) {
 				baseContainerLimitRange.WithMax(test.Resources("1.5", "1.5")).WithMax(test.Resources("2.", "2.")).Get(),
 			},
 			expectedErr: nil,
-			expectedLimits: &core.LimitRangeItem{
-				Type: core.LimitTypeContainer,
+			expectedLimits: &corev1.LimitRangeItem{
+				Type: corev1.LimitTypeContainer,
 				Max:  test.Resources("1.5", "1.5"),
 			},
 		},
@@ -126,8 +124,8 @@ func TestGetContainerLimitRangeItem(t *testing.T) {
 				baseContainerLimitRange.WithMin(test.Resources("1.5", "1.5")).WithMin(test.Resources("1.", "1.")).Get(),
 			},
 			expectedErr: nil,
-			expectedLimits: &core.LimitRangeItem{
-				Type: core.LimitTypeContainer,
+			expectedLimits: &corev1.LimitRangeItem{
+				Type: corev1.LimitTypeContainer,
 				Min:  test.Resources("1.5", "1.5"),
 			},
 		},
