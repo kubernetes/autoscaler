@@ -55,25 +55,3 @@ func TestOldRRSACloudConfigIsValid(t *testing.T) {
 	assert.True(t, cfg.isValid())
 	assert.True(t, cfg.RRSAEnabled)
 }
-
-func TestFirstNotEmpty(t *testing.T) {
-	// Test case where the first non-empty string is at the beginning
-	result := firstNotEmpty("hello", "world", "test")
-	assert.Equal(t, "hello", result)
-
-	// Test case where the first non-empty string is in the middle
-	result = firstNotEmpty("", "foo", "bar")
-	assert.Equal(t, "foo", result)
-
-	// Test case where the first non-empty string is at the end
-	result = firstNotEmpty("", "", "baz")
-	assert.Equal(t, "baz", result)
-
-	// Test case where all strings are empty
-	result = firstNotEmpty("", "", "")
-	assert.Equal(t, "", result)
-
-	// Test case with no arguments
-	result = firstNotEmpty()
-	assert.Equal(t, "", result)
-}
