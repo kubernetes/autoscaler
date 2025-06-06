@@ -181,8 +181,8 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 	req1Nic := testDeviceRequest{name: "req1Nic", count: 1, selectors: singleAttrSelector(exampleDriver, nicAttribute, nicTypeA)}
 	req1Global := testDeviceRequest{name: "req1Global", count: 1, selectors: singleAttrSelector(exampleDriver, globalDevAttribute, globalDevTypeA)}
 
-	sharedGpuBClaim := testResourceClaim("sharedGpuBClaim", nil, "", []testDeviceRequest{req1GpuB}, nil, nil)
-	sharedAllocatedGlobalClaim := testResourceClaim("sharedGlobalClaim", nil, "", []testDeviceRequest{req1Global}, []testAllocation{{request: req1Global.name, driver: exampleDriver, pool: "global-pool", device: globalDevice + "-0"}}, nil)
+	sharedGpuBClaim := testResourceClaim("sharedGpuBClaim", nil, "", []testDeviceRequest{req1GpuB}, nil)
+	sharedAllocatedGlobalClaim := testResourceClaim("sharedGlobalClaim", nil, "", []testDeviceRequest{req1Global}, []testAllocation{{request: req1Global.name, driver: exampleDriver, pool: "global-pool", device: globalDevice + "-0"}})
 
 	testCases := map[string]struct {
 		nodeGroups           map[*testNodeGroupDef]int
@@ -250,10 +250,8 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 			expectedScaleUps: map[string]int{node1Gpu1Nic1slice.name: 3},
 		},
 		"scale-up: scale from 0 nodes in a node group": {
-			nodeGroups: map[*testNodeGroupDef]int{node1Gpu1Nic1slice: 0},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
-			),
+			nodeGroups:       map[*testNodeGroupDef]int{node1Gpu1Nic1slice: 0},
+			pods:             unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
 			expectedScaleUps: map[string]int{node1Gpu1Nic1slice.name: 3},
 		},
 		"scale-up: scale from 0 nodes in a node group, with pods on the template nodes consuming DRA resources": {
@@ -264,9 +262,7 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 					scheduledPod(baseSmallPod, "template-1", node3GpuA1slice.name+"-template", map[*testDeviceRequest][]string{&req1GpuA: {gpuDevice + "-1"}}),
 				},
 			},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}),
-			),
+			pods:             unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}),
 			expectedScaleUps: map[string]int{node3GpuA1slice.name: 3},
 		},
 		"scale-up: scale from 0 nodes in a node group, with pods on the template nodes consuming DRA resources, including shared claims": {
@@ -278,16 +274,12 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 					scheduledPod(baseSmallPod, "template-1", node3GpuA1slice.name+"-template", map[*testDeviceRequest][]string{&req1GpuA: {gpuDevice + "-1"}}, sharedAllocatedGlobalClaim),
 				},
 			},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}, sharedAllocatedGlobalClaim),
-			),
+			pods:             unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}, sharedAllocatedGlobalClaim),
 			expectedScaleUps: map[string]int{node3GpuA1slice.name: 3},
 		},
 		"no scale-up: pods requesting multiple different devices, but they're on different nodes": {
 			nodeGroups: map[*testNodeGroupDef]int{node1GpuA1slice: 1, node1Nic1slice: 1},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
-			),
+			pods:       unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
 		},
 		"scale-up: pods requesting a shared, unallocated claim": {
 			extraResourceClaims: []*resourceapi.ResourceClaim{sharedGpuBClaim},
@@ -597,13 +589,13 @@ func resourceClaimsForPod(pod *apiv1.Pod, nodeName string, claimCount int, reque
 			}
 		}
 
-		claims = append(claims, testResourceClaim(name, pod, nodeName, claimRequests, claimAllocations, nil))
+		claims = append(claims, testResourceClaim(name, pod, nodeName, claimRequests, claimAllocations))
 	}
 
 	return claims
 }
 
-func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, requests []testDeviceRequest, allocations []testAllocation, reservedFor []*apiv1.Pod) *resourceapi.ResourceClaim {
+func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, requests []testDeviceRequest, allocations []testAllocation) *resourceapi.ResourceClaim {
 	var deviceRequests []resourceapi.DeviceRequest
 	for _, request := range requests {
 		var selectors []resourceapi.DeviceSelector
@@ -672,15 +664,6 @@ func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, 
 					Name:     owningPod.Name,
 					UID:      owningPod.UID,
 				},
-			}
-		} else {
-			for _, pod := range podReservations {
-				podReservations = append(podReservations, resourceapi.ResourceClaimConsumerReference{
-					APIGroup: "",
-					Resource: "pods",
-					Name:     pod.Name,
-					UID:      pod.UID,
-				})
 			}
 		}
 		claim.Status = resourceapi.ResourceClaimStatus{

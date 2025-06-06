@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
@@ -170,10 +171,10 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		nodeNoGpuUnready,
 	}
 
-	processor := NewDefaultCustomResourcesProcessor()
+	processor := GpuCustomResourcesProcessor{}
 	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	ctx := &context.AutoscalingContext{CloudProvider: provider}
-	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes)
+	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes, snapshot.Snapshot{})
 
 	foundInReady := make(map[string]bool)
 	for _, node := range newReadyNodes {
