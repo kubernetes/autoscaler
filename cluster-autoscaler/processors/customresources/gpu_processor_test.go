@@ -171,7 +171,7 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 	}
 
 	processor := NewDefaultCustomResourcesProcessor()
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	ctx := &context.AutoscalingContext{CloudProvider: provider}
 	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes)
 

@@ -11,6 +11,7 @@ type Network struct {
 	Subnets               []NetworkSubnet   `json:"subnets"`
 	Routes                []NetworkRoute    `json:"routes"`
 	Servers               []int64           `json:"servers"`
+	LoadBalancers         []int64           `json:"load_balancers"`
 	Protection            NetworkProtection `json:"protection"`
 	Labels                map[string]string `json:"labels"`
 	ExposeRoutesToVSwitch bool              `json:"expose_routes_to_vswitch"`

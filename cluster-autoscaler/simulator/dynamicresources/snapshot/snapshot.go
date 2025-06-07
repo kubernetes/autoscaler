@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -177,7 +178,7 @@ func (s Snapshot) RemovePodOwnedClaims(pod *apiv1.Pod) {
 			// The claim isn't tracked in the snapshot for some reason. Nothing to remove/modify, so continue to the next claim.
 			continue
 		}
-		if ownerName, ownerUid := drautils.ClaimOwningPod(claim); ownerName == pod.Name && ownerUid == pod.UID {
+		if err := resourceclaim.IsForPod(pod, claim); err == nil {
 			delete(s.resourceClaimsById, claimId)
 		} else {
 			drautils.ClearPodReservationInPlace(claim, pod)
@@ -194,7 +195,7 @@ func (s Snapshot) ReservePodClaims(pod *apiv1.Pod) error {
 		return err
 	}
 	for _, claim := range claims {
-		if drautils.ClaimFullyReserved(claim) && !drautils.ClaimReservedForPod(claim, pod) {
+		if drautils.ClaimFullyReserved(claim) && !resourceclaim.IsReservedForPod(pod, claim) {
 			return fmt.Errorf("claim %s/%s already has max number of reservations set, can't add more", claim.Namespace, claim.Name)
 		}
 	}
@@ -213,9 +214,7 @@ func (s Snapshot) UnreservePodClaims(pod *apiv1.Pod) error {
 		return err
 	}
 	for _, claim := range claims {
-		ownerPodName, ownerPodUid := drautils.ClaimOwningPod(claim)
-		podOwnedClaim := ownerPodName == pod.Name && ownerPodUid == ownerPodUid
-
+		podOwnedClaim := resourceclaim.IsForPod(pod, claim) == nil
 		drautils.ClearPodReservationInPlace(claim, pod)
 		if podOwnedClaim || !drautils.ClaimInUse(claim) {
 			drautils.DeallocateClaimInPlace(claim)

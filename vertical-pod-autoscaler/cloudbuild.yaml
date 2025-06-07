@@ -1,5 +1,5 @@
 # See https://cloud.google.com/cloud-build/docs/build-config
-timeout: 3600s
+timeout: 7200s
 # this prevents errors if you don't use both _GIT_TAG and _PULL_BASE_REF,
 # or any new substitutions added in the future.
 options:

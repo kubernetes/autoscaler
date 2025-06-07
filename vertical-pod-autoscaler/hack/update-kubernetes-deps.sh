@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-K8S_TAG=${K8S_TAG:-v1.26.1}
+K8S_TAG=${K8S_TAG:-v1.33.0}
 K8S_TAG=${K8S_TAG#v}
 K8S_FORK="git@github.com:kubernetes/kubernetes.git"
 

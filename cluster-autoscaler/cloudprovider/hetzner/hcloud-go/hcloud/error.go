@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
+	"strings"
 )
 
 // ErrorCode represents an error code returned from the API.
@@ -29,6 +31,7 @@ const (
 	ErrorCodeRobotUnavailable      ErrorCode = "robot_unavailable"       // Robot was not available. The caller may retry the operation after a short delay
 	ErrorCodeResourceLocked        ErrorCode = "resource_locked"         // The resource is locked. The caller should contact support
 	ErrorUnsupportedError          ErrorCode = "unsupported_error"       // The given resource does not support this
+	ErrorDeprecatedAPIEndpoint     ErrorCode = "deprecated_api_endpoint" // The request can not be answered because the API functionality was removed
 
 	// Server related error codes.
 
@@ -126,11 +129,16 @@ type ErrorDetailsInvalidInputField struct {
 	Messages []string
 }
 
-// IsError returns whether err is an API error with the given error code.
-func IsError(err error, code ErrorCode) bool {
+// ErrorDetailsDeprecatedAPIEndpoint contains the details of a 'deprecated_api_endpoint' error.
+type ErrorDetailsDeprecatedAPIEndpoint struct {
+	Announcement string
+}
+
+// IsError returns whether err is an API error with one of the given error codes.
+func IsError(err error, code ...ErrorCode) bool {
 	var apiErr Error
 	ok := errors.As(err, &apiErr)
-	return ok && apiErr.Code == code
+	return ok && slices.Index(code, apiErr.Code) > -1
 }
 
 type InvalidIPError struct {
@@ -147,4 +155,41 @@ type DNSNotFoundError struct {
 
 func (e DNSNotFoundError) Error() string {
 	return fmt.Sprintf("dns for ip %s not found", e.IP.String())
+}
+
+// ArgumentError is a type of error returned when validating arguments.
+type ArgumentError string
+
+func (e ArgumentError) Error() string { return string(e) }
+
+func newArgumentErrorf(format string, args ...any) ArgumentError {
+	return ArgumentError(fmt.Sprintf(format, args...))
+}
+
+func missingArgument(name string, obj any) error {
+	return newArgumentErrorf("missing argument '%s' [%T]", name, obj)
+}
+
+func invalidArgument(name string, obj any) error {
+	return newArgumentErrorf("invalid value '%v' for argument '%s' [%T]", obj, name, obj)
+}
+
+func missingField(obj any, field string) error {
+	return newArgumentErrorf("missing field [%s] in [%T]", field, obj)
+}
+
+func invalidFieldValue(obj any, field string, value any) error {
+	return newArgumentErrorf("invalid value '%v' for field [%s] in [%T]", value, field, obj)
+}
+
+func missingOneOfFields(obj any, fields ...string) error {
+	return newArgumentErrorf("missing one of fields [%s] in [%T]", strings.Join(fields, ", "), obj)
+}
+
+func mutuallyExclusiveFields(obj any, fields ...string) error {
+	return newArgumentErrorf("found mutually exclusive fields [%s] in [%T]", strings.Join(fields, ", "), obj)
+}
+
+func missingRequiredTogetherFields(obj any, fields ...string) error {
+	return newArgumentErrorf("missing required together fields [%s] in [%T]", strings.Join(fields, ", "), obj)
 }

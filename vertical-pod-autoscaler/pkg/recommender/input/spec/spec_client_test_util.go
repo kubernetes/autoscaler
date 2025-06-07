@@ -68,6 +68,19 @@ metadata:
   name: Pod2
   labels:
     Pod2LabelKey: Pod2LabelValue
+status:
+  containerStatuses:
+  - name: Name23
+    resources:
+      requests:
+        memory: "250Mi"
+        cpu: "30m"
+  initContainerStatuses:
+  - name: Name22-init
+    resources:
+      requests:
+        memory: "350Mi"
+        cpu: "40m"
 spec:
   containers:
   - name: Name21
@@ -82,6 +95,14 @@ spec:
       requests:
         memory: "4096Mi"
         cpu: "4000m"
+  - name: Name23
+    image: Name23Image
+    resources:
+      # Requests below will be ignored because
+      # requests are also defined in containerStatus.
+      requests:
+        memory: "1Mi"
+        cpu: "1m"
   initContainers:
   - name: Name21-init
     image: Name21-initImage
@@ -89,6 +110,14 @@ spec:
       requests:
         memory: "128Mi"
         cpu: "40m"
+  - name: Name22-init
+    image: Name22-initImage
+    resources:
+      requests:
+        # Requests below will be ignored because
+        # requests are also defined in initContainerStatus.
+        memory: "1Mi"
+        cpu: "1m"
 `
 
 type podListerMock struct {
@@ -122,11 +151,13 @@ func newSpecClientTestCase() *specClientTestCase {
 	containerSpec12 := newTestContainerSpec(podID1, "Name12", 1000, 1024*1024*1024)
 	containerSpec21 := newTestContainerSpec(podID2, "Name21", 2000, 2048*1024*1024)
 	containerSpec22 := newTestContainerSpec(podID2, "Name22", 4000, 4096*1024*1024)
+	containerSpec23 := newTestContainerSpec(podID2, "Name23", 30, 250*1024*1024)
 
 	initContainerSpec21 := newTestContainerSpec(podID2, "Name21-init", 40, 128*1024*1024)
+	initContainerSpec22 := newTestContainerSpec(podID2, "Name22-init", 40, 350*1024*1024)
 
 	podSpec1 := newTestPodSpec(podID1, []BasicContainerSpec{containerSpec11, containerSpec12}, nil)
-	podSpec2 := newTestPodSpec(podID2, []BasicContainerSpec{containerSpec21, containerSpec22}, []BasicContainerSpec{initContainerSpec21})
+	podSpec2 := newTestPodSpec(podID2, []BasicContainerSpec{containerSpec21, containerSpec22, containerSpec23}, []BasicContainerSpec{initContainerSpec21, initContainerSpec22})
 
 	return &specClientTestCase{
 		podSpecs: []*BasicPodSpec{podSpec1, podSpec2},

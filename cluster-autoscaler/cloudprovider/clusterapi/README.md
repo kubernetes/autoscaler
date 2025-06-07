@@ -186,9 +186,15 @@ There are two annotations that control how a cluster resource should be scaled:
 The autoscaler will monitor any `MachineSet`, `MachineDeployment`, or `MachinePool` containing
 both of these annotations.
 
+> Note: The cluster autoscaler does not enforce the node group sizes. If a node group is
+> below the minimum number of nodes, or above the maximum number of nodes, the cluster
+> autoscaler will not scale that node group up or down. The cluster autoscaler can be configured
+> to enforce the minimum node group size by enabling the `--enforce-node-group-min-size` flag.
+> Please see [this entry in the Cluster Autoscaler FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
+> for more information.
+
 > Note: `MachinePool` support in cluster-autoscaler requires a provider implementation
-> that supports the new "MachinePool Machines" feature. MachinePools in Cluster API are
-> considered an [experimental feature](https://cluster-api.sigs.k8s.io/tasks/experimental-features/experimental-features.html#active-experimental-features) and are not enabled by default.
+> that supports the "MachinePool Machines" feature.
 
 ### Scale from zero support
 
@@ -223,14 +229,23 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
     capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
     capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk: "100Gi"
-    capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
-    capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
     capacity.cluster-autoscaler.kubernetes.io/maxPods: "200"
+    // Device Plugin
+    // Comment out the below annotation if DRA is enabled on your cluster running k8s v1.32.0 or greater
+    capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
+    // Dynamic Resource Allocation (DRA)
+    // Uncomment the below annotation if DRA is enabled on your cluster running k8s v1.32.0 or greater
+    // capacity.cluster-autoscaler.kubernetes.io/dra-driver: "gpu.nvidia.com"
+    // Common in Device Plugin and DRA
+    capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
 ```
 
-*Note* the `maxPods` annotation will default to `110` if it is not supplied.
-This value is inspired by the Kubernetes best practices
-[Considerations for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
+> Note: the `maxPods` annotation will default to `110` if it is not supplied.
+> This value is inspired by the Kubernetes best practices
+> [Considerations for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
+
+> Note: User should select the annotation for GPU either `gpu-type` or `dra-driver` depends on whether using
+> Device Plugin or Dynamic Resource Allocation(DRA). `gpu-count` is a common parameter in both.
 
 #### RBAC changes for scaling from zero
 
