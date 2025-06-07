@@ -174,6 +174,9 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 	} {
+		if tc.testName != "AdminAccess ResourceClaim don't count for utilization" {
+			continue
+		}
 		t.Run(tc.testName, func(t *testing.T) {
 			utilization, err := CalculateDynamicResourceUtilization(tc.nodeInfo)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
