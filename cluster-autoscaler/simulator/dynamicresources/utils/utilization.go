@@ -110,6 +110,14 @@ func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[
 		}
 
 		for _, deviceAlloc := range alloc.Devices.Results {
+			deviceReq := getDeviceResultRequest(claim, &deviceAlloc)
+			if deviceReq == nil {
+				return nil, fmt.Errorf("claim %s/%s device request %s not found in claim spec", claim.Namespace, claim.Name, deviceAlloc.Request)
+			}
+			if deviceReq.AdminAccess == nil || !*deviceReq.AdminAccess {
+				continue // Skip devices with AdminAccess, since they do not count for utilization.
+			}
+
 			if result[deviceAlloc.Driver] == nil {
 				result[deviceAlloc.Driver] = map[string][]string{}
 			}
