@@ -156,6 +156,23 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			wantHighestUtilization:     0,
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
+		{
+			testName: "AdminAccess ResourceClaim don't count for utilization",
+			nodeInfo: framework.NewNodeInfo(node,
+				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
+				mergeLists(
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, ptr.To(true)),
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, ptr.To(false)),
+				)...,
+			),
+			wantUtilization: map[string]map[string]float64{
+				fooDriver: {
+					"pool1": 0.6,
+				},
+			},
+			wantHighestUtilization:     0.6,
+			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
+		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			utilization, err := CalculateDynamicResourceUtilization(tc.nodeInfo)
@@ -232,7 +249,7 @@ func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devi
 					Allocation: &resourceapi.AllocationResult{
 						Devices: resourceapi.DeviceAllocationResult{
 							Results: []resourceapi.DeviceRequestAllocationResult{
-								{Request: devReqName, Driver: driverName, Pool: poolName, Device: devName},
+								{Request: devReqName, Driver: driverName, Pool: poolName, Device: devName, AdminAccess: adminaccess},
 							},
 						},
 					},

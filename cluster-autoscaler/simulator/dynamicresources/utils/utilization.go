@@ -114,8 +114,9 @@ func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[
 			if deviceReq == nil {
 				return nil, fmt.Errorf("claim %s/%s device request %s not found in claim spec", claim.Namespace, claim.Name, deviceAlloc.Request)
 			}
-			if deviceReq.AdminAccess == nil || !*deviceReq.AdminAccess {
-				continue // Skip devices with AdminAccess, since they do not count for utilization.
+			if deviceReq.AdminAccess != nil && *deviceReq.AdminAccess {
+				// devices with admin access don't count for utilization
+				continue
 			}
 
 			if result[deviceAlloc.Driver] == nil {
