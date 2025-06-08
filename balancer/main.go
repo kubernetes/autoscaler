@@ -19,8 +19,13 @@ package main
 import (
 	"context"
 	"flag"
-	"k8s.io/klog/v2"
 	"time"
+
+	"os"
+	"os/signal"
+	"syscall"
+
+	"k8s.io/klog/v2"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	balancerclientset "k8s.io/autoscaler/balancer/pkg/client/clientset/versioned"
@@ -59,8 +64,14 @@ func main() {
 	flag.Parse()
 
 	// set up signals so we handle the first shutdown signal gracefully
-	// TODO: handle sigints
 	stopCh := make(chan struct{})
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigCh
+		klog.Infof("Received termination, signaling shutdown")
+		close(stopCh)
+	}()
 
 	cfg, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
 	if err != nil {
