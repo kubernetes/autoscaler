@@ -52,7 +52,7 @@ for project_name in ${PROJECT_NAMES[*]}; do
         if [[ -n $(find . -name "Godeps.json") ]]; then
           godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
         else
-          go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/apis)
+          go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/apis)
         fi
         ;;
       *)
@@ -71,6 +71,6 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
   # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
   ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
-  go test -count=1 ./... -vet="${ANALYZERS}"
+  go test ./... -vet="${ANALYZERS}"
   popd
 fi
