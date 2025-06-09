@@ -152,7 +152,7 @@ func (s *Snapshot) RemovePodOwnedClaims(pod *apiv1.Pod) {
 
 	for _, claim := range claims {
 		claimId := GetClaimId(claim)
-		if drautils.PodOwnsClaim(pod, claim) {
+		if err := resourceclaim.IsForPod(pod, claim); err == nil {
 			s.resourceClaims.DeleteCurrent(claimId)
 			continue
 		}
@@ -201,7 +201,7 @@ func (s *Snapshot) UnreservePodClaims(pod *apiv1.Pod) error {
 		claimId := GetClaimId(claim)
 		claim := s.ensureClaimWritable(claim)
 		drautils.ClearPodReservationInPlace(claim, pod)
-		if drautils.PodOwnsClaim(pod, claim) || !drautils.ClaimInUse(claim) {
+		if err := resourceclaim.IsForPod(pod, claim); err == nil || !drautils.ClaimInUse(claim) {
 			drautils.DeallocateClaimInPlace(claim)
 		}
 
