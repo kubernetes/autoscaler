@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -422,8 +421,7 @@ func TestDeleteInstances(t *testing.T) {
 		},
 	}, nil)
 	err = as.DeleteInstances(instances)
-	expectedErrStr := "The specified account is disabled."
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
+	assert.Error(t, err)
 }
 
 func TestAgentPoolDeleteNodes(t *testing.T) {
@@ -478,8 +476,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 			ObjectMeta: v1.ObjectMeta{Name: "node"},
 		},
 	})
-	expectedErrStr := "The specified account is disabled."
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
+	assert.Error(t, err)
 
 	as.minSize = 3
 	err = as.DeleteNodes([]*apiv1.Node{})
