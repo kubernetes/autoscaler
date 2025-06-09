@@ -116,7 +116,7 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 		return nil, nil
 	}
 
-	// Skip SageMaker instances
+	// Skip SageMaker HyperPod instances
 	if strings.HasPrefix(node.GetName(), "hyperpod") {
 		klog.V(4).Infof("Skipping SageMaker HyperPod node %s", node.Name)
 		return nil, nil
@@ -150,7 +150,7 @@ func (aws *awsCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 		return true, cloudprovider.ErrNotImplemented
 	}
 
-	// Skip SageMaker instances
+	// Skip SageMaker HyperPod instances
 	if strings.HasPrefix(node.GetName(), "hyperpod") {
 		return true, cloudprovider.ErrNotImplemented
 	}
@@ -334,7 +334,7 @@ func (ng *AwsNodeGroup) DecreaseTargetSize(delta int) error {
 
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (ng *AwsNodeGroup) Belongs(node *apiv1.Node) (bool, error) {
-	// Skip SageMaker instances
+	// Skip SageMaker HyperPod instances
 	if strings.HasPrefix(node.GetName(), "hyperpod") {
 		return false, nil
 	}
