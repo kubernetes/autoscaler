@@ -217,12 +217,13 @@ type AwsInstanceRef struct {
 }
 
 var validAwsRefIdRegex = regexp.MustCompile(fmt.Sprintf(`^aws\:\/\/\/[-0-9a-z]*\/[-0-9a-z]*(\/[-0-9a-z\.]*)?$|aws\:\/\/\/[-0-9a-z]*\/%s.*$`, placeholderInstanceNamePrefix))
+var sageMakerRefIdRegex = regexp.MustCompile(`^aws:///[-0-9a-z]+/sagemaker/.*$`)
 
 // AwsRefFromProviderId creates AwsInstanceRef object from provider id which
 // must be in format: aws:///zone/name
 func AwsRefFromProviderId(id string) (*AwsInstanceRef, error) {
 	// Special case for SageMaker format: aws:///<region>/sagemaker/...
-	if strings.HasPrefix(id, "aws:///") && strings.Contains(id, "/sagemaker") {
+	if sageMakerRefIdRegex.MatchString(id) {
 		return &AwsInstanceRef{
 			ProviderID: id,
 			Name:       "sagemaker-node",
