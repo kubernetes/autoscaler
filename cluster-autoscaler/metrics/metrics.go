@@ -504,9 +504,7 @@ func UpdateDurationFromStart(label FunctionLabel, start time.Time) {
 
 // UpdateDuration records the duration of the step identified by the label
 func UpdateDuration(label FunctionLabel, duration time.Duration) {
-	// TODO(maciekpytel): remove second condition if we manage to get
-	// asynchronous node drain
-	if duration > LogLongDurationThreshold && label != ScaleDown {
+	if duration > LogLongDurationThreshold {
 		klog.V(4).Infof("Function %s took %v to complete", label, duration)
 	}
 	functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())

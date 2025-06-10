@@ -23,6 +23,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/utils/set"
 )
 
@@ -61,7 +62,7 @@ func SanitizedNodeResourceSlices(nodeLocalSlices []*resourceapi.ResourceSlice, n
 func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceapi.ResourceClaim, nameSuffix, newNodeName, oldNodeName string, oldNodePoolNames set.Set[string]) ([]*resourceapi.ResourceClaim, error) {
 	var result []*resourceapi.ResourceClaim
 	for _, claim := range claims {
-		if ownerName, ownerUid := ClaimOwningPod(claim); ownerName != oldOwner.Name || ownerUid != oldOwner.UID {
+		if err := resourceclaim.IsForPod(oldOwner, claim); err != nil {
 			// Only claims owned by the pod are bound to its lifecycle. The lifecycle of other claims is independent, and they're most likely shared
 			// by multiple pods. They shouldn't be sanitized or duplicated - just add unchanged to the result.
 			result = append(result, claim)
