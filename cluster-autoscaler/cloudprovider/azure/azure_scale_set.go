@@ -651,18 +651,15 @@ func (scaleSet *ScaleSet) Debug() string {
 
 // TemplateNodeInfo returns a node template for this scale set.
 func (scaleSet *ScaleSet) TemplateNodeInfo() (*framework.NodeInfo, error) {
-	vmss, err := scaleSet.getVMSSFromCache()
+	template, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		return nil, err
 	}
 
 	inputLabels := map[string]string{}
 	inputTaints := ""
-	template, err := buildNodeTemplateFromVMSS(vmss, inputLabels, inputTaints)
-	if err != nil {
-		return nil, err
-	}
-	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
+	node, err := buildNodeFromTemplate(scaleSet.Name, inputLabels, inputTaints, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
+
 	if err != nil {
 		return nil, err
 	}

@@ -19,8 +19,6 @@ package azure
 import (
 	"context"
 	"fmt"
-	"os"
-	"time"
 
 	_ "go.uber.org/mock/mockgen/model" // for go:generate
 
@@ -31,7 +29,7 @@ import (
 	azurecore_policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -49,12 +47,7 @@ import (
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 )
 
-//go:generate sh -c "mockgen -source=azure_client.go -destination azure_mock_agentpool_client.go -package azure -exclude_interfaces DeploymentsClient"
-
-const (
-	vmsContextTimeout      = 5 * time.Minute
-	vmsAsyncContextTimeout = 30 * time.Minute
-)
+//go:generate sh -c "mockgen k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure AgentPoolsClient >./agentpool_client.go"
 
 // AgentPoolsClient interface defines the methods needed for scaling vms pool.
 // it is implemented by track2 sdk armcontainerservice.AgentPoolsClient
@@ -75,89 +68,52 @@ type AgentPoolsClient interface {
 		machines armcontainerservice.AgentPoolDeleteMachinesParameter,
 		options *armcontainerservice.AgentPoolsClientBeginDeleteMachinesOptions) (
 		*runtime.Poller[armcontainerservice.AgentPoolsClientDeleteMachinesResponse], error)
-	NewListPager(
-		resourceGroupName, resourceName string,
-		options *armcontainerservice.AgentPoolsClientListOptions,
-	) *runtime.Pager[armcontainerservice.AgentPoolsClientListResponse]
 }
 
 func getAgentpoolClientCredentials(cfg *Config) (azcore.TokenCredential, error) {
-	if cfg.AuthMethod == "" || cfg.AuthMethod == authMethodPrincipal {
-		// Use MSI
-		if cfg.UseManagedIdentityExtension {
-			// Use System Assigned MSI
-			if cfg.UserAssignedIdentityID == "" {
-				klog.V(4).Info("Agentpool client: using System Assigned MSI to retrieve access token")
-				return azidentity.NewManagedIdentityCredential(nil)
-			}
-			// Use User Assigned MSI
-			klog.V(4).Info("Agentpool client: using User Assigned MSI to retrieve access token")
-			return azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{
-				ID: azidentity.ClientID(cfg.UserAssignedIdentityID),
-			})
+	var cred azcore.TokenCredential
+	var err error
+	if cfg.AuthMethod == authMethodCLI {
+		cred, err = azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{
+			TenantID: cfg.TenantID})
+		if err != nil {
+			klog.Errorf("NewAzureCLICredential failed: %v", err)
+			return nil, err
 		}
-
-		// Use Service Principal with ClientID and ClientSecret
-		if cfg.AADClientID != "" && cfg.AADClientSecret != "" {
-			klog.V(2).Infoln("Agentpool client: using client_id+client_secret to retrieve access token")
-			return azidentity.NewClientSecretCredential(cfg.TenantID, cfg.AADClientID, cfg.AADClientSecret, nil)
+	} else if cfg.AuthMethod == "" || cfg.AuthMethod == authMethodPrincipal {
+		cred, err = azidentity.NewClientSecretCredential(cfg.TenantID, cfg.AADClientID, cfg.AADClientSecret, nil)
+		if err != nil {
+			klog.Errorf("NewClientSecretCredential failed: %v", err)
+			return nil, err
 		}
+	} else {
+		return nil, fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
+	}
+	return cred, nil
+}
 
-		// Use Service Principal with ClientCert and AADClientCertPassword
-		if cfg.AADClientID != "" && cfg.AADClientCertPath != "" {
-			klog.V(2).Infoln("Agentpool client: using client_cert+client_private_key to retrieve access token")
-			certData, err := os.ReadFile(cfg.AADClientCertPath)
-			if err != nil {
-				return nil, fmt.Errorf("reading the client certificate from file %s failed with error: %w", cfg.AADClientCertPath, err)
-			}
-			certs, privateKey, err := azidentity.ParseCertificates(certData, []byte(cfg.AADClientCertPassword))
-			if err != nil {
-				return nil, fmt.Errorf("parsing service principal certificate data failed with error: %w", err)
-			}
-			return azidentity.NewClientCertificateCredential(cfg.TenantID, cfg.AADClientID, certs, privateKey, &azidentity.ClientCertificateCredentialOptions{
-				SendCertificateChain: true,
-			})
+func getAgentpoolClientRetryOptions(cfg *Config) azurecore_policy.RetryOptions {
+	if cfg.AuthMethod == authMethodCLI {
+		return azurecore_policy.RetryOptions{
+			MaxRetries: -1, // no retry when using CLI auth for UT
 		}
 	}
-
-	if cfg.UseFederatedWorkloadIdentityExtension {
-		klog.V(4).Info("Agentpool client: using workload identity for access token")
-		return azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{
-			TokenFilePath: cfg.AADFederatedTokenFile,
-		})
-	}
-
-	return nil, fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
+	return azextensions.DefaultRetryOpts()
 }
 
 func newAgentpoolClient(cfg *Config) (AgentPoolsClient, error) {
-	retryOptions := azextensions.DefaultRetryOpts()
-	cred, err := getAgentpoolClientCredentials(cfg)
-	if err != nil {
-		klog.Errorf("failed to get agent pool client credentials: %v", err)
-		return nil, err
-	}
-
-	env := azure.PublicCloud // default to public cloud
-	if cfg.Cloud != "" {
-		var err error
-		env, err = azure.EnvironmentFromName(cfg.Cloud)
-		if err != nil {
-			klog.Errorf("failed to get environment from name %s: with error: %v", cfg.Cloud, err)
-			return nil, err
-		}
-	}
+	retryOptions := getAgentpoolClientRetryOptions(cfg)
 
 	if cfg.ARMBaseURLForAPClient != "" {
 		klog.V(10).Infof("Using ARMBaseURLForAPClient to create agent pool client")
-		return newAgentpoolClientWithConfig(cfg.SubscriptionID, cred, cfg.ARMBaseURLForAPClient, env.TokenAudience, retryOptions, true /*insecureAllowCredentialWithHTTP*/)
+		return newAgentpoolClientWithConfig(cfg.SubscriptionID, nil, cfg.ARMBaseURLForAPClient, "UNKNOWN", retryOptions)
 	}
 
-	return newAgentpoolClientWithConfig(cfg.SubscriptionID, cred, env.ResourceManagerEndpoint, env.TokenAudience, retryOptions, false /*insecureAllowCredentialWithHTTP*/)
+	return newAgentpoolClientWithPublicEndpoint(cfg, retryOptions)
 }
 
 func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCredential,
-	cloudCfgEndpoint, cloudCfgAudience string, retryOptions azurecore_policy.RetryOptions, insecureAllowCredentialWithHTTP bool) (AgentPoolsClient, error) {
+	cloudCfgEndpoint, cloudCfgAudience string, retryOptions azurecore_policy.RetryOptions) (AgentPoolsClient, error) {
 	agentPoolsClient, err := armcontainerservice.NewAgentPoolsClient(subscriptionID, cred,
 		&policy.ClientOptions{
 			ClientOptions: azurecore_policy.ClientOptions{
@@ -169,10 +125,9 @@ func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCreden
 						},
 					},
 				},
-				InsecureAllowCredentialWithHTTP: insecureAllowCredentialWithHTTP,
-				Telemetry:                       azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
-				Transport:                       azextensions.DefaultHTTPClient(),
-				Retry:                           retryOptions,
+				Telemetry: azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
+				Transport: azextensions.DefaultHTTPClient(),
+				Retry:     retryOptions,
 			},
 		})
 
@@ -182,6 +137,26 @@ func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCreden
 
 	klog.V(10).Infof("Successfully created agent pool client with ARMBaseURL")
 	return agentPoolsClient, nil
+}
+
+func newAgentpoolClientWithPublicEndpoint(cfg *Config, retryOptions azurecore_policy.RetryOptions) (AgentPoolsClient, error) {
+	cred, err := getAgentpoolClientCredentials(cfg)
+	if err != nil {
+		klog.Errorf("failed to get agent pool client credentials: %v", err)
+		return nil, err
+	}
+
+	// default to public cloud
+	env := azure.PublicCloud
+	if cfg.Cloud != "" {
+		env, err = azure.EnvironmentFromName(cfg.Cloud)
+		if err != nil {
+			klog.Errorf("failed to get environment from name %s: with error: %v", cfg.Cloud, err)
+			return nil, err
+		}
+	}
+
+	return newAgentpoolClientWithConfig(cfg.SubscriptionID, cred, env.ResourceManagerEndpoint, env.TokenAudience, retryOptions)
 }
 
 type azClient struct {
@@ -257,11 +232,9 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 
 	agentPoolClient, err := newAgentpoolClient(cfg)
 	if err != nil {
-		klog.Errorf("newAgentpoolClient failed with error: %s", err)
-		if cfg.EnableVMsAgentPool {
-			// only return error if VMs agent pool is supported which is controlled by toggle
-			return nil, err
-		}
+		// we don't want to fail the whole process so we don't break any existing functionality
+		// since this may not be fatal - it is only used by vms pool which is still under development.
+		klog.Warningf("newAgentpoolClient failed with error: %s", err)
 	}
 
 	return &azClient{

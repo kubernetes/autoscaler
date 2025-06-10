@@ -168,23 +168,6 @@ func (m *AzureManager) fetchExplicitNodeGroups(specs []string) error {
 	return nil
 }
 
-// parseSKUAndVMsAgentpoolNameFromSpecName parses the spec name for a mixed-SKU VMs pool.
-// The spec name should be in the format <agentpoolname>/<sku>, e.g., "mypool1/Standard_D2s_v3", if the agent pool is a VMs pool.
-// This method returns a boolean indicating if the agent pool is a VMs pool, along with the agent pool name and SKU.
-func (m *AzureManager) parseSKUAndVMsAgentpoolNameFromSpecName(name string) (bool, string, string) {
-	parts := strings.Split(name, "/")
-	if len(parts) == 2 {
-		agentPoolName := parts[0]
-		sku := parts[1]
-
-		vmsPoolMap := m.azureCache.getVMsPoolMap()
-		if _, ok := vmsPoolMap[agentPoolName]; ok {
-			return true, agentPoolName, sku
-		}
-	}
-	return false, "", ""
-}
-
 func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGroup, error) {
 	scaleToZeroSupported := scaleToZeroSupportedStandard
 	if strings.EqualFold(m.config.VMType, providerazureconsts.VMTypeVMSS) {
@@ -194,13 +177,9 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
 	}
-
-	// Starting from release 1.30, a cluster may have both VMSS and VMs pools.
-	// Therefore, we cannot solely rely on the VMType to determine the node group type.
-	// Instead, we need to check the cache to determine if the agent pool is a VMs pool.
-	isVMsPool, agentPoolName, sku := m.parseSKUAndVMsAgentpoolNameFromSpecName(s.Name)
-	if isVMsPool {
-		return NewVMPool(s, m, agentPoolName, sku)
+	vmsPoolSet := m.azureCache.getVMsPoolSet()
+	if _, ok := vmsPoolSet[s.Name]; ok {
+		return NewVMsPool(s, m), nil
 	}
 
 	switch m.config.VMType {

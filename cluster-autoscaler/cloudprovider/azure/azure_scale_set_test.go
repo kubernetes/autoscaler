@@ -1232,12 +1232,12 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	// Properly testing dynamic SKU list through skewer is not possible,
 	// because there are no Resource API mocks included yet.
 	// Instead, the rest of the (consumer side) tests here
-	// override GetInstanceTypeDynamically and GetInstanceTypeStatically functions.
+	// override GetVMSSTypeDynamically and GetVMSSTypeStatically functions.
 
 	t.Run("Checking dynamic workflow", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
-		GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
 			vmssType.GPU = 2
@@ -1255,10 +1255,10 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	t.Run("Checking static workflow if dynamic fails", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
-		GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
-		GetInstanceTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
+		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
 			vmssType.GPU = 2
@@ -1276,10 +1276,10 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	t.Run("Fails to find vmss instance information using static and dynamic workflow, instance not supported", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
-		GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
-		GetInstanceTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
+		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
 			return &InstanceType{}, fmt.Errorf("static error exists")
 		}
 		nodeInfo, err := asg.TemplateNodeInfo()
@@ -1292,7 +1292,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	t.Run("Checking static-only workflow", func(t *testing.T) {
 		asg.enableDynamicInstanceList = false
 
-		GetInstanceTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
+		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
 			vmssType.GPU = 2

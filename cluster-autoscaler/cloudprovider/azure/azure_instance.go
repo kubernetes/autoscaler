@@ -22,79 +22,80 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"k8s.io/klog/v2"
 )
 
-// GetInstanceTypeStatically uses static list of vmss generated at azure_instance_types.go to fetch vmss instance information.
+// GetVMSSTypeStatically uses static list of vmss generated at azure_instance_types.go to fetch vmss instance information.
 // It is declared as a variable for testing purpose.
-var GetInstanceTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
-	var instanceType *InstanceType
+var GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
+	var vmssType *InstanceType
 
 	for k := range InstanceTypes {
-		if strings.EqualFold(k, template.SkuName) {
-			instanceType = InstanceTypes[k]
+		if strings.EqualFold(k, *template.Sku.Name) {
+			vmssType = InstanceTypes[k]
 			break
 		}
 	}
 
 	promoRe := regexp.MustCompile(`(?i)_promo`)
-	if promoRe.MatchString(template.SkuName) {
-		if instanceType == nil {
+	if promoRe.MatchString(*template.Sku.Name) {
+		if vmssType == nil {
 			// We didn't find an exact match but this is a promo type, check for matching standard
-			klog.V(4).Infof("No exact match found for %s, checking standard types", template.SkuName)
-			skuName := promoRe.ReplaceAllString(template.SkuName, "")
+			klog.V(4).Infof("No exact match found for %s, checking standard types", *template.Sku.Name)
+			skuName := promoRe.ReplaceAllString(*template.Sku.Name, "")
 			for k := range InstanceTypes {
 				if strings.EqualFold(k, skuName) {
-					instanceType = InstanceTypes[k]
+					vmssType = InstanceTypes[k]
 					break
 				}
 			}
 		}
 	}
-	if instanceType == nil {
-		return instanceType, fmt.Errorf("instance type %q not supported", template.SkuName)
+	if vmssType == nil {
+		return vmssType, fmt.Errorf("instance type %q not supported", *template.Sku.Name)
 	}
-	return instanceType, nil
+	return vmssType, nil
 }
 
-// GetInstanceTypeDynamically fetched vmss instance information using sku api calls.
+// GetVMSSTypeDynamically fetched vmss instance information using sku api calls.
 // It is declared as a variable for testing purpose.
-var GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
+var GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 	ctx := context.Background()
-	var instanceType InstanceType
+	var vmssType InstanceType
 
-	sku, err := azCache.GetSKU(ctx, template.SkuName, template.Location)
+	sku, err := azCache.GetSKU(ctx, *template.Sku.Name, *template.Location)
 	if err != nil {
 		// We didn't find an exact match but this is a promo type, check for matching standard
 		promoRe := regexp.MustCompile(`(?i)_promo`)
-		skuName := promoRe.ReplaceAllString(template.SkuName, "")
-		if skuName != template.SkuName {
-			klog.V(1).Infof("No exact match found for %q, checking standard type %q. Error %v", template.SkuName, skuName, err)
-			sku, err = azCache.GetSKU(ctx, skuName, template.Location)
+		skuName := promoRe.ReplaceAllString(*template.Sku.Name, "")
+		if skuName != *template.Sku.Name {
+			klog.V(1).Infof("No exact match found for %q, checking standard type %q. Error %v", *template.Sku.Name, skuName, err)
+			sku, err = azCache.GetSKU(ctx, skuName, *template.Location)
 		}
 		if err != nil {
-			return instanceType, fmt.Errorf("instance type %q not supported. Error %v", template.SkuName, err)
+			return vmssType, fmt.Errorf("instance type %q not supported. Error %v", *template.Sku.Name, err)
 		}
 	}
 
-	instanceType.VCPU, err = sku.VCPU()
+	vmssType.VCPU, err = sku.VCPU()
 	if err != nil {
-		klog.V(1).Infof("Failed to parse vcpu from sku %q %v", template.SkuName, err)
-		return instanceType, err
+		klog.V(1).Infof("Failed to parse vcpu from sku %q %v", *template.Sku.Name, err)
+		return vmssType, err
 	}
 	gpu, err := getGpuFromSku(sku)
 	if err != nil {
-		klog.V(1).Infof("Failed to parse gpu from sku %q %v", template.SkuName, err)
-		return instanceType, err
+		klog.V(1).Infof("Failed to parse gpu from sku %q %v", *template.Sku.Name, err)
+		return vmssType, err
 	}
-	instanceType.GPU = gpu
+	vmssType.GPU = gpu
 
 	memoryGb, err := sku.Memory()
 	if err != nil {
-		klog.V(1).Infof("Failed to parse memoryMb from sku %q %v", template.SkuName, err)
-		return instanceType, err
+		klog.V(1).Infof("Failed to parse memoryMb from sku %q %v", *template.Sku.Name, err)
+		return vmssType, err
 	}
-	instanceType.MemoryMb = int64(memoryGb) * 1024
+	vmssType.MemoryMb = int64(memoryGb) * 1024
 
-	return instanceType, nil
+	return vmssType, nil
 }
