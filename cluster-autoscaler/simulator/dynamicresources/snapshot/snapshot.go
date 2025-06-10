@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1beta1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
@@ -45,9 +46,9 @@ func GetClaimId(claim *resourceapi.ResourceClaim) ResourceClaimId {
 // obtained via the Provider. Then, it can be modified using the exposed methods, to simulate scheduling actions
 // in the cluster.
 type Snapshot struct {
-	resourceClaims *patchSet[ResourceClaimId, *resourceapi.ResourceClaim]
-	resourceSlices *patchSet[string, []*resourceapi.ResourceSlice]
-	deviceClasses  *patchSet[string, *resourceapi.DeviceClass]
+	resourceClaims *common.PatchSet[ResourceClaimId, *resourceapi.ResourceClaim]
+	resourceSlices *common.PatchSet[string, []*resourceapi.ResourceSlice]
+	deviceClasses  *common.PatchSet[string, *resourceapi.DeviceClass]
 }
 
 // nonNodeLocalResourceSlicesIdentifier is a special key used in the resourceSlices patchSet
@@ -61,25 +62,25 @@ func NewSnapshot(claims map[ResourceClaimId]*resourceapi.ResourceClaim, nodeLoca
 	maps.Copy(slices, nodeLocalSlices)
 	slices[nonNodeLocalResourceSlicesIdentifier] = nonNodeLocalSlices
 
-	claimsPatch := newPatchFromMap(claims)
-	slicesPatch := newPatchFromMap(slices)
-	devicesPatch := newPatchFromMap(deviceClasses)
+	claimsPatch := common.NewPatchFromMap(claims)
+	slicesPatch := common.NewPatchFromMap(slices)
+	devicesPatch := common.NewPatchFromMap(deviceClasses)
 	return &Snapshot{
-		resourceClaims: newPatchSet(claimsPatch),
-		resourceSlices: newPatchSet(slicesPatch),
-		deviceClasses:  newPatchSet(devicesPatch),
+		resourceClaims: common.NewPatchSet(claimsPatch),
+		resourceSlices: common.NewPatchSet(slicesPatch),
+		deviceClasses:  common.NewPatchSet(devicesPatch),
 	}
 }
 
 // NewEmptySnapshot returns a zero initialized Snapshot.
 func NewEmptySnapshot() *Snapshot {
-	claimsPatch := newPatch[ResourceClaimId, *resourceapi.ResourceClaim]()
-	slicesPatch := newPatch[string, []*resourceapi.ResourceSlice]()
-	devicesPatch := newPatch[string, *resourceapi.DeviceClass]()
+	claimsPatch := common.NewPatch[ResourceClaimId, *resourceapi.ResourceClaim]()
+	slicesPatch := common.NewPatch[string, []*resourceapi.ResourceSlice]()
+	devicesPatch := common.NewPatch[string, *resourceapi.DeviceClass]()
 	return &Snapshot{
-		resourceClaims: newPatchSet(claimsPatch),
-		resourceSlices: newPatchSet(slicesPatch),
-		deviceClasses:  newPatchSet(devicesPatch),
+		resourceClaims: common.NewPatchSet(claimsPatch),
+		resourceSlices: common.NewPatchSet(slicesPatch),
+		deviceClasses:  common.NewPatchSet(devicesPatch),
 	}
 }
 
