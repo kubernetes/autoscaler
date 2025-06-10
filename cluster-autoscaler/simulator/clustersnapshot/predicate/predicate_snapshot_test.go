@@ -71,7 +71,7 @@ func extractNodes(nodeInfos []*framework.NodeInfo) []*apiv1.Node {
 type snapshotState struct {
 	nodes       []*apiv1.Node
 	podsByNode  map[string][]*apiv1.Pod
-	draSnapshot drasnapshot.Snapshot
+	draSnapshot *drasnapshot.Snapshot
 }
 
 func compareStates(t *testing.T, a, b snapshotState) {
@@ -148,7 +148,9 @@ func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.Cluster
 			pods = append(pods, pod)
 		}
 	}
-	err = snapshot.SetClusterState(state.nodes, pods, state.draSnapshot.Clone())
+
+	draSnapshot := drasnapshot.CloneTestSnapshot(state.draSnapshot)
+	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot)
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -476,704 +478,707 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				podsByNode: map[string][]*apiv1.Pod{largeNode.Name: {withNodeName(largePod, largeNode.Name)}},
 			},
 		},
+		{
+			name: "add empty nodeInfo with LocalResourceSlices",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(nil, nil, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices))
+			},
+			// LocalResourceSlices from the NodeInfo should get added to the DRA snapshot.
+			modifiedState: snapshotState{
+				nodes:       []*apiv1.Node{node},
+				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "add nodeInfo with LocalResourceSlices and NeededResourceClaims",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					}, nil, nil, deviceClasses),
+			},
+			// The pod in the added NodeInfo references the shared claim already in the DRA snapshot, and a new pod-owned allocated claim that
+			// needs to be added to the DRA snapshot.
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
+					drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
+					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+				})
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+			},
+			// The shared claim should just get a reservation for the pod added in the DRA snapshot.
+			// The pod-owned claim should get added to the DRA snapshot, with a reservation for the pod.
+			// LocalResourceSlices from the NodeInfo should get added to the DRA snapshot.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "adding LocalResourceSlices for an already tracked Node is an error",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices))
+			},
+			// LocalResourceSlices for the Node already exist in the DRA snapshot, so trying to add them again should be an error.
+			wantErr: cmpopts.AnyError,
+			// The state shouldn't change on error.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "adding already tracked pod-owned ResourceClaims is an error",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
+					}, nil, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
+					drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
+					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+				})
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+			},
+			// The pod-owned claim already exists in the DRA snapshot, so trying to add it again should be an error.
+			wantErr: cmpopts.AnyError,
+			// The state shouldn't change on error.
+			// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
+					}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "adding unallocated pod-owned ResourceClaims is an error",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					}, nil, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
+					podOwnedClaim.DeepCopy(),
+					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+				})
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+			},
+			// The added pod-owned claim isn't allocated, so AddNodeInfo should fail.
+			wantErr: cmpopts.AnyError,
+			// The state shouldn't change on error.
+			// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(podOwnedClaim, podWithClaims),
+					}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "adding pod-owned ResourceClaims allocated to the wrong Node is an error",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					}, nil, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
+					drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAllocWrongNode),
+					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+				})
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+			},
+			// The added pod-owned claim is allocated to a different Node than the one being added, so AddNodeInfo should fail.
+			wantErr: cmpopts.AnyError,
+			// The state shouldn't change on error.
+			// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAllocWrongNode), podWithClaims),
+					}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "adding a pod referencing a shared claim already at max reservations is an error",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
+					}, nil, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
+					drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
+					fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
+				})
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+			},
+			// The shared claim referenced by the pod is already at the max reservation count, and no more reservations can be added - this should be an error to match scheduler behavior.
+			wantErr: cmpopts.AnyError,
+			// The state shouldn't change on error.
+			// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
+					}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "adding a pod referencing its own claim without adding the claim is an error",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					}, nil, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
+					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+				})
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+			},
+			// The added pod references a pod-owned claim that isn't present in the PodInfo - this should be an error.
+			wantErr: cmpopts.AnyError,
+			// The state shouldn't change on error.
+			// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "remove nodeInfo with LocalResourceSlices and NeededResourceClaims",
+			// Start with a NodeInfo with LocalResourceSlices and pods with NeededResourceClaims in the DRA snapshot.
+			// One claim is shared, one is pod-owned.
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices},
+					nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.RemoveNodeInfo(node.Name)
+			},
+			// LocalResourceSlices for the removed Node should get removed from the DRA snapshot.
+			// The pod-owned claim referenced by a pod from the removed Node should get removed from the DRA snapshot.
+			// The shared claim referenced by a pod from the removed Node should stay in the DRA snapshot, but the pod's reservation should be removed.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					}, nil, nil, deviceClasses),
+			},
+		},
+		{
+			name: "remove nodeInfo with LocalResourceSlices and NeededResourceClaims, then add it back",
+			// Start with a NodeInfo with LocalResourceSlices and pods with NeededResourceClaims in the DRA snapshot.
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices},
+					nil, deviceClasses),
+			},
+			// Remove the NodeInfo and then add it back to the snapshot.
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				if err := snapshot.RemoveNodeInfo(node.Name); err != nil {
+					return err
+				}
+				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
+					drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
+					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+				})
+				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+			},
+			// The state should be identical to the initial one after the modifications.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "removing LocalResourceSlices for a non-existing Node is an error",
+			state: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.RemoveNodeInfo("wrong-name")
+			},
+			// The removed Node isn't in the snapshot, so this should be an error.
+			wantErr: cmpopts.AnyError,
+			// The state shouldn't change on error.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "schedule pod with NeededResourceClaims to an existing nodeInfo",
+			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
+			// that the pod references, but they aren't allocated yet.
+			state: snapshotState{
+				nodes: []*apiv1.Node{node},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
+						drasnapshot.GetClaimId(sharedClaim):   sharedClaim.DeepCopy(),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.SchedulePod(podWithClaims, node.Name)
+			},
+			// The pod should get added to the Node.
+			// The claims referenced by the Pod should get allocated and reserved for the Pod.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "schedule pod with NeededResourceClaims (some of them shared and already allocated) to an existing nodeInfo",
+			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
+			// that the pod references. The shared claim is already allocated, the pod-owned one isn't yet.
+			state: snapshotState{
+				nodes: []*apiv1.Node{node},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			// Run SchedulePod, which should allocate the pod-owned claim in the DRA snapshot via the DRA scheduler plugin.
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.SchedulePod(podWithClaims, node.Name)
+			},
+			// The pod should get added to the Node.
+			// The pod-owned claim referenced by the Pod should get allocated. Both claims referenced by the Pod should get reserved for the Pod.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "scheduling pod with failing DRA predicates is an error",
+			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot doesn't track one of the claims
+			// referenced by the Pod we're trying to schedule.
+			state: snapshotState{
+				nodes: []*apiv1.Node{node},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): sharedClaim.DeepCopy(),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.SchedulePod(podWithClaims, node.Name)
+			},
+			// SchedulePod should fail at checking scheduling predicates, because the DRA plugin can't find one of the claims.
+			wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
+			// The state shouldn't change on error.
+			modifiedState: snapshotState{
+				nodes: []*apiv1.Node{node},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): sharedClaim,
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "scheduling pod referencing a shared claim already at max reservations is an error",
+			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
+			// that the pod references. The shared claim is already allocated and at max reservations.
+			state: snapshotState{
+				nodes: []*apiv1.Node{node},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
+						drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.SchedulePod(podWithClaims, node.Name)
+			},
+			// The shared claim referenced by the pod is already at the max reservation count, and no more reservations can be added - this should be an error to match scheduler behavior.
+			wantErr: clustersnapshot.NewSchedulingInternalError(nil, ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
+			// The state shouldn't change on error.
+			// TODO(DRA): Until transaction-like clean-up is implemented in SchedulePod, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
+			modifiedState: snapshotState{
+				nodes: []*apiv1.Node{node},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
+						drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "schedule pod with NeededResourceClaims to any Node (only one Node has ResourceSlices)",
+			// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot already tracks all the claims
+			// that the pod references, but they aren't allocated yet.
+			state: snapshotState{
+				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
+						drasnapshot.GetClaimId(sharedClaim):   sharedClaim.DeepCopy(),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
+					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
+				}
+				return err
+			},
+			// The pod should get added to the Node.
+			// The claims referenced by the Pod should get allocated and reserved for the Pod.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{otherNode, node, largeNode},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "scheduling pod on any Node with failing DRA predicates is an error",
+			// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot doesn't track one of the claims
+			// referenced by the Pod we're trying to schedule.
+			state: snapshotState{
+				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): sharedClaim.DeepCopy(),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				if foundNodeName != "" {
+					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
+				}
+				return err
+			},
+			// SchedulePodOnAnyNodeMatching should fail at checking scheduling predicates for every Node, because the DRA plugin can't find one of the claims.
+			wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
+			// The state shouldn't change on error.
+			modifiedState: snapshotState{
+				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): sharedClaim,
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "scheduling pod referencing a shared claim already at max reservations on any Node is an error",
+			// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot already tracks all the claims
+			// that the pod references. The shared claim is already allocated and at max reservations.
+			state: snapshotState{
+				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
+						drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				if foundNodeName != "" {
+					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
+				}
+				return err
+			},
+			// SchedulePodOnAnyNodeMatching should fail at trying to add a reservation to the shared claim for every Node.
+			wantErr: clustersnapshot.NewSchedulingInternalError(nil, ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
+			// The state shouldn't change on error.
+			// TODO(DRA): Until transaction-like clean-up is implemented in SchedulePodOnAnyNodeMatching, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
+			modifiedState: snapshotState{
+				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
+						drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "unschedule Pod with NeededResourceClaims",
+			// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim, both used only by the pod.
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name)
+			},
+			// The unscheduled pod should be removed from the Node.
+			// The claims referenced by the pod should stay in the DRA snapshot, but the pod's reservations should get removed, and the claims should be deallocated.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
+						drasnapshot.GetClaimId(sharedClaim):   sharedClaim,
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "unschedule Pod with NeededResourceClaims and schedule it back",
+			// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim, both used only by the pod.
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				if err := snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name); err != nil {
+					return err
+				}
+				return snapshot.SchedulePod(withNodeName(podWithClaims, node.Name), node.Name)
+			},
+			// The state shouldn't change.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "unschedule Pod with NeededResourceClaims (some are shared and still used by other pods)",
+			// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods.
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name)
+			},
+			// The unscheduled pod should be removed from the Node.
+			// The claims referenced by the pod should stay in the DRA snapshot, but the pod's reservations should get removed.
+			// The pod-owned claim should get deallocated, but the shared one shouldn't.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), pod),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "unschedule Pod with NeededResourceClaims (some are shared and still used by other pods) and schedule it back",
+			// Start with a Pod with NeededResourceClaims already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods.
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				if err := snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name); err != nil {
+					return err
+				}
+				return snapshot.SchedulePod(withNodeName(podWithClaims, node.Name), node.Name)
+			},
+			// The state shouldn't change.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "get/list NodeInfo with DRA objects",
+			// Start with a Pod with NeededResourceClaims already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods. There are other Nodes
+			// and pods in the cluster.
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node, otherNode},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				nodeInfoDiffOpts := []cmp.Option{
+					// We don't care about this field staying the same, and it differs because it's a global counter bumped on every AddPod.
+					cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
+					cmp.AllowUnexported(framework.NodeInfo{}, schedulerframework.NodeInfo{}),
+					cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
+					cmpopts.SortSlices(func(i1, i2 *framework.NodeInfo) bool { return i1.Node().Name < i2.Node().Name }),
+					IgnoreObjectOrder[*resourceapi.ResourceClaim](),
+					IgnoreObjectOrder[*resourceapi.ResourceSlice](),
+				}
+
+				// Verify that GetNodeInfo works as expected.
+				nodeInfo, err := snapshot.GetNodeInfo(node.Name)
+				if err != nil {
+					return err
+				}
+				wantNodeInfo := framework.NewNodeInfo(node, resourceSlices,
+					framework.NewPodInfo(withNodeName(pod, node.Name), nil),
+					framework.NewPodInfo(withNodeName(podWithClaims, node.Name), []*resourceapi.ResourceClaim{
+						drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
+					}),
+				)
+				if diff := cmp.Diff(wantNodeInfo, nodeInfo, nodeInfoDiffOpts...); diff != "" {
+					t.Errorf("GetNodeInfo(): unexpected output (-want +got): %s", diff)
+				}
+
+				// Verify that ListNodeInfo works as expected.
+				nodeInfos, err := snapshot.ListNodeInfos()
+				if err != nil {
+					return err
+				}
+				wantNodeInfos := []*framework.NodeInfo{wantNodeInfo, framework.NewNodeInfo(otherNode, nil)}
+				if diff := cmp.Diff(wantNodeInfos, nodeInfos, nodeInfoDiffOpts...); diff != "" {
+					t.Errorf("ListNodeInfos(): unexpected output (-want +got): %s", diff)
+				}
+
+				return nil
+			},
+			// The state shouldn't change.
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node, otherNode},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
 	}
 
-	// Only the Basic store is compatible with DRA for now.
-	if snapshotName == "basic" {
-		// Uncomment to get logs from the DRA plugin.
-		// var fs flag.FlagSet
-		// klog.InitFlags(&fs)
-		//if err := fs.Set("v", "10"); err != nil {
-		//	t.Fatalf("Error while setting higher klog verbosity: %v", err)
-		//}
-		featuretesting.SetFeatureGateDuringTest(t, feature.DefaultFeatureGate, features.DynamicResourceAllocation, true)
+	for i := range testCases {
+		if testCases[i].modifiedState.draSnapshot == nil {
+			testCases[i].modifiedState.draSnapshot = drasnapshot.NewEmptySnapshot()
+		}
 
-		testCases = append(testCases, []modificationTestCase{
-			{
-				name: "add empty nodeInfo with LocalResourceSlices",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(nil, nil, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices))
-				},
-				// LocalResourceSlices from the NodeInfo should get added to the DRA snapshot.
-				modifiedState: snapshotState{
-					nodes:       []*apiv1.Node{node},
-					draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "add nodeInfo with LocalResourceSlices and NeededResourceClaims",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-						}, nil, nil, deviceClasses),
-				},
-				// The pod in the added NodeInfo references the shared claim already in the DRA snapshot, and a new pod-owned allocated claim that
-				// needs to be added to the DRA snapshot.
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
-						drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
-						drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-					})
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
-				},
-				// The shared claim should just get a reservation for the pod added in the DRA snapshot.
-				// The pod-owned claim should get added to the DRA snapshot, with a reservation for the pod.
-				// LocalResourceSlices from the NodeInfo should get added to the DRA snapshot.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "adding LocalResourceSlices for an already tracked Node is an error",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices))
-				},
-				// LocalResourceSlices for the Node already exist in the DRA snapshot, so trying to add them again should be an error.
-				wantErr: cmpopts.AnyError,
-				// The state shouldn't change on error.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "adding already tracked pod-owned ResourceClaims is an error",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
-						}, nil, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
-						drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
-						drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-					})
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
-				},
-				// The pod-owned claim already exists in the DRA snapshot, so trying to add it again should be an error.
-				wantErr: cmpopts.AnyError,
-				// The state shouldn't change on error.
-				// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
-						}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "adding unallocated pod-owned ResourceClaims is an error",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-						}, nil, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
-						podOwnedClaim.DeepCopy(),
-						drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-					})
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
-				},
-				// The added pod-owned claim isn't allocated, so AddNodeInfo should fail.
-				wantErr: cmpopts.AnyError,
-				// The state shouldn't change on error.
-				// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(podOwnedClaim, podWithClaims),
-						}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "adding pod-owned ResourceClaims allocated to the wrong Node is an error",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-						}, nil, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
-						drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAllocWrongNode),
-						drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-					})
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
-				},
-				// The added pod-owned claim is allocated to a different Node than the one being added, so AddNodeInfo should fail.
-				wantErr: cmpopts.AnyError,
-				// The state shouldn't change on error.
-				// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAllocWrongNode), podWithClaims),
-						}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "adding a pod referencing a shared claim already at max reservations is an error",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
-						}, nil, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
-						drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
-						fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
-					})
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
-				},
-				// The shared claim referenced by the pod is already at the max reservation count, and no more reservations can be added - this should be an error to match scheduler behavior.
-				wantErr: cmpopts.AnyError,
-				// The state shouldn't change on error.
-				// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
-						}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "adding a pod referencing its own claim without adding the claim is an error",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-						}, nil, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
-						drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-					})
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
-				},
-				// The added pod references a pod-owned claim that isn't present in the PodInfo - this should be an error.
-				wantErr: cmpopts.AnyError,
-				// The state shouldn't change on error.
-				// TODO(DRA): Until transaction-like clean-up is implemented in AddNodeInfo, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-						}, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "remove nodeInfo with LocalResourceSlices and NeededResourceClaims",
-				// Start with a NodeInfo with LocalResourceSlices and pods with NeededResourceClaims in the DRA snapshot.
-				// One claim is shared, one is pod-owned.
-				state: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices},
-						nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.RemoveNodeInfo(node.Name)
-				},
-				// LocalResourceSlices for the removed Node should get removed from the DRA snapshot.
-				// The pod-owned claim referenced by a pod from the removed Node should get removed from the DRA snapshot.
-				// The shared claim referenced by a pod from the removed Node should stay in the DRA snapshot, but the pod's reservation should be removed.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-						}, nil, nil, deviceClasses),
-				},
-			},
-			{
-				name: "remove nodeInfo with LocalResourceSlices and NeededResourceClaims, then add it back",
-				// Start with a NodeInfo with LocalResourceSlices and pods with NeededResourceClaims in the DRA snapshot.
-				state: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices},
-						nil, deviceClasses),
-				},
-				// Remove the NodeInfo and then add it back to the snapshot.
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					if err := snapshot.RemoveNodeInfo(node.Name); err != nil {
-						return err
-					}
-					podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
-						drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
-						drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-					})
-					return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
-				},
-				// The state should be identical to the initial one after the modifications.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "removing LocalResourceSlices for a non-existing Node is an error",
-				state: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.RemoveNodeInfo("wrong-name")
-				},
-				// The removed Node isn't in the snapshot, so this should be an error.
-				wantErr: cmpopts.AnyError,
-				// The state shouldn't change on error.
-				modifiedState: snapshotState{
-					draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "schedule pod with NeededResourceClaims to an existing nodeInfo",
-				// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
-				// that the pod references, but they aren't allocated yet.
-				state: snapshotState{
-					nodes: []*apiv1.Node{node},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
-							drasnapshot.GetClaimId(sharedClaim):   sharedClaim.DeepCopy(),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.SchedulePod(podWithClaims, node.Name)
-				},
-				// The pod should get added to the Node.
-				// The claims referenced by the Pod should get allocated and reserved for the Pod.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "schedule pod with NeededResourceClaims (some of them shared and already allocated) to an existing nodeInfo",
-				// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
-				// that the pod references. The shared claim is already allocated, the pod-owned one isn't yet.
-				state: snapshotState{
-					nodes: []*apiv1.Node{node},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				// Run SchedulePod, which should allocate the pod-owned claim in the DRA snapshot via the DRA scheduler plugin.
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.SchedulePod(podWithClaims, node.Name)
-				},
-				// The pod should get added to the Node.
-				// The pod-owned claim referenced by the Pod should get allocated. Both claims referenced by the Pod should get reserved for the Pod.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "scheduling pod with failing DRA predicates is an error",
-				// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot doesn't track one of the claims
-				// referenced by the Pod we're trying to schedule.
-				state: snapshotState{
-					nodes: []*apiv1.Node{node},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): sharedClaim.DeepCopy(),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.SchedulePod(podWithClaims, node.Name)
-				},
-				// SchedulePod should fail at checking scheduling predicates, because the DRA plugin can't find one of the claims.
-				wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
-				// The state shouldn't change on error.
-				modifiedState: snapshotState{
-					nodes: []*apiv1.Node{node},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): sharedClaim,
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "scheduling pod referencing a shared claim already at max reservations is an error",
-				// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
-				// that the pod references. The shared claim is already allocated and at max reservations.
-				state: snapshotState{
-					nodes: []*apiv1.Node{node},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
-							drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.SchedulePod(podWithClaims, node.Name)
-				},
-				// The shared claim referenced by the pod is already at the max reservation count, and no more reservations can be added - this should be an error to match scheduler behavior.
-				wantErr: clustersnapshot.NewSchedulingInternalError(nil, ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
-				// The state shouldn't change on error.
-				// TODO(DRA): Until transaction-like clean-up is implemented in SchedulePod, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
-				modifiedState: snapshotState{
-					nodes: []*apiv1.Node{node},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
-							drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "schedule pod with NeededResourceClaims to any Node (only one Node has ResourceSlices)",
-				// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot already tracks all the claims
-				// that the pod references, but they aren't allocated yet.
-				state: snapshotState{
-					nodes: []*apiv1.Node{otherNode, node, largeNode},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
-							drasnapshot.GetClaimId(sharedClaim):   sharedClaim.DeepCopy(),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
-					if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
-						t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
-					}
-					return err
-				},
-				// The pod should get added to the Node.
-				// The claims referenced by the Pod should get allocated and reserved for the Pod.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{otherNode, node, largeNode},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "scheduling pod on any Node with failing DRA predicates is an error",
-				// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot doesn't track one of the claims
-				// referenced by the Pod we're trying to schedule.
-				state: snapshotState{
-					nodes: []*apiv1.Node{otherNode, node, largeNode},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): sharedClaim.DeepCopy(),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
-					if foundNodeName != "" {
-						t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
-					}
-					return err
-				},
-				// SchedulePodOnAnyNodeMatching should fail at checking scheduling predicates for every Node, because the DRA plugin can't find one of the claims.
-				wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
-				// The state shouldn't change on error.
-				modifiedState: snapshotState{
-					nodes: []*apiv1.Node{otherNode, node, largeNode},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(sharedClaim): sharedClaim,
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "scheduling pod referencing a shared claim already at max reservations on any Node is an error",
-				// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot already tracks all the claims
-				// that the pod references. The shared claim is already allocated and at max reservations.
-				state: snapshotState{
-					nodes: []*apiv1.Node{otherNode, node, largeNode},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
-							drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
-					if foundNodeName != "" {
-						t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
-					}
-					return err
-				},
-				// SchedulePodOnAnyNodeMatching should fail at trying to add a reservation to the shared claim for every Node.
-				wantErr: clustersnapshot.NewSchedulingInternalError(nil, ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
-				// The state shouldn't change on error.
-				// TODO(DRA): Until transaction-like clean-up is implemented in SchedulePodOnAnyNodeMatching, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
-				modifiedState: snapshotState{
-					nodes: []*apiv1.Node{otherNode, node, largeNode},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
-							drasnapshot.GetClaimId(sharedClaim):   fullyReservedClaim(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc)),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "unschedule Pod with NeededResourceClaims",
-				// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim, both used only by the pod.
-				state: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name)
-				},
-				// The unscheduled pod should be removed from the Node.
-				// The claims referenced by the pod should stay in the DRA snapshot, but the pod's reservations should get removed, and the claims should be deallocated.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
-							drasnapshot.GetClaimId(sharedClaim):   sharedClaim,
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "unschedule Pod with NeededResourceClaims and schedule it back",
-				// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim, both used only by the pod.
-				state: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					if err := snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name); err != nil {
-						return err
-					}
-					return snapshot.SchedulePod(withNodeName(podWithClaims, node.Name), node.Name)
-				},
-				// The state shouldn't change.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "unschedule Pod with NeededResourceClaims (some are shared and still used by other pods)",
-				// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods.
-				state: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					return snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name)
-				},
-				// The unscheduled pod should be removed from the Node.
-				// The claims referenced by the pod should stay in the DRA snapshot, but the pod's reservations should get removed.
-				// The pod-owned claim should get deallocated, but the shared one shouldn't.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), pod),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "unschedule Pod with NeededResourceClaims (some are shared and still used by other pods) and schedule it back",
-				// Start with a Pod with NeededResourceClaims already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods.
-				state: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					if err := snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name); err != nil {
-						return err
-					}
-					return snapshot.SchedulePod(withNodeName(podWithClaims, node.Name), node.Name)
-				},
-				// The state shouldn't change.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-			{
-				name: "get/list NodeInfo with DRA objects",
-				// Start with a Pod with NeededResourceClaims already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods. There are other Nodes
-				// and pods in the cluster.
-				state: snapshotState{
-					nodes:      []*apiv1.Node{node, otherNode},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-				op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-					nodeInfoDiffOpts := []cmp.Option{
-						// We don't care about this field staying the same, and it differs because it's a global counter bumped on every AddPod.
-						cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
-						cmp.AllowUnexported(framework.NodeInfo{}, schedulerframework.NodeInfo{}),
-						cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
-						cmpopts.SortSlices(func(i1, i2 *framework.NodeInfo) bool { return i1.Node().Name < i2.Node().Name }),
-						IgnoreObjectOrder[*resourceapi.ResourceClaim](),
-						IgnoreObjectOrder[*resourceapi.ResourceSlice](),
-					}
-
-					// Verify that GetNodeInfo works as expected.
-					nodeInfo, err := snapshot.GetNodeInfo(node.Name)
-					if err != nil {
-						return err
-					}
-					wantNodeInfo := framework.NewNodeInfo(node, resourceSlices,
-						framework.NewPodInfo(withNodeName(pod, node.Name), nil),
-						framework.NewPodInfo(withNodeName(podWithClaims, node.Name), []*resourceapi.ResourceClaim{
-							drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
-						}),
-					)
-					if diff := cmp.Diff(wantNodeInfo, nodeInfo, nodeInfoDiffOpts...); diff != "" {
-						t.Errorf("GetNodeInfo(): unexpected output (-want +got): %s", diff)
-					}
-
-					// Verify that ListNodeInfo works as expected.
-					nodeInfos, err := snapshot.ListNodeInfos()
-					if err != nil {
-						return err
-					}
-					wantNodeInfos := []*framework.NodeInfo{wantNodeInfo, framework.NewNodeInfo(otherNode, nil)}
-					if diff := cmp.Diff(wantNodeInfos, nodeInfos, nodeInfoDiffOpts...); diff != "" {
-						t.Errorf("ListNodeInfos(): unexpected output (-want +got): %s", diff)
-					}
-
-					return nil
-				},
-				// The state shouldn't change.
-				modifiedState: snapshotState{
-					nodes:      []*apiv1.Node{node, otherNode},
-					podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
-					draSnapshot: drasnapshot.NewSnapshot(
-						map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
-							drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
-							drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
-						},
-						map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
-				},
-			},
-		}...)
+		if testCases[i].state.draSnapshot == nil {
+			testCases[i].state.draSnapshot = drasnapshot.NewEmptySnapshot()
+		}
 	}
 
 	return testCases
 }
 
 func TestForking(t *testing.T) {
-	node := BuildTestNode("specialNode-2", 10, 100)
+	// Uncomment to get logs from the DRA plugin.
+	// var fs flag.FlagSet
+	// klog.InitFlags(&fs)
+	//if err := fs.Set("v", "10"); err != nil {
+	//	t.Fatalf("Error while setting higher klog verbosity: %v", err)
+	//}
+	featuretesting.SetFeatureGateDuringTest(t, feature.DefaultFeatureGate, features.DynamicResourceAllocation, true)
 
+	node := BuildTestNode("specialNode-2", 10, 100)
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range validTestCases(t, snapshotName) {
 			t.Run(fmt.Sprintf("%s: %s base", snapshotName, tc.name), func(t *testing.T) {
@@ -1300,7 +1305,7 @@ func TestSetClusterState(t *testing.T) {
 	nodes := clustersnapshot.CreateTestNodes(nodeCount)
 	pods := clustersnapshot.CreateTestPods(podCount)
 	podsByNode := clustersnapshot.AssignTestPodsToNodes(pods, nodes)
-	state := snapshotState{nodes: nodes, podsByNode: podsByNode}
+	state := snapshotState{nodes: nodes, podsByNode: podsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}
 
 	extraNodes := clustersnapshot.CreateTestNodesWithPrefix("extra", extraNodeCount)
 
@@ -1323,9 +1328,9 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
 
-				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
+				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
 		t.Run(fmt.Sprintf("%s: clear base %d nodes %d pods and set a new state", name, nodeCount, podCount),
 			func(t *testing.T) {
@@ -1334,9 +1339,9 @@ func TestSetClusterState(t *testing.T) {
 
 				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
 				newPodsByNode := clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, drasnapshot.Snapshot{}))
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil))
 
-				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode}, getSnapshotState(t, snapshot))
+				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
 		t.Run(fmt.Sprintf("%s: clear fork %d nodes %d pods %d extra nodes %d extra pods", name, nodeCount, podCount, extraNodeCount, extraPodCount),
 			func(t *testing.T) {
@@ -1355,11 +1360,11 @@ func TestSetClusterState(t *testing.T) {
 					assert.NoError(t, err)
 				}
 
-				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode}, getSnapshotState(t, snapshot))
+				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
 
-				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
+				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 
 				// SetClusterState() should break out of forked state.
 				snapshot.Fork()
@@ -1768,7 +1773,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
+			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 
@@ -1777,6 +1782,14 @@ func TestPVCClearAndFork(t *testing.T) {
 }
 
 func TestWithForkedSnapshot(t *testing.T) {
+	// Uncomment to get logs from the DRA plugin.
+	// var fs flag.FlagSet
+	// klog.InitFlags(&fs)
+	//if err := fs.Set("v", "10"); err != nil {
+	//	t.Fatalf("Error while setting higher klog verbosity: %v", err)
+	//}
+	featuretesting.SetFeatureGateDuringTest(t, feature.DefaultFeatureGate, features.DynamicResourceAllocation, true)
+
 	err := fmt.Errorf("some error")
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range validTestCases(t, snapshotName) {
