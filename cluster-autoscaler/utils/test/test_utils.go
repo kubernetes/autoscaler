@@ -103,6 +103,13 @@ func WithNodeName(nodeName string) func(*apiv1.Pod) {
 	}
 }
 
+// WithDeletionTimestamp sets deletion timestamp to the pod.
+func WithDeletionTimestamp(deletionTimestamp time.Time) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.DeletionTimestamp = &metav1.Time{Time: deletionTimestamp}
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
