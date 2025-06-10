@@ -32,8 +32,8 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/vburenin/ifacemaker v1.2.1
 	go.uber.org/mock v0.4.0
-	golang.org/x/crypto v0.35.0
-	golang.org/x/net v0.33.0
+	golang.org/x/crypto v0.36.0
+	golang.org/x/net v0.38.0
 	golang.org/x/oauth2 v0.27.0
 	golang.org/x/sys v0.31.0
 	google.golang.org/api v0.151.0
