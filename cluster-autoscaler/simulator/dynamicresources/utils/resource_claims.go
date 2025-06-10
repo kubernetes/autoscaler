@@ -23,7 +23,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/component-helpers/scheduling/corev1"
-	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
 )
 
 // ClaimAllocated returns whether the provided claim is allocated.

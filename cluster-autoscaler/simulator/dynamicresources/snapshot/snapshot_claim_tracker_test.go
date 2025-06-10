@@ -170,7 +170,7 @@ func TestSnapshotClaimTrackerListAllAllocatedDevices(t *testing.T) {
 				GetClaimId(allocatedClaim2): allocatedClaim2,
 				GetClaimId(claim3):          claim3,
 			},
-			wantDevices: sets.New[structured.DeviceID](
+			wantDevices: sets.New(
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-1"),
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-2"),
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-3"),
