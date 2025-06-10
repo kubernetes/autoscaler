@@ -17,57 +17,35 @@ limitations under the License.
 package snapshot
 
 import (
-	"maps"
-
 	"github.com/google/go-cmp/cmp"
 	resourceapi "k8s.io/api/resource/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 )
 
 // CloneTestSnapshot creates a deep copy of the provided Snapshot.
 // This function is intended for testing purposes only.
 func CloneTestSnapshot(snapshot *Snapshot) *Snapshot {
-	cloned := &Snapshot{
-		deviceClasses:  newPatchSet[string, *resourceapi.DeviceClass](),
-		resourceSlices: newPatchSet[string, []*resourceapi.ResourceSlice](),
-		resourceClaims: newPatchSet[ResourceClaimId, *resourceapi.ResourceClaim](),
-	}
-
-	for i := 0; i < len(snapshot.deviceClasses.patches); i++ {
-		devicesPatch := snapshot.deviceClasses.patches[i]
-		clonedPatch := newPatch[string, *resourceapi.DeviceClass]()
-		for key, deviceClass := range devicesPatch.Modified {
-			clonedPatch.Modified[key] = deviceClass.DeepCopy()
+	cloneString := func(s string) string { return s }
+	cloneResourceClaimId := func(rc ResourceClaimId) ResourceClaimId { return rc }
+	cloneDeviceClass := func(dc *resourceapi.DeviceClass) *resourceapi.DeviceClass { return dc.DeepCopy() }
+	cloneResourceClaim := func(rc *resourceapi.ResourceClaim) *resourceapi.ResourceClaim { return rc.DeepCopy() }
+	cloneResourceSlices := func(rcs []*resourceapi.ResourceSlice) []*resourceapi.ResourceSlice {
+		clone := make([]*resourceapi.ResourceSlice, len(rcs))
+		for i := range rcs {
+			clone[i] = rcs[i].DeepCopy()
 		}
-		maps.Copy(clonedPatch.Deleted, devicesPatch.Deleted)
-		cloned.deviceClasses.patches = append(cloned.deviceClasses.patches, clonedPatch)
+		return clone
 	}
 
-	for i := 0; i < len(snapshot.resourceSlices.patches); i++ {
-		slicesPatch := snapshot.resourceSlices.patches[i]
-		clonedPatch := newPatch[string, []*resourceapi.ResourceSlice]()
-		for key, slices := range slicesPatch.Modified {
-			deepCopySlices := make([]*resourceapi.ResourceSlice, len(slices))
-			for i, slice := range slices {
-				deepCopySlices[i] = slice.DeepCopy()
-			}
+	deviceClasses := common.ClonePatchSet(snapshot.deviceClasses, cloneString, cloneDeviceClass)
+	resourceSlices := common.ClonePatchSet(snapshot.resourceSlices, cloneString, cloneResourceSlices)
+	resourceClaims := common.ClonePatchSet(snapshot.resourceClaims, cloneResourceClaimId, cloneResourceClaim)
 
-			clonedPatch.Modified[key] = deepCopySlices
-		}
-		maps.Copy(clonedPatch.Deleted, slicesPatch.Deleted)
-		cloned.resourceSlices.patches = append(cloned.resourceSlices.patches, clonedPatch)
+	return &Snapshot{
+		deviceClasses:  deviceClasses,
+		resourceSlices: resourceSlices,
+		resourceClaims: resourceClaims,
 	}
-
-	for i := 0; i < len(snapshot.resourceClaims.patches); i++ {
-		claimsPatch := snapshot.resourceClaims.patches[i]
-		clonedPatch := newPatch[ResourceClaimId, *resourceapi.ResourceClaim]()
-		for claimId, claim := range claimsPatch.Modified {
-			clonedPatch.Modified[claimId] = claim.DeepCopy()
-		}
-		maps.Copy(clonedPatch.Deleted, claimsPatch.Deleted)
-		cloned.resourceClaims.patches = append(cloned.resourceClaims.patches, clonedPatch)
-	}
-
-	return cloned
 }
 
 // SnapshotFlattenedComparer returns a cmp.Option that provides a custom comparer function
