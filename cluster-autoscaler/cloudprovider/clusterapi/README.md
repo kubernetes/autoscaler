@@ -214,6 +214,11 @@ autoscaler about the sizing of the nodes in the node group. At the minimum,
 you must specify the CPU and memory annotations, these annotations should
 match the expected capacity of the nodes created from the infrastructure.
 
+> Note: The scale from zero annotations will override any capacity information
+> supplied by the Cluster API provider in the infrastructure machine templates.
+> If both the annotations and the provider supplied capacity information are
+> present, the annotations will take precedence.
+
 For example, if my MachineDeployment will create nodes that have "16000m" CPU,
 "128G" memory, "100Gi" ephemeral disk storage, 2 NVidia GPUs, and can support
 200 max pods, the following annotations will instruct the autoscaler how to
@@ -289,6 +294,12 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/labels: "key1=value1,key2=value2"
     capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
 ```
+
+> Note: The labels supplied through the capacity annotation will be combined
+> with the labels to be propagated from the scalable Cluster API resource.
+> The annotation does not override the labels in the scalable resource.
+> Please see the [Cluster API Book chapter on Metadata propagation](https://cluster-api.sigs.k8s.io/reference/api/metadata-propagation)
+> for more information.
 
 #### Per-NodeGroup autoscaling options
 
