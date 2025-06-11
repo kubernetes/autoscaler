@@ -17,14 +17,11 @@ limitations under the License.
 package aws
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/aws"
+	ec2types "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
 func TestGetStaticEC2InstanceTypes(t *testing.T) {
@@ -33,15 +30,15 @@ func TestGetStaticEC2InstanceTypes(t *testing.T) {
 }
 
 func TestInstanceTypeTransform(t *testing.T) {
-	rawInstanceType := ec2.InstanceTypeInfo{
-		InstanceType: aws.String("c4.xlarge"),
-		ProcessorInfo: &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{aws.String("x86_64")},
+	rawInstanceType := ec2types.InstanceTypeInfo{
+		InstanceType: ec2types.InstanceType("c4.xlarge"),
+		ProcessorInfo: &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
 		},
-		VCpuInfo: &ec2.VCpuInfo{
-			DefaultVCpus: aws.Int64(4),
+		VCpuInfo: &ec2types.VCpuInfo{
+			DefaultVCpus: aws.Int32(4),
 		},
-		MemoryInfo: &ec2.MemoryInfo{
+		MemoryInfo: &ec2types.MemoryInfo{
 			SizeInMiB: aws.Int64(7680),
 		},
 	}
@@ -89,36 +86,15 @@ func TestInterpretEc2SupportedArchitecure(t *testing.T) {
 }
 
 func TestGetGpuCount(t *testing.T) {
-	gpuDeviceInfos := []*ec2.GpuDeviceInfo{
-		{Count: aws.Int64(8)},
-		{Count: aws.Int64(4)},
-		{Count: aws.Int64(0)},
+	gpuDeviceInfos := []ec2types.GpuDeviceInfo{
+		{Count: aws.Int32(8)},
+		{Count: aws.Int32(4)},
+		{Count: aws.Int32(0)},
 	}
 
-	gpuInfo := ec2.GpuInfo{Gpus: gpuDeviceInfos}
+	gpuInfo := ec2types.GpuInfo{Gpus: gpuDeviceInfos}
 
-	assert.Equal(t, int64(12), getGpuCount(&gpuInfo))
-}
-
-func TestGetCurrentAwsRegion(t *testing.T) {
-	region := "us-west-2"
-	if oldRegion, found := os.LookupEnv("AWS_REGION"); found {
-		os.Unsetenv("AWS_REGION")
-		defer os.Setenv("AWS_REGION", oldRegion)
-	}
-
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte("{\"region\" : \"" + region + "\"}"))
-	}))
-	// Close the server when test finishes
-	defer server.Close()
-
-	ec2MetaDataServiceUrl = server.URL
-	result, err := GetCurrentAwsRegion()
-
-	assert.Nil(t, err)
-	assert.NotNil(t, result)
-	assert.Equal(t, region, result)
+	assert.Equal(t, int32(12), getGpuCount(&gpuInfo))
 }
 
 func TestGetCurrentAwsRegionWithRegionEnv(t *testing.T) {
