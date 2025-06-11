@@ -145,7 +145,7 @@ func (u unsetResourceClaimTracker) AssumedClaimRestore(namespace, claimName stri
 	klog.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
+func (u unsetResourceSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
