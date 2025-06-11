@@ -32,29 +32,29 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/vburenin/ifacemaker v1.2.1
 	go.uber.org/mock v0.4.0
-	golang.org/x/crypto v0.35.0
-	golang.org/x/net v0.33.0
+	golang.org/x/crypto v0.36.0
+	golang.org/x/net v0.38.0
 	golang.org/x/oauth2 v0.27.0
-	golang.org/x/sys v0.30.0
+	golang.org/x/sys v0.31.0
 	google.golang.org/api v0.151.0
 	google.golang.org/grpc v1.68.1
 	google.golang.org/protobuf v1.36.5
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.33.0-beta.0
-	k8s.io/apimachinery v0.33.0-beta.0
-	k8s.io/apiserver v0.33.0-beta.0
+	k8s.io/api v0.34.0-alpha.0
+	k8s.io/apimachinery v0.34.0-alpha.0
+	k8s.io/apiserver v0.34.0-alpha.0
 	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
-	k8s.io/client-go v0.33.0-beta.0
+	k8s.io/client-go v0.34.0-alpha.0
 	k8s.io/cloud-provider v0.30.1
 	k8s.io/cloud-provider-aws v1.27.0
 	k8s.io/cloud-provider-gcp/providers v0.28.2
-	k8s.io/component-base v0.33.0-beta.0
-	k8s.io/component-helpers v0.33.0-beta.0
+	k8s.io/component-base v0.34.0-alpha.0
+	k8s.io/component-helpers v0.34.0-alpha.0
 	k8s.io/dynamic-resource-allocation v0.0.0
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubelet v0.33.0-beta.0
-	k8s.io/kubernetes v1.33.0-beta.0
+	k8s.io/kubelet v0.34.0-alpha.0
+	k8s.io/kubernetes v1.34.0-alpha.0
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
 	sigs.k8s.io/cloud-provider-azure v1.29.4
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.13
@@ -122,7 +122,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -134,7 +134,7 @@ require (
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -171,9 +171,9 @@ require (
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	go.etcd.io/etcd/api/v3 v3.5.16 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.5.16 // indirect
-	go.etcd.io/etcd/client/v3 v3.5.16 // indirect
+	go.etcd.io/etcd/api/v3 v3.5.21 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.5.21 // indirect
+	go.etcd.io/etcd/client/v3 v3.5.21 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful v0.42.0 // indirect
@@ -190,9 +190,9 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/term v0.29.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241209162323-e6fa225c2576 // indirect
@@ -203,14 +203,14 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.0.0 // indirect
-	k8s.io/code-generator v0.33.0-beta.0 // indirect
-	k8s.io/controller-manager v0.33.0-beta.0 // indirect
-	k8s.io/cri-api v0.33.0-beta.0 // indirect
+	k8s.io/code-generator v0.34.0-alpha.0 // indirect
+	k8s.io/controller-manager v0.34.0-alpha.0 // indirect
+	k8s.io/cri-api v0.34.0-alpha.0 // indirect
 	k8s.io/cri-client v0.0.0 // indirect
 	k8s.io/csi-translation-lib v0.27.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250207200755-1244d31929d7 // indirect
-	k8s.io/kms v0.33.0-beta.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20250304201544-e5f78fe3ede9 // indirect
+	k8s.io/kms v0.34.0-alpha.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
 	k8s.io/kubectl v0.28.0 // indirect
 	k8s.io/mount-utils v0.26.0-alpha.0 // indirect
@@ -227,66 +227,66 @@ replace github.com/digitalocean/godo => github.com/digitalocean/godo v1.27.0
 
 replace github.com/rancher/go-rancher => github.com/rancher/go-rancher v0.1.0
 
-replace k8s.io/api => k8s.io/api v0.33.0-beta.0
+replace k8s.io/api => k8s.io/api v0.34.0-alpha.0
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.33.0-beta.0
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.0-alpha.0
 
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.33.0-beta.0
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.34.0-alpha.0
 
-replace k8s.io/apiserver => k8s.io/apiserver v0.33.0-beta.0
+replace k8s.io/apiserver => k8s.io/apiserver v0.34.0-alpha.0
 
-replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.33.0-beta.0
+replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.34.0-alpha.0
 
-replace k8s.io/client-go => k8s.io/client-go v0.33.0-beta.0
+replace k8s.io/client-go => k8s.io/client-go v0.34.0-alpha.0
 
-replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.33.0-beta.0
+replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.34.0-alpha.0
 
-replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.33.0-beta.0
+replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.34.0-alpha.0
 
-replace k8s.io/code-generator => k8s.io/code-generator v0.33.0-beta.0
+replace k8s.io/code-generator => k8s.io/code-generator v0.34.0-alpha.0
 
-replace k8s.io/component-base => k8s.io/component-base v0.33.0-beta.0
+replace k8s.io/component-base => k8s.io/component-base v0.34.0-alpha.0
 
-replace k8s.io/component-helpers => k8s.io/component-helpers v0.33.0-beta.0
+replace k8s.io/component-helpers => k8s.io/component-helpers v0.34.0-alpha.0
 
-replace k8s.io/controller-manager => k8s.io/controller-manager v0.33.0-beta.0
+replace k8s.io/controller-manager => k8s.io/controller-manager v0.34.0-alpha.0
 
-replace k8s.io/cri-api => k8s.io/cri-api v0.33.0-beta.0
+replace k8s.io/cri-api => k8s.io/cri-api v0.34.0-alpha.0
 
-replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.33.0-beta.0
+replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.34.0-alpha.0
 
-replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.33.0-beta.0
+replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.34.0-alpha.0
 
-replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.33.0-beta.0
+replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.34.0-alpha.0
 
-replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.33.0-beta.0
+replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.34.0-alpha.0
 
-replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.33.0-beta.0
+replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.34.0-alpha.0
 
-replace k8s.io/kubectl => k8s.io/kubectl v0.33.0-beta.0
+replace k8s.io/kubectl => k8s.io/kubectl v0.34.0-alpha.0
 
-replace k8s.io/kubelet => k8s.io/kubelet v0.33.0-beta.0
+replace k8s.io/kubelet => k8s.io/kubelet v0.34.0-alpha.0
 
-replace k8s.io/metrics => k8s.io/metrics v0.33.0-beta.0
+replace k8s.io/metrics => k8s.io/metrics v0.34.0-alpha.0
 
-replace k8s.io/mount-utils => k8s.io/mount-utils v0.33.0-beta.0
+replace k8s.io/mount-utils => k8s.io/mount-utils v0.34.0-alpha.0
 
-replace k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.33.0-beta.0
+replace k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.34.0-alpha.0
 
-replace k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.33.0-beta.0
+replace k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.34.0-alpha.0
 
-replace k8s.io/sample-controller => k8s.io/sample-controller v0.33.0-beta.0
+replace k8s.io/sample-controller => k8s.io/sample-controller v0.34.0-alpha.0
 
-replace k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.33.0-beta.0
+replace k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.34.0-alpha.0
 
-replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.33.0-beta.0
+replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.34.0-alpha.0
 
-replace k8s.io/kms => k8s.io/kms v0.33.0-beta.0
+replace k8s.io/kms => k8s.io/kms v0.34.0-alpha.0
 
-replace k8s.io/endpointslice => k8s.io/endpointslice v0.33.0-beta.0
+replace k8s.io/endpointslice => k8s.io/endpointslice v0.34.0-alpha.0
 
 replace k8s.io/autoscaler/cluster-autoscaler/apis => ./apis
 
-replace k8s.io/cri-client => k8s.io/cri-client v0.33.0-beta.0
+replace k8s.io/cri-client => k8s.io/cri-client v0.34.0-alpha.0
 
-replace k8s.io/externaljwt => k8s.io/externaljwt v0.33.0-beta.0
+replace k8s.io/externaljwt => k8s.io/externaljwt v0.34.0-alpha.0
