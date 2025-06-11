@@ -19,6 +19,7 @@ package alicloud
 import (
 	"os"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/metadata"
 	"k8s.io/klog/v2"
 )
@@ -63,19 +64,19 @@ func (cc *cloudConfig) isValid() bool {
 	}
 
 	if cc.OIDCProviderARN == "" {
-		cc.OIDCProviderARN = firstNotEmpty(os.Getenv(oidcProviderARN), os.Getenv(oldOidcProviderARN))
+		cc.OIDCProviderARN = utils.FirstNotEmpty(os.Getenv(oidcProviderARN), os.Getenv(oldOidcProviderARN))
 	}
 
 	if cc.OIDCTokenFilePath == "" {
-		cc.OIDCTokenFilePath = firstNotEmpty(os.Getenv(oidcTokenFilePath), os.Getenv(oldOidcTokenFilePath))
+		cc.OIDCTokenFilePath = utils.FirstNotEmpty(os.Getenv(oidcTokenFilePath), os.Getenv(oldOidcTokenFilePath))
 	}
 
 	if cc.RoleARN == "" {
-		cc.RoleARN = firstNotEmpty(os.Getenv(roleARN), os.Getenv(oldRoleARN))
+		cc.RoleARN = utils.FirstNotEmpty(os.Getenv(roleARN), os.Getenv(oldRoleARN))
 	}
 
 	if cc.RoleSessionName == "" {
-		cc.RoleSessionName = firstNotEmpty(os.Getenv(roleSessionName), os.Getenv(oldRoleSessionName))
+		cc.RoleSessionName = utils.FirstNotEmpty(os.Getenv(roleSessionName), os.Getenv(oldRoleSessionName))
 	}
 
 	if cc.RegionId != "" && cc.AccessKeyID != "" && cc.AccessKeySecret != "" {
@@ -132,16 +133,4 @@ func (cc *cloudConfig) getRegion() string {
 		klog.Errorf("Failed to get RegionId from metadata.Because of %s\n", err.Error())
 	}
 	return r
-}
-
-// firstNotEmpty returns the first non-empty string from the input list.
-// If all strings are empty or no arguments are provided, it returns an empty string.
-func firstNotEmpty(strs ...string) string {
-	for _, str := range strs {
-		if str != "" {
-			return str
-		}
-	}
-
-	return ""
 }

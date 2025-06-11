@@ -61,7 +61,7 @@ func TestProviderSnapshot(t *testing.T) {
 		triggerSlicesError  bool
 		classes             []*resourceapi.DeviceClass
 		triggerClassesError bool
-		wantSnapshot        drasnapshot.Snapshot
+		wantSnapshot        *drasnapshot.Snapshot
 		wantErr             error
 	}{
 		{
@@ -133,7 +133,7 @@ func TestProviderSnapshot(t *testing.T) {
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("Provider.Snapshot(): unexpected error (-want +got): %s", diff)
 			}
-			if diff := cmp.Diff(tc.wantSnapshot, snapshot, cmp.AllowUnexported(drasnapshot.Snapshot{}), cmpopts.EquateEmpty()); diff != "" {
+			if diff := cmp.Diff(tc.wantSnapshot, snapshot, drasnapshot.SnapshotFlattenedComparer()); diff != "" {
 				t.Fatalf("Provider.Snapshot(): snapshot differs from expected (-want +got): %s", diff)
 			}
 		})

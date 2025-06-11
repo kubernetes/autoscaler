@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -55,6 +56,7 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 	if err != nil {
 		return nil, err
 	}
+
 	if s.draEnabled {
 		return s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
 	}
@@ -245,7 +247,7 @@ func (s *PredicateSnapshot) modifyResourceClaimsForNewPod(podInfo *framework.Pod
 	// so we don't add them. The claims should already be allocated in the provided PodInfo.
 	var podOwnedClaims []*resourceapi.ResourceClaim
 	for _, claim := range podInfo.NeededResourceClaims {
-		if ownerName, _ := drautils.ClaimOwningPod(claim); ownerName != "" {
+		if err := resourceclaim.IsForPod(podInfo.Pod, claim); err == nil {
 			podOwnedClaims = append(podOwnedClaims, claim)
 		}
 	}
