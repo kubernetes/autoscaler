@@ -56,6 +56,7 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 	if err != nil {
 		return nil, err
 	}
+
 	if s.draEnabled {
 		return s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
 	}

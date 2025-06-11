@@ -29,13 +29,13 @@ import (
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.
 // It is inefficient. But hopefully bug-free and good for initial testing.
 type BasicSnapshotStore struct {
-	data []*internalBasicSnapshotData
+	data        []*internalBasicSnapshotData
+	draSnapshot *drasnapshot.Snapshot
 }
 
 type internalBasicSnapshotData struct {
 	nodeInfoMap        map[string]*schedulerframework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
-	draSnapshot        drasnapshot.Snapshot
 }
 
 func (data *internalBasicSnapshotData) listNodeInfos() []*schedulerframework.NodeInfo {
@@ -142,7 +142,6 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        clonedNodeInfoMap,
 		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
-		draSnapshot:        data.draSnapshot.Clone(),
 	}
 }
 
@@ -208,8 +207,8 @@ func (snapshot *BasicSnapshotStore) getInternalData() *internalBasicSnapshotData
 }
 
 // DraSnapshot returns the DRA snapshot.
-func (snapshot *BasicSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
-	return snapshot.getInternalData().draSnapshot
+func (snapshot *BasicSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
+	return snapshot.draSnapshot
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
@@ -226,7 +225,7 @@ func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo *schedulerfram
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error {
+func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
 	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
@@ -243,7 +242,13 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 			}
 		}
 	}
-	snapshot.getInternalData().draSnapshot = draSnapshot
+
+	if draSnapshot == nil {
+		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.draSnapshot = draSnapshot
+	}
+
 	return nil
 }
 
@@ -271,6 +276,7 @@ func (snapshot *BasicSnapshotStore) IsPVCUsedByPods(key string) bool {
 func (snapshot *BasicSnapshotStore) Fork() {
 	forkData := snapshot.getInternalData().clone()
 	snapshot.data = append(snapshot.data, forkData)
+	snapshot.draSnapshot.Fork()
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -279,6 +285,7 @@ func (snapshot *BasicSnapshotStore) Revert() {
 		return
 	}
 	snapshot.data = snapshot.data[:len(snapshot.data)-1]
+	snapshot.draSnapshot.Revert()
 }
 
 // Commit commits changes done after forking.
@@ -288,6 +295,7 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 		return nil
 	}
 	snapshot.data = append(snapshot.data[:len(snapshot.data)-2], snapshot.data[len(snapshot.data)-1])
+	snapshot.draSnapshot.Commit()
 	return nil
 }
 
@@ -295,6 +303,7 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 func (snapshot *BasicSnapshotStore) clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
+	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
 }
 
 // implementation of SharedLister interface

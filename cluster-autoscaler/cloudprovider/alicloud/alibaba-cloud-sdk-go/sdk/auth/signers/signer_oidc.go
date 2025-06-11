@@ -19,6 +19,13 @@ package signers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/jmespath/go-jmespath"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
@@ -26,16 +33,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/responses"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 	"k8s.io/klog/v2"
-	"net/http"
-	"os"
-	"runtime"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
 	defaultOIDCDurationSeconds = 3600
+	oidcTokenFilePath          = "ALIBABA_CLOUD_OIDC_TOKEN_FILE"
+	oldOidcTokenFilePath       = "ALICLOUD_OIDC_TOKEN_FILE_PATH"
 )
 
 // OIDCSigner is kind of signer
@@ -149,7 +152,7 @@ func (signer *OIDCSigner) getOIDCToken(OIDCTokenFilePath string) string {
 	tokenPath := OIDCTokenFilePath
 	_, err := os.Stat(tokenPath)
 	if os.IsNotExist(err) {
-		tokenPath = os.Getenv("ALIBABA_CLOUD_OIDC_TOKEN_FILE")
+		tokenPath = utils.FirstNotEmpty(os.Getenv(oidcTokenFilePath), os.Getenv(oldOidcTokenFilePath))
 		if tokenPath == "" {
 			klog.Error("oidc token file path is missing")
 			return ""
