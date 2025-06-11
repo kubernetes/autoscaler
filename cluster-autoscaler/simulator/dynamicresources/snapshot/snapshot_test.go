@@ -483,7 +483,7 @@ func TestSnapshotResourceSlices(t *testing.T) {
 			}
 
 			if tc.wantAllSlices != nil {
-				allSlices, err := snapshot.ResourceSlices().List()
+				allSlices, err := snapshot.ResourceSlices().ListWithDeviceTaintRules()
 				if err != nil {
 					t.Fatalf("ResourceSlices().List(): unexpected error: %v", err)
 				}
