@@ -190,7 +190,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 				// If the pod can't be scheduled on the last node because of topology constraints, we can stop binpacking.
 				// The pod can't be scheduled on any new node either, because it has the same topology constraints.
 				nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, func(nodeInfo *framework.NodeInfo) bool {
-					return true // Node scale-up can cause old nodes to become schedulable, so we check all nodes.
+					return nodeInfo.Node().Name != estimationState.lastNodeName // only skip the last node that failed scheduling
 				})
 				if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 					// Unexpected error.
