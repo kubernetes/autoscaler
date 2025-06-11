@@ -118,12 +118,6 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	drainabilityRules := rules.Default(deleteOptions)
 
 	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
-	if autoscalingOptions.DynamicResourceAllocationEnabled {
-		// TODO(DRA): Remove this once DeltaSnapshotStore is integrated with DRA.
-		klog.Warningf("Using BasicSnapshotStore instead of DeltaSnapshotStore because DRA is enabled. Autoscaling performance/scalability might be decreased.")
-		snapshotStore = store.NewBasicSnapshotStore()
-	}
-
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		FrameworkHandle:      fwHandle,
