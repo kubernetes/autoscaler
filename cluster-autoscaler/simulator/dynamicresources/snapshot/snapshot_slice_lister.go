@@ -24,6 +24,7 @@ type snapshotSliceLister struct {
 	snapshot *Snapshot
 }
 
-func (sl snapshotSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
+// TODO(DRA): Actually handle the taint rules.
+func (sl snapshotSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
 	return sl.snapshot.listResourceSlices(), nil
 }
