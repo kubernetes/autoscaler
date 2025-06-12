@@ -417,8 +417,6 @@ spec:
        ## replicas: 1
 ```
 
-**Warning**: If the Autoscaler is enabled **and** the replicas field is set for a `MachineDeployment` or `MachineSet` the Cluster may enter a broken state where replicas become unpredictable.
-
 If the replica field is unset in the Cluster definition Autoscaling can be enabled [as described above](#enabling-autoscaling)
 
 ## Special note on GPU instances
