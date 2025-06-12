@@ -71,6 +71,9 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
   # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
   ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
-  go test -count=1 ./... -vet="${ANALYZERS}"
+  # These vendored directories have explicitly been stripped of _test.go files, so avoid searching/compiling for them
+  # when searching for tests
+  EXCLUDE_MODULES="cloudprovider/aws/aws-sdk-go|cloudprovider/aws/aws-sdk-go-v2|cloudprovider/aws/smithy-go"
+  go test -count=1 $(go list ./... | grep -Ev "${EXCLUDE_MODULES}") -vet="${ANALYZERS}"
   popd
 fi
