@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"slices"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -27,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/podtopologyspread"
 )
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
@@ -171,7 +174,8 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 
 		if estimationState.lastNodeName != "" {
 			// Try to schedule the pod on only newly created node.
-			if err := e.clusterSnapshot.SchedulePod(pod, estimationState.lastNodeName); err == nil {
+			err := e.clusterSnapshot.SchedulePod(pod, estimationState.lastNodeName)
+			if err == nil {
 				// The pod was scheduled on the newly created node.
 				found = true
 				estimationState.trackScheduledPod(pod, estimationState.lastNodeName)
@@ -180,6 +184,24 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 				return false, err
 			}
 			// The pod can't be scheduled on the newly created node because of scheduling predicates.
+
+			// Check if node failed because of topology constraints.
+			if isPodUsingHostNameTopologyKey(pod) && hasTopologyConstraintError(err) {
+				// If the pod can't be scheduled on the last node because of topology constraints, we can stop binpacking.
+				// The pod can't be scheduled on any new node either, because it has the same topology constraints.
+				nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, func(nodeInfo *framework.NodeInfo) bool {
+					return nodeInfo.Node().Name != estimationState.lastNodeName // only skip the last node that failed scheduling
+				})
+				if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
+					// Unexpected error.
+					return false, err
+				}
+				if nodeName != "" {
+					// The pod was scheduled on a different node, so we can continue binpacking.
+					found = true
+					estimationState.trackScheduledPod(pod, nodeName)
+				}
+			}
 		}
 
 		if !found {
@@ -238,6 +260,33 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState.lastNodeName = newNodeInfo.Node().Name
 	estimationState.newNodeNames[estimationState.lastNodeName] = true
 	return nil
+}
+
+// isTopologyConstraintError determines if an error is related to pod topology spread constraints
+// by checking the predicate name and reasons
+func hasTopologyConstraintError(err clustersnapshot.SchedulingError) bool {
+	if err == nil {
+		return false
+	}
+
+	// Check reasons for mentions of topology or constraints
+	return slices.Contains(err.FailingPredicateReasons(), podtopologyspread.ErrReasonConstraintsNotMatch)
+}
+
+// isPodUsingHostNameTopoKey returns true if the pod has any topology spread
+// constraint that uses the kubernetes.io/hostname topology key
+func isPodUsingHostNameTopologyKey(pod *apiv1.Pod) bool {
+	if pod == nil || pod.Spec.TopologySpreadConstraints == nil {
+		return false
+	}
+
+	for _, constraint := range pod.Spec.TopologySpreadConstraints {
+		if constraint.TopologyKey == apiv1.LabelHostname {
+			return true
+		}
+	}
+
+	return false
 }
 
 func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) {
