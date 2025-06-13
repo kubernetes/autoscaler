@@ -276,8 +276,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	stateUpdateStart := time.Now()
 
+	var draSnapshot *drasnapshot.Snapshot
+	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.AutoscalingContext.DraProvider != nil {
+		var err error
+		draSnapshot, err = a.AutoscalingContext.DraProvider.Snapshot()
+		if err != nil {
+			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
+		}
+	}
+
 	// Get nodes and pods currently living on cluster
-	allNodes, readyNodes, typedErr := a.obtainNodeLists()
+	allNodes, readyNodes, typedErr := a.obtainNodeLists(draSnapshot)
 	if typedErr != nil {
 		klog.Errorf("Failed to get node list: %v", typedErr)
 		return typedErr
@@ -302,6 +311,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to get daemonset list: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
+
 	// Snapshot scale-down actuation status before cache refresh.
 	scaleDownActuationStatus := a.scaleDownActuator.CheckStatus()
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
@@ -334,14 +344,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
-
-	var draSnapshot drasnapshot.Snapshot
-	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.AutoscalingContext.DraProvider != nil {
-		draSnapshot, err = a.AutoscalingContext.DraProvider.Snapshot()
-		if err != nil {
-			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
-		}
-	}
 
 	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
@@ -980,7 +982,7 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	a.clusterStateRegistry.Stop()
 }
 
-func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
+func (a *StaticAutoscaler) obtainNodeLists(draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
 	allNodes, err := a.AllNodeLister().List()
 	if err != nil {
 		klog.Errorf("Failed to list all nodes: %v", err)
@@ -998,7 +1000,7 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caer
 	// Treat those nodes as unready until GPU actually becomes available and let
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
-	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
+	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, draSnapshot)
 	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }
