@@ -76,12 +76,12 @@ func TestSnapshotSliceListerList(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			snapshot := NewSnapshot(nil, tc.localSlices, tc.globalSlices, nil)
 			var resourceSliceLister schedulerframework.ResourceSliceLister = snapshot.ResourceSlices()
-			slices, err := resourceSliceLister.List()
+			slices, err := resourceSliceLister.ListWithDeviceTaintRules()
 			if err != nil {
-				t.Fatalf("snapshotSliceLister.List(): got unexpected error: %v", err)
+				t.Fatalf("snapshotSliceLister.ListWithDeviceTaintRules(): got unexpected error: %v", err)
 			}
 			if diff := cmp.Diff(tc.wantSlices, slices, cmpopts.EquateEmpty(), test.IgnoreObjectOrder[*resourceapi.ResourceSlice]()); diff != "" {
-				t.Errorf("snapshotSliceLister.List(): unexpected output (-want +got): %s", diff)
+				t.Errorf("snapshotSliceLister.ListWithDeviceTaintRules(): unexpected output (-want +got): %s", diff)
 			}
 		})
 	}
