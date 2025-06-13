@@ -232,6 +232,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		if aErr != nil {
 			return scaleUpStatus, aErr
 		}
+		nodeGroups = appendCreatedNodeGroups(nodeGroups, oldId, createNodeGroupResults)
 	}
 
 	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups)
@@ -843,4 +844,15 @@ func GetPodsAwaitingEvaluation(egs []*equivalence.PodGroup, bestOption string) [
 		}
 	}
 	return awaitsEvaluation
+}
+
+func appendCreatedNodeGroups(nodeGroups []cloudprovider.NodeGroup, bestOptionNodeGroupId string, results []nodegroups.CreateNodeGroupResult) []cloudprovider.NodeGroup {
+	for _, result := range results {
+		for _, ng := range result.AllCreatedNodeGroups() {
+			if ng.Id() != bestOptionNodeGroupId {
+				nodeGroups = append(nodeGroups, ng)
+			}
+		}
+	}
+	return nodeGroups
 }
