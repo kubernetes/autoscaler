@@ -213,7 +213,7 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 			t.Parallel()
 
 			processor := NewAtomicResizeFilteringProcessor()
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			for _, ng := range tc.nodeGroups {
 				provider.AddNodeGroupWithCustomOptions(ng.nodeGroupName, 0, 100, ng.nodeGroupTargetSize, &config.NodeGroupAutoscalingOptions{
 					ZeroOrMaxNodeScaling: ng.zeroOrMaxNodeScaling,

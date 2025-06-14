@@ -17,11 +17,15 @@ limitations under the License.
 package flags
 
 import (
+	"flag"
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -143,6 +147,50 @@ func TestParseShutdownGracePeriodsAndPriorities(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			shutdownGracePeriodByPodPriority := parseShutdownGracePeriodsAndPriorities(tc.input)
 			assert.Equal(t, tc.want, shutdownGracePeriodByPodPriority)
+		})
+	}
+}
+
+func TestCreateAutoscalingOptions(t *testing.T) {
+	for _, tc := range []struct {
+		testName            string
+		flags               []string
+		wantOptionsAsserter func(t *testing.T, gotOptions config.AutoscalingOptions)
+	}{
+		{
+			testName: "DrainPriorityConfig defaults to an empty list when the flag isn't passed",
+			flags:    []string{},
+			wantOptionsAsserter: func(t *testing.T, gotOptions config.AutoscalingOptions) {
+				if diff := cmp.Diff([]kubelet_config.ShutdownGracePeriodByPodPriority{}, gotOptions.DrainPriorityConfig, cmpopts.EquateEmpty()); diff != "" {
+					t.Errorf("createAutoscalingOptions(): unexpected DrainPriorityConfig field (-want +got): %s", diff)
+				}
+			},
+		},
+		{
+			testName: "DrainPriorityConfig is parsed correctly when the flag passed",
+			flags:    []string{"--drain-priority-config", "5000:60,3000:50,0:40"},
+			wantOptionsAsserter: func(t *testing.T, gotOptions config.AutoscalingOptions) {
+				wantConfig := []kubelet_config.ShutdownGracePeriodByPodPriority{
+					{Priority: 5000, ShutdownGracePeriodSeconds: 60},
+					{Priority: 3000, ShutdownGracePeriodSeconds: 50},
+					{Priority: 0, ShutdownGracePeriodSeconds: 40},
+				}
+				if diff := cmp.Diff(wantConfig, gotOptions.DrainPriorityConfig); diff != "" {
+					t.Errorf("createAutoscalingOptions(): unexpected DrainPriorityConfig field (-want +got): %s", diff)
+				}
+			},
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			pflag.CommandLine = pflag.NewFlagSet("test", pflag.ExitOnError)
+			pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+			err := pflag.CommandLine.Parse(tc.flags)
+			if err != nil {
+				t.Errorf("pflag.CommandLine.Parse() got unexpected error: %v", err)
+			}
+
+			gotOptions := createAutoscalingOptions()
+			tc.wantOptionsAsserter(t, gotOptions)
 		})
 	}
 }

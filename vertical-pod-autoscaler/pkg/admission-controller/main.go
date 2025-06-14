@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/pflag"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_flag "k8s.io/component-base/cli/flag"
@@ -36,6 +37,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
@@ -81,12 +83,13 @@ func main() {
 	commonFlags := common.InitCommonFlags()
 	klog.InitFlags(nil)
 	common.InitLoggingFlags()
+	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
 	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion())
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	healthCheck := metrics.NewHealthCheck(time.Minute)
@@ -115,7 +118,7 @@ func main() {
 	hostname, err := os.Hostname()
 	if err != nil {
 		klog.ErrorS(err, "Unable to get hostname")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	statusNamespace := status.AdmissionControllerStatusNamespace
@@ -154,6 +157,6 @@ func main() {
 
 	if err = server.ListenAndServeTLS("", ""); err != nil {
 		klog.ErrorS(err, "Failed to start HTTPS server")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 }

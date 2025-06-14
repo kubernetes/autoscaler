@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -46,11 +46,11 @@ type UpdateSecurityRuleDetails struct {
 	// Allowed values:
 	//   * An IP address range in CIDR notation. For example: `192.168.1.0/24` or `2001:0db8:0123:45::/56`
 	//     IPv6 addressing is supported for all commercial and government regions. See
-	//     IPv6 Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).
+	//     IPv6 Addresses (https://docs.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).
 	//   * The `cidrBlock` value for a Service, if you're
 	//     setting up a security rule for traffic destined for a particular `Service` through
 	//     a service gateway. For example: `oci-phx-objectstorage`.
-	//   * The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a NetworkSecurityGroup in the same
+	//   * The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a NetworkSecurityGroup in the same
 	//     VCN. The value can be the NSG that the rule belongs to if the rule's intent is to control
 	//     traffic between VNICs in the same NSG.
 	Destination *string `mandatory:"false" json:"destination"`
@@ -61,7 +61,7 @@ type UpdateSecurityRuleDetails struct {
 	//   * `SERVICE_CIDR_BLOCK`: If the rule's `destination` is the `cidrBlock` value for a
 	//     Service (the rule is for traffic destined for a
 	//     particular `Service` through a service gateway).
-	//   * `NETWORK_SECURITY_GROUP`: If the rule's `destination` is the OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a
+	//   * `NETWORK_SECURITY_GROUP`: If the rule's `destination` is the OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a
 	//     NetworkSecurityGroup.
 	DestinationType UpdateSecurityRuleDetailsDestinationTypeEnum `mandatory:"false" json:"destinationType,omitempty"`
 
@@ -79,11 +79,11 @@ type UpdateSecurityRuleDetails struct {
 	// Allowed values:
 	//   * An IP address range in CIDR notation. For example: `192.168.1.0/24` or `2001:0db8:0123:45::/56`
 	//     IPv6 addressing is supported for all commercial and government regions. See
-	//     IPv6 Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).
+	//     IPv6 Addresses (https://docs.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).
 	//   * The `cidrBlock` value for a Service, if you're
 	//     setting up a security rule for traffic coming from a particular `Service` through
 	//     a service gateway. For example: `oci-phx-objectstorage`.
-	//   * The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a NetworkSecurityGroup in the same
+	//   * The OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a NetworkSecurityGroup in the same
 	//     VCN. The value can be the NSG that the rule belongs to if the rule's intent is to control
 	//     traffic between VNICs in the same NSG.
 	Source *string `mandatory:"false" json:"source"`
@@ -93,7 +93,7 @@ type UpdateSecurityRuleDetails struct {
 	//   * `SERVICE_CIDR_BLOCK`: If the rule's `source` is the `cidrBlock` value for a
 	//     Service (the rule is for traffic coming from a
 	//     particular `Service` through a service gateway).
-	//   * `NETWORK_SECURITY_GROUP`: If the rule's `source` is the OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a
+	//   * `NETWORK_SECURITY_GROUP`: If the rule's `source` is the OCID (https://docs.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of a
 	//     NetworkSecurityGroup.
 	SourceType UpdateSecurityRuleDetailsSourceTypeEnum `mandatory:"false" json:"sourceType,omitempty"`
 

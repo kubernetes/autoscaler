@@ -18,6 +18,8 @@ package aws
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
@@ -26,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"testing"
 )
 
 var testAwsManager = &AwsManager{
@@ -249,6 +250,20 @@ func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, group, nil)
+}
+
+func TestNodeGroupForNodeWithHybridNode(t *testing.T) {
+	hybridNode := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "eks-hybrid:///us-west-2/my-cluster/my-node-1",
+		},
+	}
+	a := &autoScalingMock{}
+	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
+	group, err := provider.NodeGroupForNode(hybridNode)
+
+	assert.NoError(t, err)
+	assert.Nil(t, group)
 }
 
 func TestAwsRefFromProviderId(t *testing.T) {

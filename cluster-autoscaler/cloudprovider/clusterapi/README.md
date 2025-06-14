@@ -186,9 +186,15 @@ There are two annotations that control how a cluster resource should be scaled:
 The autoscaler will monitor any `MachineSet`, `MachineDeployment`, or `MachinePool` containing
 both of these annotations.
 
+> Note: The cluster autoscaler does not enforce the node group sizes. If a node group is
+> below the minimum number of nodes, or above the maximum number of nodes, the cluster
+> autoscaler will not scale that node group up or down. The cluster autoscaler can be configured
+> to enforce the minimum node group size by enabling the `--enforce-node-group-min-size` flag.
+> Please see [this entry in the Cluster Autoscaler FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
+> for more information.
+
 > Note: `MachinePool` support in cluster-autoscaler requires a provider implementation
-> that supports the new "MachinePool Machines" feature. MachinePools in Cluster API are
-> considered an [experimental feature](https://cluster-api.sigs.k8s.io/tasks/experimental-features/experimental-features.html#active-experimental-features) and are not enabled by default.
+> that supports the "MachinePool Machines" feature.
 
 ### Scale from zero support
 
@@ -208,6 +214,11 @@ autoscaler about the sizing of the nodes in the node group. At the minimum,
 you must specify the CPU and memory annotations, these annotations should
 match the expected capacity of the nodes created from the infrastructure.
 
+> Note: The scale from zero annotations will override any capacity information
+> supplied by the Cluster API provider in the infrastructure machine templates.
+> If both the annotations and the provider supplied capacity information are
+> present, the annotations will take precedence.
+
 For example, if my MachineDeployment will create nodes that have "16000m" CPU,
 "128G" memory, "100Gi" ephemeral disk storage, 2 NVidia GPUs, and can support
 200 max pods, the following annotations will instruct the autoscaler how to
@@ -223,14 +234,23 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
     capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
     capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk: "100Gi"
-    capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
-    capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
     capacity.cluster-autoscaler.kubernetes.io/maxPods: "200"
+    // Device Plugin
+    // Comment out the below annotation if DRA is enabled on your cluster running k8s v1.32.0 or greater
+    capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
+    // Dynamic Resource Allocation (DRA)
+    // Uncomment the below annotation if DRA is enabled on your cluster running k8s v1.32.0 or greater
+    // capacity.cluster-autoscaler.kubernetes.io/dra-driver: "gpu.nvidia.com"
+    // Common in Device Plugin and DRA
+    capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
 ```
 
-*Note* the `maxPods` annotation will default to `110` if it is not supplied.
-This value is inspired by the Kubernetes best practices
-[Considerations for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
+> Note: the `maxPods` annotation will default to `110` if it is not supplied.
+> This value is inspired by the Kubernetes best practices
+> [Considerations for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
+
+> Note: User should select the annotation for GPU either `gpu-type` or `dra-driver` depends on whether using
+> Device Plugin or Dynamic Resource Allocation(DRA). `gpu-count` is a common parameter in both.
 
 #### RBAC changes for scaling from zero
 
@@ -274,6 +294,12 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/labels: "key1=value1,key2=value2"
     capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
 ```
+
+> Note: The labels supplied through the capacity annotation will be combined
+> with the labels to be propagated from the scalable Cluster API resource.
+> The annotation does not override the labels in the scalable resource.
+> Please see the [Cluster API Book chapter on Metadata propagation](https://cluster-api.sigs.k8s.io/reference/api/metadata-propagation)
+> for more information.
 
 #### Per-NodeGroup autoscaling options
 
@@ -390,8 +416,6 @@ spec:
        ## replicas field is not set.
        ## replicas: 1
 ```
-
-**Warning**: If the Autoscaler is enabled **and** the replicas field is set for a `MachineDeployment` or `MachineSet` the Cluster may enter a broken state where replicas become unpredictable.
 
 If the replica field is unset in the Cluster definition Autoscaling can be enabled [as described above](#enabling-autoscaling)
 

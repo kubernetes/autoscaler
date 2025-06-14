@@ -306,7 +306,14 @@ func (m *gceManagerImpl) Refresh() error {
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
-	return m.forceRefresh()
+
+	if err := m.forceRefresh(); err != nil {
+		return err
+	}
+
+	migs := m.migLister.GetMigs()
+	m.cache.DropInstanceTemplatesForMissingMigs(migs)
+	return nil
 }
 
 func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {

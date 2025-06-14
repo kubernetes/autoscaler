@@ -62,7 +62,7 @@ func TestOKWithScaleUp(t *testing.T) {
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 5)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 
@@ -104,7 +104,7 @@ func TestOKWithScaleUp(t *testing.T) {
 func TestEmptyOK(t *testing.T) {
 	now := time.Now()
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 0, 10, 0)
 	assert.NotNil(t, provider)
 
@@ -148,7 +148,7 @@ func TestHasNodeGroupStartedScaleUp(t *testing.T) {
 	for tn, tc := range tests {
 		t.Run(tn, func(t *testing.T) {
 			now := time.Now()
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.AddNodeGroup("ng1", 0, 5, tc.initialSize)
 			fakeClient := &fake.Clientset{}
 			fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
@@ -225,7 +225,7 @@ func TestRecalculateStateAfterNodeGroupSizeChanged(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.AddNodeGroup(ngName, 0, 1000, tc.newTarget)
 
 			fakeLogRecorder, _ := utils.NewStatusMapRecorder(&fake.Clientset{}, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
@@ -255,7 +255,7 @@ func TestOKOneUnreadyNode(t *testing.T) {
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
@@ -294,7 +294,7 @@ func TestNodeWithoutNodeGroupDontCrash(t *testing.T) {
 
 	noNgNode := BuildTestNode("no_ng", 1000, 1000)
 	SetNodeReadyState(noNgNode, true, now.Add(-time.Minute))
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNode("no_ng", noNgNode)
 
 	fakeClient := &fake.Clientset{}
@@ -317,7 +317,7 @@ func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
@@ -370,7 +370,7 @@ func TestMissingNodes(t *testing.T) {
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 5)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 
@@ -411,7 +411,7 @@ func TestTooManyUnready(t *testing.T) {
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
@@ -440,7 +440,7 @@ func TestUnreadyLongAfterCreation(t *testing.T) {
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 	ng2_1.CreationTimestamp = metav1.Time{Time: now.Add(-30 * time.Minute)}
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
@@ -472,7 +472,7 @@ func TestNotStarted(t *testing.T) {
 	SetNodeNotReadyTaint(ng2_1)
 	ng2_1.CreationTimestamp = metav1.Time{Time: now.Add(-10 * time.Minute)}
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
@@ -511,7 +511,7 @@ func TestExpiredScaleUp(t *testing.T) {
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 5)
 	provider.AddNode("ng1", ng1_1)
 	assert.NotNil(t, provider)
@@ -536,7 +536,7 @@ func TestExpiredScaleUp(t *testing.T) {
 
 func TestRegisterScaleDown(t *testing.T) {
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
 	assert.NotNil(t, provider)
@@ -556,7 +556,7 @@ func TestRegisterScaleDown(t *testing.T) {
 }
 
 func TestUpcomingNodes(t *testing.T) {
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	now := time.Now()
 
 	// 6 nodes are expected to come.
@@ -629,8 +629,7 @@ func TestUpcomingNodes(t *testing.T) {
 func TestTaintBasedNodeDeletion(t *testing.T) {
 	// Create a new Cloud Provider that does not implement the HasInstance check
 	// it will return the ErrNotImplemented error instead.
-	provider := testprovider.NewTestNodeDeletionDetectionCloudProvider(nil, nil,
-		func(string) (bool, error) { return false, cloudprovider.ErrNotImplemented })
+	provider := testprovider.NewTestCloudProviderBuilder().WithHasInstance(func(string) (bool, error) { return false, cloudprovider.ErrNotImplemented }).Build()
 	now := time.Now()
 
 	// One node is already there, for a second nde deletion / draining was already started.
@@ -667,7 +666,7 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 
 func TestIncorrectSize(t *testing.T) {
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 5)
 	provider.AddNode("ng1", ng1_1)
 	assert.NotNil(t, provider)
@@ -702,7 +701,7 @@ func TestUnregisteredNodes(t *testing.T) {
 	ng1_1.Spec.ProviderID = "ng1-1"
 	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
 	ng1_2.Spec.ProviderID = "ng1-2"
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNode("ng1", ng1_1)
 	provider.AddNode("ng1", ng1_2)
@@ -750,7 +749,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	SetNodeReadyState(noNgNode, true, now.Add(-time.Minute))
 
 	noNgNode.Spec.ProviderID = "no-ng"
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNode("ng1", ng1_1)
 	provider.AddNode("ng1", ng1_2)
@@ -844,7 +843,7 @@ func TestScaleUpBackoff(t *testing.T) {
 	ng1_3 := BuildTestNode("ng1-3", 1000, 1000)
 	SetNodeReadyState(ng1_3, true, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 4)
 	ng1 := provider.GetNodeGroup("ng1")
 	provider.AddNode("ng1", ng1_1)
@@ -967,7 +966,7 @@ func TestGetClusterSize(t *testing.T) {
 	notAutoscaledNode := BuildTestNode("notAutoscaledNode", 1000, 1000)
 	SetNodeReadyState(notAutoscaledNode, true, now.Add(-time.Minute))
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 5)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 
@@ -1018,7 +1017,7 @@ func TestUpdateScaleUp(t *testing.T) {
 	now := time.Now()
 	later := now.Add(time.Minute)
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 5)
 	provider.AddNodeGroup("ng2", 1, 10, 5)
 	fakeClient := &fake.Clientset{}
@@ -1065,7 +1064,7 @@ func TestUpdateScaleUp(t *testing.T) {
 func TestScaleUpFailures(t *testing.T) {
 	now := time.Now()
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 0, 10, 0)
 	provider.AddNodeGroup("ng2", 0, 10, 0)
 	assert.NotNil(t, provider)
@@ -1213,7 +1212,7 @@ func TestUpdateAcceptableRanges(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			for nodeGroupName, targetSize := range tc.targetSizes {
 				provider.AddNodeGroup(nodeGroupName, 0, 1000, targetSize)
 			}
@@ -1397,7 +1396,7 @@ func TestUpdateIncorrectNodeGroupSizes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			for nodeGroupName, acceptableRange := range tc.acceptableRanges {
 				provider.AddNodeGroup(nodeGroupName, 0, 1000, acceptableRange.CurrentTarget)
 			}
@@ -1458,7 +1457,7 @@ func TestTruncateIfExceedMaxSize(t *testing.T) {
 }
 
 func TestIsNodeGroupRegistered(t *testing.T) {
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	registeredNodeGroupName := "registered-node-group"
 	provider.AddNodeGroup(registeredNodeGroupName, 1, 10, 1)
 	fakeClient := &fake.Clientset{}
@@ -1537,7 +1536,7 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 	for _, tc := range testCases {
 
 		now := time.Now()
-		provider := testprovider.NewTestCloudProvider(nil, nil)
+		provider := testprovider.NewTestCloudProviderBuilder().Build()
 		for groupName, groupSize := range tc.nodeGroups {
 			provider.AddUpcomingNodeGroup(groupName, 1, 10, groupSize)
 		}

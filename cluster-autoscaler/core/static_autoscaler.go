@@ -93,7 +93,6 @@ type StaticAutoscaler struct {
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	taintConfig             taints.TaintConfig
-	draProvider             *draprovider.Provider
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -167,7 +166,8 @@ func NewStaticAutoscaler(
 		processorCallbacks,
 		debuggingSnapshotter,
 		remainingPdbTracker,
-		clusterStateRegistry)
+		clusterStateRegistry,
+		draProvider)
 
 	taintConfig := taints.NewTaintConfig(opts)
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
@@ -179,7 +179,7 @@ func NewStaticAutoscaler(
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor, draProvider)
+	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingContext.ScaleDownActuator = scaleDownActuator
 
 	if scaleUpOrchestrator == nil {
@@ -203,7 +203,6 @@ func NewStaticAutoscaler(
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		taintConfig:             taintConfig,
-		draProvider:             draProvider,
 	}
 }
 
@@ -277,8 +276,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	stateUpdateStart := time.Now()
 
+	var draSnapshot *drasnapshot.Snapshot
+	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.AutoscalingContext.DraProvider != nil {
+		var err error
+		draSnapshot, err = a.AutoscalingContext.DraProvider.Snapshot()
+		if err != nil {
+			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
+		}
+	}
+
 	// Get nodes and pods currently living on cluster
-	allNodes, readyNodes, typedErr := a.obtainNodeLists()
+	allNodes, readyNodes, typedErr := a.obtainNodeLists(draSnapshot)
 	if typedErr != nil {
 		klog.Errorf("Failed to get node list: %v", typedErr)
 		return typedErr
@@ -303,6 +311,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to get daemonset list: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
+
 	// Snapshot scale-down actuation status before cache refresh.
 	scaleDownActuationStatus := a.scaleDownActuator.CheckStatus()
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
@@ -335,14 +344,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
-
-	var draSnapshot drasnapshot.Snapshot
-	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.draProvider != nil {
-		draSnapshot, err = a.draProvider.Snapshot()
-		if err != nil {
-			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
-		}
-	}
 
 	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
@@ -606,7 +607,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime, scaleDownCandidates)
+		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime)
 		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
 			"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
 			a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
@@ -627,6 +628,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
+			a.updateSoftDeletionTaints(allNodes)
+		} else if len(scaleDownCandidates) == 0 {
+			klog.V(4).Infof("Starting scale down: no scale down candidates. skipping...")
+			scaleDownStatus.Result = scaledownstatus.ScaleDownNoCandidates
+			metrics.UpdateLastTime(metrics.ScaleDown, time.Now())
 			a.updateSoftDeletionTaints(allNodes)
 		} else {
 			klog.V(4).Infof("Starting scale down")
@@ -712,8 +718,8 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 	return nil
 }
 
-func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time, scaleDownCandidates []*apiv1.Node) bool {
-	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop || len(scaleDownCandidates) == 0
+func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time) bool {
+	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop
 
 	if a.ScaleDownDelayTypeLocal {
 		return scaleDownInCooldown
@@ -976,7 +982,7 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	a.clusterStateRegistry.Stop()
 }
 
-func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
+func (a *StaticAutoscaler) obtainNodeLists(draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
 	allNodes, err := a.AllNodeLister().List()
 	if err != nil {
 		klog.Errorf("Failed to list all nodes: %v", err)
@@ -994,7 +1000,7 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caer
 	// Treat those nodes as unready until GPU actually becomes available and let
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
-	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
+	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, draSnapshot)
 	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }

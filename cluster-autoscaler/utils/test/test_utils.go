@@ -160,8 +160,8 @@ func WithHostPort(hostport int32) func(*apiv1.Pod) {
 	}
 }
 
-// WithMaxSkew sets a namespace to the pod.
-func WithMaxSkew(maxSkew int32, topologySpreadingKey string) func(*apiv1.Pod) {
+// WithMaxSkew sets a topology spread constraint to the pod.
+func WithMaxSkew(maxSkew int32, topologySpreadingKey string, minDomains int32) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		if maxSkew > 0 {
 			pod.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{
@@ -174,6 +174,7 @@ func WithMaxSkew(maxSkew int32, topologySpreadingKey string) func(*apiv1.Pod) {
 							"app": "estimatee",
 						},
 					},
+					MinDomains: &minDomains,
 				},
 			}
 		}
@@ -191,6 +192,29 @@ func WithCreationTimestamp(timestamp time.Time) func(*apiv1.Pod) {
 func WithDeletionTimestamp(deletionTimestamp time.Time) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		pod.DeletionTimestamp = &metav1.Time{Time: deletionTimestamp}
+	}
+}
+
+// WithNodeNamesAffinity sets pod's affinity for specific nodes.
+func WithNodeNamesAffinity(nodeNames ...string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.Affinity = &apiv1.Affinity{
+			NodeAffinity: &apiv1.NodeAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: &apiv1.NodeSelector{
+					NodeSelectorTerms: []apiv1.NodeSelectorTerm{
+						{
+							MatchFields: []apiv1.NodeSelectorRequirement{
+								{
+									Key:      metav1.ObjectNameField,
+									Operator: apiv1.NodeSelectorOpIn,
+									Values:   nodeNames,
+								},
+							},
+						},
+					},
+				},
+			},
+		}
 	}
 }
 

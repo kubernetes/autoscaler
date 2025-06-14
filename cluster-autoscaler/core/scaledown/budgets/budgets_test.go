@@ -420,9 +420,9 @@ func TestCropNodesToBudgets(t *testing.T) {
 		},
 	} {
 		t.Run(tn, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 				return nil
-			})
+			}).Build()
 			for _, bucket := range append(tc.empty, tc.drain...) {
 				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
 				provider.InsertNodeGroup(bucket.Group)

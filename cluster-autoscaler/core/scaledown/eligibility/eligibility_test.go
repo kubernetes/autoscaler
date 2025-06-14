@@ -42,7 +42,7 @@ type testCase struct {
 	desc                        string
 	nodes                       []*apiv1.Node
 	pods                        []*apiv1.Pod
-	draSnapshot                 drasnapshot.Snapshot
+	draSnapshot                 *drasnapshot.Snapshot
 	draEnabled                  bool
 	wantUnneeded                []string
 	wantUnremovable             []*simulator.UnremovableNode
@@ -223,7 +223,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 			}
 			s := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults)
 			c := NewChecker(s)
-			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			provider.AddNodeGroup("ng1", 1, 10, 2)
 			for _, n := range tc.nodes {
 				provider.AddNode("ng1", n)

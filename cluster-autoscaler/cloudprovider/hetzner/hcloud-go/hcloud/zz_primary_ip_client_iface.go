@@ -27,11 +27,11 @@ type IPrimaryIPClient interface {
 	// AllWithOpts returns all Primary IPs for the given options.
 	AllWithOpts(ctx context.Context, opts PrimaryIPListOpts) ([]*PrimaryIP, error)
 	// Create creates a Primary IP.
-	Create(ctx context.Context, reqBody PrimaryIPCreateOpts) (*PrimaryIPCreateResult, *Response, error)
+	Create(ctx context.Context, opts PrimaryIPCreateOpts) (*PrimaryIPCreateResult, *Response, error)
 	// Delete deletes a Primary IP.
 	Delete(ctx context.Context, primaryIP *PrimaryIP) (*Response, error)
 	// Update updates a Primary IP.
-	Update(ctx context.Context, primaryIP *PrimaryIP, reqBody PrimaryIPUpdateOpts) (*PrimaryIP, *Response, error)
+	Update(ctx context.Context, primaryIP *PrimaryIP, opts PrimaryIPUpdateOpts) (*PrimaryIP, *Response, error)
 	// Assign a Primary IP to a resource.
 	Assign(ctx context.Context, opts PrimaryIPAssignOpts) (*Action, *Response, error)
 	// Unassign a Primary IP from a resource.

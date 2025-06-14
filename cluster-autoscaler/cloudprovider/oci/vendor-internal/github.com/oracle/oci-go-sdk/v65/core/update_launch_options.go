@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -6,11 +6,11 @@
 //
 // Use the Core Services API to manage resources such as virtual cloud networks (VCNs),
 // compute instances, and block storage volumes. For more information, see the console
-// documentation for the Networking (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/overview.htm),
-// Compute (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
-// Block Volume (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
+// documentation for the Networking (https://docs.oracle.com/iaas/Content/Network/Concepts/overview.htm),
+// Compute (https://docs.oracle.com/iaas/Content/Compute/Concepts/computeoverview.htm), and
+// Block Volume (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm) services.
 // The required permissions are documented in the
-// Details for the Core Services (https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
+// Details for the Core Services (https://docs.oracle.com/iaas/Content/Identity/Reference/corepolicyreference.htm) article.
 //
 
 package core
@@ -43,7 +43,7 @@ type UpdateLaunchOptions struct {
 	// Before you change the networking type, detach all VNICs and block volumes except for the primary
 	// VNIC and the boot volume.
 	// The image must have paravirtualized drivers installed. For more information, see
-	// Editing an Instance (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/resizinginstances.htm).
+	// Editing an Instance (https://docs.oracle.com/iaas/Content/Compute/Tasks/resizinginstances.htm).
 	// If the instance is running when you change the network type, it will be rebooted.
 	// **Note:** Some instances might not function properly if you change the networking type. After
 	// the instance reboots and is running, connect to it. If the connection fails or the OS doesn't behave
@@ -57,7 +57,7 @@ type UpdateLaunchOptions struct {
 	// instance and the boot volume or the block volume, you can enable in-transit encryption.
 	// In-transit encryption is not enabled by default.
 	// All boot volumes and block volumes are encrypted at rest.
-	// For more information, see Block Volume Encryption (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm#Encrypti).
+	// For more information, see Block Volume Encryption (https://docs.oracle.com/iaas/Content/Block/Concepts/overview.htm#Encrypti).
 	IsPvEncryptionInTransitEnabled *bool `mandatory:"false" json:"isPvEncryptionInTransitEnabled"`
 }
 

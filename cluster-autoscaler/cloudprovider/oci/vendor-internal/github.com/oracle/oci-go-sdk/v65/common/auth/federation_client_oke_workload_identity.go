@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2025, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
 package auth
@@ -125,8 +125,14 @@ func (c *x509FederationClientForOkeWorkloadIdentity) getSecurityToken() (securit
 
 	statusCode := response.StatusCode
 	if statusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get a RPST token from Proxymux: URL: %s, Status: %s, Message: %s",
-			c.proxymuxEndpoint, response.Status, body.String())
+		if statusCode == http.StatusForbidden {
+			return nil, fmt.Errorf("please ensure the cluster type is enhanced: Status: %s, Message: %s",
+				response.Status, body.String())
+		} else {
+			return nil, fmt.Errorf("failed to get a RPST token from Proxymux: URL: %s, Status: %s, Message: %s",
+				c.proxymuxEndpoint, response.Status, body.String())
+		}
+
 	}
 
 	if _, err = body.ReadFrom(response.Body); err != nil {

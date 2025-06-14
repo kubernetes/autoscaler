@@ -60,6 +60,7 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 			originalRequest:    mustParseToPointer("1"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "no original request",
@@ -73,6 +74,7 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 			recommendedRequest: mustParseToPointer("0"),
 			defaultLimit:       mustParseToPointer("2"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "limit equal to request",
@@ -141,6 +143,7 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 			originalRequest:    mustParseToPointer("1"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "no original request",
@@ -154,6 +157,7 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 			recommendedRequest: mustParseToPointer("0"),
 			defaultLimit:       mustParseToPointer("2"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "limit equal to request",

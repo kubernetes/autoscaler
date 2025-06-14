@@ -6,10 +6,11 @@ package nodepools
 
 import (
 	"context"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -122,6 +123,12 @@ func TestGetNodePoolNodes(t *testing.T) {
 					Code:    common.String("InternalServerError"),
 					Message: common.String("blah blah quota exceeded blah blah"),
 				},
+			},
+			{
+				// This case happens if a node fails to scale up due to lack of capacity in the region.
+				// It's not a real node, so we shouldn't return it in the list of nodes.
+				Id:             common.String(""),
+				LifecycleState: oke.NodeLifecycleStateCreating,
 			},
 		},
 	}

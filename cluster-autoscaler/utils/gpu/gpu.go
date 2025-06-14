@@ -19,6 +19,7 @@ package gpu
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/klog/v2"
 )
 
@@ -105,15 +106,9 @@ func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
 
 // PodRequestsGpu returns true if a given pod has GPU request.
 func PodRequestsGpu(pod *apiv1.Pod) bool {
-	for _, container := range pod.Spec.Containers {
-		if container.Resources.Requests != nil {
-			_, gpuFound := container.Resources.Requests[ResourceNvidiaGPU]
-			if gpuFound {
-				return true
-			}
-		}
-	}
-	return false
+	podRequests := podutils.PodRequests(pod)
+	_, gpuFound := podRequests[ResourceNvidiaGPU]
+	return gpuFound
 }
 
 // GetNodeGPUFromCloudProvider returns the GPU the node has. Returned GPU has the GPU label of the

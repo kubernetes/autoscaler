@@ -27,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
-	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -281,7 +280,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				}
 
 				clusterSnapshot := snapshotFactory()
-				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, drasnapshot.Snapshot{}); err != nil {
+				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, nil); err != nil {
 					assert.NoError(b, err)
 				}
 

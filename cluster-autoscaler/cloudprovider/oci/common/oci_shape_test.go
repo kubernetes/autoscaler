@@ -6,10 +6,11 @@ package common
 
 import (
 	"context"
-	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
 	"reflect"
 	"strings"
 	"testing"
+
+	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
@@ -17,12 +18,14 @@ import (
 
 type mockShapeClient struct {
 	err                   error
-	listShapeResp         core.ListShapesResponse
+	listShapeResponses    []core.ListShapesResponse
 	getInstanceConfigResp core.GetInstanceConfigurationResponse
+	requestCount          int
 }
 
 func (m *mockShapeClient) ListShapes(_ context.Context, _ core.ListShapesRequest) (core.ListShapesResponse, error) {
-	return m.listShapeResp, m.err
+	m.requestCount++
+	return m.listShapeResponses[m.requestCount-1], m.err
 }
 
 func (m *mockShapeClient) GetInstanceConfiguration(context.Context, core.GetInstanceConfigurationRequest) (core.GetInstanceConfigurationResponse, error) {
@@ -46,12 +49,14 @@ var instanceDetails = core.ComputeInstanceDetails{
 
 var shapeClient = &mockShapeClient{
 	err: nil,
-	listShapeResp: core.ListShapesResponse{
-		Items: []core.Shape{
-			{
-				Shape:       common.String("VM.Standard2.8"),
-				Ocpus:       common.Float32(8),
-				MemoryInGBs: common.Float32(120),
+	listShapeResponses: []core.ListShapesResponse{
+		{
+			Items: []core.Shape{
+				{
+					Shape:       common.String("VM.Standard2.8"),
+					Ocpus:       common.Float32(8),
+					MemoryInGBs: common.Float32(120),
+				},
 			},
 		},
 	},
@@ -76,12 +81,24 @@ func TestNodePoolGetShape(t *testing.T) {
 
 	shapeClient := &mockShapeClient{
 		err: nil,
-		listShapeResp: core.ListShapesResponse{
-			Items: []core.Shape{
-				{
-					Shape:       common.String("VM.Standard1.2"),
-					Ocpus:       common.Float32(2),
-					MemoryInGBs: common.Float32(16),
+		listShapeResponses: []core.ListShapesResponse{
+			{
+				Items: []core.Shape{
+					{
+						Shape:       common.String("VM.Standard1.1"),
+						Ocpus:       common.Float32(2),
+						MemoryInGBs: common.Float32(16),
+					},
+				},
+				OpcNextPage: common.String("nextPage"),
+			},
+			{
+				Items: []core.Shape{
+					{
+						Shape:       common.String("VM.Standard1.2"),
+						Ocpus:       common.Float32(2),
+						MemoryInGBs: common.Float32(16),
+					},
 				},
 			},
 		},

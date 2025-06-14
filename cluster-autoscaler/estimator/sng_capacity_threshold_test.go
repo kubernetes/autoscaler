@@ -77,7 +77,7 @@ func TestSngCapacityThreshold(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(func(string, int) error { return nil }, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(string, int) error { return nil }).Build()
 			for _, ng := range tt.nodeGroupsConfig {
 				provider.AddNodeGroup(ng.name, 0, ng.maxNodes, ng.nodesCount)
 			}

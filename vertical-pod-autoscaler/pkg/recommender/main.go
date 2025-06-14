@@ -40,6 +40,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
@@ -52,6 +53,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	metrics_resources "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/resources"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -63,6 +65,7 @@ var (
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	memorySaver            = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+	updateWorkerCount      = flag.Int("update-worker-count", 10, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits (`kube-api-qps` and `kube-api-burst`) are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
 )
 
 // Prometheus history provider flags
@@ -131,18 +134,26 @@ func main() {
 	leaderElection := defaultLeaderElectionConfiguration()
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
+	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
+
 	kube_flag.InitFlags()
 	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion(), "recommenderName", *recommenderName)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
+
+	if *routines.MinCheckpointsPerRun != 10 { // Default value is 10
+		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
+	}
+
 	ctx := context.Background()
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
 	metrics_recommender.Register()
 	metrics_quality.Register()
+	metrics_resources.Register()
 	server.Initialize(&commonFlags.EnableProfiling, healthCheck, address)
 
 	if !leaderElection.LeaderElect {
@@ -151,7 +162,7 @@ func main() {
 		id, err := os.Hostname()
 		if err != nil {
 			klog.ErrorS(err, "Unable to get hostname")
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
@@ -170,7 +181,7 @@ func main() {
 		)
 		if err != nil {
 			klog.ErrorS(err, "Unable to create leader election lock")
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 
 		leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
@@ -279,12 +290,13 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        *checkpointsGCInterval,
 		UseCheckpoints:               useCheckpoints,
+		UpdateWorkerCount:            *updateWorkerCount,
 	}.Make()
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
 		klog.ErrorS(err, "Could not parse --prometheus-query-timeout as a time.Duration")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	if useCheckpoints {
@@ -312,7 +324,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
 			klog.ErrorS(err, "Could not initialize history provider")
-			os.Exit(255)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
