@@ -63,7 +63,7 @@ type PlacementProblems struct {
 	OverflowReplicas int32
 }
 
-// buildTargetInfoMap aggregates information scattered across multiple
+// buildTargetInfoMapForProportional aggregates information scattered across multiple
 // maps into a single one. It assumes that all inputs are already validated
 // and consistent.
 func buildTargetInfoMapForProportional(
@@ -91,7 +91,7 @@ func buildTargetInfoMapForProportional(
 	return result
 }
 
-// buildTargetInfoMap aggregates information scattered across multiple
+// buildTargetInfoMapForPriority aggregates information scattered across multiple
 // maps into a single one. It assumes that all inputs are already validated
 // and consistent.
 func buildTargetInfoMapForPriority(
