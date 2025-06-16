@@ -247,7 +247,7 @@ var (
 		"e2-standard-32":              1.07210,
 		"f1-micro":                    0.0076,
 		"g1-small":                    0.0257,
-		"h4d-highmem-192-lssd": 10.030586,
+		"h4d-highmem-192-lssd":        10.030586,
 		"m1-megamem-96":               10.6740,
 		"m1-ultramem-40":              6.3039,
 		"m1-ultramem-80":              12.6078,
