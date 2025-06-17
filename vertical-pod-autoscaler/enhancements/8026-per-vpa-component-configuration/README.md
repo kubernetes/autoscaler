@@ -13,6 +13,9 @@
   - [API Changes](#api-changes)
     - [Phase 1 (Current Proposal)](#phase-1-current-proposal)
     - [Future Extensions](#future-extensions)
+  - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+    - [How can this feature be enabled / disabled in a live cluster?](#how-can-this-feature-be-enabled--disabled-in-a-live-cluster)
+  - [Kubernetes version compatibility](#kubernetes-version-compatibility)
   - [Validation via CEL and Testing](#validation-via-cel-and-testing)
   - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
@@ -105,21 +108,49 @@ Each parameter can be configured independently, falling back to global defaults 
 
 #### Phase 1 (Current Proposal)
 
-Extend ContainerResourcePolicy with:
-* oomBumpUpRatio
-* oomMinBumpUp
-* memoryAggregationInterval
+Extend `ContainerResourcePolicy` with:
+* `oomBumpUpRatio`
+* `oomMinBumpUp`
+* `memoryAggregationInterval`
 
-Extend PodUpdatePolicy with:
-* evictAfterOomThreshold
+Extend `PodUpdatePolicy` with:
+* `evictAfterOomThreshold`
 
 #### Future Extensions
 
 This AEP will be updated as additional parameters are identified for per-object configuration. Potential candidates include:
-* confidenceIntervalCPU
-* confidenceIntervalMemory
-* recommendationMarginFraction
+* `confidenceIntervalCPU`
+* `confidenceIntervalMemory`
+* `recommendationMarginFraction`
 * Other parameters that benefit from workload-specific tuning
+
+### Feature Enablement and Rollback
+
+#### How can this feature be enabled / disabled in a live cluster?
+
+- Feature gate name: `PerVPAConfig`
+- Components depending on the feature gate:
+  - admission-controller
+  - recommender
+  - updater
+
+Disabling of feature gate `PerVPAConfig` will cause the following to happen:
+
+- Any per-VPA configuration parameters specified in VPA objects will be ignored
+- Components will fall back to using their global configuration values
+
+Enabling of feature gate `PerVPAConfig` will cause the following to happen:
+
+- VPA components will honor the per-VPA configuration parameters specified in VPA objects
+- Validation will be performed on the configuration parameters
+- Configuration parameters will override global defaults for the specific VPA object
+
+### Kubernetes version compatibility
+
+The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is being introduced as alpha and will follow the standard Kubernetes feature gate graduation process:
+- Alpha: v1.5.0
+- Beta: TBD
+- GA: TBD
 
 ### Validation via CEL and Testing
 
