@@ -119,9 +119,10 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	for _, node := range nodes {
-		err = ng.Manager.Client.DeleteNode(context.Background(), ng.Manager.ClusterID, ng.ID, node.Name)
+		shortID := strings.TrimPrefix(node.Spec.ProviderID, "openstack:///")
+		err = ng.Manager.Client.DeleteNode(context.Background(), ng.Manager.ClusterID, ng.ID, shortID)
 		if err != nil {
-			return fmt.Errorf("failed to delete node %s: %w", node.Name, err)
+			return fmt.Errorf("failed to delete node %s: %w", shortID, err)
 		}
 	}
 	size, err = ng.TargetSize()
@@ -167,7 +168,7 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, 0)
 	for _, node := range nodes {
 		instance := cloudprovider.Instance{
-			Id:     fmt.Sprintf("%s", node.InstanceName),
+			Id:     node.Id,
 			Status: toInstanceStatus(node.Status),
 		}
 

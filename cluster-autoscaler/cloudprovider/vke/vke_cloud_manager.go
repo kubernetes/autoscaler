@@ -49,7 +49,7 @@ type ClientInterface interface {
 	DeleteNodePool(ctx context.Context, projectID string, clusterID string, poolID string) (*sdk.NodePool, error)
 
 	// DeleteNode deletes a specific node.
-	DeleteNode(ctx context.Context, clusterID string, nodeGroupID string, instanceName string) error
+	DeleteNode(ctx context.Context, clusterID string, nodeGroupID string, Id string) error
 
 	// ListClusterFlavors list all available flavors usable in a Kubernetes cluster.
 	ListClusterFlavors(ctx context.Context, clusterID string) ([]sdk.Flavor, error)

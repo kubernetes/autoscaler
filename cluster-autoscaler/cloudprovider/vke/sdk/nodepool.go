@@ -168,12 +168,12 @@ func (c *Client) DeleteNodePool(ctx context.Context, projectID string, clusterID
 		true,
 	)
 }
-func (c *Client) DeleteNode(ctx context.Context, clusterID, NodeGroupID, NodeName string) error {
-	klog.V(2).Infof("Deleting node %s from cluster %s", NodeName, clusterID)
+func (c *Client) DeleteNode(ctx context.Context, clusterID, NodeGroupID, Id string) error {
+	klog.V(2).Infof("Deleting node %s from cluster %s", Id, clusterID)
 	c.CallAPIWithContext(
 		ctx,
 		"DELETE",
-		fmt.Sprintf("/cluster/%s/nodegroups/%s/nodes/%s", clusterID, NodeGroupID, NodeName),
+		fmt.Sprintf("/cluster/%s/nodegroups/%s/nodes/%s", clusterID, NodeGroupID, Id),
 		nil,
 		nil,
 		nil,

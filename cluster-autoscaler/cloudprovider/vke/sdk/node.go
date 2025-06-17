@@ -46,8 +46,7 @@ import (
 
 type Node struct {
 	ClusterUUID   string `json:"cluster_uuid"`
-	InstanceName  string `json:"instance_name"`
-	Id            string `json:"instance_uuid"`
+	Id            string `json:"id"`
 	NodeGroupUUID string `json:"node_group_uuid"`
 	Current       int    `json:"current_nodes"`
 	MinSize       int    `json:"node_group_min_size"`

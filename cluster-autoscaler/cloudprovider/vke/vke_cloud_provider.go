@@ -118,7 +118,7 @@ func (provider *VKEProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	// We won't be able to determine the node group of the node with the information at hand.
 
 	// Try to retrieve the associated node group from an already built mapping in cache
-	if ng := provider.findNodeGroupFromCache(node.Name); ng != nil {
+	if ng := provider.findNodeGroupFromCache(node.Spec.ProviderID); ng != nil {
 		return ng, nil
 	}
 
@@ -127,12 +127,12 @@ func (provider *VKEProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	// 	return ng, nil
 	// }
 
-	klog.V(5).Infof("trying to find node group of node %s (provider ID %s) by listing all nodes under autoscaled node pools", node.Name, node.Name)
+	klog.V(5).Infof("trying to find node group of node %s (provider ID %s) by listing all nodes under autoscaled node pools", node.Spec.ProviderID, node.Spec.ProviderID)
 
 	// This should also refresh the cache for the next time
 	ng, err := provider.findNodeGroupByListingNodes(node)
 	if ng == nil {
-		klog.Warningf("unable to find which node group the node %s (provider ID %s) belongs to", node.Name, node.Name)
+		klog.Warningf("unable to find which node group the node %s (provider ID %s) belongs to", node.Spec.ProviderID, node.Spec.ProviderID)
 	}
 
 	return ng, err
@@ -181,15 +181,9 @@ func (provider *VKEProvider) findNodeGroupByListingNodes(node *apiv1.Node) (clou
 		}
 
 		for _, instance := range instances {
-			klog.V(5).Infof("Instance %s and Host Name: %s: Len instance len: %v ", instance.Id, node.Name, len(instance.Id))
-			if len(instance.Id) <= 69 {
-				if instance.Id == node.Name {
-					return ng, nil
-				}
-			} else {
-				if instance.Id[0:69] == node.Name {
-					return ng, nil
-				}
+			klog.V(5).Infof("InstanceID: %s, ProviderID: %s ", instance.Id, node.Spec.ProviderID)
+			if instance.Id == node.Spec.ProviderID {
+				return ng, nil
 			}
 		}
 	}
