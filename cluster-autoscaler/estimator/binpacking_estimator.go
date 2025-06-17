@@ -18,13 +18,18 @@ package estimator
 
 import (
 	"fmt"
+	"strconv"
+
+	"slices"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/podtopologyspread"
 )
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
@@ -93,6 +98,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	nodeTemplate *framework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
 ) (int, []*apiv1.Pod) {
+	observeBinpackingHeterogeneity(podsEquivalenceGroups, nodeTemplate)
 
 	e.limiter.StartEstimation(podsEquivalenceGroups, nodeGroup, e.context)
 	defer e.limiter.EndEstimation()
@@ -105,6 +111,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	}()
 
 	estimationState := newEstimationState()
+	newNodesAvailable := true
 	for _, podsEquivalenceGroup := range podsEquivalenceGroups {
 		var err error
 		var remainingPods []*apiv1.Pod
@@ -115,10 +122,12 @@ func (e *BinpackingNodeEstimator) Estimate(
 			return 0, nil
 		}
 
-		err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
-		if err != nil {
-			klog.Error(err.Error())
-			return 0, nil
+		if newNodesAvailable {
+			newNodesAvailable, err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
+			if err != nil {
+				klog.Error(err.Error())
+				return 0, nil
+			}
 		}
 	}
 
@@ -153,25 +162,46 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 	return pods[index:], nil
 }
 
+// Returns whether it is worth retrying adding new nodes and error in unexpected
+// situations where whole estimation should be stopped.
 func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 	estimationState *estimationState,
 	nodeTemplate *framework.NodeInfo,
 	pods []*apiv1.Pod,
-) error {
+) (bool, error) {
 	for _, pod := range pods {
 		found := false
 
 		if estimationState.lastNodeName != "" {
 			// Try to schedule the pod on only newly created node.
-			if err := e.clusterSnapshot.SchedulePod(pod, estimationState.lastNodeName); err == nil {
+			err := e.clusterSnapshot.SchedulePod(pod, estimationState.lastNodeName)
+			if err == nil {
 				// The pod was scheduled on the newly created node.
 				found = true
 				estimationState.trackScheduledPod(pod, estimationState.lastNodeName)
 			} else if err.Type() == clustersnapshot.SchedulingInternalError {
 				// Unexpected error.
-				return err
+				return false, err
 			}
 			// The pod can't be scheduled on the newly created node because of scheduling predicates.
+
+			// Check if node failed because of topology constraints.
+			if isPodUsingHostNameTopologyKey(pod) && hasTopologyConstraintError(err) {
+				// If the pod can't be scheduled on the last node because of topology constraints, we can stop binpacking.
+				// The pod can't be scheduled on any new node either, because it has the same topology constraints.
+				nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, func(nodeInfo *framework.NodeInfo) bool {
+					return nodeInfo.Node().Name != estimationState.lastNodeName // only skip the last node that failed scheduling
+				})
+				if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
+					// Unexpected error.
+					return false, err
+				}
+				if nodeName != "" {
+					// The pod was scheduled on a different node, so we can continue binpacking.
+					found = true
+					estimationState.trackScheduledPod(pod, nodeName)
+				}
+			}
 		}
 
 		if !found {
@@ -179,7 +209,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// on a new node either. There is no point adding more nodes to snapshot in such case, especially because of
 			// performance cost each extra node adds to future FitsAnyNodeMatching calls.
 			if estimationState.lastNodeName != "" && !estimationState.newNodesWithPods[estimationState.lastNodeName] {
-				break
+				return true, nil
 			}
 
 			// Stop binpacking if we reach the limit of nodes we can add.
@@ -189,12 +219,12 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// each call that returns true, one node gets added. Therefore this
 			// must be the last check right before really adding a node.
 			if !e.limiter.PermissionToAddNode() {
-				break
+				return false, nil
 			}
 
 			// Add new node
 			if err := e.addNewNodeToSnapshot(estimationState, nodeTemplate); err != nil {
-				return fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
+				return false, fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
 			}
 
 			// And try to schedule pod to it.
@@ -203,7 +233,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// adding and removing node to snapshot for each such pod.
 			if err := e.clusterSnapshot.SchedulePod(pod, estimationState.lastNodeName); err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 				// Unexpected error.
-				return err
+				return false, err
 			} else if err != nil {
 				// The pod can't be scheduled on the new node because of scheduling predicates.
 				break
@@ -212,7 +242,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			estimationState.trackScheduledPod(pod, estimationState.lastNodeName)
 		}
 	}
-	return nil
+	return true, nil
 }
 
 func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
@@ -230,4 +260,59 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState.lastNodeName = newNodeInfo.Node().Name
 	estimationState.newNodeNames[estimationState.lastNodeName] = true
 	return nil
+}
+
+// isTopologyConstraintError determines if an error is related to pod topology spread constraints
+// by checking the predicate name and reasons
+func hasTopologyConstraintError(err clustersnapshot.SchedulingError) bool {
+	if err == nil {
+		return false
+	}
+
+	// Check reasons for mentions of topology or constraints
+	return slices.Contains(err.FailingPredicateReasons(), podtopologyspread.ErrReasonConstraintsNotMatch)
+}
+
+// isPodUsingHostNameTopoKey returns true if the pod has any topology spread
+// constraint that uses the kubernetes.io/hostname topology key
+func isPodUsingHostNameTopologyKey(pod *apiv1.Pod) bool {
+	if pod == nil || pod.Spec.TopologySpreadConstraints == nil {
+		return false
+	}
+
+	for _, constraint := range pod.Spec.TopologySpreadConstraints {
+		if constraint.TopologyKey == apiv1.LabelHostname {
+			return true
+		}
+	}
+
+	return false
+}
+
+func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) {
+	node := nodeTemplate.Node()
+	var instanceType, cpuCount string
+	if node != nil {
+		if node.Labels != nil {
+			instanceType = node.Labels[apiv1.LabelInstanceTypeStable]
+		}
+		cpuCount = node.Status.Capacity.Cpu().String()
+	}
+	namespaces := make(map[string]bool)
+	for _, peg := range podsEquivalenceGroups {
+		e := peg.Exemplar()
+		if e != nil {
+			namespaces[e.Namespace] = true
+		}
+	}
+	// Quantize # of namespaces to limit metric cardinality.
+	nsCountBucket := ""
+	if len(namespaces) <= 5 {
+		nsCountBucket = strconv.Itoa(len(namespaces))
+	} else if len(namespaces) <= 10 {
+		nsCountBucket = "6-10"
+	} else {
+		nsCountBucket = "11+"
+	}
+	metrics.ObserveBinpackingHeterogeneity(instanceType, cpuCount, nsCountBucket, len(podsEquivalenceGroups))
 }

@@ -81,7 +81,7 @@ func TestPriceExpander(t *testing.T) {
 	p1 := BuildTestPod("p1", 1000, 0)
 	p2 := BuildTestPod("p2", 500, 0)
 
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", n1)

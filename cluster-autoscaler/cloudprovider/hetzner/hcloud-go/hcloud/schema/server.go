@@ -99,8 +99,8 @@ type ServerListResponse struct {
 // create a server.
 type ServerCreateRequest struct {
 	Name             string                  `json:"name"`
-	ServerType       interface{}             `json:"server_type"` // int or string
-	Image            interface{}             `json:"image"`       // int or string
+	ServerType       IDOrName                `json:"server_type"`
+	Image            IDOrName                `json:"image"`
 	SSHKeys          []int64                 `json:"ssh_keys,omitempty"`
 	Location         string                  `json:"location,omitempty"`
 	Datacenter       string                  `json:"datacenter,omitempty"`
@@ -257,7 +257,7 @@ type ServerActionDisableRescueResponse struct {
 // ServerActionRebuildRequest defines the schema for the request to
 // rebuild a server.
 type ServerActionRebuildRequest struct {
-	Image interface{} `json:"image"` // int or string
+	Image IDOrName `json:"image"`
 }
 
 // ServerActionRebuildResponse defines the schema of the response when
@@ -270,7 +270,7 @@ type ServerActionRebuildResponse struct {
 // ServerActionAttachISORequest defines the schema for the request to
 // attach an ISO to a server.
 type ServerActionAttachISORequest struct {
-	ISO interface{} `json:"iso"` // int or string
+	ISO IDOrName `json:"iso"`
 }
 
 // ServerActionAttachISOResponse defines the schema of the response when
@@ -287,12 +287,6 @@ type ServerActionDetachISORequest struct{}
 // creating a detach_iso server action.
 type ServerActionDetachISOResponse struct {
 	Action Action `json:"action"`
-}
-
-// ServerActionEnableBackupRequest defines the schema for the request to
-// enable backup for a server.
-type ServerActionEnableBackupRequest struct {
-	BackupWindow *string `json:"backup_window,omitempty"`
 }
 
 // ServerActionEnableBackupResponse defines the schema of the response when
@@ -314,8 +308,8 @@ type ServerActionDisableBackupResponse struct {
 // ServerActionChangeTypeRequest defines the schema for the request to
 // change a server's type.
 type ServerActionChangeTypeRequest struct {
-	ServerType  interface{} `json:"server_type"` // int or string
-	UpgradeDisk bool        `json:"upgrade_disk"`
+	ServerType  IDOrName `json:"server_type"`
+	UpgradeDisk bool     `json:"upgrade_disk"`
 }
 
 // ServerActionChangeTypeResponse defines the schema of the response when

@@ -44,13 +44,12 @@ import (
 func TestNodePoolAsyncInitialization(t *testing.T) {
 	scaleUpSize := 3
 	failingNodeGroupName := "failing-ng"
-	provider := testprovider.NewTestCloudProvider(
-		func(nodeGroup string, increase int) error {
-			if nodeGroup == failingNodeGroupName {
-				return fmt.Errorf("Simulated error")
-			}
-			return nil
-		}, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
+		if nodeGroup == failingNodeGroupName {
+			return fmt.Errorf("Simulated error")
+		}
+		return nil
+	}).Build()
 	pod := BuildTestPod("p1", 2, 1000)
 	failingNodeGroup := provider.BuildNodeGroup(failingNodeGroupName, 0, 100, 0, false, true, "T1", nil)
 	successfulNodeGroup := provider.BuildNodeGroup("async-ng", 0, 100, 0, false, true, "T1", nil)

@@ -4,6 +4,8 @@
 
 - [Limits control](#limits-control)
 - [Memory Value Humanization](#memory-value-humanization)
+- [CPU Recommendation Rounding](#cpu-recommendation-rounding)
+- [In-Place Updates](#in-place-updates-inplaceorrecreate)
 
 ## Limits control
 
@@ -51,3 +53,78 @@ To enable this feature, set the --round-cpu-millicores flag when running the VPA
 ```bash
 --round-cpu-millicores=50
 ```
+
+## In-Place Updates (`InPlaceOrRecreate`)
+
+> [!WARNING] 
+> FEATURE STATE: VPA v1.4.0 [alpha]
+
+VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (which is in beta as of Kubernetes 1.33) to modify container resources without requiring pod recreation.
+For more information, see [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)
+
+### Usage
+
+To use in-place updates, set the VPA's `updateMode` to `InPlaceOrRecreate`:
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: my-vpa
+spec:
+  updatePolicy:
+    updateMode: "InPlaceOrRecreate"
+```
+
+### Behavior
+
+When using `InPlaceOrRecreate` mode, VPA will first attempt to apply updates in-place, if in-place update fails, VPA will fall back to pod recreation.
+Updates are attempted when:
+* Container requests are outside the recommended bounds
+* Quick OOM occurs
+* For long-running pods (>12h), when recommendations differ significantly (>10%)
+
+Important Notes
+
+* Disruption Possibility: While in-place updates aim to minimize disruption, they cannot guarantee zero disruption as the container runtime is responsible for the actual resize operation.
+
+* Memory Limit Downscaling: In the beta version, memory limit downscaling is not supported for pods with resizePolicy: PreferNoRestart. In such cases, VPA will fall back to pod recreation.
+
+### Requirements:
+
+* Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
+* VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
+
+### Configuration
+
+Enable the feature by setting the following flags in VPA components ( for both updater and admission-controller ):
+
+```bash
+--feature-gates=InPlaceOrRecreate=true
+``` 
+
+### Limitations
+
+* All containers in a pod are updated together (partial updates not supported)
+* Memory downscaling requires careful consideration to prevent OOMs
+* Updates still respect VPA's standard update conditions and timing restrictions
+* In-place updates will fail if they would result in a change to the pod's QoS class
+
+### Fallback Behavior
+
+VPA will fall back to pod recreation in the following scenarios:
+
+* In-place update is [infeasible](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#resize-status) (node resources, etc.)
+* Update is [deferred](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#resize-status) for more than 5 minutes
+* Update is in progress for more than 1 hour
+* [Pod QoS](https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/) class would change due to the update
+* Memory limit downscaling is required with [PreferNoRestart policy](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#container-resize-policy)
+
+### Monitoring
+
+VPA provides metrics to track in-place update operations:
+
+* `vpa_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+* `vpa_in_place_updated_pods_total`: Number of pods successfully updated in-place
+* `vpa_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+* `vpa_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
+* `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
