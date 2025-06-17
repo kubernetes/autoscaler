@@ -108,6 +108,7 @@ rules:
     - storageclasses
     - csidrivers
     - csistoragecapacities
+    - volumeattachments
     verbs:
     - get
     - list
