@@ -109,7 +109,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 		klog.V(2).InfoS("Can't calculate recommendations, one of VPA or Pod is nil", "vpa", vpa, "pod", pod)
 		return nil, nil, nil
 	}
-	klog.V(2).InfoS("Updating requirements for pod", "pod", pod.Name)
+	klog.V(2).InfoS("Updating requirements for pod", "pod", klog.KObj(pod))
 
 	var annotations vpa_api_util.ContainerToAnnotationsMap
 	recommendedPodResources := &vpa_types.RecommendedPodResources{}
