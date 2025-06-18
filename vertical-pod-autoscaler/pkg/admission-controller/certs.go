@@ -68,8 +68,11 @@ func (cr *certReloader) start(stop <-chan struct{}) error {
 	if err = watcher.Add(cr.tlsKeyPath); err != nil {
 		return err
 	}
-	if err = watcher.Add(cr.clientCaPath); err != nil {
-		return err
+	// we watch the CA file ony when registerWebhook is enabled
+	if cr.mutatingWebhookClient != nil {
+		if err = watcher.Add(cr.clientCaPath); err != nil {
+			return err
+		}
 	}
 
 	go func() {
@@ -123,6 +126,10 @@ func (cr *certReloader) load() error {
 
 func (cr *certReloader) reloadWebhookCA() error {
 	client := cr.mutatingWebhookClient
+	if client == nil {
+		// this should never happen as we don't watch the file if mutatingWebhookClient is nil
+		return fmt.Errorf("webhook client is not set")
+	}
 	webhook, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err != nil {
 		return err
