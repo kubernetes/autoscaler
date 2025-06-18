@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
@@ -392,6 +393,7 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 	})
 })
 
+
 var _ = FullVpaE2eDescribe("OOMing pods under VPA with custom OOM settings", func() {
 	const replicas = 3
 
@@ -399,6 +401,10 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA with custom OOM settings", fun
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
+		if !features.Enabled(features.PerVPAConfig) {
+			ginkgo.Skip("Test requires PerVPAConfig feature gate to be enabled")
+		}
+
 		ns := f.Namespace.Name
 		ginkgo.By("Setting up a hamster deployment")
 
