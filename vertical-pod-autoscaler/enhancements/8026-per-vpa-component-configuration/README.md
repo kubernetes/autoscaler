@@ -148,9 +148,9 @@ Enabling of feature gate `PerVPAConfig` will cause the following to happen:
 ### Kubernetes version compatibility
 
 The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is being introduced as alpha and will follow the standard Kubernetes feature gate graduation process:
-- Alpha: v1.5.0
-- Beta: TBD
-- GA: TBD
+- Alpha: v1.5.0 (default off)
+- Beta: TBD (default on)
+- GA: TBD (default on)
 
 ### Validation via CEL and Testing
 
