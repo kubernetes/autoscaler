@@ -158,19 +158,19 @@ func AddEvictedPod(vpaSize int) {
 	evictedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
 }
 
-// NewInPlaceUpdtateablePodsCounter returns a wrapper for counting Pods which are matching in-place update criteria
-func NewInPlaceUpdtateablePodsCounter() *SizeBasedGauge {
-	return newSizeBasedGauge(evictableCount)
+// NewInPlaceUpdatablePodsCounter returns a wrapper for counting Pods which are matching in-place update criteria
+func NewInPlaceUpdatablePodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(inPlaceUpdatableCount)
 }
 
-// NewVpasWithInPlaceUpdtateablePodsCounter returns a wrapper for counting VPA objects with Pods matching in-place update criteria
-func NewVpasWithInPlaceUpdtateablePodsCounter() *SizeBasedGauge {
-	return newSizeBasedGauge(vpasWithEvictablePodsCount)
+// NewVpasWithInPlaceUpdatablePodsCounter returns a wrapper for counting VPA objects with Pods matching in-place update criteria
+func NewVpasWithInPlaceUpdatablePodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(vpasWithInPlaceUpdatablePodsCount)
 }
 
-// NewVpasWithInPlaceUpdtatedPodsCounter returns a wrapper for counting VPA objects with evicted Pods
-func NewVpasWithInPlaceUpdtatedPodsCounter() *SizeBasedGauge {
-	return newSizeBasedGauge(vpasWithEvictedPodsCount)
+// NewVpasWithInPlaceUpdatedPodsCounter returns a wrapper for counting VPA objects with in-place updated Pods
+func NewVpasWithInPlaceUpdatedPodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(vpasWithInPlaceUpdatedPodsCount)
 }
 
 // AddInPlaceUpdatedPod increases the counter of pods updated in place by Updater, by given VPA size

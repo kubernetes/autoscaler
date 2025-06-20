@@ -213,12 +213,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 	// wrappers for metrics which are computed every loop run
 	controlledPodsCounter := metrics_updater.NewControlledPodsCounter()
 	evictablePodsCounter := metrics_updater.NewEvictablePodsCounter()
-	inPlaceUpdatablePodsCounter := metrics_updater.NewInPlaceUpdtateablePodsCounter()
+	inPlaceUpdatablePodsCounter := metrics_updater.NewInPlaceUpdatablePodsCounter()
 	vpasWithEvictablePodsCounter := metrics_updater.NewVpasWithEvictablePodsCounter()
 	vpasWithEvictedPodsCounter := metrics_updater.NewVpasWithEvictedPodsCounter()
 
-	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdtateablePodsCounter()
-	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdtatedPodsCounter()
+	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdatablePodsCounter()
+	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdatedPodsCounter()
 
 	// using defer to protect against 'return' after evictionRateLimiter.Wait
 	defer controlledPodsCounter.Observe()
