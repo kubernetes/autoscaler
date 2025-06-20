@@ -136,17 +136,6 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		cronJob:               factory.Batch().V1().CronJobs().Informer(),
 	}
 
-	for kind, informer := range informersMap {
-		stopCh := make(chan struct{})
-		go informer.Run(stopCh)
-		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
-		if !synced {
-			klog.V(0).InfoS("Initial sync failed", "kind", kind)
-		} else {
-			klog.InfoS("Initial sync completed", "kind", kind)
-		}
-	}
-
 	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
 	return &controllerFetcher{
 		scaleNamespacer:              scaleNamespacer,

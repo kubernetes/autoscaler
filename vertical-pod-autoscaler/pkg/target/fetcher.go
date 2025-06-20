@@ -91,18 +91,6 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		cronJob:               factory.Batch().V1().CronJobs().Informer(),
 	}
 
-	for kind, informer := range informersMap {
-		stopCh := make(chan struct{})
-		go informer.Run(stopCh)
-		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
-		if !synced {
-			klog.ErrorS(nil, "Could not sync cache for "+string(kind))
-			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
-		} else {
-			klog.InfoS("Initial sync completed", "kind", kind)
-		}
-	}
-
 	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
 	return &vpaTargetSelectorFetcher{
 		scaleNamespacer: scaleNamespacer,
