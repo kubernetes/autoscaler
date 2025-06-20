@@ -95,8 +95,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `metric-for-pod-labels` | string |  "up{job=\"kubernetes-pods\"}" | Which metric to look for pod labels in metrics  |
 | `min-checkpoints` | int |  10 | Minimum number of checkpoints to write per recommender's main loop. WARNING: this flag is deprecated and doesn't have any effect. It will be removed in a future release. Refer to update-worker-count to influence the minimum number of checkpoints written per loop.  |
 | `one-output` | severity |  | If true, only write logs to their native level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
-| `oom-bump-up-ratio` | float |  1.2 | The memory bump up ratio when OOM occurred, default is 1.2.  |
-| `oom-min-bump-up-bytes` | float |  1.048576e+08 | The minimal increase of memory when OOM occurred in bytes, default is 100 * 1024 * 1024  |
+| `oom-bump-up-ratio` | float |  1.2 | Default memory bump up ratio when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 1.2.  |
+| `oom-min-bump-up-bytes` | float |  1.048576e+08 | Default minimal increase of memory (in bytes) when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 100 * 1024 * 1024 (100Mi).  |
 | `password` | string |  | The password used in the prometheus server basic auth |
 | `pod-label-prefix` | string |  "pod_label_" | Which prefix to look for pod labels in metrics  |
 | `pod-name-label` | string |  "kubernetes_pod_name" | Label name to look for pod names  |
