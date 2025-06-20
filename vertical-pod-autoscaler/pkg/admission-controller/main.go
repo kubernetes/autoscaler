@@ -27,6 +27,7 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 
@@ -141,9 +142,13 @@ func main() {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
 	})
+	var mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface
+	if *registerWebhook {
+		mutatingWebhookClient = kubeClient.AdmissionregistrationV1().MutatingWebhookConfigurations()
+	}
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(*certsConfiguration, *minTlsVersion, *ciphers, stopCh, kubeClient.AdmissionregistrationV1().MutatingWebhookConfigurations()),
+		TLSConfig: configTLS(*certsConfiguration, *minTlsVersion, *ciphers, stopCh, mutatingWebhookClient),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
