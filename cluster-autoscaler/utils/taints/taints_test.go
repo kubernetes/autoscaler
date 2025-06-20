@@ -94,7 +94,7 @@ func TestSoftCheckNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
 	taints := []apiv1.Taint{
 		{
-			Key:    DeletionCandidateTaint,
+			Key:    DeletionCandidateTaintKey,
 			Value:  fmt.Sprint(time.Now().Unix()),
 			Effect: apiv1.TaintEffectPreferNoSchedule,
 		},
@@ -254,7 +254,7 @@ func TestSoftCleanNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
 	taints := []apiv1.Taint{
 		{
-			Key:    DeletionCandidateTaint,
+			Key:    DeletionCandidateTaintKey,
 			Value:  fmt.Sprint(time.Now().Unix()),
 			Effect: apiv1.TaintEffectPreferNoSchedule,
 		},
@@ -301,14 +301,14 @@ func TestCleanAllToBeDeleted(t *testing.T) {
 func TestCleanAllDeletionCandidates(t *testing.T) {
 	n1 := BuildTestNode("n1", 1000, 10)
 	n2 := BuildTestNode("n2", 1000, 10)
-	n2.Spec.Taints = []apiv1.Taint{{Key: DeletionCandidateTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
+	n2.Spec.Taints = []apiv1.Taint{{Key: DeletionCandidateTaintKey, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 
 	fakeClient := buildFakeClient(t, n1, n2)
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient, false)
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
-	CleanAllDeletionCandidates([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder)
+	CleanStaleDeletionCandidates([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, time.Duration(0))
 
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n1").Spec.Taints))
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n2").Spec.Taints))

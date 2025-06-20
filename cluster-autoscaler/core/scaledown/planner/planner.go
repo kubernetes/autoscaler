@@ -85,10 +85,18 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 	if minUpdateInterval == 0*time.Nanosecond {
 		minUpdateInterval = 1 * time.Nanosecond
 	}
+
+	var unneededNodes *unneeded.Nodes
+	if context.AutoscalingOptions.NodeDeletionCandidateTTL == 0 {
+		unneededNodes = unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
+	} else {
+		unneededNodes = unneeded.NewWithTaints(processors.NodeGroupConfigProcessor, resourceLimitsFinder, context.ListerRegistry, context.NodeDeletionCandidateTTL, time.Now())
+	}
+
 	return &Planner{
 		context:               context,
 		unremovableNodes:      unremovable.NewNodes(),
-		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
+		unneededNodes:         unneededNodes,
 		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, deleteOptions, drainabilityRules, true),
 		actuationInjector:     scheduling.NewHintingSimulator(),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
