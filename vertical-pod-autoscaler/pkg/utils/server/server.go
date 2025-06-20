@@ -21,9 +21,8 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"k8s.io/klog/v2"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 )
