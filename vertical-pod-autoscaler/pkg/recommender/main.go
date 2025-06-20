@@ -232,6 +232,14 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlag.VpaObjectNamespace, stopCh)
 
+	factory.Start(stopCh)
+	informerMap := factory.WaitForCacheSync(stopCh)
+	for informerType, synced := range informerMap {
+		if !synced {
+			klog.V(0).InfoS("Initial sync failed", "kind", informerType)
+		}
+	}
+
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
 	useCheckpoints := *storage != "prometheus"

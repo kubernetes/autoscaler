@@ -172,6 +172,8 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 }
 
 func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+	stopCh := make(chan struct{})
+	defer close(stopCh)
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
@@ -184,6 +186,15 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
+
+	factory.Start(stopCh)
+	informerMap := factory.WaitForCacheSync(stopCh)
+	for informerType, synced := range informerMap {
+		if !synced {
+			klog.V(0).InfoS("Initial sync failed", "kind", informerType)
+		}
+	}
+
 	admissionControllerStatusNamespace := status.AdmissionControllerStatusNamespace
 	if namespace != "" {
 		admissionControllerStatusNamespace = namespace

@@ -116,6 +116,16 @@ func main() {
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
 	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
 
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+	factory.Start(stopCh)
+	informerMap := factory.WaitForCacheSync(stopCh)
+	for informerType, synced := range informerMap {
+		if !synced {
+			klog.V(0).InfoS("Initial sync failed", "kind", informerType)
+		}
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		klog.ErrorS(err, "Unable to get hostname")
@@ -126,7 +136,6 @@ func main() {
 	if namespace != "" {
 		statusNamespace = namespace
 	}
-	stopCh := make(chan struct{})
 	statusUpdater := status.NewUpdater(
 		kubeClient,
 		status.AdmissionControllerStatusName,
@@ -134,7 +143,6 @@ func main() {
 		statusUpdateInterval,
 		hostname,
 	)
-	defer close(stopCh)
 
 	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider), patch.NewObservedContainersCalculator()}
 	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
