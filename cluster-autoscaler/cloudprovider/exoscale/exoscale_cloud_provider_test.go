@@ -197,6 +197,21 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_Ins
 			nil,
 		)
 
+	ts.p.manager.client.(*exoscaleClientMock).
+		On("ListSKSClusters", ts.p.manager.ctx, ts.p.manager.zone).
+		Return(
+			[]*egoscale.SKSCluster{{
+				ID:   &testSKSClusterID,
+				Name: &testSKSClusterName,
+				Nodepools: []*egoscale.SKSNodepool{{
+					ID:             &testSKSNodepoolID,
+					InstancePoolID: &testInstancePoolID,
+					Name:           &testSKSNodepoolName,
+				}},
+			}},
+			nil,
+		)
+
 	nodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(testInstanceID),
@@ -280,7 +295,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_SKS
 	})
 	ts.Require().NoError(err)
 	ts.Require().NotNil(nodeGroup)
-	ts.Require().Equal(testInstancePoolID, nodeGroup.Id())
+	ts.Require().Equal(testSKSNodepoolID, nodeGroup.Id())
 	ts.Require().IsType(&sksNodepoolNodeGroup{}, nodeGroup)
 }
 
@@ -359,6 +374,21 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 			nil,
 		)
 
+	ts.p.manager.client.(*exoscaleClientMock).
+		On("ListSKSClusters", ts.p.manager.ctx, ts.p.manager.zone).
+		Return(
+			[]*egoscale.SKSCluster{{
+				ID:   &testSKSClusterID,
+				Name: &testSKSClusterName,
+				Nodepools: []*egoscale.SKSNodepool{{
+					ID:             &testSKSNodepoolID,
+					InstancePoolID: &sksNodepoolInstancePoolID,
+					Name:           &testSKSNodepoolName,
+				}},
+			}},
+			nil,
+		)
+
 	instancePoolNodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(instancePoolInstanceID),
@@ -432,7 +462,11 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 
 	// ---------------------------------------------------------------
 
-	ts.Require().Len(ts.p.NodeGroups(), 2)
+	nodeGroups := ts.p.NodeGroups()
+	ts.Require().Len(nodeGroups, 2)
+	if len(nodeGroups) >= 2 {
+		ts.Require().Equal(nodeGroups[1].Id(), testSKSNodepoolID)
+	}
 }
 
 func TestSuiteExoscaleCloudProvider(t *testing.T) {
