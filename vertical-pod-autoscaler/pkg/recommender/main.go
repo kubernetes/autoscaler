@@ -71,6 +71,7 @@ var (
 // Prometheus history provider flags
 var (
 	prometheusAddress   = flag.String("prometheus-address", "http://prometheus.monitoring.svc", `Where to reach for Prometheus metrics`)
+	prometheusInsecure  = flag.Bool("prometheus-insecure", false, `Skip tls verify if https is used in the prometheus-address`)
 	prometheusJobName   = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
 	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
 	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
@@ -84,6 +85,8 @@ var (
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
 	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
+	bearerToken         = flag.String("bearer-token", "", "The bearer token used in the Prometheus server bearer token auth")
+	bearerTokenFile     = flag.String("bearer-token-file", "", "Path to the bearer token file used for authentication by the Prometheus server")
 )
 
 // External metrics provider flags
@@ -146,6 +149,20 @@ func main() {
 
 	if *routines.MinCheckpointsPerRun != 10 { // Default value is 10
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
+	}
+
+	if *bearerToken != "" && *bearerTokenFile != "" && *username != "" {
+		klog.ErrorS(nil, "--bearer-token, --bearer-token-file and --username are mutually exclusive and can't be set together.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if *bearerTokenFile != "" {
+		fileContent, err := os.ReadFile(*bearerTokenFile)
+		if err != nil {
+			klog.ErrorS(err, "Unable to read bearer token file")
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+		*bearerToken = strings.TrimSpace(string(fileContent))
 	}
 
 	ctx := context.Background()
@@ -304,6 +321,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	} else {
 		config := history.PrometheusHistoryProviderConfig{
 			Address:                *prometheusAddress,
+			Insecure:               *prometheusInsecure,
 			QueryTimeout:           promQueryTimeout,
 			HistoryLength:          *historyLength,
 			HistoryResolution:      *historyResolution,
@@ -316,9 +334,10 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
 			Namespace:              commonFlag.VpaObjectNamespace,
-			PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
-				Username: *username,
-				Password: *password,
+			Authentication: history.PrometheusCredentials{
+				BearerToken: *bearerToken,
+				Username:    *username,
+				Password:    *password,
 			},
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
