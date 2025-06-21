@@ -30,26 +30,37 @@ Build the cluster autoscaler with VCloud support:
 
 ```bash
 cd cluster-autoscaler
+# Build VCloud-specific binary
 go build -tags vcloud -o cluster-autoscaler-vcloud .
+
+# Alternative: Use Makefile
+BUILD_TAGS=vcloud make build
 ```
 
 Deploy with the VCloud provider:
 
 ```bash
-# Using config file
+# Option 1: Using config file (hostPath mount)
 ./cluster-autoscaler-vcloud \
   --cloud-provider=vcloud \
-  --cloud-config=/path/to/vcloud-config.ini \
+  --cloud-config=/etc/vcloud/config \
   --kubeconfig=$HOME/.kube/config \
   --v=2 --logtostderr
 
-# Using environment variables (no config file needed)
+# Option 2: Using environment variables (no config file needed)
 export CLUSTER_ID="your-cluster-id"
 export CLUSTER_NAME="your-cluster-name"
 export MGMT_URL="https://k8s.io.infra.vnetwork.dev"
 export PROVIDER_TOKEN="your-token"
 ./cluster-autoscaler-vcloud \
   --cloud-provider=vcloud \
+  --kubeconfig=$HOME/.kube/config \
+  --v=2 --logtostderr
+
+# Option 3: Auto-discovery mode (uses environment variables)
+./cluster-autoscaler-vcloud \
+  --cloud-provider=vcloud \
+  --node-group-auto-discovery=vcloud:tag=k8s.io/cluster-autoscaler/enabled \
   --kubeconfig=$HOME/.kube/config \
   --v=2 --logtostderr
 ```
@@ -89,59 +100,17 @@ spec:
         - ./cluster-autoscaler
         - --v=2
         - --cloud-provider=vcloud
-        - --cloud-config=/etc/vcloud/config
+        - --cloud-config=/etc/config/cloud-config
         - --nodes=1:10:nodepool-name
         volumeMounts:
-        - name: vcloud-config
-          mountPath: /etc/vcloud
+        - name: cloud-config
+          mountPath: /etc/config
           readOnly: true
       volumes:
-      - name: vcloud-config
+      - name: cloud-config
         hostPath:
-          path: /etc/vcloud
+          path: /etc/config
           type: Directory
----
-# Option 2: Using environment variables (no config file needed)
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      serviceAccountName: cluster-autoscaler
-      containers:
-      - image: cluster-autoscaler:latest
-        name: cluster-autoscaler
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 300Mi
-        command:
-        - ./cluster-autoscaler
-        - --v=2
-        - --cloud-provider=vcloud
-        - --nodes=1:10:nodepool-name
-        env:
-        - name: CLUSTER_ID
-          value: "your-cluster-id"
-        - name: CLUSTER_NAME
-          value: "your-cluster-name"
-        - name: MGMT_URL
-          value: "https://k8s.io.infra.vnetwork.dev"
-        - name: PROVIDER_TOKEN
-          value: "your-provider-token"
 ```
 
 ## Features
@@ -238,7 +207,7 @@ The test suite includes:
 # Test with hostPath config file
 ./cluster-autoscaler \
   --cloud-provider=vcloud \
-  --cloud-config=/etc/vcloud/config \
+  --cloud-config=/etc/config/cloud-config \
   --dry-run=true --v=2
 
 # Test with environment variables
@@ -259,15 +228,15 @@ kubectl delete deployment test-scale
 
 1. Create the config file on each node:
 ```bash
-sudo mkdir -p /etc/vcloud
-sudo cat > /etc/vcloud/config << EOF
+sudo mkdir -p /etc/config
+sudo cat > /etc/config/cloud-config << EOF
 [vCloud]
 CLUSTER_ID=your-cluster-id
 CLUSTER_NAME=your-cluster-name
 MGMT_URL=https://k8s.io.infra.vnetwork.dev
 PROVIDER_TOKEN=your-provider-token
 EOF
-sudo chmod 600 /etc/vcloud/config
+sudo chmod 600 /etc/config/cloud-config
 ```
 
 2. Ensure the config file is available on all nodes where cluster-autoscaler might run
@@ -285,23 +254,19 @@ Common issues and solutions:
 - **Scale down fails**: Verify nodes belong to the node group and minimum size constraints
 - **Individual node deletion fails**: Check instance exists and is in deletable state
 - **Configuration errors**: 
-  - Config file: Check `/etc/vcloud/config` exists and has correct permissions (600)
+  - Config file: Check `/etc/config/cloud-config` exists and has correct permissions (600)
   - Environment variables: Verify all required env vars are set
-- **Config file not found**: Ensure `/etc/vcloud/config` exists on the node running cluster-autoscaler
+- **Config file not found**: Ensure `/etc/config/cloud-config` exists on the node running cluster-autoscaler
 - **Permission denied**: Check config file permissions and ownership
 - **High API calls**: Use `--v=2` and consider `--scan-interval=30s`
 
 ```bash
 # Debug logging with hostPath config
-./cluster-autoscaler --cloud-provider=vcloud --cloud-config=/etc/vcloud/config --v=4 --logtostderr
-
-# Debug logging with environment variables
-CLUSTER_ID=your-id CLUSTER_NAME=your-name MGMT_URL=https://k8s.io.infra.vnetwork.dev PROVIDER_TOKEN=your-token \
-./cluster-autoscaler --cloud-provider=vcloud --v=4 --logtostderr
+./cluster-autoscaler --cloud-provider=vcloud --cloud-config=/etc/config/cloud-config --v=4 --logtostderr
 
 # Check config file
-ls -la /etc/vcloud/config
-cat /etc/vcloud/config
+ls -la /etc/config/cloud-config
+cat /etc/config/cloud-config
 
 # Test API connectivity
 curl -H "X-Provider-Token: $TOKEN" "$MGMT_URL/nodepools"
