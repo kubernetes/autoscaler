@@ -4,16 +4,7 @@ The VCloud provider enables Kubernetes Cluster Autoscaler to automatically scale
 using VCloud NodePool APIs.
 
 ## Configuration
-
-Create a cloud configuration file in INI format:
-
-```ini
-[vCloud]
-CLUSTER_ID=your-cluster-id
-CLUSTER_NAME=your-cluster-name
-MGMT_URL=https://k8s.io.infra.vnetwork.dev
-PROVIDER_TOKEN=your-token
-```
+Embedded in worker node on deployment-process, you can shell into worker at locate /etc/config/cloud-config
 
 ### Configuration Parameters
 
@@ -21,20 +12,17 @@ PROVIDER_TOKEN=your-token
 |------------------|-------------------------------------------|----------|
 | `CLUSTER_ID`     | Unique identifier for your VCloud cluster | Yes      |
 | `CLUSTER_NAME`   | Human-readable name of your cluster       | Yes      |
-| `MGMT_URL`       | VCloud management API URL                  | Yes      |
+| `MGMT_URL`       | VCloud management API URL                 | Yes      |
 | `PROVIDER_TOKEN` | Authentication token for VCloud API       | Yes      |
 
 ## Deployment
-
 Build the cluster autoscaler with VCloud support:
 
 ```bash
 cd cluster-autoscaler
+
 # Build VCloud-specific binary
 go build -tags vcloud -o cluster-autoscaler-vcloud .
-
-# Alternative: Use Makefile
-BUILD_TAGS=vcloud make build
 ```
 
 Deploy with the VCloud provider:
@@ -47,17 +35,7 @@ Deploy with the VCloud provider:
   --kubeconfig=$HOME/.kube/config \
   --v=2 --logtostderr
 
-# Option 2: Using environment variables (no config file needed)
-export CLUSTER_ID="your-cluster-id"
-export CLUSTER_NAME="your-cluster-name"
-export MGMT_URL="https://k8s.io.infra.vnetwork.dev"
-export PROVIDER_TOKEN="your-token"
-./cluster-autoscaler-vcloud \
-  --cloud-provider=vcloud \
-  --kubeconfig=$HOME/.kube/config \
-  --v=2 --logtostderr
-
-# Option 3: Auto-discovery mode (uses environment variables)
+# Option 2: Auto-discovery mode (uses environment variables)
 ./cluster-autoscaler-vcloud \
   --cloud-provider=vcloud \
   --node-group-auto-discovery=vcloud:tag=k8s.io/cluster-autoscaler/enabled \
@@ -66,9 +44,6 @@ export PROVIDER_TOKEN="your-token"
 ```
 
 ### Kubernetes Deployment
-
-**Option 1: Using config file (mounted from host)**
-
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -274,6 +249,6 @@ curl -H "X-Provider-Token: $TOKEN" "$MGMT_URL/nodepools"
 # Test individual node operations
 curl -X DELETE -H "X-Provider-Token: $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"force": false, "reason": "test"}' \
-  "$MGMT_URL/nodepools/{pool-id}/machines/{instance-id}"
+  -d '{"force": false, "reason": "cluster-autoscaler-scale-down"}' \
+  "$MGMT_URL/nodepools/{pool-id}/machines/{machine-id}"
 ```
