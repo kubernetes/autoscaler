@@ -23,6 +23,12 @@ cd cluster-autoscaler
 
 # Build VCloud-specific binary
 go build -tags vcloud -o cluster-autoscaler-vcloud .
+
+# Build for specific platforms
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cluster-autoscaler-linux-amd64 .
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o cluster-autoscaler-linux-arm64 .
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o cluster-autoscaler-darwin-amd64 .
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o cluster-autoscaler-darwin-arm64 .
 ```
 
 Deploy with the VCloud provider:
