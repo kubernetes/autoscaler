@@ -293,20 +293,9 @@ func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(ctx context.Context, as
 	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(%s)", scaleSet.Name)
 	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(ctx, future, scaleSet.manager.config.ResourceGroup)
 
-	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
+	_, rerr := isSuccessHTTPResponse(httpResponse, err)
 
-	// Don't print success/failure message in sync mode
-	if !async {
-		return err
-	}
-
-	if isSuccess {
-		klog.V(3).Infof("waitForCreateOrUpdateInstances(%s) success", scaleSet.Name)
-		return nil
-	}
-
-	klog.Errorf("waitForCreateOrUpdateInstances(%s) failed, err: %v", scaleSet.Name, err)
-	return err
+	return rerr
 }
 
 // setScaleSetSize sets ScaleSet size.
@@ -332,7 +321,6 @@ func (scaleSet *ScaleSet) setScaleSetSize(size int64, delta int) error {
 
 		ctx, cancel := getContextWithTimeout(syncContextTimeout)
 		defer cancel()
-		klog.V(3).Infof("Waiting %s for scaleSet.waitForCreateOrUpdateInstances(%s)", syncContextTimeout, scaleSet.Name)
 		err = scaleSet.waitForCreateOrUpdateInstances(ctx, false, future)
 		if err == nil {
 			klog.V(3).Infof("Increased capacity for scale set %q to %d", scaleSet.Name, requiredInstances)
@@ -345,11 +333,16 @@ func (scaleSet *ScaleSet) setScaleSetSize(size int64, delta int) error {
 		}
 
 		// Switch to async wait for the outcome of VMSS capacity update.
-		klog.V(3).Infof("Waiting %s for scaleSet.waitForCreateOrUpdateInstances(%s) in async mode", asyncContextTimeout, scaleSet.Name)
 		go func() {
 			ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 			defer cancel()
-			_ = scaleSet.waitForCreateOrUpdateInstances(ctx, true, future)
+
+			err = scaleSet.waitForCreateOrUpdateInstances(ctx, true, future)
+			if err != nil {
+				klog.Errorf("Failed to increase capacity for scale set %q to %d: %v", scaleSet.Name, requiredInstances, err)
+			} else {
+				klog.V(3).Infof("Increased capacity for scale set %q to %d", scaleSet.Name, requiredInstances)
+			}
 		}()
 	}
 	return nil
@@ -500,7 +493,7 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachi
 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
-	klog.V(3).Infof("Waiting %s for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", vmssContextTimeout, scaleSet.Name)
+	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
 	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateAsync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
 	if rerr != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, rerr)
