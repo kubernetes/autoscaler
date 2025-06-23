@@ -129,10 +129,16 @@ This AEP will be updated as additional parameters are identified for per-object 
 #### How can this feature be enabled / disabled in a live cluster?
 
 - Feature gate name: `PerVPAConfig`
+- Default: Off (Alpha) 
 - Components depending on the feature gate:
   - admission-controller
   - recommender
   - updater
+
+The feature gate will remain in alpha (default off) until:
+- All planned configuration parameters have been implemented and tested
+- Performance impact has been thoroughly evaluated
+- Documentation is complete for all parameters
 
 Disabling of feature gate `PerVPAConfig` will cause the following to happen:
 
