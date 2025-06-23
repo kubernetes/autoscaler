@@ -75,7 +75,7 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
-      oomBumpUpRatio: 1.5
+      oomBumpUpRatio: 150
       oomMinBumpUp: 104857600
       memoryAggregationInterval: "12h"
 ```
@@ -83,7 +83,8 @@ spec:
 ### Parameter Descriptions
 
 #### Container Policy Parameters
-* `oomBumpUpRatio` (float): 
+* `oomBumpUpRatio` (int):
+  - Since it's discouraged to use floats would use int and convert to float. ( e.g. 220 -> 220/100 -> 2.2 ). The converstion will be used in the controller code.
   - Multiplier applied to memory recommendations after OOM events
   - Controls how aggressively memory is increased after container crashes
 
@@ -161,7 +162,7 @@ The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is 
 ### Validation via CEL and Testing
 
 Initial validation rules:
-* oomBumpUpRatio > 1.0
+* oomBumpUpRatio > 100
 * oomMinBumpUp > 0
 * memoryAggregationInterval > 0
 * evictAfterOOMThreshold > 0
