@@ -4,6 +4,7 @@ The VCloud provider enables Kubernetes Cluster Autoscaler to automatically scale
 using VCloud NodePool APIs.
 
 ## Configuration
+
 Embedded in worker node on deployment-process, you can shell into worker at locate /etc/config/cloud-config
 
 ### Configuration Parameters
@@ -16,6 +17,7 @@ Embedded in worker node on deployment-process, you can shell into worker at loca
 | `PROVIDER_TOKEN` | Authentication token for VCloud API       | Yes      |
 
 ## Deployment
+
 Build the cluster autoscaler with VCloud support:
 
 ```bash
@@ -34,22 +36,24 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o cluster-autoscaler-darwin-arm
 Deploy with the VCloud provider:
 
 ```bash
-# Option 1: Using config file (hostPath mount)
-./cluster-autoscaler-vcloud \
+# Option 1: Using Static mode
+./cluster-autoscaler-darwin-arm64 \
   --cloud-provider=vcloud \
-  --cloud-config=/etc/vcloud/config \
+  --cloud-config=/etc/config/cloud-config \
   --kubeconfig=$HOME/.kube/config \
+  --nodes=1:3:nodepool-name \
   --v=2 --logtostderr
 
-# Option 2: Auto-discovery mode (uses environment variables)
-./cluster-autoscaler-vcloud \
+# Option 2: Auto-discovery mode
+./cluster-autoscaler-darwin-arm64 \
   --cloud-provider=vcloud \
-  --node-group-auto-discovery=vcloud:tag=k8s.io/cluster-autoscaler/enabled \
+  --node-group-auto-discovery=vcloud:tag=autoscaler.k8s.io.infra.vnetwork.dev/enabled=true \
   --kubeconfig=$HOME/.kube/config \
   --v=2 --logtostderr
 ```
 
 ### Kubernetes Deployment
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -68,30 +72,30 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-      - image: cluster-autoscaler:latest
-        name: cluster-autoscaler
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 300Mi
-        command:
-        - ./cluster-autoscaler
-        - --v=2
-        - --cloud-provider=vcloud
-        - --cloud-config=/etc/config/cloud-config
-        - --nodes=1:10:nodepool-name
-        volumeMounts:
-        - name: cloud-config
-          mountPath: /etc/config
-          readOnly: true
+        - image: cluster-autoscaler:latest
+          name: cluster-autoscaler
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - ./cluster-autoscaler
+            - --v=2
+            - --cloud-provider=vcloud
+            - --cloud-config=/etc/config/cloud-config
+            - --nodes=1:3:nodepool-name
+          volumeMounts:
+            - name: cloud-config
+              mountPath: /etc/config
+              readOnly: true
       volumes:
-      - name: cloud-config
-        hostPath:
-          path: /etc/config
-          type: Directory
+        - name: cloud-config
+          hostPath:
+            path: /etc/config
+            type: Directory
 ```
 
 ## Features
@@ -107,11 +111,13 @@ spec:
 ## Scaling Operations
 
 ### Scale Up (Node Creation)
+
 - **Method**: Pool capacity increase via `PUT /nodepools/{id}/scale`
 - **Behavior**: VCloud creates new instances automatically
 - **Control**: Cluster autoscaler specifies desired size, VCloud manages instance details
 
 ### Scale Down (Node Deletion)
+
 - **Method**: Individual instance deletion via `DELETE /nodepools/{id}/machines/{instance-id}`
 - **Behavior**: Precise targeting of specific nodes for removal
 - **Control**: Cluster autoscaler specifies exact instances to delete
@@ -119,6 +125,7 @@ spec:
 ### API Payloads
 
 **Scale Up Request:**
+
 ```json
 {
   "desiredSize": 5,
@@ -128,6 +135,7 @@ spec:
 ```
 
 **Scale Down Request:**
+
 ```json
 {
   "force": false,
@@ -137,19 +145,23 @@ spec:
 
 ## Architecture
 
-The VCloud provider implements a **hybrid scaling approach** that combines the best practices from other cloud providers:
+The VCloud provider implements a **hybrid scaling approach** that combines the best practices from other cloud
+providers:
 
 ### Scaling Strategy
+
 - **Scale Up**: Uses pool capacity increase (like AWS/Azure/DigitalOcean)
 - **Scale Down**: Uses individual instance deletion (like GCP/Azure)
 
 ### Benefits
+
 - ✅ **Predictable Scale Down**: Exact control over which nodes are removed
 - ✅ **Efficient Scale Up**: Let VCloud manage instance provisioning details
 - ✅ **Standard Compliance**: Follows cluster-autoscaler patterns
 - ✅ **Error Handling**: Comprehensive validation and rollback support
 
 ### Implementation Highlights
+
 - **Node Ownership Validation**: Ensures nodes belong to the correct node group
 - **Minimum Size Enforcement**: Prevents scaling below configured limits
 - **Graceful Deletion**: Uses `force: false` for proper instance shutdown
@@ -159,7 +171,7 @@ The VCloud provider implements a **hybrid scaling approach** that combines the b
 ## Requirements
 
 - VCloud NodePool APIs available
-- NodePools with autoscaling enabled (min/max > 0) 
+- NodePools with autoscaling enabled (min/max > 0)
 - Valid VCloud provider token with scaling permissions
 - Network connectivity to VCloud management APIs
 - API endpoints: `/nodepools`, `/nodepools/{id}`, `/nodepools/{id}/scale`, `/nodepools/{id}/machines/{machine-id}`
@@ -176,7 +188,8 @@ go test ./cloudprovider/vcloud/ -v
 ```
 
 The test suite includes:
-- Configuration parsing (INI files and environment variables)
+
+- Configuration parsing
 - Node group properties and validation
 - Provider ID format validation
 - DeleteNodes implementation patterns
@@ -191,12 +204,6 @@ The test suite includes:
   --cloud-config=/etc/config/cloud-config \
   --dry-run=true --v=2
 
-# Test with environment variables
-CLUSTER_ID=test CLUSTER_NAME=test MGMT_URL=https://k8s.io.infra.vnetwork.dev PROVIDER_TOKEN=test \
-./cluster-autoscaler \
-  --cloud-provider=vcloud \
-  --dry-run=true --v=2
-
 # Test scaling
 kubectl run test-scale --image=nginx --requests=cpu=1000m --replicas=3
 kubectl get nodes -w
@@ -205,9 +212,8 @@ kubectl delete deployment test-scale
 
 ## Configuration Setup
 
-**For hostPath config file deployment:**
-
 1. Create the config file on each node:
+
 ```bash
 sudo mkdir -p /etc/config
 sudo cat > /etc/config/cloud-config << EOF
@@ -222,10 +228,6 @@ sudo chmod 600 /etc/config/cloud-config
 
 2. Ensure the config file is available on all nodes where cluster-autoscaler might run
 
-**For environment variable deployment:**
-
-No additional setup needed - just set the environment variables in the deployment.
-
 ## Troubleshooting
 
 Common issues and solutions:
@@ -234,15 +236,14 @@ Common issues and solutions:
 - **Scale up fails**: Check provider token permissions and NodePool capacity limits
 - **Scale down fails**: Verify nodes belong to the node group and minimum size constraints
 - **Individual node deletion fails**: Check instance exists and is in deletable state
-- **Configuration errors**: 
-  - Config file: Check `/etc/config/cloud-config` exists and has correct permissions (600)
-  - Environment variables: Verify all required env vars are set
+- **Configuration errors**:
+    - Config file: Check `/etc/config/cloud-config` exists and has correct permissions (600)
 - **Config file not found**: Ensure `/etc/config/cloud-config` exists on the node running cluster-autoscaler
 - **Permission denied**: Check config file permissions and ownership
 - **High API calls**: Use `--v=2` and consider `--scan-interval=30s`
 
 ```bash
-# Debug logging with hostPath config
+# Debug logging v4
 ./cluster-autoscaler --cloud-provider=vcloud --cloud-config=/etc/config/cloud-config --v=4 --logtostderr
 
 # Check config file
