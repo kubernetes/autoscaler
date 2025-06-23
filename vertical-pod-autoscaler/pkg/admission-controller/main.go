@@ -120,9 +120,10 @@ func main() {
 	defer close(stopCh)
 	factory.Start(stopCh)
 	informerMap := factory.WaitForCacheSync(stopCh)
-	for informerType, synced := range informerMap {
+	for kind, synced := range informerMap {
 		if !synced {
-			klog.V(0).InfoS("Initial sync failed", "kind", informerType)
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 	}
 
