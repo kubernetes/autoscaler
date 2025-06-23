@@ -84,7 +84,7 @@ spec:
 
 #### Container Policy Parameters
 * `oomBumpUpRatio` (int):
-  - Since it's discouraged to use floats would use int and convert to float. ( e.g. 220 -> 220/100 -> 2.2 ). The converstion will be used in the controller code.
+  - Since using floats is discouraged, we use integers and convert them to floats as needed (e.g., 220 -> 220 / 100 -> 2.2). This conversion will be handled in the controller code.
   - Multiplier applied to memory recommendations after OOM events
   - Controls how aggressively memory is increased after container crashes
 
