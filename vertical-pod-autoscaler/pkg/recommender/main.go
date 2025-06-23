@@ -85,8 +85,8 @@ var (
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
 	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
-	bearerToken         = flag.String("bearer-token", "", "The bearer token used in the Prometheus server bearer token auth")
-	bearerTokenFile     = flag.String("bearer-token-file", "", "Path to the bearer token file used for authentication by the Prometheus server")
+	bearerToken         = flag.String("prometheus-bearer-token", "", "The bearer token used in the Prometheus server bearer token auth")
+	bearerTokenFile     = flag.String("prometheus-bearer-token-file", "", "Path to the bearer token file used for authentication by the Prometheus server")
 )
 
 // External metrics provider flags

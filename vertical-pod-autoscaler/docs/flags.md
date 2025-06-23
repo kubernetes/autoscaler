@@ -55,8 +55,6 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `add-dir-header` |  |  | If true, adds the file directory to the header of the log messages |
 | `address` | string |  ":8942" | The address to expose Prometheus metrics.  |
 | `alsologtostderr` |  |  | log to standard error as well as files (no effect when -logtostderr=true) |
-| `bearer-token` | string |  | The bearer token used in the Prometheus server bearer token auth |
-| `bearer-token-file` | string |  | Path to the bearer token file used for authentication by the Prometheus server |
 | `checkpoints-gc-interval` |  |  10m0s | duration                       How often orphaned checkpoints should be garbage collected  |
 | `checkpoints-timeout` |  |  1m0s | duration                           Timeout for writing checkpoints since the start of the recommender's main loop  |
 | `confidence-interval-cpu` |  |  24h0m0s | duration                       The time interval used for computing the confidence multiplier for the CPU lower and upper bound. Default: 24h  |
@@ -107,6 +105,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `pod-recommendation-min-memory-mb` | float |  250 | Minimum memory recommendation for a pod  |
 | `profiling` | int |  | Is debug/pprof endpoenabled |
 | `prometheus-address` | string |  "http://prometheus.monitoring.svc" | Where to reach for Prometheus metrics  |
+| `prometheus-bearer-token` | string |  | The bearer token used in the Prometheus server bearer token auth |
+| `prometheus-bearer-token-file` | string |  | Path to the bearer token file used for authentication by the Prometheus server |
 | `prometheus-cadvisor-job-name` | string |  "kubernetes-cadvisor" | Name of the prometheus job name which scrapes the cAdvisor metrics  |
 | `prometheus-insecure` |  |  | Skip tls verify if https is used in the prometheus-address |
 | `prometheus-query-timeout` | string |  "5m" | How long to wait before killing long queries  |
