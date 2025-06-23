@@ -138,6 +138,9 @@ func TestGetContainerLimitRangeItem(t *testing.T) {
 			cs := fake.NewSimpleClientset(tc.limitRanges...)
 			factory := informers.NewSharedInformerFactory(cs, 0)
 			lc, err := NewLimitsRangeCalculator(factory)
+
+			factory.Start(t.Context().Done())
+			_ = factory.WaitForCacheSync(t.Context().Done())
 			if assert.NoError(t, err) {
 				limitRange, err := lc.GetContainerLimitRangeItem(testNamespace)
 				if tc.expectedErr == nil {
