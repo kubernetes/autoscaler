@@ -1,0 +1,349 @@
+[default]
+s3 =
+  unsupported_key=123
+  other_unsupported=abc
+
+region = default_region
+
+[profile exampleProfile]
+region = us-west-2
+aws_access_key_id = AKID
+aws_secret_access_key = SECRET
+
+[profile alt_profile_name]
+region = alt_profile_name_region
+
+[profile with_role_duration]
+duration_seconds = 3601
+
+[profile merged_profiles]
+duration_seconds = 3601
+role_arn = config_profile_arn
+sso_start_url = https://my-sso-config-profile-role.awsapps.com/start
+sso_region = us-east-1
+sso_account_id = 1234567890
+sso_role_name = ConfigProfileRole
+ca_bundle = /path/to/bundle.a
+
+[profile short_profile_name_first]
+region = short_profile_name_first_short
+
+[profile short_profile_name_first]
+region = short_profile_name_first_alt
+
+[profile partial_creds]
+aws_access_key_id = partial_creds_akid
+
+[profile complete_creds]
+aws_access_key_id = complete_creds_akid
+aws_secret_access_key = complete_creds_secret
+
+[profile complete_creds_with_token]
+aws_access_key_id = complete_creds_with_token_akid
+aws_secret_access_key = complete_creds_with_token_secret
+aws_session_token = complete_creds_with_token_token
+
+[profile full_profile]
+aws_access_key_id = full_profile_akid
+aws_secret_access_key = full_profile_secret
+region = full_profile_region
+
+[profile config_file_load_order]
+region = shared_config_region
+aws_access_key_id = shared_config_akid
+aws_secret_access_key = shared_config_secret
+
+[profile partial_assume_role]
+role_arn = partial_assume_role_role_arn
+
+[profile assume_role]
+role_arn = assume_role_role_arn
+source_profile = complete_creds
+
+[profile assume_role_w_mfa]
+role_arn = assume_role_role_arn
+source_profile = complete_creds
+mfa_serial = 0123456789
+
+[profile assume_role_invalid_source_profile]
+role_arn = assume_role_invalid_source_profile_role_arn
+source_profile = profile_not_exists
+
+[profile assume_role_w_creds]
+role_arn = assume_role_w_creds_role_arn
+source_profile = assume_role_w_creds
+external_id = 1234
+role_session_name = assume_role_w_creds_session_name
+aws_access_key_id = assume_role_w_creds_akid
+aws_secret_access_key = assume_role_w_creds_secret
+
+[profile assume_role_w_creds_ext_dur]
+role_arn = assume_role_w_creds_role_arn
+duration_seconds=1800
+source_profile = assume_role_w_creds_ext_dur
+external_id = 1234
+role_session_name = assume_role_w_creds_session_name
+aws_access_key_id = assume_role_w_creds_akid
+aws_secret_access_key = assume_role_w_creds_secret
+
+[profile assume_role_wo_creds]
+role_arn = assume_role_wo_creds_role_arn
+source_profile = assume_role_wo_creds
+
+[profile valid_arn_region]
+s3_use_arn_region=true
+
+[profile disable_mrap]
+s3_disable_multiregion_access_points=true
+
+[profile endpoint_discovery_enabled]
+endpoint_discovery_enabled=true
+
+[profile endpoint_discovery_disabled]
+endpoint_discovery_enabled=false
+
+[profile endpoint_discovery_auto]
+endpoint_discovery_enabled=auto
+
+[profile endpoint_discovery_unknown]
+endpoint_discovery_enabled=unknown
+
+[profile with_mixed_case_keys]
+aWs_AcCeSs_kEy_ID = accessKey
+aWs_SecrEt_AccEsS_kEY = secret
+
+[profile assume_role_with_credential_source]
+role_arn = assume_role_with_credential_source_role_arn
+credential_source = Ec2InstanceMetadata
+
+[profile multiple_assume_role]
+role_arn = multiple_assume_role_role_arn
+source_profile = assume_role
+
+[profile multiple_assume_role_with_credential_source]
+role_arn = multiple_assume_role_with_credential_source_role_arn
+source_profile = assume_role_with_credential_source
+
+[profile multiple_assume_role_with_credential_source2]
+role_arn = multiple_assume_role_with_credential_source2_role_arn
+source_profile = multiple_assume_role_with_credential_source
+
+[profile sso_creds]
+sso_account_id = 012345678901
+sso_region = us-west-2
+sso_role_name = TestRole
+sso_start_url = https://127.0.0.1/start
+
+[profile source_sso_creds]
+role_arn = source_sso_creds_arn
+source_profile = sso_creds
+
+[profile sso_and_static]
+aws_access_key_id = sso_and_static_akid
+aws_secret_access_key = sso_and_static_secret
+aws_session_token = sso_and_static_token
+sso_account_id = 012345678901
+sso_region = us-west-2
+sso_role_name = TestRole
+sso_start_url = https://THIS_SHOULD_NOT_BE_IN_TESTDATA_CACHE/start
+
+[profile sso_and_assume]
+sso_account_id = 012345678901
+sso_region = us-west-2
+sso_role_name = TestRole
+sso_start_url = https://127.0.0.1/start
+role_arn = sso_with_assume_role_arn
+source_profile = multiple_assume_role_with_credential_source
+
+[profile source_sso_and_assume]
+role_arn = source_sso_and_assume_arn
+source_profile = sso_and_assume
+
+[profile sso_mixed_credproc]
+sso_account_id = 012345678901
+sso_region = us-west-2
+sso_role_name = TestRole
+sso_start_url = https://127.0.0.1/start
+credential_process = /path/to/process
+
+[profile sso-session-success]
+region = us-east-1
+sso_session = sso-session-success-dev
+sso_account_id = 123456789012
+sso_role_name = testRole
+
+[sso-session sso-session-success-dev]
+sso_region = us-east-1
+sso_start_url = https://d-123456789a.awsapps.com/start
+sso_registration_scopes = sso:account:access
+
+[profile DoNotNormalize]
+aws_access_key_id = DoNotNormalize_config_akid
+aws_secret_access_key = DoNotNormalize_config_secret
+aws_session_token = DoNotNormalize_config_session_token
+
+[profile donotnormalize]
+aws_access_key_id = donotnormalize_config_akid
+aws_secret_access_key = donotnormalize_config_secret
+aws_session_token = donotnormalize_config_session_token
+
+[profile DONOTNORMALIZE]
+aws_access_key_id = DONOTNORMALIZE_config_akid
+aws_secret_access_key = DONOTNORMALIZE_config_secret
+aws_session_token = DONOTNORMALIZE_config_session_token
+
+[profile DoNotNormalize]
+region = us-west-2
+duration_seconds = 1200
+
+[profile donotnormalize]
+region = us-west-1
+duration_seconds = 1500
+
+[profile DONOTNORMALIZE]
+region = us-west-3
+duration_seconds = 1800
+
+[profile AssumeWithDoNotNormalize]
+role_arn = AssumeWithDoNotNormalize_role_arn
+source_profile = DoNotNormalize
+
+[profile EC2MetadataServiceEndpoint]
+ec2_metadata_service_endpoint = http://endpoint.localhost
+
+[profile EC2MetadataServiceEndpointModeIPv6]
+ec2_metadata_service_endpoint_mode = IPv6
+
+[profile EC2MetadataServiceEndpointModeIPv4]
+ec2_metadata_service_endpoint_mode = IPv4
+
+[profile EC2MetadataServiceEndpointModeUnknown]
+ec2_metadata_service_endpoint_mode = foobar
+
+[profile EC2MetadataServiceEndpointAndModeMixed]
+ec2_metadata_service_endpoint = http://endpoint.localhost
+ec2_metadata_service_endpoint_mode = IPv6
+
+[profile UseDualStackEndpointEnabled]
+region = "us-west-2"
+use_dualstack_endpoint=True
+
+[profile UseDualStackEndpointDisabled]
+region = "us-west-2"
+use_dualstack_endpoint=False
+
+[profile UseDualStackEndpointInvalid]
+region = "us-west-2"
+use_dualstack_endpoint=invalid
+
+[profile UseFIPSEndpointEnabled]
+region = "us-west-2"
+use_fips_endpoint=True
+
+[profile UseFIPSEndpointDisabled]
+region = "us-west-2"
+use_fips_endpoint=False
+
+[profile UseFIPSEndpointInvalid]
+region = "us-west-2"
+use_fips_endpoint=invalid
+
+[profile autodefaultsmode]
+defaults_mode = auto
+
+[profile standarddefaultsmode]
+defaults_mode = standard
+
+[profile invaliddefaultsmode]
+defaults_mode = invalid
+
+[profile retryunset]
+
+[profile retrywithstandard]
+retry_mode = standard
+max_attempts = 5
+
+[profile retrywithadaptive]
+retry_mode = adaptive
+max_attempts = 4
+
+[profile retrywithinvalidmode]
+retry_mode = invalid
+
+[profile retrywithinvalidattempts]
+max_attempts = invalid
+
+[profile with_ca_bundle]
+ca_bundle = custom_ca_bundle_file.pem
+
+[profile sdk_app_id]
+sdk_ua_app_id = 12345
+
+[profile endpoint_config]
+ignore_configured_endpoint_urls = true
+endpoint_url = https://example.com
+
+[profile ec2-metadata-v1-disabled-false]
+ec2_metadata_v1_disabled=False
+
+[profile ec2-metadata-v1-disabled-true]
+ec2_metadata_v1_disabled=True
+
+[profile ec2-metadata-v1-disabled-invalid]
+ec2_metadata_v1_disabled=invalid
+
+[profile request_compression]
+disable_request_compression = true
+request_min_compression_size_bytes = 12345
+
+[profile request_compression_invalid_disable]
+disable_request_compression = blabla
+request_min_compression_size_bytes = 12345
+
+[profile request_compression_non_int_min_request]
+disable_request_compression = false
+request_min_compression_size_bytes = hahaha
+
+[profile request_compression_min_request_out_of_bounds]
+disable_request_compression = false
+request_min_compression_size_bytes = 10485761
+
+[profile service_endpoint_url]
+services = service_endpoint_url_services
+
+[services service_endpoint_url_services]
+s3 =
+  endpoint_url = http://127.0.0.1
+  other = foo
+ec2 =
+  endpoint_url = http://127.0.0.1:81
+
+[profile account_id]
+aws_access_key_id = account_id_akid
+aws_secret_access_key = account_id_secret
+aws_account_id = 012345678901
+
+[profile account_id_endpoint_mode]
+account_id_endpoint_mode = disabled
+
+[profile account_id_endpoint_mode_error]
+account_id_endpoint_mode = blabla
+
+[profile request_checksum_calculation_when_supported]
+request_checksum_calculation = when_supported
+
+[profile request_checksum_calculation_when_required]
+request_checksum_calculation = WHEN_REQUIRED
+
+[profile request_checksum_calculation_error]
+request_checksum_calculation = blabla
+
+[profile response_checksum_validation_when_supported]
+response_checksum_validation = When_SUPPORTED
+
+[profile response_checksum_validation_when_required]
+response_checksum_validation = when_required
+
+[profile response_checksum_validation_error]
+response_checksum_validation = blabla
+

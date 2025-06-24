@@ -1,0 +1,7 @@
+{
+	"with_mixed_case_keys": {
+		"int_value": "60",
+		"string_value": "secret",
+		"float_value": "12.3"
+	}
+}

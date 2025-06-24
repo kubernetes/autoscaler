@@ -1,0 +1,16 @@
+[profile comments];comment
+a = foo#notcomment
+b = foo;notcomment
+c = foo#
+d = foo;
+e = foo bar 	 # comment
+f = foo 	 bar ; comment
+g = foo		# comment
+h = foo		; comment
+i = # comment
+j = ; comment
+k = foo # ; comment
+l = foo ; # comment
+m = foo		
+n = foo #
+o = foo ;

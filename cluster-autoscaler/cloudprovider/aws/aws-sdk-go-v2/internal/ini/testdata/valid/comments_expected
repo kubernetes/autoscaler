@@ -1,0 +1,19 @@
+{
+	"profile comments": {
+		"a": "foo#notcomment",
+		"b": "foo;notcomment",
+		"c": "foo#",
+		"d": "foo;",
+		"e": "foo bar",
+		"f": "foo \t bar",
+		"g": "foo",
+		"h": "foo",
+		"i": "",
+		"j": "",
+		"k": "foo",
+		"l": "foo",
+		"m": "foo",
+		"n": "foo",
+		"o": "foo"
+	}
+}

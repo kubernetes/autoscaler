@@ -1,0 +1,4 @@
+[with_mixed_case_keys]
+sTring_Value = secret
+iNt_Value = 60
+flOAt_Value = 12.3

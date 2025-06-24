@@ -1,0 +1,50 @@
+[default]
+region = ap-south-1
+
+[profile    with-tab]
+region = cn-north-1
+
+[profile default]
+region = ap-north-1
+
+[profile duplicate-profile]
+region = us-east-1
+
+[profile duplicate-profile]
+region = us-west-2
+
+[profile partial-creds-1]
+aws_access_key_id = notForAccess
+
+[profile complete]
+aws_access_key_id = configAccessKey
+aws_secret_access_key = configSecretKey
+region = us-west-2
+
+[replaced-profile]
+region = eu-northeast-1
+
+[profile replaced-profile]
+region = eu-west-1
+
+[profile]
+region = us-west-2
+
+[profile ]
+region = ap-east-2
+
+[profile    ]
+region = ap-south-1
+
+[profile-bar]
+region = us-east-1
+
+[ignored-profile]
+region = ap-east-1
+
+[profile sso-session-test]
+sso_session = dev-session
+
+[sso-session dev-session]
+sso_region = us-west-2
+sso_start_url =  https://example.aws/start

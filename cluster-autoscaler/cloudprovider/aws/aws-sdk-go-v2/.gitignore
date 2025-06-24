@@ -1,0 +1,31 @@
+# Project-specific ignore
+/doc
+/doc-staging
+/internal/awstesting/integration/smoke/**/importmarker__.go
+/internal/awstesting/integration/smoke/_test/
+/vendor
+/private/model/cli/gen-api/gen-api
+build/
+bin/
+
+# Mac
+.DS_Store/
+
+# Intellij
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Node
+dist
+
+# Java
+.gradle/
+
+# vscode
+.vscode/
+
+# Ruby
+.yardoc
+Gemfile.lock

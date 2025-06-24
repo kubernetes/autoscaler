@@ -1,0 +1,105 @@
+{
+  "dialogAction": {
+    "fulfillmentState": "ReadyForFulfillment",
+    "intentName": "fooIntent",
+    "message": "fooMessage",
+    "messageFormat": "PlainText",
+    "slotToElicit": "fooSlot",
+    "slots": {
+      "fooSlot": "slotValue",
+      "barSlot": "slotValue"
+    },
+    "type": "ConfirmIntent"
+  },
+  "recentIntentSummaryView": [
+    {
+      "checkpointLabel": "fooLabel1",
+      "confirmationStatus": "Confirmed",
+      "dialogActionType": "ConfirmIntent",
+      "fulfillmentState": "Fulfilled",
+      "intentName": "fooIntent",
+      "slotToElicit": "fooSlot",
+      "slots": {
+        "fooSlot": "slotValue",
+        "barSlot": "slotValue"
+      }
+    },
+    {
+      "checkpointLabel": "fooLabel2",
+      "confirmationStatus": "Confirmed",
+      "dialogActionType": "ConfirmIntent",
+      "fulfillmentState": "Fulfilled",
+      "intentName": "fooIntent",
+      "slotToElicit": "fooSlot",
+      "slots": {
+        "fooSlot": "slotValue",
+        "barSlot": "slotValue"
+      }
+    },
+    {
+      "checkpointLabel": "fooLabel3",
+      "confirmationStatus": "Confirmed",
+      "dialogActionType": "ConfirmIntent",
+      "fulfillmentState": "Fulfilled",
+      "intentName": "fooIntent",
+      "slotToElicit": "fooSlot",
+      "slots": {
+        "fooSlot": "slotValue",
+        "barSlot": "slotValue"
+      }
+    },
+    {
+      "checkpointLabel": "fooLabel4",
+      "confirmationStatus": "Confirmed",
+      "dialogActionType": "ConfirmIntent",
+      "fulfillmentState": "Fulfilled",
+      "intentName": "fooIntent",
+      "slotToElicit": "fooSlot",
+      "slots": {
+        "fooSlot": "slotValue",
+        "barSlot": "slotValue"
+      }
+    },
+    {
+      "checkpointLabel": "fooLabel5",
+      "confirmationStatus": "Confirmed",
+      "dialogActionType": "ConfirmIntent",
+      "fulfillmentState": "Fulfilled",
+      "intentName": "fooIntent",
+      "slotToElicit": "fooSlot",
+      "slots": {
+        "fooSlot": "slotValue",
+        "barSlot": "slotValue"
+      }
+    },
+    {
+      "checkpointLabel": "fooLabel6",
+      "confirmationStatus": "Confirmed",
+      "dialogActionType": "ConfirmIntent",
+      "fulfillmentState": "Fulfilled",
+      "intentName": "fooIntent",
+      "slotToElicit": "fooSlot",
+      "slots": {
+        "fooSlot": "slotValue",
+        "barSlot": "slotValue"
+      }
+    },
+    {
+      "checkpointLabel": "fooLabel7",
+      "confirmationStatus": "Confirmed",
+      "dialogActionType": "ConfirmIntent",
+      "fulfillmentState": "Fulfilled",
+      "intentName": "fooIntent",
+      "slotToElicit": "fooSlot",
+      "slots": {
+        "fooSlot": "slotValue",
+        "barSlot": "slotValue"
+      }
+    }
+  ],
+  "sessionAttributes": {
+    "foo": "fooValue",
+    "bar": "barValue"
+  },
+  "sessionId": "benchmark"
+}
