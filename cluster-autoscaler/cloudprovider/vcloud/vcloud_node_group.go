@@ -58,13 +58,6 @@ func (n *NodeGroup) MinSize() int {
 
 // TargetSize returns the current target size of the node group
 func (n *NodeGroup) TargetSize() (int, error) {
-	ctx := context.Background()
-	nodePoolInfo, err := n.client.GetNodePool(ctx, n.id)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get node pool info: %v", err)
-	}
-
-	n.targetSize = nodePoolInfo.DesiredSize
 	return n.targetSize, nil
 }
 
@@ -91,6 +84,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("failed to create instances: %v", err)
 	}
 
+	// Update local state immediately (like DigitalOcean)
 	n.targetSize = targetSize
 	return nil
 }
@@ -164,9 +158,10 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		klog.V(2).Infof("Successfully deleted instance %s from node group %s", instanceID, n.id)
 	}
 
-	// Update target size to reflect deletions
-	n.targetSize = currentSize - deletedCount
-	klog.Infof("Successfully deleted %d nodes from node group %s (new target size: %d)", deletedCount, n.id, n.targetSize)
+	// Update local state to reflect deletions (like DigitalOcean)
+	newTargetSize := currentSize - deletedCount
+	n.targetSize = newTargetSize
+	klog.Infof("Successfully deleted %d nodes from node group %s (new target size: %d)", deletedCount, n.id, newTargetSize)
 
 	return nil
 }
@@ -201,10 +196,11 @@ func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 		klog.V(2).Infof("Force deleted instance %s from node group %s", instanceID, n.id)
 	}
 
-	// Update target size to reflect forced deletions
+	// Update local state to reflect forced deletions (like DigitalOcean)
 	currentSize, _ := n.TargetSize()
-	n.targetSize = currentSize - deletedCount
-	klog.Infof("Force deleted %d nodes from node group %s (new target size: %d)", deletedCount, n.id, n.targetSize)
+	newTargetSize := currentSize - deletedCount
+	n.targetSize = newTargetSize
+	klog.Infof("Force deleted %d nodes from node group %s (new target size: %d)", deletedCount, n.id, newTargetSize)
 
 	return nil
 }
@@ -226,6 +222,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 			currentSize, targetSize, n.MinSize())
 	}
 
+	// Update local state (like DigitalOcean)
 	n.targetSize = targetSize
 	return nil
 }
@@ -243,49 +240,38 @@ func (n *NodeGroup) Debug() string {
 
 // Nodes returns a list of all nodes that belong to this node group
 func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
-	ctx := context.Background()
-	nodePoolInfo, err := n.client.GetNodePool(ctx, n.id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get node pool info: %v", err)
-	}
-
 	var instanceIDs []string
 
-	// First, try to use machines array from nodepool detail response
-	if len(nodePoolInfo.Machines) > 0 {
-		klog.V(4).Infof("Using machines array from nodepool detail: %d instances", len(nodePoolInfo.Machines))
-		instanceIDs = nodePoolInfo.Machines
+	// Get instance IDs from the machines API
+	ctx := context.Background()
+	var apiErr error
+	instanceIDs, apiErr = n.client.ListNodePoolInstances(ctx, n.id)
+	if apiErr != nil {
+		klog.V(2).Infof("Failed to get instances from machines API: %v", apiErr)
+		instanceIDs = []string{} // Use final fallback
 	} else {
-		// Fallback: try to get instance IDs from the dedicated machines API
-		var apiErr error
-		instanceIDs, apiErr = n.client.ListNodePoolInstances(ctx, n.id)
-		if apiErr != nil {
-			klog.V(2).Infof("Failed to get instances from machines API: %v", apiErr)
-			instanceIDs = []string{} // Use final fallback
-		} else {
-			klog.V(4).Infof("Using machines API response: %d instances", len(instanceIDs))
-		}
+		klog.V(4).Infof("Using machines API response: %d instances", len(instanceIDs))
 	}
 
 	var result []cloudprovider.Instance
 
-	// If we got actual instance IDs from either source, use them
+	// If we got actual instance IDs, use them
 	if len(instanceIDs) > 0 {
 		klog.V(4).Infof("Using %d actual instance IDs for node group %s", len(instanceIDs), n.id)
 		for _, instanceID := range instanceIDs {
 			result = append(result, cloudprovider.Instance{
 				Id:     toProviderID(instanceID),
-				Status: toInstanceStatus(nodePoolInfo.Status),
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			})
 		}
 	} else {
-		// Final fallback: create instances based on current size with generated IDs
+		// Final fallback: create instances based on target size with generated IDs
 		klog.V(4).Infof("Using final fallback for node group %s", n.id)
-		for i := 0; i < nodePoolInfo.CurrentSize; i++ {
+		for i := 0; i < n.targetSize; i++ {
 			instanceID := fmt.Sprintf("%s-instance-%d", n.id, i)
 			result = append(result, cloudprovider.Instance{
 				Id:     toProviderID(instanceID),
-				Status: toInstanceStatus(nodePoolInfo.Status),
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			})
 		}
 	}
@@ -304,9 +290,7 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // Exist checks if the node group really exists on the cloud provider side
 func (n *NodeGroup) Exist() bool {
-	ctx := context.Background()
-	_, err := n.client.GetNodePool(ctx, n.id)
-	return err == nil
+	return true
 }
 
 // Create creates the node group on the cloud provider side

@@ -19,6 +19,8 @@ package vcloud
 import (
 	"io"
 	"os"
+	"sync"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -40,12 +42,18 @@ const (
 type vcloudCloudProvider struct {
 	manager         *EnhancedManager
 	resourceLimiter *cloudprovider.ResourceLimiter
+
+	// Cache for node-to-nodegroup mapping
+	nodeGroupCache      map[string]cloudprovider.NodeGroup
+	nodeGroupCacheTime  time.Time
+	nodeGroupCacheMutex sync.RWMutex
 }
 
 func newVcloudCloudProvider(manager *EnhancedManager, rl *cloudprovider.ResourceLimiter) *vcloudCloudProvider {
 	return &vcloudCloudProvider{
 		manager:         manager,
 		resourceLimiter: rl,
+		nodeGroupCache:  make(map[string]cloudprovider.NodeGroup),
 	}
 }
 
@@ -76,19 +84,78 @@ func (v *vcloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 		return nil, nil
 	}
 
-	// Search through all node groups to find the one containing this instance
-	for _, group := range v.manager.nodeGroups {
-		klog.V(5).Infof("checking node group %q", group.Id())
-		nodes, err := group.Nodes()
-		if err != nil {
-			klog.V(4).Infof("failed to get nodes for group %q: %v", group.Id(), err)
-			continue
+	// Check cache first
+	v.nodeGroupCacheMutex.RLock()
+	if time.Since(v.nodeGroupCacheTime) < 30*time.Second {
+		if cachedGroup, found := v.nodeGroupCache[providerID]; found {
+			klog.V(5).Infof("found cached node group %q for instance %q", cachedGroup.Id(), instanceID)
+			v.nodeGroupCacheMutex.RUnlock()
+			return cachedGroup, nil
 		}
+	}
+	v.nodeGroupCacheMutex.RUnlock()
 
-		for _, instance := range nodes {
-			if instance.Id == providerID {
-				klog.V(4).Infof("found node group %q for instance %q", group.Id(), instanceID)
-				return group, nil
+	// Cache miss or stale, search through all node groups
+	v.nodeGroupCacheMutex.Lock()
+	defer v.nodeGroupCacheMutex.Unlock()
+
+	// Double-check cache after acquiring write lock
+	if time.Since(v.nodeGroupCacheTime) < 30*time.Second {
+		if cachedGroup, found := v.nodeGroupCache[providerID]; found {
+			klog.V(5).Infof("found cached node group (double-check) %q for instance %q", cachedGroup.Id(), instanceID)
+			return cachedGroup, nil
+		}
+	}
+
+	// If cache is stale, rebuild it
+	if time.Since(v.nodeGroupCacheTime) >= 30*time.Second {
+		klog.V(4).Infof("rebuilding node group cache")
+		v.nodeGroupCache = make(map[string]cloudprovider.NodeGroup)
+
+		// Only update cache time if we have node groups to work with
+		if len(v.manager.nodeGroups) > 0 {
+			v.nodeGroupCacheTime = time.Now()
+
+			// Build cache for all instances
+			for _, group := range v.manager.nodeGroups {
+				nodes, err := group.Nodes()
+				if err != nil {
+					klog.V(4).Infof("failed to get nodes for group %q: %v", group.Id(), err)
+					continue
+				}
+
+				for _, instance := range nodes {
+					v.nodeGroupCache[instance.Id] = group
+				}
+			}
+		} else {
+			klog.V(4).Infof("no node groups available yet, skipping cache rebuild")
+		}
+	}
+
+	// Now check the cache for our node
+	if group, found := v.nodeGroupCache[providerID]; found {
+		klog.V(4).Infof("found node group %q for instance %q", group.Id(), instanceID)
+		return group, nil
+	}
+
+	// If cache is empty and we have node groups, fall back to direct search
+	if len(v.nodeGroupCache) == 0 && len(v.manager.nodeGroups) > 0 {
+		klog.V(4).Infof("cache empty, falling back to direct search for instance %q", instanceID)
+		for _, group := range v.manager.nodeGroups {
+			nodes, err := group.Nodes()
+			if err != nil {
+				klog.V(4).Infof("failed to get nodes for group %q: %v", group.Id(), err)
+				continue
+			}
+
+			for _, instance := range nodes {
+				if instance.Id == providerID {
+					klog.V(4).Infof("found node group %q for instance %q (fallback)", group.Id(), instanceID)
+					// Update cache with this finding
+					v.nodeGroupCache[instance.Id] = group
+					return group, nil
+				}
 			}
 		}
 	}
@@ -151,6 +218,13 @@ func (v *vcloudCloudProvider) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state
 func (v *vcloudCloudProvider) Refresh() error {
 	klog.V(4).Info("refreshing VCloud node groups")
+
+	// Invalidate node group cache when refreshing
+	v.nodeGroupCacheMutex.Lock()
+	v.nodeGroupCache = make(map[string]cloudprovider.NodeGroup)
+	v.nodeGroupCacheTime = time.Time{}
+	v.nodeGroupCacheMutex.Unlock()
+
 	return v.manager.Refresh()
 }
 
