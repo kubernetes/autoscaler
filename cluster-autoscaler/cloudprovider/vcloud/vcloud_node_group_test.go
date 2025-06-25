@@ -695,6 +695,83 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 		cpuCapacity.String(), memoryCapacity.String())
 }
 
+// TestNodeGroup_TemplateNodeInfo_ProductionInstanceType tests with actual production instance type
+func TestNodeGroup_TemplateNodeInfo_ProductionInstanceType(t *testing.T) {
+	ng := &NodeGroup{
+		id:           "test-pool",
+		clusterID:    "test-cluster",
+		client:       nil,
+		manager:      nil,
+		minSize:      1,
+		maxSize:      10,
+		targetSize:   3,
+		instanceType: "v2g-standard-8-16", // Actual production instance type
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo()
+	if err != nil {
+		t.Errorf("TemplateNodeInfo should not return error, got: %v", err)
+	}
+
+	if nodeInfo == nil {
+		t.Fatal("Expected nodeInfo to be non-nil")
+	}
+
+	node := nodeInfo.Node()
+	if node == nil {
+		t.Fatal("Expected node to be non-nil")
+	}
+
+	// Verify node has the correct labels
+	if node.Labels["node.kubernetes.io/instance-type"] != "v2g-standard-8-16" {
+		t.Errorf("Expected instance type label 'v2g-standard-8-16', got '%s'",
+			node.Labels["node.kubernetes.io/instance-type"])
+	}
+
+	// Verify node has correct resource capacity for 8-16 instance type
+	cpuCapacity := node.Status.Capacity["cpu"]
+	if cpuCapacity.IsZero() {
+		t.Error("Expected CPU capacity to be non-zero")
+	}
+
+	memoryCapacity := node.Status.Capacity["memory"]
+	if memoryCapacity.IsZero() {
+		t.Error("Expected memory capacity to be non-zero")
+	}
+
+	// Verify actual production values: 8 CPU, 16GB memory
+	expectedCPU := int64(8)
+	expectedMemoryGB := int64(16)
+	expectedMemoryBytes := expectedMemoryGB * 1024 * 1024 * 1024
+
+	actualCPU := cpuCapacity.Value()
+	actualMemory := memoryCapacity.Value()
+
+	if actualCPU != expectedCPU {
+		t.Errorf("Expected CPU capacity %d, got %d", expectedCPU, actualCPU)
+	}
+
+	if actualMemory != expectedMemoryBytes {
+		t.Errorf("Expected memory capacity %d bytes (%dGB), got %d bytes",
+			expectedMemoryBytes, expectedMemoryGB, actualMemory)
+	}
+
+	// Verify allocatable resources are less than capacity (system overhead)
+	cpuAllocatable := node.Status.Allocatable["cpu"]
+	memoryAllocatable := node.Status.Allocatable["memory"]
+
+	if cpuAllocatable.Cmp(cpuCapacity) >= 0 {
+		t.Error("Expected CPU allocatable to be less than capacity")
+	}
+
+	if memoryAllocatable.Cmp(memoryCapacity) >= 0 {
+		t.Error("Expected memory allocatable to be less than capacity")
+	}
+
+	t.Logf("Production TemplateNodeInfo test passed: CPU=%s, Memory=%sGB",
+		cpuCapacity.String(), memoryCapacity.String())
+}
+
 // TestParseInstanceType tests the parseInstanceType utility function
 func TestParseInstanceType(t *testing.T) {
 	tests := []struct {
