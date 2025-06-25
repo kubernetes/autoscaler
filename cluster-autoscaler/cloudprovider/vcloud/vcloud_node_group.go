@@ -439,26 +439,3 @@ func fromProviderID(providerID string) (string, error) {
 	}
 	return strings.TrimPrefix(providerID, vcloudProviderIDPrefix), nil
 }
-
-// toInstanceStatus converts VCloud instance state to cloudprovider.InstanceStatus
-func toInstanceStatus(state string) *cloudprovider.InstanceStatus {
-	status := &cloudprovider.InstanceStatus{}
-
-	switch strings.ToLower(state) {
-	case "creating", "pending", "provisioning":
-		status.State = cloudprovider.InstanceCreating
-	case "running", "active":
-		status.State = cloudprovider.InstanceRunning
-	case "deleting", "terminating", "destroyed":
-		status.State = cloudprovider.InstanceDeleting
-	default:
-		status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
-			ErrorClass:   cloudprovider.OtherErrorClass,
-			ErrorCode:    "unknown-state-vcloud",
-			ErrorMessage: fmt.Sprintf("unknown instance state: %s", state),
-		}
-		status.State = cloudprovider.InstanceRunning // Default to running for unknown states
-	}
-
-	return status
-}

@@ -134,6 +134,30 @@ type NodePoolListResponse struct {
 	} `json:"data"`
 }
 
+// MachineInfo represents detailed information about a machine/instance in a node pool.
+// This matches the actual API response format from VCloud NodePool APIs.
+type MachineInfo struct {
+	// ID is the unique identifier for the machine/instance
+	ID string `json:"id"`
+	// Name is the human-readable name of the machine
+	Name string `json:"name"`
+	// State indicates the current operational state of the machine
+	State string `json:"state"`
+	// IP is the assigned IP address of the machine
+	IP string `json:"ip"`
+	// OS describes the operating system and version
+	OS string `json:"os"`
+	// Kernel specifies the kernel type (e.g., "linux")
+	Kernel string `json:"kernel"`
+	// Runtime indicates the container runtime (e.g., "containerd://1.7.12")
+	Runtime string `json:"runtime"`
+	// CreatedAt is the timestamp when the machine was created
+	CreatedAt string `json:"createdAt"`
+	// NodePoolID is the ID of the node pool this machine belongs to
+	// This field can be added by the API to improve validation and management
+	NodePoolID string `json:"nodePoolId,omitempty"`
+}
+
 // parseINIConfig parses VCloud configuration from INI format input.
 // It looks for a [vCloud] section and extracts the required parameters:
 // CLUSTER_ID, CLUSTER_NAME, MGMT_URL, and PROVIDER_TOKEN.
@@ -379,16 +403,7 @@ func (c *VCloudAPIClient) ListNodePoolInstances(ctx context.Context, nodePoolID 
 	var instancesResponse struct {
 		Status int `json:"status"`
 		Data   struct {
-			Machines []struct {
-				ID        string `json:"id"`
-				Name      string `json:"name"`
-				State     string `json:"state"`
-				IP        string `json:"ip"`
-				OS        string `json:"os"`
-				Kernel    string `json:"kernel"`
-				Runtime   string `json:"runtime"`
-				CreatedAt string `json:"createdAt"`
-			} `json:"machines"`
+			Machines []MachineInfo `json:"machines"`
 		} `json:"data"`
 	}
 
@@ -405,11 +420,80 @@ func (c *VCloudAPIClient) ListNodePoolInstances(ctx context.Context, nodePoolID 
 
 	var instanceIDs []string
 	for _, machine := range instancesResponse.Data.Machines {
+		// Validate machine belongs to the correct node pool if NodePoolID is provided
+		if machine.NodePoolID != "" && machine.NodePoolID != nodePoolID {
+			klog.Warningf("Machine %s belongs to node pool %s, not %s. Skipping.",
+				machine.ID, machine.NodePoolID, nodePoolID)
+			continue
+		}
+
 		instanceIDs = append(instanceIDs, machine.ID)
+		klog.V(4).Infof("Found machine: ID=%s, Name=%s, State=%s, IP=%s",
+			machine.ID, machine.Name, machine.State, machine.IP)
 	}
 
 	klog.V(2).Infof("Found %d instances in node pool %s", len(instanceIDs), nodePoolID)
 	return instanceIDs, nil
+}
+
+// GetNodePoolMachines retrieves detailed machine information for a node pool.
+// This provides comprehensive machine details including state, IP, and runtime info
+// which can be useful for node group management and validation.
+func (c *VCloudAPIClient) GetNodePoolMachines(ctx context.Context, nodePoolID string) ([]MachineInfo, error) {
+	klog.V(2).Infof("Getting detailed machine info for node pool: %s", nodePoolID)
+
+	resp, err := c.Request(ctx, "GET", fmt.Sprintf("/nodepools/%s/machines", nodePoolID), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get node pool machines: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		return nil, fmt.Errorf("failed to read machines response: %w", readErr)
+	}
+
+	klog.V(4).Infof("Machines API response: %s", string(body))
+
+	var machinesResponse struct {
+		Status int `json:"status"`
+		Data   struct {
+			Machines []MachineInfo `json:"machines"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &machinesResponse); err != nil {
+		klog.Warningf("Failed to parse machines response as JSON: %v", err)
+		return []MachineInfo{}, nil
+	}
+
+	if machinesResponse.Status != 200 {
+		klog.Warningf("Machines API returned status %d", machinesResponse.Status)
+		return []MachineInfo{}, nil
+	}
+
+	// Add nodePoolID to each machine if not already present
+	var validMachines []MachineInfo
+	for _, machine := range machinesResponse.Data.Machines {
+		// Set the NodePoolID if it's not already provided by the API
+		if machine.NodePoolID == "" {
+			machine.NodePoolID = nodePoolID
+		}
+
+		// Validate machine belongs to the correct node pool
+		if machine.NodePoolID != nodePoolID {
+			klog.Warningf("Machine %s belongs to node pool %s, not %s. Skipping.",
+				machine.ID, machine.NodePoolID, nodePoolID)
+			continue
+		}
+
+		validMachines = append(validMachines, machine)
+		klog.V(4).Infof("Found machine: ID=%s, Name=%s, State=%s, IP=%s, NodePool=%s",
+			machine.ID, machine.Name, machine.State, machine.IP, machine.NodePoolID)
+	}
+
+	klog.V(2).Infof("Found %d valid machines in node pool %s", len(validMachines), nodePoolID)
+	return validMachines, nil
 }
 
 // ScaleNodePool scales a node pool to the specified desired size.
