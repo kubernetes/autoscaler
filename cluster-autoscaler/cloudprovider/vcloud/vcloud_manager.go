@@ -599,13 +599,14 @@ func (m *EnhancedManager) Refresh() error {
 				pool.ID, pool.Name, pool.MinSize, pool.MaxSize, pool.CurrentSize)
 
 			ng := &NodeGroup{
-				id:         pool.ID,
-				clusterID:  m.clusterID,
-				client:     m.client,
-				manager:    m,
-				minSize:    pool.MinSize,
-				maxSize:    pool.MaxSize,
-				targetSize: pool.DesiredSize,
+				id:           pool.ID,
+				clusterID:    m.clusterID,
+				client:       m.client,
+				manager:      m,
+				minSize:      pool.MinSize,
+				maxSize:      pool.MaxSize,
+				targetSize:   pool.DesiredSize,
+				instanceType: pool.InstanceType, // Cache instance type for TemplateNodeInfo
 			}
 			nodeGroups = append(nodeGroups, ng)
 		}

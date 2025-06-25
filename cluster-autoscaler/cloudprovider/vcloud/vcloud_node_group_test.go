@@ -599,19 +599,100 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 // TestNodeGroup_Exist tests the Exist method
 func TestNodeGroup_Exist(t *testing.T) {
 	ng := &NodeGroup{
-		id:         "test-pool",
-		clusterID:  "test-cluster",
-		client:     nil,
-		manager:    nil,
-		minSize:    1,
-		maxSize:    10,
-		targetSize: 3,
+		id:           "test-pool",
+		clusterID:    "test-cluster",
+		client:       nil,
+		manager:      nil,
+		minSize:      1,
+		maxSize:      10,
+		targetSize:   3,
+		instanceType: "v2g-standard-4-8",
 	}
 
 	// Exist() always returns true in the current implementation
 	if !ng.Exist() {
 		t.Error("Expected Exist() to return true")
 	}
+}
+
+// TestNodeGroup_TemplateNodeInfo tests the TemplateNodeInfo method
+func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
+	ng := &NodeGroup{
+		id:           "test-pool",
+		clusterID:    "test-cluster",
+		client:       nil,
+		manager:      nil,
+		minSize:      1,
+		maxSize:      10,
+		targetSize:   3,
+		instanceType: "v2g-standard-4-8",
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo()
+	if err != nil {
+		t.Errorf("TemplateNodeInfo should not return error, got: %v", err)
+	}
+
+	if nodeInfo == nil {
+		t.Fatal("Expected nodeInfo to be non-nil")
+	}
+
+	node := nodeInfo.Node()
+	if node == nil {
+		t.Fatal("Expected node to be non-nil")
+	}
+
+	// Verify node has the correct labels
+	if node.Labels["node.kubernetes.io/instance-type"] != "v2g-standard-4-8" {
+		t.Errorf("Expected instance type label 'v2g-standard-4-8', got '%s'",
+			node.Labels["node.kubernetes.io/instance-type"])
+	}
+
+	// Verify node has correct resource capacity
+	cpuCapacity := node.Status.Capacity["cpu"]
+	if cpuCapacity.IsZero() {
+		t.Error("Expected CPU capacity to be non-zero")
+	}
+
+	memoryCapacity := node.Status.Capacity["memory"]
+	if memoryCapacity.IsZero() {
+		t.Error("Expected memory capacity to be non-zero")
+	}
+
+	// Verify node has allocatable resources
+	cpuAllocatable := node.Status.Allocatable["cpu"]
+	if cpuAllocatable.IsZero() {
+		t.Error("Expected CPU allocatable to be non-zero")
+	}
+
+	memoryAllocatable := node.Status.Allocatable["memory"]
+	if memoryAllocatable.IsZero() {
+		t.Error("Expected memory allocatable to be non-zero")
+	}
+
+	// Verify that allocatable is less than capacity (system overhead)
+	if cpuAllocatable.Cmp(cpuCapacity) >= 0 {
+		t.Error("Expected CPU allocatable to be less than capacity")
+	}
+
+	if memoryAllocatable.Cmp(memoryCapacity) >= 0 {
+		t.Error("Expected memory allocatable to be less than capacity")
+	}
+
+	// Verify node has ready conditions
+	found := false
+	for _, condition := range node.Status.Conditions {
+		if condition.Type == "Ready" && condition.Status == "True" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("Expected node to have Ready=True condition")
+	}
+
+	t.Logf("TemplateNodeInfo test passed: CPU=%s, Memory=%s",
+		cpuCapacity.String(), memoryCapacity.String())
 }
 
 // TestParseInstanceType tests the parseInstanceType utility function

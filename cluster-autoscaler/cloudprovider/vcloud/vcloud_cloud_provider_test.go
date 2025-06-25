@@ -50,22 +50,24 @@ func mockManager() *EnhancedManager {
 		config:    config,
 		nodeGroups: []*NodeGroup{
 			{
-				id:         "pool-1",
-				clusterID:  "test-cluster-123",
-				client:     client,
-				manager:    nil, // Will be set below
-				minSize:    1,
-				maxSize:    10,
-				targetSize: 3,
+				id:           "pool-1",
+				clusterID:    "test-cluster-123",
+				client:       client,
+				manager:      nil, // Will be set below
+				minSize:      1,
+				maxSize:      10,
+				targetSize:   3,
+				instanceType: "v2g-standard-4-8",
 			},
 			{
-				id:         "pool-2",
-				clusterID:  "test-cluster-123",
-				client:     client,
-				manager:    nil, // Will be set below
-				minSize:    2,
-				maxSize:    5,
-				targetSize: 2,
+				id:           "pool-2",
+				clusterID:    "test-cluster-123",
+				client:       client,
+				manager:      nil, // Will be set below
+				minSize:      2,
+				maxSize:      5,
+				targetSize:   2,
+				instanceType: "v2g-standard-2-4",
 			},
 		},
 	}

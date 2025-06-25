@@ -44,9 +44,10 @@ type NodeGroup struct {
 	client    *VCloudAPIClient
 	manager   *EnhancedManager
 
-	minSize    int
-	maxSize    int
-	targetSize int
+	minSize      int
+	maxSize      int
+	targetSize   int
+	instanceType string // Cached instance type to avoid API calls during scaling simulation
 }
 
 // MaxSize returns maximum size of the node group
@@ -288,41 +289,38 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 
 // TemplateNodeInfo returns a framework.NodeInfo structure of an empty node
 func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
-	// Get node pool info to determine instance type and other properties
-	ctx := context.Background()
-	pools, err := n.client.ListNodePools(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get node pool info: %v", err)
-	}
-
-	var pool *NodePoolInfo
-	for _, p := range pools {
-		if p.ID == n.id {
-			pool = &p
-			break
-		}
-	}
-	if pool == nil {
-		return nil, fmt.Errorf("node pool %s not found", n.id)
+	// Use cached instance type information to avoid API calls during scaling simulation
+	// This is critical for performance during cluster autoscaler operation
+	instanceType := n.getCachedInstanceType()
+	if instanceType == "" {
+		// Fallback to a default instance type if not cached
+		instanceType = "v2g-standard-4-8" // 4 CPU, 8GB RAM default
+		klog.V(4).Infof("Using default instance type for template node in group %s", n.id)
 	}
 
 	// Parse instance type for resource information
-	cpu, memory, err := parseInstanceType(pool.InstanceType)
+	cpu, memory, err := parseInstanceType(instanceType)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse instance type %s: %v", pool.InstanceType, err)
+		// Fallback to safe defaults if parsing fails
+		cpu = 4
+		memory = 8 * 1024 * 1024 * 1024 // 8GB
+		klog.Warningf("Failed to parse instance type %s, using defaults: %v", instanceType, err)
 	}
+
+	nodeName := fmt.Sprintf("template-node-%s", n.id)
 
 	// Create node template with proper resource allocation
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: fmt.Sprintf("template-node-%s", n.id),
+			Name: nodeName,
 			Labels: map[string]string{
-				"node.kubernetes.io/instance-type":      pool.InstanceType,
-				"topology.kubernetes.io/zone":           pool.Zone,
+				apiv1.LabelHostname:                     nodeName,
+				"node.kubernetes.io/instance-type":      instanceType,
+				"topology.kubernetes.io/zone":           "zone-1", // Default zone
 				"kubernetes.io/arch":                    "amd64",
 				"kubernetes.io/os":                      "linux",
-				vcloudLabelNamespace + "/instance-type": pool.InstanceType,
-				vcloudLabelNamespace + "/zone":          pool.Zone,
+				vcloudLabelNamespace + "/instance-type": instanceType,
+				vcloudLabelNamespace + "/zone":          "zone-1",
 			},
 		},
 		Spec: apiv1.NodeSpec{
@@ -342,20 +340,15 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 				apiv1.ResourcePods:             *resource.NewQuantity(110, resource.DecimalSI),
 				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(95*1024*1024*1024, resource.BinarySI), // 95Gi allocatable
 			},
-			Conditions: []apiv1.NodeCondition{
-				{
-					Type:   apiv1.NodeReady,
-					Status: apiv1.ConditionTrue,
-				},
-			},
+			Conditions: cloudprovider.BuildReadyConditions(),
 		},
 	}
 
-	// Create NodeInfo and set the node
-	nodeInfo := framework.NewNodeInfo(node, nil)
+	// Create NodeInfo with the node and kube-proxy pod (standard for cluster autoscaler)
+	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(n.id)})
 
 	klog.V(4).Infof("Created template node info for node group %s: CPU=%d, Memory=%dGi, InstanceType=%s",
-		n.id, cpu, memory/(1024*1024*1024), pool.InstanceType)
+		n.id, cpu, memory/(1024*1024*1024), instanceType)
 
 	return nodeInfo, nil
 }
@@ -387,6 +380,11 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 }
 
 // Helper functions
+
+// getCachedInstanceType returns the cached instance type for this node group
+func (n *NodeGroup) getCachedInstanceType() string {
+	return n.instanceType
+}
 
 // parseInstanceType parses VCloud instance type format (e.g., "v2g-standard-8-16")
 // and returns CPU cores and memory in bytes
