@@ -94,6 +94,16 @@ type NodePoolInfo struct {
 	Zone string `json:"zone"`
 	// Status indicates the current operational status of the node pool
 	Status string `json:"status"`
+	// TotalNodes is the total number of nodes including pending ones
+	TotalNodes int `json:"totalNodes"`
+	// Autoscaling indicates if autoscaling is enabled for this node pool
+	Autoscaling bool `json:"autoscaling"`
+	// AutoscalingClass specifies the autoscaling class used
+	AutoscalingClass string `json:"autoscalingClass"`
+	// CreatedAt is the timestamp when the node pool was created
+	CreatedAt string `json:"createdAt"`
+	// UpdatedAt is the timestamp when the node pool was last updated
+	UpdatedAt string `json:"updatedAt"`
 	// Machines is the list of actual machine IDs in this node pool
 	Machines []string `json:"machines"`
 }

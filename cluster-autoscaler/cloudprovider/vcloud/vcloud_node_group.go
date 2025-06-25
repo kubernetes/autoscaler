@@ -19,9 +19,12 @@ package vcloud
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -285,7 +288,76 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 
 // TemplateNodeInfo returns a framework.NodeInfo structure of an empty node
 func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	// Get node pool info to determine instance type and other properties
+	ctx := context.Background()
+	pools, err := n.client.ListNodePools(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get node pool info: %v", err)
+	}
+
+	var pool *NodePoolInfo
+	for _, p := range pools {
+		if p.ID == n.id {
+			pool = &p
+			break
+		}
+	}
+	if pool == nil {
+		return nil, fmt.Errorf("node pool %s not found", n.id)
+	}
+
+	// Parse instance type for resource information
+	cpu, memory, err := parseInstanceType(pool.InstanceType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse instance type %s: %v", pool.InstanceType, err)
+	}
+
+	// Create node template with proper resource allocation
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: fmt.Sprintf("template-node-%s", n.id),
+			Labels: map[string]string{
+				"node.kubernetes.io/instance-type":      pool.InstanceType,
+				"topology.kubernetes.io/zone":           pool.Zone,
+				"kubernetes.io/arch":                    "amd64",
+				"kubernetes.io/os":                      "linux",
+				vcloudLabelNamespace + "/instance-type": pool.InstanceType,
+				vcloudLabelNamespace + "/zone":          pool.Zone,
+			},
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: toProviderID(fmt.Sprintf("template-%s", n.id)),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceCPU:              *resource.NewQuantity(cpu, resource.DecimalSI),
+				apiv1.ResourceMemory:           *resource.NewQuantity(memory, resource.BinarySI),
+				apiv1.ResourcePods:             *resource.NewQuantity(110, resource.DecimalSI),               // Standard Kubernetes limit
+				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(100*1024*1024*1024, resource.BinarySI), // 100Gi default
+			},
+			Allocatable: apiv1.ResourceList{
+				// Leave some capacity for system processes
+				apiv1.ResourceCPU:              *resource.NewQuantity(cpu*900/1000, resource.DecimalSI), // 90% allocatable
+				apiv1.ResourceMemory:           *resource.NewQuantity(memory*85/100, resource.BinarySI), // 85% allocatable (system overhead)
+				apiv1.ResourcePods:             *resource.NewQuantity(110, resource.DecimalSI),
+				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(95*1024*1024*1024, resource.BinarySI), // 95Gi allocatable
+			},
+			Conditions: []apiv1.NodeCondition{
+				{
+					Type:   apiv1.NodeReady,
+					Status: apiv1.ConditionTrue,
+				},
+			},
+		},
+	}
+
+	// Create NodeInfo and set the node
+	nodeInfo := framework.NewNodeInfo(node, nil)
+
+	klog.V(4).Infof("Created template node info for node group %s: CPU=%d, Memory=%dGi, InstanceType=%s",
+		n.id, cpu, memory/(1024*1024*1024), pool.InstanceType)
+
+	return nodeInfo, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side
@@ -315,6 +387,30 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 }
 
 // Helper functions
+
+// parseInstanceType parses VCloud instance type format (e.g., "v2g-standard-8-16")
+// and returns CPU cores and memory in bytes
+func parseInstanceType(instanceType string) (int64, int64, error) {
+	parts := strings.Split(instanceType, "-")
+	if len(parts) < 4 {
+		return 0, 0, fmt.Errorf("invalid instance type format: %s", instanceType)
+	}
+
+	cpu, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse CPU from instance type %s: %v", instanceType, err)
+	}
+
+	memoryGB, err := strconv.ParseInt(parts[3], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse memory from instance type %s: %v", instanceType, err)
+	}
+
+	// Convert GB to bytes
+	memoryBytes := memoryGB * 1024 * 1024 * 1024
+
+	return cpu, memoryBytes, nil
+}
 
 // extractInstanceID extracts the instance ID from a Kubernetes node
 func (n *NodeGroup) extractInstanceID(node *apiv1.Node) (string, error) {
