@@ -245,6 +245,112 @@ func TestParseEnvConfig(t *testing.T) {
 	}
 }
 
+// TestParseINIConfig_RealExample tests parsing with real vCloud configuration data
+func TestParseINIConfig_RealExample(t *testing.T) {
+	// Real vCloud configuration example from production environment
+	realConfigData := `[vCloud]
+CLUSTER_ID=363d6263-865f-48f6-b21e-5bf48b766c28
+CLUSTER_NAME=k8s-c-shanismit
+MGMT_URL=https://k8s.io.infra.vnetwork.dev/api/v2/services/42f16e6f-39bf-4ca0-9b3a-cd924d353396/s10015/clusters/363d6263-865f-48f6-b21e-5bf48b766c28
+PROVIDER_TOKEN=MzYzZDYyNjMtODY1Zi00OGY2LWIyMWUtNWJmNDhiNzY2YzI4`
+
+	config, err := parseINIConfig(strings.NewReader(realConfigData))
+	if err != nil {
+		t.Fatalf("parseINIConfig failed with real config data: %v", err)
+	}
+
+	// Validate parsed values match expected real configuration
+	expectedClusterID := "363d6263-865f-48f6-b21e-5bf48b766c28"
+	if config.ClusterID != expectedClusterID {
+		t.Errorf("Expected ClusterID '%s', got '%s'", expectedClusterID, config.ClusterID)
+	}
+
+	expectedClusterName := "k8s-c-shanismit"
+	if config.ClusterName != expectedClusterName {
+		t.Errorf("Expected ClusterName '%s', got '%s'", expectedClusterName, config.ClusterName)
+	}
+
+	expectedMgmtURL := "https://k8s.io.infra.vnetwork.dev/api/v2/services/42f16e6f-39bf-4ca0-9b3a-cd924d353396/s10015/clusters/363d6263-865f-48f6-b21e-5bf48b766c28"
+	if config.MgmtURL != expectedMgmtURL {
+		t.Errorf("Expected MGMT_URL '%s', got '%s'", expectedMgmtURL, config.MgmtURL)
+	}
+
+	expectedToken := "MzYzZDYyNjMtODY1Zi00OGY2LWIyMWUtNWJmNDhiNzY2YzI4"
+	if config.ProviderToken != expectedToken {
+		t.Errorf("Expected ProviderToken '%s', got '%s'", expectedToken, config.ProviderToken)
+	}
+
+	// Test URL validation with real config format
+	if !strings.HasPrefix(config.MgmtURL, "https://") {
+		t.Error("Real config MGMT_URL should start with https://")
+	}
+
+	// Test that URL contains expected vnetwork.dev domain
+	if !strings.Contains(config.MgmtURL, "k8s.io.infra.vnetwork.dev") {
+		t.Error("Real config MGMT_URL should contain vnetwork.dev domain")
+	}
+
+	// Test cluster ID format (should be UUID format)
+	if len(config.ClusterID) != 36 {
+		t.Errorf("Expected ClusterID to be 36 characters (UUID format), got %d characters", len(config.ClusterID))
+	}
+
+	// Test cluster name format (should match pattern)
+	if !strings.HasPrefix(config.ClusterName, "k8s-c-") {
+		t.Error("Expected ClusterName to start with 'k8s-c-' prefix")
+	}
+}
+
+// TestNewEnhancedManager_RealExample tests manager creation with real configuration
+func TestNewEnhancedManager_RealExample(t *testing.T) {
+	// Real vCloud configuration example
+	realConfigData := `[vCloud]
+CLUSTER_ID=363d6263-865f-48f6-b21e-5bf48b766c28
+CLUSTER_NAME=k8s-c-shanismit
+MGMT_URL=https://k8s.io.infra.vnetwork.dev/api/v2/services/42f16e6f-39bf-4ca0-9b3a-cd924d353396/s10015/clusters/363d6263-865f-48f6-b21e-5bf48b766c28
+PROVIDER_TOKEN=MzYzZDYyNjMtODY1Zi00OGY2LWIyMWUtNWJmNDhiNzY2YzI4`
+
+	manager, err := newEnhancedManager(strings.NewReader(realConfigData))
+	if err != nil {
+		t.Fatalf("newEnhancedManager failed with real config: %v", err)
+	}
+
+	// Validate manager was created correctly with real config
+	expectedClusterID := "363d6263-865f-48f6-b21e-5bf48b766c28"
+	if manager.clusterID != expectedClusterID {
+		t.Errorf("Expected clusterID '%s', got '%s'", expectedClusterID, manager.clusterID)
+	}
+
+	if manager.client == nil {
+		t.Error("Expected client to be initialized with real config")
+	}
+
+	if manager.config == nil {
+		t.Error("Expected config to be initialized with real config")
+	}
+
+	// Test configuration validation with real data
+	if err := manager.ValidateConfig(); err != nil {
+		t.Errorf("Real config should pass validation, got error: %v", err)
+	}
+
+	// Test that the API client was configured with correct endpoints
+	if manager.client.clusterID != expectedClusterID {
+		t.Errorf("Expected client clusterID '%s', got '%s'", expectedClusterID, manager.client.clusterID)
+	}
+
+	expectedClusterName := "k8s-c-shanismit"
+	if manager.client.clusterName != expectedClusterName {
+		t.Errorf("Expected client clusterName '%s', got '%s'", expectedClusterName, manager.client.clusterName)
+	}
+
+	// Test URL construction patterns
+	expectedMgmtURL := "https://k8s.io.infra.vnetwork.dev/api/v2/services/42f16e6f-39bf-4ca0-9b3a-cd924d353396/s10015/clusters/363d6263-865f-48f6-b21e-5bf48b766c28"
+	if manager.client.mgmtURL != expectedMgmtURL {
+		t.Errorf("Expected client mgmtURL to match config, got '%s'", manager.client.mgmtURL)
+	}
+}
+
 // TestDeleteNodes_ValidationChecks tests the validation logic in DeleteNodes
 func TestDeleteNodes_ValidationChecks(t *testing.T) {
 	// Create a mock NodeGroup with constraints
