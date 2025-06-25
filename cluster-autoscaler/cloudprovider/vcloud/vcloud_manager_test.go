@@ -89,6 +89,12 @@ func mockVCloudAPIServer() *httptest.Server {
 			return
 		}
 
+		if strings.Contains(poolID, "/machines/") {
+			// Mock individual machine deletion endpoint
+			mockScaleResponse(w, r, poolID)
+			return
+		}
+
 		if r.Method == "GET" {
 			var nodePool NodePoolInfo
 			switch poolID {
@@ -232,6 +238,28 @@ func mockScaleResponse(w http.ResponseWriter, r *http.Request, poolID string) {
 				},
 			},
 			Message: "Scaling operation initiated",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	} else if r.Method == "DELETE" {
+		// Mock DELETE endpoint for individual machine deletion
+		response := struct {
+			Status  int    `json:"status"`
+			Message string `json:"message"`
+			Data    struct {
+				InstanceID string `json:"instanceId"`
+				Operation  string `json:"operation"`
+			} `json:"data"`
+		}{
+			Status:  200,
+			Message: "Instance deletion initiated",
+			Data: struct {
+				InstanceID string `json:"instanceId"`
+				Operation  string `json:"operation"`
+			}{
+				InstanceID: "test-instance",
+				Operation:  "delete",
+			},
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
@@ -398,7 +426,7 @@ func TestEnhancedManager_Refresh(t *testing.T) {
 	manager := &EnhancedManager{
 		client:     client,
 		clusterID:  "test-cluster-123",
-		nodeGroups: []*NodeGroup{},
+		nodeGroups: make([]*NodeGroup, 0),
 		config: &Config{
 			ClusterID:     "test-cluster-123",
 			ClusterName:   "test-cluster",
@@ -441,18 +469,19 @@ func TestEnhancedManager_GetNodeGroupForInstance(t *testing.T) {
 		httpClient:    &http.Client{Timeout: 30 * time.Second},
 	}
 
+	nodeGroup := &NodeGroup{
+		id:         "pool-1",
+		clusterID:  "test-cluster-123",
+		client:     client,
+		minSize:    1,
+		maxSize:    10,
+		targetSize: 3,
+	}
+
 	manager := &EnhancedManager{
-		client:    client,
-		clusterID: "test-cluster-123",
-		nodeGroups: []*NodeGroup{
-			{
-				id:        "pool-1",
-				clusterID: "test-cluster-123",
-				client:    client,
-				minSize:   1,
-				maxSize:   10,
-			},
-		},
+		client:     client,
+		clusterID:  "test-cluster-123",
+		nodeGroups: []*NodeGroup{nodeGroup},
 		config: &Config{
 			ClusterID:     "test-cluster-123",
 			ClusterName:   "test-cluster",
@@ -460,6 +489,9 @@ func TestEnhancedManager_GetNodeGroupForInstance(t *testing.T) {
 			ProviderToken: "test-token",
 		},
 	}
+
+	// Set manager reference
+	nodeGroup.manager = manager
 
 	// Test with non-existent instance
 	nodeGroup, err := manager.GetNodeGroupForInstance("vcloud://non-existent-instance")

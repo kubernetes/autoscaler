@@ -53,6 +53,7 @@ func mockManager() *EnhancedManager {
 				id:         "pool-1",
 				clusterID:  "test-cluster-123",
 				client:     client,
+				manager:    nil, // Will be set below
 				minSize:    1,
 				maxSize:    10,
 				targetSize: 3,
@@ -61,11 +62,17 @@ func mockManager() *EnhancedManager {
 				id:         "pool-2",
 				clusterID:  "test-cluster-123",
 				client:     client,
+				manager:    nil, // Will be set below
 				minSize:    2,
 				maxSize:    5,
 				targetSize: 2,
 			},
 		},
+	}
+
+	// Set manager reference for each node group
+	for _, ng := range manager.nodeGroups {
+		ng.manager = manager
 	}
 
 	return manager
@@ -329,14 +336,14 @@ func TestFromProviderID(t *testing.T) {
 	}
 }
 
-// TestBuildVcloud tests the BuildVcloud function with various configurations
+// TestBuildVcloud tests the BuildVcloud function availability
 func TestBuildVcloud(t *testing.T) {
 	// Test the BuildVcloud function exists and can be called
 	// We'll skip actual testing since it requires file I/O and would log.Fatal on error
 	t.Log("BuildVcloud function is available and properly exported")
 
-	// Test that we can at least call it without crashing the test
-	// by using a valid but empty config string instead of file
+	// The function exists and follows the standard cloud provider interface
+	// Actual testing would require valid config file and would exit on error
 	t.Log("BuildVcloud requires valid config file path, skipping destructive test")
 }
 

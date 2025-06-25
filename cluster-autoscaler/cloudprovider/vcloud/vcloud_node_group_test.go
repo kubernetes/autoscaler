@@ -17,6 +17,7 @@ limitations under the License.
 package vcloud
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -28,6 +29,8 @@ func TestNodeGroup_BasicProperties(t *testing.T) {
 	ng := &NodeGroup{
 		id:         "test-pool-id",
 		clusterID:  "test-cluster",
+		client:     nil, // Not needed for basic property tests
+		manager:    nil, // Not needed for basic property tests
 		minSize:    1,
 		maxSize:    10,
 		targetSize: 3,
@@ -63,8 +66,13 @@ func TestNodeGroup_BasicProperties(t *testing.T) {
 // TestNodeGroup_Autoprovisioned tests autoprovisioning flag
 func TestNodeGroup_Autoprovisioned(t *testing.T) {
 	ng := &NodeGroup{
-		id:        "test-pool-id",
-		clusterID: "test-cluster",
+		id:         "test-pool-id",
+		clusterID:  "test-cluster",
+		client:     nil,
+		manager:    nil,
+		minSize:    1,
+		maxSize:    10,
+		targetSize: 3,
 	}
 
 	// VCloud node groups are not autoprovisioned - they're managed manually
@@ -351,12 +359,166 @@ PROVIDER_TOKEN=MzYzZDYyNjMtODY1Zi00OGY2LWIyMWUtNWJmNDhiNzY2YzI4`
 	}
 }
 
+// TestMachineInfoStruct tests the MachineInfo structure with real API response data
+func TestMachineInfoStruct(t *testing.T) {
+	// Updated real machine data from your VCloud API response (now includes nodePoolId)
+	realMachineData := `{
+		"status": 200,
+		"data": {
+			"machines": [
+				{
+					"id": "0d026b65-03bf-4f6d-a053-10982471a22e",
+					"name": "k8s-c-shanismit-nuhgut-worker-1",
+					"state": "active",
+					"ip": "10.254.11.10",
+					"os": "Kubernetes Techev 25.05.v1.33.1",
+					"kernel": "linux",
+					"runtime": "containerd://1.7.12",
+					"createdAt": "2025-06-25T01:04:35Z",
+					"nodePoolId": "03f2031c-b0e9-42a3-8498-4c8ff2dc2046"
+				},
+				{
+					"id": "0831e8fe-2912-43bc-bc6b-6ca7325ea69a",
+					"name": "k8s-c-shanismit-nuhgut-worker-autoscaler-202506250825253",
+					"state": "active",
+					"ip": "10.254.11.16",
+					"os": "Kubernetes Techev 25.05.v1.33.1",
+					"kernel": "linux",
+					"runtime": "containerd://1.7.12",
+					"createdAt": "2025-06-25T01:25:51Z",
+					"nodePoolId": "03f2031c-b0e9-42a3-8498-4c8ff2dc2046"
+				}
+			]
+		}
+	}`
+
+	// Parse the response
+	var machinesResponse struct {
+		Status int `json:"status"`
+		Data   struct {
+			Machines []MachineInfo `json:"machines"`
+		} `json:"data"`
+	}
+
+	err := json.Unmarshal([]byte(realMachineData), &machinesResponse)
+	if err != nil {
+		t.Fatalf("Failed to parse real machine data: %v", err)
+	}
+
+	// Validate the response was parsed correctly
+	if machinesResponse.Status != 200 {
+		t.Errorf("Expected status 200, got %d", machinesResponse.Status)
+	}
+
+	if len(machinesResponse.Data.Machines) != 2 {
+		t.Errorf("Expected 2 machines, got %d", len(machinesResponse.Data.Machines))
+	}
+
+	// Validate first machine
+	machine1 := machinesResponse.Data.Machines[0]
+	expectedID1 := "0d026b65-03bf-4f6d-a053-10982471a22e"
+	if machine1.ID != expectedID1 {
+		t.Errorf("Expected machine1 ID '%s', got '%s'", expectedID1, machine1.ID)
+	}
+
+	expectedName1 := "k8s-c-shanismit-nuhgut-worker-1"
+	if machine1.Name != expectedName1 {
+		t.Errorf("Expected machine1 name '%s', got '%s'", expectedName1, machine1.Name)
+	}
+
+	if machine1.State != "active" {
+		t.Errorf("Expected machine1 state 'active', got '%s'", machine1.State)
+	}
+
+	expectedIP1 := "10.254.11.10"
+	if machine1.IP != expectedIP1 {
+		t.Errorf("Expected machine1 IP '%s', got '%s'", expectedIP1, machine1.IP)
+	}
+
+	expectedOS := "Kubernetes Techev 25.05.v1.33.1"
+	if machine1.OS != expectedOS {
+		t.Errorf("Expected machine1 OS '%s', got '%s'", expectedOS, machine1.OS)
+	}
+
+	if machine1.Kernel != "linux" {
+		t.Errorf("Expected machine1 kernel 'linux', got '%s'", machine1.Kernel)
+	}
+
+	expectedRuntime := "containerd://1.7.12"
+	if machine1.Runtime != expectedRuntime {
+		t.Errorf("Expected machine1 runtime '%s', got '%s'", expectedRuntime, machine1.Runtime)
+	}
+
+	expectedCreatedAt := "2025-06-25T01:04:35Z"
+	if machine1.CreatedAt != expectedCreatedAt {
+		t.Errorf("Expected machine1 createdAt '%s', got '%s'", expectedCreatedAt, machine1.CreatedAt)
+	}
+
+	// Validate second machine (autoscaler created)
+	machine2 := machinesResponse.Data.Machines[1]
+	expectedID2 := "0831e8fe-2912-43bc-bc6b-6ca7325ea69a"
+	if machine2.ID != expectedID2 {
+		t.Errorf("Expected machine2 ID '%s', got '%s'", expectedID2, machine2.ID)
+	}
+
+	// Check that the second machine has autoscaler in the name
+	if !strings.Contains(machine2.Name, "autoscaler") {
+		t.Error("Expected machine2 name to contain 'autoscaler'")
+	}
+
+	expectedIP2 := "10.254.11.16"
+	if machine2.IP != expectedIP2 {
+		t.Errorf("Expected machine2 IP '%s', got '%s'", expectedIP2, machine2.IP)
+	}
+
+	// Test that both machines have consistent OS and runtime
+	if machine2.OS != expectedOS {
+		t.Errorf("Expected consistent OS across machines, got '%s'", machine2.OS)
+	}
+
+	if machine2.Runtime != expectedRuntime {
+		t.Errorf("Expected consistent runtime across machines, got '%s'", machine2.Runtime)
+	}
+
+	// NEW: Test nodePoolId validation (both machines should have the same nodePoolId)
+	expectedNodePoolID := "03f2031c-b0e9-42a3-8498-4c8ff2dc2046"
+	if machine1.NodePoolID != expectedNodePoolID {
+		t.Errorf("Expected machine1 nodePoolId '%s', got '%s'", expectedNodePoolID, machine1.NodePoolID)
+	}
+
+	if machine2.NodePoolID != expectedNodePoolID {
+		t.Errorf("Expected machine2 nodePoolId '%s', got '%s'", expectedNodePoolID, machine2.NodePoolID)
+	}
+
+	// Validate that both machines belong to the same node pool
+	if machine1.NodePoolID != machine2.NodePoolID {
+		t.Errorf("Expected both machines to have same nodePoolId. Machine1: %s, Machine2: %s",
+			machine1.NodePoolID, machine2.NodePoolID)
+	}
+
+	// Test nodePoolId format (should be UUID format)
+	if len(machine1.NodePoolID) != 36 {
+		t.Errorf("Expected nodePoolId to be 36 characters (UUID format), got %d characters", len(machine1.NodePoolID))
+	}
+
+	// Test that nodePoolId is not empty (API enhancement validation)
+	if machine1.NodePoolID == "" {
+		t.Error("Expected nodePoolId to be provided by the enhanced API")
+	}
+
+	if machine2.NodePoolID == "" {
+		t.Error("Expected nodePoolId to be provided by the enhanced API")
+	}
+}
+
 // TestDeleteNodes_ValidationChecks tests the validation logic in DeleteNodes
 func TestDeleteNodes_ValidationChecks(t *testing.T) {
 	// Create a mock NodeGroup with constraints
 	ng := &NodeGroup{
 		id:         "test-pool",
 		clusterID:  "test-cluster",
+		client:     nil,
+		manager:    nil,
 		minSize:    2,
 		maxSize:    10,
 		targetSize: 3,
@@ -381,6 +543,8 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	ng := &NodeGroup{
 		id:         "test-pool",
 		clusterID:  "test-cluster",
+		client:     nil,
+		manager:    nil,
 		minSize:    1,
 		maxSize:    10,
 		targetSize: 3,
@@ -407,6 +571,8 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	ng := &NodeGroup{
 		id:         "test-pool",
 		clusterID:  "test-cluster",
+		client:     nil,
+		manager:    nil,
 		minSize:    1,
 		maxSize:    10,
 		targetSize: 5,
@@ -418,13 +584,72 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		t.Error("DecreaseTargetSize should fail for positive delta")
 	}
 
-	// Other tests would require a real client for TargetSize() call
-	t.Log("DecreaseTargetSize validation logic works correctly for delta validation")
+	// Test negative delta (correct usage) - should succeed
+	err = ng.DecreaseTargetSize(-2)
+	if err != nil {
+		t.Errorf("DecreaseTargetSize should succeed for negative delta, got error: %v", err)
+	}
+
+	// Verify the new target size is updated
+	if ng.targetSize != 3 {
+		t.Errorf("Expected targetSize to be 3 after decreasing by 2, got %d", ng.targetSize)
+	}
 }
 
 // TestNodeGroup_Exist tests the Exist method
 func TestNodeGroup_Exist(t *testing.T) {
-	// Since we don't have a real client, this test would fail with nil pointer
-	// The Exist method is designed to work with a real API client
-	t.Log("NodeGroup.Exist() method is available and would work with a real client")
+	ng := &NodeGroup{
+		id:         "test-pool",
+		clusterID:  "test-cluster",
+		client:     nil,
+		manager:    nil,
+		minSize:    1,
+		maxSize:    10,
+		targetSize: 3,
+	}
+
+	// Exist() always returns true in the current implementation
+	if !ng.Exist() {
+		t.Error("Expected Exist() to return true")
+	}
+}
+
+// TestParseInstanceType tests the parseInstanceType utility function
+func TestParseInstanceType(t *testing.T) {
+	tests := []struct {
+		instanceType   string
+		expectedCPU    int64
+		expectedMemory int64
+		expectError    bool
+	}{
+		{"v2g-standard-8-16", 8, 16 * 1024 * 1024 * 1024, false},
+		{"v2g-standard-4-8", 4, 8 * 1024 * 1024 * 1024, false},
+		{"v2g-standard-2-4", 2, 4 * 1024 * 1024 * 1024, false},
+		{"invalid-format", 0, 0, true},
+		{"v2g-standard", 0, 0, true},
+		{"v2g-standard-invalid-8", 0, 0, true},
+		{"v2g-standard-8-invalid", 0, 0, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.instanceType, func(t *testing.T) {
+			cpu, memory, err := parseInstanceType(test.instanceType)
+
+			if test.expectError {
+				if err == nil {
+					t.Errorf("Expected error for instance type %s", test.instanceType)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error for instance type %s: %v", test.instanceType, err)
+				}
+				if cpu != test.expectedCPU {
+					t.Errorf("Expected CPU %d, got %d", test.expectedCPU, cpu)
+				}
+				if memory != test.expectedMemory {
+					t.Errorf("Expected memory %d, got %d", test.expectedMemory, memory)
+				}
+			}
+		})
+	}
 }
