@@ -100,7 +100,7 @@ func NewWithTaints(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder
 // It sets the initial state of unneeded nodes reflect the taint status of nodes in the cluster.
 // This is in order the avoid state loss between deployment restarts.
 func (n *Nodes) Initialize(nodes []simulator.NodeToBeRemoved, maxDeletionCandidateStaleness time.Duration, ts time.Time) {
-	n.updateInetrnalState(nodes, ts, func(nn simulator.NodeToBeRemoved, ts time.Time) *node {
+	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved, ts time.Time) *node {
 		name := nn.Node.Name
 		if since, err := taints.GetDeletionCandidateTime(nn.Node); err == nil {
 			if since.Add(maxDeletionCandidateStaleness).Before(ts) {
@@ -124,7 +124,7 @@ func (n *Nodes) Initialize(nodes []simulator.NodeToBeRemoved, maxDeletionCandida
 // Update stores nodes along with a time at which they were found to be
 // unneeded. Previously existing timestamps are preserved.
 func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
-	n.updateInetrnalState(nodes, ts, func(nn simulator.NodeToBeRemoved, ts time.Time) *node {
+	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved, ts time.Time) *node {
 		return &node{
 			ntbr:  nn,
 			since: ts,
@@ -132,7 +132,7 @@ func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 	})
 }
 
-func (n *Nodes) updateInetrnalState(nodes []simulator.NodeToBeRemoved, ts time.Time, updatedNodeBuilder func(simulator.NodeToBeRemoved, time.Time) *node) {
+func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.Time, updatedNodeBuilder func(simulator.NodeToBeRemoved, time.Time) *node) {
 	updated := make(map[string]*node, len(nodes))
 	for _, nn := range nodes {
 		name := nn.Node.Name
