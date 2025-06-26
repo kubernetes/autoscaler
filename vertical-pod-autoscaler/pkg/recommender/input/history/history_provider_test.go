@@ -372,7 +372,7 @@ func TestPrometheusAuth(t *testing.T) {
 		_, err := prov.GetClusterHistory()
 
 		assert.Nil(t, err)
-		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Basic dXNlcjpwYXNzd29yZA==")
+		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Basic dXNlcjpwYXNzd29yZA==") // "user:password"
 	})
 
 	t.Run("Bearer token auth", func(t *testing.T) {
