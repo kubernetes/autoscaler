@@ -123,11 +123,11 @@ func attachModelFiles(modelPath string, modelFiles ...modelLoader) error {
 // pattern passed in. Returns the path of the model file to be loaded. Includes
 // all versions of a service model.
 //
-//	e.g:
-//	models/apis/*/*/api-2.json
+//   e.g:
+//   models/apis/*/*/api-2.json
 //
-//	Or with specific model file:
-//	models/apis/service/version/api-2.json
+//   Or with specific model file:
+//   models/apis/service/version/api-2.json
 func ExpandModelGlobPath(globs ...string) ([]string, error) {
 	modelPaths := []string{}
 
@@ -150,7 +150,7 @@ func ExpandModelGlobPath(globs ...string) ([]string, error) {
 // Uses the third from last path element to determine unique service. Only one
 // service version will be included.
 //
-//	models/apis/service/version/api-2.json
+//   models/apis/service/version/api-2.json
 func TrimModelServiceVersions(modelPaths []string) (include, exclude []string) {
 	sort.Strings(modelPaths)
 

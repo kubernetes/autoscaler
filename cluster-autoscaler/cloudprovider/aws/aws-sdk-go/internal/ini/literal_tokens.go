@@ -153,7 +153,7 @@ func (v ValueType) String() string {
 
 // ValueType enums
 const (
-	NoneType    = ValueType(iota)
+	NoneType = ValueType(iota)
 	DecimalType // deprecated
 	IntegerType // deprecated
 	StringType
@@ -166,9 +166,9 @@ type Value struct {
 	Type ValueType
 	raw  []rune
 
-	integer int64   // deprecated
+	integer int64 // deprecated
 	decimal float64 // deprecated
-	boolean bool    // deprecated
+	boolean bool // deprecated
 	str     string
 }
 
