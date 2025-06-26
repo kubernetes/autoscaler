@@ -17,6 +17,7 @@ limitations under the License.
 package unneeded
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -65,12 +66,11 @@ func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *No
 }
 
 // NewWithTaints initializes unneeded nodes with state offloaded from the kubernetes cluster, using the existing DeletionCandidateTaint taints.
-func NewWithTaints(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, listerRegistry kube_util.ListerRegistry, maxDeletionCandidateStaleness time.Duration, ts time.Time) *Nodes {
-	unneededNodes := NewNodes(sdtg, limitsFinder)
+// LoadFromExistingTaints loads any existing DeletionCandidateTaint taints from the kubernetes cluster. given a TTL for the taint
+func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, maxDeletionCandidateTTL time.Duration, ts time.Time) error {
 	allNodes, err := listerRegistry.AllNodeLister().List()
 	if err != nil {
-		klog.Errorf("Failed to list nodes when initializing unneeded nodes: %v", err)
-		return nil
+		return fmt.Errorf("Failed to list nodes when initializing unneeded nodes: %v", err)
 	}
 
 	var nodesWithTaints []simulator.NodeToBeRemoved
@@ -90,16 +90,16 @@ func NewWithTaints(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder
 
 	if len(nodesWithTaints) > 0 {
 		klog.V(1).Infof("Initializing unneeded nodes with %d nodes that have deletion candidate taints", len(nodesWithTaints))
-		unneededNodes.Initialize(nodesWithTaints, maxDeletionCandidateStaleness, ts)
+		n.initialize(nodesWithTaints, maxDeletionCandidateTTL, ts)
 	}
 
-	return unneededNodes
+	return nil
 }
 
-// Initialize initializes the Nodes object with the given node list.
+// initialize initializes the Nodes object with the given node list.
 // It sets the initial state of unneeded nodes reflect the taint status of nodes in the cluster.
 // This is in order the avoid state loss between deployment restarts.
-func (n *Nodes) Initialize(nodes []simulator.NodeToBeRemoved, maxDeletionCandidateStaleness time.Duration, ts time.Time) {
+func (n *Nodes) initialize(nodes []simulator.NodeToBeRemoved, maxDeletionCandidateStaleness time.Duration, ts time.Time) {
 	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved, ts time.Time) *node {
 		name := nn.Node.Name
 		if since, err := taints.GetDeletionCandidateTime(nn.Node); err == nil {
