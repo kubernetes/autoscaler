@@ -50,7 +50,12 @@ func (t *PrometheusBasicAuthTransport) RoundTrip(req *http.Request) (*http.Respo
 		rt = http.DefaultTransport
 	}
 
-	// Clone the request to avoid modifying the original
+	// Clone the request before modification to avoid data races and side effects.
+	// Original http.Request contains shared fields (Header, URL, Body) that are unsafe to modify directly.
+	// Also, RoundTripper interface recommends not to modify the request:
+	//   https://cs.opensource.google/go/go/+/refs/tags/go1.24.4:src/net/http/client.go;l=128-132
+	// Extra materials: https://pkg.go.dev/net/http#Request.Clone (deep copy requirement)
+	//   and https://github.com/golang/go/issues/36095 (concurrency safety discussion)
 	cloned := req.Clone(req.Context())
 	cloned.SetBasicAuth(t.Username, t.Password)
 	return rt.RoundTrip(cloned)
