@@ -159,7 +159,7 @@ func main() {
 	if *bearerTokenFile != "" {
 		fileContent, err := os.ReadFile(*bearerTokenFile)
 		if err != nil {
-			klog.ErrorS(err, "Unable to read bearer token file")
+			klog.ErrorS(err, "Unable to read bearer token file", "filename", *bearerTokenFile)
 			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 		*bearerToken = strings.TrimSpace(string(fileContent))
