@@ -375,7 +375,7 @@ func getDeletionCandidateTTLCondition(deletionCandidateTTL time.Duration) func(*
 			return true
 		}
 		if time.Since(*markedForDeletionTime) > deletionCandidateTTL {
-			klog.V(4).Infof("Node %v is stale, DeletionCandidate time is %v", node.Name, markedForDeletionTime)
+			klog.V(4).Infof("Node %v has stale %v taint: the time is %v (%v ago)", node.Name, DeletionCandidateTaintKey, markedForDeletionTime, time.Since(*markedForDeletionTime))
 			return false
 		}
 		return true
