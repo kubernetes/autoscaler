@@ -65,12 +65,11 @@ func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *No
 	}
 }
 
-// NewWithTaints initializes unneeded nodes with state offloaded from the kubernetes cluster, using the existing DeletionCandidateTaint taints.
 // LoadFromExistingTaints loads any existing DeletionCandidateTaint taints from the kubernetes cluster. given a TTL for the taint
 func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, maxDeletionCandidateTTL time.Duration, ts time.Time) error {
 	allNodes, err := listerRegistry.AllNodeLister().List()
 	if err != nil {
-		return fmt.Errorf("Failed to list nodes when initializing unneeded nodes: %v", err)
+		return fmt.Errorf("failed to list nodes when initializing unneeded nodes: %v", err)
 	}
 
 	var nodesWithTaints []simulator.NodeToBeRemoved
