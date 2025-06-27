@@ -75,7 +75,7 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
-      oomBumpUpRatio: 150
+      oomBumpUpRatio: "1.5"
       oomMinBumpUp: 104857600
       memoryAggregationInterval: "12h"
 ```
@@ -83,8 +83,8 @@ spec:
 ### Parameter Descriptions
 
 #### Container Policy Parameters
-* `oomBumpUpRatio` (int):
-  - Since using floats is discouraged, we use integers and convert them to floats as needed (e.g., 220 -> 220 / 100 -> 2.2). This conversion will be handled in the controller code.
+* `oomBumpUpRatio` (string):
+  - Since using floats is discouraged, we represent the ratio as a string (e.g., "2.2").
   - Multiplier applied to memory recommendations after OOM events
   - Controls how aggressively memory is increased after container crashes
 
@@ -161,11 +161,15 @@ The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is 
 
 ### Validation via CEL and Testing
 
-Initial validation rules:
-* oomBumpUpRatio > 100
+Initial validation rules (CEL):
 * oomMinBumpUp > 0
 * memoryAggregationInterval > 0
 * evictAfterOOMThreshold > 0
+
+Validation via Admission Controller:
+Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
+
+* oomBumpUpRatio – Since this parameter is a string, it will be converted to a float during validation. The value must be greater than 1.
 
 Additional validation rules will be added as new parameters are introduced.
 E2E tests will be included to verify:
