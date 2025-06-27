@@ -1715,7 +1715,7 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 				processors:            processors,
 				loopStartNotifier:     loopstart.NewObserversList(nil),
 				processorCallbacks:    processorCallbacks,
-				initialized:           true,
+				initialized:           false,
 			}
 
 			allPodListerMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice()

@@ -103,7 +103,7 @@ func (n *Nodes) initialize(nodes []simulator.NodeToBeRemoved, maxDeletionCandida
 		name := nn.Node.Name
 		if since, err := taints.GetDeletionCandidateTime(nn.Node); err == nil {
 			if since.Add(maxDeletionCandidateStaleness).Before(ts) {
-				klog.V(4).Infof("Removing deletion candidate taint from %s - deletion candidate time is too old", name)
+				klog.V(4).Infof("Ignoring deletion candidate taint from %s - deletion candidate time is too old", name)
 				return nil
 			}
 			klog.V(4).Infof("Found node %s with deletion candidate taint from %s", name, since.String())
