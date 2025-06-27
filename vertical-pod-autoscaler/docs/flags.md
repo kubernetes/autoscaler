@@ -105,7 +105,10 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `pod-recommendation-min-memory-mb` | float |  250 | Minimum memory recommendation for a pod  |
 | `profiling` | int |  | Is debug/pprof endpoenabled |
 | `prometheus-address` | string |  "http://prometheus.monitoring.svc" | Where to reach for Prometheus metrics  |
+| `prometheus-bearer-token` | string |  | The bearer token used in the Prometheus server bearer token auth |
+| `prometheus-bearer-token-file` | string |  | Path to the bearer token file used for authentication by the Prometheus server |
 | `prometheus-cadvisor-job-name` | string |  "kubernetes-cadvisor" | Name of the prometheus job name which scrapes the cAdvisor metrics  |
+| `prometheus-insecure` |  |  | Skip tls verify if https is used in the prometheus-address |
 | `prometheus-query-timeout` | string |  "5m" | How long to wait before killing long queries  |
 | `recommendation-lower-bound-cpu-percentile` | float |  0.5 | CPU usage percentile that will be used for the lower bound on CPU recommendation.  |
 | `recommendation-lower-bound-memory-percentile` | float |  0.5 | Memory usage percentile that will be used for the lower bound on memory recommendation.  |
