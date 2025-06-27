@@ -27,6 +27,7 @@ import (
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
@@ -224,6 +225,9 @@ func (e Evictor) initiateEviction(ctx *acontext.AutoscalingContext, node *apiv1.
 }
 
 func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, retryUntil time.Time, maxTermination int64, fullEvictionPod bool, force bool) status.PodEvictionResult {
+	if fake.IsFake(podToEvict) {
+		return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
+	}
 	ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 
 	termination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
