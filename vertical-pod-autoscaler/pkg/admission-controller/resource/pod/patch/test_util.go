@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"testing"
 
-	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
-
 	"github.com/stretchr/testify/assert"
+
+	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 )
 
 // EqPatch returns true if patches are equal by comparing their
