@@ -411,7 +411,7 @@ func CleanAllTaints(nodes []*apiv1.Node, client kube_client.Interface, recorder 
 				"failed to clean %v on node %v: %v", taintKey, node.Name, err)
 		} else if node != nil && updatedNode != nil && !slices.Equal(updatedNode.Spec.Taints, node.Spec.Taints) {
 			recorder.Eventf(node, apiv1.EventTypeNormal, "ClusterAutoscalerCleanup",
-				"removed %v taints from node %v", taintKey, node.Name)
+				"removed %v taint from node %v", taintKey, node.Name)
 		}
 	}
 }
