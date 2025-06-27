@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	simulator_fake "k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -183,6 +184,7 @@ func TestDrainNodeWithPods(t *testing.T) {
 	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
 	p2 := BuildTestPod("p2", 300, 0, WithNodeName(n1.Name))
 	d1 := BuildTestPod("d1", 150, 0, WithNodeName(n1.Name), WithDSController())
+	f1 := simulator_fake.WithFakePodAnnotation(BuildTestPod("f1", 100, 0, WithNodeName(n1.Name)))
 
 	SetNodeReadyState(n1, true, time.Time{})
 
@@ -216,7 +218,7 @@ func TestDrainNodeWithPods(t *testing.T) {
 		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
 		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
 	}
-	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1, f1})
 	nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
 	_, err = evictor.DrainNode(&ctx, nodeInfo)
