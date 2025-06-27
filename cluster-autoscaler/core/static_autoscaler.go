@@ -173,14 +173,6 @@ func NewStaticAutoscaler(
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
 	processors.ScaleStateNotifier.Register(clusterStateRegistry)
 
-	// Remove stale DeletionCandidates taints from nodes before initializing the autoscaler.
-	if allNodes, err := autoscalingContext.AllNodeLister().List(); err != nil {
-		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
-	} else {
-		taints.CleanStaleDeletionCandidates(allNodes,
-			autoscalingContext.ClientSet, autoscalingContext.Recorder, autoscalingContext.NodeDeletionCandidateTTL)
-	}
-
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
 	scaleDownPlanner := planner.New(autoscalingContext, processors, deleteOptions, drainabilityRules)
