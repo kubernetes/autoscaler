@@ -117,6 +117,27 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
 		}
 	}
+
+	// Invalidate cache entries for node groups that were scaled down to zero and have no nodes
+	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
+		size, err := nodeGroup.TargetSize()
+		if err != nil {
+			if instances, errN := nodeGroup.Nodes(); errN == nil {
+				size = len(instances)
+			} else {
+				continue
+			}
+		}
+		// We should only invalidate if both target size is 0 and there are no nodes
+		if size == 0 && p.nodeInfoCache != nil {
+			// Check if there are any nodes in this group
+			instances, err := nodeGroup.Nodes()
+			if err == nil && len(instances) == 0 {
+				delete(p.nodeInfoCache, nodeGroup.Id())
+			}
+		}
+	}
+
 	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
 		id := nodeGroup.Id()
 		seenGroups[id] = true
