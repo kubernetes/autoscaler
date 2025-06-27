@@ -395,9 +395,7 @@ func CleanStaleDeletionCandidates(nodes []*apiv1.Node, client kube_client.Interf
 // CleanAllTaints cleans all specified taints from given nodes.
 func CleanAllTaints(nodes []*apiv1.Node, client kube_client.Interface, recorder kube_record.EventRecorder, taintKey string, cordonNode bool, conditions ...func(*apiv1.Node) bool) {
 	for _, node := range nodes {
-		taintsPresent := false
-		taintsPresent = taintsPresent || HasTaint(node, taintKey)
-		if !taintsPresent {
+		if !HasTaint(node, taintKey) {
 			continue
 		}
 		for _, condition := range conditions {
