@@ -942,7 +942,7 @@ func TestCleanStaleDeletionCandidates(t *testing.T) {
 						break
 					}
 				}
-				
+
 				if isUnneeded {
 					assert.True(t, hasTaint, "Node %s should still have deletion candidate taint", node.Name)
 				} else {
