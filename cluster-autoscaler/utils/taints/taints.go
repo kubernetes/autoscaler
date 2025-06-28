@@ -374,7 +374,7 @@ func getDeletionCandidateTTLCondition(deletionCandidateTTL time.Duration) func(*
 		if markedForDeletionTime == nil {
 			return true
 		}
-		if time.Since(*markedForDeletionTime) > deletionCandidateTTL {
+		if time.Since(*markedForDeletionTime) < deletionCandidateTTL {
 			klog.V(4).Infof("Node %v has stale %v taint: the time is %v (%v ago)", node.Name, DeletionCandidateTaintKey, markedForDeletionTime, time.Since(*markedForDeletionTime))
 			return false
 		}
@@ -395,13 +395,17 @@ func CleanStaleDeletionCandidates(nodes []*apiv1.Node, client kube_client.Interf
 // CleanAllTaints cleans all specified taints from given nodes.
 func CleanAllTaints(nodes []*apiv1.Node, client kube_client.Interface, recorder kube_record.EventRecorder, taintKey string, cordonNode bool, conditions ...func(*apiv1.Node) bool) {
 	for _, node := range nodes {
+		skip := false
 		if !HasTaint(node, taintKey) {
 			continue
 		}
 		for _, condition := range conditions {
 			if !condition(node) {
-				continue
+				skip = true
 			}
+		}
+		if skip {
+			continue
 		}
 		updatedNode, err := CleanTaints(node, client, []string{taintKey}, cordonNode)
 		if err != nil {

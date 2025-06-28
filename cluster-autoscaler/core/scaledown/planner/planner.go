@@ -103,7 +103,7 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 
 	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
 	if context.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
-		unneededNodes.LoadFromExistingTaints(context.ListerRegistry, context.NodeDeletionCandidateTTL, time.Now())
+		unneededNodes.LoadFromExistingTaints(context.ListerRegistry, time.Now())
 	}
 
 	return &Planner{
