@@ -88,7 +88,9 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 	}
 
 	// Remove stale DeletionCandidates taints from nodes before initializing the autoscaler.
-	if allNodes, err := context.AllNodeLister().List(); err != nil {
+	if allNodesLister := context.AllNodeLister(); allNodesLister == nil {
+		klog.Warningf("Cannot access node lister, not cleaning up taints")
+	} else if allNodes, err := allNodesLister.List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
 		taints.CleanStaleDeletionCandidates(allNodes,
