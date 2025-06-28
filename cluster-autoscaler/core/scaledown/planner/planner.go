@@ -88,15 +88,17 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 	}
 
 	// Remove stale DeletionCandidates taints from nodes before initializing the autoscaler.
-	if context.AutoscalingKubeClients.ListerRegistry == nil {
-		klog.Warningf("Cannot access lister registry, not cleaning up taints")
-	} else if allNodesLister := context.AllNodeLister(); allNodesLister == nil {
-		klog.Warningf("Cannot access node lister, not cleaning up taints")
-	} else if allNodes, err := allNodesLister.List(); err != nil {
-		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
-	} else {
-		taints.CleanStaleDeletionCandidates(allNodes,
-			context.ClientSet, context.Recorder, context.NodeDeletionCandidateTTL)
+	if context.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
+		if context.AutoscalingKubeClients.ListerRegistry == nil {
+			klog.Warningf("Cannot access lister registry, not cleaning up taints")
+		} else if allNodesLister := context.AllNodeLister(); allNodesLister == nil {
+			klog.Warningf("Cannot access node lister, not cleaning up taints")
+		} else if allNodes, err := allNodesLister.List(); err != nil {
+			klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
+		} else {
+			taints.CleanStaleDeletionCandidates(allNodes,
+				context.ClientSet, context.Recorder, context.NodeDeletionCandidateTTL)
+		}
 	}
 
 	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
