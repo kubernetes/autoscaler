@@ -88,7 +88,9 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 	}
 
 	// Remove stale DeletionCandidates taints from nodes before initializing the autoscaler.
-	if allNodesLister := context.AllNodeLister(); allNodesLister == nil {
+	if context.AutoscalingKubeClients.ListerRegistry == nil {
+		klog.Warningf("Cannot access lister registry, not cleaning up taints")
+	} else if allNodesLister := context.AllNodeLister(); allNodesLister == nil {
 		klog.Warningf("Cannot access node lister, not cleaning up taints")
 	} else if allNodes, err := allNodesLister.List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
