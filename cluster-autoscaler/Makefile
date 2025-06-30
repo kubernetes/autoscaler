@@ -122,7 +122,7 @@ $(RELEASE_NOTES): ## Install release notes to GOBIN
 .PHONY: release-notes
 release-notes: $(RELEASE_NOTES)
 	@echo "generating release notes from $(PREVIOUS_TAG) to $(RELEASE_TAG) with start sha $(START_SHA) and end sha $(END_SHA)"
-	release-notes --org $(GIT_ORG_NAME) --repo $(GIT_REPO_NAME) --branch $(RELEASE_BRANCH) --repo-path $(ROOT_DIR) --start-sha $(START_SHA) --end-sha $(END_SHA) --markdown-links true --output $(RELEASE_TAG).md --list-v2
+	release-notes --org $(GIT_ORG_NAME) --repo $(GIT_REPO_NAME) --branch $(RELEASE_BRANCH) --repo-path $(ROOT_DIR) --start-sha $(START_SHA) --end-sha $(END_SHA) --markdown-links --dependencies=false --output $(RELEASE_TAG).md --list-v2
 
 clean: clean-arch-$(GOARCH)
 
