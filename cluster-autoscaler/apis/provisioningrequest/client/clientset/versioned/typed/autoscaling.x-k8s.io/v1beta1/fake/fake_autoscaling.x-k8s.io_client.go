@@ -29,7 +29,7 @@ type FakeAutoscalingV1beta1 struct {
 }
 
 func (c *FakeAutoscalingV1beta1) ProvisioningRequests(namespace string) v1beta1.ProvisioningRequestInterface {
-	return &FakeProvisioningRequests{c, namespace}
+	return newFakeProvisioningRequests(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate
