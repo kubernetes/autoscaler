@@ -86,6 +86,44 @@ push-manifest:
 execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-release-image-arch-,$(ALL_ARCH)) push-manifest
 	@echo "Release ${TAG}${FOR_PROVIDER} completed"
 
+ROOT_DIR := $(shell git rev-parse --show-toplevel 2>/dev/null)
+GIT_REMOTE_NAME ?= upstream
+RELEASE_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
+RELEASE_TAG ?= $(shell git describe --abbrev=0 2>/dev/null)
+FULL_VERSION := $(RELEASE_TAG:cluster-autoscaler-%=%)
+MAJOR_VERSION := $(shell echo $(FULL_VERSION) | sed -E 's/^([0-9]+)\.([0-9]+)\.([0-9]+)$$/\1/')
+MINOR_VERSION := $(shell echo $(FULL_VERSION) | sed -E 's/^([0-9]+)\.([0-9]+)\.([0-9]+)$$/\2/')
+PATCH_VERSION := $(shell echo $(FULL_VERSION) | sed -E 's/^([0-9]+)\.([0-9]+)\.([0-9]+)$$/\3/')
+# if the release tag is a .0 version, use the main branch
+ifeq ($(PATCH_VERSION),0)
+	PREVIOUS_TAG ?= $(shell git tag -l | grep -E "^cluster-autoscaler-[0-9]+\.[0-9]+\.0$$" | sort -V | tail -n 2 | head -n 1 2>/dev/null)
+else
+	PREVIOUS_TAG ?= $(shell git tag -l | grep -E "^cluster-autoscaler-[0-9]+\.[0-9]+\.[0-9]+$$" | sort -V | tail -n 2 | head -n 1 2>/dev/null)
+endif
+GIT_REMOTE_NAME ?= upstream
+GIT_ORG_NAME ?= kubernetes
+GIT_REPO_NAME ?= autoscaler
+START_SHA ?= $(shell git rev-list -n 1 $(PREVIOUS_TAG) 2>/dev/null)
+END_SHA ?= $(shell git rev-parse $(GIT_REMOTE_NAME)/$(RELEASE_BRANCH) 2>/dev/null)
+
+thing:
+	@echo $(FULL_VERSION)
+	@echo $(MAJOR_VERSION)
+	@echo $(MINOR_VERSION)
+	@echo $(PATCH_VERSION)
+	@echo $(PREVIOUS_TAG)
+	@echo $(START_SHA)
+	@echo $(END_SHA)
+	@echo $(ROOT_DIR)
+
+$(RELEASE_NOTES): ## Install release notes to GOBIN
+	go install k8s.io/release/cmd/release-notes@v0.18.0
+
+.PHONY: release-notes
+release-notes: $(RELEASE_NOTES)
+	@echo "generating release notes from $(PREVIOUS_TAG) to $(RELEASE_TAG) with start sha $(START_SHA) and end sha $(END_SHA)"
+	release-notes --org $(GIT_ORG_NAME) --repo $(GIT_REPO_NAME) --branch $(RELEASE_BRANCH) --repo-path $(ROOT_DIR) --start-sha $(START_SHA) --end-sha $(END_SHA) --markdown-links true --output $(RELEASE_TAG).md --list-v2
+
 clean: clean-arch-$(GOARCH)
 
 clean-arch-%:
