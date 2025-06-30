@@ -1,0 +1,27 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      next-version:
+        type: choice
+        options:
+          - bump-minor
+          - bump-patch
+
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    with:
+      mode: release
+
+  release-to-github-and-bump:
+    uses: gardener/cc-utils/.github/workflows/release.yaml@master
+    needs:
+      - build
+    secrets: inherit
+    with:
+      release-commit-target: branch
+      next-version: ${{ inputs.next-version }}
+      next-version-callback-action-path:
+      slack-channel-id: C0170QTBJUW # #gardener-mcm

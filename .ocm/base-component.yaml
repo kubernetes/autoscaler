@@ -1,0 +1,14 @@
+main-source:
+  labels:
+    - name: cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1
+      value:
+        policy: skip
+        comment: |
+          we use gosec for sast scanning. See attached log.
+labels:
+  - name: cloud.gardener.cnudie/responsibles
+    value:
+    - type: githubUser
+      username: aaronfern
+    - type: githubUser
+      username: elankath

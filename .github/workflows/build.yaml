@@ -1,0 +1,92 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      mode:
+        required: true
+        type: string
+        default: snapshot
+        description: |
+          the mode to use. either `snapshot` or `release`. Will affect effective version, as well
+          as target-oci-registry.
+
+jobs:
+  prepare:
+    uses: gardener/cc-utils/.github/workflows/prepare.yaml@master
+    with:
+      mode: ${{ inputs.mode }}
+    permissions:
+      contents: read
+
+  oci-images:
+    name: Build OCI-Images
+    needs:
+      - prepare
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    secrets: inherit
+    uses: gardener/cc-utils/.github/workflows/oci-ocm.yaml@master
+    strategy:
+      matrix:
+        args:
+          - name: cluster-autoscaler:
+            oci-repository: gardener/autoscaler/cluster-autoscaler
+            dockerfile: cluster-autoscaler/Dockerfile
+    with:
+      name: ${{ matrix.args.name }}
+      version: ${{ needs.prepare.outputs.version }}
+      dockerfile: ${{ matrix.args.dockerfile }}
+      oci-registry: ${{ needs.prepare.outputs.oci-registry }}
+      oci-repository: ${{ matrix.args.oci-repository }}
+      oci-platforms: linux/amd64,linux/arm64
+      ocm-labels: ${{ toJSON(matrix.args.ocm-labels || '') }}
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - uses: gardener/cc-utils/.github/actions/trusted-checkout@master
+      - name: run-test
+        shell: bash
+        run: |
+          set -eu
+          .ci/test
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - uses: gardener/cc-utils/.github/actions/trusted-checkout@master
+      - name: run-check
+        run: |
+          set -eu
+          .ci/check
+          # verify calls `make sast-report`, which generates `gosec-report.sarif`
+          tar czf gosec-report.tar.gz gosec-report.sarif
+      - name: add-sast-report-to-component-descriptor
+        uses: gardener/cc-utils/.github/actions/export-ocm-fragments@master
+        with:
+          blobs-directory: .
+          ocm-resources: |
+            name: gosec-report
+            relation: local
+            access:
+              type: localBlob
+              localReference: gosec-report.tar.gz
+            labels:
+              - name: gardener.cloud/purposes
+                value:
+                  - lint
+                  - sast
+                  - gosec
+              - name: gardener.cloud/comment
+                value: |
+                  we use gosec (linter) for SAST scans
+                  see: https://github.com/securego/gosec
