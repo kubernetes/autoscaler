@@ -44,7 +44,6 @@ require (
 	k8s.io/api v0.34.0-alpha.1
 	k8s.io/apimachinery v0.34.0-alpha.1
 	k8s.io/apiserver v0.34.0-alpha.1
-	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
 	k8s.io/client-go v0.34.0-alpha.1
 	k8s.io/cloud-provider v0.30.1
 	k8s.io/cloud-provider-aws v1.27.0
@@ -284,8 +283,6 @@ replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation
 replace k8s.io/kms => k8s.io/kms v0.34.0-alpha.1
 
 replace k8s.io/endpointslice => k8s.io/endpointslice v0.34.0-alpha.1
-
-replace k8s.io/autoscaler/cluster-autoscaler/apis => ./apis
 
 replace k8s.io/cri-client => k8s.io/cri-client v0.34.0-alpha.1
 
