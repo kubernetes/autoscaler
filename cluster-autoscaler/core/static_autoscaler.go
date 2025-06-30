@@ -626,7 +626,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime, scaleDownCandidates)
+		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime)
 		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
 			"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
 			a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
@@ -647,6 +647,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
+			a.updateSoftDeletionTaints(allNodes)
 		} else {
 			klog.V(4).Infof("Starting scale down")
 
@@ -666,20 +667,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				a.clusterStateRegistry.Recalculate()
 			}
 
-			if (scaleDownStatus.Result == scaledownstatus.ScaleDownNoNodeDeleted ||
-				scaleDownStatus.Result == scaledownstatus.ScaleDownNoUnneeded) &&
-				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
-				taintableNodes := a.scaleDownPlanner.UnneededNodes()
-
-				// Make sure we are only cleaning taints from selected node groups.
-				selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
-
-				// This is a sanity check to make sure `taintableNodes` only includes
-				// nodes from selected nodes.
-				taintableNodes = intersectNodes(selectedNodes, taintableNodes)
-				untaintableNodes := subtractNodes(selectedNodes, taintableNodes)
-				actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
-			}
+			a.updateSoftDeletionTaints(allNodes)
 
 			if typedErr != nil {
 				klog.Errorf("Failed to scale down: %v", typedErr)
@@ -700,8 +688,23 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	return nil
 }
 
-func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time, scaleDownCandidates []*apiv1.Node) bool {
-	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop || len(scaleDownCandidates) == 0
+func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
+	if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
+		taintableNodes := a.scaleDownPlanner.UnneededNodes()
+
+		// Make sure we are only cleaning taints from selected node groups.
+		selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
+
+		// This is a sanity check to make sure `taintableNodes` only includes
+		// nodes from selected nodes.
+		taintableNodes = intersectNodes(selectedNodes, taintableNodes)
+		untaintableNodes := subtractNodes(selectedNodes, taintableNodes)
+		actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
+	}
+}
+
+func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time) bool {
+	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop
 
 	if a.ScaleDownDelayTypeLocal {
 		return scaleDownInCooldown
