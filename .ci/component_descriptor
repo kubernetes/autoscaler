@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-set -e
-
-cp "${BASE_DEFINITION_PATH}" "${COMPONENT_DESCRIPTOR_PATH}"
