@@ -223,18 +223,18 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 }
 
 func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
-	// Create a stop channel that will be used to signal shutdown
-	stopCh := make(chan struct{})
-	defer close(stopCh)
+	// create a context that will be used to signal shutdown
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
-	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlag.VpaObjectNamespace, stopCh)
+	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlag.VpaObjectNamespace, ctx.Done())
 
-	factory.Start(stopCh)
-	informerMap := factory.WaitForCacheSync(stopCh)
+	factory.Start(ctx.Done())
+	informerMap := factory.WaitForCacheSync(ctx.Done())
 	for kind, synced := range informerMap {
 		if !synced {
 			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
