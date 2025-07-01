@@ -22,14 +22,10 @@ import (
 	"testing"
 	"time"
 
-	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
-
-	"golang.org/x/time/rate"
-	v1 "k8s.io/api/autoscaling/v1"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/time/rate"
+	v1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,6 +39,8 @@ import (
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
+	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )

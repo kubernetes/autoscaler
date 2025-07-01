@@ -80,19 +80,19 @@ type PodsRestrictionFactoryImpl struct {
 func NewPodsRestrictionFactory(client kube_client.Interface, minReplicas int, evictionToleranceFraction float64, patchCalculators []patch.Calculator) (PodsRestrictionFactory, error) {
 	rcInformer, err := setupInformer(client, replicationController)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create rcInformer: %v", err)
+		return nil, fmt.Errorf("failed to create rcInformer: %v", err)
 	}
 	ssInformer, err := setupInformer(client, statefulSet)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create ssInformer: %v", err)
+		return nil, fmt.Errorf("failed to create ssInformer: %v", err)
 	}
 	rsInformer, err := setupInformer(client, replicaSet)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create rsInformer: %v", err)
+		return nil, fmt.Errorf("failed to create rsInformer: %v", err)
 	}
 	dsInformer, err := setupInformer(client, daemonSet)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create dsInformer: %v", err)
+		return nil, fmt.Errorf("failed to create dsInformer: %v", err)
 	}
 	return &PodsRestrictionFactoryImpl{
 		client:                    client,
@@ -120,7 +120,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		rc, ok := rcObj.(*apiv1.ReplicationController)
 		if !ok {
-			return 0, fmt.Errorf("Failed to parse Replication Controller")
+			return 0, fmt.Errorf("failed to parse Replication Controller")
 		}
 		if rc.Spec.Replicas == nil || *rc.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("replication controller %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -136,7 +136,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		rs, ok := rsObj.(*appsv1.ReplicaSet)
 		if !ok {
-			return 0, fmt.Errorf("Failed to parse Replicaset")
+			return 0, fmt.Errorf("failed to parse Replicaset")
 		}
 		if rs.Spec.Replicas == nil || *rs.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("replica set %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -152,7 +152,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		ss, ok := ssObj.(*appsv1.StatefulSet)
 		if !ok {
-			return 0, fmt.Errorf("Failed to parse StatefulSet")
+			return 0, fmt.Errorf("failed to parse StatefulSet")
 		}
 		if ss.Spec.Replicas == nil || *ss.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("stateful set %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -168,7 +168,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		ds, ok := dsObj.(*appsv1.DaemonSet)
 		if !ok {
-			return 0, fmt.Errorf("Failed to parse DaemonSet")
+			return 0, fmt.Errorf("failed to parse DaemonSet")
 		}
 		if ds.Status.NumberReady == 0 {
 			return 0, fmt.Errorf("daemon set %s/%s has no number ready pods", creator.Namespace, creator.Name)
@@ -290,7 +290,7 @@ func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
 
 func managingControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
 	var managingController metav1.OwnerReference
-	for _, ownerReference := range pod.ObjectMeta.GetOwnerReferences() {
+	for _, ownerReference := range pod.GetOwnerReferences() {
 		if *ownerReference.Controller {
 			managingController = ownerReference
 			break
@@ -315,13 +315,13 @@ func setupInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 		informer = appsinformer.NewDaemonSetInformer(kubeClient, apiv1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	default:
-		return nil, fmt.Errorf("Unknown controller kind: %v", kind)
+		return nil, fmt.Errorf("unknown controller kind: %v", kind)
 	}
 	stopCh := make(chan struct{})
 	go informer.Run(stopCh)
 	synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
 	if !synced {
-		return nil, fmt.Errorf("Failed to sync %v cache.", kind)
+		return nil, fmt.Errorf("failed to sync %v cache", kind)
 	}
 	return informer, nil
 }
