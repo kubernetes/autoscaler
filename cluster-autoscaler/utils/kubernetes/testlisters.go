@@ -92,7 +92,7 @@ func NewTestNodeLister(nodes []*apiv1.Node) *TestNodeLister {
 	return &TestNodeLister{nodes: nodes}
 }
 
-// TestNodeLister is used in tests involving listers where nodes might change over the test run.
+// DynamicTestNodeLister is used in tests involving listers where nodes might change over the test run.
 type DynamicTestNodeLister struct {
 	clientset *fake.Clientset
 }
@@ -115,7 +115,7 @@ func (l *DynamicTestNodeLister) Get(name string) (*apiv1.Node, error) {
 	return l.clientset.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
 }
 
-// DynamicTestNodeLister is used in tests involving listers where nodes might change over the test run.
+// NewDynamicTestNodeLister is used in tests involving listers where nodes might change over the test run.
 func NewDynamicTestNodeLister(clientset *fake.Clientset) *DynamicTestNodeLister {
 	return &DynamicTestNodeLister{
 		clientset: clientset,
