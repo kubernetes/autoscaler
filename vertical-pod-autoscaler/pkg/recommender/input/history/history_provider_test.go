@@ -384,4 +384,18 @@ func TestPrometheusAuth(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Bearer token")
 	})
+
+	t.Run("Basic auth and Bearer token auth are set at once", func(t *testing.T) {
+		// if both auth methods are set we prefer Bearer token
+		cfg.Authentication.BearerToken = "token"
+		cfg.Authentication.Username = "user"
+		cfg.Authentication.Password = "password"
+
+		prov, _ := NewPrometheusHistoryProvider(cfg)
+		_, err := prov.GetClusterHistory()
+
+		assert.Nil(t, err)
+		assert.NotContains(t, capturedRequest.Header.Get("Authorization"), "Basic")
+		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Bearer token")
+	})
 }
