@@ -714,15 +714,7 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 	schedulablePodGroups map[string][]estimator.PodEquivalenceGroup,
 ) ([]nodegroupset.ScaleUpInfo, errors.AutoscalerError) {
 	// Recompute similar node groups in case they need to be updated
-	nodeGroups := o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
-
-	// Similar node groups may return injected node groups as they are used for simulations
-	var similarNodeGroups []cloudprovider.NodeGroup
-	for _, ng := range nodeGroups {
-		if ng.Exist() || o.scaleUpExecutor.asyncNodeGroupStateChecker.IsUpcoming(ng) {
-			similarNodeGroups = append(similarNodeGroups, ng)
-		}
-	}
+	similarNodeGroups := o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
 
 	if similarNodeGroups != nil {
 		// if similar node groups are found, log about them
