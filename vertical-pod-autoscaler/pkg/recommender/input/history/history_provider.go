@@ -18,6 +18,7 @@ package history
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"sort"
@@ -33,22 +34,55 @@ import (
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 )
 
-// PrometheusBasicAuthTransport contains the username and password of prometheus server
+// PrometheusBasicAuthTransport injects basic auth headers into HTTP requests.
 type PrometheusBasicAuthTransport struct {
 	Username string
 	Password string
+	Base     http.RoundTripper
 }
 
 // RoundTrip function injects the username and password in the request's basic auth header
 func (t *PrometheusBasicAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.SetBasicAuth(t.Username, t.Password)
-	return http.DefaultTransport.RoundTrip(req)
+	// Use default transport if none specified
+	rt := t.Base
+	if rt == nil {
+		rt = http.DefaultTransport
+	}
+
+	// Clone the request before modification to avoid data races and side effects.
+	// Original http.Request contains shared fields (Header, URL, Body) that are unsafe to modify directly.
+	// Also, RoundTripper interface recommends not to modify the request:
+	//   https://cs.opensource.google/go/go/+/refs/tags/go1.24.4:src/net/http/client.go;l=128-132
+	// Extra materials: https://pkg.go.dev/net/http#Request.Clone (deep copy requirement)
+	//   and https://github.com/golang/go/issues/36095 (concurrency safety discussion)
+	cloned := req.Clone(req.Context())
+	cloned.SetBasicAuth(t.Username, t.Password)
+	return rt.RoundTrip(cloned)
+}
+
+// PrometheusBearerTokenAuthTransport injects bearer token into HTTP requests.
+type PrometheusBearerTokenAuthTransport struct {
+	Token string
+	Base  http.RoundTripper
+}
+
+// RoundTrip function injects the bearer token in the request's Authorization header
+func (bt *PrometheusBearerTokenAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	rt := bt.Base
+	if rt == nil {
+		rt = http.DefaultTransport
+	}
+
+	cloned := req.Clone(req.Context())
+	cloned.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bt.Token))
+	return rt.RoundTrip(cloned)
 }
 
 // PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
 type PrometheusHistoryProviderConfig struct {
 	Address                                          string
+	Insecure                                         bool
 	QueryTimeout                                     time.Duration
 	HistoryLength, HistoryResolution                 string
 	PodLabelPrefix, PodLabelsMetricName              string
@@ -56,7 +90,17 @@ type PrometheusHistoryProviderConfig struct {
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
 	CadvisorMetricsJobName                           string
 	Namespace                                        string
-	PrometheusBasicAuthTransport
+
+	Authentication PrometheusCredentials
+}
+
+// PrometheusCredentials keeps credentials for Prometheus API. The Username + Password pair is mutually exclusive with
+// the BearerToken field. It's handled in the CLI flags. But if BearerToken is set, it will have priority over the basic auth.
+// If both are empty, no authentication is used.
+type PrometheusCredentials struct {
+	Username    string
+	Password    string
+	BearerToken string
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -90,23 +134,33 @@ type prometheusHistoryProvider struct {
 
 // NewPrometheusHistoryProvider constructs a history provider that gets data from Prometheus.
 func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (HistoryProvider, error) {
-	promConfig := promapi.Config{
-		Address:      config.Address,
-		RoundTripper: promapi.DefaultRoundTripper,
+	prometheusTransport := promapi.DefaultRoundTripper
+
+	if config.Insecure {
+		prometheusTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
-	if config.Username != "" && config.Password != "" {
-		transport := &PrometheusBasicAuthTransport{
-			Username: config.Username,
-			Password: config.Password,
+	if config.Authentication.BearerToken != "" {
+		prometheusTransport = &PrometheusBearerTokenAuthTransport{
+			Token: config.Authentication.BearerToken,
+			Base:  prometheusTransport,
 		}
-		promConfig.RoundTripper = transport
+	} else if config.Authentication.Username != "" && config.Authentication.Password != "" {
+		prometheusTransport = &PrometheusBasicAuthTransport{
+			Username: config.Authentication.Username,
+			Password: config.Authentication.Password,
+			Base:     prometheusTransport,
+		}
 	}
 
 	roundTripper := metrics_recommender.NewPrometheusRoundTripperCounter(
-		metrics_recommender.NewPrometheusRoundTripperDuration(promConfig.RoundTripper),
+		metrics_recommender.NewPrometheusRoundTripperDuration(prometheusTransport),
 	)
-	promConfig.RoundTripper = roundTripper
+
+	promConfig := promapi.Config{
+		Address:      config.Address,
+		RoundTripper: roundTripper,
+	}
 
 	promClient, err := promapi.NewClient(promConfig)
 	if err != nil {
