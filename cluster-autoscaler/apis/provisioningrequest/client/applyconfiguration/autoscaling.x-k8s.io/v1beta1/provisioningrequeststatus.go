@@ -19,15 +19,15 @@ limitations under the License.
 package v1beta1
 
 import (
-	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
 // ProvisioningRequestStatusApplyConfiguration represents a declarative configuration of the ProvisioningRequestStatus type for use
 // with apply.
 type ProvisioningRequestStatusApplyConfiguration struct {
-	Conditions               []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
-	ProvisioningClassDetails map[string]v1beta1.Detail        `json:"provisioningClassDetails,omitempty"`
+	Conditions               []v1.ConditionApplyConfiguration           `json:"conditions,omitempty"`
+	ProvisioningClassDetails map[string]autoscalingxk8siov1beta1.Detail `json:"provisioningClassDetails,omitempty"`
 }
 
 // ProvisioningRequestStatusApplyConfiguration constructs a declarative configuration of the ProvisioningRequestStatus type for use with
@@ -53,9 +53,9 @@ func (b *ProvisioningRequestStatusApplyConfiguration) WithConditions(values ...*
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the ProvisioningClassDetails field,
 // overwriting an existing map entries in ProvisioningClassDetails field with the same key.
-func (b *ProvisioningRequestStatusApplyConfiguration) WithProvisioningClassDetails(entries map[string]v1beta1.Detail) *ProvisioningRequestStatusApplyConfiguration {
+func (b *ProvisioningRequestStatusApplyConfiguration) WithProvisioningClassDetails(entries map[string]autoscalingxk8siov1beta1.Detail) *ProvisioningRequestStatusApplyConfiguration {
 	if b.ProvisioningClassDetails == nil && len(entries) > 0 {
-		b.ProvisioningClassDetails = make(map[string]v1beta1.Detail, len(entries))
+		b.ProvisioningClassDetails = make(map[string]autoscalingxk8siov1beta1.Detail, len(entries))
 	}
 	for k, v := range entries {
 		b.ProvisioningClassDetails[k] = v
