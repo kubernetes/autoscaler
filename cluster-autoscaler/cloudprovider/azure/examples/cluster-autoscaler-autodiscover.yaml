@@ -123,7 +123,7 @@ subjects:
 apiVersion: v1
 data:
   ResourceGroup: <base64-encoded-resource-group>
-  SubscriptionID: <base64-encode-subscription-id>
+  SubscriptionID: <base64-encoded-subscription-id>
   Deployment: <base64-encoded-azure-initial-deploy-name>
   VMType: c3RhbmRhcmQ=
 kind: Secret
