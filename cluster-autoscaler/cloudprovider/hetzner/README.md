@@ -47,7 +47,7 @@ Can be useful when you have many different node pools and run into issues of the
 
 **NOTE**: In contrast to `HCLOUD_CLUSTER_CONFIG`, this file is not base64 encoded.
 
-The global `imagesForArch` configuration can be overriden on a per-nodepool basis by adding an `imagesForArch` field to individual nodepool configurations.
+The global `imagesForArch` configuration can be overridden on a per-nodepool basis by adding an `imagesForArch` field to individual nodepool configurations.
 
 The image selection logic works as follows:
 
