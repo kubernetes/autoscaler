@@ -118,6 +118,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `recommender-interval` |  |  1m0s | duration                          How often metrics should be fetched  |
 | `recommender-name` | string |  "default" | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster.  |
 | `round-cpu-millicores` | int |  1 | CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.  |
+| `round-memory-bytes` | int |  1 | Memory recommendation rounding factor in bytes. The Memory value will always be rounded up to the nearest multiple of this factor.  |
 | `skip-headers` |  |  | If true, avoid header prefixes in the log messages |
 | `skip-log-headers` |  |  | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
 | `stderrthreshold` | severity | : info | set the log level threshold for writing to standard error  |

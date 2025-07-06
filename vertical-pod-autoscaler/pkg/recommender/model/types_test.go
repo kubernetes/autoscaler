@@ -29,19 +29,21 @@ type ResourcesAsResourceListTestCase struct {
 	resources    Resources
 	humanize     bool
 	roundCPU     int
+	roundMemory  int
 	resourceList apiv1.ResourceList
 }
 
 func TestResourcesAsResourceList(t *testing.T) {
 	testCases := []ResourcesAsResourceListTestCase{
 		{
-			name: "basic resources without humanize and no cpu rounding",
+			name: "basic resources without humanize and no rounding",
 			resources: Resources{
 				ResourceCPU:    1000,
 				ResourceMemory: 1000,
 			},
-			humanize: false,
-			roundCPU: 1,
+			humanize:    false,
+			roundCPU:    1,
+			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
 				apiv1.ResourceMemory: *resource.NewQuantity(1000, resource.DecimalSI),
@@ -53,11 +55,26 @@ func TestResourcesAsResourceList(t *testing.T) {
 				ResourceCPU:    1000,
 				ResourceMemory: 262144000, // 250Mi
 			},
-			humanize: true,
-			roundCPU: 1,
+			humanize:    true,
+			roundCPU:    1,
+			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
 				apiv1.ResourceMemory: resource.MustParse("250.00Mi"),
+			},
+		},
+		{
+			name: "basic resources with humanize and memory rounding to 256Mi",
+			resources: Resources{
+				ResourceCPU:    1000,
+				ResourceMemory: 262144000, // 250Mi
+			},
+			humanize:    true,
+			roundCPU:    1,
+			roundMemory: 268435456,
+			resourceList: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
+				apiv1.ResourceMemory: resource.MustParse("256.00Mi"),
 			},
 		},
 		{
@@ -66,8 +83,9 @@ func TestResourcesAsResourceList(t *testing.T) {
 				ResourceCPU:    1000,
 				ResourceMemory: 839500000, // 800.61Mi
 			},
-			humanize: true,
-			roundCPU: 3,
+			humanize:    true,
+			roundCPU:    3,
+			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1002, resource.DecimalSI),
 				apiv1.ResourceMemory: resource.MustParse("800.61Mi"),
@@ -79,8 +97,9 @@ func TestResourcesAsResourceList(t *testing.T) {
 				ResourceCPU:    0,
 				ResourceMemory: 0,
 			},
-			humanize: false,
-			roundCPU: 2,
+			humanize:    false,
+			roundCPU:    2,
+			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(0, resource.DecimalSI),
 				apiv1.ResourceMemory: *resource.NewQuantity(0, resource.DecimalSI),
@@ -92,17 +111,32 @@ func TestResourcesAsResourceList(t *testing.T) {
 				ResourceCPU:    1231241,
 				ResourceMemory: 839500000,
 			},
-			humanize: false,
-			roundCPU: 13,
+			humanize:    false,
+			roundCPU:    13,
+			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1231243, resource.DecimalSI),
 				apiv1.ResourceMemory: *resource.NewQuantity(839500000, resource.DecimalSI),
 			},
 		},
+		{
+			name: "large memory value without humanize and with memory rounding to 128Mi",
+			resources: Resources{
+				ResourceCPU:    1231241,
+				ResourceMemory: 839500000,
+			},
+			humanize:    false,
+			roundCPU:    13,
+			roundMemory: 134217728,
+			resourceList: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1231243, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(939524096, resource.DecimalSI),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := ResourcesAsResourceList(tc.resources, tc.humanize, tc.roundCPU)
+			result := ResourcesAsResourceList(tc.resources, tc.humanize, tc.roundCPU, tc.roundMemory)
 			if !result[apiv1.ResourceCPU].Equal(tc.resourceList[apiv1.ResourceCPU]) {
 				t.Errorf("expected %v, got %v", tc.resourceList[apiv1.ResourceCPU], result[apiv1.ResourceCPU])
 			}

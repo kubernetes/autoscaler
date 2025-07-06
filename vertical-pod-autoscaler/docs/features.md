@@ -54,6 +54,22 @@ To enable this feature, set the --round-cpu-millicores flag when running the VPA
 --round-cpu-millicores=50
 ```
 
+## Memory Recommendation Rounding
+
+VPA can provide Memory recommendations rounded up to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-memory-bytes` flag in the recommender component.
+
+When enabled, Memory recommendations will be:
+- Rounded up to the nearest multiple of the specified bytes value
+- Applied to target, lower bound, and upper bound recommendations
+
+For example, with `--round-memory-bytes=134217728`, a memory recommendation of `200Mi` would be rounded up to `256Mi`, and a recommendation of `80Mi` would be rounded up to `128Mi`.
+
+To enable this feature, set the `--round-memory-bytes` flag when running the VPA recommender:
+
+```bash
+--round-memory-bytes=134217728
+```
+
 ## In-Place Updates (`InPlaceOrRecreate`)
 
 > [!WARNING] 
