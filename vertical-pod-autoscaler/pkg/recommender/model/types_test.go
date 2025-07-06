@@ -39,14 +39,14 @@ func TestResourcesAsResourceList(t *testing.T) {
 			name: "basic resources without humanize and no rounding",
 			resources: Resources{
 				ResourceCPU:    1000,
-				ResourceMemory: 1000,
+				ResourceMemory: 1024,
 			},
 			humanize:    false,
 			roundCPU:    1,
 			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
-				apiv1.ResourceMemory: *resource.NewQuantity(1000, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(1024, resource.BinarySI),
 			},
 		},
 		{
@@ -102,7 +102,7 @@ func TestResourcesAsResourceList(t *testing.T) {
 			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(0, resource.DecimalSI),
-				apiv1.ResourceMemory: *resource.NewQuantity(0, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(0, resource.BinarySI),
 			},
 		},
 		{
@@ -116,7 +116,7 @@ func TestResourcesAsResourceList(t *testing.T) {
 			roundMemory: 1,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1231243, resource.DecimalSI),
-				apiv1.ResourceMemory: *resource.NewQuantity(839500000, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(839500000, resource.BinarySI),
 			},
 		},
 		{
@@ -130,7 +130,7 @@ func TestResourcesAsResourceList(t *testing.T) {
 			roundMemory: 134217728,
 			resourceList: apiv1.ResourceList{
 				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1231243, resource.DecimalSI),
-				apiv1.ResourceMemory: *resource.NewQuantity(939524096, resource.DecimalSI),
+				apiv1.ResourceMemory: resource.MustParse("896Mi"),
 			},
 		},
 	}
@@ -537,42 +537,42 @@ func TestQuantityFromMemoryAmount(t *testing.T) {
 		{
 			name:         "should get 69",
 			memoryAmount: 69,
-			want:         *resource.NewQuantity(69, resource.DecimalSI),
+			want:         *resource.NewQuantity(69, resource.BinarySI),
 		},
 		{
 			name:         "should get 12",
 			memoryAmount: 12,
-			want:         *resource.NewQuantity(12, resource.DecimalSI),
+			want:         *resource.NewQuantity(12, resource.BinarySI),
 		},
 		{
 			name:         "should get 17",
 			memoryAmount: 17,
-			want:         *resource.NewQuantity(17, resource.DecimalSI),
+			want:         *resource.NewQuantity(17, resource.BinarySI),
 		},
 		{
 			name:         "should get 4",
 			memoryAmount: 4,
-			want:         *resource.NewQuantity(4, resource.DecimalSI),
+			want:         *resource.NewQuantity(4, resource.BinarySI),
 		},
 		{
 			name:         "should get 12",
 			memoryAmount: 12,
-			want:         *resource.NewQuantity(12, resource.DecimalSI),
+			want:         *resource.NewQuantity(12, resource.BinarySI),
 		},
 		{
 			name:         "should get 1",
 			memoryAmount: 1,
-			want:         *resource.NewQuantity(1, resource.DecimalSI),
+			want:         *resource.NewQuantity(1, resource.BinarySI),
 		},
 		{
 			name:         "should get 0",
 			memoryAmount: 0,
-			want:         *resource.NewQuantity(0, resource.DecimalSI),
+			want:         *resource.NewQuantity(0, resource.BinarySI),
 		},
 		{
 			name:         "should get 123456789",
 			memoryAmount: 123456789,
-			want:         *resource.NewQuantity(123456789, resource.DecimalSI),
+			want:         *resource.NewQuantity(123456789, resource.BinarySI),
 		},
 	}
 	for _, tc := range tc {

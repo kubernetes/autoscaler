@@ -73,7 +73,7 @@ func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
 
 // QuantityFromMemoryAmount converts memory ResourceAmount to a resource.Quantity.
 func QuantityFromMemoryAmount(memoryAmount ResourceAmount) resource.Quantity {
-	return *resource.NewScaledQuantity(int64(memoryAmount), 0)
+	return *resource.NewQuantity(int64(memoryAmount), resource.BinarySI)
 }
 
 // ScaleResource returns the resource amount multiplied by a given factor.
