@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	simulator_fake "k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -683,6 +684,11 @@ func TestPodsToEvict(t *testing.T) {
 			wantDsPods:    []*apiv1.Pod{},
 			wantNonDsPods: []*apiv1.Pod{},
 		},
+		"fake pods are never returned": {
+			pods:          []*apiv1.Pod{fakePod("pod-1"), fakePod("pod-2")},
+			wantDsPods:    []*apiv1.Pod{},
+			wantNonDsPods: []*apiv1.Pod{},
+		},
 		"non-DS pods are correctly returned": {
 			pods:          []*apiv1.Pod{regularPod("pod-1"), regularPod("pod-2")},
 			wantDsPods:    []*apiv1.Pod{},
@@ -764,6 +770,10 @@ func mirrorPod(name string) *apiv1.Pod {
 			},
 		},
 	}
+}
+
+func fakePod(name string) *apiv1.Pod {
+	return simulator_fake.WithFakePodAnnotation(regularPod(name))
 }
 
 func dsPod(name string, evictable bool) *apiv1.Pod {
