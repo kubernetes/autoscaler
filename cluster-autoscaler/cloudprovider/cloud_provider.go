@@ -45,7 +45,7 @@ const (
 	// CloudStackProviderName gets the provider name of cloudstack
 	CloudStackProviderName = "cloudstack"
 	// CoreWeaveProviderName gets the provider name of coreweave
-    CoreWeaveProviderName = "coreweave"
+	CoreWeaveProviderName = "coreweave"
 	// ClusterAPIProviderName gets the provider name of clusterapi
 	ClusterAPIProviderName = "clusterapi"
 	// DigitalOceanProviderName gets the provider name of digitalocean

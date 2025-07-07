@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/cloudstack"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/clusterapi"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/coreweave"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/equinixmetal"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale"
@@ -51,7 +52,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/volcengine"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vultr"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/coreweave"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/client-go/informers"
 )

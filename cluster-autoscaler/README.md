@@ -23,6 +23,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Civo](./cloudprovider/civo/README.md)
 * [CloudStack](./cloudprovider/cloudstack/README.md)
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
+* [CoreWeave](./cloudprovider/coreweave/README.md)
 * [DigitalOcean](./cloudprovider/digitalocean/README.md)
 * [Exoscale](./cloudprovider/exoscale/README.md)
 * [Equinix Metal](cloudprovider/equinixmetal/README.md#notes)
