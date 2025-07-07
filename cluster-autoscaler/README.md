@@ -49,6 +49,7 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 | Kubernetes Version | CA Version               | Chart Version |
 |--------------------|--------------------------|---------------|
+| 1.33.x             | 1.33.x                   |9.47.0+|
 | 1.32.x             | 1.32.x                   |9.45.0+|
 | 1.31.x             | 1.31.x                   |9.38.0+|
 | 1.30.x             | 1.30.x                   |9.37.0+|
