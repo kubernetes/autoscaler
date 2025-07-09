@@ -7,6 +7,7 @@ updates:
   open-pull-requests-limit: 0 # setting this to 0 means only allowing security updates, see https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/recommender"
   schedule:
@@ -17,6 +18,7 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/updater"
   schedule:
@@ -27,6 +29,7 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/admission-controller"
   schedule:
@@ -37,12 +40,15 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
 - package-ecosystem: gomod
   directory: "/addon-resizer"
   schedule:
     interval: daily
   target-branch: "addon-resizer-release-1.8"
   open-pull-requests-limit: 3
+  labels:
+    - "release-note-none"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
@@ -50,3 +56,4 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "area/dependency"
+    - "release-note-none"
