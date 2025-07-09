@@ -43,3 +43,36 @@ updates:
     interval: daily
   target-branch: "addon-resizer-release-1.8"
   open-pull-requests-limit: 3
+# Go - Cluster Autoscaler
+- directory: "/cluster-autoscaler"
+  package-ecosystem: "gomod"
+  open-pull-requests-limit: 5
+  schedule:
+    interval: "daily"
+    time: "15:00"
+    # Use America/New_York Standard Time (UTC -05:00)
+    timezone: "America/New_York"
+  commit-message:
+    prefix: "dependabot"
+    include: scope
+  ignore:
+    # Update providers manually.
+    - dependency-name: "k8s.io/cloud-provider-aws/*"
+    - dependency-name: "github.com/aws/*"
+    - dependency-name: "k8s.io/cloud-provider-gcp/*"
+    - dependency-name: "sigs.k8s.io/cloud-provider-azure/*"
+    - dependency-name: "github.com/Azure/*"
+    - dependency-name: "github.com/digitalocean/*"
+    # Maintain k8s version skew compatibility manually.
+    - dependency-name: "k8s.io/api"
+    - dependency-name: "k8s.io/apimachinery"
+    - dependency-name: "k8s.io/apiserver"
+    - dependency-name: "k8s.io/client-go"
+    - dependency-name: "k8s.io/component-base"
+    - dependency-name: "k8s.io/component-helpers"
+    - dependency-name: "k8s.io/kubelet"
+    - dependency-name: "k8s.io/kubernetes"
+  labels:
+    - "ok-to-test"
+    - "kind/cleanup"
+    - "release-note-none"
