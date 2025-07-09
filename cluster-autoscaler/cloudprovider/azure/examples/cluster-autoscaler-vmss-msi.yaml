@@ -123,7 +123,7 @@ subjects:
 apiVersion: v1
 data:
   ResourceGroup: <base64-encoded-resource-group>
-  SubscriptionID: <base64-encode-subscription-id>
+  SubscriptionID: <base64-encoded-subscription-id>
   VMType: dm1zcw==
 kind: Secret
 metadata:
@@ -157,10 +157,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: control-plane
       containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ ca_version }}
-          imagePullPolicy: Always
-          name: cluster-autoscaler
-          command:
+        - command:
             - ./cluster-autoscaler
             - --v=3
             - --logtostderr=true
@@ -186,6 +183,9 @@ spec:
                 secretKeyRef:
                   key: VMType
                   name: cluster-autoscaler-azure
+          image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ ca_version }}
+          imagePullPolicy: Always
+          name: cluster-autoscaler
           resources:
             limits:
               cpu: 100m
