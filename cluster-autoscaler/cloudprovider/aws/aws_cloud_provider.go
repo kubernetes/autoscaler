@@ -204,18 +204,24 @@ type AwsInstanceRef struct {
 	Name       string
 }
 
-var validAwsRefIdRegex = regexp.MustCompile(fmt.Sprintf(`^aws\:\/\/\/[-0-9a-z]*\/[-0-9a-z]*(\/[-0-9a-z\.]*)?$|aws\:\/\/\/[-0-9a-z]*\/%s.*$`, placeholderInstanceNamePrefix))
+var validAwsRefIdRegex = regexp.MustCompile(fmt.Sprintf(`^aws\:\/\/\/[-0-9a-z]*\/([-0-9a-z]*)(\/[-0-9a-z\.]*)?$|aws\:\/\/\/[-0-9a-z]*\/(%s.*)$`, placeholderInstanceNamePrefix))
 
 // AwsRefFromProviderId creates AwsInstanceRef object from provider id which
 // must be in format: aws:///zone/name
 func AwsRefFromProviderId(id string) (*AwsInstanceRef, error) {
-	if validAwsRefIdRegex.FindStringSubmatch(id) == nil {
+	matches := validAwsRefIdRegex.FindStringSubmatch(id)
+	if matches == nil || len(matches) != 4 {
 		return nil, fmt.Errorf("wrong id: expected format aws:///<zone>/<name>, got %v", id)
 	}
-	splitted := strings.Split(id[7:], "/")
+
+	name := matches[1]
+	if name == "" {
+		name = matches[3]
+	}
+
 	return &AwsInstanceRef{
 		ProviderID: id,
-		Name:       splitted[1],
+		Name:       name,
 	}, nil
 }
 
