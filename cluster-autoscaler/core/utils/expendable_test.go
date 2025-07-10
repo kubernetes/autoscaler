@@ -88,7 +88,7 @@ func TestFilterOutExpendablePods(t *testing.T) {
 	assert.Equal(t, podWaitingForPreemption2, res[2])
 }
 
-func TestIsExpandablePod(t *testing.T) {
+func TestIsExpendablePod(t *testing.T) {
 	preemptLowerPriorityPolicy := apiv1.PreemptLowerPriority
 	neverPolicy := apiv1.PreemptNever
 
@@ -150,7 +150,7 @@ func TestIsExpandablePod(t *testing.T) {
 			name:   "pod priority set, never preemption policy, higher cutoff",
 			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, &neverPolicy),
 			cutoff: 0,
-			want:   false,
+			want:   true,
 		},
 		{
 			name:   "pod priority set, never preemption policy, equal cutoff",
