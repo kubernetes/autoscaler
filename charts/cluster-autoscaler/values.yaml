@@ -366,6 +366,17 @@ rbac:
     name: ""
     # rbac.serviceAccount.automountServiceAccountToken -- Automount API credentials for a Service Account.
     automountServiceAccountToken: true
+  # rbac.additionalRules -- Additional rules for role/clusterrole
+  additionalRules: []
+  # - apiGroups:
+  #   - infrastructure.cluster.x-k8s.io
+  #   resources:
+  #   - kubemarkmachinetemplates
+  #   verbs:
+  #   - get
+  #   - list
+  #   - watch
+
 
 # replicaCount -- Desired number of pods
 replicaCount: 1
