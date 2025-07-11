@@ -47,6 +47,7 @@ Currently, supporting these different needs requires running multiple VPA compon
   - oomBumpUpRatio
   - oomMinBumpUp
   - memoryAggregationInterval
+  - memoryAggregationIntervalCount
   - evictAfterOOMThreshold
 
 ### Non-Goals
@@ -78,6 +79,7 @@ spec:
       oomBumpUpRatio: "1.5"
       oomMinBumpUp: 104857600
       memoryAggregationInterval: "12h"
+      memoryAggregationIntervalCount: 5
 ```
 
 ### Parameter Descriptions
@@ -96,6 +98,11 @@ spec:
   - Time window for aggregating memory usage data
   - Affects how quickly VPA responds to memory usage changes
 
+* `memoryAggregationIntervalCount` (integer):
+  - Number of consecutive memory aggregation intervals
+  - Used to calculate the total memory aggregation window length
+  - Total window length = memoryAggregationInterval * memoryAggregationIntervalCount
+
 #### Update Policy Parameters
 * `evictAfterOOMThreshold` (duration):
   - Time to wait after OOM before considering pod eviction
@@ -113,6 +120,7 @@ Extend `ContainerResourcePolicy` with:
 * `oomBumpUpRatio`
 * `oomMinBumpUp`
 * `memoryAggregationInterval`
+* `memoryAggregationIntervalCount`
 
 Extend `PodUpdatePolicy` with:
 * `evictAfterOOMThreshold`
@@ -162,14 +170,15 @@ The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is 
 ### Validation via CEL and Testing
 
 Initial validation rules (CEL):
-* oomMinBumpUp > 0
-* memoryAggregationInterval > 0
-* evictAfterOOMThreshold > 0
+* `oomMinBumpUp` > 0
+* `memoryAggregationInterval` > 0
+* `evictAfterOOMThreshold` > 0
+* `memoryAggregationIntervalCount` > 0
 
 Validation via Admission Controller:
 Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
 
-* oomBumpUpRatio – Since this parameter is a string, it will be converted to a float during validation. The value must be greater than 1.
+* `oomBumpUpRatio` – Since this parameter is a string, it will be converted to a float during validation. The value must be greater than 1.
 
 Additional validation rules will be added as new parameters are introduced.
 E2E tests will be included to verify:
