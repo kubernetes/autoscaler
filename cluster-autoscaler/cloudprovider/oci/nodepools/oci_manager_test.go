@@ -119,8 +119,8 @@ func TestGetNodePoolNodes(t *testing.T) {
 			{
 				Id: common.String("node8"),
 				NodeError: &oke.NodeError{
-					Code:    common.String("InternalServerError"),
-					Message: common.String("blah blah quota exceeded blah blah"),
+					Code:    common.String("InternalError"),
+					Message: common.String("blah blah Out of host capacity blah blah"),
 				},
 			},
 		},
@@ -179,8 +179,8 @@ func TestGetNodePoolNodes(t *testing.T) {
 				State: cloudprovider.InstanceCreating,
 				ErrorInfo: &cloudprovider.InstanceErrorInfo{
 					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:    "InternalServerError",
-					ErrorMessage: "blah blah quota exceeded blah blah",
+					ErrorCode:    "InternalError",
+					ErrorMessage: "blah blah Out of host capacity blah blah",
 				},
 			},
 		},

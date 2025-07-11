@@ -519,6 +519,7 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 	nodePool, err := m.nodePoolCache.get(np.Id())
 	if err != nil {
+		klog.Error(err, "error while performing GetNodePoolNodes call")
 		return nil, err
 	}
 
@@ -527,10 +528,14 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 		if node.NodeError != nil {
 
+			// We should move away from the approach of determining a node error as a Out of host capacity
+			// through string comparison. An error code specifically for Out of host capacity must be set
+			// and returned in the API response.
 			errorClass := cloudprovider.OtherErrorClass
 			if *node.NodeError.Code == "LimitExceeded" ||
-				(*node.NodeError.Code == "InternalServerError" &&
-					strings.Contains(*node.NodeError.Message, "quota")) {
+				*node.NodeError.Code == "QuotaExceeded" ||
+				(*node.NodeError.Code == "InternalError" &&
+					strings.Contains(*node.NodeError.Message, "Out of host capacity")) {
 				errorClass = cloudprovider.OutOfResourcesErrorClass
 			}
 
