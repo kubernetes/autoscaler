@@ -214,6 +214,23 @@ func (np *nodePool) DecreaseTargetSize(delta int) error {
 		}
 	}
 	klog.V(4).Infof("DECREASE_TARGET_CHECK_VIA_COMPUTE: %v", decreaseTargetCheckViaComputeBool)
+	np.manager.InvalidateAndRefreshCache()
+	nodes, err := np.manager.GetNodePoolNodes(np)
+	if err != nil {
+		klog.V(4).Error(err, "error while performing GetNodePoolNodes call")
+		return err
+	}
+	if !decreaseTargetCheckViaComputeBool {
+		for _, node := range nodes {
+			if node.Status != nil && node.Status.ErrorInfo != nil {
+				if node.Status.ErrorInfo.ErrorClass == cloudprovider.OutOfResourcesErrorClass {
+					klog.V(4).Infof("Using Compute to calculate nodepool size as nodepool may contain nodes without a compute instance.")
+					decreaseTargetCheckViaComputeBool = true
+					break
+				}
+			}
+		}
+	}
 	var nodesLen int
 	if decreaseTargetCheckViaComputeBool {
 		nodesLen, err = np.manager.GetExistingNodePoolSizeViaCompute(np)
@@ -222,12 +239,6 @@ func (np *nodePool) DecreaseTargetSize(delta int) error {
 			return err
 		}
 	} else {
-		np.manager.InvalidateAndRefreshCache()
-		nodes, err := np.manager.GetNodePoolNodes(np)
-		if err != nil {
-			klog.V(4).Error(err, "error while performing GetNodePoolNodes call")
-			return err
-		}
 		nodesLen = len(nodes)
 	}
 
