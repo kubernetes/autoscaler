@@ -542,8 +542,9 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 			errorClass := cloudprovider.OtherErrorClass
 			if *node.NodeError.Code == "LimitExceeded" ||
-				(*node.NodeError.Code == "InternalServerError" &&
-					strings.Contains(*node.NodeError.Message, "quota")) {
+				*node.NodeError.Code == "QuotaExceeded" ||
+				(*node.NodeError.Code == "InternalError" &&
+					strings.Contains(*node.NodeError.Message, "Out of host capacity")) {
 				errorClass = cloudprovider.OutOfResourcesErrorClass
 			}
 
