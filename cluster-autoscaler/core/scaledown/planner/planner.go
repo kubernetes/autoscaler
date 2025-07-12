@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	klog "k8s.io/klog/v2"
 )
 
@@ -85,10 +86,30 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 	if minUpdateInterval == 0*time.Nanosecond {
 		minUpdateInterval = 1 * time.Nanosecond
 	}
+
+	// Remove stale DeletionCandidates taints from nodes before initializing the autoscaler.
+	if context.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
+		if context.AutoscalingKubeClients.ListerRegistry == nil {
+			klog.Warningf("Cannot access lister registry, not cleaning up taints")
+		} else if allNodesLister := context.AllNodeLister(); allNodesLister == nil {
+			klog.Warningf("Cannot access node lister, not cleaning up taints")
+		} else if allNodes, err := allNodesLister.List(); err != nil {
+			klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
+		} else {
+			taints.CleanStaleDeletionCandidates(allNodes,
+				context.ClientSet, context.Recorder, context.NodeDeletionCandidateTTL)
+		}
+	}
+
+	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
+	if context.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
+		unneededNodes.LoadFromExistingTaints(context.ListerRegistry, time.Now())
+	}
+
 	return &Planner{
 		context:               context,
 		unremovableNodes:      unremovable.NewNodes(),
-		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
+		unneededNodes:         unneededNodes,
 		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, deleteOptions, drainabilityRules, true),
 		actuationInjector:     scheduling.NewHintingSimulator(),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
