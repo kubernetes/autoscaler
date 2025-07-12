@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -25,38 +26,43 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/eks"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/service/autoscaling/types"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/service/ec2/types"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2/service/eks/types"
 )
 
 type autoScalingMock struct {
 	mock.Mock
 }
 
-func (a *autoScalingMock) DescribeAutoScalingGroupsPages(i *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error {
-	args := a.Called(i, fn)
-	return args.Error(0)
+var _ autoScalingI = &autoScalingMock{}
+
+func (a *autoScalingMock) DescribeAutoScalingGroups(ctx context.Context, i *autoscaling.DescribeAutoScalingGroupsInput, opts ...func(*autoscaling.Options)) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
+	args := a.Called(ctx, i)
+	return args.Get(0).(*autoscaling.DescribeAutoScalingGroupsOutput), nil
 }
 
-func (a *autoScalingMock) DescribeLaunchConfigurations(i *autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error) {
-	args := a.Called(i)
+func (a *autoScalingMock) DescribeLaunchConfigurations(ctx context.Context, i *autoscaling.DescribeLaunchConfigurationsInput, opts ...func(options *autoscaling.Options)) (*autoscaling.DescribeLaunchConfigurationsOutput, error) {
+	args := a.Called(ctx, i)
 	return args.Get(0).(*autoscaling.DescribeLaunchConfigurationsOutput), nil
 }
 
-func (a *autoScalingMock) DescribeScalingActivities(i *autoscaling.DescribeScalingActivitiesInput) (*autoscaling.DescribeScalingActivitiesOutput, error) {
-	args := a.Called(i)
+func (a *autoScalingMock) DescribeScalingActivities(ctx context.Context, i *autoscaling.DescribeScalingActivitiesInput, opts ...func(options *autoscaling.Options)) (*autoscaling.DescribeScalingActivitiesOutput, error) {
+	args := a.Called(ctx, i)
 	return args.Get(0).(*autoscaling.DescribeScalingActivitiesOutput), args.Error(1)
 }
 
-func (a *autoScalingMock) SetDesiredCapacity(input *autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error) {
-	args := a.Called(input)
+func (a *autoScalingMock) SetDesiredCapacity(ctx context.Context, input *autoscaling.SetDesiredCapacityInput, opts ...func(options *autoscaling.Options)) (*autoscaling.SetDesiredCapacityOutput, error) {
+	args := a.Called(ctx, input)
 	return args.Get(0).(*autoscaling.SetDesiredCapacityOutput), nil
 }
 
-func (a *autoScalingMock) TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
-	args := a.Called(input)
+func (a *autoScalingMock) TerminateInstanceInAutoScalingGroup(ctx context.Context, input *autoscaling.TerminateInstanceInAutoScalingGroupInput, opts ...func(options *autoscaling.Options)) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
+	args := a.Called(ctx, input)
 	return args.Get(0).(*autoscaling.TerminateInstanceInAutoScalingGroupOutput), nil
 }
 
@@ -64,27 +70,31 @@ type ec2Mock struct {
 	mock.Mock
 }
 
-func (e *ec2Mock) DescribeImages(input *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
-	args := e.Called(input)
+var _ ec2I = &ec2Mock{}
+
+func (e *ec2Mock) DescribeImages(ctx context.Context, i *ec2.DescribeImagesInput, opts ...func(options *ec2.Options)) (*ec2.DescribeImagesOutput, error) {
+	args := e.Called(ctx, i)
 	return args.Get(0).(*ec2.DescribeImagesOutput), nil
 }
 
-func (e *ec2Mock) DescribeLaunchTemplateVersions(i *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
-	args := e.Called(i)
+func (e *ec2Mock) DescribeLaunchTemplateVersions(ctx context.Context, i *ec2.DescribeLaunchTemplateVersionsInput, opts ...func(options *ec2.Options)) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	args := e.Called(ctx, i)
 	return args.Get(0).(*ec2.DescribeLaunchTemplateVersionsOutput), nil
 }
 
-func (e *ec2Mock) GetInstanceTypesFromInstanceRequirementsPages(input *ec2.GetInstanceTypesFromInstanceRequirementsInput, fn func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool) error {
-	args := e.Called(input, fn)
-	return args.Error(0)
+func (e *ec2Mock) GetInstanceTypesFromInstanceRequirements(ctx context.Context, i *ec2.GetInstanceTypesFromInstanceRequirementsInput, opts ...func(options *ec2.Options)) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error) {
+	args := e.Called(ctx, i)
+	return args.Get(0).(*ec2.GetInstanceTypesFromInstanceRequirementsOutput), nil
 }
 
 type eksMock struct {
 	mock.Mock
 }
 
-func (k *eksMock) DescribeNodegroup(i *eks.DescribeNodegroupInput) (*eks.DescribeNodegroupOutput, error) {
-	args := k.Called(i)
+var _ eksI = &eksMock{}
+
+func (k *eksMock) DescribeNodegroup(ctx context.Context, i *eks.DescribeNodegroupInput, opts ...func(options *eks.Options)) (*eks.DescribeNodegroupOutput, error) {
+	args := k.Called(ctx, i)
 
 	if args.Get(0) == nil && args.Get(1) == nil {
 		return nil, nil
@@ -114,28 +124,28 @@ func TestGetManagedNodegroup(t *testing.T) {
 	nodegroupName := "testNodegroup"
 	clusterName := "testCluster"
 
-	taintEffect1 := eks.TaintEffectNoSchedule
+	taintEffect1 := ekstypes.TaintEffectNoSchedule
 	taintEffectTranslated1 := apiv1.TaintEffectNoSchedule
 	taintKey1 := "key 1"
 	taintValue1 := "value 1"
-	taint1 := eks.Taint{
-		Effect: &taintEffect1,
+	taint1 := ekstypes.Taint{
+		Effect: taintEffect1,
 		Key:    &taintKey1,
 		Value:  &taintValue1,
 	}
 
-	taintEffect2 := eks.TaintEffectNoExecute
+	taintEffect2 := ekstypes.TaintEffectNoExecute
 	taintEffectTranslated2 := apiv1.TaintEffectNoExecute
 	taintKey2 := "key 2"
 	taintValue2 := "value 2"
-	taint2 := eks.Taint{
-		Effect: &taintEffect2,
+	taint2 := ekstypes.Taint{
+		Effect: taintEffect2,
 		Key:    &taintKey2,
 		Value:  &taintValue2,
 	}
 
 	amiType := "testAmiType"
-	diskSize := int64(100)
+	diskSize := int32(100)
 	capacityType := "testCapacityType"
 	k8sVersion := "1.19"
 
@@ -145,22 +155,25 @@ func TestGetManagedNodegroup(t *testing.T) {
 	tagValue2 := "value 2"
 
 	// Create test nodegroup
-	testNodegroup := eks.Nodegroup{
-		AmiType:       &amiType,
+	testNodegroup := ekstypes.Nodegroup{
+		AmiType:       ekstypes.AMITypes(amiType),
 		ClusterName:   &clusterName,
 		DiskSize:      &diskSize,
-		Labels:        map[string]*string{labelKey1: &labelValue1, labelKey2: &labelValue2},
+		Labels:        map[string]string{labelKey1: labelValue1, labelKey2: labelValue2},
 		NodegroupName: &nodegroupName,
-		CapacityType:  &capacityType,
+		CapacityType:  ekstypes.CapacityTypes(capacityType),
 		Version:       &k8sVersion,
-		Taints:        []*eks.Taint{&taint1, &taint2},
-		Tags:          map[string]*string{tagKey1: &tagValue1, tagKey2: &tagValue2},
+		Taints:        []ekstypes.Taint{taint1, taint2},
+		Tags:          map[string]string{tagKey1: tagValue1, tagKey2: tagValue2},
 	}
 
-	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
-		ClusterName:   &clusterName,
-		NodegroupName: &nodegroupName,
-	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+	k.On("DescribeNodegroup",
+		mock.Anything,
+		&eks.DescribeNodegroupInput{
+			ClusterName:   &clusterName,
+			NodegroupName: &nodegroupName,
+		},
+	).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
 	taintList, labelMap, tagMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
@@ -174,7 +187,7 @@ func TestGetManagedNodegroup(t *testing.T) {
 	assert.Equal(t, len(labelMap), 7)
 	assert.Equal(t, labelMap[labelKey1], labelValue1)
 	assert.Equal(t, labelMap[labelKey2], labelValue2)
-	assert.Equal(t, labelMap["diskSize"], strconv.FormatInt(diskSize, 10))
+	assert.Equal(t, labelMap["diskSize"], strconv.FormatInt(int64(diskSize), 10))
 	assert.Equal(t, labelMap["amiType"], amiType)
 	assert.Equal(t, labelMap["eks.amazonaws.com/capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
@@ -200,22 +213,25 @@ func TestGetManagedNodegroupWithNilValues(t *testing.T) {
 	k8sVersion := "1.19"
 
 	// Create test nodegroup
-	testNodegroup := eks.Nodegroup{
-		AmiType:       &amiType,
+	testNodegroup := ekstypes.Nodegroup{
+		AmiType:       ekstypes.AMITypes(amiType),
 		ClusterName:   &clusterName,
 		DiskSize:      nil,
 		Labels:        nil,
 		NodegroupName: &nodegroupName,
-		CapacityType:  &capacityType,
+		CapacityType:  ekstypes.CapacityTypes(capacityType),
 		Version:       &k8sVersion,
 		Taints:        nil,
 		Tags:          nil,
 	}
 
-	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
-		ClusterName:   &clusterName,
-		NodegroupName: &nodegroupName,
-	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+	k.On("DescribeNodegroup",
+		mock.Anything,
+		&eks.DescribeNodegroupInput{
+			ClusterName:   &clusterName,
+			NodegroupName: &nodegroupName,
+		},
+	).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
 	taintList, labelMap, tagMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
@@ -244,22 +260,25 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 	k8sVersion := "1.19"
 
 	// Create test nodegroup
-	testNodegroup := eks.Nodegroup{
-		AmiType:       &amiType,
+	testNodegroup := ekstypes.Nodegroup{
+		AmiType:       ekstypes.AMITypes(amiType),
 		ClusterName:   &clusterName,
 		DiskSize:      nil,
-		Labels:        make(map[string]*string),
+		Labels:        make(map[string]string),
 		NodegroupName: &nodegroupName,
-		CapacityType:  &capacityType,
+		CapacityType:  ekstypes.CapacityTypes(capacityType),
 		Version:       &k8sVersion,
-		Taints:        make([]*eks.Taint, 0),
-		Tags:          make(map[string]*string),
+		Taints:        make([]ekstypes.Taint, 0),
+		Tags:          make(map[string]string),
 	}
 
-	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
-		ClusterName:   &clusterName,
-		NodegroupName: &nodegroupName,
-	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+	k.On("DescribeNodegroup",
+		mock.Anything,
+		&eks.DescribeNodegroupInput{
+			ClusterName:   &clusterName,
+			NodegroupName: &nodegroupName,
+		},
+	).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
 	taintList, labelMap, tagMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
@@ -287,28 +306,22 @@ func TestMoreThen100Groups(t *testing.T) {
 	}
 
 	// First batch, first 100 elements
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice(names[:100]),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: names[:100],
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("asg-1", 1, "test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("asg-1", 1, "test-instance-id"), nil)
 
 	// Second batch, element 101
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"asg-100"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"asg-100"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("asg-2", 1, "test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("asg-2", 1, "test-instance-id"), nil)
 
 	asgs, err := awsWrapper.getAutoscalingGroupsByNames(names)
 	assert.Nil(t, err)
@@ -326,29 +339,41 @@ func TestGetInstanceTypesForAsgs(t *testing.T) {
 
 	a := &autoScalingMock{}
 	e := &ec2Mock{}
-	a.On("DescribeLaunchConfigurations", &autoscaling.DescribeLaunchConfigurationsInput{
-		LaunchConfigurationNames: []*string{aws.String(ltName)},
-		MaxRecords:               aws.Int64(50),
-	}).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
-		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
-			{
-				LaunchConfigurationName: aws.String(ltName),
-				InstanceType:            aws.String(instanceType),
-			},
+	a.On("DescribeLaunchConfigurations",
+		mock.Anything,
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: []string{ltName},
+			MaxRecords:               aws.Int32(50),
 		},
-	})
-	e.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
-		LaunchTemplateName: aws.String(ltName),
-		Versions:           []*string{aws.String(ltVersion)},
-	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
-		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
-			{
-				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
-					InstanceType: aws.String(instanceType),
+	).Return(
+		&autoscaling.DescribeLaunchConfigurationsOutput{
+			LaunchConfigurations: []autoscalingtypes.LaunchConfiguration{
+				{
+					LaunchConfigurationName: aws.String(ltName),
+					InstanceType:            aws.String(instanceType),
 				},
 			},
 		},
-	})
+		nil,
+	)
+	e.On("DescribeLaunchTemplateVersions",
+		mock.Anything,
+		&ec2.DescribeLaunchTemplateVersionsInput{
+			LaunchTemplateName: aws.String(ltName),
+			Versions:           []string{ltVersion},
+		},
+	).Return(
+		&ec2.DescribeLaunchTemplateVersionsOutput{
+			LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{
+				{
+					LaunchTemplateData: &ec2types.ResponseLaunchTemplateData{
+						InstanceType: ec2types.InstanceType(instanceType),
+					},
+				},
+			},
+		},
+		nil,
+	)
 
 	t.Setenv("AWS_REGION", "fanghorn")
 
@@ -418,20 +443,20 @@ func TestGetInstanceTypesFromInstanceRequirementsOverrides(t *testing.T) {
 			name:    "launchTemplateName",
 			version: "1",
 		},
-		instanceRequirementsOverrides: &autoscaling.InstanceRequirements{
-			VCpuCount: &autoscaling.VCpuCountRequest{
-				Min: aws.Int64(4),
-				Max: aws.Int64(8),
+		instanceRequirementsOverrides: &autoscalingtypes.InstanceRequirements{
+			VCpuCount: &autoscalingtypes.VCpuCountRequest{
+				Min: aws.Int32(4),
+				Max: aws.Int32(8),
 			},
-			MemoryMiB: &autoscaling.MemoryMiBRequest{
-				Min: aws.Int64(4),
-				Max: aws.Int64(8),
+			MemoryMiB: &autoscalingtypes.MemoryMiBRequest{
+				Min: aws.Int32(4),
+				Max: aws.Int32(8),
 			},
-			AcceleratorTypes:         []*string{aws.String(autoscaling.AcceleratorTypeGpu)},
-			AcceleratorManufacturers: []*string{aws.String(autoscaling.AcceleratorManufacturerNvidia)},
-			AcceleratorCount: &autoscaling.AcceleratorCountRequest{
-				Min: aws.Int64(4),
-				Max: aws.Int64(8),
+			AcceleratorTypes:         []autoscalingtypes.AcceleratorType{autoscalingtypes.AcceleratorTypeGpu},
+			AcceleratorManufacturers: []autoscalingtypes.AcceleratorManufacturer{autoscalingtypes.AcceleratorManufacturerNvidia},
+			AcceleratorCount: &autoscalingtypes.AcceleratorCountRequest{
+				Min: aws.Int32(4),
+				Max: aws.Int32(8),
 			},
 		},
 	}
@@ -443,49 +468,61 @@ func TestGetInstanceTypesFromInstanceRequirementsOverrides(t *testing.T) {
 		eksI:         nil,
 	}
 
-	e.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
-		LaunchTemplateName: aws.String("launchTemplateName"),
-		Versions:           []*string{aws.String("1")},
-	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
-		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
-			{
-				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
-					ImageId: aws.String("123"),
+	e.On("DescribeLaunchTemplateVersions",
+		mock.Anything,
+		&ec2.DescribeLaunchTemplateVersionsInput{
+			LaunchTemplateName: aws.String("launchTemplateName"),
+			Versions:           []string{"1"},
+		},
+	).Return(
+		&ec2.DescribeLaunchTemplateVersionsOutput{
+			LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{
+				{
+					LaunchTemplateData: &ec2types.ResponseLaunchTemplateData{
+						ImageId: aws.String("123"),
+					},
 				},
 			},
 		},
-	})
+		nil,
+	)
 
-	e.On("DescribeImages", &ec2.DescribeImagesInput{
-		ImageIds: []*string{aws.String("123")},
-	}).Return(&ec2.DescribeImagesOutput{
-		Images: []*ec2.Image{
-			{
-				Architecture:       aws.String("x86_64"),
-				VirtualizationType: aws.String("xen"),
+	e.On("DescribeImages",
+		mock.Anything,
+		&ec2.DescribeImagesInput{
+			ImageIds: []string{"123"},
+		},
+	).Return(
+		&ec2.DescribeImagesOutput{
+			Images: []ec2types.Image{
+				{
+					Architecture:       ec2types.ArchitectureValuesX8664,
+					VirtualizationType: "xen",
+				},
 			},
 		},
-	})
+		nil,
+	)
 
 	requirements, err := awsWrapper.getRequirementsRequestFromAutoscaling(mixedInstancesPolicy.instanceRequirementsOverrides)
 	assert.NoError(t, err)
-	e.On("GetInstanceTypesFromInstanceRequirementsPages",
+	e.On("GetInstanceTypesFromInstanceRequirements",
+		mock.Anything,
 		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
-			ArchitectureTypes:    []*string{aws.String("x86_64")},
+			ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
 			InstanceRequirements: requirements,
-			VirtualizationTypes:  []*string{aws.String("xen")},
+			VirtualizationTypes:  []ec2types.VirtualizationType{"xen"},
 		},
-		mock.AnythingOfType("func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool)
-		fn(&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
-			InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{
+	).Return(
+		&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
+			InstanceTypes: []ec2types.InstanceTypeInfoFromInstanceRequirements{
 				{
 					InstanceType: aws.String("g4dn.xlarge"),
 				},
 			},
-		}, false)
-	}).Return(nil)
+		},
+		nil,
+	)
 
 	result, err := awsWrapper.getInstanceTypeFromRequirementsOverrides(mixedInstancesPolicy)
 	assert.NoError(t, err)
@@ -505,67 +542,79 @@ func TestGetInstanceTypesFromInstanceRequirementsInLaunchTemplate(t *testing.T) 
 		eksI:         nil,
 	}
 
-	instanceRequirements := &ec2.InstanceRequirements{
-		VCpuCount: &ec2.VCpuCountRange{
-			Min: aws.Int64(4),
-			Max: aws.Int64(8),
+	instanceRequirements := &ec2types.InstanceRequirements{
+		VCpuCount: &ec2types.VCpuCountRange{
+			Min: aws.Int32(4),
+			Max: aws.Int32(8),
 		},
-		MemoryMiB: &ec2.MemoryMiB{
-			Min: aws.Int64(4),
-			Max: aws.Int64(8),
+		MemoryMiB: &ec2types.MemoryMiB{
+			Min: aws.Int32(4),
+			Max: aws.Int32(8),
 		},
-		AcceleratorTypes:         []*string{aws.String(autoscaling.AcceleratorTypeGpu)},
-		AcceleratorManufacturers: []*string{aws.String(autoscaling.AcceleratorManufacturerNvidia)},
-		AcceleratorCount: &ec2.AcceleratorCount{
-			Min: aws.Int64(4),
-			Max: aws.Int64(8),
+		AcceleratorTypes:         []ec2types.AcceleratorType{ec2types.AcceleratorTypeGpu},
+		AcceleratorManufacturers: []ec2types.AcceleratorManufacturer{ec2types.AcceleratorManufacturerNvidia},
+		AcceleratorCount: &ec2types.AcceleratorCount{
+			Min: aws.Int32(4),
+			Max: aws.Int32(8),
 		},
 	}
 
-	e.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
-		LaunchTemplateName: aws.String("launchTemplateName"),
-		Versions:           []*string{aws.String("1")},
-	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
-		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
-			{
-				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
-					ImageId:              aws.String("123"),
-					InstanceRequirements: instanceRequirements,
+	e.On("DescribeLaunchTemplateVersions",
+		mock.Anything,
+		&ec2.DescribeLaunchTemplateVersionsInput{
+			LaunchTemplateName: aws.String("launchTemplateName"),
+			Versions:           []string{"1"},
+		},
+	).Return(
+		&ec2.DescribeLaunchTemplateVersionsOutput{
+			LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{
+				{
+					LaunchTemplateData: &ec2types.ResponseLaunchTemplateData{
+						ImageId:              aws.String("123"),
+						InstanceRequirements: instanceRequirements,
+					},
 				},
 			},
 		},
-	})
+		nil,
+	)
 
-	e.On("DescribeImages", &ec2.DescribeImagesInput{
-		ImageIds: []*string{aws.String("123")},
-	}).Return(&ec2.DescribeImagesOutput{
-		Images: []*ec2.Image{
-			{
-				Architecture:       aws.String("x86_64"),
-				VirtualizationType: aws.String("xen"),
+	e.On("DescribeImages",
+		mock.Anything,
+		&ec2.DescribeImagesInput{
+			ImageIds: []string{"123"},
+		},
+	).Return(
+		&ec2.DescribeImagesOutput{
+			Images: []ec2types.Image{
+				{
+					Architecture:       ec2types.ArchitectureValuesX8664,
+					VirtualizationType: "xen",
+				},
 			},
 		},
-	})
+		nil,
+	)
 
 	requirements, err := awsWrapper.getRequirementsRequestFromEC2(instanceRequirements)
 	assert.NoError(t, err)
-	e.On("GetInstanceTypesFromInstanceRequirementsPages",
+	e.On("GetInstanceTypesFromInstanceRequirements",
+		mock.Anything,
 		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
-			ArchitectureTypes:    []*string{aws.String("x86_64")},
+			ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
 			InstanceRequirements: requirements,
-			VirtualizationTypes:  []*string{aws.String("xen")},
+			VirtualizationTypes:  []ec2types.VirtualizationType{"xen"},
 		},
-		mock.AnythingOfType("func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool)
-		fn(&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
-			InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{
+	).Return(
+		&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
+			InstanceTypes: []ec2types.InstanceTypeInfoFromInstanceRequirements{
 				{
 					InstanceType: aws.String("g4dn.xlarge"),
 				},
 			},
-		}, false)
-	}).Return(nil)
+		},
+		nil,
+	)
 
 	result, err := awsWrapper.getInstanceTypeByLaunchTemplate(launchTemplate)
 	assert.NoError(t, err)
@@ -581,13 +630,13 @@ func TestGetLaunchTemplateData(t *testing.T) {
 	testCases := []struct {
 		testName             string
 		describeTemplateData *ec2.DescribeLaunchTemplateVersionsOutput
-		expectedData         *ec2.ResponseLaunchTemplateData
+		expectedData         *ec2types.ResponseLaunchTemplateData
 		expectedErr          error
 	}{
 		{
 			"no launch template version found",
 			&ec2.DescribeLaunchTemplateVersionsOutput{
-				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{},
+				LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{},
 			},
 			nil,
 			errors.New("unable to find template versions for launch template launchTemplateName"),
@@ -595,7 +644,7 @@ func TestGetLaunchTemplateData(t *testing.T) {
 		{
 			"no data found for launch template",
 			&ec2.DescribeLaunchTemplateVersionsOutput{
-				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+				LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{
 					{
 						LaunchTemplateName: aws.String("launchTemplateName"),
 						LaunchTemplateData: nil,
@@ -608,16 +657,16 @@ func TestGetLaunchTemplateData(t *testing.T) {
 		{
 			"launch template data found successfully",
 			&ec2.DescribeLaunchTemplateVersionsOutput{
-				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+				LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{
 					{
 						LaunchTemplateName: aws.String("launchTemplateName"),
-						LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+						LaunchTemplateData: &ec2types.ResponseLaunchTemplateData{
 							ImageId: aws.String("123"),
 						},
 					},
 				},
 			},
-			&ec2.ResponseLaunchTemplateData{
+			&ec2types.ResponseLaunchTemplateData{
 				ImageId: aws.String("123"),
 			},
 			nil,
@@ -626,11 +675,17 @@ func TestGetLaunchTemplateData(t *testing.T) {
 
 	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
 		LaunchTemplateName: aws.String("launchTemplateName"),
-		Versions:           []*string{aws.String("1")},
+		Versions:           []string{"1"},
 	}
 
 	for _, testCase := range testCases {
-		e.On("DescribeLaunchTemplateVersions", describeTemplateInput).Return(testCase.describeTemplateData).Once()
+		e.On("DescribeLaunchTemplateVersions",
+			mock.Anything,
+			describeTemplateInput,
+		).Return(
+			testCase.describeTemplateData,
+			nil,
+		).Once()
 
 		describeData, err := awsWrapper.getLaunchTemplateData("launchTemplateName", "1")
 		assert.Equal(t, testCase.expectedData, describeData)
@@ -643,12 +698,12 @@ func TestBuildLaunchTemplateFromSpec(t *testing.T) {
 
 	units := []struct {
 		name string
-		in   *autoscaling.LaunchTemplateSpecification
+		in   *autoscalingtypes.LaunchTemplateSpecification
 		exp  *launchTemplate
 	}{
 		{
 			name: "non-default, specified version",
-			in: &autoscaling.LaunchTemplateSpecification{
+			in: &autoscalingtypes.LaunchTemplateSpecification{
 				LaunchTemplateName: aws.String("foo"),
 				Version:            aws.String("1"),
 			},
@@ -659,7 +714,7 @@ func TestBuildLaunchTemplateFromSpec(t *testing.T) {
 		},
 		{
 			name: "non-default, specified $Latest",
-			in: &autoscaling.LaunchTemplateSpecification{
+			in: &autoscalingtypes.LaunchTemplateSpecification{
 				LaunchTemplateName: aws.String("foo"),
 				Version:            aws.String("$Latest"),
 			},
@@ -670,7 +725,7 @@ func TestBuildLaunchTemplateFromSpec(t *testing.T) {
 		},
 		{
 			name: "specified $Default",
-			in: &autoscaling.LaunchTemplateSpecification{
+			in: &autoscalingtypes.LaunchTemplateSpecification{
 				LaunchTemplateName: aws.String("foo"),
 				Version:            aws.String("$Default"),
 			},
@@ -681,7 +736,7 @@ func TestBuildLaunchTemplateFromSpec(t *testing.T) {
 		},
 		{
 			name: "no version specified",
-			in: &autoscaling.LaunchTemplateSpecification{
+			in: &autoscalingtypes.LaunchTemplateSpecification{
 				LaunchTemplateName: aws.String("foo"),
 				Version:            nil,
 			},
@@ -705,31 +760,37 @@ func TestGetInstanceTypesFromInstanceRequirementsWithEmptyList(t *testing.T) {
 		ec2I:         e,
 		eksI:         nil,
 	}
-	requirements := &ec2.InstanceRequirementsRequest{}
+	requirements := &ec2types.InstanceRequirementsRequest{}
 
-	e.On("DescribeImages", &ec2.DescribeImagesInput{
-		ImageIds: []*string{aws.String("123")},
-	}).Return(&ec2.DescribeImagesOutput{
-		Images: []*ec2.Image{
-			{
-				Architecture:       aws.String("x86_64"),
-				VirtualizationType: aws.String("xen"),
+	e.On("DescribeImages",
+		mock.Anything,
+		&ec2.DescribeImagesInput{
+			ImageIds: []string{"123"},
+		},
+	).Return(
+		&ec2.DescribeImagesOutput{
+			Images: []ec2types.Image{
+				{
+					Architecture:       ec2types.ArchitectureValuesX8664,
+					VirtualizationType: "xen",
+				},
 			},
 		},
-	})
-	e.On("GetInstanceTypesFromInstanceRequirementsPages",
+		nil,
+	)
+	e.On("GetInstanceTypesFromInstanceRequirements",
+		mock.Anything,
 		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
-			ArchitectureTypes:    []*string{aws.String("x86_64")},
+			ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
 			InstanceRequirements: requirements,
-			VirtualizationTypes:  []*string{aws.String("xen")},
+			VirtualizationTypes:  []ec2types.VirtualizationType{"xen"},
 		},
-		mock.AnythingOfType("func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool)
-		fn(&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
-			InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{},
-		}, false)
-	}).Return(nil)
+	).Return(
+		&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
+			InstanceTypes: []ec2types.InstanceTypeInfoFromInstanceRequirements{},
+		},
+		nil,
+	)
 
 	result, err := awsWrapper.getInstanceTypeFromInstanceRequirements("123", requirements)
 	assert.Error(t, err)
@@ -742,46 +803,46 @@ func TestTaintEksTranslator(t *testing.T) {
 	key := "key"
 	value := "value"
 
-	taintEffect1 := eks.TaintEffectNoSchedule
+	taintEffect1 := ekstypes.TaintEffectNoSchedule
 	taintEffectTranslated1 := apiv1.TaintEffectNoSchedule
-	taint1 := eks.Taint{
-		Effect: &taintEffect1,
+	taint1 := ekstypes.Taint{
+		Effect: taintEffect1,
 		Key:    &key,
 		Value:  &value,
 	}
 
-	t1, err := taintEksTranslator(&taint1)
+	t1, err := taintEksTranslator(taint1)
 	assert.Nil(t, err)
 	assert.Equal(t, t1, taintEffectTranslated1)
 
-	taintEffect2 := eks.TaintEffectNoSchedule
+	taintEffect2 := ekstypes.TaintEffectNoSchedule
 	taintEffectTranslated2 := apiv1.TaintEffectNoSchedule
-	taint2 := eks.Taint{
-		Effect: &taintEffect2,
+	taint2 := ekstypes.Taint{
+		Effect: taintEffect2,
 		Key:    &key,
 		Value:  &value,
 	}
-	t2, err := taintEksTranslator(&taint2)
+	t2, err := taintEksTranslator(taint2)
 	assert.Nil(t, err)
 	assert.Equal(t, t2, taintEffectTranslated2)
 
-	taintEffect3 := eks.TaintEffectNoExecute
+	taintEffect3 := ekstypes.TaintEffectNoExecute
 	taintEffectTranslated3 := apiv1.TaintEffectNoExecute
-	taint3 := eks.Taint{
-		Effect: &taintEffect3,
+	taint3 := ekstypes.Taint{
+		Effect: taintEffect3,
 		Key:    &key,
 		Value:  &value,
 	}
-	t3, err := taintEksTranslator(&taint3)
+	t3, err := taintEksTranslator(taint3)
 	assert.Nil(t, err)
 	assert.Equal(t, t3, taintEffectTranslated3)
 
 	taintEffect4 := "TAINT_NO_EXISTS"
-	taint4 := eks.Taint{
-		Effect: &taintEffect4,
+	taint4 := ekstypes.Taint{
+		Effect: ekstypes.TaintEffect(taintEffect4),
 		Key:    &key,
 		Value:  &value,
 	}
-	_, err = taintEksTranslator(&taint4)
+	_, err = taintEksTranslator(taint4)
 	assert.Error(t, err)
 }
