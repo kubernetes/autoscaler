@@ -218,6 +218,146 @@ func TestUpdateRecommendation(t *testing.T) {
 	}
 }
 
+// TestUpdateRecommendationRaceCondition tests for race conditions when multiple
+// goroutines try to update recommendations concurrently. This test should detect
+// the race condition on line 170 where state.LastRecommendation is modified.
+// Run with: go test -race -run TestUpdateRecommendationRaceCondition
+func TestUpdateRecommendationRaceCondition(t *testing.T) {
+	namespace := "test-namespace"
+	vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "race-test-vpa"}, labels.Nothing(), anyTime)
+
+	// Set up container state
+	containerName := "test-container"
+	state := NewAggregateContainerState()
+	vpa.aggregateContainerStates[aggregateStateKey{
+		namespace:     namespace,
+		containerName: containerName,
+	}] = state
+
+	// Number of concurrent goroutines to stress test the race condition
+	numGoroutines := 50
+	numIterations := 100
+
+	// Channel to coordinate goroutine start
+	start := make(chan struct{})
+
+	// Function that updates recommendation
+	updateRecommendation := func(cpuValue string) {
+		<-start // Wait for signal to start
+		for i := 0; i < numIterations; i++ {
+			recommendation := &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					test.Recommendation().WithContainer(containerName).WithTarget(cpuValue, "200Mi").GetContainerResources(),
+				},
+			}
+			vpa.UpdateRecommendation(recommendation)
+		}
+	}
+
+	// Function that reads LastRecommendation
+	readLastRecommendation := func() {
+		<-start // Wait for signal to start
+		for i := 0; i < numIterations; i++ {
+			// This will race with the writes in updateRecommendation
+			_ = state.GetLastRecommendation()
+		}
+	}
+
+	// Start goroutines that will update recommendations with different CPU values
+	for i := 0; i < numGoroutines/2; i++ {
+		go updateRecommendation("100m")
+		go updateRecommendation("200m")
+	}
+
+	// Start goroutines that read LastRecommendation
+	for i := 0; i < numGoroutines/4; i++ {
+		go readLastRecommendation()
+	}
+
+	// Start all goroutines simultaneously to maximize chance of race condition
+	close(start)
+
+	// Give time for all goroutines to complete
+	time.Sleep(1 * time.Second)
+
+	// If we get here without the race detector catching anything, the test passes
+	// The race detector (go test -race) will detect the data race if it exists
+}
+
+// TestAggregateContainerStateRaceCondition tests for race conditions when
+// multiple goroutines access AggregateContainerState fields concurrently.
+// This test specifically targets the LastRecommendation field race condition.
+func TestAggregateContainerStateRaceCondition(t *testing.T) {
+	state := NewAggregateContainerState()
+
+	// Number of concurrent operations
+	numGoroutines := 20
+	numIterations := 100
+
+	// Channel to coordinate start
+	start := make(chan struct{})
+
+	// Goroutine that writes to LastRecommendation (simulating UpdateRecommendation)
+	writeLastRecommendation := func() {
+		<-start
+		for i := 0; i < numIterations; i++ {
+			// This simulates the direct assignment that causes the race condition
+			// Before the fix: state.LastRecommendation = containerRecommendation.UncappedTarget
+			cpuValue := resource.MustParse("100m")
+			memoryValue := resource.MustParse("200Mi")
+
+			// This will race with reads if not properly protected
+			// Direct assignment without proper synchronization (this is the bug!)
+			state.LastRecommendation = corev1.ResourceList{
+				corev1.ResourceCPU:    cpuValue,
+				corev1.ResourceMemory: memoryValue,
+			}
+		}
+	}
+
+	// Goroutine that reads LastRecommendation
+	readLastRecommendation := func() {
+		<-start
+		for i := 0; i < numIterations; i++ {
+			// This should be protected by the GetLastRecommendation method
+			_ = state.GetLastRecommendation()
+		}
+	}
+
+	// Goroutine that calls other methods that access fields
+	accessOtherFields := func() {
+		<-start
+		for i := 0; i < numIterations; i++ {
+			_ = state.NeedsRecommendation()
+			_ = state.GetUpdateMode()
+			_ = state.GetScalingMode()
+		}
+	}
+
+	// Start writer goroutines
+	for i := 0; i < numGoroutines/3; i++ {
+		go writeLastRecommendation()
+	}
+
+	// Start reader goroutines
+	for i := 0; i < numGoroutines/3; i++ {
+		go readLastRecommendation()
+	}
+
+	// Start other access goroutines
+	for i := 0; i < numGoroutines/3; i++ {
+		go accessOtherFields()
+	}
+
+	// Start all goroutines
+	close(start)
+
+	// Wait for completion
+	time.Sleep(1 * time.Second)
+
+	// Test passes if no race condition is detected by race detector
+}
+
 func TestUseAggregationIfMatching(t *testing.T) {
 	modeOff := vpa_types.UpdateModeOff
 	modeAuto := vpa_types.UpdateModeAuto
