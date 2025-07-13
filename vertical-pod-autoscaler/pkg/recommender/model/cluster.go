@@ -19,6 +19,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -82,6 +83,9 @@ type clusterState struct {
 
 	lastAggregateContainerStateGC time.Time
 	gcInterval                    time.Duration
+
+	// Mutex to protect concurrent access to maps
+	mutex sync.RWMutex
 }
 
 // StateMapSize is the number of pods being tracked by the VPA
@@ -464,6 +468,8 @@ func (cluster *clusterState) getContributiveAggregateStateKeys(ctx context.Conte
 // keep track of empty recommendations and log information about them
 // periodically.
 func (cluster *clusterState) RecordRecommendation(vpa *Vpa, now time.Time) error {
+	cluster.mutex.Lock()
+	defer cluster.mutex.Unlock()
 	if vpa.Recommendation != nil && len(vpa.Recommendation.ContainerRecommendations) > 0 {
 		delete(cluster.emptyVPAs, vpa.ID)
 		return nil
