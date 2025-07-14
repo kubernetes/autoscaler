@@ -89,6 +89,8 @@ type ScaleSet struct {
 	dedicatedHost bool
 
 	enableFastDeleteOnFailedProvisioning bool
+
+	enableLabelPrediction bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -111,6 +113,7 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 		enableForceDelete:         az.config.EnableForceDelete,
 		enableDynamicInstanceList: az.config.EnableDynamicInstanceList,
 		enableDetailedCSEMessage:  az.config.EnableDetailedCSEMessage,
+		enableLabelPrediction:     az.config.EnableLabelPrediction,
 		dedicatedHost:             dedicatedHost,
 	}
 
@@ -657,7 +660,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 	if err != nil {
 		return nil, err
 	}
-	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
+	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList, scaleSet.enableLabelPrediction)
 	if err != nil {
 		return nil, err
 	}
