@@ -104,8 +104,8 @@ type Config struct {
 	// EnableFastDeleteOnFailedProvisioning defines whether to delete the experimental faster VMSS instance deletion on failed provisioning
 	EnableFastDeleteOnFailedProvisioning bool `json:"enableFastDeleteOnFailedProvisioning,omitempty" yaml:"enableFastDeleteOnFailedProvisioning,omitempty"`
 
-	// EnableLabelPrediction defines whether to enable self-hosted label prediction for nodes
-	EnableLabelPrediction bool `json:"enableLabelPrediction,omitempty" yaml:"enableLabelPrediction,omitempty"`
+	// EnableLabelPredictionsOnTemplate defines whether to enable label predictions on the template when scaling from zero
+	EnableLabelPredictionsOnTemplate bool `json:"enableLabelPredictionsOnTemplate,omitempty" yaml:"enableLabelPredictionsOnTemplate,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -136,7 +136,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.VMType = providerazureconsts.VMTypeVMSS
 	cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
 	cfg.StrictCacheUpdates = false
-	cfg.EnableLabelPrediction = false
+	cfg.EnableLabelPredictionsOnTemplate = false
 
 	// Config file overrides defaults
 	if configReader != nil {
@@ -312,7 +312,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableFastDeleteOnFailedProvisioning, "AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING"); err != nil {
 		return nil, err
 	}
-	if _, err = assignBoolFromEnvIfExists(&cfg.EnableLabelPrediction, "AZURE_ENABLE_LABEL_PREDICTION"); err != nil {
+	if _, err = assignBoolFromEnvIfExists(&cfg.EnableLabelPredictionsOnTemplate, "AZURE_ENABLE_LABEL_PREDICTIONS_ON_TEMPLATE"); err != nil {
 		return nil, err
 	}
 

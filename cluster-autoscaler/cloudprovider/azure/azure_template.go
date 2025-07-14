@@ -324,6 +324,8 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 		labels = extractLabelsFromTags(template.VMSSNodeTemplate.Tags)
 	}
 
+	// This is the best-effort to match AKS system labels,
+	// this prediction needs to be constantly worked on and maintained to keep up with the changes in AKS
 	if enableLabelPrediction {
 		// Add the agentpool label, its value should come from the VMSS poolName tag
 		// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
@@ -351,12 +353,6 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 				labels[legacyStorageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
 				labels[storageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
 			}
-			// Add ephemeral-storage value
-			if template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
-				node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
-				klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
-				klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
-			}
 		}
 
 		// If we are on GPU-enabled SKUs, append the accelerator
@@ -365,6 +361,13 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 			labels[GPULabel] = "nvidia"
 			labels[legacyGPULabel] = "nvidia"
 		}
+	}
+
+	// Add ephemeral-storage value
+	if template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
+		klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
+		klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
 	}
 
 	// Extract allocatables from tags
