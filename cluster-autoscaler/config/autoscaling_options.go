@@ -50,6 +50,8 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 	// Maximum time CA waits for node to be provisioned
 	MaxNodeProvisionTime time.Duration
+	// Whether CA should ignore instance creation stockout errors
+	IgnoreInstanceCreationStockoutErrors bool
 	// ZeroOrMaxNodeScaling means that a node group should be scaled up to maximum size or down to zero nodes all at once instead of one-by-one.
 	ZeroOrMaxNodeScaling bool
 	// IgnoreDaemonSetsUtilization sets if daemonsets utilization should be considered during node scale-down

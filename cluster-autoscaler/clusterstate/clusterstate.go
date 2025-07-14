@@ -204,6 +204,11 @@ func (csr *ClusterStateRegistry) MaxNodeProvisionTime(nodeGroup cloudprovider.No
 	return csr.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(nodeGroup)
 }
 
+// IgnoreInstanceCreationStockoutErrors returns IgnoreInstanceCreationStockoutErrors value that should be used for a given NodeGroup.
+func (csr *ClusterStateRegistry) IgnoreInstanceCreationStockoutErrors(nodeGroup cloudprovider.NodeGroup) (bool, error) {
+	return csr.nodeGroupConfigProcessor.GetIgnoreInstanceCreationStockoutErrors(nodeGroup)
+}
+
 func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
 	maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
 	if err != nil {
@@ -1128,6 +1133,11 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 		}
 	}
 
+	ignoreStockoutErrors, err := csr.nodeGroupConfigProcessor.GetIgnoreInstanceCreationStockoutErrors(nodeGroup)
+	if err != nil {
+		klog.V(1).Infof("Failed to find IgnoreInstanceCreationStockoutErrors for nodeGroup %v with error: %v", nodeGroup.Id(), err)
+	}
+
 	// If node group is scaling up and there are new node-create requests which cannot be satisfied because of
 	// out-of-resources errors we:
 	//  - emit event
@@ -1135,6 +1145,10 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 	//  - increase scale-up failure metric
 	//  - backoff the node group
 	for errorCode, instances := range currentErrorCodeToInstance {
+		if errorCode.class == cloudprovider.OutOfResourcesErrorClass && ignoreStockoutErrors {
+			continue // The scaleUp will timeout after MaxNodeProvisionTime is reached (ClusterStateRegistry::updateScaleRequests)
+		}
+
 		unseenInstanceIds := make([]string, 0)
 		for _, instance := range instances {
 			if _, seen := previousInstanceToErrorCode[instance.Id]; !seen {
@@ -1228,14 +1242,29 @@ func (csr *ClusterStateRegistry) buildInstanceToErrorCodeMappings(instances []cl
 }
 
 // GetCreatedNodesWithErrors returns a map from node group id to list of nodes which reported a create error.
-func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() map[string][]*apiv1.Node {
+func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors(nodeGroups map[string]cloudprovider.NodeGroup) map[string][]*apiv1.Node {
 	csr.Lock()
 	defer csr.Unlock()
+
+	ignoreStockoutErrors := func(nodeGroupId string) bool {
+		nodeGroup := nodeGroups[nodeGroupId]
+		if nodeGroup == nil {
+			return false
+		}
+		ignore, err := csr.IgnoreInstanceCreationStockoutErrors(nodeGroup)
+		if err != nil {
+			klog.V(1).Infof("Failed to find IgnoreInstanceCreationStockoutErrors for nodeGroup %v with error: %v", nodeGroupId, err)
+		}
+		return ignore // These nodes will be deleted after MaxNodeProvisionTime is reached (StaticAutoscaler::removeOldUnregisteredNodes)
+	}
 
 	nodesWithCreateErrors := make(map[string][]*apiv1.Node)
 	for nodeGroupId, nodeGroupInstances := range csr.cloudProviderNodeInstances {
 		_, _, instancesByErrorCode := csr.buildInstanceToErrorCodeMappings(nodeGroupInstances)
-		for _, instances := range instancesByErrorCode {
+		for errorCode, instances := range instancesByErrorCode {
+			if errorCode.class == cloudprovider.OutOfResourcesErrorClass && ignoreStockoutErrors(nodeGroupId) {
+				continue
+			}
 			for _, instance := range instances {
 				nodesWithCreateErrors[nodeGroupId] = append(nodesWithCreateErrors[nodeGroupId], FakeNode(instance, cloudprovider.FakeNodeCreateError))
 			}

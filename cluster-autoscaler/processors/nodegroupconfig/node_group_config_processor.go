@@ -35,6 +35,8 @@ type NodeGroupConfigProcessor interface {
 	GetScaleDownGpuUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetMaxNodeProvisionTime return MaxNodeProvisionTime value that should be used for a given NodeGroup.
 	GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	// GetIgnoreInstanceCreationStockoutErrors returns IgnoreInstanceCreationStockoutErrors value that should be used for a given NodeGroup.
+	GetIgnoreInstanceCreationStockoutErrors(nodeGroup cloudprovider.NodeGroup) (bool, error)
 	// GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
 	GetIgnoreDaemonSetsUtilization(nodeGroup cloudprovider.NodeGroup) (bool, error)
 	// CleanUp cleans up processor's internal structures.
@@ -58,6 +60,18 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(nodeGroup 
 		return p.nodeGroupDefaults.ScaleDownUnneededTime, nil
 	}
 	return ngConfig.ScaleDownUnneededTime, nil
+}
+
+// GetIgnoreInstanceCreationStockoutErrors returns IgnoreInstanceCreationStockoutErrors value that should be used for a given NodeGroup.
+func (p *DelegatingNodeGroupConfigProcessor) GetIgnoreInstanceCreationStockoutErrors(nodeGroup cloudprovider.NodeGroup) (bool, error) {
+	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return false, err
+	}
+	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+		return p.nodeGroupDefaults.IgnoreInstanceCreationStockoutErrors, nil
+	}
+	return ngConfig.IgnoreInstanceCreationStockoutErrors, nil
 }
 
 // GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
