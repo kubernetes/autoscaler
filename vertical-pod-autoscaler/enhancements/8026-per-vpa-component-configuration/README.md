@@ -85,9 +85,11 @@ spec:
 ### Parameter Descriptions
 
 #### Container Policy Parameters
-* `oomBumpUpRatio` (string):
-  - Since using floats is discouraged, we represent the ratio as a string (e.g., "2.2").
+#### Container Policy Parameters
+* `oomBumpUpRatio` (Quantity):
   - Multiplier applied to memory recommendations after OOM events
+  - Represented as a Quantity (e.g., "1.5")
+  - Must be greater than 1
   - Controls how aggressively memory is increased after container crashes
 
 * `oomMinBumpUp` (bytes): 
@@ -178,7 +180,7 @@ Initial validation rules (CEL):
 Validation via Admission Controller:
 Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
 
-* `oomBumpUpRatio` – Since this parameter is a string, it will be converted to a float during validation. The value must be greater than 1.
+* `oomBumpUpRatio` – Using Kubernetes Quantity type for validation. The value must be greater than 1.
 
 Additional validation rules will be added as new parameters are introduced.
 E2E tests will be included to verify:
