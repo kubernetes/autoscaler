@@ -334,3 +334,48 @@ func TestBuildNodeFromTemplateWithLabelPrediction(t *testing.T) {
 	assert.Equal(t, "managed", node.Labels["storageprofile"])
 	assert.Equal(t, "managed", node.Labels["kubernetes.azure.com/storageprofile"])
 }
+
+func TestBuildNodeFromTemplateWithEphemeralStorage(t *testing.T) {
+	poolName := "testpool"
+	testSkuName := "Standard_DS2_v2"
+	testNodeName := "test-node"
+	diskSizeGB := int32(128)
+
+	vmss := compute.VirtualMachineScaleSet{
+		Response: autorest.Response{},
+		Sku:      &compute.Sku{Name: &testSkuName},
+		Plan:     nil,
+		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
+				StorageProfile: &compute.VirtualMachineScaleSetStorageProfile{
+					OsDisk: &compute.VirtualMachineScaleSetOSDisk{
+						DiskSizeGB:       &diskSizeGB,
+						DiffDiskSettings: nil, // This makes it managed
+						ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
+							StorageAccountType: compute.StorageAccountTypesPremiumLRS,
+						},
+					},
+				},
+			},
+		},
+		Tags: map[string]*string{
+			"poolName": &poolName,
+		},
+		Zones:    &[]string{"1", "2"},
+		Location: to.StringPtr("westus"),
+	}
+
+	template, err := buildNodeTemplateFromVMSS(vmss, map[string]string{}, "")
+	assert.NoError(t, err)
+
+	manager := &AzureManager{}
+	node, err := buildNodeFromTemplate(testNodeName, template, manager, false, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, node)
+
+	// Verify ephemeral storage is set correctly
+	expectedEphemeralStorage := resource.NewQuantity(int64(diskSizeGB)*1024*1024*1024, resource.DecimalSI)
+	ephemeralStorage, exists := node.Status.Capacity[apiv1.ResourceEphemeralStorage]
+	assert.True(t, exists)
+	assert.Equal(t, expectedEphemeralStorage.String(), ephemeralStorage.String())
+}
