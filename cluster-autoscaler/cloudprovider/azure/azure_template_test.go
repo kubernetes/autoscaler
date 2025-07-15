@@ -291,3 +291,46 @@ func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 	}
 	return set
 }
+
+func TestBuildNodeFromTemplateWithLabelPrediction(t *testing.T) {
+	poolName := "testpool"
+	testSkuName := "Standard_DS2_v2"
+	testNodeName := "test-node"
+
+	vmss := compute.VirtualMachineScaleSet{
+		Response: autorest.Response{},
+		Sku:      &compute.Sku{Name: &testSkuName},
+		Plan:     nil,
+		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
+				StorageProfile: &compute.VirtualMachineScaleSetStorageProfile{
+					OsDisk: &compute.VirtualMachineScaleSetOSDisk{
+						DiffDiskSettings: nil, // This makes it managed
+						ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
+							StorageAccountType: compute.StorageAccountTypesPremiumLRS,
+						},
+					},
+				},
+			},
+		},
+		Tags: map[string]*string{
+			"poolName": &poolName,
+		},
+		Zones:    &[]string{"1", "2"},
+		Location: to.StringPtr("westus"),
+	}
+
+	template, err := buildNodeTemplateFromVMSS(vmss, map[string]string{}, "")
+	assert.NoError(t, err)
+
+	manager := &AzureManager{}
+	node, err := buildNodeFromTemplate(testNodeName, template, manager, false, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, node)
+
+	// Verify label prediction labels are added
+	assert.Equal(t, poolName, node.Labels["agentpool"])
+	assert.Equal(t, poolName, node.Labels["kubernetes.azure.com/agentpool"])
+	assert.Equal(t, "managed", node.Labels["storageprofile"])
+	assert.Equal(t, "managed", node.Labels["kubernetes.azure.com/storageprofile"])
+}

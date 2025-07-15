@@ -364,7 +364,7 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 	}
 
 	// Add ephemeral-storage value
-	if template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
+	if template.VMSSNodeTemplate.OSDisk != nil && template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
 		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
 		klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
 		klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
