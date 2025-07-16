@@ -403,7 +403,8 @@ func main() {
 					run(healthCheck, debuggingSnapshotter)
 				},
 				OnStoppedLeading: func() {
-					klog.Fatalf("lost master")
+					klog.Fatalf("lost master. Shutting down.")
+					klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 				},
 			},
 		})
