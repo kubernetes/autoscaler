@@ -170,10 +170,10 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		nodeNoGpuUnready,
 	}
 
-	processor := NewDefaultCustomResourcesProcessor()
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	processor := GpuCustomResourcesProcessor{}
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	ctx := &context.AutoscalingContext{CloudProvider: provider}
-	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes)
+	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes, nil)
 
 	foundInReady := make(map[string]bool)
 	for _, node := range newReadyNodes {

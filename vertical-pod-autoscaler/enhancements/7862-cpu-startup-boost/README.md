@@ -1,15 +1,15 @@
 # AEP-7862: CPU Startup Boost
 
-<!-- toc -->
+<!-- TOC -->
+
 - [AEP-7862: CPU Startup Boost](#aep-7862-cpu-startup-boost)
-  - [Summary](#summary)
     - [Goals](#goals)
     - [Non-Goals](#non-goals)
   - [Proposal](#proposal)
   - [Design Details](#design-details)
     - [Workflow](#workflow)
     - [API Changes](#api-changes)
-      - [Priority of `StartupBoost`](#priority-of-startupboost)
+      - [Priority of StartupBoost](#priority-of-startupboost)
     - [Validation](#validation)
       - [Static Validation](#static-validation)
       - [Dynamic Validation](#dynamic-validation)
@@ -19,12 +19,17 @@
     - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
   - [Test Plan](#test-plan)
   - [Examples](#examples)
-    - [CPU Boost Only](#cpu-boost-only)
-    - [CPU Boost and Vanilla VPA](#cpu-boost-and-vanilla-vpa)
+    - [Per-pod configurations startupBoost configured in VerticalPodAutoscalerSpec](#per-pod-configurations-startupboost-configured-in-verticalpodautoscalerspec)
+      - [Startup CPU Boost Enabled & VPA Disabled](#startup-cpu-boost-enabled--vpa-disabled)
+      - [Startup CPU Boost Disabled & VPA Enabled](#startup-cpu-boost-disabled--vpa-enabled)
+      - [Startup CPU Boost Enabled & VPA Enabled](#startup-cpu-boost-enabled--vpa-enabled)
+    - [Per-container configurations startupBoost configured in ContainerPolicies](#per-container-configurations-startupboost-configured-in-containerpolicies)
+      - [Startup CPU Boost Enabled & VPA Disabled](#startup-cpu-boost-enabled--vpa-disabled)
+      - [Startup CPU Boost Disabled & VPA Enabled](#startup-cpu-boost-disabled--vpa-enabled)
+      - [Startup CPU Boost Enabled & VPA Enabled](#startup-cpu-boost-enabled--vpa-enabled)
   - [Implementation History](#implementation-history)
-<!-- /toc -->
 
-## Summary
+<!-- /TOC -->
 
 Long application start time is a known problem for more traditional workloads
 running in containerized applications, especially Java workloads. This delay can
@@ -37,10 +42,6 @@ This proposal allows VPA to boost the CPU request and limit of containers during
 the pod startup and to scale the CPU resources back down when the pod is
 `Ready` or after certain time has elapsed, leveraging the
 [in-place pod resize Kubernetes feature](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
-
-> [!NOTE]
-> This feature depends on the new `InPlaceOrRecreate` VPA mode:
-> [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md)
 
 ### Goals
 
@@ -61,17 +62,16 @@ time.
 
 ## Proposal
 
-* To extend [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L191)
+* To extend [`VerticalPodAutoscalerSpec`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L75)
 with a new `StartupBoost` field to allow users to configure the CPU startup
 boost.
 
-* To extend [`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236)
-with a new `StartupBoostOnly` mode to allow users to only enable the startup
-boost feature and not vanilla VPA altogether.
+* To extend [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L191)
+with a new `StartupBoost` field to allow users to optionally customize the
+startup boost behavior for individual containers.
 
-* To allow CPU startup boost if a `StartupBoost` config is specified in `Auto`
-[`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236)
-container policies.
+* To enable only startup boost (if the `StartupBoost` config is present in the
+VPA object) without having to ALSO use the traditional VPA functionality.
 
 ## Design Details
 
@@ -95,23 +95,36 @@ down the CPU resources to the appropriate non-boosted value:
 
 ### API Changes
 
-The new `StartupBoost` parameter will be added to the [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L191)
-and contain the following fields:
-  * `StartupBoost.CPU.Factor`: the factor by which to multiply the initial
-  resource request and limit of the containers' targeted by the VPA object.
-  * `StartupBoost.CPU.Value`: the target value of the CPU request or limit
-  during the startup boost phase.
-  * [Optional] `StartupBoost.CPU.Duration`: if specified, it indicates for how
-  long to keep the pod boosted **after** it goes to `Ready`.
+The new `StartupBoost` parameter will be added to both:
+   * [`VerticalPodAutoscalerSpec`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L75):
+   Will allow users to specify the default CPU startup boost for all containers of the pod targeted by the VPA object.
+   * [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L191):
+   Will allow users to optionally customize the startup boost behavior for individual containers.
+
+`StartupBoost` will contain the following fields:
+  * [Optional] `StartupBoost.CPU.Type` (type: `string`): A string that specifies
+  the kind of boost to apply. Supported values are:
+    * `Factor`: The `StartupBoost.CPU.Value` field will be interpreted as a
+    multiplier for the recommended CPU request. For example, a value of `2` will
+    double the CPU request.
+    * `Quantity`: The `StartupBoost.CPU.Value` field will be interpreted as an
+    absolute CPU resource quantity (e.g., `"500m"`, `"1"`) to be used as the CPU
+    request or limit during the boost phase.
+    * If not specified, `StartupBoost.CPU.Type` defaults to `Factor`.
+
+  * `StartupBoost.CPU.Value`: (type: `string`): A string representing the
+  magnitude of the boost, interpreted based on the `StartupBoost.CPU.Type`.
+     * If `StartupBoost.CPU.Type`is `Factor`, this field is optional and
+     defaults to `"1"`.
+     * If `StartupBoost.CPU.Type`is `Quantity`, this field is required.
+  * [Optional] `StartupBoost.CPU.Duration` (type: `duration`): if specified, it
+  indicates for how long to keep the pod boosted **after** it goes to `Ready`.
+     * It defaults to `0s` if not specified.
 
 > [!IMPORTANT]
 > The boosted CPU value will be capped by
 > [`--container-recommendation-max-allowed-cpu`](https://github.com/kubernetes/autoscaler/blob/4d294562e505431d518a81e8833accc0ec99c9b8/vertical-pod-autoscaler/pkg/recommender/main.go#L122)
 > flag value, if set.
-
-> [!IMPORTANT]
-> Only one of `Factor` or `Value` may be specified per container policy.
-
 
 > [!NOTE]
 > To ensure that containers are unboosted only after their applications are
@@ -121,22 +134,15 @@ and contain the following fields:
 > section for more details on this feature's behavior for different combinations
 > of probers + `StartupBoost.CPU.Duration`.
 
-We will also add a new mode to the [`ContainerScalingMode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L231-L236):
-  * **NEW**: `StartupBoostOnly`: new mode that will allow users to only enable
-  the startup boost feature for a container and not vanilla VPA altogether.
-  * **NEW**: `Auto`: we will modify the existing `Auto` mode to enable both
-  vanilla VPA and CPU Startup Boost (when `StartupBoost` parameter is
-  specified).
-
 #### Priority of `StartupBoost`
 
-The new `StartupBoost` field will take precedence over the rest of the container
-resource policy configurations. Functioning independently from all other fields
-in [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L191),
+The new `StartupBoost` field will take precedence over the rest of the fields
+in  [`VerticalPodAutoscalerSpec`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L75)
+and [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L191),
 **except for**:
-   * [`ContainerName`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L192-L195)
-   * [`Mode`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L196-L198)
-   * [`ControlledValues`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L214-L217)
+   * [`VerticalPodAutoscalerSpec.TargetRef`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L88)
+   * [`ContainerResourcePolicy.ContainerName`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L192-L195)
+   * [`ContainerResourcePolicy.ControlledValues`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L214-L217)
 
 This means that a container's CPU request/limit can be boosted during startup
 beyond [`MaxAllowed`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L203-L206),
@@ -149,24 +155,24 @@ excluded from [`ControlledResources`](https://github.com/kubernetes/autoscaler/b
 
 * We will check that the `startupBoost` configuration is valid when VPA objects
 are created/updated:
-   * The VPA autoscaling mode must be `InPlaceOrRecreate` (since it does not
-   make sense to use this feature with disruptive modes of VPA).
-   * The boost factor is >= 1 (via CRD validation rules)
-   * Only one of `StartupBoost.CPU.Factor` or `StartupBoost.CPU.Value` is
-   specified
-   * The [feature enablement](#feature-enablement) flags must be on.
+   * The boost factor value is >= 1 (via CRD validation rules)
+   * The [feature enablement](#feature-enablement-and-rollback) flags must be
+   on.
 
 
 #### Dynamic Validation
 
-* `StartupBoost.CPU.Value` must be greater than the CPU request or limit of the
+* The boosted CPU value must be greater than the CPU request or limit of the
   container during the boost phase, otherwise we risk downscaling the container.
+* If `Type` is set to `Factor` and `Value` is set to a value that can't be
+  parsed as a `float64` (e.g., `500m`), the API must reject the `startupBoost`
+  configuration as invalid.
 
 ### Mitigating Failed In-Place Downsizes
 
 The VPA Updater **will not** evict a pod if it attempted to scaled the pod down
 in place (to unboost its CPU resources) and the update failed (see the
-[scenarios](https://github.com/kubernetes/autoscaler/blob/0a34bf5d3a71b486bdaa440f1af7f8d50dc8e391/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md?plain=1#L164-L169 ) where the VPA
+[scenarios](https://github.com/kubernetes/autoscaler/blob/0a34bf5d3a71b486bdaa440f1af7f8d50dc8e391/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md?plain=1#L164-L169) where the VPA
 updater will consider that the update failed). This is to avoid an eviction
 loop:
 
@@ -179,37 +185,33 @@ the pod in-place and it fails.
 
 #### How can this feature be enabled / disabled in a live cluster?
 
-* Feature gates names: `CPUStartupBoost` and `InPlaceOrRecreate` (from
-[AEP-4016](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support/README.md#feature-enablement-and-rollback))
+* Feature gates name: `CPUStartupBoost`
 * Components depending on the feature gates:
   * admission-controller
   * updater
 
-Enabling of feature gates `CPUStartupBoost` AND `InPlaceOrRecreate` will cause
-the following to happen:
+Enabling of feature gates `CPUStartupBoost` will cause the following to happen:
   * admission-controller to **accept** new VPA objects being created with
-`StartupBoostOnly` configured.
+`StartupBoost` configured.
   * admission-controller to **boost** CPU resources.
   * updater to **unboost** the CPU resources.
 
-Disabling of feature gates `CPUStartupBoost` OR `InPlaceOrRecreate` will cause
-the following to happen:
+Disabling of feature gates `CPUStartupBoost` will cause the following to happen:
   * admission-controller to **reject** new VPA objects being created with
-  `StartupBoostOnly` configured.
+  `StartupBoost` configured.
     * A descriptive error message should be returned to the user letting them
     know that they are using a feature gated feature.
   * admission-controller **to not** boost CPU resources, should it encounter a
-  VPA configured with a `StartupBoost` config and `StartupBoostOnly` or `Auto`
-  `ContainerScalingMode`.
+  VPA configured with a `StartupBoost` config.
   * updater **to not** unboost CPU resources when pods meet the scale down
   requirements, should it encounter a VPA configured with a `StartupBoost`
-  config and `StartupBoostOnly` or `Auto` `ContainerScalingMode`.
+  config.
 
 ### Kubernetes Version Compatibility
 
 Similarly to [AEP-4016](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support#kubernetes-version-compatibility),
-`StartupBoost` configuration and `StartupBoostOnly` mode are built assuming that
-VPA will be running on a Kubernetes 1.33+ with the beta version of
+`StartupBoost` configuration is built assuming that VPA will be running on a
+Kubernetes 1.33+ with the beta version of
 [KEP-1287: In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287)
 enabled. If this is not the case, VPA's attempt to unboost pods may fail and the
 pods may remain boosted for their whole lifecycle.
@@ -242,11 +244,9 @@ down.
 Here are some examples of the VPA CR incorporating CPU boosting for different
 scenarios.
 
-### CPU Boost Only
+### Per-pod configurations (`startupBoost` configured in `VerticalPodAutoscalerSpec`)
 
-All containers under `example` deployment will receive "regular" VPA updates,
-**except for** `boosted-container-name`. `boosted-container-name` will only be
-CPU boosted/unboosted, because it has a `StartupBoostOnly` container policy.
+#### Startup CPU Boost Enabled & VPA Disabled
 
 ```yaml
 apiVersion: "autoscaling.k8s.io/v1"
@@ -259,23 +259,117 @@ spec:
     kind: Deployment
     name: example
   updatePolicy:
-    # VPA Update mode must be InPlaceOrRecreate
-    updateMode: "InPlaceOrRecreate"
+    # This only disables VPA actuations. It doesn't disable
+    # startup boost configurations.
+    updateMode: "Off"
+  startupBoost:
+    cpu:
+      value: "3"
+      duration: 10s
+```
+
+#### Startup CPU Boost Disabled & VPA Enabled
+
+```yaml
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: example-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: example
+  updatePolicy:
+    updateMode: "Auto"
+```
+
+#### Startup CPU Boost Enabled & VPA Enabled
+
+```yaml
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: example-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: example
+  updatePolicy:
+    updateMode: "Auto"
+  startupBoost:
+    cpu:
+      value: "3"
+      duration: 10s
+```
+
+### Per-container configurations (`startupBoost` configured in `ContainerPolicies`)
+
+#### Startup CPU Boost Enabled & VPA Disabled
+
+All containers under `example` deployment will receive "regular" VPA updates
+(VPA is in `"Auto"` mode in this example), **except for**
+`boosted-container-name`. `boosted-container-name` will only be CPU
+boosted/unboosted (`StartupBoost` is enabled and VPA `Mode` is set to `Off`).
+
+```yaml
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: example-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: example
   resourcePolicy:
     containerPolicies:
       - containerName: "boosted-container-name"
-        mode: "StartupBoostOnly"
+        # VPA mode is set to Off, so it never changes pod resources for this
+        # container. This setting is independent from the startup boost mode.
+        # CPU startup boost changes will still be applied.
+        mode: "Off"
         startupBoost:
           cpu:
-            factor: 2.0
+            type: "Quantity"
+            value: "2"
 ```
 
-### CPU Boost and Vanilla VPA
+#### Startup CPU Boost Disabled & VPA Enabled
+
+All containers under `example` deployment will receive "regular" VPA updates
+and be CPU boosted/unboosted, except for `disable-cpu-boost-for-this-container`.
+It has a `containerPolicy` `startupBoost` overriding the global VPA config that
+sets the boost factor to 1.
+
+```yaml
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: example-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: example
+  startupBoost:
+    cpu:
+      value: "2"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: "disable-cpu-boost-for-this-container"
+        startupBoost:
+          cpu:
+            value: "1"
+```
+
+#### Startup CPU Boost Enabled & VPA Enabled
 
 All containers under `example` deployment will receive "regular" VPA updates,
 **including** `boosted-container-name`. Additionally, `boosted-container-name`
 will be CPU boosted/unboosted, because it has a `StartupBoost` config in its
-container policy and `Auto` container policy mode.
+container policy.
 
 ```yaml
 apiVersion: "autoscaling.k8s.io/v1"
@@ -287,13 +381,9 @@ spec:
     apiVersion: "apps/v1"
     kind: Deployment
     name: example
-  updatePolicy:
-    # VPA Update mode must be InPlaceOrRecreate
-    updateMode: "InPlaceOrRecreate"
   resourcePolicy:
     containerPolicies:
       - containerName: "boosted-container-name"
-        mode: "Auto" # Vanilla VPA mode + Startup Boost
         minAllowed:
           cpu: "250m"
           memory: "100Mi"
@@ -303,10 +393,14 @@ spec:
         # The CPU boosted resources can go beyond maxAllowed.
         startupBoost:
           cpu:
-            value: 4
+            type: "Quantity"
+            value: "4"
 ```
 
 ## Implementation History
 
+* 2025-06-23: Decouple Startup CPU Boost from InPlaceOrRecreate mode, allow
+users to specify a `startupBoost` config in `VerticalPodAutoscalerSpec` and in
+`ContainerPolicies` to make the API simpler and add more yaml examples.
 * 2025-03-20: Initial version.
 

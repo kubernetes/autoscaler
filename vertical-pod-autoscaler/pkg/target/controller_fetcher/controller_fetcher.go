@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -117,7 +116,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.ErrorS(err, "Could not create discoveryClient")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
 	restClient := kubeClient.CoreV1().RESTClient()
@@ -135,17 +134,6 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
 		job:                   factory.Batch().V1().Jobs().Informer(),
 		cronJob:               factory.Batch().V1().CronJobs().Informer(),
-	}
-
-	for kind, informer := range informersMap {
-		stopCh := make(chan struct{})
-		go informer.Run(stopCh)
-		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
-		if !synced {
-			klog.V(0).InfoS("Initial sync failed", "kind", kind)
-		} else {
-			klog.InfoS("Initial sync completed", "kind", kind)
-		}
 	}
 
 	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
@@ -222,7 +210,7 @@ func (f *controllerFetcher) getParentOfController(ctx context.Context, controlle
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Unhandled targetRef %s / %s / %s, last error %v",
+		return nil, fmt.Errorf("unhandled targetRef %s / %s / %s, last error %v",
 			controllerKey.ApiVersion, controllerKey.Kind, controllerKey.Name, err)
 	}
 
@@ -238,14 +226,14 @@ func (c *ControllerKeyWithAPIVersion) groupKind() (schema.GroupKind, error) {
 
 	groupKind := schema.GroupKind{
 		Group: groupVersion.Group,
-		Kind:  c.ControllerKey.Kind,
+		Kind:  c.Kind,
 	}
 
 	return groupKind, nil
 }
 
 func (f *controllerFetcher) isWellKnown(key *ControllerKeyWithAPIVersion) bool {
-	kind := wellKnownController(key.ControllerKey.Kind)
+	kind := wellKnownController(key.Kind)
 	_, exists := f.informersMap[kind]
 	return exists
 }
@@ -347,7 +335,7 @@ func (f *controllerFetcher) FindTopMostWellKnownOrScalable(ctx context.Context, 
 
 		_, alreadyVisited := visited[*owner]
 		if alreadyVisited {
-			return nil, fmt.Errorf("Cycle detected in ownership chain")
+			return nil, fmt.Errorf("cycle detected in ownership chain")
 		}
 		visited[*key] = true
 

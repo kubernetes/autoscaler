@@ -164,7 +164,7 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 
 func setUpScaleDownActuator(ctx *context.AutoscalingContext, autoscalingOptions config.AutoscalingOptions) {
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
-	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(deleteOptions), processorstest.NewTestProcessors(ctx).NodeGroupConfigProcessor, nil)
+	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(deleteOptions), processorstest.NewTestProcessors(ctx).NodeGroupConfigProcessor)
 }
 
 type nodeGroup struct {
@@ -245,14 +245,13 @@ type autoscalerSetupConfig struct {
 }
 
 func setupCloudProvider(config *autoscalerSetupConfig) (*testprovider.TestCloudProvider, error) {
-	provider := testprovider.NewTestCloudProvider(
-		func(id string, delta int) error {
-			return config.mocks.onScaleUp.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			ret := config.mocks.onScaleDown.ScaleDown(id, name)
-			config.nodesDeleted <- true
-			return ret
-		})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return config.mocks.onScaleUp.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		ret := config.mocks.onScaleDown.ScaleDown(id, name)
+		config.nodesDeleted <- true
+		return ret
+	}).Build()
 	nodeGroupTemplates := map[string]*framework.NodeInfo{}
 	for _, ng := range config.nodeGroups {
 		provider.AddNodeGroup(ng.name, ng.min, ng.max, len(ng.nodes))
@@ -316,12 +315,12 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 
 	deleteOptions := options.NewNodeDeleteOptions(ctx.AutoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
-	draProvider := draprovider.NewProvider(config.mocks.resourceClaimLister, config.mocks.resourceSliceLister, config.mocks.deviceClassLister)
+	ctx.DraProvider = draprovider.NewProvider(config.mocks.resourceClaimLister, config.mocks.resourceSliceLister, config.mocks.deviceClassLister)
 	nodeDeletionTracker := config.mocks.nodeDeletionTracker
 	if nodeDeletionTracker == nil {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	ctx.ScaleDownActuator = actuation.NewActuator(&ctx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor, draProvider)
+	ctx.ScaleDownActuator = actuation.NewActuator(&ctx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules)
 
 	processorCallbacks.scaleDownPlanner = sdPlanner
@@ -335,7 +334,6 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 		processors:           processors,
 		loopStartNotifier:    loopstart.NewObserversList(nil),
 		processorCallbacks:   processorCallbacks,
-		draProvider:          draProvider,
 	}
 
 	return autoscaler, nil
@@ -367,16 +365,13 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	tn := BuildTestNode("tn", 1000, 1000)
 	tni := framework.NewTestNodeInfo(tn)
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
-		func(id string, delta int) error {
-			return onScaleUpMock.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			ret := onScaleDownMock.ScaleDown(id, name)
-			deleteFinished <- true
-			return ret
-		},
-		nil, nil,
-		nil, map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return onScaleUpMock.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		ret := onScaleDownMock.ScaleDown(id, name)
+		deleteFinished <- true
+		return ret
+	}).WithMachineTemplates(map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni}).Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
@@ -539,16 +534,13 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 	tn := BuildTestNode("tn", 1000, 1000)
 	tni := framework.NewTestNodeInfo(tn)
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
-		func(id string, delta int) error {
-			return onScaleUpMock.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			ret := onScaleDownMock.ScaleDown(id, name)
-			deleteFinished <- true
-			return ret
-		},
-		nil, nil,
-		nil, map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return onScaleUpMock.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		ret := onScaleDownMock.ScaleDown(id, name)
+		deleteFinished <- true
+		return ret
+	}).WithMachineTemplates(map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni}).Build()
 	assert.NotNil(t, provider)
 
 	provider.AddNodeGroup("ng1", 0, 10, 1)
@@ -779,19 +771,14 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	SetNodeReadyState(tn2, true, time.Now())
 	tni3 := framework.NewTestNodeInfo(tn3)
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
-		func(id string, delta int) error {
-			return onScaleUpMock.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			ret := onScaleDownMock.ScaleDown(id, name)
-			deleteFinished <- true
-			return ret
-		}, func(id string) error {
-			return onNodeGroupCreateMock.Create(id)
-		}, func(id string) error {
-			return onNodeGroupDeleteMock.Delete(id)
-		},
-		[]string{"TN1", "TN2"}, map[string]*framework.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return onScaleUpMock.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		ret := onScaleDownMock.ScaleDown(id, name)
+		deleteFinished <- true
+		return ret
+	}).WithOnNodeGroupCreate(onNodeGroupCreateMock.Create).WithOnNodeGroupDelete(onNodeGroupDeleteMock.Delete).
+		WithMachineTypes([]string{"TN1", "TN2"}).WithMachineTemplates(map[string]*framework.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3}).Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-TN1", 0, 10, 0, "TN1")
 	autoprovisionedTN1 := reflect.ValueOf(provider.GetNodeGroup("autoprovisioned-TN1")).Interface().(*testprovider.TestNodeGroup)
@@ -926,14 +913,13 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 			p1.Spec.NodeName = "n1"
 			p2 := BuildTestPod("p2", 600, 100, MarkUnschedulable())
 
-			provider := testprovider.NewTestCloudProvider(
-				func(id string, delta int) error {
-					return onScaleUpMock.ScaleUp(id, delta)
-				}, func(id string, name string) error {
-					ret := onScaleDownMock.ScaleDown(id, name)
-					deleteFinished <- true
-					return ret
-				})
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+				return onScaleUpMock.ScaleUp(id, delta)
+			}).WithOnScaleDown(func(id string, name string) error {
+				ret := onScaleDownMock.ScaleDown(id, name)
+				deleteFinished <- true
+				return ret
+			}).Build()
 			provider.AddNodeGroup("ng1", 2, 10, 2)
 			provider.AddNode("ng1", n1)
 
@@ -1093,14 +1079,13 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	p6.OwnerReferences = ownerRef
 	p6.Spec.Priority = &priority100
 
-	provider := testprovider.NewTestCloudProvider(
-		func(id string, delta int) error {
-			return onScaleUpMock.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			ret := onScaleDownMock.ScaleDown(id, name)
-			deleteFinished <- true
-			return ret
-		})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return onScaleUpMock.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		ret := onScaleDownMock.ScaleDown(id, name)
+		deleteFinished <- true
+		return ret
+	}).Build()
 	provider.AddNodeGroup("ng1", 0, 10, 1)
 	provider.AddNodeGroup("ng2", 0, 10, 2)
 	provider.AddNode("ng1", n1)
@@ -1231,12 +1216,11 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	p4.Spec.NodeName = "n2"
 	p4.OwnerReferences = ownerRef
 
-	provider := testprovider.NewTestCloudProvider(
-		func(id string, delta int) error {
-			return onScaleUpMock.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			return onScaleDownMock.ScaleDown(id, name)
-		})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return onScaleUpMock.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		return onScaleDownMock.ScaleDown(id, name)
+	}).Build()
 	provider.AddNodeGroup("ng1", 0, 10, 2)
 	provider.AddNode("ng1", n1)
 
@@ -1330,12 +1314,11 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	p3.Spec.NodeName = "n3"
 	p3.OwnerReferences = ownerRef
 
-	provider := testprovider.NewTestCloudProvider(
-		func(id string, delta int) error {
-			return onScaleUpMock.ScaleUp(id, delta)
-		}, func(id string, name string) error {
-			return onScaleDownMock.ScaleDown(id, name)
-		})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return onScaleUpMock.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		return onScaleDownMock.ScaleDown(id, name)
+	}).Build()
 	provider.AddNodeGroup("ng1", 0, 10, 2)
 	provider.AddNode("ng1", n2)
 
@@ -1424,83 +1407,44 @@ func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
 	p1.Spec.NodeName = n1.Name
 
 	// set minimal cloud provider where only ng1 is defined as selected node group
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	assert.NotNil(t, provider)
 
-	tests := map[string]struct {
+	tests := []struct {
+		name           string
 		node           *apiv1.Node
 		pods           []*apiv1.Pod
 		expectedTaints []apiv1.Taint
 	}{
-		"Node from selected node groups can get their deletion candidate taints removed": {
+		{
+			name:           "Node from selected node groups can get their deletion candidate taints removed",
 			node:           n1,
 			pods:           []*apiv1.Pod{p1},
 			expectedTaints: []apiv1.Taint{},
 		},
-		"Node from non-selected node groups should keep their deletion candidate taints": {
+		{
+			name:           "Node from non-selected node groups should keep their deletion candidate taints",
 			node:           n2,
 			pods:           nil,
 			expectedTaints: n2.Spec.Taints,
 		},
 	}
 
-	for name, test := range tests {
-		// prevent issues with scoping, we should be able to get rid of that with Go 1.22
-		test := test
-		t.Run(name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			// Create fake listers for the generated nodes, nothing returned by the rest (but the ones used in the tested path have to be defined).
-			readyNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{test.node})
-			allNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{test.node})
-			allPodListerMock := kubernetes.NewTestPodLister(test.pods)
-			daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
-			assert.NoError(t, err)
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
-				kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister,
-				nil, nil, nil, nil)
+			allNodes := []*apiv1.Node{test.node}
+			fakeClient := buildFakeClient(t, allNodes...)
+			autoscaler := buildStaticAutoscaler(t, provider, allNodes, allNodes, fakeClient)
 
-			// Create context with minimal autoscalingOptions that guarantee we reach the tested logic.
-			autoscalingOptions := config.AutoscalingOptions{
-				ScaleDownEnabled:      true,
-				MaxBulkSoftTaintCount: 10,
-				MaxBulkSoftTaintTime:  3 * time.Second,
-			}
-			processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-			clientset := fake.NewSimpleClientset(test.node)
-			context, err := NewScaleTestAutoscalingContext(autoscalingOptions, clientset, listerRegistry, provider, processorCallbacks, nil)
+			runningTime := time.Now()
+			err := autoscaler.RunOnce(runningTime)
 			assert.NoError(t, err)
 
-			// Create CSR with unhealthy cluster protection effectively disabled, to guarantee we reach the tested logic.
-			clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
-				OkTotalUnreadyCount: 1,
-			}
-			processors := processorstest.NewTestProcessors(&context)
-
-			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingOptions.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
-
-			// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
-			sdActuator := actuation.NewActuator(&context, clusterState, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor, nil)
-			context.ScaleDownActuator = sdActuator
-
-			// Fake planner that keeps track of the scale-down candidates passed to UpdateClusterState.
-			sdPlanner := &candidateTrackingFakePlanner{}
-
-			autoscaler := &StaticAutoscaler{
-				AutoscalingContext:   &context,
-				clusterStateRegistry: clusterState,
-				scaleDownPlanner:     sdPlanner,
-				scaleDownActuator:    sdActuator,
-				processors:           processors,
-				loopStartNotifier:    loopstart.NewObserversList(nil),
-				processorCallbacks:   processorCallbacks,
-			}
-
-			err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
-			assert.NoError(t, err)
-			newNode, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), test.node.Name, metav1.GetOptions{})
-			assert.NoError(t, err)
+			newNode, clientErr := fakeClient.CoreV1().Nodes().Get(stdcontext.TODO(), test.node.Name, metav1.GetOptions{})
+			assert.NoError(t, clientErr)
 			assert.Equal(t, test.expectedTaints, newNode.Spec.Taints)
 		})
 	}
@@ -2066,7 +2010,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	startTime := time.Time{}
 
 	// Generate a number of ready and unready nodes created at startTime, spread across multiple node groups.
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	allNodeNames := map[string]bool{}
 	readyNodeNames := map[string]bool{}
 	notReadyNodeNames := map[string]bool{}
@@ -2128,7 +2072,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	csr := clusterstate.NewClusterStateRegistry(provider, csrConfig, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
 
 	// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
-	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processorstest.NewTestProcessors(&ctx).NodeGroupConfigProcessor, nil)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processorstest.NewTestProcessors(&ctx).NodeGroupConfigProcessor)
 	ctx.ScaleDownActuator = actuator
 
 	// Fake planner that keeps track of the scale-down candidates passed to UpdateClusterState.
@@ -2201,10 +2145,10 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
 	ng1_1.Spec.ProviderID = "ng1-1"
-	provider := testprovider.NewTestCloudProvider(func(nodegroup string, delta int) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodegroup string, delta int) error {
 		sizeChanges <- fmt.Sprintf("%s/%d", nodegroup, delta)
 		return nil
-	}, nil)
+	}).Build()
 	provider.AddNodeGroup("ng1", 1, 10, 3)
 	provider.AddNode("ng1", ng1_1)
 
@@ -2249,10 +2193,10 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	ng1_1.Spec.ProviderID = "ng1-1"
 	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
 	ng1_2.Spec.ProviderID = "ng1-2"
-	provider := testprovider.NewTestCloudProvider(nil, func(nodegroup string, node string) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodegroup string, node string) error {
 		deletedNodes <- fmt.Sprintf("%s/%s", nodegroup, node)
 		return nil
-	})
+	}).Build()
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNode("ng1", ng1_1)
 	provider.AddNode("ng1", ng1_2)
@@ -2300,10 +2244,10 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 	deletedNodes := make(chan string, 10)
 
 	now := time.Now()
-	provider := testprovider.NewTestCloudProvider(nil, func(nodegroup string, node string) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodegroup string, node string) error {
 		deletedNodes <- fmt.Sprintf("%s/%s", nodegroup, node)
 		return nil
-	})
+	}).Build()
 	provider.AddNodeGroupWithCustomOptions("atomic-ng", 0, 10, 10, &config.NodeGroupAutoscalingOptions{
 		MaxNodeProvisionTime: 45 * time.Minute,
 		ZeroOrMaxNodeScaling: true,
@@ -2759,7 +2703,7 @@ func newScaleDownPlannerAndActuator(ctx *context.AutoscalingContext, p *ca_proce
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	planner := planner.New(ctx, p, deleteOptions, nil)
-	actuator := actuation.NewActuator(ctx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor, nil)
+	actuator := actuation.NewActuator(ctx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor)
 	return planner, actuator
 }
 
@@ -2772,4 +2716,162 @@ func newEstimatorBuilder() estimator.EstimatorBuilder {
 	)
 
 	return estimatorBuilder
+}
+
+func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+
+	minSizeNgName := "ng-min-size"
+	nodesToHaveNoTaints := createNodeGroupWithSoftTaintedNodes(provider, minSizeNgName, 2, 10, 2)
+
+	notSizeNgName := "ng"
+	nodesToHaveTaints := createNodeGroupWithSoftTaintedNodes(provider, notSizeNgName, 3, 10, 4)
+
+	tests := []struct {
+		name                          string
+		testNodes                     []*apiv1.Node
+		scaleDownInCoolDown           bool
+		expectedNodesWithSoftTaints   []*apiv1.Node
+		expectedNodesWithNoSoftTaints []*apiv1.Node
+	}{
+		{
+			name:                          "Soft tainted nodes are cleaned when scale down skipped",
+			testNodes:                     nodesToHaveNoTaints,
+			scaleDownInCoolDown:           false,
+			expectedNodesWithSoftTaints:   []*apiv1.Node{},
+			expectedNodesWithNoSoftTaints: nodesToHaveNoTaints,
+		},
+		{
+			name:                          "Soft tainted nodes are cleaned when scale down in cooldown",
+			testNodes:                     nodesToHaveNoTaints,
+			scaleDownInCoolDown:           true,
+			expectedNodesWithSoftTaints:   []*apiv1.Node{},
+			expectedNodesWithNoSoftTaints: nodesToHaveNoTaints,
+		},
+		{
+			name:                          "Soft tainted nodes are not cleaned when scale down requested",
+			testNodes:                     nodesToHaveTaints,
+			scaleDownInCoolDown:           false,
+			expectedNodesWithSoftTaints:   nodesToHaveTaints,
+			expectedNodesWithNoSoftTaints: []*apiv1.Node{},
+		},
+		{
+			name:                          "Soft tainted nodes are cleaned only from min sized node group when scale down requested",
+			testNodes:                     append(nodesToHaveNoTaints, nodesToHaveTaints...),
+			scaleDownInCoolDown:           false,
+			expectedNodesWithSoftTaints:   nodesToHaveTaints,
+			expectedNodesWithNoSoftTaints: nodesToHaveNoTaints,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			fakeClient := buildFakeClient(t, test.testNodes...)
+
+			autoscaler := buildStaticAutoscaler(t, provider, test.testNodes, test.testNodes, fakeClient)
+			autoscaler.processorCallbacks.disableScaleDownForLoop = test.scaleDownInCoolDown
+			assert.Equal(t, autoscaler.isScaleDownInCooldown(time.Now()), test.scaleDownInCoolDown)
+
+			err := autoscaler.RunOnce(time.Now())
+
+			assert.NoError(t, err)
+			assertNodesSoftTaintsStatus(t, fakeClient, test.expectedNodesWithSoftTaints, true)
+			assertNodesSoftTaintsStatus(t, fakeClient, test.expectedNodesWithNoSoftTaints, false)
+		})
+	}
+}
+
+func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, allNodes []*apiv1.Node, readyNodes []*apiv1.Node, fakeClient *fake.Clientset) *StaticAutoscaler {
+	autoscalingOptions := config.AutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime:         time.Minute,
+			ScaleDownUnreadyTime:          time.Minute,
+			ScaleDownUtilizationThreshold: 0.5,
+			MaxNodeProvisionTime:          10 * time.Second,
+		},
+		MaxScaleDownParallelism:    10,
+		MaxDrainParallelism:        1,
+		ScaleDownEnabled:           true,
+		MaxBulkSoftTaintCount:      20,
+		MaxBulkSoftTaintTime:       5 * time.Second,
+		NodeDeleteDelayAfterTaint:  5 * time.Minute,
+		ScaleDownSimulationTimeout: 10 * time.Second,
+	}
+
+	allNodeLister := kubernetes.NewTestNodeLister(allNodes)
+	readyNodeLister := kubernetes.NewTestNodeLister(readyNodes)
+
+	daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
+	assert.NoError(t, err)
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+		kubernetes.NewTestPodLister(nil),
+		kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister, nil, nil, nil, nil)
+
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+
+	ctx, err := NewScaleTestAutoscalingContext(autoscalingOptions, fakeClient, listerRegistry, provider, processorCallbacks, nil)
+	assert.NoError(t, err)
+
+	processors := processorstest.NewTestProcessors(&ctx)
+	cp := scaledowncandidates.NewCombinedScaleDownCandidatesProcessor()
+	cp.Register(scaledowncandidates.NewScaleDownCandidatesSortingProcessor([]scaledowncandidates.CandidatesComparer{}))
+	processors.ScaleDownNodeProcessor = cp
+
+	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{OkTotalUnreadyCount: 1}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor)
+	ctx.ScaleDownActuator = actuator
+
+	deleteOptions := options.NewNodeDeleteOptions(ctx.AutoscalingOptions)
+	drainabilityRules := rules.Default(deleteOptions)
+
+	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules)
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:   &ctx,
+		clusterStateRegistry: csr,
+		scaleDownActuator:    actuator,
+		scaleDownPlanner:     sdPlanner,
+		processors:           processors,
+		loopStartNotifier:    loopstart.NewObserversList(nil),
+		processorCallbacks:   processorCallbacks,
+	}
+	return autoscaler
+}
+
+func buildFakeClient(t *testing.T, nodes ...*apiv1.Node) *fake.Clientset {
+	fakeClient := fake.NewSimpleClientset()
+	for _, node := range nodes {
+		_, err := fakeClient.CoreV1().Nodes().Create(stdcontext.TODO(), node, metav1.CreateOptions{})
+		assert.NoError(t, err)
+	}
+	return fakeClient
+}
+
+func createNodeGroupWithSoftTaintedNodes(provider *testprovider.TestCloudProvider, name string, minSize int, maxSize int, size int) []*apiv1.Node {
+	nodesCreationTime := time.Time{}
+	var ngNodes []*apiv1.Node
+	ng := provider.BuildNodeGroup(name, minSize, maxSize, size, true, false, "", nil)
+	provider.InsertNodeGroup(ng)
+	for i := range size {
+		node := BuildTestNode(fmt.Sprintf("%s-node-%d", name, i), 2000, 1000)
+		node.CreationTimestamp = metav1.NewTime(nodesCreationTime)
+		node.Spec.Taints = []apiv1.Taint{{
+			Key:    taints.DeletionCandidateTaint,
+			Value:  "1",
+			Effect: apiv1.TaintEffectNoSchedule,
+		}}
+		SetNodeReadyState(node, true, nodesCreationTime)
+		ngNodes = append(ngNodes, node)
+		provider.AddNode(ng.Id(), node)
+	}
+	return ngNodes
+}
+
+func assertNodesSoftTaintsStatus(t *testing.T, fakeClient *fake.Clientset, nodes []*apiv1.Node, tainted bool) {
+	for _, node := range nodes {
+		newNode, clientErr := fakeClient.CoreV1().Nodes().Get(stdcontext.TODO(), node.Name, metav1.GetOptions{})
+		assert.NoError(t, clientErr)
+		assert.Equal(t, tainted, taints.HasDeletionCandidateTaint(newNode))
+	}
 }

@@ -44,6 +44,8 @@ func TestRunFiltersOnNode(t *testing.T) {
 	p600 := BuildTestPod("p600", 600, 500000)
 	p8000 := BuildTestPod("p8000", 8000, 0)
 	p500 := BuildTestPod("p500", 500, 500000)
+	podWithAffinity := BuildTestPod("pod_with_affinity", 500, 500, WithNodeNamesAffinity("n1000"))
+	podWithInvalidAffinity := BuildTestPod("pod_with_affinity", 500, 500, WithNodeNamesAffinity("non-existing-node"))
 
 	n1000 := BuildTestNode("n1000", 1000, 2000000)
 	SetNodeReadyState(n1000, true, time.Time{})
@@ -67,20 +69,26 @@ func TestRunFiltersOnNode(t *testing.T) {
 	assert.NoError(t, err)
 
 	tests := []struct {
-		name          string
-		customConfig  *config.KubeSchedulerConfiguration
-		node          *apiv1.Node
-		scheduledPods []*apiv1.Pod
-		testPod       *apiv1.Pod
-		expectError   bool
+		name                        string
+		customConfig                *config.KubeSchedulerConfiguration
+		node                        *apiv1.Node
+		scheduledPods               []*apiv1.Pod
+		testPod                     *apiv1.Pod
+		expectError                 bool
+		wantFailingPredicateName    string
+		wantFailingPredicateReasons []string
+		wantErrorSubstrings         []string
 	}{
 		// default predicate checker test cases
 		{
-			name:          "default - other pod - insuficient cpu",
-			node:          n1000,
-			scheduledPods: []*apiv1.Pod{p450},
-			testPod:       p600,
-			expectError:   true,
+			name:                        "default - other pod - insuficient cpu",
+			node:                        n1000,
+			scheduledPods:               []*apiv1.Pod{p450},
+			testPod:                     p600,
+			expectError:                 true,
+			wantFailingPredicateName:    "NodeResourcesFit",
+			wantFailingPredicateReasons: []string{"Insufficient cpu"},
+			wantErrorSubstrings:         []string{"NodeResourcesFit", "Insufficient cpu"},
 		},
 		{
 			name:          "default - other pod - ok",
@@ -90,18 +98,40 @@ func TestRunFiltersOnNode(t *testing.T) {
 			expectError:   false,
 		},
 		{
-			name:          "default - empty - insuficient cpu",
-			node:          n1000,
-			scheduledPods: []*apiv1.Pod{},
-			testPod:       p8000,
-			expectError:   true,
+			name:                        "default - empty - insuficient cpu",
+			node:                        n1000,
+			scheduledPods:               []*apiv1.Pod{},
+			testPod:                     p8000,
+			expectError:                 true,
+			wantFailingPredicateName:    "NodeResourcesFit",
+			wantFailingPredicateReasons: []string{"Insufficient cpu"},
+			wantErrorSubstrings:         []string{"NodeResourcesFit", "Insufficient cpu"},
 		},
 		{
-			name:          "default - empty - ok",
+			name:                        "default - empty - ok",
+			node:                        n1000,
+			scheduledPods:               []*apiv1.Pod{},
+			testPod:                     p600,
+			expectError:                 false,
+			wantFailingPredicateName:    "NodeResourcesFit",
+			wantFailingPredicateReasons: []string{"Insufficient cpu"},
+		},
+		{
+			name:          "default - affinity on existing node - ok",
 			node:          n1000,
 			scheduledPods: []*apiv1.Pod{},
-			testPod:       p600,
+			testPod:       podWithAffinity,
 			expectError:   false,
+		},
+		{
+			name:                     "default - affinity on non-existing node - error",
+			node:                     n1000,
+			scheduledPods:            []*apiv1.Pod{},
+			testPod:                  podWithInvalidAffinity,
+			expectError:              true,
+			customConfig:             customConfig,
+			wantFailingPredicateName: "NodeAffinity",
+			wantErrorSubstrings:      []string{"PreFilter filtered the Node out"},
 		},
 		// custom predicate checker test cases
 		{
@@ -150,10 +180,11 @@ func TestRunFiltersOnNode(t *testing.T) {
 				assert.Nil(t, state)
 				assert.NotNil(t, predicateError)
 				assert.Equal(t, clustersnapshot.FailingPredicateError, predicateError.Type())
-				assert.Equal(t, "NodeResourcesFit", predicateError.FailingPredicateName())
-				assert.Equal(t, []string{"Insufficient cpu"}, predicateError.FailingPredicateReasons())
-				assert.Contains(t, predicateError.Error(), "NodeResourcesFit")
-				assert.Contains(t, predicateError.Error(), "Insufficient cpu")
+				assert.Equal(t, tt.wantFailingPredicateName, predicateError.FailingPredicateName())
+				assert.Equal(t, tt.wantFailingPredicateReasons, predicateError.FailingPredicateReasons())
+				for _, wantErrorSubstring := range tt.wantErrorSubstrings {
+					assert.Contains(t, predicateError.Error(), wantErrorSubstring)
+				}
 			} else {
 				assert.Nil(t, predicateError)
 				assert.NotNil(t, state)

@@ -19,7 +19,6 @@ package target
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -72,7 +71,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.ErrorS(err, "Could not create discoveryClient")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
 	restClient := kubeClient.CoreV1().RESTClient()
@@ -90,18 +89,6 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
 		job:                   factory.Batch().V1().Jobs().Informer(),
 		cronJob:               factory.Batch().V1().CronJobs().Informer(),
-	}
-
-	for kind, informer := range informersMap {
-		stopCh := make(chan struct{})
-		go informer.Run(stopCh)
-		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
-		if !synced {
-			klog.ErrorS(nil, "Could not sync cache for "+string(kind))
-			os.Exit(255)
-		} else {
-			klog.InfoS("Initial sync completed", "kind", kind)
-		}
 	}
 
 	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
@@ -122,7 +109,7 @@ type vpaTargetSelectorFetcher struct {
 
 func (f *vpaTargetSelectorFetcher) Fetch(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	if vpa.Spec.TargetRef == nil {
-		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object, switch to v1.")
+		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object, switch to v1")
 	}
 	kind := wellKnownController(vpa.Spec.TargetRef.Kind)
 	informer, exists := f.informersMap[kind]
@@ -143,7 +130,7 @@ func (f *vpaTargetSelectorFetcher) Fetch(ctx context.Context, vpa *vpa_types.Ver
 
 	selector, err := f.getLabelSelectorFromResource(ctx, groupKind, vpa.Namespace, vpa.Spec.TargetRef.Name)
 	if err != nil {
-		return nil, fmt.Errorf("Unhandled targetRef %s / %s / %s, last error %v",
+		return nil, fmt.Errorf("unhandled targetRef %s / %s / %s, last error %v",
 			vpa.Spec.TargetRef.APIVersion, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name, err)
 	}
 	return selector, nil
@@ -190,7 +177,7 @@ func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
 		scale, err := f.scaleNamespacer.Scales(namespace).Get(ctx, groupResource, name, metav1.GetOptions{})
 		if err == nil {
 			if scale.Status.Selector == "" {
-				return nil, fmt.Errorf("Resource %s/%s has an empty selector for scale sub-resource", namespace, name)
+				return nil, fmt.Errorf("resource %s/%s has an empty selector for scale sub-resource", namespace, name)
 			}
 			selector, err := labels.Parse(scale.Status.Selector)
 			if err != nil {

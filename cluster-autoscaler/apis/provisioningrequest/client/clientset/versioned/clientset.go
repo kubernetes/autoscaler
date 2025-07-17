@@ -19,8 +19,8 @@ limitations under the License.
 package versioned
 
 import (
-	"fmt"
-	"net/http"
+	fmt "fmt"
+	http "net/http"
 
 	autoscalingv1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/typed/autoscaling.x-k8s.io/v1"
 	autoscalingv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/typed/autoscaling.x-k8s.io/v1beta1"

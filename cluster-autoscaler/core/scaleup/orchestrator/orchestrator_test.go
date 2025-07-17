@@ -46,7 +46,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
-	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -1003,9 +1002,9 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 			machineTemplates[ntc.NodeGroupName] = ntc.NodeInfo
 			machineTemplates[ntc.MachineType] = ntc.NodeInfo
 		}
-		provider = testprovider.NewTestAutoprovisioningCloudProvider(onScaleUpFunc, nil, onCreateGroupFunc, nil, machineTypes, machineTemplates)
+		provider = testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(onScaleUpFunc).WithOnNodeGroupCreate(onCreateGroupFunc).WithMachineTypes(machineTypes).WithMachineTemplates(machineTemplates).Build()
 	} else {
-		provider = testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
+		provider = testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(onScaleUpFunc).Build()
 	}
 	options := defaultOptions
 	if config.Options != nil {
@@ -1044,7 +1043,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	// build orchestrator
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
-	err = context.ClusterSnapshot.SetClusterState(nodes, kube_util.ScheduledPods(pods), drasnapshot.Snapshot{})
+	err = context.ClusterSnapshot.SetClusterState(nodes, kube_util.ScheduledPods(pods), nil)
 	assert.NoError(t, err)
 	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).
 		Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
@@ -1138,10 +1137,10 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	podLister := kube_util.NewTestPodLister(pods)
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
 		t.Fatalf("No expansion is expected, but increased %s by %d", nodeGroup, increase)
 		return nil
-	}, nil)
+	}).Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNodeGroup("ng2", 1, 10, 5)
 	provider.AddNode("ng1", n1)
@@ -1154,7 +1153,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	}
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
-	err = context.ClusterSnapshot.SetClusterState(nodes, pods, drasnapshot.Snapshot{})
+	err = context.ClusterSnapshot.SetClusterState(nodes, pods, nil)
 	assert.NoError(t, err)
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
@@ -1184,9 +1183,9 @@ func TestBinpackingLimiter(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
 		return nil
-	}, nil)
+	}).Build()
 
 	options := defaultOptions
 	provider.AddNodeGroup("ng1", 1, 10, 1)
@@ -1197,7 +1196,7 @@ func TestBinpackingLimiter(t *testing.T) {
 
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
-	err = context.ClusterSnapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
+	err = context.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 	assert.NoError(t, err)
 	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).
 		Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
@@ -1242,10 +1241,10 @@ func TestScaleUpNoHelp(t *testing.T) {
 	podLister := kube_util.NewTestPodLister(pods)
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
 		t.Fatalf("No expansion is expected")
 		return nil
-	}, nil)
+	}).Build()
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	assert.NotNil(t, provider)
@@ -1257,7 +1256,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	}
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
-	err = context.ClusterSnapshot.SetClusterState(nodes, pods, drasnapshot.Snapshot{})
+	err = context.ClusterSnapshot.SetClusterState(nodes, pods, nil)
 	assert.NoError(t, err)
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
@@ -1386,7 +1385,7 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(func(string, int) error { return nil }, nil)
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(string, int) error { return nil }).Build()
 			nodeGroupSetProcessor := &constNodeGroupSetProcessor{}
 			now := time.Now()
 
@@ -1412,7 +1411,7 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 			listers := kube_util.NewListerRegistry(nil, nil, kube_util.NewTestPodLister(nil), nil, nil, nil, nil, nil, nil)
 			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled}, &fake.Clientset{}, listers, provider, nil, nil)
 			assert.NoError(t, err)
-			err = ctx.ClusterSnapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
+			err = ctx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 			assert.NoError(t, err)
 			nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
@@ -1451,9 +1450,9 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(func(string, int) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(string, int) error {
 				return nil
-			}, nil)
+			}).Build()
 
 			type ngInfo struct {
 				min, max, size int
@@ -1496,7 +1495,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			}
 			context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 			assert.NoError(t, err)
-			err = context.ClusterSnapshot.SetClusterState(nodes, podList, drasnapshot.Snapshot{})
+			err = context.ClusterSnapshot.SetClusterState(nodes, podList, nil)
 			assert.NoError(t, err)
 			nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
@@ -1544,14 +1543,13 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	SetNodeReadyState(t1, true, time.Time{})
 	ti1 := framework.NewTestNodeInfo(t1)
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
-		func(nodeGroup string, increase int) error {
-			expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
-			return nil
-		}, nil, func(nodeGroup string) error {
-			createdGroups <- nodeGroup
-			return nil
-		}, nil, []string{"T1"}, map[string]*framework.NodeInfo{"T1": ti1})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
+		expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
+		return nil
+	}).WithOnNodeGroupCreate(func(nodeGroup string) error {
+		createdGroups <- nodeGroup
+		return nil
+	}).WithMachineTypes([]string{"T1"}).WithMachineTemplates(map[string]*framework.NodeInfo{"T1": ti1}).Build()
 
 	options := config.AutoscalingOptions{
 		EstimatorName:  estimator.BinpackingEstimatorName,
@@ -1595,14 +1593,13 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	SetNodeReadyState(t1, true, time.Time{})
 	ti1 := framework.NewTestNodeInfo(t1)
 
-	provider := testprovider.NewTestAutoprovisioningCloudProvider(
-		func(nodeGroup string, increase int) error {
-			expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
-			return nil
-		}, nil, func(nodeGroup string) error {
-			createdGroups <- nodeGroup
-			return nil
-		}, nil, []string{"T1"}, map[string]*framework.NodeInfo{"T1": ti1})
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
+		expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
+		return nil
+	}).WithOnNodeGroupCreate(func(nodeGroup string) error {
+		createdGroups <- nodeGroup
+		return nil
+	}).WithMachineTypes([]string{"T1"}).WithMachineTemplates(map[string]*framework.NodeInfo{"T1": ti1}).Build()
 
 	options := config.AutoscalingOptions{
 		BalanceSimilarNodeGroups: true,
@@ -1642,11 +1639,11 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
 		assert.Equal(t, "ng1", nodeGroup)
 		assert.Equal(t, 1, increase)
 		return nil
-	}, nil)
+	}).Build()
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 0, cloudprovider.ResourceNameMemory: 0},
 		map[string]int64{cloudprovider.ResourceNameCores: 48, cloudprovider.ResourceNameMemory: 1000},
@@ -1674,7 +1671,7 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
-	err = context.ClusterSnapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
+	err = context.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 	assert.NoError(t, err)
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 	processors := processorstest.NewTestProcessors(&context)
@@ -1724,7 +1721,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 			isUpcomingMockMap:       map[string]bool{},
 			machineTypes:            []string{"T1"},
 			machineTemplates:        map[string]*framework.NodeInfo{"T1": ti1},
-			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T1": true},
+			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T1": true, "autoprovisioned-T1-1": true},
 			expectedExpandedGroups:  map[string]int{"autoprovisioned-T1": 1},
 		},
 		{
@@ -1733,7 +1730,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 			isUpcomingMockMap:       map[string]bool{"autoprovisioned-T1": true},
 			machineTypes:            []string{"T1", "T2"},
 			machineTemplates:        map[string]*framework.NodeInfo{"T1": ti1, "T2": ti2},
-			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T2": true},
+			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T2": true, "autoprovisioned-T2-1": true},
 			expectedExpandedGroups:  map[string]int{"autoprovisioned-T2": 2},
 		},
 	}
@@ -1743,14 +1740,13 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 		expandedGroups := make(map[string]int)
 		fakeClient := &fake.Clientset{}
 
-		provider := testprovider.NewTestAutoprovisioningCloudProvider(
-			func(nodeGroup string, increase int) error {
-				expandedGroups[nodeGroup] += increase
-				return nil
-			}, nil, func(nodeGroup string) error {
-				createdGroups[nodeGroup] = true
-				return nil
-			}, nil, tc.machineTypes, tc.machineTemplates)
+		provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
+			expandedGroups[nodeGroup] += increase
+			return nil
+		}).WithOnNodeGroupCreate(func(nodeGroup string) error {
+			createdGroups[nodeGroup] = true
+			return nil
+		}).WithMachineTypes(tc.machineTypes).WithMachineTemplates(tc.machineTemplates).Build()
 
 		for _, upcomingNodeName := range tc.upcomingNodeGroupsNames {
 			provider.AddNodeGroup(upcomingNodeName, 0, 10, 0)
@@ -1768,7 +1764,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 
 		processors := processorstest.NewTestProcessors(&context)
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
-		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 0}
+		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 1}
 		processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: tc.isUpcomingMockMap}
 
 		nodes := []*apiv1.Node{}
@@ -1784,13 +1780,24 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 		assert.Equal(t, len(tc.expectedExpandedGroups), len(expandedGroups))
 
 		for groupName := range tc.expectedCreatedGroups {
-			assert.True(t, createdGroups[groupName])
+			assert.True(t, createdGroups[groupName], "Missing created node group: %v. Got %v", groupName, createdGroups)
 		}
 		for groupName, expectedExpandedGroupValue := range tc.expectedExpandedGroups {
 			assert.Equal(t, expectedExpandedGroupValue, expandedGroups[groupName])
 		}
+		consideredNodeGroupNames := nodeGroupIds(scaleUpStatus.ConsideredNodeGroups)
+		for name := range tc.expectedCreatedGroups {
+			assert.True(t, consideredNodeGroupNames[name], "Missing considered node group: %v. Got %v", name, consideredNodeGroupNames)
+		}
 	}
+}
 
+func nodeGroupIds(nodeGroups []cloudprovider.NodeGroup) map[string]bool {
+	result := make(map[string]bool)
+	for _, ng := range nodeGroups {
+		result[ng.Id()] = true
+	}
+	return result
 }
 
 func TestCheckDeltaWithinLimits(t *testing.T) {

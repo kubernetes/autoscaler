@@ -24,15 +24,14 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	core "k8s.io/client-go/testing"
-	"k8s.io/klog/v2/ktesting"
-
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	core "k8s.io/client-go/testing"
+	"k8s.io/klog/v2/ktesting"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
@@ -97,6 +96,10 @@ type fakeClusterState struct {
 }
 
 func (cs *fakeClusterState) AddSample(sample *model.ContainerUsageSampleWithKey) error {
+	_, podExists := cs.stubbedPods[sample.Container.PodID]
+	if !podExists {
+		return model.NewKeyError(sample.Container.PodID)
+	}
 	samplesForContainer := cs.addedSamples[sample.Container]
 	cs.addedSamples[sample.Container] = append(samplesForContainer, sample)
 	return nil
@@ -651,6 +654,27 @@ func TestClusterStateFeeder_LoadRealTimeMetrics(t *testing.T) {
 	samplesForContainer2 := clusterState.addedSamples[regularContainer2]
 	assert.Contains(t, samplesForContainer2, regularContainer2UsageSamples[0])
 	assert.Contains(t, samplesForContainer2, regularContainer2UsageSamples[1])
+
+	// Add extra container metrics for which there are no added pods to the state to simulate memory-saver=true
+	extraPodID := model.PodID{Namespace: namespaceName, PodName: "ExtraPod"}
+	extraContainer := model.ContainerID{PodID: extraPodID, ContainerName: "ExtraContainer"}
+	extraContainerMetricsSnapshot, _ := newContainerMetricsSnapshot(extraContainer, 200, 2048)
+	containerMetricsSnapshots = append(containerMetricsSnapshots, extraContainerMetricsSnapshot)
+
+	clusterState = NewFakeClusterState(nil, pods)
+
+	feeder = clusterStateFeeder{
+		memorySaveMode: true,
+		clusterState:   clusterState,
+		metricsClient:  fakeMetricsClient{snapshots: containerMetricsSnapshots},
+	}
+
+	feeder.LoadRealTimeMetrics(tctx)
+
+	assert.Equal(t, 2, len(clusterState.addedSamples))
+
+	_, samplesForExtraContainerExist := clusterState.addedSamples[extraContainer]
+	assert.False(t, samplesForExtraContainerExist)
 }
 
 type fakeHistoryProvider struct {
@@ -881,12 +905,12 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 	}
 
 	checkpointClient := &fakeautoscalingv1.FakeAutoscalingV1{Fake: &core.Fake{}}
-	checkpointClient.Fake.AddReactor("list", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
+	checkpointClient.AddReactor("list", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
 		return true, checkpoints, nil
 	})
 
 	deletedCheckpoints := []string{}
-	checkpointClient.Fake.AddReactor("delete", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
+	checkpointClient.AddReactor("delete", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
 		deleteAction := action.(core.DeleteAction)
 		deletedCheckpoints = append(deletedCheckpoints, deleteAction.GetName())
 

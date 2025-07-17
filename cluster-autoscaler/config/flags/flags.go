@@ -34,7 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	"k8s.io/client-go/rest"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
@@ -174,7 +174,7 @@ var (
 	bulkGceMigInstancesListingEnabled  = flag.Bool("bulk-mig-instances-listing-enabled", false, "Fetch GCE mig instances in bulk instead of per mig")
 	enableProfiling                    = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
 	clusterAPICloudConfigAuthoritative = flag.Bool("clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
-	cordonNodeBeforeTerminate          = flag.Bool("cordon-node-before-terminating", false, "Should CA cordon nodes before terminating during downscale process")
+	cordonNodeBeforeTerminate          = flag.Bool("cordon-node-before-terminating", true, "Should CA cordon nodes before terminating during downscale process")
 	daemonSetEvictionForEmptyNodes     = flag.Bool("daemonset-eviction-for-empty-nodes", false, "DaemonSet pods will be gracefully terminated from empty nodes")
 	daemonSetEvictionForOccupiedNodes  = flag.Bool("daemonset-eviction-for-occupied-nodes", true, "DaemonSet pods will be gracefully terminated from non-empty nodes")
 	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
@@ -269,12 +269,12 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Failed to get scheduler config: %v", err)
 	}
 
-	if isFlagPassed("drain-priority-config") && isFlagPassed("max-graceful-termination-sec") {
+	if pflag.CommandLine.Changed("drain-priority-config") && pflag.CommandLine.Changed("max-graceful-termination-sec") {
 		klog.Fatalf("Invalid configuration, could not use --drain-priority-config together with --max-graceful-termination-sec")
 	}
 
 	var drainPriorityConfigMap []kubelet_config.ShutdownGracePeriodByPodPriority
-	if isFlagPassed("drain-priority-config") {
+	if pflag.CommandLine.Changed("drain-priority-config") {
 		drainPriorityConfigMap = parseShutdownGracePeriodsAndPriorities(*drainPriorityConfig)
 		if len(drainPriorityConfigMap) == 0 {
 			klog.Fatalf("Invalid configuration, parsing --drain-priority-config")
@@ -407,16 +407,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ProactiveScaleupEnabled:                      *proactiveScaleupEnabled,
 		PodInjectionLimit:                            *podInjectionLimit,
 	}
-}
-
-func isFlagPassed(name string) bool {
-	found := false
-	flag.Visit(func(f *flag.Flag) {
-		if f.Name == name {
-			found = true
-		}
-	})
-	return found
 }
 
 func minMaxFlagString(min, max int64) string {

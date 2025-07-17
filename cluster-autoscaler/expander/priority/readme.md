@@ -11,7 +11,7 @@ The expander is configured using a single ConfigMap, which is watched by the exp
 
 ## Configuration
 
-Configuration is based on the values stored in a ConfigMap. This ConfigMap has to be created before cluster autoscaler with priority expander can be started. The ConfigMap must be named `cluster-autoscaler-priority-expander` and it must be placed in the same namespace as cluster autoscaler pod. The ConfigMap is watched by the cluster autoscaler and any changes made to it are loaded on the fly, without restarting cluster autoscaler.
+Configuration is based on the values stored in a ConfigMap. The ConfigMap must be named `cluster-autoscaler-priority-expander` and it must be placed in the workload cluster, in the namespace specified by the `--namespace` flag (if cluster autoscaler is running inside the workload cluster, this is the namespace of the autoscaler pod). The ConfigMap is watched by the cluster autoscaler and any changes made to it are loaded on the fly, without restarting cluster autoscaler. If the ConfigMap is missing or malformed, cluster autoscaler will skip the priority expander and proceed with the next expander option.
 
 The format of the ConfigMap ([example](priority-expander-configmap.yaml)) is as follows:
 

@@ -172,7 +172,7 @@ func (client *mockAutoscalingGceClient) FetchAvailableCpuPlatforms() (map[string
 	return nil, nil
 }
 
-func (client *mockAutoscalingGceClient) FetchAvailableDiskTypes() (map[string][]string, error) {
+func (client *mockAutoscalingGceClient) FetchAvailableDiskTypes(_ string) ([]string, error) {
 	return nil, nil
 }
 

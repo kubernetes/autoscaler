@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -33,7 +32,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
@@ -410,20 +408,6 @@ func TestDeleteInstances(t *testing.T) {
 	err = as.DeleteInstances(instances)
 	expectedErr = fmt.Errorf("cannot delete instance (%s) which don't belong to the same node pool (\"as\")", testValidProviderID1)
 	assert.Equal(t, expectedErr, err)
-
-	instances = []*azureRef{
-		{Name: testValidProviderID0},
-	}
-	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
-	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
-		},
-	}, nil)
-	err = as.DeleteInstances(instances)
-	expectedErrStr := "The specified account is disabled."
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
 }
 
 func TestAgentPoolDeleteNodes(t *testing.T) {
@@ -463,23 +447,6 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	})
 	expectedErr = fmt.Errorf("node belongs to a different asg than as")
 	assert.Equal(t, expectedErr, err)
-
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
-	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
-	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
-		},
-	}, nil)
-	err = as.DeleteNodes([]*apiv1.Node{
-		{
-			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID0},
-			ObjectMeta: v1.ObjectMeta{Name: "node"},
-		},
-	})
-	expectedErrStr := "The specified account is disabled."
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
 
 	as.minSize = 3
 	err = as.DeleteNodes([]*apiv1.Node{})

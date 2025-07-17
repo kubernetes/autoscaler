@@ -23,10 +23,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-
-	"k8s.io/klog/v2"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 )
 
 // OomInfo contains data of the OOM event occurrence
@@ -91,7 +91,7 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 			continue
 		}
 		oomInfo := OomInfo{
-			Timestamp: event.CreationTimestamp.Time.UTC(),
+			Timestamp: event.CreationTimestamp.UTC(),
 			Memory:    model.ResourceAmount(memory.Value()),
 			ContainerID: model.ContainerID{
 				PodID: model.PodID{
@@ -156,14 +156,18 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
 				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
 				if oldSpec != nil {
-					memory := oldSpec.Resources.Requests[apiv1.ResourceMemory]
+					requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
+					var memory resource.Quantity
+					if requests != nil {
+						memory = requests[apiv1.ResourceMemory]
+					}
 					oomInfo := OomInfo{
-						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
+						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.UTC(),
 						Memory:    model.ResourceAmount(memory.Value()),
 						ContainerID: model.ContainerID{
 							PodID: model.PodID{
-								Namespace: newPod.ObjectMeta.Namespace,
-								PodName:   newPod.ObjectMeta.Name,
+								Namespace: newPod.Namespace,
+								PodName:   newPod.Name,
 							},
 							ContainerName: containerStatus.Name,
 						},

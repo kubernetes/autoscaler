@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -28,8 +29,6 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -103,7 +102,7 @@ func addAnnotationRequest(updateResources [][]string, kind string) resource_admi
 	return GetAddAnnotationPatch(ResourceUpdatesAnnotation, vpaUpdates)
 }
 
-func TestClalculatePatches_ResourceUpdates(t *testing.T) {
+func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	tests := []struct {
 		name                 string
 		pod                  *core.Pod
@@ -165,10 +164,31 @@ func TestClalculatePatches_ResourceUpdates(t *testing.T) {
 			},
 		},
 		{
+			name: "replacement cpu request recommendation from container status",
+			pod: test.Pod().
+				AddContainer(core.Container{}).
+				AddContainerStatus(test.ContainerStatus().
+					WithCPURequest(resource.MustParse("0")).Get()).Get(),
+			namespace: "default",
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: core.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches: []resource_admission.PatchRecord{
+				addResourceRequestPatch(0, cpu, "1"),
+				addAnnotationRequest([][]string{{cpu}}, request),
+			},
+		},
+		{
 			name: "two containers",
 			pod: &core.Pod{
 				Spec: core.PodSpec{
 					Containers: []core.Container{{
+						Name: "container-1",
 						Resources: core.ResourceRequirements{
 							Requests: core.ResourceList{
 								cpu: resource.MustParse("0"),
@@ -235,6 +255,26 @@ func TestClalculatePatches_ResourceUpdates(t *testing.T) {
 					}},
 				},
 			},
+			namespace: "default",
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Limits: core.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches: []resource_admission.PatchRecord{
+				addResourceLimitPatch(0, cpu, "1"),
+				addAnnotationRequest([][]string{{cpu}}, limit),
+			},
+		},
+		{
+			name: "replacement cpu limit from container status",
+			pod: test.Pod().
+				AddContainer(core.Container{}).
+				AddContainerStatus(test.ContainerStatus().
+					WithCPULimit(resource.MustParse("0")).Get()).Get(),
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{

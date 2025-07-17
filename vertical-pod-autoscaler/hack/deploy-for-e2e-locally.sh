@@ -80,12 +80,12 @@ for i in ${COMPONENTS}; do
   fi
   if [ $i == admission-controller ] ; then
     (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh e2e || true)
+    kubectl apply -f ${SCRIPT_ROOT}/deploy/admission-controller-service.yaml
   fi
   ALL_ARCHITECTURES=${ARCH} make --directory ${SCRIPT_ROOT}/pkg/${i} docker-build REGISTRY=${REGISTRY} TAG=${TAG}
   docker tag ${REGISTRY}/vpa-${i}-${ARCH}:${TAG} ${REGISTRY}/vpa-${i}:${TAG}
   kind load docker-image ${REGISTRY}/vpa-${i}:${TAG}
 done
-
 
 for i in ${COMPONENTS}; do
   if [ $i == recommender-externalmetrics ] ; then
@@ -96,6 +96,6 @@ for i in ${COMPONENTS}; do
      kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/metrics-pump.yaml
      kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/${i}-deployment.yaml
   else
-     REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl apply -f -
+    REGISTRY=${REGISTRY} TAG=${TAG} ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl apply -f -
   fi
 done

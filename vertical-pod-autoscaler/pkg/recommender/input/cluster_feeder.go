@@ -19,7 +19,6 @@ package input
 import (
 	"context"
 	"fmt"
-	"os"
 	"slices"
 	"time"
 
@@ -183,7 +182,7 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	indexer, ok := store.(cache.Indexer)
 	if !ok {
 		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	podLister := v1lister.NewPodLister(indexer)
 	go controller.Run(stopCh)
@@ -281,7 +280,7 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 		}
 		for _, checkpoint := range checkpointList.Items {
 
-			klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
+			klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
 			err = feeder.setVpaCheckpoint(&checkpoint)
 			if err != nil {
 				klog.ErrorS(err, "Error while loading checkpoint")
@@ -397,7 +396,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 			}
 		}
 
-		if feeder.shouldIgnoreNamespace(vpaCRD.ObjectMeta.Namespace) {
+		if feeder.shouldIgnoreNamespace(vpaCRD.Namespace) {
 			klog.V(6).InfoS("Ignoring vpaCRD as this namespace is ignored", "vpaCRD", klog.KObj(vpaCRD))
 			continue
 		}
@@ -499,15 +498,17 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
 	sampleCount := 0
 	droppedSampleCount := 0
 	for _, containerMetrics := range containersMetrics {
-		podInitContainers := feeder.clusterState.Pods()[containerMetrics.ID.PodID].InitContainers
-		if slices.Contains(podInitContainers, containerMetrics.ID.ContainerName) {
-			klog.V(3).InfoS("Skipping metric samples for init container", "pod", klog.KRef(containerMetrics.ID.PodID.Namespace, containerMetrics.ID.PodID.PodName), "container", containerMetrics.ID.ContainerName)
-			droppedSampleCount += len(containerMetrics.Usage)
-			continue
+		// Container metrics are fetched for all pods, however, not all pod states are tracked in memory saver mode.
+		if pod, exists := feeder.clusterState.Pods()[containerMetrics.ID.PodID]; exists && pod != nil {
+			if slices.Contains(pod.InitContainers, containerMetrics.ID.ContainerName) {
+				klog.V(3).InfoS("Skipping metric samples for init container", "pod", klog.KRef(containerMetrics.ID.Namespace, containerMetrics.ID.PodName), "container", containerMetrics.ID.ContainerName)
+				droppedSampleCount += len(containerMetrics.Usage)
+				continue
+			}
 		}
 		for _, sample := range newContainerUsageSamplesWithKey(containerMetrics) {
 			if err := feeder.clusterState.AddSample(sample); err != nil {
-				// Not all pod states are tracked in memory saver mode
+				// Not all pod states are tracked in memory saver mode.
 				if _, isKeyError := err.(model.KeyError); isKeyError && feeder.memorySaveMode {
 					continue
 				}

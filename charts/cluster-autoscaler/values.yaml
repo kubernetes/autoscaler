@@ -285,7 +285,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.32.0
+  tag: v1.33.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -366,6 +366,17 @@ rbac:
     name: ""
     # rbac.serviceAccount.automountServiceAccountToken -- Automount API credentials for a Service Account.
     automountServiceAccountToken: true
+  # rbac.additionalRules -- Additional rules for role/clusterrole
+  additionalRules: []
+  # - apiGroups:
+  #   - infrastructure.cluster.x-k8s.io
+  #   resources:
+  #   - kubemarkmachinetemplates
+  #   verbs:
+  #   - get
+  #   - list
+  #   - watch
+
 
 # replicaCount -- Desired number of pods
 replicaCount: 1

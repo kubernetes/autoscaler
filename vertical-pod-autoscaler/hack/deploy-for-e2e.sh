@@ -69,6 +69,7 @@ gcloud auth configure-docker -q
 for i in ${COMPONENTS}; do
   if [ $i == admission-controller ] ; then
     (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh e2e || true)
+    kubectl apply -f ${SCRIPT_ROOT}/deploy/admission-controller-service.yaml
   fi
   ALL_ARCHITECTURES=amd64 make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
