@@ -76,6 +76,11 @@ type ControllerKeyWithAPIVersion struct {
 	ApiVersion string
 }
 
+// String defines the format for the stringification of ControllerKeyWithAPIVersion
+func (c ControllerKeyWithAPIVersion) String() string {
+	return fmt.Sprintf("ControllerKeyWithAPIVersion %s of %s kind in %s namespace}", c.Name, c.Kind, c.Namespace)
+}
+
 // ControllerFetcher is responsible for finding the topmost well-known or scalable controller
 type ControllerFetcher interface {
 	// FindTopMostWellKnownOrScalable returns topmost well-known or scalable controller. Error is returned if controller cannot be found.
