@@ -119,13 +119,14 @@ var (
 	maxBulkSoftTaintTime       = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node. "+
 		"This flag is mutually exclusion with drain-priority-config flag which allows more configuration options.")
-	maxTotalUnreadyPercentage = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
-	okTotalUnreadyCount       = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
-	scaleUpFromZero           = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there are 0 ready nodes.")
-	parallelScaleUp           = flag.Bool("parallel-scale-up", false, "Whether to allow parallel node groups scale up. Experimental: may not work on some cloud providers, enable at your own risk.")
-	maxNodeProvisionTime      = flag.Duration("max-node-provision-time", 15*time.Minute, "The default maximum time CA waits for node to be provisioned - the value can be overridden per node group")
-	maxPodEvictionTime        = flag.Duration("max-pod-eviction-time", 2*time.Minute, "Maximum time CA tries to evict a pod before giving up")
-	nodeGroupsFlag            = multiStringFlag(
+	maxTotalUnreadyPercentage            = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
+	okTotalUnreadyCount                  = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
+	scaleUpFromZero                      = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there are 0 ready nodes.")
+	parallelScaleUp                      = flag.Bool("parallel-scale-up", false, "Whether to allow parallel node groups scale up. Experimental: may not work on some cloud providers, enable at your own risk.")
+	maxNodeProvisionTime                 = flag.Duration("max-node-provision-time", 15*time.Minute, "The default maximum time CA waits for node to be provisioned - the value can be overridden per node group")
+	ignoreInstanceCreationStockoutErrors = flag.Bool("ignore-instance-creation-stockout-errors", false, "Whether CA should ignore instance creation stockout errors")
+	maxPodEvictionTime                   = flag.Duration("max-pod-eviction-time", 2*time.Minute, "Maximum time CA tries to evict a pod before giving up")
+	nodeGroupsFlag                       = multiStringFlag(
 		"nodes",
 		"sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...>")
 	nodeGroupAutoDiscoveryFlag = multiStringFlag(
@@ -283,12 +284,13 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
-			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
-			ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
-			ScaleDownUnneededTime:            *scaleDownUnneededTime,
-			ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
-			IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
-			MaxNodeProvisionTime:             *maxNodeProvisionTime,
+			ScaleDownUtilizationThreshold:        *scaleDownUtilizationThreshold,
+			ScaleDownGpuUtilizationThreshold:     *scaleDownGpuUtilizationThreshold,
+			ScaleDownUnneededTime:                *scaleDownUnneededTime,
+			ScaleDownUnreadyTime:                 *scaleDownUnreadyTime,
+			IgnoreDaemonSetsUtilization:          *ignoreDaemonSetsUtilization,
+			MaxNodeProvisionTime:                 *maxNodeProvisionTime,
+			IgnoreInstanceCreationStockoutErrors: *ignoreInstanceCreationStockoutErrors,
 		},
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
