@@ -89,6 +89,11 @@ func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceap
 
 		var sanitizedAllocations []resourceapi.DeviceRequestAllocationResult
 		for _, devAlloc := range claim.Status.Allocation.Devices.Results {
+			if devAlloc.AdminAccess != nil && *devAlloc.AdminAccess {
+				// Device requests with AdminAccess don't reserve their allocated resources, so we can safely ignore them when sanitizing.
+				sanitizedAllocations = append(sanitizedAllocations, devAlloc)
+				continue
+			}
 			// It's possible to have both node-local and global allocations in a single resource claim. Make sure that all allocations were node-local on the old node.
 			if !oldNodePoolNames.Has(devAlloc.Pool) {
 				return nil, fmt.Errorf("claim %s/%s has an allocation %s, from a pool that isn't node-local on %s - can't be sanitized", claim.Namespace, claim.Name, devAlloc.Request, oldNodeName)
