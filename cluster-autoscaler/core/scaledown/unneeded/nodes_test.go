@@ -271,7 +271,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
 				nil, nil, nil, nil, nil, nil, nil)
 
-			nodes.LoadFromExistingTaints(listerRegistry, currentTime)
+			nodes.LoadFromExistingTaints(listerRegistry, currentTime, time.Duration(0))
 
 			unneededNodes := nodes.AsList()
 
