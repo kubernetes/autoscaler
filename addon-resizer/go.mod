@@ -9,7 +9,7 @@ require (
 	github.com/prometheus/client_golang v1.22.0
 	github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/common v0.65.0
-	github.com/spf13/pflag v1.0.6
+	github.com/spf13/pflag v1.0.7
 	gopkg.in/inf.v0 v0.9.1
 	k8s.io/api v0.33.3
 	k8s.io/apimachinery v0.33.3
