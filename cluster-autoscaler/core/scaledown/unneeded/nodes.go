@@ -66,7 +66,7 @@ func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *No
 }
 
 // LoadFromExistingTaints loads any existing DeletionCandidateTaint taints from the kubernetes cluster. given a TTL for the taint
-func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, ts time.Time) error {
+func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, ts time.Time, DeletionCandidateStalenessTTL time.Duration) error {
 	allNodes, err := listerRegistry.AllNodeLister().List()
 	if err != nil {
 		return fmt.Errorf("failed to list nodes when initializing unneeded nodes: %v", err)
@@ -77,6 +77,10 @@ func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, 
 		if since, err := taints.GetDeletionCandidateTime(node); err == nil && since != nil {
 			if err != nil {
 				klog.Errorf("Failed to get pods to move for node %s: %v", node.Name, err)
+				continue
+			}
+			if since.Add(DeletionCandidateStalenessTTL).Before(ts) {
+				klog.V(4).Infof("Skipping node %s with deletion candidate taint from %s, since it is older than TTL %s", node.Name, since.String(), DeletionCandidateStalenessTTL.String())
 				continue
 			}
 			nodeToBeRemoved := simulator.NodeToBeRemoved{
