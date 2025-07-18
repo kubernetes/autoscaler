@@ -37,6 +37,7 @@ package model
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -105,16 +106,27 @@ type AggregateContainerState struct {
 	// we want to know if it needs recommendation, if the recommendation
 	// is present and if the automatic updates are on (are we able to
 	// apply the recommendation to the pods).
-	LastRecommendation  corev1.ResourceList
+	lastRecommendation  corev1.ResourceList
 	IsUnderVPA          bool
 	UpdateMode          *vpa_types.UpdateMode
 	ScalingMode         *vpa_types.ContainerScalingMode
 	ControlledResources *[]ResourceName
+
+	mutex sync.RWMutex
 }
 
 // GetLastRecommendation returns last recorded recommendation.
 func (a *AggregateContainerState) GetLastRecommendation() corev1.ResourceList {
-	return a.LastRecommendation
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
+	return a.lastRecommendation
+}
+
+// SetLastRecommendation sets the last recorded recommendation in a thread-safe manner.
+func (a *AggregateContainerState) SetLastRecommendation(recommendation corev1.ResourceList) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	a.lastRecommendation = recommendation
 }
 
 // NeedsRecommendation returns true if the state should have recommendation calculated.
@@ -147,7 +159,7 @@ func (a *AggregateContainerState) GetControlledResources() []ResourceName {
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
 	a.IsUnderVPA = false
-	a.LastRecommendation = nil
+	a.lastRecommendation = nil
 	a.UpdateMode = nil
 	a.ScalingMode = nil
 	a.ControlledResources = nil
