@@ -242,14 +242,8 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 	}{
 		{
 			name:                     "All deletion candidate nodes with standard TTL",
-			allNodes:                 []*apiv1.Node{n1},
+			allNodes:                 []*apiv1.Node{n1, n2},
 			expectedUnneededNodes:    []*apiv1.Node{n1},
-			nodeDeletionCandidateTTL: time.Minute * 5,
-		},
-		{
-			name:                     "All deletion candidate nodes with standard TTL",
-			allNodes:                 []*apiv1.Node{n2},
-			expectedUnneededNodes:    []*apiv1.Node{},
 			nodeDeletionCandidateTTL: time.Minute * 5,
 		},
 	}
@@ -271,7 +265,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
 				nil, nil, nil, nil, nil, nil, nil)
 
-			nodes.LoadFromExistingTaints(listerRegistry, currentTime, time.Duration(0))
+			nodes.LoadFromExistingTaints(listerRegistry, currentTime, tc.nodeDeletionCandidateTTL)
 
 			unneededNodes := nodes.AsList()
 
