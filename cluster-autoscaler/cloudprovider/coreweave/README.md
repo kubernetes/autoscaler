@@ -1,17 +1,17 @@
 # Cluster Autoscaler for CoreWeave
 
-The Cluster Autoscaler for CoreWeave automatically adjusts the size of your Kubernetes cluster by adding or removing nodes in CoreWeave node pools based on pending workloads and resource utilization.
+The Cluster Autoscaler for CoreWeave automatically adjusts the size of your Kubernetes cluster by adding or removing nodes in CoreWeave NodePools based on pending workloads and resource utilization.
 
 ## Configuration
 
 ### Cloud config
 
-The CoreWeave provider does not require a separate cloud config file. All configuration is managed via Kubernetes node pool resources and standard Cluster Autoscaler flags.
+The CoreWeave provider does not require a separate cloud config file. All configuration is managed via Kubernetes CoreWeave NodePool resource and standard Cluster Autoscaler flags.
 
 ## Behavior
 
-- The autoscaler monitors unschedulable pods and scales node pools up or down as needed.
-- Minimum and maximum node pool sizes are configured via the CoreWeave node pool custom resources.
+- The autoscaler monitors unschedulable pods and scales NodePools up or down as needed.
+- Minimum and maximum NodePools sizes are configured via the CoreWeave NodePool custom resources.
 
 ## Development
 

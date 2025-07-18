@@ -132,18 +132,17 @@ func (m *CoreWeaveManager) UpdateNodeGroup() ([]cloudprovider.NodeGroup, error) 
 	return m.nodeGroups, nil
 }
 
-// GetNodeGroup by nodeUID retrieves a NodeGroup by its nodeUID
-func (m *CoreWeaveManager) GetNodeGroup(nodeUID string) (cloudprovider.NodeGroup, error) {
-	// Searching by labels is not always reliable, so we will iterate through nodes collected by node groups and cached with Instances()
+// GetNodeGroup by nodePoolUID retrieves a NodeGroup by its nodepool UID.
+func (m *CoreWeaveManager) GetNodeGroup(nodePoolUID string) (cloudprovider.NodeGroup, error) {
 	if m.nodeGroups == nil {
 		return nil, fmt.Errorf("node groups are not initialized")
 	}
 	for _, ng := range m.nodeGroups {
-		if ng.Id() == nodeUID {
-			klog.V(4).Infof("Found node group for node UID %s: %s", ng.(*CoreWeaveNodeGroup).Name, nodeUID)
+		if ng.Id() == nodePoolUID {
+			klog.V(4).Infof("Found node group for nodepool UID %s: %s", ng.(*CoreWeaveNodeGroup).Name, nodePoolUID)
 			return ng, nil
 		}
 	}
 	// If no node group is found, return an error
-	return nil, fmt.Errorf("node group for node %s not found", nodeUID)
+	return nil, fmt.Errorf("node group for nodepool %s not found", nodePoolUID)
 }
