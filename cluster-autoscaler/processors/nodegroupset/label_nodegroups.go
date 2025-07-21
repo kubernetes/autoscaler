@@ -37,7 +37,7 @@ func areLabelsSame(n1, n2 *framework.NodeInfo, labels []string) bool {
 		}
 		val2, exists := n2.Node().ObjectMeta.Labels[label]
 		if !exists {
-			klog.V(8).Infof("%s label not present on %s", label, n1.Node().Name)
+			klog.V(8).Infof("%s label not present on %s", label, n2.Node().Name)
 			return false
 		}
 		if val1 != val2 {
