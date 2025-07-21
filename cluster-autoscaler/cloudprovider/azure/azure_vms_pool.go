@@ -466,7 +466,7 @@ func (vmPool *VMPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	node, err := buildNodeFromTemplate(vmPool.agentPoolName, template, vmPool.manager, vmPool.manager.config.EnableDynamicInstanceList)
+	node, err := buildNodeFromTemplate(vmPool.agentPoolName, template, vmPool.manager, vmPool.manager.config.EnableDynamicInstanceList, false)
 	if err != nil {
 		return nil, err
 	}
