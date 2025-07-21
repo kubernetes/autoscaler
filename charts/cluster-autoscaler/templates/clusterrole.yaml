@@ -119,7 +119,7 @@ rules:
   - apiGroups:
       - ""
     resourceNames:
-    - {{ default "cluster-autoscaler" .Values.extraArgs.status-config-map-name }}
+    - {{ default "cluster-autoscaler" (index .Values.extraArgs "status-config-map-name") }}
     resources:
       - configmaps
     verbs:
@@ -136,7 +136,7 @@ rules:
   - apiGroups:
     - coordination.k8s.io
     resourceNames:
-    - {{ default "cluster-autoscaler" .Values.extraArgs.leader-elect-resource-name }}
+    - {{ default "cluster-autoscaler" (index .Values.extraArgs "leader-elect-resource-name") }}
     resources:
     - leases
     verbs:
