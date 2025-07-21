@@ -233,7 +233,7 @@ func newManager() (*hetznerManager, error) {
             return nil, fmt.Errorf("HCLOUD_SUBNET %s is not part of the specified HCLOUD_NETWORK %s", subnetStr, network.Name)
         }
     }
-    //_, subnet, _ = net.ParseCIDR("10.0.95.128/25")
+
 	m := &hetznerManager{
 		client:           client,
 		nodeGroups:       make(map[string]*hetznerNodeGroup),
