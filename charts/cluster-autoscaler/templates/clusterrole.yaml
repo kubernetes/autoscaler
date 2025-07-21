@@ -118,15 +118,12 @@ rules:
     - get
   - apiGroups:
       - ""
-    resourceNames:
-    - {{ default "cluster-autoscaler" (index .Values.extraArgs "status-config-map-name") }}
     resources:
       - configmaps
     verbs:
       - list
       - watch
       - get
-      - update
   - apiGroups:
     - coordination.k8s.io
     resources:
