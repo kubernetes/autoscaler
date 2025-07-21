@@ -50,6 +50,8 @@ Can be useful when you have many different node pools and run into issues of the
 
 `HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
 
+`HCLOUD_SUBNET` Default empty , The Subnet CIDR of the network that is used in the cluster, must be a subnet of the network defined in `HCLOUD_NETWORK`, example: `10.0.0/16`
+
 `HCLOUD_FIREWALL` Default empty , The id or name of the firewall that is used in the cluster , @see https://docs.hetzner.cloud/#firewalls
 
 `HCLOUD_SSH_KEY` Default empty , The id or name of SSH Key that will have access to the fresh created server, @see https://docs.hetzner.cloud/#ssh-keys
