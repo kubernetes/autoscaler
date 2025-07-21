@@ -78,7 +78,7 @@ func (u *uthoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.No
 	klog.V(5).Infof("checking nodegroup for normalized ID: %q", providerID)
 
 	for _, group := range u.manager.nodeGroups {
-		klog.V(4).Infof("iterating over node group %q", group.Id())
+		klog.V(5).Infof("iterating over node group %q", group.Id())
 		nodes, err := group.Nodes()
 		if err != nil {
 			return nil, fmt.Errorf("failed to list nodes for group %q: %w", group.Id(), err)
@@ -185,9 +185,4 @@ func BuildUtho(
 	// This means we don't use the cloudprovider.NodeGroupDiscoveryOptions
 	// flags (which can be set via '--node-group-auto-discovery' or '-nodes')
 	return newUthoCloudProvider(manager, rl)
-}
-
-// toProviderID returns a provider ID from the given node ID.
-func toProviderID(nodeID string) string {
-	return fmt.Sprintf("%s%s", uthoProviderIDPrefix, nodeID)
 }

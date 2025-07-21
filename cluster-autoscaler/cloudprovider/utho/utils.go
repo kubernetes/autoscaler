@@ -90,3 +90,8 @@ func join(dst, src map[string]string) map[string]string {
 	}
 	return dst
 }
+
+// toProviderID returns a provider ID from the given node ID.
+func toProviderID(nodeID string) string {
+	return fmt.Sprintf("%s%s", uthoProviderIDPrefix, nodeID)
+}

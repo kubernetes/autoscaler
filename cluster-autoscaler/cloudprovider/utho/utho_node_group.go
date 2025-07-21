@@ -79,13 +79,18 @@ func (n *NodeGroup) TargetSize() (int, error) {
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
 func (n *NodeGroup) IncreaseSize(delta int) error {
+	klog.V(4).Infof("IncreaseSize: requested delta=%d for node group %s", delta, n.id)
+
 	if delta <= 0 {
+		klog.Errorf("IncreaseSize: delta must be positive, got %d", delta)
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
 
 	targetSize := n.nodePool.Count + delta
 
 	if targetSize > n.MaxSize() {
+		klog.Errorf("IncreaseSize: size increase too large for node group %s. current: %d, desired: %d, max: %d",
+			n.id, n.nodePool.Count, targetSize, n.MaxSize())
 		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
 			n.nodePool.Count, targetSize, n.MaxSize())
 	}
@@ -96,18 +101,29 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		Count:      strconv.Itoa(targetSize),
 	}
 	ctx := context.Background()
-	updatedNodePool, err := n.client.UpdateNodePool(ctx, param)
+	klog.V(4).Infof("IncreaseSize: calling UpdateNodePool with targetSize=%d for node group %s", targetSize, n.id)
+	_, err := n.client.UpdateNodePool(ctx, param)
 	if err != nil {
+		klog.Errorf("IncreaseSize: UpdateNodePool API error for node group %s: %v", n.id, err)
 		return err
 	}
 
-	if updatedNodePool.Count != targetSize {
+	nodePool, err := n.client.ReadNodePool(ctx, n.clusterID, n.id)
+	if err != nil {
+		klog.Errorf("IncreaseSize: ReadNodePool API error for node group %s: %v", n.id, err)
+		return fmt.Errorf("failed to read node pool after update for node group %s: %w", n.id, err)
+	}
+
+	if nodePool.Count != targetSize {
+		klog.Errorf("IncreaseSize: couldn't increase size to %d (delta: %d). Current size is: %d for node group %s",
+			targetSize, delta, nodePool.Count, n.id)
 		return fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
-			targetSize, delta, updatedNodePool.Count)
+			targetSize, delta, nodePool.Count)
 	}
 
 	// update internal cache
 	n.nodePool.Count = targetSize
+	klog.V(4).Infof("IncreaseSize: node group %s count updated, new Count=%d", n.id, n.nodePool.Count)
 	return nil
 }
 
@@ -176,12 +192,17 @@ func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
 func (n *NodeGroup) DecreaseTargetSize(delta int) error {
+	klog.V(4).Infof("DecreaseTargetSize: requested delta=%d for node group %s", delta, n.id)
+
 	if delta >= 0 {
+		klog.Errorf("DecreaseTargetSize: delta must be negative, got %d", delta)
 		return fmt.Errorf("delta must be negative, have: %d", delta)
 	}
 
 	targetSize := n.nodePool.Count + delta
 	if targetSize < n.MinSize() {
+		klog.Errorf("DecreaseTargetSize: size decrease too small for node group %s. current: %d, desired: %d, min: %d",
+			n.Id(), n.nodePool.Count, targetSize, n.MinSize())
 		return fmt.Errorf("node group %s: size decrease is too small. current size: %d, desired size: %d, minimum size: %d",
 			n.Id(), n.nodePool.Count, targetSize, n.MinSize())
 	}
@@ -194,18 +215,23 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 		Size:       strconv.Itoa(targetSize),
 	}
 	ctx := context.Background()
+	klog.V(4).Infof("DecreaseTargetSize: calling UpdateNodePool with targetSize=%d for node group %s", targetSize, n.id)
 	updatedNodePool, err := n.client.UpdateNodePool(ctx, req)
 	if err != nil {
+		klog.Errorf("DecreaseTargetSize: UpdateNodePool API error for node group %s: %v", n.id, err)
 		return err
 	}
 
 	if updatedNodePool.Count != targetSize {
+		klog.Errorf("DecreaseTargetSize: couldn't decrease size to %d (delta: %d). Current size is: %d for node group %s",
+			targetSize, delta, updatedNodePool.Count, n.id)
 		return fmt.Errorf("couldn't decrease size to %d (delta: %d). Current size is: %d",
 			targetSize, delta, updatedNodePool.Count)
 	}
 
 	// update internal cache
 	n.nodePool.Count = targetSize
+	klog.V(4).Infof("DecreaseTargetSize: node group %s count updated, new Count=%d", n.id, n.nodePool.Count)
 	return nil
 }
 
@@ -249,7 +275,7 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 		})
 	}
 
-	klog.Infof("Returning %d valid instances for node group %s", len(instances), n.Id())
+	klog.V(5).Infof("Returning %d valid instances for node group %s", len(instances), n.Id())
 	return instances, nil
 }
 
@@ -269,7 +295,7 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if len(n.nodePool.Workers) == 0 {
 		return nil, fmt.Errorf("node pool %s has no example worker to derive resources", n.id)
 	}
-	klog.V(4).Infof("TemplateNodeInfo: using first worker of pool %s as spec template", n.id)
+	klog.V(5).Infof("TemplateNodeInfo: using first worker of pool %s as spec template", n.id)
 
 	// Use the first worker as a spec template
 	w := n.nodePool.Workers[0]
@@ -300,9 +326,9 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		"kubernetes.io/arch":               "amd64",
 		"node.kubernetes.io/instance-type": n.nodePool.Size,
 		"topology.kubernetes.io/zone":      n.nodePool.Ip,
-		nodeIDLabel:                        strconv.Itoa(w.ID),
+		"node_id":                          strconv.Itoa(w.ID),
 	})
-	klog.V(4).Infof("TemplateNodeInfo: labels populated for node %s", name)
+	klog.V(5).Infof("TemplateNodeInfo: labels populated for node %s", name)
 
 	// Mark Ready
 	node.Status.Conditions = readyConditions()

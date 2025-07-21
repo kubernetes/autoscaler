@@ -29,6 +29,8 @@ import (
 
 type nodeGroupClient interface {
 	// ListNodePools lists all the node pools found in a Kubernetes cluster.
+	ReadNodePool(ctx context.Context, clusterId int, nodePoolId string) (*utho.NodepoolDetails, error)
+	// ListNodePools lists all the node pools found in a Kubernetes cluster.
 	ListNodePools(ctx context.Context, clusterID string) ([]utho.NodepoolDetails, error)
 	// UpdateNodePool updates the details of an existing node pool.
 	UpdateNodePool(ctx context.Context, params utho.UpdateKubernetesAutoscaleNodepool) (*utho.UpdateKubernetesAutoscaleNodepoolResponse, error)
@@ -113,8 +115,6 @@ func (m *Manager) Refresh() error {
 			klog.V(4).Infof("skipping non-autoscaling node pool: %s", nodePool.ID)
 			continue
 		}
-
-		klog.V(4).Infof("adding node pool min: %d max: %d", nodePool.MinNodes, nodePool.MaxNodes)
 
 		clusterID, err := strconv.Atoi(m.clusterID)
 		if err != nil {
