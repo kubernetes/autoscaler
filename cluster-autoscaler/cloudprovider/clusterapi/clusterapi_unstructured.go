@@ -304,6 +304,17 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	return capacity, nil
 }
 
+// InstanceSystemInfo sets the nodeSystemInfo from the infrastructure reference resource.
+// If the infrastructure reference resource is not found, returns nil.
+func (r unstructuredScalableResource) InstanceSystemInfo() *apiv1.NodeSystemInfo {
+	infraObj, err := r.readInfrastructureReferenceResource()
+	if err != nil || infraObj == nil {
+		return nil
+	}
+	nsiObj := systemInfoFromInfrastructureObject(infraObj)
+	return &nsiObj
+}
+
 func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([]*resourceapi.ResourceSlice, error) {
 	var result []*resourceapi.ResourceSlice
 	driver := r.InstanceDRADriver()
@@ -438,6 +449,25 @@ func resourceCapacityFromInfrastructureObject(infraobj *unstructured.Unstructure
 	}
 
 	return capacity
+}
+
+func systemInfoFromInfrastructureObject(infraobj *unstructured.Unstructured) apiv1.NodeSystemInfo {
+	nsi := apiv1.NodeSystemInfo{}
+	infransi, found, err := unstructured.NestedStringMap(infraobj.Object, "status", "nodeInfo")
+	if !found || err != nil {
+		return nsi
+	}
+
+	for k, v := range infransi {
+		switch k {
+		case "architecture":
+			nsi.Architecture = v
+		case "operatingSystem":
+			nsi.OperatingSystem = v
+		}
+	}
+
+	return nsi
 }
 
 // adapted from https://github.com/kubernetes/kubernetes/blob/release-1.25/pkg/util/taints/taints.go#L39
