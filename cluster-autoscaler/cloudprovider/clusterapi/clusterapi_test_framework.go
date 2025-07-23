@@ -60,6 +60,7 @@ type testConfigBuilder struct {
 	nodeCount    int
 	annotations  map[string]string
 	capacity     map[string]string
+	nodeInfo     map[string]string
 }
 
 // NewTestConfigBuilder returns a builder for dynamically constructing mock ClusterAPI resources for testing.
@@ -91,6 +92,7 @@ func (b *testConfigBuilder) Build() *TestConfig {
 			isMachineDeployment,
 			b.annotations,
 			b.capacity,
+			b.nodeInfo,
 		)[0],
 	)[0]
 }
@@ -111,6 +113,7 @@ func (b *testConfigBuilder) BuildMultiple(configCount int) []*TestConfig {
 			isMachineDeployment,
 			b.annotations,
 			b.capacity,
+			b.nodeInfo,
 		)...,
 	)
 }
@@ -167,6 +170,18 @@ func (b *testConfigBuilder) WithCapacity(c map[string]string) *testConfigBuilder
 			b.capacity = map[string]string{}
 		}
 		maps.Insert(b.capacity, maps.All(c))
+	}
+	return b
+}
+
+func (b *testConfigBuilder) WithNodeInfo(n map[string]string) *testConfigBuilder {
+	if n == nil {
+		b.nodeInfo = nil
+	} else {
+		if b.nodeInfo == nil {
+			b.nodeInfo = map[string]string{}
+		}
+		maps.Insert(b.nodeInfo, maps.All(n))
 	}
 	return b
 }
@@ -290,8 +305,8 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 			UID:  config.machineSet.GetUID(),
 		}
 
-		if spec.capacity != nil {
-			klog.V(4).Infof("adding capacity to machine template")
+		if spec.capacity != nil || spec.nodeInfo != nil {
+			klog.V(4).Infof("creating machine template")
 			config.machineTemplate = &unstructured.Unstructured{
 				Object: map[string]interface{}{
 					"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
@@ -303,11 +318,23 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 					},
 				},
 			}
+		}
+		if spec.capacity != nil {
+			klog.V(4).Infof("adding capacity to machine template")
 			if err := unstructured.SetNestedStringMap(config.machineTemplate.Object, spec.capacity, "status", "capacity"); err != nil {
 				panic(err)
 			}
 		} else {
 			klog.V(4).Infof("not adding capacity")
+		}
+
+		if spec.nodeInfo != nil {
+			klog.V(4).Infof("adding node info")
+			if err := unstructured.SetNestedStringMap(config.machineTemplate.Object, spec.nodeInfo, "status", "nodeInfo"); err != nil {
+				panic(err)
+			}
+		} else {
+			klog.V(4).Infof("not adding node info")
 		}
 
 		for j := 0; j < spec.nodeCount; j++ {
@@ -324,6 +351,7 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 type TestSpec struct {
 	annotations             map[string]string
 	capacity                map[string]string
+	nodeInfo                map[string]string
 	machineDeploymentName   string
 	machineSetName          string
 	machinePoolName         string
@@ -333,17 +361,17 @@ type TestSpec struct {
 	rootIsMachineDeployment bool
 }
 
-func createTestSpecs(namespace, clusterName, namePrefix string, scalableResourceCount, nodeCount int, isMachineDeployment bool, annotations map[string]string, capacity map[string]string) []TestSpec {
+func createTestSpecs(namespace, clusterName, namePrefix string, scalableResourceCount, nodeCount int, isMachineDeployment bool, annotations map[string]string, capacity map[string]string, nodeInfo map[string]string) []TestSpec {
 	var specs []TestSpec
 
 	for i := 0; i < scalableResourceCount; i++ {
-		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations, capacity))
+		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations, capacity, nodeInfo))
 	}
 
 	return specs
 }
 
-func createTestSpec(namespace, clusterName, name string, nodeCount int, isMachineDeployment bool, annotations map[string]string, capacity map[string]string) TestSpec {
+func createTestSpec(namespace, clusterName, name string, nodeCount int, isMachineDeployment bool, annotations map[string]string, capacity map[string]string, nodeInfo map[string]string) TestSpec {
 	return TestSpec{
 		annotations:             annotations,
 		capacity:                capacity,
@@ -353,6 +381,7 @@ func createTestSpec(namespace, clusterName, name string, nodeCount int, isMachin
 		namespace:               namespace,
 		nodeCount:               nodeCount,
 		rootIsMachineDeployment: isMachineDeployment,
+		nodeInfo:                nodeInfo,
 	}
 }
 
