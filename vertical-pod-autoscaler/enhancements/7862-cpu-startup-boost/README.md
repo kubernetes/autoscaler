@@ -88,9 +88,9 @@ creation.
 
 1. The VPA Updater monitors pods targeted by the VPA object and when the pod
 condition is `Ready` and  `StartupBoost.CPU.Duration` has elapsed, it scales
-down the CPU resources to the appropriate non-boosted value:
-`existing VPA recommendation for that container` (if any) OR the
-`CPU resources configured in the pod spec`.
+down the CPU resources to the appropriate non-boosted value, which is determined by the VPA `updatePolicy`:
+    * If `updatePolicy` is `Auto`, `Recreate` or `InPlaceOrRecreate`, the VPA Updater will apply the VPA recommendation, even if it's higher than the boosted value.
+    * If `updatePolicy` is `Off`, the VPA Updater will revert the CPU resources to the values specified in the pod spec.
     * The scale down is applied [in-place](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
 
 ### API Changes
@@ -101,22 +101,52 @@ The new `StartupBoost` parameter will be added to both:
    * [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.3.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L191):
    Will allow users to optionally customize the startup boost behavior for individual containers.
 
+Here is the Go struct definition for `CPUStartupBoost`:
+
+```go
+// +enum
+type CPUBoostType string
+
+const (
+    FactorType   CPUBoostType = "Factor"
+    QuantityType CPUBoostType = "Quantity"
+)
+
+type CPUStartupBoost struct {
+    // +unionDiscriminator
+    // +required
+    Type CPUBoostType `json:"type"`
+
+    // +unionMember=Factor
+    // +optional
+    Factor *int32 `json:"factor,omitempty"`
+
+    // +unionMember=Quantity
+    // +optional
+    Quantity *resource.Quantity `json:"quantity,omitempty"`
+
+    // +optional
+    Duration *metav1.Duration `json:"duration,omitempty"`
+}
+```
+
 `StartupBoost` will contain the following fields:
   * [Optional] `StartupBoost.CPU.Type` (type: `string`): A string that specifies
   the kind of boost to apply. Supported values are:
-    * `Factor`: The `StartupBoost.CPU.Value` field will be interpreted as a
+    * `Factor`: The `StartupBoost.CPU.Factor` field will be interpreted as a
     multiplier for the recommended CPU request. For example, a value of `2` will
     double the CPU request.
-    * `Quantity`: The `StartupBoost.CPU.Value` field will be interpreted as an
+    * `Quantity`: The `StartupBoost.CPU.Quantity` field will be interpreted as an
     absolute CPU resource quantity (e.g., `"500m"`, `"1"`) to be used as the CPU
     request or limit during the boost phase.
     * If not specified, `StartupBoost.CPU.Type` defaults to `Factor`.
 
-  * `StartupBoost.CPU.Value`: (type: `string`): A string representing the
-  magnitude of the boost, interpreted based on the `StartupBoost.CPU.Type`.
-     * If `StartupBoost.CPU.Type`is `Factor`, this field is optional and
-     defaults to `"1"`.
+  * [Optional] `StartupBoost.CPU.Factor`: (type: `integer`): The factor to apply to the CPU request. Defaults to 1 if not specified.
+     * If `StartupBoost.CPU.Type`is `Factor`, this field is required.
+     * If `StartupBoost.CPU.Type`is `Quantity`, this field is not allowed.
+  * [Optional] `StartupBoost.CPU.Quantity`: (type: `resource.Quantity`): The absolute CPU resource quantity.
      * If `StartupBoost.CPU.Type`is `Quantity`, this field is required.
+     * If `StartupBoost.CPU.Type`is `Factor`, this field is not allowed.
   * [Optional] `StartupBoost.CPU.Duration` (type: `duration`): if specified, it
   indicates for how long to keep the pod boosted **after** it goes to `Ready`.
      * It defaults to `0s` if not specified.
@@ -264,7 +294,7 @@ spec:
     updateMode: "Off"
   startupBoost:
     cpu:
-      value: "3"
+      factor: 3
       duration: 10s
 ```
 
@@ -300,7 +330,7 @@ spec:
     updateMode: "Auto"
   startupBoost:
     cpu:
-      value: "3"
+      factor: 3
       duration: 10s
 ```
 
@@ -333,7 +363,7 @@ spec:
         startupBoost:
           cpu:
             type: "Quantity"
-            value: "2"
+            quantity: "2"
 ```
 
 #### Startup CPU Boost Disabled & VPA Enabled
@@ -355,13 +385,13 @@ spec:
     name: example
   startupBoost:
     cpu:
-      value: "2"
+      factor: 2
   resourcePolicy:
     containerPolicies:
       - containerName: "disable-cpu-boost-for-this-container"
         startupBoost:
           cpu:
-            value: "1"
+            factor: 1
 ```
 
 #### Startup CPU Boost Enabled & VPA Enabled
@@ -394,7 +424,7 @@ spec:
         startupBoost:
           cpu:
             type: "Quantity"
-            value: "4"
+            quantity: "4"
 ```
 
 ## Implementation History
