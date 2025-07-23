@@ -84,13 +84,20 @@ VPA Admission Controller
 
 1. The VPA Admission Controller modifies the pod's containers CPU request and
 limits to align with its `StartupBoost` policy, if specified, during the pod
-creation.
+creation. The boosted value is based on the VPA recommendation available at the
+time of admission. During the boost period, no resizing will take place.
 
 1. The VPA Updater monitors pods targeted by the VPA object and when the pod
-condition is `Ready` and  `StartupBoost.CPU.Duration` has elapsed, it scales
-down the CPU resources to the appropriate non-boosted value, which is determined by the VPA `updatePolicy`:
-    * If `updatePolicy` is `Auto`, `Recreate` or `InPlaceOrRecreate`, the VPA Updater will apply the VPA recommendation, even if it's higher than the boosted value.
-    * If `updatePolicy` is `Off`, the VPA Updater will revert the CPU resources to the values specified in the pod spec.
+condition is `Ready` and `StartupBoost.CPU.Duration` has elapsed, it scales
+down the CPU resources to the appropriate non-boosted value. This "unboosting"
+resizes the pod to whatever the recommendation is at that moment. The specific
+behavior is determined by the VPA `updatePolicy`:
+    * If `updatePolicy` is `Auto`, `Recreate` or `InPlaceOrRecreate`, the VPA
+    Updater will apply the current VPA recommendation, even if it's higher than
+    the boosted value.
+    * If `updatePolicy` is `Off` for the VPA object, or `mode` is `Off` in a
+    container policy, the VPA Updater will revert the CPU resources to the
+    values specified in the pod spec.
     * The scale down is applied [in-place](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
 
 ### API Changes
@@ -429,6 +436,7 @@ spec:
 
 ## Implementation History
 
+* 2025-08-05: Make some API changes and clarify behavior during and after boost period in the workflow section.
 * 2025-06-23: Decouple Startup CPU Boost from InPlaceOrRecreate mode, allow
 users to specify a `startupBoost` config in `VerticalPodAutoscalerSpec` and in
 `ContainerPolicies` to make the API simpler and add more yaml examples.
