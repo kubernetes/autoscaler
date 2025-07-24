@@ -48,19 +48,27 @@ type ClusterConfig struct {
 	NodeConfigs map[string]*NodeConfig `json:"node_configs"`
 }
 
+// InstanceOption is the option for the instance type
 type InstanceOption string
 
 const (
-	InstanceOptionPreferSpot     InstanceOption = "prefer_spot"
+	// InstanceOptionPreferSpot is the option to prefer spot instances
+	InstanceOptionPreferSpot InstanceOption = "prefer_spot"
+	// InstanceOptionPreferOnDemand is the option to prefer on-demand instances
 	InstanceOptionPreferOnDemand InstanceOption = "prefer_on_demand"
-	InstanceOptionSpotOnly       InstanceOption = "spot_only"
-	InstanceOptionOnDemandOnly   InstanceOption = "on_demand_only"
+	// InstanceOptionSpotOnly is the option to only use spot instances
+	InstanceOptionSpotOnly InstanceOption = "spot_only"
+	// InstanceOptionOnDemandOnly is the option to only use on-demand instances
+	InstanceOptionOnDemandOnly InstanceOption = "on_demand_only"
 )
 
+// PricingOption is the option for the pricing type
 type PricingOption string
 
 const (
-	PricingOptionFixed   PricingOption = "fixed"
+	// PricingOptionFixed is the option to use fixed pricing
+	PricingOptionFixed PricingOption = "fixed"
+	// PricingOptionDynamic is the option to use dynamic pricing
 	PricingOptionDynamic PricingOption = "dynamic"
 )
 

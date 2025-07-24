@@ -12,15 +12,6 @@ import (
 	datacrunchclient "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/datacrunch/datacrunch-go"
 )
 
-type ScriptRequest struct {
-	// Optionally allow overrides in the future
-}
-
-type ScriptResponse struct {
-	Script   string `json:"script"`
-	ScriptID string `json:"script_id"`
-}
-
 func main() {
 	http.HandleFunc("/script", handleGenerateScript)
 	port := os.Getenv("PORT")

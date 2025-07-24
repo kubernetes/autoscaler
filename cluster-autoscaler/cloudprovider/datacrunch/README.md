@@ -123,7 +123,7 @@ Configure node pools via JSON configuration:
 | `taints` | []object | Kubernetes taints that created nodes will have |
 | `labels` | map | Labels that created nodes will have |
 
-**Note**: It's your responsibilty to make sure that override_num_gpus (if used), taints and labels are correct. This is usually done as part of your startup-script.
+**Note**: It's your responsibility to make sure that override_num_gpus (if used), taints and labels are correct. This is usually done as part of your startup-script.
 
 ### Command Line Arguments
 

@@ -33,34 +33,33 @@ type Instance struct {
 	Pricing       string   `json:"pricing"`
 }
 
+// CPU represents a CPU in DataCrunch.
 type CPU struct {
 	Description   string `json:"description"`
 	NumberOfCores int    `json:"number_of_cores"`
 }
 
+// GPU represents a GPU in DataCrunch.
 type GPU struct {
 	Description  string `json:"description"`
 	NumberOfGPUs int    `json:"number_of_gpus"`
 }
 
+// GPUMem represents a GPU memory in DataCrunch.
 type GPUMem struct {
 	Description     string `json:"description"`
 	SizeInGigabytes int    `json:"size_in_gigabytes"`
 }
 
+// Memory represents a memory in DataCrunch.
 type Memory struct {
 	Description     string `json:"description"`
 	SizeInGigabytes int    `json:"size_in_gigabytes"`
 }
 
+// Storage represents a storage in DataCrunch.
 type Storage struct {
 	Description string `json:"description"`
-}
-
-type Location struct {
-	Code        string `json:"code"`
-	Name        string `json:"name"`
-	CountryCode string `json:"country_code"`
 }
 
 // InstanceList is a list of instances.
@@ -84,11 +83,13 @@ type DeployInstanceRequest struct {
 	Pricing         string         `json:"pricing,omitempty"`
 }
 
+// OSVolume represents an OS volume in DataCrunch when creating a new instance.
 type OSVolume struct {
 	Name string `json:"name"`
 	Size int    `json:"size"`
 }
 
+// DeployVolume represents a deploy volume in DataCrunch when creating a new instance.
 type DeployVolume struct {
 	Name string `json:"name"`
 	Size int    `json:"size"`
@@ -131,6 +132,7 @@ type InstanceType struct {
 	DisplayName         string   `json:"display_name"`
 }
 
+// InstanceTypeList is a list of instance types.
 type InstanceTypeList []InstanceType
 
 // PriceHistoryEntry represents a price history entry for an instance type.
@@ -141,6 +143,7 @@ type PriceHistoryEntry struct {
 	Currency            string  `json:"currency"`
 }
 
+// PriceHistory is a map of instance types to price history entries.
 type PriceHistory map[string][]PriceHistoryEntry
 
 // InstanceAvailability represents instance availability for a location.
@@ -149,6 +152,7 @@ type InstanceAvailability struct {
 	Availabilities []string `json:"availabilities"`
 }
 
+// InstanceAvailabilityList is a list of instance availabilities.
 type InstanceAvailabilityList []InstanceAvailability
 
 // StartupScript represents a startup script in DataCrunch.

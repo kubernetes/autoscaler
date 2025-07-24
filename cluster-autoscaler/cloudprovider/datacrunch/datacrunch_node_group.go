@@ -39,6 +39,7 @@ import (
 )
 
 const (
+	// ResourceGPU is the resource name for GPU
 	ResourceGPU apiv1.ResourceName = "nvidia.com/gpu"
 )
 
