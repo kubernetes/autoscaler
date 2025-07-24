@@ -1,5 +1,5 @@
-//go:build !gce && !aws && !azure && !kubemark && !alicloud && !magnum && !digitalocean && !clusterapi && !huaweicloud && !ionoscloud && !linode && !hetzner && !bizflycloud && !brightbox && !equinixmetal && !oci && !vultr && !tencentcloud && !scaleway && !externalgrpc && !civo && !rancher && !volcengine && !baiducloud && !cherry && !cloudstack && !exoscale && !kamatera && !ovhcloud && !kwok && !utho && !coreweave
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox,!equinixmetal,!oci,!vultr,!tencentcloud,!scaleway,!externalgrpc,!civo,!rancher,!volcengine,!baiducloud,!cherry,!cloudstack,!exoscale,!kamatera,!ovhcloud,!kwok,!utho,!coreweave
+//go:build !gce && !aws && !azure && !kubemark && !alicloud && !magnum && !digitalocean && !clusterapi && !huaweicloud && !ionoscloud && !linode && !hetzner && !bizflycloud && !brightbox && !equinixmetal && !oci && !vultr && !tencentcloud && !scaleway && !externalgrpc && !civo && !rancher && !volcengine && !baiducloud && !cherry && !cloudstack && !exoscale && !kamatera && !ovhcloud && !kwok && !utho && !coreweave && !slicer
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox,!equinixmetal,!oci,!vultr,!tencentcloud,!scaleway,!externalgrpc,!civo,!rancher,!volcengine,!baiducloud,!cherry,!cloudstack,!exoscale,!kamatera,!ovhcloud,!kwok,!utho,!coreweave,!slicer
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -48,6 +48,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/slicer"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/volcengine"
@@ -89,6 +90,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.VolcengineProviderName,
 	cloudprovider.UthoProviderName,
 	cloudprovider.CoreWeaveProviderName,
+	cloudprovider.SlicerProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -161,6 +163,9 @@ func buildCloudProvider(opts *coreoptions.AutoscalerOptions,
 		return utho.BuildUtho(opts, do, rl)
 	case cloudprovider.CoreWeaveProviderName:
 		return coreweave.BuildCoreWeave(opts, do, rl)
+	case cloudprovider.SlicerProviderName:
+		return slicer.BuildSlicer(opts, do, rl)
 	}
+
 	return nil
 }

@@ -39,6 +39,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [OVHcloud](./cloudprovider/ovhcloud/README.md)
 * [Rancher](./cloudprovider/rancher/README.md)
 * [Scaleway](./cloudprovider/scaleway/README.md)
+* [Slicer](./cloudprovider/slicer/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
 * [Utho](./cloudprovider/utho/README.md)
 * [Vultr](./cloudprovider/vultr/README.md)
@@ -242,6 +243,7 @@ Supported cloud providers:
 * OVHcloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/ovhcloud/README.md
 * Rancher https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/rancher/README.md
 * Scaleway https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/scaleway/README.md
+* Slicer https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/slicer/README.md
 * TencentCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/tencentcloud/README.md
 * Utho https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/utho/README.md
 * Vultr https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md
