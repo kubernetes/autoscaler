@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nvidia-smi-gpu-test
+spec:
+  runtimeClassName: nvidia
+  tolerations:
+    - key: "gpu-test"
+      operator: "Exists"
+      effect: "NoSchedule"
+  containers:
+    - name: nvidia-smi
+      image: nvidia/cuda:12.2.0-base-ubuntu22.04 # Or any CUDA image with nvidia-smi
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      # command: ["nvidia-smi"]
+      # Optionally, keep the pod running for inspection:
+      command: ["sleep", "36000"]
+  restartPolicy: Never
