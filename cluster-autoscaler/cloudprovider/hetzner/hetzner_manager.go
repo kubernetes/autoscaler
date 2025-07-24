@@ -22,12 +22,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	"net"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -211,28 +211,28 @@ func newManager() (*hetznerManager, error) {
 		}
 	}
 
-    serversCache := newServersCache(ctx, client)
+	serversCache := newServersCache(ctx, client)
 
-    var subnet *net.IPNet
-    subnetStr := os.Getenv("HCLOUD_SUBNET")
-    if subnetStr != "" && network != nil {
-        _, subnet, err = net.ParseCIDR(subnetStr)
-        if err != nil {
-            return nil, fmt.Errorf("failed to parse HCLOUD_SUBNET: %s", err)
-        }
-        // Validate that the subnet is part of the network
-        found := false
-        for _, nSubnet := range network.Subnets {
-            _, nSubnetRange, _ := net.ParseCIDR(nSubnet.IPRange.String())
-            if nSubnetRange.String() == subnet.String() {
-                found = true
-                break
-            }
-        }
-        if !found {
-            return nil, fmt.Errorf("HCLOUD_SUBNET %s is not part of the specified HCLOUD_NETWORK %s", subnetStr, network.Name)
-        }
-    }
+	var subnet *net.IPNet
+	subnetStr := os.Getenv("HCLOUD_SUBNET")
+	if subnetStr != "" && network != nil {
+		_, subnet, err = net.ParseCIDR(subnetStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse HCLOUD_SUBNET: %s", err)
+		}
+		// Validate that the subnet is part of the network
+		found := false
+		for _, nSubnet := range network.Subnets {
+			_, nSubnetRange, _ := net.ParseCIDR(nSubnet.IPRange.String())
+			if nSubnetRange.String() == subnet.String() {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("HCLOUD_SUBNET %s is not part of the specified HCLOUD_NETWORK %s", subnetStr, network.Name)
+		}
+	}
 
 	m := &hetznerManager{
 		client:           client,
@@ -247,8 +247,8 @@ func newManager() (*hetznerManager, error) {
 		clusterConfig:    clusterConfig,
 		cachedServerType: newServerTypeCache(ctx, client),
 		cachedServers:    serversCache,
-		subnet: subnet,
-		ipReserver: newIPReserver(ctx, client, serversCache),
+		subnet:           subnet,
+		ipReserver:       newIPReserver(ctx, client, serversCache),
 	}
 
 	return m, nil
@@ -283,136 +283,136 @@ func (m *hetznerManager) deleteByNode(node *apiv1.Node) error {
 }
 
 func (m *hetznerManager) assignIP(server *hcloud.Server, ip net.IP) error {
-    // Basic validation
-    if server == nil || ip == nil || m.network == nil {
-        return fmt.Errorf("invalid parameters: server=%v, ip=%v, network=%v", server != nil, ip != nil, m.network != nil)
-    }
+	// Basic validation
+	if server == nil || ip == nil || m.network == nil {
+		return fmt.Errorf("invalid parameters: server=%v, ip=%v, network=%v", server != nil, ip != nil, m.network != nil)
+	}
 
-    ctx := m.apiCallContext
-    klog.Infof("Assigning static IP %s to server %s", ip.String(), server.Name)
+	ctx := m.apiCallContext
+	klog.Infof("Assigning static IP %s to server %s", ip.String(), server.Name)
 
-    // Check if server is already attached to the correct network
-    isAttached := false
-    for _, privNet := range server.PrivateNet {
-        if privNet.Network != nil && privNet.Network.ID == m.network.ID {
-            isAttached = true
-            break
-        }
-    }
+	// Check if server is already attached to the correct network
+	isAttached := false
+	for _, privNet := range server.PrivateNet {
+		if privNet.Network != nil && privNet.Network.ID == m.network.ID {
+			isAttached = true
+			break
+		}
+	}
 
-    // Detach from network if already attached
-    if isAttached {
-        klog.V(1).Infof("Detaching server %s from network %s", server.Name, m.network.Name)
+	// Detach from network if already attached
+	if isAttached {
+		klog.V(1).Infof("Detaching server %s from network %s", server.Name, m.network.Name)
 
-        detachAction, _, err := m.client.Server.DetachFromNetwork(ctx, server, hcloud.ServerDetachFromNetworkOpts{
-            Network: m.network,
-        })
-        if err != nil {
-            return fmt.Errorf("failed to detach from network: %w", err)
-        }
+		detachAction, _, err := m.client.Server.DetachFromNetwork(ctx, server, hcloud.ServerDetachFromNetworkOpts{
+			Network: m.network,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to detach from network: %w", err)
+		}
 
-        if err := m.client.Action.WaitFor(ctx, detachAction); err != nil {
-            return fmt.Errorf("waiting for network detachment failed: %w", err)
-        }
-    }
+		if err := m.client.Action.WaitFor(ctx, detachAction); err != nil {
+			return fmt.Errorf("waiting for network detachment failed: %w", err)
+		}
+	}
 
-    // Attach to network with static IP
-    klog.V(1).Infof("Connecting server %s to network %s with IP %s", server.Name, m.network.Name, ip.String())
+	// Attach to network with static IP
+	klog.V(1).Infof("Connecting server %s to network %s with IP %s", server.Name, m.network.Name, ip.String())
 
-    attachAction, _, err := m.client.Server.AttachToNetwork(ctx, server, hcloud.ServerAttachToNetworkOpts{
-        Network: m.network,
-        IP:      ip,
-    })
-    if err != nil {
-        return fmt.Errorf("failed to attach to network: %w", err)
-    }
+	attachAction, _, err := m.client.Server.AttachToNetwork(ctx, server, hcloud.ServerAttachToNetworkOpts{
+		Network: m.network,
+		IP:      ip,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to attach to network: %w", err)
+	}
 
-    if err := m.client.Action.WaitFor(ctx, attachAction); err != nil {
-        return fmt.Errorf("waiting for network attachment failed: %w", err)
-    }
+	if err := m.client.Action.WaitFor(ctx, attachAction); err != nil {
+		return fmt.Errorf("waiting for network attachment failed: %w", err)
+	}
 
-    klog.Infof("Server %s successfully connected with IP %s", server.Name, ip.String())
-    return nil
+	klog.Infof("Server %s successfully connected with IP %s", server.Name, ip.String())
+	return nil
 }
 
 func (m *hetznerManager) createServer(ctx context.Context, opts hcloud.ServerCreateOpts) (*hcloud.Server, error) {
-    // Initialize labels if not present
-    if opts.Labels == nil {
-        opts.Labels = make(map[string]string)
-    }
+	// Initialize labels if not present
+	if opts.Labels == nil {
+		opts.Labels = make(map[string]string)
+	}
 
-    // Prepare IP reservation and assignment
-    var ipToAssign net.IP
-    if m.network != nil && m.subnet != nil {
-        // Create server initially stopped for network configuration
-        startAfterCreate := false
-        opts.StartAfterCreate = &startAfterCreate
+	// Prepare IP reservation and assignment
+	var ipToAssign net.IP
+	if m.network != nil && m.subnet != nil {
+		// Create server initially stopped for network configuration
+		startAfterCreate := false
+		opts.StartAfterCreate = &startAfterCreate
 
-        if opts.Networks != nil {
-            // remove network from opts if it was set
-            klog.Warningf("Network is set in ServerCreateOpts, but will be ignored for IP assignment: %s", opts.Networks[0].Name)
-            opts.Networks = []*hcloud.Network{}
-        }
+		if opts.Networks != nil {
+			// remove network from opts if it was set
+			klog.Warningf("Network is set in ServerCreateOpts, but will be ignored for IP assignment: %s", opts.Networks[0].Name)
+			opts.Networks = []*hcloud.Network{}
+		}
 
-        // Reserve IP address
-        var err error
-        if ipToAssign, err = m.ipReserver.reserveNewIP(m.subnet); err != nil {
-            return nil, fmt.Errorf("IP reservation failed: %w", err)
-        }
+		// Reserve IP address
+		var err error
+		if ipToAssign, err = m.ipReserver.reserveNewIP(m.subnet); err != nil {
+			return nil, fmt.Errorf("IP reservation failed: %w", err)
+		}
 
-        // Store reserved IP as label
-        opts.Labels[m.ipReserver.getReservedIPLabelName()] = ipToAssign.String()
-    }
+		// Store reserved IP as label
+		opts.Labels[m.ipReserver.getReservedIPLabelName()] = ipToAssign.String()
+	}
 
-    // Create server
-    serverCreateResult, _, err := m.client.Server.Create(ctx, opts)
-    if err != nil {
-        if ipToAssign != nil {
-            m.ipReserver.removeReservedIP(ipToAssign)
-        }
-        return nil, fmt.Errorf("Server creation of type %s in region %s failed: %w", opts.ServerType.Name, opts.Location.Name, err)
-    }
+	// Create server
+	serverCreateResult, _, err := m.client.Server.Create(ctx, opts)
+	if err != nil {
+		if ipToAssign != nil {
+			m.ipReserver.removeReservedIP(ipToAssign)
+		}
+		return nil, fmt.Errorf("Server creation of type %s in region %s failed: %w", opts.ServerType.Name, opts.Location.Name, err)
+	}
 
-    server := serverCreateResult.Server
-    actions := append(serverCreateResult.NextActions, serverCreateResult.Action)
+	server := serverCreateResult.Server
+	actions := append(serverCreateResult.NextActions, serverCreateResult.Action)
 
-    // Wait for creation actions to complete
-    if err = m.client.Action.WaitFor(ctx, actions...); err != nil {
-        if ipToAssign != nil {
-            m.ipReserver.removeReservedIP(ipToAssign)
-        }
-        return server, fmt.Errorf("Waiting for server actions for %s failed: %w", server.Name, err)
-    }
+	// Wait for creation actions to complete
+	if err = m.client.Action.WaitFor(ctx, actions...); err != nil {
+		if ipToAssign != nil {
+			m.ipReserver.removeReservedIP(ipToAssign)
+		}
+		return server, fmt.Errorf("Waiting for server actions for %s failed: %w", server.Name, err)
+	}
 
-    // Assign IP if one was reserved
-    if ipToAssign != nil {
-        if err = m.assignIP(server, ipToAssign); err != nil {
-            m.ipReserver.removeReservedIP(ipToAssign)
-            return server, fmt.Errorf("IP assignment for server %s failed: %w", server.Name, err)
-        }
-    }
+	// Assign IP if one was reserved
+	if ipToAssign != nil {
+		if err = m.assignIP(server, ipToAssign); err != nil {
+			m.ipReserver.removeReservedIP(ipToAssign)
+			return server, fmt.Errorf("IP assignment for server %s failed: %w", server.Name, err)
+		}
+	}
 
-    // Start the server if it wasn't started automatically
-    if opts.StartAfterCreate != nil && !*opts.StartAfterCreate {
-        powerOnAction, _, err := m.client.Server.Poweron(ctx, server)
-        if err != nil {
-            return server, fmt.Errorf("Powering on server %s failed: %v", server.Name, err)
-        }
-        if err = m.client.Action.WaitFor(ctx, powerOnAction); err != nil {
-            return server, fmt.Errorf("Waiting for power-on for server %s failed: %v", server.Name, err)
-        }
-    }
+	// Start the server if it wasn't started automatically
+	if opts.StartAfterCreate != nil && !*opts.StartAfterCreate {
+		powerOnAction, _, err := m.client.Server.Poweron(ctx, server)
+		if err != nil {
+			return server, fmt.Errorf("Powering on server %s failed: %v", server.Name, err)
+		}
+		if err = m.client.Action.WaitFor(ctx, powerOnAction); err != nil {
+			return server, fmt.Errorf("Waiting for power-on for server %s failed: %v", server.Name, err)
+		}
+	}
 
-    return server, nil
+	return server, nil
 }
 
 func (m *hetznerManager) deleteServer(server *hcloud.Server) error {
-    if server != nil {
-        reservedIP, reservedIPExists := m.ipReserver.getReservedIPFromLabel(server)
-        if reservedIPExists {
-            m.ipReserver.removeReservedIP(reservedIP)
-        }
-    }
+	if server != nil {
+		reservedIP, reservedIPExists := m.ipReserver.getReservedIPFromLabel(server)
+		if reservedIPExists {
+			m.ipReserver.removeReservedIP(reservedIP)
+		}
+	}
 	_, _, err := m.client.Server.DeleteWithResult(m.apiCallContext, server)
 	return err
 }

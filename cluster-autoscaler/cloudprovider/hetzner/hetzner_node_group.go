@@ -499,14 +499,14 @@ func createServer(n *hetznerNodeGroup) error {
 		opts.Firewalls = []*hcloud.ServerCreateFirewall{serverCreateFirewall}
 	}
 
-    server, err := n.manager.createServer(ctx, opts)
+	server, err := n.manager.createServer(ctx, opts)
 
-    if err != nil {
-        if server != nil {
-            _ = n.manager.deleteServer(server)
-        }
-        return fmt.Errorf("failed to create server %s in region %s: %v", n.instanceType, n.region, err)
-   }
+	if err != nil {
+		if server != nil {
+			_ = n.manager.deleteServer(server)
+		}
+		return fmt.Errorf("failed to create server %s in region %s: %v", n.instanceType, n.region, err)
+	}
 
 	return nil
 }
