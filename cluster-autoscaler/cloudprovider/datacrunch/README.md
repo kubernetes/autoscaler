@@ -39,7 +39,6 @@ The provider consists of several key components:
 
 ### Optional Components
 
-- **`startup-script-server.go`**: HTTP server for dynamic startup script generation
 - **Caching layers**: Server type and instance caching for performance optimization
 
 ## Prerequisites
@@ -47,6 +46,7 @@ The provider consists of several key components:
 ### DataCrunch Account Setup
 
 1. **API Credentials**: Generate REST API credentials from the DataCrunch dashboard
+
    - Go to Keys page → Create REST API Credentials
    - Store client ID and secret securely
 
@@ -77,7 +77,8 @@ DATACRUNCH_CLUSTER_CONFIG="base64-encoded-json"          # Base64 encoded
 DATACRUNCH_CLUSTER_CONFIG_FILE="/path/to/config.json"    # File path
 
 # Optional: Startup script configuration
-DATACRUNCH_STARTUP_SCRIPT_FETCH_URL="http://startup-script-server:8080/script"
+DATACRUNCH_STARTUP_SCRIPT="#!/bin/bash\necho 'Hello World'"  # Global startup script
+DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT="true"                  # Auto-delete scripts after execution
 ```
 
 ### Node Pool Configuration
@@ -111,17 +112,17 @@ Configure node pools via JSON configuration:
 
 #### Configuration Options
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `image_type` | string | DataCrunch image name (e.g., `ubuntu-24.04-cuda-12.8-open-docker`) |
-| `ssh_key_ids` | []string | List of SSH key IDs for instance access |
-| `instance_option` | string | Instance preference: `prefer_spot`, `prefer_on_demand`, `spot_only`, `on_demand_only` |
-| `disk_size_gb` | int | OS disk size in GB |
-| `override_num_gpus` | int | Override GPU count (useful for MiG configurations) |
-| `pricing_option` | string | Pricing model: `dynamic` or `fixed` (on-demand only) |
-| `startup_script_base64` | string | Base64-encoded startup script (overrides URL-based scripts) |
-| `taints` | []object | Kubernetes taints that created nodes will have |
-| `labels` | map | Labels that created nodes will have |
+| Field                   | Type     | Description                                                                           |
+| ----------------------- | -------- | ------------------------------------------------------------------------------------- |
+| `image_type`            | string   | DataCrunch image name (e.g., `ubuntu-24.04-cuda-12.8-open-docker`)                    |
+| `ssh_key_ids`           | []string | List of SSH key IDs for instance access                                               |
+| `instance_option`       | string   | Instance preference: `prefer_spot`, `prefer_on_demand`, `spot_only`, `on_demand_only` |
+| `disk_size_gb`          | int      | OS disk size in GB                                                                    |
+| `override_num_gpus`     | int      | Override GPU count (useful for MiG configurations)                                    |
+| `pricing_option`        | string   | Pricing model: `dynamic` or `fixed` (on-demand only)                                  |
+| `startup_script_base64` | string   | Base64-encoded startup script (takes precedence over `DATACRUNCH_STARTUP_SCRIPT`)     |
+| `taints`                | []object | Kubernetes taints that created nodes will have                                        |
+| `labels`                | map      | Labels that created nodes will have                                                   |
 
 **Note**: It's your responsibility to make sure that override_num_gpus (if used), taints and labels are correct. This is usually done as part of your startup-script.
 
@@ -135,61 +136,20 @@ Configure the autoscaler with node group specifications:
 ```
 
 Example:
+
 ```bash
 --nodes=0:3:1A100.22V:FIN-01:gpu-nodes
 ```
 
 This creates a node group named `gpu-nodes` with:
+
 - Minimum 0 nodes, maximum 3 nodes
-- Instance type `1A100.22V` 
+- Instance type `1A100.22V`
 - Region `FIN-01`
 
 ## Deployment
 
-### Method 1: Using Startup Script Server (Recommended)
-
-This method provides enhanced security by dynamically generating startup scripts and automatically deleting them after use.
-
-#### 1. Deploy the Startup Script Server
-
-```yaml
-# See examples/startup-script-server.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: startup-script-server
-spec:
-  template:
-    spec:
-      containers:
-      - name: startup-script-server
-        image: your-registry/startup-script-server:latest
-        env:
-        - name: DATACRUNCH_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: datacrunch-secrets
-              key: client-id
-        - name: DATACRUNCH_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: datacrunch-secrets
-              key: client-secret
-        - name: K3S_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: cluster-secrets
-              key: k3s-token
-        - name: K3S_URL
-          value: "https://your-cluster-api:6443"
-        - name: STARTUP_SCRIPT_TEMPLATE
-          valueFrom:
-            configMapKeyRef:
-              name: startup-script-server-config
-              key: STARTUP_SCRIPT_TEMPLATE
-```
-
-#### 2. Deploy the Cluster Autoscaler
+Deploy the cluster autoscaler with DataCrunch provider configuration:
 
 ```yaml
 # See examples/autoscaler.yaml
@@ -201,25 +161,46 @@ spec:
   template:
     spec:
       containers:
-      - name: cluster-autoscaler
-        image: your-registry/cluster-autoscaler:latest
-        command:
-        - ./cluster-autoscaler
-        - --cloud-provider=datacrunch
-        - --nodes=0:3:1A100.22V:FIN-01:gpu-nodes
-        env:
-        - name: DATACRUNCH_STARTUP_SCRIPT_FETCH_URL
-          value: "http://startup-script-server:8080/script"
-        - name: DATACRUNCH_CLUSTER_CONFIG_JSON
-          valueFrom:
-            configMapKeyRef:
-              name: datacrunch-cluster-config
-              key: cluster_config
+        - name: cluster-autoscaler
+          image: your-registry/cluster-autoscaler:latest
+          command:
+            - ./cluster-autoscaler
+            - --cloud-provider=datacrunch
+            - --nodes=0:3:1A100.22V:FIN-01:gpu-nodes
+          env:
+            - name: DATACRUNCH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: datacrunch-secrets
+                  key: client-id
+            - name: DATACRUNCH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: datacrunch-secrets
+                  key: client-secret
+            - name: DATACRUNCH_CLUSTER_CONFIG_JSON
+              valueFrom:
+                configMapKeyRef:
+                  name: datacrunch-cluster-config
+                  key: cluster_config
+            - name: DATACRUNCH_STARTUP_SCRIPT
+              valueFrom:
+                configMapKeyRef:
+                  name: startup-script
+                  key: STARTUP_SCRIPT
+            - name: DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT
+              value: "true"
 ```
 
-### Method 2: Static Script Configuration
+### Startup Script Configuration Options
 
-For simpler deployments or in cases where security is not so important, embed startup scripts directly in configuration:
+You can configure startup scripts in three ways (in order of precedence):
+
+1. **Per-nodepool scripts** (highest precedence): Set `startup_script_base64` in nodepool configuration
+2. **Global startup script**: Set `DATACRUNCH_STARTUP_SCRIPT` environment variable
+3. **No startup script**: Instances will boot with default image configuration
+
+Example per-nodepool script configuration:
 
 ```json
 {
@@ -234,24 +215,18 @@ For simpler deployments or in cases where security is not so important, embed st
 
 ## Examples
 
-### Building the Startup Script Server
+### Example Files
 
-```dockerfile
-# See examples/Dockerfile
-FROM golang:1.24 AS builder
-WORKDIR /app
-COPY ../../.. .
-RUN CGO_ENABLED=0 GOOS=linux go build -o startup-script-server cloudprovider/datacrunch/examples/startup-script-server.go
+The `examples/` directory contains the following configuration files:
 
-FROM gcr.io/distroless/static:nonroot
-COPY --from=builder /app/startup-script-server /startup-script-server
-EXPOSE 8080
-ENTRYPOINT ["/startup-script-server"]
-```
+- **`autoscaler.yaml`**: Complete cluster autoscaler deployment
+- **`startup-script.yaml`**: Example startup script ConfigMap
+- **`clusterconfig.yaml`**: Node pool configuration example
+- **`test-gpu.yaml`**: GPU workload for testing autoscaling
 
 ### Testing GPU Autoscaling
 
-Deploy a GPU workload to trigger autoscaling:
+Deploy a GPU workload to trigger autoscaling. Make sure the taints match your nodepool configuration.
 
 ```yaml
 # See examples/test-gpu.yaml
@@ -262,21 +237,22 @@ metadata:
 spec:
   runtimeClassName: nvidia
   tolerations:
-  - key: "gpu-node"
-    operator: "Exists"
-    effect: "NoSchedule"
+    - key: "gpu-node"
+      operator: "Exists"
+      effect: "NoSchedule"
   containers:
-  - name: nvidia-smi
-    image: nvidia/cuda:12.2.0-base-ubuntu22.04
-    resources:
-      limits:
-        nvidia.com/gpu: 1
-    command: ["nvidia-smi"]
+    - name: nvidia-smi
+      image: nvidia/cuda:12.2.0-base-ubuntu22.04
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      command: ["nvidia-smi"]
 ```
 
 ### Node Pool Configuration Examples
 
 #### Pool for non-ephemeral workloads
+
 ```json
 {
   "node_configs": {
@@ -287,7 +263,7 @@ spec:
       "pricing_option": "fixed",
       "disk_size_gb": 200,
       "labels": {
-        "nodepool": "on-demand",
+        "nodepool": "on-demand"
       }
     }
   }
@@ -299,6 +275,7 @@ spec:
 ```
 
 #### Spot-Only Pool
+
 ```json
 {
   "node_configs": {
@@ -314,7 +291,7 @@ spec:
         }
       ],
       "labels": {
-        "nodepool": "spot",
+        "nodepool": "spot"
       }
     }
   }
@@ -326,6 +303,7 @@ spec:
 ```
 
 #### Fallback to On-Demand if Spot is not available
+
 ```json
 {
   "node_configs": {
@@ -341,7 +319,7 @@ spec:
         }
       ],
       "labels": {
-        "nodepool": "maybe-spot",
+        "nodepool": "maybe-spot"
       }
     }
   }
@@ -359,6 +337,7 @@ The provider supports NVIDIA MiG technology for GPU workload isolation:
 3. **Labeling**: Use labels to indicate MiG configuration
 
 Example MiG configuration:
+
 ```json
 {
   "override_num_gpus": 7,
@@ -368,7 +347,8 @@ Example MiG configuration:
 }
 ```
 
-The startup script template handles MiG setup:
+The startup script handles MiG setup:
+
 ```bash
 # unload processe that otherwise would block mig enablement. Alternatively: reboot after enabling mig
 rmmod nvidia_drm
@@ -385,13 +365,13 @@ done
 
 **NOTE**: You are responsible that `override_num_gpus` match your actual configuration. The `"nvidia.com/mig.config": "all-1g.10gb"` is primarily used to make nvidias `mig-manager` (part of `gpu-operator`) happy.
 
-### Dynamic Startup Scripts
+### Startup Script Features
 
-The startup script server provides several security and flexibility benefits:
+The DataCrunch provider includes several startup script features:
 
-1. **Script Deletion**: Enables self-deleting startup scripts for enhanced security
-2. **Template Variables**: Supports dynamic variable substitution 
-3. **Cluster Integration**: Injects configuration or secrets stored in Kubernetes
+1. **Script Deletion**: Automatically deletes startup scripts after execution when `DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT="true"`
+2. **Pre-script Injection**: Automatically prepends script deletion and instance ID retrieval logic
+3. **Flexible Configuration**: Supports both global and per-nodepool startup scripts
 
 #### ⚠️ Important: Provider ID Requirement
 
@@ -402,60 +382,26 @@ The startup script server provides several security and flexibility benefits:
 
 Without the correct provider ID, the autoscaler cannot associate Kubernetes nodes with DataCrunch instances, causing scaling failures.
 
-#### Self-Deleting Script Example
+#### Automatic Script Processing
 
-Here's an example of how to implement self-deleting startup scripts for enhanced security:
+The provider automatically:
+
+1. **Prepends pre-script logic**: Adds script deletion and instance ID retrieval to your startup script
+2. **Handles authentication**: Automatically injects DataCrunch API credentials
+3. **Optional script deletion**: When `DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT="true"` is set, the startup script will be deleted from DataCrunch after execution
+4. **Sets provider ID**: Makes the instance ID available as `$INSTANCE_ID` environment variable
+
+Your startup script only needs to focus on cluster setup:
 
 ```bash
 #!/bin/bash
 set -euo pipefail
 
-# === SELF-DELETION SECTION ===
-# This section deletes the startup script after execution for security
+# The provider automatically prepends script deletion logic when DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT="true"
+# Your script starts here with $INSTANCE_ID available
 
-# 1. Get access token
-TOKEN_RESPONSE=$(curl https://api.datacrunch.io/v1/oauth2/token \
-  --request POST \
-  --header 'Content-Type: application/json' \
-  --data '{
-  "grant_type": "client_credentials",
-  "client_id": "{{ .DATACRUNCH_CLIENT_ID }}",
-  "client_secret": "{{ .DATACRUNCH_CLIENT_SECRET }}"
-}'
-)
-
-ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
-
-# 2. Get all scripts and find the one with the matching name
-REAL_SCRIPT_ID=$(curl -s https://api.datacrunch.io/v1/scripts \
-  --header "Authorization: Bearer $ACCESS_TOKEN" | \
-  jq -r --arg NAME "{{ .SCRIPT_NAME }}" '.[] | select(.name == $NAME) | .id')
-
-# 3. Delete the script
-if [ -n "$REAL_SCRIPT_ID" ]; then
-  echo "Deleting script with id: $REAL_SCRIPT_ID (name: {{ .SCRIPT_NAME }})"
-  curl -s -X DELETE https://api.datacrunch.io/v1/scripts \
-    --header "Authorization: Bearer $ACCESS_TOKEN" \
-    --header 'Content-Type: application/json' \
-    --data '{"scripts": ["'$REAL_SCRIPT_ID'"]}'
-else
-  echo "Script with name {{ .SCRIPT_NAME }} not found, skipping deletion."
-fi
-
-# 4. Get instance ID based on $HOSTNAME
-INSTANCE_ID=$(curl -s https://api.datacrunch.io/v1/instances \
-  --header "Authorization: Bearer $ACCESS_TOKEN" | \
-  jq -r --arg HOSTNAME "$HOSTNAME" '.[] | select(.hostname == $HOSTNAME) | .id')
-
-if [ -n "$INSTANCE_ID" ]; then
-  echo "Instance ID for hostname $HOSTNAME is $INSTANCE_ID"
-  # Set provider ID for cluster autoscaler
-  PROVIDER_ID="datacrunch://$INSTANCE_ID"
-  echo "Provider ID: $PROVIDER_ID"
-else
-  echo "No instance found for hostname $HOSTNAME"
-  exit 1
-fi
+echo "Instance ID: $INSTANCE_ID"
+PROVIDER_ID="datacrunch://$INSTANCE_ID"
 
 # === YOUR CLUSTER SETUP SECTION ===
 # Add your cluster join logic here
@@ -467,9 +413,15 @@ fi
 echo "Startup script completed successfully"
 ```
 
-**Benefits of Self-Deleting Scripts:**
-- **Enhanced Security**: Scripts containing sensitive information are automatically removed
+**Benefits of Automatic Script Processing:**
+
+- **Enhanced Security**: Scripts containing sensitive information are automatically removed when enabled
 - **Reduced Attack Surface**: No persistent scripts with cluster credentials on instances
+- **Simplified Configuration**: No need to manually handle authentication and instance ID retrieval
+
+#### Implementation Details
+
+The provider uses a template file (embedded in `datacrunch_node_group.go`) to automatically prepend script deletion and instance ID retrieval logic to your startup scripts.
 
 ### Instance Type Selection
 
@@ -488,7 +440,6 @@ The provider implements caching for optimal performance:
 - **Server Cache**: Caches current instances to reduce API calls
 - **Availability Checks**: Caches instance type availability per region
 
-
 ## API Client Limitations
 
 ### Current Implementation Status
@@ -496,12 +447,12 @@ The provider implements caching for optimal performance:
 The DataCrunch Go client (`datacrunch-go/`) provides core functionality for the cluster autoscaler but is **not a complete implementation** of the DataCrunch API. The client currently includes:
 
 **Implemented Features:**
+
 - **Instance Management**: Create, list, and delete instances
 - **Startup Scripts**: Upload and manage startup scripts
 - **SSH Key Operations**: Basic SSH key management
 - **Volume Operations**: Volume lifecycle management
 - **Authentication**: OAuth2 token handling
-
 
 ### Using the Official API
 
@@ -514,8 +465,9 @@ For operations not supported by the current client implementation, you can:
 ### Client Organization
 
 The client is organized by functional areas:
+
 - **`instances.go`**: Instance lifecycle operations
-- **`volumes.go`**: Storage management  
+- **`volumes.go`**: Storage management
 - **`scripts.go`**: Startup script operations
 - **`sshkeys.go`**: SSH key management
 - **`types.go`**: API request/response types

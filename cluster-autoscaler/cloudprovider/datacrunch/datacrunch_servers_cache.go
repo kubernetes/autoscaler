@@ -65,7 +65,9 @@ type serversCachedObject struct {
 }
 
 func newServersCache(ctx context.Context, datacrunchClient *datacrunchclient.Client) *serversCache {
-	jc := &serversClock{}
+	jc := &serversClock{
+		Clock: clock.RealClock{},
+	}
 	return newServersCacheWithClock(
 		ctx,
 		datacrunchClient,

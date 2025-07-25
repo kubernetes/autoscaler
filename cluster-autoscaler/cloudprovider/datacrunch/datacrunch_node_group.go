@@ -17,16 +17,16 @@ limitations under the License.
 package datacrunch
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"maps"
 	"math/rand"
-	"net/http"
 	"os"
 	"strings"
 	"sync"
+	texttmpl "text/template"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -41,6 +41,55 @@ import (
 const (
 	// ResourceGPU is the resource name for GPU
 	ResourceGPU apiv1.ResourceName = "nvidia.com/gpu"
+)
+
+var (
+	PreStartupScriptTemplate = `
+#!/bin/bash
+
+# 1. get access token
+TOKEN_RESPONSE=$(curl https://api.datacrunch.io/v1/oauth2/token \
+    --request POST \
+    --header 'Content-Type: application/json' \
+    --data '{
+    "grant_type": "client_credentials",
+    "client_id": "{{ .DATACRUNCH_CLIENT_ID }}",
+    "client_secret": "{{ .DATACRUNCH_CLIENT_SECRET }}"
+}'
+)
+
+ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
+
+# 2. if script should be deleted
+if [ "{{ .DELETE_SCRIPT }}" = "true" ]; then
+    # a. Get all scripts and find the one with the matching name
+    REAL_SCRIPT_ID=$(curl -s https://api.datacrunch.io/v1/scripts \
+        --header "Authorization: Bearer $ACCESS_TOKEN" | \
+        jq -r --arg NAME "{{ .SCRIPT_NAME }}" '.[] | select(.name == $NAME) | .id')
+
+    # b. delete the script
+    if [ -n "$REAL_SCRIPT_ID" ]; then
+        echo "Deleting script with id: $REAL_SCRIPT_ID (name: {{ .SCRIPT_NAME }})"
+        curl -s -X DELETE https://api.datacrunch.io/v1/scripts \
+        --header "Authorization: Bearer $ACCESS_TOKEN" \
+        --header 'Content-Type: application/json' \
+        --data '{"scripts": ["'$REAL_SCRIPT_ID'"]}'
+    else
+        echo "Script with name {{ .SCRIPT_NAME }} not found, skipping deletion."
+    fi
+fi
+
+# 3.Get instance ID based on $HOSTNAME
+INSTANCE_ID=$(curl -s https://api.datacrunch.io/v1/instances \
+    --header "Authorization: Bearer $ACCESS_TOKEN" | \
+    jq -r --arg HOSTNAME "$HOSTNAME" '.[] | select(.hostname == $HOSTNAME) | .id')
+
+if [ -n "$INSTANCE_ID" ]; then
+    echo "Instance ID for hostname $HOSTNAME is $INSTANCE_ID"
+else
+    echo "No instance found for hostname $HOSTNAME"
+fi
+	`
 )
 
 // datacrunchNodeGroup implements cloudprovider.NodeGroup interface. datacrunchNodeGroup contains
@@ -460,23 +509,45 @@ func serverTypeAvailable(manager *datacrunchManager, instanceType string, region
 	return manager.cachedServerType.GetInstanceTypeAvailabilityCached(instanceType, region, isSpot)
 }
 
-func fetchStartupScriptID(startupScriptIDFetchUrl string) (string, error) {
-	resp, err := http.Post(startupScriptIDFetchUrl, "application/json", nil)
+func processPreScriptTemplate(preScriptTemplate string, data interface{}) (string, error) {
+	if preScriptTemplate == "" {
+		return "", nil
+	}
+
+	tmpl, err := texttmpl.New("pre-script").Parse(preScriptTemplate)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch startup script from %s: %w", startupScriptIDFetchUrl, err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch startup script: status %d", resp.StatusCode)
+		return "", fmt.Errorf("failed to parse pre-script template: %v", err)
 	}
 
-	scriptBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read startup script body: %w", err)
+	var script bytes.Buffer
+	if err := tmpl.Execute(&script, data); err != nil {
+		return "", fmt.Errorf("failed to execute pre-script template: %v", err)
 	}
 
-	return string(scriptBytes), nil
+	return script.String(), nil
+}
+
+func buildPreScript(n *datacrunchNodeGroup, scriptName string) (string, error) {
+	// Get credentials from environment
+	clientID := os.Getenv("DATACRUNCH_CLIENT_ID")
+	clientSecret := os.Getenv("DATACRUNCH_CLIENT_SECRET")
+
+	if clientID == "" || clientSecret == "" {
+		return "", fmt.Errorf("DATACRUNCH_CLIENT_ID and DATACRUNCH_CLIENT_SECRET must be set")
+	}
+
+	deleteScriptsAfterBoot := (strings.ToLower(os.Getenv("DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT")) == "true")
+
+	// Prepare template data
+	templateData := map[string]string{
+		"DATACRUNCH_CLIENT_ID":     clientID,
+		"DATACRUNCH_CLIENT_SECRET": clientSecret,
+		"SCRIPT_NAME":              scriptName,
+		"DELETE_SCRIPT":            fmt.Sprintf("%t", deleteScriptsAfterBoot),
+	}
+
+	// Process the template
+	return processPreScriptTemplate(PreStartupScriptTemplate, templateData)
 }
 
 func deployInstance(client *datacrunchclient.Client, deployReq datacrunchclient.DeployInstanceRequest, instanceOption InstanceOption, pricingOption *PricingOption) error {
@@ -533,35 +604,38 @@ func createServer(n *datacrunchNodeGroup) error {
 	image := n.manager.clusterConfig.NodeConfigs[n.id].ImageType
 	sshKeyIDs := n.manager.clusterConfig.NodeConfigs[n.id].SSHKeyIDs
 	instanceOption := n.manager.clusterConfig.NodeConfigs[n.id].InstanceOption
+	// generate node name
+	nodeName := newNodeName(n)
+	startupScriptName := fmt.Sprintf("autoscaler-startup-script-%s", nodeName)
 
-	// Handle startup script: upload if provided, get script ID
 	var startupScriptID string
-
-	startupScriptIDFetchUrl := os.Getenv("DATACRUNCH_STARTUP_SCRIPT_FETCH_URL")
-
+	startupScript := n.manager.startupScript
 	if n.manager.clusterConfig.NodeConfigs[n.id].StartupScriptBase64 != "" {
-		startupScript, err := base64.StdEncoding.DecodeString(n.manager.clusterConfig.NodeConfigs[n.id].StartupScriptBase64)
+		startupScriptBytes, err := base64.StdEncoding.DecodeString(n.manager.clusterConfig.NodeConfigs[n.id].StartupScriptBase64)
 		if err != nil {
 			return fmt.Errorf("failed to decode startup script: %v", err)
 		}
+		startupScript = string(startupScriptBytes)
 
-		startupScriptID, err = n.manager.client.UploadStartupScript("autoscaler-startup-script", string(startupScript))
+	}
+
+	if startupScript != "" {
+		// Build pre-script from template
+		preScript, err := buildPreScript(n, startupScriptName)
+		if err != nil {
+			return fmt.Errorf("failed to build pre-script: %v", err)
+		}
+
+		// Combine pre-script with user script
+		finalScript := preScript + "\n\n# User startup script starts here\n" + startupScript
+		klog.V(4).Infof("Combined pre-script with user startup script")
+
+		startupScriptID, err = n.manager.client.UploadStartupScript(startupScriptName, finalScript)
 		if err != nil {
 			return fmt.Errorf("failed to upload startup script: %v", err)
 		}
 		klog.V(4).Infof("Uploaded startup script defined in cluster config with ID: %s", startupScriptID)
-	} else if startupScriptIDFetchUrl != "" {
-		klog.V(4).Infof("Fetching startup script from %s", startupScriptIDFetchUrl)
-		startupScriptID, err = fetchStartupScriptID(startupScriptIDFetchUrl)
-		if err != nil {
-			return fmt.Errorf("failed to fetch startup script: %s", err)
-		}
-	} else {
-		klog.Warningf("No startup script defined")
 	}
-
-	// generate node name
-	nodeName := newNodeName(n)
 
 	deployReq := datacrunchclient.DeployInstanceRequest{
 		InstanceType: typeInfo.InstanceType,

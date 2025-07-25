@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: startup-script
+  namespace: default
+
+data:
+  STARTUP_SCRIPT: |
+    #!/bin/bash
+    
+    ##########################################################
+    # THIS WILL BE ADDED AUTOMATICALLY TO THE STARTUP SCRIPT #
+    ##########################################################
+
+    # # 1. get access token
+    # TOKEN_RESPONSE=$(curl https://api.datacrunch.io/v1/oauth2/token \
+    #     --request POST \
+    #     --header 'Content-Type: application/json' \
+    #     --data '{
+    #     "grant_type": "client_credentials",
+    #     "client_id": "{{ .DATACRUNCH_CLIENT_ID }}",
+    #     "client_secret": "{{ .DATACRUNCH_CLIENT_SECRET }}"
+    # }'
+    # )
+
+    # ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
+
+    # # 2. if script should be deleted
+    # if [ "{{ .DELETE_SCRIPT }}" = "true" ]; then
+    #     # a. Get all scripts and find the one with the matching name
+    #     REAL_SCRIPT_ID=$(curl -s https://api.datacrunch.io/v1/scripts \
+    #         --header "Authorization: Bearer $ACCESS_TOKEN" | \
+    #         jq -r --arg NAME "{{ .SCRIPT_NAME }}" '.[] | select(.name == $NAME) | .id')
+
+    #     # b. delete the script
+    #     if [ -n "$REAL_SCRIPT_ID" ]; then
+    #         echo "Deleting script with id: $REAL_SCRIPT_ID (name: {{ .SCRIPT_NAME }})"
+    #         curl -s -X DELETE https://api.datacrunch.io/v1/scripts \
+    #         --header "Authorization: Bearer $ACCESS_TOKEN" \
+    #         --header 'Content-Type: application/json' \
+    #         --data '{"scripts": ["'$REAL_SCRIPT_ID'"]}'
+    #     else
+    #         echo "Script with name {{ .SCRIPT_NAME }} not found, skipping deletion."
+    #     fi
+    # fi
+
+    # # 3.Get instance ID based on $HOSTNAME
+    # INSTANCE_ID=$(curl -s https://api.datacrunch.io/v1/instances \
+    #     --header "Authorization: Bearer $ACCESS_TOKEN" | \
+    #     jq -r --arg HOSTNAME "$HOSTNAME" '.[] | select(.hostname == $HOSTNAME) | .id')
+
+    # if [ -n "$INSTANCE_ID" ]; then
+    #     echo "Instance ID for hostname $HOSTNAME is $INSTANCE_ID"
+    # else
+    #     echo "No instance found for hostname $HOSTNAME"
+    # fi
+
+    ##########################################################
+    # NOW YOU HAVE ACCESS TO ACCESS_TOKEN AND INSTANCE_ID    #
+    ##########################################################
+
+    ##########################################################
+    # USER STARTUP SCRIPT STARTS HERE                       #
+    ##########################################################
+
+    echo "Configuring NVIDIA MIG to all-1g.10gb..."
+
+    nvidia-smi -pm 1
+
+    # Step 1: Unbind the virtual consoles
+    for i in /sys/class/vtconsole/vtcon*/bind; do echo 0 > "$i"; done
+
+    # Step 2: Unload the graphics-related kernel modules with exponential backoff
+    # Function to unload kernel module with exponential backoff (max 60s)
+    unload_module_with_retry() {
+        local module_name="$1"
+        local max_wait=60
+        local wait_time=1
+        local total_wait=0
+        
+        while [ $total_wait -lt $max_wait ]; do
+            if rmmod "$module_name" 2>/dev/null; then
+                echo "Successfully unloaded $module_name"
+                return 0
+            fi
+            
+            echo "Failed to unload $module_name, retrying in ${wait_time}s..."
+            sleep $wait_time
+            total_wait=$((total_wait + wait_time))
+            wait_time=$((wait_time * 2))
+            
+            # Cap wait time to not exceed remaining time
+            if [ $((total_wait + wait_time)) -gt $max_wait ]; then
+                wait_time=$((max_wait - total_wait))
+            fi
+        done
+        
+        echo "Failed to unload $module_name after ${max_wait}s"
+        return 1
+    }
+
+    # Unload modules with retry logic
+    unload_module_with_retry nvidia_drm
+    unload_module_with_retry nvidia_modeset
+
+    # Step 3: Enable MIG mode on the first GPU
+    nvidia-smi -i 0 -mig 1
+
+    for j in {1..7}; do # A100 has max 7
+        nvidia-smi mig -cgi 1g.10gb -C
+    done
+
+    echo "Creating /etc/rancher/k3s/config.yaml with token, url, and kubelet-arg..."
+
+    # Ensure the directory exists
+    mkdir -p /etc/rancher/k3s
+
+    # Write the configuration to the file
+    cat <<EOF >/etc/rancher/k3s/config.yaml
+    "token": "<ADD_TOKEN_HERE>"
+    "server": "<ADD_K3S_URL_HERE>"
+    "node-label":
+      - "nodepool=gpu"
+      - "nvidia.com/mig.config=all-1g.10gb"
+      - "datacrunch.io/gpu-node=true"
+    "node-taint":
+      - "gpu-test:NoSchedule"
+    "kubelet-arg":
+      - "provider-id=datacrunch://${INSTANCE_ID}" # this is the only way to get the instance ID into the kubelet
+    EOF
+
+    echo "/etc/rancher/k3s/config.yaml created successfully."
+
+    # enable mirroring for all registries
+    cat <<EOF >/etc/rancher/k3s/registries.yaml
+    "*":
+    EOF
+
+    # 3. Install and start K3s agent (using placeholders for env vars)
+    echo "Installing K3s agent..."
+
+    export INSTALL_K3S_EXEC="agent"
+    export INSTALL_K3S_VERSION="v1.31.8+k3s1"
+
+    curl -sfL https://get.k3s.io | sh -s -
+
+    echo "K3s agent installation complete. Checking status..."
+    systemctl status k3s-agent.service --no-pager

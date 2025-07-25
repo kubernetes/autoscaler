@@ -195,8 +195,13 @@ spec:
                 configMapKeyRef:
                   name: datacrunch-cluster-config
                   key: cluster_config
-            - name: DATACRUNCH_STARTUP_SCRIPT_FETCH_URL
-              value: "http://startup-script-server:8080/script"
+            - name: DATACRUNCH_STARTUP_SCRIPT
+              valueFrom:
+                configMapKeyRef:
+                  name: startup-script
+                  key: STARTUP_SCRIPT
+            - name: DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT
+              value: "true"
 
           volumeMounts:
             - name: ssl-certs
