@@ -79,15 +79,15 @@ if [ "{{ .DELETE_SCRIPT }}" = "true" ]; then
     fi
 fi
 
-# 3.Get instance ID based on $HOSTNAME
+# 3.Get instance ID based on node name
 INSTANCE_ID=$(curl -s https://api.datacrunch.io/v1/instances \
     --header "Authorization: Bearer $ACCESS_TOKEN" | \
-    jq -r --arg HOSTNAME "$HOSTNAME" '.[] | select(.hostname == $HOSTNAME) | .id')
+    jq -r --arg HOSTNAME "{{ .NODENAME }}" '.[] | select(.hostname == {{ .NODENAME }}) | .id')
 
 if [ -n "$INSTANCE_ID" ]; then
-    echo "Instance ID for hostname $HOSTNAME is $INSTANCE_ID"
+    echo "Instance ID for hostname {{ .NODENAME }} is $INSTANCE_ID"
 else
-    echo "No instance found for hostname $HOSTNAME"
+    echo "No instance found for hostname {{ .NODENAME }}"
 fi
 	`
 )
@@ -527,7 +527,7 @@ func processPreScriptTemplate(preScriptTemplate string, data interface{}) (strin
 	return script.String(), nil
 }
 
-func buildPreScript(n *datacrunchNodeGroup, scriptName string) (string, error) {
+func buildPreScript(scriptName string, nodeName string) (string, error) {
 	// Get credentials from environment
 	clientID := os.Getenv("DATACRUNCH_CLIENT_ID")
 	clientSecret := os.Getenv("DATACRUNCH_CLIENT_SECRET")
@@ -544,6 +544,7 @@ func buildPreScript(n *datacrunchNodeGroup, scriptName string) (string, error) {
 		"DATACRUNCH_CLIENT_SECRET": clientSecret,
 		"SCRIPT_NAME":              scriptName,
 		"DELETE_SCRIPT":            fmt.Sprintf("%t", deleteScriptsAfterBoot),
+		"NODENAME":                 nodeName,
 	}
 
 	// Process the template
@@ -630,7 +631,7 @@ func createServer(n *datacrunchNodeGroup) error {
 
 	if startupScript != "" {
 		// Build pre-script from template
-		preScript, err := buildPreScript(n, startupScriptName)
+		preScript, err := buildPreScript(startupScriptName, nodeName)
 		if err != nil {
 			return fmt.Errorf("failed to build pre-script: %v", err)
 		}
