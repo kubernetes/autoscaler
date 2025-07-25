@@ -54,6 +54,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
@@ -1553,10 +1554,9 @@ func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 }
 
 func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
-	// setup
-	provider := &mockprovider.CloudProvider{}
+	now := time.Now()
 
-	// Create context with mocked lister registry.
+	provider := &mockprovider.CloudProvider{}
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
@@ -1571,8 +1571,14 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 		MaxMemoryTotal:               100000,
 		ExpendablePodsPriorityCutoff: 10,
 	}
-	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
+	groupId := 0
+	nextGroupID := func() string {
+		groupId++
+		return fmt.Sprintf("GID%03d", groupId)
+	}
+
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
@@ -1583,370 +1589,605 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupConfigProcessor := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults)
 	asyncNodeGroupStateChecker := asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
-		lastScaleUpTime:       time.Now(),
-		lastScaleDownFailTime: time.Now(),
+		lastScaleUpTime:       now,
+		lastScaleDownFailTime: now,
 		processorCallbacks:    processorCallbacks,
 	}
 
-	nodeGroupA := &mockprovider.NodeGroup{}
-	nodeGroupB := &mockprovider.NodeGroup{}
+	createMockedNodeGroup := func(id string, targetSize int, groupDefaults *config.NodeGroupAutoscalingOptions) *mockprovider.NodeGroup {
+		ng := &mockprovider.NodeGroup{}
+		ng.On("Exist").Return(true)
+		ng.On("Autoprovisioned").Return(false)
+		ng.On("Id").Return(id)
+		ng.On("MinSize").Return(0)
+		ng.On("TargetSize").Return(targetSize, nil)
+		ng.On("TemplateNodeInfo").Return(nil, fmt.Errorf("unknown error"))
+		ng.On("DeleteNodes", mock.Anything).Return(nil)
 
-	// Three nodes with out-of-resources errors
-	nodeGroupA.On("Exist").Return(true)
-	nodeGroupA.On("Autoprovisioned").Return(false)
-	nodeGroupA.On("TargetSize").Return(5, nil)
-	nodeGroupA.On("Id").Return("A")
-	nodeGroupA.On("DeleteNodes", mock.Anything).Return(nil)
-	nodeGroupA.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
-	nodeGroupA.On("Nodes").Return([]cloudprovider.Instance{
-		{
-			Id: "A1",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceRunning,
+		if groupDefaults == nil {
+			ng.On("GetOptions", options.NodeGroupDefaults).Return(nil, fmt.Errorf("failed to get options"))
+		} else {
+			ng.On("GetOptions", options.NodeGroupDefaults).Return(groupDefaults, nil)
+		}
+		return ng
+	}
+
+	t.Run("nodes are deleted twice", func(t *testing.T) {
+		ng := createMockedNodeGroup(nextGroupID(), 5, &options.NodeGroupDefaults)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			},
-		},
-		{
-			Id: "A2",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
+			{
+				Id:     ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 			},
-		},
-		{
-			Id: "A3",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:  "RESOURCE_POOL_EXHAUSTED",
+			{
+				Id: ngId + "N3",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "RESOURCE_POOL_EXHAUSTED",
+					},
 				},
 			},
-		},
-		{
-			Id: "A4",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:  "RESOURCE_POOL_EXHAUSTED",
+			{
+				Id: ngId + "N4",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "RESOURCE_POOL_EXHAUSTED",
+					},
 				},
 			},
-		},
-		{
-			Id: "A5",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:  "QUOTA",
+			{
+				Id: ngId + "N5",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "QUOTA",
+					},
 				},
 			},
-		},
-		{
-			Id: "A6",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass: cloudprovider.OtherErrorClass,
-					ErrorCode:  "OTHER",
+			{
+				Id: ngId + "N6",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OtherErrorClass,
+						ErrorCode:  "OTHER",
+					},
 				},
 			},
-		},
-	}, nil).Twice()
+		}, nil).Twice()
 
-	nodeGroupB.On("Exist").Return(true)
-	nodeGroupB.On("Autoprovisioned").Return(false)
-	nodeGroupB.On("TargetSize").Return(5, nil)
-	nodeGroupB.On("Id").Return("B")
-	nodeGroupB.On("DeleteNodes", mock.Anything).Return(nil)
-	nodeGroupB.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
-	nodeGroupB.On("Nodes").Return([]cloudprovider.Instance{
-		{
-			Id: "B1",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceRunning,
-			},
-		},
-	}, nil)
-
-	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupA})
-	provider.On("NodeGroupForNode", mock.Anything).Return(
-		func(node *apiv1.Node) cloudprovider.NodeGroup {
-			if strings.HasPrefix(node.Spec.ProviderID, "A") {
-				return nodeGroupA
-			}
-			if strings.HasPrefix(node.Spec.ProviderID, "B") {
-				return nodeGroupB
-			}
-			return nil
-		}, nil)
-	provider.On("HasInstance", mock.Anything).Return(
-		func(node *apiv1.Node) bool {
-			return false
-		}, nil)
-
-	now := time.Now()
-
-	clusterState.RefreshCloudProviderNodeInstancesCache()
-	// propagate nodes info in cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
-
-	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
-
-	// nodes should be deleted
-	expectedDeleteCalls := 1
-	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
-
-	// check delete was called on correct nodes
-	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
-		func(nodes []*apiv1.Node) bool {
-			if len(nodes) != 4 {
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("NodeGroupForNode", mock.Anything).Return(
+			func(node *apiv1.Node) cloudprovider.NodeGroup {
+				if strings.HasPrefix(node.Spec.ProviderID, ngId) {
+					return ng
+				}
+				return nil
+			}, nil)
+		provider.On("HasInstance", mock.Anything).Return(
+			func(node *apiv1.Node) bool {
 				return false
-			}
-			names := make(map[string]bool)
-			for _, node := range nodes {
-				names[node.Spec.ProviderID] = true
-			}
-			return names["A3"] && names["A4"] && names["A5"] && names["A6"]
-		}))
+			}, nil)
 
-	// TODO assert that scaleup was failed (separately for QUOTA and RESOURCE_POOL_EXHAUSTED)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		// propagate nodes info in cluster state
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
-	clusterState.RefreshCloudProviderNodeInstancesCache()
+		// delete nodes with create errors
+		autoscaler.deleteCreatedNodesWithErrors()
 
-	// propagate nodes info in cluster state again
-	// no changes in what provider returns
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+		// nodes should be deleted
+		expectedDeleteCalls := 1
+		ng.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
 
-	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
+		// check delete was called on correct nodes
+		ng.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+			func(nodes []*apiv1.Node) bool {
+				if len(nodes) != 4 {
+					return false
+				}
+				names := make(map[string]bool)
+				for _, node := range nodes {
+					names[node.Spec.ProviderID] = true
+				}
+				return names[ngId+"N3"] && names[ngId+"N4"] && names[ngId+"N5"] && names[ngId+"N6"]
+			}))
 
-	// nodes should be deleted again
-	expectedDeleteCalls += 1
-	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
+		// TODO assert that scaleup was failed (separately for QUOTA and RESOURCE_POOL_EXHAUSTED)
 
-	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
-		func(nodes []*apiv1.Node) bool {
-			if len(nodes) != 4 {
-				return false
-			}
-			names := make(map[string]bool)
-			for _, node := range nodes {
-				names[node.Spec.ProviderID] = true
-			}
-			return names["A3"] && names["A4"] && names["A5"] && names["A6"]
-		}))
+		clusterState.RefreshCloudProviderNodeInstancesCache()
 
-	// TODO assert that scaleup is not failed again
+		// propagate nodes info in cluster state again
+		// no changes in what provider returns
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
-	// restub node group A so nodes are no longer reporting errors
-	nodeGroupA.On("Nodes").Return([]cloudprovider.Instance{
-		{
-			Id: "A1",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceRunning,
+		// delete nodes with create errors
+		autoscaler.deleteCreatedNodesWithErrors()
+
+		// nodes should be deleted again
+		expectedDeleteCalls += 1
+		ng.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
+
+		ng.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+			func(nodes []*apiv1.Node) bool {
+				if len(nodes) != 4 {
+					return false
+				}
+				names := make(map[string]bool)
+				for _, node := range nodes {
+					names[node.Spec.ProviderID] = true
+				}
+				return names[ngId+"N3"] && names[ngId+"N4"] && names[ngId+"N5"] && names[ngId+"N6"]
+			}))
+
+		// TODO assert that scaleup is not failed again
+
+		// restub node group A so nodes are no longer reporting errors
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			},
-		},
-		{
-			Id: "A2",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
+			{
+				Id:     ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 			},
-		},
-		{
-			Id: "A3",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceDeleting,
+			{
+				Id:     ngId + "N3",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting},
 			},
-		},
-		{
-			Id: "A4",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceDeleting,
+			{
+				Id:     ngId + "N4",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting},
 			},
-		},
-		{
-			Id: "A5",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceDeleting,
+			{
+				Id:     ngId + "N5",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting},
 			},
-		},
-		{
-			Id: "A6",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceDeleting,
+			{
+				Id:     ngId + "N6",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting},
 			},
-		},
-	}, nil)
-
-	clusterState.RefreshCloudProviderNodeInstancesCache()
-
-	// update cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
-
-	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
-
-	// we expect no more Delete Nodes, don't increase expectedDeleteCalls
-	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
-
-	// failed node not included by NodeGroupForNode
-	nodeGroupC := &mockprovider.NodeGroup{}
-	nodeGroupC.On("Exist").Return(true)
-	nodeGroupC.On("Autoprovisioned").Return(false)
-	nodeGroupC.On("TargetSize").Return(1, nil)
-	nodeGroupC.On("Id").Return("C")
-	nodeGroupC.On("DeleteNodes", mock.Anything).Return(nil)
-	nodeGroupC.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
-	nodeGroupC.On("Nodes").Return([]cloudprovider.Instance{
-		{
-			Id: "C1",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:  "QUOTA",
-				},
-			},
-		},
-	}, nil)
-	provider = &mockprovider.CloudProvider{}
-	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupC})
-	provider.On("NodeGroupForNode", mock.Anything).Return(nil, nil)
-	provider.On("HasInstance", mock.Anything).Return(
-		func(node *apiv1.Node) bool {
-			return false
 		}, nil)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
-	clusterState.RefreshCloudProviderNodeInstancesCache()
-	autoscaler.clusterStateRegistry = clusterState
+		clusterState.RefreshCloudProviderNodeInstancesCache()
 
-	// update cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, time.Now())
+		// update cluster state
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
-	// No nodes are deleted when failed nodes don't have matching node groups
-	autoscaler.deleteCreatedNodesWithErrors()
-	nodeGroupC.AssertNumberOfCalls(t, "DeleteNodes", 0)
+		// delete nodes with create errors
+		autoscaler.deleteCreatedNodesWithErrors()
 
-	nodeGroupAtomic := &mockprovider.NodeGroup{}
-	nodeGroupAtomic.On("Exist").Return(true)
-	nodeGroupAtomic.On("Autoprovisioned").Return(false)
-	nodeGroupAtomic.On("TargetSize").Return(3, nil)
-	nodeGroupAtomic.On("Id").Return("D")
-	nodeGroupAtomic.On("DeleteNodes", mock.Anything).Return(nil)
-	nodeGroupAtomic.On("GetOptions", options.NodeGroupDefaults).Return(
-		&config.NodeGroupAutoscalingOptions{
-			ZeroOrMaxNodeScaling: true,
+		// we expect no more Delete Nodes, don't increase expectedDeleteCalls
+		ng.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
+	})
+
+	t.Run("failed node not included by NodeGroupForNode", func(t *testing.T) {
+		ng := createMockedNodeGroup(nextGroupID(), 1, &options.NodeGroupDefaults)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id: ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "QUOTA",
+					},
+				},
+			},
 		}, nil)
-	nodeGroupAtomic.On("Nodes").Return([]cloudprovider.Instance{
-		{
-			Id: "D1",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceRunning,
-			},
-		},
-		{
-			Id: "D2",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceRunning,
-			},
-		},
-		{
-			Id: "D3",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass: cloudprovider.OtherErrorClass,
-					ErrorCode:  "OTHER",
-				},
-			},
-		},
-	}, nil).Twice()
-	provider = &mockprovider.CloudProvider{}
-	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupAtomic})
-	provider.On("NodeGroupForNode", mock.Anything).Return(
-		func(node *apiv1.Node) cloudprovider.NodeGroup {
-			if strings.HasPrefix(node.Spec.ProviderID, "D") {
-				return nodeGroupAtomic
-			}
-			return nil
-		}, nil).Times(3)
-
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
-	clusterState.RefreshCloudProviderNodeInstancesCache()
-	autoscaler.CloudProvider = provider
-	autoscaler.clusterStateRegistry = clusterState
-	// propagate nodes info in cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
-
-	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
-
-	nodeGroupAtomic.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
-		func(nodes []*apiv1.Node) bool {
-			if len(nodes) != 3 {
+		provider = &mockprovider.CloudProvider{}
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("NodeGroupForNode", mock.Anything).Return(nil, nil)
+		provider.On("HasInstance", mock.Anything).Return(
+			func(node *apiv1.Node) bool {
 				return false
-			}
-			names := make(map[string]bool)
-			for _, node := range nodes {
-				names[node.Spec.ProviderID] = true
-			}
-			return names["D1"] && names["D2"] && names["D3"]
-		}))
+			}, nil)
 
-	// Node group with getOptions error gets no deletes.
-	nodeGroupError := &mockprovider.NodeGroup{}
-	nodeGroupError.On("Exist").Return(true)
-	nodeGroupError.On("Autoprovisioned").Return(false)
-	nodeGroupError.On("TargetSize").Return(1, nil)
-	nodeGroupError.On("Id").Return("E")
-	nodeGroupError.On("DeleteNodes", mock.Anything).Return(nil)
-	nodeGroupError.On("GetOptions", options.NodeGroupDefaults).Return(nil, fmt.Errorf("Failed to get options"))
-	nodeGroupError.On("Nodes").Return([]cloudprovider.Instance{
-		{
-			Id: "E1",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceRunning,
+		clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		autoscaler.clusterStateRegistry = clusterState
+
+		// update cluster state
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+
+		// No nodes are deleted when failed nodes don't have matching node groups
+		autoscaler.deleteCreatedNodesWithErrors()
+		ng.AssertNumberOfCalls(t, "DeleteNodes", 0)
+	})
+
+	t.Run("node group atomic", func(t *testing.T) {
+		groupDefaults := &config.NodeGroupAutoscalingOptions{ZeroOrMaxNodeScaling: true}
+
+		ng := createMockedNodeGroup(nextGroupID(), 3, groupDefaults)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			},
-		},
-		{
-
-			Id: "E2",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:  "QUOTA",
+			{
+				Id:     ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+			},
+			{
+				Id: ngId + "N3",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OtherErrorClass,
+						ErrorCode:  "OTHER",
+					},
 				},
 			},
-		},
-	}, nil)
+		}, nil).Twice()
 
-	provider = &mockprovider.CloudProvider{}
-	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupError})
-	provider.On("NodeGroupForNode", mock.Anything).Return(
-		func(node *apiv1.Node) cloudprovider.NodeGroup {
-			if strings.HasPrefix(node.Spec.ProviderID, "E") {
-				return nodeGroupError
-			}
-			return nil
-		}, nil).Times(2)
+		provider = &mockprovider.CloudProvider{}
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("NodeGroupForNode", mock.Anything).Return(
+			func(node *apiv1.Node) cloudprovider.NodeGroup {
+				if strings.HasPrefix(node.Spec.ProviderID, ngId) {
+					return ng
+				}
+				return nil
+			}, nil).Times(3)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
-	clusterState.RefreshCloudProviderNodeInstancesCache()
-	autoscaler.CloudProvider = provider
-	autoscaler.clusterStateRegistry = clusterState
-	// propagate nodes info in cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+		clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		autoscaler.CloudProvider = provider
+		autoscaler.clusterStateRegistry = clusterState
 
-	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+		autoscaler.deleteCreatedNodesWithErrors()
 
-	nodeGroupError.AssertNumberOfCalls(t, "DeleteNodes", 0)
+		ng.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+			func(nodes []*apiv1.Node) bool {
+				if len(nodes) != 3 {
+					return false
+				}
+				names := make(map[string]bool)
+				for _, node := range nodes {
+					names[node.Spec.ProviderID] = true
+				}
+				return names[ngId+"N1"] && names[ngId+"N2"] && names[ngId+"N3"]
+			}))
+	})
+
+	t.Run("Node group with getOptions error gets no deletes", func(t *testing.T) {
+		ng := createMockedNodeGroup(nextGroupID(), 1, nil)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+			},
+			{
+				Id: ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "QUOTA",
+					},
+				},
+			},
+		}, nil)
+
+		provider = &mockprovider.CloudProvider{}
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("NodeGroupForNode", mock.Anything).Return(
+			func(node *apiv1.Node) cloudprovider.NodeGroup {
+				if strings.HasPrefix(node.Spec.ProviderID, ngId) {
+					return ng
+				}
+				return nil
+			}, nil).Times(2)
+
+		clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		autoscaler.CloudProvider = provider
+		autoscaler.clusterStateRegistry = clusterState
+
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+		autoscaler.deleteCreatedNodesWithErrors()
+
+		ng.AssertNumberOfCalls(t, "DeleteNodes", 0)
+	})
+
+	t.Run("trueIgnoreInstanceCreationStockoutErrors_stockoutError_hasNoDeletesOrScaleUpFailures", func(t *testing.T) {
+		groupDefaults := options.NodeGroupDefaults
+		groupDefaults.IgnoreInstanceCreationStockoutErrors = true
+
+		ng := createMockedNodeGroup(nextGroupID(), 3, &groupDefaults)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+			},
+			{
+				Id:     ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+			},
+			{
+				Id: ngId + "N3",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "QUOTA",
+					},
+				},
+			},
+		}, nil)
+
+		provider = &mockprovider.CloudProvider{}
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("GetAvailableGPUTypes").Return(make(map[string]struct{}))
+		provider.On("NodeGroupForNode", mock.Anything).Return(
+			func(node *apiv1.Node) cloudprovider.NodeGroup {
+				if strings.HasPrefix(node.Spec.ProviderID, ngId) {
+					return ng
+				}
+				return nil
+			}, nil).Times(2)
+
+		clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		autoscaler.CloudProvider = provider
+		autoscaler.clusterStateRegistry = clusterState
+
+		clusterState.RegisterScaleUp(ng, 3, now.Add(-1*time.Second))
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+
+		// verify that instance creation errors don't result in deleted nodes
+		autoscaler.deleteCreatedNodesWithErrors()
+		ng.AssertNumberOfCalls(t, "DeleteNodes", 0)
+
+		// verify that instance creation errors don't result in scale up failures
+		assert.Empty(t, autoscaler.clusterStateRegistry.GetScaleUpFailures())
+	})
+
+	t.Run("trueIgnoreInstanceCreationStockoutErrors_stockoutError_otherError_hasDeletesOrScaleUpFailuresOnOtherError", func(t *testing.T) {
+		groupDefaults := options.NodeGroupDefaults
+		groupDefaults.IgnoreInstanceCreationStockoutErrors = true
+
+		ng := createMockedNodeGroup(nextGroupID(), 3, &groupDefaults)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+			},
+			{
+				Id:     ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+			},
+			{
+				Id: ngId + "N3",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "QUOTA",
+					},
+				},
+			},
+			{
+				Id: ngId + "N4",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OtherErrorClass,
+						ErrorCode:  "UNKNOWN",
+					},
+				},
+			},
+		}, nil)
+
+		provider = &mockprovider.CloudProvider{}
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("GetAvailableGPUTypes").Return(make(map[string]struct{}))
+		provider.On("NodeGroupForNode", mock.Anything).Return(
+			func(node *apiv1.Node) cloudprovider.NodeGroup {
+				if strings.HasPrefix(node.Spec.ProviderID, ngId) {
+					return ng
+				}
+				return nil
+			}, nil).Times(2)
+
+		clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		autoscaler.CloudProvider = provider
+		autoscaler.clusterStateRegistry = clusterState
+
+		clusterState.RegisterScaleUp(ng, 3, now.Add(-1*time.Second))
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+
+		// verify that instance creation errors result in deleted nodes
+		autoscaler.deleteCreatedNodesWithErrors()
+		ng.AssertNumberOfCalls(t, "DeleteNodes", 1)
+		ng.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+			func(nodes []*apiv1.Node) bool {
+				if len(nodes) != 1 {
+					return false
+				}
+				names := make(map[string]bool)
+				for _, node := range nodes {
+					names[node.Spec.ProviderID] = true
+				}
+				return names[ngId+"N4"]
+			}),
+		)
+
+		// verify the scale up failure comes from the instance creation errors.
+		expectedScaleUpFailures := map[string][]clusterstate.ScaleUpFailure{
+			ngId: {
+				{NodeGroup: ng, Time: now, Reason: "UNKNOWN"},
+			},
+		}
+		assert.Equal(t, expectedScaleUpFailures, autoscaler.clusterStateRegistry.GetScaleUpFailures())
+	})
+
+	t.Run("falseIgnoreInstanceCreationStockoutErrors_stockoutError_hasDeletesAndScaleUpFailures", func(t *testing.T) {
+		groupDefaults := options.NodeGroupDefaults
+		groupDefaults.IgnoreInstanceCreationStockoutErrors = false
+
+		ng := createMockedNodeGroup(nextGroupID(), 3, &groupDefaults)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+			},
+			{
+				Id:     ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+			},
+			{
+				Id: ngId + "N3",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "QUOTA",
+					},
+				},
+			},
+		}, nil)
+
+		provider = &mockprovider.CloudProvider{}
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("GetAvailableGPUTypes").Return(make(map[string]struct{}))
+		provider.On("NodeGroupForNode", mock.Anything).Return(
+			func(node *apiv1.Node) cloudprovider.NodeGroup {
+				if strings.HasPrefix(node.Spec.ProviderID, ngId) {
+					return ng
+				}
+				return nil
+			}, nil).Times(2)
+
+		clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		autoscaler.CloudProvider = provider
+		autoscaler.clusterStateRegistry = clusterState
+
+		clusterState.RegisterScaleUp(ng, 3, now.Add(-1*time.Second))
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+
+		// verify that instance creation errors result in deleted nodes
+		autoscaler.deleteCreatedNodesWithErrors()
+		ng.AssertNumberOfCalls(t, "DeleteNodes", 1)
+		ng.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+			func(nodes []*apiv1.Node) bool {
+				if len(nodes) != 1 {
+					return false
+				}
+				names := make(map[string]bool)
+				for _, node := range nodes {
+					names[node.Spec.ProviderID] = true
+				}
+				return names[ngId+"N3"]
+			}),
+		)
+
+		// verify the scale up failure comes from the instance creation errors.
+		expectedScaleUpFailures := map[string][]clusterstate.ScaleUpFailure{
+			ngId: {
+				{NodeGroup: ng, Time: now, Reason: "QUOTA"},
+			},
+		}
+		assert.Equal(t, expectedScaleUpFailures, autoscaler.clusterStateRegistry.GetScaleUpFailures())
+	})
+
+	t.Run("trueIgnoreInstanceCreationStockoutErrors_stockoutError_maxNodeProvisioningTimeExceeded_hasDeletesAndScaleUpFailures", func(t *testing.T) {
+		groupDefaults := options.NodeGroupDefaults
+		groupDefaults.IgnoreInstanceCreationStockoutErrors = true
+
+		ng := createMockedNodeGroup(nextGroupID(), 3, &groupDefaults)
+		ngId := ng.Id()
+
+		ng.On("Nodes").Return([]cloudprovider.Instance{
+			{
+				Id:     ngId + "N1",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+			},
+			{
+				Id:     ngId + "N2",
+				Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+			},
+			{
+				Id: ngId + "N3",
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:  "QUOTA",
+					},
+				},
+			},
+		}, nil)
+
+		provider = &mockprovider.CloudProvider{}
+		provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{ng})
+		provider.On("GetAvailableGPUTypes").Return(make(map[string]struct{}))
+		provider.On("NodeGroupForNode", mock.Anything).Return(
+			func(node *apiv1.Node) cloudprovider.NodeGroup {
+				if strings.HasPrefix(node.Spec.ProviderID, ngId) {
+					return ng
+				}
+				return nil
+			}, nil).Times(4)
+
+		clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor, asyncNodeGroupStateChecker)
+		clusterState.RefreshCloudProviderNodeInstancesCache()
+		autoscaler.CloudProvider = provider
+		autoscaler.clusterStateRegistry = clusterState
+
+		clusterState.RegisterScaleUp(ng, 3, now.Add(-groupDefaults.MaxNodeProvisionTime-time.Minute))
+		clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+
+		// verify that instance creation errors don't result in deleted nodes
+		autoscaler.deleteCreatedNodesWithErrors()
+		ng.AssertNumberOfCalls(t, "DeleteNodes", 0)
+
+		// verify the scale up failure comes from the exceeded MaxNodeProvisioningTime and not the instance creation errors.
+		expectedScaleUpFailures := map[string][]clusterstate.ScaleUpFailure{
+			ngId: {
+				{NodeGroup: ng, Time: now, Reason: metrics.Timeout},
+			},
+		}
+		assert.Equal(t, expectedScaleUpFailures, autoscaler.clusterStateRegistry.GetScaleUpFailures())
+
+		// verify the nodes get removed once MaxNodeProvisioningTime is exceeded
+		unregisteredNodes := clusterState.GetUnregisteredNodes()
+		assert.Equal(t, 2, len(unregisteredNodes))
+		removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now.Add(groupDefaults.MaxNodeProvisionTime).Add(time.Minute), context.LogRecorder)
+		assert.NoError(t, err)
+		assert.True(t, removed)
+	})
 }
 
 type candidateTrackingFakePlanner struct {
