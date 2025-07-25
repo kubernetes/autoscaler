@@ -297,6 +297,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		MetricsClient:       input_metrics.NewMetricsClient(source, commonFlag.VpaObjectNamespace, "default-metrics-client"),
 		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), commonFlag.VpaObjectNamespace),
+		VpaCheckpointLister: vpa_api_util.NewVpaCheckpointLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), commonFlag.VpaObjectNamespace),
 		ClusterState:        clusterState,
 		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		MemorySaveMode:      *memorySaver,
