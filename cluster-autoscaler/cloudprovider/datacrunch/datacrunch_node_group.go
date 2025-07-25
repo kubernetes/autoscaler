@@ -82,7 +82,7 @@ fi
 # 3.Get instance ID based on node name
 INSTANCE_ID=$(curl -s https://api.datacrunch.io/v1/instances \
     --header "Authorization: Bearer $ACCESS_TOKEN" | \
-    jq -r --arg HOSTNAME "{{ .NODENAME }}" '.[] | select(.hostname == {{ .NODENAME }}) | .id')
+    jq -r --arg HOSTNAME "{{ .NODENAME }}" '.[] | select(.hostname == "{{ .NODENAME }}") | .id')
 
 if [ -n "$INSTANCE_ID" ]; then
     echo "Instance ID for hostname {{ .NODENAME }} is $INSTANCE_ID"
@@ -544,7 +544,6 @@ func buildPreScript(scriptName string, nodeName string) (string, error) {
 		"DATACRUNCH_CLIENT_SECRET": clientSecret,
 		"SCRIPT_NAME":              scriptName,
 		"DELETE_SCRIPT":            fmt.Sprintf("%t", deleteScriptsAfterBoot),
-		"NODENAME":                 nodeName,
 	}
 
 	// Process the template
