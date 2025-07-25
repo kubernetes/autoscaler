@@ -41,7 +41,6 @@ type datacrunchManager struct {
 	clusterConfig    *ClusterConfig
 	cachedServerType *serverTypeCache
 	cachedServers    *serversCache
-	startupScript    string
 }
 
 // ClusterConfig holds the configuration for all the nodepools
@@ -102,7 +101,6 @@ func newManager() (*datacrunchManager, error) {
 	clusterConfigBase64 := os.Getenv("DATACRUNCH_CLUSTER_CONFIG")
 	clusterConfigBaseJSON := os.Getenv("DATACRUNCH_CLUSTER_CONFIG_JSON")
 	clusterConfigFile := os.Getenv("DATACRUNCH_CLUSTER_CONFIG_FILE")
-	startupScript := os.Getenv("DATACRUNCH_STARTUP_SCRIPT")
 
 	if clusterConfigBase64 == "" && clusterConfigFile == "" && clusterConfigBaseJSON == "" {
 		return nil, errors.New("one of `DATACRUNCH_CLUSTER_CONFIG`, `DATACRUNCH_CLUSTER_CONFIG_FILE` or `DATACRUNCH_CLUSTER_CONFIG_JSON` must be specified")
@@ -137,7 +135,6 @@ func newManager() (*datacrunchManager, error) {
 		clusterConfig:    clusterConfig,
 		cachedServerType: newServerTypeCache(ctx, client),
 		cachedServers:    newServersCache(ctx, client),
-		startupScript:    startupScript,
 	}
 
 	return m, nil

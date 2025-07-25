@@ -609,7 +609,16 @@ func createServer(n *datacrunchNodeGroup) error {
 	startupScriptName := fmt.Sprintf("autoscaler-startup-script-%s", nodeName)
 
 	var startupScriptID string
-	startupScript := n.manager.startupScript
+	startupScript := os.Getenv("DATACRUNCH_STARTUP_SCRIPT")
+	startupScriptFile := os.Getenv("DATACRUNCH_STARTUP_SCRIPT_FILE")
+	if startupScript == "" && startupScriptFile != "" {
+		startupScriptBytes, err := os.ReadFile(startupScriptFile)
+		if err != nil {
+			return fmt.Errorf("failed to read startup script file: %v", err)
+		}
+		startupScript = string(startupScriptBytes)
+	}
+
 	if n.manager.clusterConfig.NodeConfigs[n.id].StartupScriptBase64 != "" {
 		startupScriptBytes, err := base64.StdEncoding.DecodeString(n.manager.clusterConfig.NodeConfigs[n.id].StartupScriptBase64)
 		if err != nil {

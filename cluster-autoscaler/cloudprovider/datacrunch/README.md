@@ -78,6 +78,7 @@ DATACRUNCH_CLUSTER_CONFIG_FILE="/path/to/config.json"    # File path
 
 # Optional: Startup script configuration
 DATACRUNCH_STARTUP_SCRIPT="#!/bin/bash\necho 'Hello World'"  # Global startup script
+DATACRUNCH_STARTUP_SCRIPT_FILE="<path to file>"              # Is only read when DATACRUNCH_STARTUP_SCRIPT is empty
 DATACRUNCH_DELETE_SCRIPTS_AFTER_BOOT="true"                  # Auto-delete scripts after execution
 ```
 
@@ -197,7 +198,7 @@ spec:
 You can configure startup scripts in three ways (in order of precedence):
 
 1. **Per-nodepool scripts** (highest precedence): Set `startup_script_base64` in nodepool configuration
-2. **Global startup script**: Set `DATACRUNCH_STARTUP_SCRIPT` environment variable
+2. **Global startup script**: Set `DATACRUNCH_STARTUP_SCRIPT` or `DATACRUNCH_STARTUP_SCRIPT_FILE` environment variables. `DATACRUNCH_STARTUP_SCRIPT` takes precedence.
 3. **No startup script**: Instances will boot with default image configuration
 
 Example per-nodepool script configuration:
