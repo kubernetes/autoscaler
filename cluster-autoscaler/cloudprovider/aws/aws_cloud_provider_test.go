@@ -306,6 +306,15 @@ func TestAwsRefFromProviderId(t *testing.T) {
 				ProviderID: "aws:///eu-central-1c/i-placeholder-K3-EKS-spotr5xlasgsubnet02af43b02922e710f-10QH9H0C8PG7O-14",
 			},
 		},
+		{
+			// ref: https://github.com/kubernetes/autoscaler/issues/8305
+			provID: "aws:///us-east-1a/i-placeholder-some/arbitrary/cluster/local",
+			expErr: false,
+			expRef: &AwsInstanceRef{
+				Name:       "i-placeholder-some/arbitrary/cluster/local",
+				ProviderID: "aws:///us-east-1a/i-placeholder-some/arbitrary/cluster/local",
+			},
+		},
 	}
 
 	for _, test := range tests {
