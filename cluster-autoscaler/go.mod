@@ -1,8 +1,8 @@
 module k8s.io/autoscaler/cluster-autoscaler
 
-go 1.22.0
+go 1.22.12
 
-toolchain go1.22.4
+toolchain go1.24.4
 
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
@@ -40,18 +40,18 @@ require (
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.30.11
-	k8s.io/apimachinery v0.30.11
-	k8s.io/apiserver v0.30.11
+	k8s.io/api v0.30.14
+	k8s.io/apimachinery v0.30.14
+	k8s.io/apiserver v0.30.14
 	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.30.11
-	k8s.io/cloud-provider v0.30.11
+	k8s.io/client-go v0.30.14
+	k8s.io/cloud-provider v0.30.14
 	k8s.io/cloud-provider-aws v1.27.0
-	k8s.io/component-base v0.30.11
-	k8s.io/component-helpers v0.30.11
+	k8s.io/component-base v0.30.14
+	k8s.io/component-helpers v0.30.14
 	k8s.io/klog/v2 v2.120.1
-	k8s.io/kubelet v0.30.11
-	k8s.io/kubernetes v1.30.11
+	k8s.io/kubelet v0.30.14
+	k8s.io/kubernetes v1.30.14
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661
 	sigs.k8s.io/cloud-provider-azure v1.29.4
