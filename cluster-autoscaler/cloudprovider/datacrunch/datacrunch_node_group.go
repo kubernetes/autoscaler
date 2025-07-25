@@ -44,7 +44,7 @@ const (
 )
 
 var (
-	PreStartupScriptTemplate = `
+	preStartupScriptTemplate = `
 #!/bin/bash
 
 # 1. get access token
@@ -547,7 +547,7 @@ func buildPreScript(n *datacrunchNodeGroup, scriptName string) (string, error) {
 	}
 
 	// Process the template
-	return processPreScriptTemplate(PreStartupScriptTemplate, templateData)
+	return processPreScriptTemplate(preStartupScriptTemplate, templateData)
 }
 
 func deployInstance(client *datacrunchclient.Client, deployReq datacrunchclient.DeployInstanceRequest, instanceOption InstanceOption, pricingOption *PricingOption) error {
