@@ -544,6 +544,7 @@ func buildPreScript(scriptName string, nodeName string) (string, error) {
 		"DATACRUNCH_CLIENT_SECRET": clientSecret,
 		"SCRIPT_NAME":              scriptName,
 		"DELETE_SCRIPT":            fmt.Sprintf("%t", deleteScriptsAfterBoot),
+		"NODENAME":                 nodeName,
 	}
 
 	// Process the template
