@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
@@ -377,7 +378,6 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 			WithTargetRef(targetRef).
 			WithContainer(containerName).
 			Get()
-
 		InstallVPA(f, vpaCRD)
 	})
 
@@ -390,9 +390,25 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 			f, oomTestTimeout, listOptions, apiv1.ResourceMemory,
 			ParseQuantityOrDie("1400Mi"), ParseQuantityOrDie("10000Mi"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		// Checking that the pod recommendation is bigger then DefaultOOMBumpUpRatio ( this is the default which are ovverided by oom)
+		vpa, err := getVpaClientSet(f).AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).Get(context.TODO(), "hamster-vpa", metav1.GetOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// Check that the recommendation is using the custom bump ratio and not the default
+		for _, container := range vpa.Status.Recommendation.ContainerRecommendations {
+			currentMemory := container.Target.Memory().Value()
+
+			// Calculate what the memory would be with default bump ratio
+			defaultBumpMemory := float64(currentMemory) * model.DefaultOOMBumpUpRatio
+
+			// The actual memory should be higher than what it would be with default bump ratio
+			// because we're using a custom ratio that should be higher than 1.2
+			gomega.Expect(float64(currentMemory)).To(
+				gomega.BeNumerically(">", defaultBumpMemory),
+				"Memory recommendation is not using the custom OOM bump ratio")
+		}
 	})
 })
-
 
 var _ = FullVpaE2eDescribe("OOMing pods under VPA with custom OOM settings", func() {
 	const replicas = 3
