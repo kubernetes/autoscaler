@@ -29,7 +29,6 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -413,7 +412,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	})
 })
 
-var _ = RecommenderE2eDescribe("OOM with custom config)", func() {
+var _ = RecommenderE2eDescribe("OOM with custom config", func() {
 	const replicas = 3
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
@@ -466,11 +465,12 @@ var _ = RecommenderE2eDescribe("OOM with custom config)", func() {
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
 
 		currentMemory := vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory().Value()
-		oomReplicationControllerRequestLimit := float64(1024 * 1024 * 1024) // This is hard coded inside runOomingReplicationController function and should be changed
-		defaultBumpMemory := oomReplicationControllerRequestLimit * model.DefaultOOMBumpUpRatio
+		oomReplicationControllerRequestLimit := int64(1024 * 1024 * 1024)         // from runOomingReplicationController
+		defaultBumpMemory := float64(oomReplicationControllerRequestLimit) * 1.2 // DefaultOOMBumpUpRatio
+		customBumpMemory := float64(oomReplicationControllerRequestLimit) * 2.0  // Custom ratio from VPA config
 
-		// The memory should be bigger then the default oom bump ratio
-		gomega.Expect(currentMemory).Should(gomega.BeNumerically(">", defaultBumpMemory))
+		gomega.Expect(currentMemory).Should(gomega.BeNumerically(">", int64(defaultBumpMemory)),
+			fmt.Sprintf("Memory recommendation should be at bigger than default bump up ratio (2x). Got: %d, Expected: >= %d", currentMemory, int64(customBumpMemory)))
 	})
 })
 
