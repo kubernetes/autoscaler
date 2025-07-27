@@ -28,6 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -408,6 +410,67 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			GetHamsterContainerNameByIndex(1))
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(GetHamsterContainerNameByIndex(1)), errMsg)
+	})
+})
+
+var _ = RecommenderE2eDescribe("OOM with custom config)", func() {
+	const replicas = 3
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	var (
+		vpaCRD       *vpa_types.VerticalPodAutoscaler
+		vpaClientSet vpa_clientset.Interface
+	)
+
+	ginkgo.BeforeEach(func() {
+		if !features.Enabled(features.PerVPAConfig) {
+			ginkgo.Skip("Test requires PerVPAConfig feature gate to be enabled")
+		}
+		ns := f.Namespace.Name
+		vpaClientSet = getVpaClientSet(f)
+		ginkgo.By("Setting up a hamster deployment")
+		runOomingReplicationController(
+			f.ClientSet,
+			ns,
+			"hamster",
+			replicas)
+		ginkgo.By("Setting up a VPA CRD")
+		targetRef := &autoscaling.CrossVersionObjectReference{
+			APIVersion: "v1",
+			Kind:       "Deployment",
+			Name:       "hamster",
+		}
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(targetRef).
+			WithContainer(containerName).
+			WithOOMBumpUpRatio(2).
+			Get()
+		InstallVPA(f, vpaCRD)
+	})
+	ginkgo.It("have memory requests growing with OOMs more than the default", func() {
+		listOptions := metav1.ListOptions{
+			LabelSelector: "name=hamster",
+			FieldSelector: getPodSelectorExcludingDonePodsOrDie(),
+		}
+		err := waitForResourceRequestInRangeInPods(
+			f, oomTestTimeout, listOptions, apiv1.ResourceMemory,
+			ParseQuantityOrDie("1024Mi"), ParseQuantityOrDie("1024Mi"))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+
+		currentMemory := vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory().Value()
+		oomReplicationControllerRequestLimit := float64(1024 * 1024 * 1024) // This is hard coded inside runOomingReplicationController function and should be changed
+		defaultBumpMemory := oomReplicationControllerRequestLimit * model.DefaultOOMBumpUpRatio
+
+		// The memory should be bigger then the default oom bump ratio
+		gomega.Expect(currentMemory).Should(gomega.BeNumerically(">", defaultBumpMemory))
 	})
 })
 
