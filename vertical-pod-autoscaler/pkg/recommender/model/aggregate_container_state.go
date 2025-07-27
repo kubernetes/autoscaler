@@ -40,6 +40,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -289,6 +290,13 @@ func (a *AggregateContainerState) isEmpty() bool {
 	return a.TotalSamplesCount == 0
 }
 
+func (a *AggregateContainerState) convertQuantityToFloat64(quantity *resource.Quantity) float64 {
+	if quantity == nil {
+		return 0.0
+	}
+	return float64(quantity.MilliValue()) / 1000.0
+}
+
 // UpdateFromPolicy updates container state scaling mode and controlled resources based on resource
 // policy of the VPA object.
 func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.ContainerResourcePolicy) {
@@ -305,10 +313,10 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 
 	// Per VPA components - feature flag "PerVPAConfig" must be enabled
 	if resourcePolicy != nil && resourcePolicy.OOMBumpUpRatio != nil && features.Enabled(features.PerVPAConfig) {
-		a.OOMBumpUpRatio = *resourcePolicy.OOMBumpUpRatio
+		a.OOMBumpUpRatio = a.convertQuantityToFloat64(resourcePolicy.OOMBumpUpRatio)
 	}
-	if resourcePolicy != nil && resourcePolicy.OOMMinBumpUp != nil && features.Enabled(features.PerVPAConfig){
-		a.OOMMinBumpUp = *resourcePolicy.OOMMinBumpUp
+	if resourcePolicy != nil && resourcePolicy.OOMMinBumpUp != nil && features.Enabled(features.PerVPAConfig) {
+		a.OOMMinBumpUp = a.convertQuantityToFloat64(resourcePolicy.OOMMinBumpUp)
 	}
 }
 

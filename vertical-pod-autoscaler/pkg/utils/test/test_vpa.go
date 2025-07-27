@@ -21,6 +21,7 @@ import (
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -47,8 +48,8 @@ type VerticalPodAutoscalerBuilder interface {
 	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
 	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
 	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
-	WithOOMBumpUpRatio(ratio float64) VerticalPodAutoscalerBuilder
-	WithOOMMinBumpUp(minBumpUp float64) VerticalPodAutoscalerBuilder
+	WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
+	WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -89,8 +90,8 @@ type verticalPodAutoscalerBuilder struct {
 	targetRef               *autoscaling.CrossVersionObjectReference
 	appendedRecommendations []vpa_types.RecommendedContainerResources
 	recommender             string
-	oomBumpUpRatio          *float64
-	oomMinBumpUp            *float64
+	oomBumpUpRatio          *resource.Quantity
+	oomMinBumpUp            *resource.Quantity
 }
 
 func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
@@ -218,15 +219,15 @@ func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) Verti
 	return &c
 }
 
-func (b *verticalPodAutoscalerBuilder) WithOOMBumpUpRatio(ratio float64) VerticalPodAutoscalerBuilder {
+func (b *verticalPodAutoscalerBuilder) WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.oomBumpUpRatio = &ratio
+	c.oomBumpUpRatio = ratio
 	return &c
 }
 
-func (b *verticalPodAutoscalerBuilder) WithOOMMinBumpUp(minBumpUp float64) VerticalPodAutoscalerBuilder {
+func (b *verticalPodAutoscalerBuilder) WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.oomMinBumpUp = &minBumpUp
+	c.oomMinBumpUp = minBumpUp
 	return &c
 }
 
