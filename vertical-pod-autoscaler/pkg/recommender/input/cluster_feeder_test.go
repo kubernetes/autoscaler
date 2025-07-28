@@ -65,7 +65,7 @@ var (
 	unsupportedConditionTextFromFetcher = "Cannot read targetRef. Reason: targetRef not defined"
 	unsupportedConditionNoExtraText     = "Cannot read targetRef"
 	unsupportedConditionNoTargetRef     = "Cannot read targetRef"
-	unsupportedConditionMudaMudaMuda    = "Error checking if target is a topmost well-known or scalable controller: muda muda muda"
+	unsupportedConditionMudaMudaMuda    = "Error checking if target taxonomy.doestar/doseph-doestar is a topmost well-known or scalable controller: muda muda muda"
 	unsupportedTargetRefHasParent       = "The targetRef controller has a parent but it should point to a topmost well-known or scalable controller"
 )
 
