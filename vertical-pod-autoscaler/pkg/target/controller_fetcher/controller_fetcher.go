@@ -78,7 +78,7 @@ type ControllerKeyWithAPIVersion struct {
 
 // String defines the format for the stringification of ControllerKeyWithAPIVersion
 func (c ControllerKeyWithAPIVersion) String() string {
-	return fmt.Sprintf("ControllerKeyWithAPIVersion %s of %s kind in %s namespace}", c.Name, c.Kind, c.Namespace)
+	return fmt.Sprintf("{namespace=%q,kind=%q,name=%q,apiVersion=%q}", c.Namespace, c.Kind, c.Name, c.ApiVersion)
 }
 
 // ControllerFetcher is responsible for finding the topmost well-known or scalable controller
