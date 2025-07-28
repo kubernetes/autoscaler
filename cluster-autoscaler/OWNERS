@@ -4,11 +4,13 @@ approvers:
 - feiskyer
 - towca
 - x13n
+- elmiko
 reviewers:
 - aleksandra-malinowska
 - BigDarkClown
 - feiskyer
 - vadasambar
 - x13n
+- elmiko
 labels:
 - area/cluster-autoscaler
