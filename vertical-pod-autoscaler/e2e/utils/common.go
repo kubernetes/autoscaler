@@ -145,6 +145,25 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 
+// NewVPADeployment creates a VPA deployment with n containers
+// for e2e test purposes.
+func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment {
+	d := framework_deployment.NewDeployment(
+		RecommenderDeploymentName,        /*deploymentName*/
+		1,                                /*replicas*/
+		RecommenderLabels,                /*podLabels*/
+		"recommender",                    /*imageName*/
+		"localhost:5001/vpa-recommender", /*image*/
+		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+	)
+	d.ObjectMeta.Namespace = f.Namespace.Name
+	d.Spec.Template.Spec.Containers[0].ImagePullPolicy = apiv1.PullNever // Image must be loaded first
+	d.Spec.Template.Spec.ServiceAccountName = "vpa-recommender"
+	d.Spec.Template.Spec.Containers[0].Command = []string{"/recommender"}
+	d.Spec.Template.Spec.Containers[0].Args = flags
+	return d
+}
+
 // NewNHamstersDeployment creates a simple hamster deployment with n containers
 // for e2e test purposes.
 func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
