@@ -46,7 +46,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health-check
-              port: 8944
+              port: prometheus
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -54,7 +54,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /health-check
-              port: 8944
+              port: prometheus
               scheme: HTTP
             periodSeconds: 10
             failureThreshold: 3
