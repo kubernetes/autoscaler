@@ -30,10 +30,10 @@ func TestServerTypeCache(t *testing.T) {
 
 	serverTypes := []*datacrunchclient.InstanceType{
 		{
-			Name: "test1",
+			InstanceType: "test1",
 		},
 		{
-			Name: "test2",
+			InstanceType: "test2",
 		},
 	}
 
@@ -51,11 +51,11 @@ func TestServerTypeCache(t *testing.T) {
 	assert.Equal(t, serverTypeCacheKey, obj.(serverTypeCachedObject).name)
 	foundServerTypes := obj.(serverTypeCachedObject).serverTypes
 	assert.Equal(t, 2, len(foundServerTypes))
-	assert.Equal(t, "test1", foundServerTypes[0].Name)
+	assert.Equal(t, "test1", foundServerTypes[0].InstanceType)
 
 	foundServerType, err := c.getServerType("test2")
 	require.NoError(t, err)
-	assert.Equal(t, "test2", foundServerType.Name)
+	assert.Equal(t, "test2", foundServerType.InstanceType)
 
 	_, err = c.getServerType("test3")
 	require.Error(t, err)
