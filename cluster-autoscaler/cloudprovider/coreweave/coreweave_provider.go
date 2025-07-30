@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
 )
 
@@ -36,13 +37,15 @@ type CoreWeaveCloudProvider struct {
 // NewCoreWeaveCloudProvider initializes a new CoreWeave cloud provider instance.
 // It creates a CoreWeave client and a dynamic client, then initializes the CoreWeave
 // manager with these clients. If any step fails, it logs the error and returns nil.
-func NewCoreWeaveCloudProvider(rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	clientset, err := GetCoreWeaveClient()
+func NewCoreWeaveCloudProvider(rl *cloudprovider.ResourceLimiter, opts config.AutoscalingOptions) cloudprovider.CloudProvider {
+	// Get the shared *rest.Config using the autoscaler's logic
+	restConfig := kube_util.GetKubeConfig(opts.KubeClientOpts)
+	clientset, err := GetCoreWeaveClient(restConfig)
 	if err != nil {
 		klog.Errorf("Failed to create CoreWeave client: %v", err)
 		return nil
 	}
-	dynamicClient, err := GetCoreWeaveDynamicClient()
+	dynamicClient, err := GetCoreWeaveDynamicClient(restConfig)
 	if err != nil {
 		klog.Errorf("Failed to create CoreWeave dynamic client: %v", err)
 		return nil
@@ -181,5 +184,5 @@ func (c *CoreWeaveCloudProvider) Refresh() error {
 // BuildCoreWeave builds the CoreWeave cloud provider with the given options and returns it.
 func BuildCoreWeave(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	klog.V(4).Infof("Building CoreWeave cloud provider with options: %+v", opts)
-	return NewCoreWeaveCloudProvider(rl)
+	return NewCoreWeaveCloudProvider(rl, opts)
 }

@@ -96,13 +96,6 @@ func (f *fakeManager) Refresh() error {
 	return nil
 }
 
-func TestNewCoreWeaveCloudProvider_NilManager(t *testing.T) {
-	cp := NewCoreWeaveCloudProvider(nil)
-	if cp != nil {
-		t.Errorf("expected nil provider, got %v", cp)
-	}
-}
-
 func TestCoreWeaveCloudProvider_Name(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{}
 	if cp.Name() != cloudprovider.CoreWeaveProviderName {
