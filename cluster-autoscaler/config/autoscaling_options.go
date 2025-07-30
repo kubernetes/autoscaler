@@ -307,6 +307,8 @@ type AutoscalingOptions struct {
 	CheckCapacityProvisioningRequestBatchTimebox time.Duration
 	// ForceDeleteLongUnregisteredNodes is used to enable/disable ignoring min size constraints during removal of long unregistered nodes
 	ForceDeleteLongUnregisteredNodes bool
+	// ForceDeleteFailedNodes is used to enable/disable ignoring min size constraints during removal of failed nodes
+	ForceDeleteFailedNodes bool
 	// DynamicResourceAllocationEnabled configures whether logic for handling DRA objects is enabled.
 	DynamicResourceAllocationEnabled bool
 	// ClusterSnapshotParallelism is the maximum parallelism of cluster snapshot creation.
