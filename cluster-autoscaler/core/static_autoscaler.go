@@ -883,8 +883,13 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 		nodeGroup := nodeGroups[nodeGroupId]
 		if nodeGroup == nil {
 			err = fmt.Errorf("node group %s not found", nodeGroupId)
-		} else if nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete); err == nil {
-			if len(nodesToDelete) > 0 {
+		} else if nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete); err == nil && len(nodesToDelete) > 0 {
+			if a.ForceDeleteFailedNodes {
+				err = nodeGroup.ForceDeleteNodes(nodesToDelete)
+				if errors.Is(err, cloudprovider.ErrNotImplemented) {
+					err = nodeGroup.DeleteNodes(nodesToDelete)
+				}
+			} else {
 				err = nodeGroup.DeleteNodes(nodesToDelete)
 			}
 		}
