@@ -43,35 +43,27 @@ var CoreWeaveNodeGroupResource = schema.GroupVersionResource{
 	Resource: coreWeaveResource,
 }
 
-var inClusterConfig = rest.InClusterConfig
-
-// GetCoreWeaveClient returns a Kubernetes client for CoreWeave
-func GetCoreWeaveClient() (kubernetes.Interface, error) {
-	config, err := inClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get in-cluster config: %v", err)
+// GetCoreWeaveClient returns a Kubernetes client for CoreWeave using the provided rest.Config
+func GetCoreWeaveClient(config *rest.Config) (kubernetes.Interface, error) {
+	if config == nil {
+		return nil, fmt.Errorf("rest.Config is nil")
 	}
-
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kubernetes client: %v", err)
 	}
-
 	return clientset, nil
 }
 
-// GetCoreWeaveDynamicClient returns a dynamic client for CoreWeave
-func GetCoreWeaveDynamicClient() (dynamic.Interface, error) {
-	config, err := inClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get in-cluster config: %v", err)
+// GetCoreWeaveDynamicClient returns a dynamic client for CoreWeave using the provided rest.Config
+func GetCoreWeaveDynamicClient(config *rest.Config) (dynamic.Interface, error) {
+	if config == nil {
+		return nil, fmt.Errorf("rest.Config is nil")
 	}
-
 	dynamicClient, err := dynamic.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dynamic client: %v", err)
 	}
-
 	return dynamicClient, nil
 }
 

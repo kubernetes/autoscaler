@@ -17,38 +17,26 @@ limitations under the License.
 package coreweave
 
 import (
-	"errors"
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/rest"
 )
 
-// --- Test GetCoreWeaveClient and GetCoreWeaveDynamicClient ---
-
-func TestGetCoreWeaveClient_InClusterConfigError(t *testing.T) {
-	orig := inClusterConfig
-	defer func() { inClusterConfig = orig }()
-	inClusterConfig = func() (*rest.Config, error) {
-		return nil, errors.New("mock error")
-	}
-	_, err := GetCoreWeaveClient()
-	if err == nil {
-		t.Error("expected error, got nil")
+func TestGetCoreWeaveClient(t *testing.T) {
+	// Nil config should return error
+	client, err := GetCoreWeaveClient(nil)
+	if err == nil || client != nil {
+		t.Error("expected error and nil client for nil config")
 	}
 }
 
-func TestGetCoreWeaveDynamicClient_InClusterConfigError(t *testing.T) {
-	orig := inClusterConfig
-	defer func() { inClusterConfig = orig }()
-	inClusterConfig = func() (*rest.Config, error) {
-		return nil, errors.New("mock error")
-	}
-	_, err := GetCoreWeaveDynamicClient()
-	if err == nil {
-		t.Error("expected error, got nil")
+func TestGetCoreWeaveDynamicClient(t *testing.T) {
+	// Nil config should return error
+	client, err := GetCoreWeaveDynamicClient(nil)
+	if err == nil || client != nil {
+		t.Error("expected error and nil client for nil config")
 	}
 }
 
