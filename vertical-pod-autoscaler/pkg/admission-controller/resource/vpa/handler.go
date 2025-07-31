@@ -139,18 +139,18 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			}
 
 			// Validate OOMBumpUpRatio
-			if policy.OOMBumpUpRatio != nil {
-				ratio := float64(policy.OOMBumpUpRatio.MilliValue()) / 1000.0
+			if policy.OomBumpUpRatio != nil {
+				ratio := float64(policy.OomBumpUpRatio.MilliValue()) / 1000.0
 				if ratio <= 1.0 {
-					return fmt.Errorf("OOMBumpUpRatio must be greater than 1.0, got %v", ratio)
+					return fmt.Errorf("OomBumpUpRatio must be greater than 1.0, got %v", ratio)
 				}
 			}
 
 			// Validate OOMMinBumpUp
-			if policy.OOMMinBumpUp != nil {
-				minBump := policy.OOMMinBumpUp.Value()
+			if policy.OomMinBumpUp != nil {
+				minBump := policy.OomMinBumpUp.Value()
 				if minBump <= 0 {
-					return fmt.Errorf("OOMMinBumpUp must be greater than 0, got %v bytes", minBump)
+					return fmt.Errorf("OomMinBumpUp must be greater than 0, got %v bytes", minBump)
 				}
 			}
 

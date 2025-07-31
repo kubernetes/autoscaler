@@ -63,13 +63,13 @@ func (in *ContainerResourcePolicy) DeepCopyInto(out *ContainerResourcePolicy) {
 		*out = new(ContainerControlledValues)
 		**out = **in
 	}
-	if in.OOMBumpUpRatio != nil {
-		in, out := &in.OOMBumpUpRatio, &out.OOMBumpUpRatio
+	if in.OomBumpUpRatio != nil {
+		in, out := &in.OomBumpUpRatio, &out.OomBumpUpRatio
 		x := (*in).DeepCopy()
 		*out = &x
 	}
-	if in.OOMMinBumpUp != nil {
-		in, out := &in.OOMMinBumpUp, &out.OOMMinBumpUp
+	if in.OomMinBumpUp != nil {
+		in, out := &in.OomMinBumpUp, &out.OomMinBumpUp
 		x := (*in).DeepCopy()
 		*out = &x
 	}

@@ -267,8 +267,8 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			MaxAllowed:       b.maxAllowed[containerName],
 			ControlledValues: b.controlledValues[containerName],
 			Mode:             &scalingModeAuto,
-			OOMBumpUpRatio:   b.oomBumpUpRatio,
-			OOMMinBumpUp:     b.oomMinBumpUp,
+			OomBumpUpRatio:   b.oomBumpUpRatio,
+			OomMinBumpUp:     b.oomMinBumpUp,
 		}
 		if scalingMode, ok := b.scalingMode[containerName]; ok {
 			containerResourcePolicy.Mode = scalingMode

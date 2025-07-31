@@ -312,11 +312,11 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	}
 
 	// Per VPA components - feature flag "PerVPAConfig" must be enabled
-	if resourcePolicy != nil && resourcePolicy.OOMBumpUpRatio != nil && features.Enabled(features.PerVPAConfig) {
-		a.OOMBumpUpRatio = a.convertQuantityToFloat64(resourcePolicy.OOMBumpUpRatio)
+	if resourcePolicy != nil && resourcePolicy.OomBumpUpRatio != nil && features.Enabled(features.PerVPAConfig) {
+		a.OOMBumpUpRatio = a.convertQuantityToFloat64(resourcePolicy.OomBumpUpRatio)
 	}
-	if resourcePolicy != nil && resourcePolicy.OOMMinBumpUp != nil && features.Enabled(features.PerVPAConfig) {
-		a.OOMMinBumpUp = a.convertQuantityToFloat64(resourcePolicy.OOMMinBumpUp)
+	if resourcePolicy != nil && resourcePolicy.OomMinBumpUp != nil && features.Enabled(features.PerVPAConfig) {
+		a.OOMMinBumpUp = a.convertQuantityToFloat64(resourcePolicy.OomMinBumpUp)
 	}
 }
 

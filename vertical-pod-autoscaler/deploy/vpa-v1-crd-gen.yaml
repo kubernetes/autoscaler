@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: verticalpodautoscalercheckpoints.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -225,7 +225,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: verticalpodautoscalers.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
@@ -373,15 +373,21 @@ spec:
                           - "Off"
                           type: string
                         oomBumpUpRatio:
+                          anyOf:
+                          - type: integer
+                          - type: string
                           description: OOMBumpUpRatio is the ratio to increase resources
                             when OOM is detected.
-                          minimum: 1
-                          type: number
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                         oomMinBumpUp:
+                          anyOf:
+                          - type: integer
+                          - type: string
                           description: OOMMinBumpUp is the minimum increase in resources
                             when OOM is detected.
-                          minimum: 0
-                          type: number
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                       type: object
                     type: array
                 type: object
