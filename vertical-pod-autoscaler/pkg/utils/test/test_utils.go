@@ -200,6 +200,36 @@ func (m *VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalP
 	return nil, fmt.Errorf("unimplemented")
 }
 
+// VerticalPodAutoscalerCheckPointListerMock is a mock of VerticalPodAutoscalerCheckPointLister
+type VerticalPodAutoscalerCheckPointListerMock struct {
+	mock.Mock
+}
+
+// List is a mock implementation of VerticalPodAutoscalerLister.List
+func (m *VerticalPodAutoscalerCheckPointListerMock) List(selector labels.Selector) (ret []*vpa_types.VerticalPodAutoscalerCheckpoint, err error) {
+	args := m.Called()
+	var returnArg []*vpa_types.VerticalPodAutoscalerCheckpoint
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).([]*vpa_types.VerticalPodAutoscalerCheckpoint)
+	}
+	return returnArg, args.Error(1)
+}
+
+// VerticalPodAutoscalerCheckpoints is a mock implementation of returning a lister for namespace.
+func (m *VerticalPodAutoscalerCheckPointListerMock) VerticalPodAutoscalerCheckpoints(namespace string) vpa_lister.VerticalPodAutoscalerCheckpointNamespaceLister {
+	args := m.Called(namespace)
+	var returnArg vpa_lister.VerticalPodAutoscalerCheckpointNamespaceLister
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).(vpa_lister.VerticalPodAutoscalerCheckpointNamespaceLister)
+	}
+	return returnArg
+}
+
+// Get is not implemented for this mock
+func (m *VerticalPodAutoscalerCheckPointListerMock) Get(name string) (*vpa_types.VerticalPodAutoscalerCheckpoint, error) {
+	return nil, fmt.Errorf("unimplemented")
+}
+
 // VerticalPodAutoscalerV1Beta1ListerMock is a mock of VerticalPodAutoscalerLister or
 // VerticalPodAutoscalerNamespaceLister - the crucial List method is the same.
 type VerticalPodAutoscalerV1Beta1ListerMock struct {

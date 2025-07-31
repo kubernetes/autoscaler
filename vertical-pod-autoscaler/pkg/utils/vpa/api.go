@@ -107,6 +107,36 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	return vpaLister
 }
 
+// NewVpaCheckpointLister returns VerticalPodAutoscalerCheckpointLister configured to fetch all VPACheckpoint objects from namespace,
+// set namespace to k8sapiv1.NamespaceAll to select all namespaces.
+// The method blocks until vpaCheckpointLister is initially populated.
+func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerCheckpointLister {
+	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalercheckpoints", namespace, fields.Everything())
+	informerOptions := cache.InformerOptions{
+		ObjectType:    &vpa_types.VerticalPodAutoscalerCheckpoint{},
+		ListerWatcher: vpaListWatch,
+		Handler:       &cache.ResourceEventHandlerFuncs{},
+		ResyncPeriod:  1 * time.Hour,
+		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	}
+
+	store, controller := cache.NewInformerWithOptions(informerOptions)
+	indexer, ok := store.(cache.Indexer)
+	if !ok {
+		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+	vpaCheckpointLister := vpa_lister.NewVerticalPodAutoscalerCheckpointLister(indexer)
+	go controller.Run(stopChannel)
+	if !cache.WaitForCacheSync(stopChannel, controller.HasSynced) {
+		klog.ErrorS(nil, "Failed to sync VPA checkpoint cache during initialization")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	} else {
+		klog.InfoS("Initial VPA checkpoint synced successfully")
+	}
+	return vpaCheckpointLister
+}
+
 // PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
 func PodMatchesVPA(pod *core.Pod, vpaWithSelector *VpaWithSelector) bool {
 	return PodLabelsMatchVPA(pod.Namespace, labels.Set(pod.GetLabels()), vpaWithSelector.Vpa.Namespace, vpaWithSelector.Selector)
