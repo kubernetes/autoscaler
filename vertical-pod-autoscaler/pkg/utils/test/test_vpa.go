@@ -48,7 +48,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
 	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
 	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
-	WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
+	WithOOMBumpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
 	WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
@@ -90,7 +90,7 @@ type verticalPodAutoscalerBuilder struct {
 	targetRef               *autoscaling.CrossVersionObjectReference
 	appendedRecommendations []vpa_types.RecommendedContainerResources
 	recommender             string
-	oomBumpUpRatio          *resource.Quantity
+	oomBumpRatio            *resource.Quantity
 	oomMinBumpUp            *resource.Quantity
 }
 
@@ -219,9 +219,9 @@ func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) Verti
 	return &c
 }
 
-func (b *verticalPodAutoscalerBuilder) WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder {
+func (b *verticalPodAutoscalerBuilder) WithOOMBumpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.oomBumpUpRatio = ratio
+	c.oomBumpRatio = ratio
 	return &c
 }
 
@@ -267,8 +267,8 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			MaxAllowed:       b.maxAllowed[containerName],
 			ControlledValues: b.controlledValues[containerName],
 			Mode:             &scalingModeAuto,
-			OomBumpUpRatio:   b.oomBumpUpRatio,
-			OomMinBumpUp:     b.oomMinBumpUp,
+			OOMBumpRatio:     b.oomBumpRatio,
+			OOMMinBumpUp:     b.oomMinBumpUp,
 		}
 		if scalingMode, ok := b.scalingMode[containerName]; ok {
 			containerResourcePolicy.Mode = scalingMode
