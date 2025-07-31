@@ -230,7 +230,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 	// to contain only Pods controlled by a VPA in auto, recreate, or inPlaceOrRecreate mode
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
-		controlledPodsCounter.Add(vpaSize, vpaSize)
+		updateMode := vpa_api_util.GetUpdateMode(vpa)
+		controlledPodsCounter.Add(vpaSize, updateMode, vpaSize)
 		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := u.restrictionFactory.GetCreatorMaps(livePods, vpa)
 		if err != nil {
 			klog.ErrorS(err, "Failed to get creator maps")
@@ -242,7 +243,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		podsForInPlace := make([]*apiv1.Pod, 0)
 		podsForEviction := make([]*apiv1.Pod, 0)
-		updateMode := vpa_api_util.GetUpdateMode(vpa)
 
 		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && features.Enabled(features.InPlaceOrRecreate) {
 			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
@@ -253,7 +253,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
 			}
 			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
-			evictablePodsCounter.Add(vpaSize, len(podsForEviction))
+			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
 		}
 
 		withInPlaceUpdatable := false
@@ -304,7 +304,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.V(0).InfoS("Eviction failed", "error", evictErr, "pod", klog.KObj(pod))
 			} else {
 				withEvicted = true
-				metrics_updater.AddEvictedPod(vpaSize)
+				metrics_updater.AddEvictedPod(vpaSize, updateMode)
 			}
 		}
 
@@ -315,10 +315,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 			vpasWithInPlaceUpdatedPodsCounter.Add(vpaSize, 1)
 		}
 		if withEvictable {
-			vpasWithEvictablePodsCounter.Add(vpaSize, 1)
+			vpasWithEvictablePodsCounter.Add(vpaSize, updateMode, 1)
 		}
 		if withEvicted {
-			vpasWithEvictedPodsCounter.Add(vpaSize, 1)
+			vpasWithEvictedPodsCounter.Add(vpaSize, updateMode, 1)
 		}
 	}
 	timer.ObserveStep("EvictPods")
