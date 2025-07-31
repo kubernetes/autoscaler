@@ -24,6 +24,7 @@ import (
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -446,7 +447,7 @@ var _ = RecommenderE2eDescribe("OOM with custom config", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(targetRef).
 			WithContainer(containerName).
-			WithOOMBumpUpRatio(2).
+			WithOOMBumpUpRatio(resource.NewQuantity(2, resource.DecimalSI)).
 			Get()
 		InstallVPA(f, vpaCRD)
 	})
@@ -465,7 +466,7 @@ var _ = RecommenderE2eDescribe("OOM with custom config", func() {
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
 
 		currentMemory := vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory().Value()
-		oomReplicationControllerRequestLimit := int64(1024 * 1024 * 1024)         // from runOomingReplicationController
+		oomReplicationControllerRequestLimit := int64(1024 * 1024 * 1024)        // from runOomingReplicationController
 		defaultBumpMemory := float64(oomReplicationControllerRequestLimit) * 1.2 // DefaultOOMBumpUpRatio
 		customBumpMemory := float64(oomReplicationControllerRequestLimit) * 2.0  // Custom ratio from VPA config
 

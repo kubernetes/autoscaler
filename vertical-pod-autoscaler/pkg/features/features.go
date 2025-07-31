@@ -54,7 +54,6 @@ const (
 	// optimization strategies to be applied to different workloads within the
 	// same cluster.
 	PerVPAConfig featuregate.Feature = "PerVPAConfig"
-
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.
