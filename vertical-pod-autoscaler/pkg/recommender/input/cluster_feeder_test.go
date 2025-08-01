@@ -65,8 +65,8 @@ var (
 	unsupportedConditionTextFromFetcher = "Cannot read targetRef. Reason: targetRef not defined"
 	unsupportedConditionNoExtraText     = "Cannot read targetRef"
 	unsupportedConditionNoTargetRef     = "Cannot read targetRef"
-	unsupportedConditionMudaMudaMuda    = "Error checking if target is a topmost well-known or scalable controller: muda muda muda"
-	unsupportedTargetRefHasParent       = "The targetRef controller has a parent but it should point to a topmost well-known or scalable controller"
+	unsupportedConditionMudaMudaMuda    = "Error checking if target taxonomy.doestar/doseph-doestar is a topmost well-known or scalable controller: muda muda muda"
+	unsupportedTargetRefHasParent       = "The target stardust.dodokind/dotaro has a parent controller but it should point to a topmost well-known or scalable controller"
 )
 
 const (
@@ -859,11 +859,12 @@ func TestFilterVPAsIgnoreNamespaces(t *testing.T) {
 func TestCanCleanupCheckpoints(t *testing.T) {
 	_, tctx := ktesting.NewTestContext(t)
 	client := fake.NewSimpleClientset()
+	namespace := "testNamespace"
 
-	_, err := client.CoreV1().Namespaces().Create(tctx, &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "testNamespace"}}, metav1.CreateOptions{})
+	_, err := client.CoreV1().Namespaces().Create(tctx, &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
-	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container").WithNamespace("testNamespace").WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container").WithNamespace(namespace).WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
 		Kind:       kind,
 		Name:       name1,
 		APIVersion: apiVersion,
@@ -878,22 +879,19 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	vpaLister.On("List").Return(vpas, nil)
 
-	checkpoints := &vpa_types.VerticalPodAutoscalerCheckpointList{
-		Items: []vpa_types.VerticalPodAutoscalerCheckpoint{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "testNamespace",
-					Name:      "nonExistentVPA",
-				},
-				Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
-					VPAObjectName: "nonExistentVPA",
-				},
-			},
+	vpaCheckPoint := &vpa_types.VerticalPodAutoscalerCheckpoint{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      "nonExistentVPA",
+		},
+		Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+			VPAObjectName: "nonExistentVPA",
 		},
 	}
+	vpacheckpoints := []*vpa_types.VerticalPodAutoscalerCheckpoint{vpaCheckPoint}
 
 	for _, vpa := range vpas {
-		checkpoints.Items = append(checkpoints.Items, vpa_types.VerticalPodAutoscalerCheckpoint{
+		vpacheckpoints = append(vpacheckpoints, &vpa_types.VerticalPodAutoscalerCheckpoint{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: vpa.Namespace,
 				Name:      vpa.Name,
@@ -904,23 +902,29 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		})
 	}
 
+	// Create a mock checkpoint client to track deletions
 	checkpointClient := &fakeautoscalingv1.FakeAutoscalingV1{Fake: &core.Fake{}}
-	checkpointClient.AddReactor("list", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
-		return true, checkpoints, nil
-	})
-
+	// Track deleted checkpoints
 	deletedCheckpoints := []string{}
 	checkpointClient.AddReactor("delete", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
 		deleteAction := action.(core.DeleteAction)
 		deletedCheckpoints = append(deletedCheckpoints, deleteAction.GetName())
-
 		return true, nil, nil
 	})
+
+	// Create namespace lister mock that will return the checkpoint list
+	checkpointNamespaceLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
+	checkpointNamespaceLister.On("List").Return(vpacheckpoints, nil)
+
+	// Create main checkpoint mock that will return the namespace lister
+	checkpointLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
+	checkpointLister.On("VerticalPodAutoscalerCheckpoints", namespace).Return(checkpointNamespaceLister)
 
 	feeder := clusterStateFeeder{
 		coreClient:          client.CoreV1(),
 		vpaLister:           vpaLister,
 		vpaCheckpointClient: checkpointClient,
+		vpaCheckpointLister: checkpointLister,
 		clusterState:        model.NewClusterState(testGcPeriod),
 		recommenderName:     "default",
 	}
