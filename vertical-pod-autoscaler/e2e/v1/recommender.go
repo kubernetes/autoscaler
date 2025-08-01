@@ -447,7 +447,7 @@ var _ = RecommenderE2eDescribe("OOM with custom config", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(targetRef).
 			WithContainer(containerName).
-			WithOOMBumpRatio(resource.NewQuantity(2, resource.DecimalSI)).
+			WithOOMBumpUpRatio(resource.NewQuantity(2, resource.DecimalSI)).
 			Get()
 		InstallVPA(f, vpaCRD)
 	})
