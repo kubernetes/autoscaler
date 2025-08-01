@@ -134,7 +134,7 @@ spec:
       serviceAccountName: cluster-autoscaler
       containers:
         - name: utho-cluster-autoscaler
-          image: utho/autoscaler:0.1.19
+          image: utho/autoscaler:1.0.0
           imagePullPolicy: IfNotPresent
           command:
             - ./cluster-autoscaler
