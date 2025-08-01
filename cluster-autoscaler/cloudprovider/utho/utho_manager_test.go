@@ -99,7 +99,7 @@ func TestManager_newManager(t *testing.T) {
 	t.Run("missing cluster id", func(t *testing.T) {
 		config := `{"token": "123-345", "cluster_id": ""}`
 		_, err := newManager(strings.NewReader(config))
-		assert.EqualError(t, err, "cluster ID is not provided")
+		assert.EqualError(t, err, "cluster ID is not provided and couldn't be retrieved from nodes")
 	})
 }
 

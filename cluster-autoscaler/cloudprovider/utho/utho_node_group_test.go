@@ -81,11 +81,18 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 
 		newQuant := numberOfNodes + delta
 		client.On("UpdateNodePool", context.Background(),
-			utho.UpdateKubernetesAutoscaleNodepool{ // Use value, not pointer
+			utho.UpdateKubernetesAutoscaleNodepool{
 				ClusterId:  ng.clusterID,
 				NodePoolId: ng.id,
 				Count:      strconv.Itoa(newQuant),
 			}).Return(&utho.UpdateKubernetesAutoscaleNodepoolResponse{Count: newQuant}, nil).Once()
+
+		client.On("ReadNodePool", context.Background(), ng.clusterID, ng.id).
+			Return(&utho.NodepoolDetails{
+				Count:    newQuant,
+				MinNodes: 2,
+				MaxNodes: 3,
+			}, nil).Once()
 
 		err := ng.IncreaseSize(delta)
 		assert.NoError(t, err)
@@ -264,7 +271,11 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 		err := ng.DeleteNodes(nodes)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "deleting node failed for cluster:")
+		errMsg := err.Error()
+		assert.Contains(t, errMsg, "deleting node failed for cluster", "error should indicate node deletion failure")
+		assert.Contains(t, errMsg, "node pool \"pool-123\"", "error should contain node pool ID")
+		assert.Contains(t, errMsg, "node \"123\"", "error should contain node ID")
+		assert.Contains(t, errMsg, "delete error", "error should contain underlying error message")
 		client.AssertExpectations(t)
 	})
 }
@@ -331,6 +342,13 @@ func TestNodeGroup_IncreaseSize_WithUpdateFailure(t *testing.T) {
 				NodePoolId: nodeGroup.id,
 				Count:      "3",
 			}).Return(&utho.UpdateKubernetesAutoscaleNodepoolResponse{Count: 2}, nil).Once()
+
+		client.On("ReadNodePool", context.Background(), nodeGroup.clusterID, nodeGroup.id).
+			Return(&utho.NodepoolDetails{
+				Count:    2, // Still returns old count to simulate update failure
+				MinNodes: 1,
+				MaxNodes: 5,
+			}, nil).Once()
 
 		err := nodeGroup.IncreaseSize(1)
 		assert.Error(t, err)
@@ -478,7 +496,53 @@ func TestNodeGroup_DeleteNodes_WorkerStatus(t *testing.T) {
 	})
 }
 
+func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
+	t.Run("valid template node info", func(t *testing.T) {
+		client := &uthoClientMock{}
+		nodeGroup := testNodeGroup(client, &utho.NodepoolDetails{
+			Workers: []utho.WorkerNode{
+				{ID: 123, Cpu: 2, Ram: 4096},
+			},
+		})
+
+		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		assert.NoError(t, err)
+		assert.NotNil(t, nodeInfo)
+
+		node := nodeInfo.Node()
+		assert.NotNil(t, node)
+		assert.Equal(t, "linux", node.Labels["kubernetes.io/os"])
+		assert.Equal(t, "amd64", node.Labels["kubernetes.io/arch"])
+		assert.Equal(t, "123", node.Labels["node_id"])
+	})
+
+	t.Run("no workers in node pool", func(t *testing.T) {
+		client := &uthoClientMock{}
+		nodeGroup := testNodeGroup(client, &utho.NodepoolDetails{
+			Workers: []utho.WorkerNode{},
+		})
+
+		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		assert.Error(t, err)
+		assert.Nil(t, nodeInfo)
+		assert.Contains(t, err.Error(), "node pool pool-123 has no example worker")
+	})
+
+	t.Run("nil node pool", func(t *testing.T) {
+		client := &uthoClientMock{}
+		nodeGroup := testNodeGroup(client, nil)
+
+		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		assert.Error(t, err)
+		assert.Nil(t, nodeInfo)
+		assert.Contains(t, err.Error(), fmt.Sprintf("node pool %s has no example worker to derive resources", nodeGroup.id))
+	})
+}
+
 func testNodeGroup(client nodeGroupClient, np *utho.NodepoolDetails) *NodeGroup {
+	if np == nil {
+		np = &utho.NodepoolDetails{}
+	}
 	return &NodeGroup{
 		id:        "pool-123",
 		clusterID: 1111,

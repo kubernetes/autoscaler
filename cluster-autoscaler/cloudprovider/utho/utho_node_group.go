@@ -35,7 +35,7 @@ import (
 
 const (
 	uthoLabel   = "utho.com"
-	nodeIDLabel = uthoLabel + "/node-id"
+	nodeIDLabel = "node_id"
 )
 
 var (
