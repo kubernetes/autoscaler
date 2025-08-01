@@ -77,6 +77,7 @@ type NodeConfig struct {
 	PlacementGroup string
 	Taints         []apiv1.Taint
 	Labels         map[string]string
+	ImagesForArch  *ImageList
 }
 
 // LegacyConfig holds the configuration in the legacy format
