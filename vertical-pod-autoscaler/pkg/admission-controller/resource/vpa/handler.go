@@ -138,11 +138,11 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				return fmt.Errorf("ContainerPolicies.ContainerName is required")
 			}
 
-			// Validate OOMBumpRatio
-			if policy.OOMBumpRatio != nil {
-				ratio := float64(policy.OOMBumpRatio.MilliValue()) / 1000.0
+			// Validate OOMBumpUpRatio
+			if policy.OOMBumpUpRatio != nil {
+				ratio := float64(policy.OOMBumpUpRatio.MilliValue()) / 1000.0
 				if ratio <= 1.0 {
-					return fmt.Errorf("OOMBumpRatio must be greater than 1.0, got %v", ratio)
+					return fmt.Errorf("OOMBumpUpRatio must be greater than 1.0, got %v", ratio)
 				}
 			}
 
