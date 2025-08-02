@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: datacrunch-cluster-config
+  namespace: default
+data:
+  cluster_config: |
+    {
+      "node_configs": {
+        "autoscaler-nodes": {
+          "image_type": "ubuntu-24.04-cuda-12.8-open-docker",
+          "ssh_key_ids": ["<your-ssh-key-id>"],
+          "instance_option": "prefer_spot",
+          "disk_size_gb": 100,
+          "override_num_gpus": 7,
+          "taints": [
+            {
+              "key": "gpu-test",
+              "effect": "NoSchedule"
+            }
+          ],
+          "labels": {
+            "nodepool": "gpu",
+            "nvidia.com/mig.config": "all-1g.10gb",
+            "datacrunch.io/gpu-node": "true"
+          }
+        }
+      }
+    }
