@@ -22,6 +22,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 )
 
@@ -35,13 +36,20 @@ type SizeBasedGauge struct {
 	gauge  *prometheus.GaugeVec
 }
 
+// UpdateModeAndSizeBasedGauge is a wrapper for incrementally recording values
+// indexed by log2(VPA size) and update mode
+type UpdateModeAndSizeBasedGauge struct {
+	values [metrics.MaxVpaSizeLog]map[vpa_types.UpdateMode]int
+	gauge  *prometheus.GaugeVec
+}
+
 var (
 	controlledCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
 			Name:      "controlled_pods_total",
 			Help:      "Number of Pods controlled by VPA updater.",
-		}, []string{"vpa_size_log2"},
+		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
 	evictableCount = prometheus.NewGaugeVec(
@@ -49,7 +57,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "evictable_pods_total",
 			Help:      "Number of Pods matching evicition criteria.",
-		}, []string{"vpa_size_log2"},
+		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
 	evictedCount = prometheus.NewCounterVec(
@@ -57,7 +65,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "evicted_pods_total",
 			Help:      "Number of Pods evicted by Updater to apply a new recommendation.",
-		}, []string{"vpa_size_log2"},
+		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
 	vpasWithEvictablePodsCount = prometheus.NewGaugeVec(
@@ -65,7 +73,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "vpas_with_evictable_pods_total",
 			Help:      "Number of VPA objects with at least one Pod matching evicition criteria.",
-		}, []string{"vpa_size_log2"},
+		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
 	vpasWithEvictedPodsCount = prometheus.NewGaugeVec(
@@ -73,7 +81,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "vpas_with_evicted_pods_total",
 			Help:      "Number of VPA objects with at least one evicted Pod.",
-		}, []string{"vpa_size_log2"},
+		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
 	inPlaceUpdatableCount = prometheus.NewGaugeVec(
@@ -138,30 +146,41 @@ func newSizeBasedGauge(gauge *prometheus.GaugeVec) *SizeBasedGauge {
 	}
 }
 
+// newModeAndSizeBasedGauge provides a wrapper for counting items in a loop
+func newModeAndSizeBasedGauge(gauge *prometheus.GaugeVec) *UpdateModeAndSizeBasedGauge {
+	g := &UpdateModeAndSizeBasedGauge{
+		gauge: gauge,
+	}
+	for i := range g.values {
+		g.values[i] = make(map[vpa_types.UpdateMode]int)
+	}
+	return g
+}
+
 // NewControlledPodsCounter returns a wrapper for counting Pods controlled by Updater
-func NewControlledPodsCounter() *SizeBasedGauge {
-	return newSizeBasedGauge(controlledCount)
+func NewControlledPodsCounter() *UpdateModeAndSizeBasedGauge {
+	return newModeAndSizeBasedGauge(controlledCount)
 }
 
 // NewEvictablePodsCounter returns a wrapper for counting Pods which are matching eviction criteria
-func NewEvictablePodsCounter() *SizeBasedGauge {
-	return newSizeBasedGauge(evictableCount)
+func NewEvictablePodsCounter() *UpdateModeAndSizeBasedGauge {
+	return newModeAndSizeBasedGauge(evictableCount)
 }
 
 // NewVpasWithEvictablePodsCounter returns a wrapper for counting VPA objects with Pods matching eviction criteria
-func NewVpasWithEvictablePodsCounter() *SizeBasedGauge {
-	return newSizeBasedGauge(vpasWithEvictablePodsCount)
+func NewVpasWithEvictablePodsCounter() *UpdateModeAndSizeBasedGauge {
+	return newModeAndSizeBasedGauge(vpasWithEvictablePodsCount)
 }
 
 // NewVpasWithEvictedPodsCounter returns a wrapper for counting VPA objects with evicted Pods
-func NewVpasWithEvictedPodsCounter() *SizeBasedGauge {
-	return newSizeBasedGauge(vpasWithEvictedPodsCount)
+func NewVpasWithEvictedPodsCounter() *UpdateModeAndSizeBasedGauge {
+	return newModeAndSizeBasedGauge(vpasWithEvictedPodsCount)
 }
 
 // AddEvictedPod increases the counter of pods evicted by Updater, by given VPA size
-func AddEvictedPod(vpaSize int) {
+func AddEvictedPod(vpaSize int, mode vpa_types.UpdateMode) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
-	evictedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
+	evictedCount.WithLabelValues(strconv.Itoa(log2), string(mode)).Inc()
 }
 
 // NewInPlaceUpdatablePodsCounter returns a wrapper for counting Pods which are matching in-place update criteria
@@ -201,5 +220,21 @@ func (g *SizeBasedGauge) Add(vpaSize int, value int) {
 func (g *SizeBasedGauge) Observe() {
 	for log2, value := range g.values {
 		g.gauge.WithLabelValues(strconv.Itoa(log2)).Set(float64(value))
+	}
+}
+
+// Add increases the counter for the given VPA size and VPA update mode.
+func (g *UpdateModeAndSizeBasedGauge) Add(vpaSize int, vpaUpdateMode vpa_types.UpdateMode, value int) {
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
+	g.values[log2][vpaUpdateMode] += value
+}
+
+// Observe stores the recorded values into metrics object associated with the
+// wrapper
+func (g *UpdateModeAndSizeBasedGauge) Observe() {
+	for log2, valueMap := range g.values {
+		for vpaMode, value := range valueMap {
+			g.gauge.WithLabelValues(strconv.Itoa(log2), string(vpaMode)).Set(float64(value))
+		}
 	}
 }
