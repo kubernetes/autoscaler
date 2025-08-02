@@ -1599,7 +1599,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupA.On("Autoprovisioned").Return(false)
 	nodeGroupA.On("TargetSize").Return(5, nil)
 	nodeGroupA.On("Id").Return("A")
-	nodeGroupA.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupA.On("ForceDeleteNodes", mock.Anything).Return(nil)
 	nodeGroupA.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
 	nodeGroupA.On("Nodes").Return([]cloudprovider.Instance{
 		{
@@ -1660,7 +1660,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupB.On("Autoprovisioned").Return(false)
 	nodeGroupB.On("TargetSize").Return(5, nil)
 	nodeGroupB.On("Id").Return("B")
-	nodeGroupB.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupB.On("ForceDeleteNodes", mock.Anything).Return(nil)
 	nodeGroupB.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
 	nodeGroupB.On("Nodes").Return([]cloudprovider.Instance{
 		{
@@ -1698,10 +1698,10 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 
 	// nodes should be deleted
 	expectedDeleteCalls := 1
-	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
+	nodeGroupA.AssertNumberOfCalls(t, "ForceDeleteNodes", expectedDeleteCalls)
 
 	// check delete was called on correct nodes
-	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+	nodeGroupA.AssertCalled(t, "ForceDeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
 			if len(nodes) != 4 {
 				return false
@@ -1726,9 +1726,9 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 
 	// nodes should be deleted again
 	expectedDeleteCalls += 1
-	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
+	nodeGroupA.AssertNumberOfCalls(t, "ForceDeleteNodes", expectedDeleteCalls)
 
-	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+	nodeGroupA.AssertCalled(t, "ForceDeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
 			if len(nodes) != 4 {
 				return false
@@ -1791,7 +1791,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	autoscaler.deleteCreatedNodesWithErrors()
 
 	// we expect no more Delete Nodes, don't increase expectedDeleteCalls
-	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
+	nodeGroupA.AssertNumberOfCalls(t, "ForceDeleteNodes", expectedDeleteCalls)
 
 	// failed node not included by NodeGroupForNode
 	nodeGroupC := &mockprovider.NodeGroup{}
@@ -1799,7 +1799,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupC.On("Autoprovisioned").Return(false)
 	nodeGroupC.On("TargetSize").Return(1, nil)
 	nodeGroupC.On("Id").Return("C")
-	nodeGroupC.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupC.On("ForceDeleteNodes", mock.Anything).Return(nil)
 	nodeGroupC.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
 	nodeGroupC.On("Nodes").Return([]cloudprovider.Instance{
 		{
@@ -1830,14 +1830,14 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 
 	// No nodes are deleted when failed nodes don't have matching node groups
 	autoscaler.deleteCreatedNodesWithErrors()
-	nodeGroupC.AssertNumberOfCalls(t, "DeleteNodes", 0)
+	nodeGroupC.AssertNumberOfCalls(t, "ForceDeleteNodes", 0)
 
 	nodeGroupAtomic := &mockprovider.NodeGroup{}
 	nodeGroupAtomic.On("Exist").Return(true)
 	nodeGroupAtomic.On("Autoprovisioned").Return(false)
 	nodeGroupAtomic.On("TargetSize").Return(3, nil)
 	nodeGroupAtomic.On("Id").Return("D")
-	nodeGroupAtomic.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupAtomic.On("ForceDeleteNodes", mock.Anything).Return(nil)
 	nodeGroupAtomic.On("GetOptions", options.NodeGroupDefaults).Return(
 		&config.NodeGroupAutoscalingOptions{
 			ZeroOrMaxNodeScaling: true,
@@ -1886,7 +1886,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	// delete nodes with create errors
 	autoscaler.deleteCreatedNodesWithErrors()
 
-	nodeGroupAtomic.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+	nodeGroupAtomic.AssertCalled(t, "ForceDeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
 			if len(nodes) != 3 {
 				return false
@@ -1904,7 +1904,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupError.On("Autoprovisioned").Return(false)
 	nodeGroupError.On("TargetSize").Return(1, nil)
 	nodeGroupError.On("Id").Return("E")
-	nodeGroupError.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupError.On("ForceDeleteNodes", mock.Anything).Return(nil)
 	nodeGroupError.On("GetOptions", options.NodeGroupDefaults).Return(nil, fmt.Errorf("Failed to get options"))
 	nodeGroupError.On("Nodes").Return([]cloudprovider.Instance{
 		{
@@ -1946,7 +1946,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	// delete nodes with create errors
 	autoscaler.deleteCreatedNodesWithErrors()
 
-	nodeGroupError.AssertNumberOfCalls(t, "DeleteNodes", 0)
+	nodeGroupError.AssertNumberOfCalls(t, "ForceDeleteNodes", 0)
 }
 
 type candidateTrackingFakePlanner struct {

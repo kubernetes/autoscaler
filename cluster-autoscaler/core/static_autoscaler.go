@@ -880,7 +880,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 		if nodeGroup == nil {
 			err = fmt.Errorf("node group %s not found", nodeGroupId)
 		} else if nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete); err == nil {
-			err = nodeGroup.DeleteNodes(nodesToDelete)
+			err = nodeGroup.ForceDeleteNodes(nodesToDelete)
 		}
 
 		if err != nil {
