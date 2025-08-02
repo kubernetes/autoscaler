@@ -18,6 +18,7 @@ package orchestrator
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -166,10 +167,22 @@ func (e *scaleUpExecutor) executeScaleUp(
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	increase := info.NewSize - info.CurrentSize
 	if err := e.increaseSize(info.Group, increase, atomic); err != nil {
-		e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
 		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: ")
-		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, now)
-		return aerr
+
+		backoff := true
+		for _, part := range e.autoscalingContext.AutoscalingOptions.ScaleUpIgnoreBackoffErrors {
+			if strings.Contains(err.Error(), part) {
+				e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ScaledUpGroup", "Scale-up: retriable error %s", aerr.Error())
+				backoff = false
+				break
+			}
+		}
+
+		if backoff {
+			e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
+			e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, now)
+			return aerr
+		}
 	}
 	if increase < 0 {
 		return errors.NewAutoscalerError(errors.InternalError, fmt.Sprintf("increase in number of nodes cannot be negative, got: %v", increase))
