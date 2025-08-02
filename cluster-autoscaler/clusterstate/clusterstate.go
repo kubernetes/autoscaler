@@ -204,6 +204,15 @@ func (csr *ClusterStateRegistry) MaxNodeProvisionTime(nodeGroup cloudprovider.No
 	return csr.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(nodeGroup)
 }
 
+// NodeGroupScaleUpTime returns scale-up time for the given node group
+func (csr *ClusterStateRegistry) NodeGroupScaleUpTime(nodeGroup cloudprovider.NodeGroup) (time.Time, error) {
+	scaleUpRequest, found := csr.scaleUpRequests[nodeGroup.Id()]
+	if !found {
+		return time.Time{}, fmt.Errorf("failed to find scaleUpRequest for node group: %s", nodeGroup.Id())
+	}
+	return scaleUpRequest.Time, nil
+}
+
 func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
 	maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
 	if err != nil {
