@@ -63,7 +63,7 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context
 			continue
 		}
 		minSize := nodeGroup.MinSize()
-		if size <= minSize {
+		if minSize <= size {
 			klog.V(1).Infof("Skipping %s - node group min size reached (current: %d, min: %d)", node.Name, size, minSize)
 			continue
 		}
