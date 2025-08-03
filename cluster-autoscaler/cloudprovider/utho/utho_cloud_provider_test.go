@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,7 @@ import (
 )
 
 // Helper function to set up mock ListNodePools
-func setupMockListNodePools(client *uthoClientMock, ctx context.Context, clusterID string, nodePools []utho.NodepoolDetails, err error) {
+func setupMockListNodePools(ctx context.Context, client *uthoClientMock, clusterID string, nodePools []utho.NodepoolDetails, err error) {
 	client.On("ListNodePools", ctx, clusterID, nil).Return(nodePools, &utho.Meta{}, err).Once()
 }
 
@@ -43,7 +43,7 @@ func TestCloudProvider_NewCloudProvider_Success(t *testing.T) {
 	client := &uthoClientMock{}
 	ctx := context.Background()
 
-	setupMockListNodePools(client, ctx, "123", []utho.NodepoolDetails{
+	setupMockListNodePools(ctx, client, "123", []utho.NodepoolDetails{
 		{ID: "1234", AutoScale: true, MinNodes: 1, MaxNodes: 2},
 		{ID: "4567", AutoScale: true, MinNodes: 5, MaxNodes: 8},
 		{ID: "9876", AutoScale: false, MinNodes: 5, MaxNodes: 8},
@@ -63,7 +63,7 @@ func TestUthoCloudProvider_NewNodeGroup_Success(t *testing.T) {
 	client := &uthoClientMock{}
 	ctx := context.Background()
 
-	setupMockListNodePools(client, ctx, manager.clusterID, []utho.NodepoolDetails{
+	setupMockListNodePools(ctx, client, manager.clusterID, []utho.NodepoolDetails{
 		{ID: "1234", AutoScale: true, MinNodes: 1, MaxNodes: 2},
 		{ID: "4567", AutoScale: true, MinNodes: 5, MaxNodes: 8},
 		{ID: "9876", AutoScale: false, MinNodes: 5, MaxNodes: 8},
@@ -88,7 +88,7 @@ func TestUthoCloudProvider_NodeGroupForNode_Success(t *testing.T) {
 	client := &uthoClientMock{}
 	ctx := context.Background()
 
-	setupMockListNodePools(client, ctx, manager.clusterID, []utho.NodepoolDetails{
+	setupMockListNodePools(ctx, client, manager.clusterID, []utho.NodepoolDetails{
 		{
 			ID:        "pool-123",
 			AutoScale: true,
@@ -149,7 +149,7 @@ func TestUthoCloudProvider_Refresh_EmptyNodePools(t *testing.T) {
 	client := &uthoClientMock{}
 	ctx := context.Background()
 
-	setupMockListNodePools(client, ctx, manager.clusterID, []utho.NodepoolDetails{}, nil)
+	setupMockListNodePools(ctx, client, manager.clusterID, []utho.NodepoolDetails{}, nil)
 
 	manager.client = client
 	provider := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
@@ -171,7 +171,7 @@ func TestUthoCloudProvider_Refresh_ErrorFromAPI(t *testing.T) {
 	client := &uthoClientMock{}
 	ctx := context.Background()
 
-	setupMockListNodePools(client, ctx, manager.clusterID, nil, errors.New("mock error"))
+	setupMockListNodePools(ctx, client, manager.clusterID, nil, errors.New("mock error"))
 
 	manager.client = client
 	provider := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})

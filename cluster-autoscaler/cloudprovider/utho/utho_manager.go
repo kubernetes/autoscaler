@@ -38,6 +38,7 @@ type nodeGroupClient interface {
 	DeleteNode(ctx context.Context, params utho.DeleteNodeParams) (*utho.DeleteResponse, error)
 }
 
+// Manager manages Utho cloud provider node groups.
 type Manager struct {
 	clusterID  string
 	client     nodeGroupClient
@@ -96,6 +97,7 @@ func newManager(configReader io.Reader) (*Manager, error) {
 	return m, nil
 }
 
+// Refresh updates the state of the Utho Manager
 func (m *Manager) Refresh() error {
 	ctx := context.Background()
 
