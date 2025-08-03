@@ -23,6 +23,9 @@ To disable getting VPA recommendations for an individual container, set `mode` t
 
 ## Memory Value Humanization
 
+> [!WARNING]
+> **DEPRECATED**: This feature is deprecated and will be removed in a future version. Use `--round-memory-bytes` instead for memory recommendation formatting.
+
 VPA can present memory recommendations in human-readable binary units (KiB, MiB, GiB, TiB) instead of raw bytes, making resource recommendations easier to understand. This feature is controlled by the `--humanize-memory` flag in the recommender component.
 
 When enabled, memory values in recommendations will be:
