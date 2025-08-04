@@ -71,7 +71,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (ALPHA - default=false) |
 | `history-length` | string |  "8d" | How much time back prometheus have to be queried to get historical metrics  |
 | `history-resolution` | string |  "1h" | Resolution at which Prometheus is queried for historical metrics  |
-| `humanize-memory` |  |  | Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
+| `humanize-memory` |  |  | DEPRECATED: Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. This flag is deprecated and will be removed in a future version. Use --round-memory-bytes instead. |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `kube-api-burst` | float |  100 | QPS burst limit when making requests to Kubernetes apiserver  |
 | `kube-api-qps` | float |  50 | QPS limit when making requests to Kubernetes apiserver  |
