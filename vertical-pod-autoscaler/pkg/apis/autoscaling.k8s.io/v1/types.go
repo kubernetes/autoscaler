@@ -223,7 +223,7 @@ type ContainerResourcePolicy struct {
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
 
-	// OOMBumpUpRatio is the ratio to increase resources when OOM is detected.
+	// oomBumpUpRatio is the ratio to increase resources when OOM is detected.
 	// +optional
 	OOMBumpUpRatio *resource.Quantity `json:"oomBumpUpRatio,omitempty" protobuf:"bytes,7,opt,name=oomBumpUpRatio"`
 
