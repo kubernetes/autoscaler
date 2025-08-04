@@ -52,6 +52,8 @@ type NodeGroupAutoscalingOptions struct {
 	MaxNodeProvisionTime time.Duration
 	// ZeroOrMaxNodeScaling means that a node group should be scaled up to maximum size or down to zero nodes all at once instead of one-by-one.
 	ZeroOrMaxNodeScaling bool
+	// AllowNonAtomicScaleUpToMax indicates that partially failing scale-ups of ZeroOrMaxNodeScaling node groups should not be cancelled
+	AllowNonAtomicScaleUpToMax bool
 	// IgnoreDaemonSetsUtilization sets if daemonsets utilization should be considered during node scale-down
 	IgnoreDaemonSetsUtilization bool
 }
