@@ -463,6 +463,7 @@ vpa:
 | containerSecurityContext | object | `{}` | [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | customArgs | list | `[]` | Additional custom container arguments. Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler parameters and their default values. List of arguments as strings. |
 | deployment.annotations | object | `{}` | Annotations to add to the Deployment object. |
+| dnsConfig | object | `{}` | [Pod's DNS Config](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config) |
 | dnsPolicy | string | `"ClusterFirst"` | Defaults to `ClusterFirst`. Valid values are: `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`. If autoscaler does not depend on cluster DNS, recommended to set this to `Default`. |
 | envFromConfigMap | string | `""` | ConfigMap name to use as envFrom. |
 | envFromSecret | string | `""` | Secret name to use as envFrom. |
