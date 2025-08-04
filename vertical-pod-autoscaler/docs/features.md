@@ -23,10 +23,10 @@ To disable getting VPA recommendations for an individual container, set `mode` t
 
 ## Memory Value Humanization
 
-[!WARNING]
+> [!WARNING]
 > DEPRECATED: This feature is deprecated as of VPA v1.5.0 and will be removed in a future version. Use `--round-memory-bytes` instead for memory recommendation formatting.
 
-[!NOTE]
+> [!NOTE]
 > This feature was added in v1.3.0.
 
 
