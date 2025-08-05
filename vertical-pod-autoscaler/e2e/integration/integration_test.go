@@ -18,13 +18,11 @@ package integration
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"testing"
 
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/config"
-	"k8s.io/kubernetes/test/utils/image"
 )
 
 // handleFlags sets up all flags and parses the command line.
@@ -38,13 +36,6 @@ func handleFlags() {
 func TestMain(m *testing.M) {
 	// Register test flags, then parse flags.
 	handleFlags()
-
-	if framework.TestContext.ListImages {
-		for _, v := range image.GetImageConfigs() {
-			fmt.Println(v.GetE2EImage())
-		}
-		os.Exit(0)
-	}
 
 	framework.AfterReadingAllFlags(&framework.TestContext)
 

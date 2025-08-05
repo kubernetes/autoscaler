@@ -80,10 +80,14 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 	})
 })
 
+// Create VPA and deployment in 2 namespaces, 1 should be ignored
+// Ignored namespace VPA and deployment are intentionally created first
+// so that by the time included namespace has recommendation generated,
+// we know that ignored namespace has been waiting long enough.
 func testIncludedAndIgnoredNamespaces(f *framework.Framework, vpaClientSet vpa_clientset.Interface, includedNamespace, ignoredNamespace string) {
 	ginkgo.By("Setting up a hamster deployment in ignored namespace")
 	f.Namespace.Name = ignoredNamespace
-	d := utils.NewNHamstersDeployment(f, 2 /*number of containers*/)
+	d := utils.NewNHamstersDeployment(f, 2)
 	_ = utils.StartDeploymentPods(f, d)
 
 	ginkgo.By("Setting up VPA for ignored namespace")
@@ -102,7 +106,7 @@ func testIncludedAndIgnoredNamespaces(f *framework.Framework, vpaClientSet vpa_c
 
 	ginkgo.By("Setting up a hamster deployment in included namespace")
 	f.Namespace.Name = includedNamespace
-	d = utils.NewNHamstersDeployment(f, 2 /*number of containers*/)
+	d = utils.NewNHamstersDeployment(f, 2)
 	_ = utils.StartDeploymentPods(f, d)
 
 	ginkgo.By("Setting up VPA for included namespace")
