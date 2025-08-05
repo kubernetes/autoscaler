@@ -28,9 +28,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
+const (
+	VirtualNodeLabelValue = "virtual-kubelet"
+)
+
 // isVirtualNode determines if the node is created by virtual kubelet
 func isVirtualNode(node *apiv1.Node) bool {
-	return node.ObjectMeta.Labels["type"] == "virtual-kubelet"
+	return node.ObjectMeta.Labels["type"] == VirtualNodeLabelValue
 }
 
 // FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
