@@ -223,11 +223,11 @@ type ContainerResourcePolicy struct {
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
 
-	// oomBumpUpRatio is the ratio to increase resources when OOM is detected.
+	// oomBumpUpRatio is the ratio to increase memory when OOM is detected.
 	// +optional
 	OOMBumpUpRatio *resource.Quantity `json:"oomBumpUpRatio,omitempty" protobuf:"bytes,7,opt,name=oomBumpUpRatio"`
 
-	// oomMinBumpUp is the minimum increase in resources when OOM is detected.
+	// oomMinBumpUp is the minimum increase in memory when OOM is detected.
 	// +optional
 	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
 }
