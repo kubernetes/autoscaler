@@ -21,14 +21,18 @@ import (
 	"errors"
 )
 
+// CloudInstancesService provides methods for managing cloud instances via the Utho API.
 type CloudInstancesService service
 
+// CloudInstances represents a list of cloud instances returned by the API.
 type CloudInstances struct {
 	CloudInstance []CloudInstance `json:"cloud"`
 	Meta          Meta            `json:"meta"`
 	Status        string          `json:"status,omitempty" faker:"oneof:success,error"`
 	Message       string          `json:"message,omitempty" faker:"sentence"`
 }
+
+// CloudInstance represents a single cloud instance.
 type CloudInstance struct {
 	ID                string                   `json:"cloudid" faker:"oneof: 00000,11111,22222,33333"`
 	Hostname          string                   `json:"hostname"`
@@ -84,9 +88,13 @@ type CloudInstance struct {
 	Gpus              []any                    `json:"gpus,omitempty"`
 	Rescue            int                      `json:"rescue"`
 }
+
+// Features represents the features available for a cloud instance.
 type Features struct {
 	Backups string `json:"backups" faker:"oneof:0,1"`
 }
+
+// Image represents an image available for a cloud instance.
 type Image struct {
 	Name         string `json:"name"`
 	Distribution string `json:"distribution"`
@@ -94,13 +102,19 @@ type Image struct {
 	Image        string `json:"image"`
 	Cost         string `json:"cost"`
 }
+
+// Networks represents the network configuration for a cloud instance.
 type Networks struct {
 	Public  Public  `json:"public"`
 	Private Private `json:"private"`
 }
+
+// Public represents the public network configuration for a cloud instance.
 type Public struct {
 	V4 V4PublicArray `json:"v4"`
 }
+
+// V4Public represents a public IPv4 address for a cloud instance.
 type V4Public struct {
 	IPAddress string `json:"ip_address,omitempty" faker:"ipv4"`
 	Netmask   string `json:"netmask,omitempty" faker:"ipv4_netmask"`
@@ -112,9 +126,12 @@ type V4Public struct {
 	Mac       string `json:"mac,omitempty"`
 }
 
+// Private represents the private network configuration for a cloud instance.
 type Private struct {
 	V4 []V4Private `json:"v4"`
 }
+
+// V4Private represents a private IPv4 address for a cloud instance.
 type V4Private struct {
 	Noip        int    `json:"noip"`
 	IPAddress   string `json:"ip_address,omitempty" faker:"ipv4"`
@@ -128,6 +145,8 @@ type V4Private struct {
 	Mac         string `json:"mac,omitempty"`
 	Primary     string `json:"primary,omitempty" faker:"oneof:1,0"`
 }
+
+// Storages represents a collection of storage devices attached to a cloud instance.
 type Storages struct {
 	ID        string `json:"id" faker:"oneof: 00000,11111,22222,33333"`
 	Size      int    `json:"size"`
@@ -138,6 +157,8 @@ type Storages struct {
 	Bus       string `json:"bus" faker:"oneof:virtio,sata"`
 	Type      string `json:"type" faker:"oneof:ssd,hdd"`
 }
+
+// Storage represents a single storage device attached to a cloud instance.
 type Storage struct {
 	ID        string `json:"id" faker:"oneof: 00000,11111,22222,33333"`
 	Size      int    `json:"size"`
@@ -148,6 +169,8 @@ type Storage struct {
 	Bus       string `json:"bus" faker:"oneof:virtio,sata"`
 	Type      string `json:"type" faker:"oneof:ssd,hdd"`
 }
+
+// Snapshot represents a snapshot of a cloud instance's storage.
 type Snapshot struct {
 	ID        string `json:"id" faker:"oneof: 00000,11111,22222,33333"`
 	Size      string `json:"size" faker:"oneof:1GB,50GB,100GB"`
@@ -155,16 +178,22 @@ type Snapshot struct {
 	Note      string `json:"note" faker:"sentence"`
 	Name      string `json:"name"`
 }
+
+// CloudInstanceFirewall represents a firewall attached to a cloud instance.
 type CloudInstanceFirewall struct {
 	ID        string `json:"id" faker:"oneof: 00000,11111,22222,33333"`
 	Name      string `json:"name"`
 	CreatedAt string `json:"created_at" faker:"date"`
 }
+
+// Meta contains metadata about a list of resources.
 type Meta struct {
 	Total       int `json:"total"`
 	Totalpages  int `json:"totalpages"`
 	Currentpage int `json:"currentpage"`
 }
+
+// Snapshots represents a collection of snapshots for a cloud instance.
 type Snapshots struct {
 	ID        string `json:"id" faker:"oneof: 00000,11111,22222,33333"`
 	Size      string `json:"size" faker:"oneof:1GB,50GB,100GB"`
@@ -172,17 +201,22 @@ type Snapshots struct {
 	Note      string `json:"note" faker:"sentence"`
 	Name      string `json:"name"`
 }
+
+// CloudInstanceFirewalls represents a collection of firewalls attached to a cloud instance.
 type CloudInstanceFirewalls struct {
 	ID        string `json:"id" faker:"oneof: 00000,11111,22222,33333"`
 	Name      string `json:"name"`
 	CreatedAt string `json:"created_at" faker:"date"`
 }
 
+// OsImages represents a list of OS images available for cloud instances.
 type OsImages struct {
 	OsImages []OsImage `json:"images"`
 	Status   string    `json:"status,omitempty" faker:"oneof:success,error"`
 	Message  string    `json:"message,omitempty" faker:"sentence"`
 }
+
+// OsImage represents a single OS image available for cloud instances.
 type OsImage struct {
 	Distro       string  `json:"distro,omitempty"`
 	Distribution string  `json:"distribution"`
@@ -191,11 +225,14 @@ type OsImage struct {
 	Cost         float64 `json:"cost"`
 }
 
+// Plans represents a list of available plans for cloud instances.
 type Plans struct {
 	Plans   []Plan `json:"plans"`
 	Status  string `json:"status,omitempty" faker:"oneof:success,error"`
 	Message string `json:"message,omitempty" faker:"sentence"`
 }
+
+// Plan represents a single plan for a cloud instance.
 type Plan struct {
 	ID        string  `json:"id" faker:"oneof: 00000,11111,22222,33333"`
 	Type      string  `json:"type" faker:"oneof:ramcpu,disk"`
@@ -209,6 +246,7 @@ type Plan struct {
 	Plantype  string  `json:"plantype" faker:"oneof:cloud,dedicated"`
 }
 
+// CreateCloudInstanceParams contains parameters for creating a cloud instance.
 type CreateCloudInstanceParams struct {
 	Dcslug         string          `json:"dcslug"`
 	Image          string          `json:"image"`
@@ -230,10 +268,12 @@ type CreateCloudInstanceParams struct {
 	Cloud          []CloudHostname `json:"cloud"`
 }
 
+// CloudHostname represents the hostname for a cloud instance.
 type CloudHostname struct {
 	Hostname string `json:"hostname"`
 }
 
+// CreateCloudInstanceResponse represents the response after creating a cloud instance.
 type CreateCloudInstanceResponse struct {
 	ID       string `json:"cloudid" faker:"oneof: 00000,11111,22222,33333"`
 	Password string `json:"password" faker:"password"`
@@ -293,6 +333,7 @@ func (s *CloudInstancesService) List() ([]CloudInstance, error) {
 	return cloudInstances.CloudInstance, nil
 }
 
+// DeleteCloudInstanceParams contains parameters for deleting a cloud instance.
 type DeleteCloudInstanceParams struct {
 	// Please provide confirm string as follow: "I am aware this action will delete data and server permanently"
 	Confirm string `json:"confirm"`
@@ -346,6 +387,7 @@ func (s *CloudInstancesService) ListResizePlans(instanceId string) ([]Plan, erro
 	return plans.Plans, nil
 }
 
+// CreateSnapshotParams contains parameters for creating a snapshot.
 type CreateSnapshotParams struct {
 	Name string `json:"name"`
 }
@@ -413,6 +455,7 @@ func (s *CloudInstancesService) DisableBackup(instanceId string) (*BasicResponse
 	return &basicResponse, nil
 }
 
+// UpdateBillingCycleParams contains parameters for updating the billing cycle of a cloud instance.
 type UpdateBillingCycleParams struct {
 	Billingcycle string `json:"billingcycle"`
 }
@@ -497,6 +540,7 @@ func (s *CloudInstancesService) PowerOn(instanceId string) (*BasicResponse, erro
 	return &basicResponse, nil
 }
 
+// RebuildCloudInstanceParams contains parameters for rebuilding a cloud instance.
 type RebuildCloudInstanceParams struct {
 	Image string `json:"image"`
 	// Please provide confirm string as follow: "I am aware this action will delete data permanently and build a fresh server"
@@ -519,6 +563,7 @@ func (s *CloudInstancesService) Rebuild(instanceId string, rebuildCloudInstanceP
 	return &basicResponse, nil
 }
 
+// ResetPasswordResponse represents the response after resetting a cloud instance password.
 type ResetPasswordResponse struct {
 	Password string `json:"password" faker:"password"`
 	Status   string `json:"status,omitempty" faker:"oneof:success,error"`
@@ -541,6 +586,7 @@ func (s *CloudInstancesService) ResetPassword(instanceId string) (*ResetPassword
 	return &resetPasswordResponse, nil
 }
 
+// ResizeCloudInstanceParams contains parameters for resizing a cloud instance.
 type ResizeCloudInstanceParams struct {
 	Type string `json:"type"`
 	Plan string `json:"plan"`
@@ -578,6 +624,7 @@ func (s *CloudInstancesService) RestoreSnapshot(instanceId, snapshotId string) (
 	return &basicResponse, nil
 }
 
+// UpdateStorageParams contains parameters for updating a storage device attached to a cloud instance.
 type UpdateStorageParams struct {
 	Bus  string `json:"bus"`
 	Type string `json:"type"`
@@ -615,6 +662,7 @@ func (s *CloudInstancesService) AssignPublicIP(cloudid string) (*BasicResponse, 
 	return &basicResponse, nil
 }
 
+// UpdateRDNSParams contains parameters for updating the RDNS of a cloud instance.
 type UpdateRDNSParams struct {
 	Rdns string `json:"rdns"`
 }
@@ -667,6 +715,7 @@ func (s *CloudInstancesService) DisableRescue(cloudid string) (*BasicResponse, e
 	return &basicResponse, nil
 }
 
+// MountISOParams contains parameters for mounting an ISO to a cloud instance.
 type MountISOParams struct {
 	Iso string `json:"iso"`
 }
@@ -704,6 +753,7 @@ func (s *CloudInstancesService) UnmountISO(cloudid string) (*BasicResponse, erro
 }
 
 // Custom type to handle unmarshaling of V4Public
+// V4PublicArray is a custom type to handle unmarshaling of V4Public.
 type V4PublicArray []V4Public
 
 func (v *V4PublicArray) UnmarshalJSON(data []byte) error {

@@ -22,15 +22,17 @@ import (
 	"fmt"
 )
 
+// KubernetesService provides methods for interacting with Kubernetes resources via the Utho API.
 type KubernetesService service
 
-// List
+// KubernetesList represents a list of Kubernetes clusters returned by the API.
 type KubernetesList struct {
 	K8s     []K8s  `json:"k8s,omitempty"`
 	Rcode   string `json:"rcode,omitempty"`
 	Status  string `json:"status" faker:"oneof: success, failure"`
 	Message string `json:"message" faker:"sentence"`
 }
+// K8s represents a single Kubernetes cluster.
 type K8s struct {
 	ID             int                 `json:"id,string"`
 	CreatedAt      string              `json:"created_at" faker:"timestamp"`

@@ -21,11 +21,13 @@ import (
 	"net/http"
 )
 
+// ErrorResponse represents an error response from the Utho API.
 type ErrorResponse struct {
 	Response *http.Response
 	Errors   []Error `json:"errors"`
 }
 
+// Error represents a single error returned by the Utho API.
 type Error struct {
 	Message     string      `json:"message"`
 	LongMessage string      `json:"long_message"`

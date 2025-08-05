@@ -27,14 +27,19 @@ import (
 	"time"
 )
 
+// BaseUrl is the base endpoint for the Utho API.
 const BaseUrl = "https://api.utho.com/v2/"
 
 var defaultHTTPClient = &http.Client{Timeout: time.Second * 300}
 
+// Client is the interface for interacting with the Utho API client.
 type Client interface {
+	// NewRequest creates a new API request.
 	NewRequest(method, url string, body ...interface{}) (*http.Request, error)
+	// Do sends an API request and decodes the response.
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 
+	// Kubernetes returns the KubernetesService for Kubernetes-related API calls.
 	Kubernetes() *KubernetesService
 }
 

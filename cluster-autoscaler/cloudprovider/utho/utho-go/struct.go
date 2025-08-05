@@ -16,11 +16,13 @@ limitations under the License.
 
 package utho
 
+// BasicResponse represents a basic API response with status and message.
 type BasicResponse struct {
 	Status  string `json:"status,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
+// CreateResponse represents the response returned after creating a resource.
 type CreateResponse struct {
 	ID        string `json:"id"`
 	AppStatus string `json:"app_status,omitempty"`
@@ -28,22 +30,26 @@ type CreateResponse struct {
 	Message   string `json:"message"`
 }
 
+// CreateBasicResponse represents a basic response for create operations.
 type CreateBasicResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
+// UpdateResponse represents the response returned after updating a resource.
 type UpdateResponse struct {
 	ID      string `json:"id"`
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
+// DeleteResponse represents the response returned after deleting a resource.
 type DeleteResponse struct {
 	Status  string `json:"status,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
+// Dclocation represents a datacenter location.
 type Dclocation struct {
 	Location string `json:"location"`
 	Country  string `json:"country"`
