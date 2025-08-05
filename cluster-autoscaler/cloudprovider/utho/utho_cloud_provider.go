@@ -33,11 +33,13 @@ var _ cloudprovider.CloudProvider = (*uthoCloudProvider)(nil)
 
 const uthoProviderIDPrefix = "utho://"
 
+// uthoCloudProvider implements cloudprovider.CloudProvider interface for Utho.
 type uthoCloudProvider struct {
 	manager         *Manager
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
+// newUthoCloudProvider creates a new Utho cloud provider instance.
 func newUthoCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter) *uthoCloudProvider {
 	return &uthoCloudProvider{
 		manager:         manager,

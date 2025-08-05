@@ -56,6 +56,7 @@ type Config struct {
 	Token string `json:"token"`
 }
 
+// newManager creates a new Manager instance from the provided configuration.
 func newManager(configReader io.Reader) (*Manager, error) {
 	cfg := &Config{}
 

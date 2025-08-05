@@ -32,6 +32,7 @@ type KubernetesList struct {
 	Status  string `json:"status" faker:"oneof: success, failure"`
 	Message string `json:"message" faker:"sentence"`
 }
+
 // K8s represents a single Kubernetes cluster.
 type K8s struct {
 	ID             int                 `json:"id,string"`
@@ -57,6 +58,7 @@ type K8s struct {
 	SecurityGroups []K8sSecurityGroups `json:"security_groups"`
 }
 
+// KubernetesRead represents the response for reading a Kubernetes cluster's details.
 // Read
 type KubernetesRead struct {
 	Info           KubernetesClusterInfo      `json:"info"`
@@ -69,10 +71,14 @@ type KubernetesRead struct {
 	Status         string                     `json:"status,omitempty"`
 	Message        string                     `json:"message,omitempty"`
 }
+
+// KubernetesClusterInfo contains metadata and master node details for a Kubernetes cluster.
 type KubernetesClusterInfo struct {
 	Cluster KubernetesClusterMetadata `json:"cluster"`
 	Master  MasterNodeDetails         `json:"master"`
 }
+
+// KubernetesClusterMetadata contains metadata about a Kubernetes cluster.
 type KubernetesClusterMetadata struct {
 	ID              int           `json:"id,string"`
 	Version         string        `json:"version,omitempty"`
@@ -100,6 +106,8 @@ type KubernetesClusterMetadata struct {
 	Dns             string        `json:"dns,omitempty"`
 	Dclocation      K8sDclocation `json:"dclocation"`
 }
+
+// MasterNodeDetails contains details about the master node of a Kubernetes cluster.
 type MasterNodeDetails struct {
 	Cloudid        int            `json:"cloudid,string"`
 	Hostname       string         `json:"hostname"`
@@ -115,12 +123,14 @@ type MasterNodeDetails struct {
 	PrivateNetwork PrivateNetwork `json:"private_network,omitempty"`
 }
 
+// VpcDetails contains information about a VPC associated with a Kubernetes cluster.
 type VpcDetails struct {
 	ID         string `json:"id"`
 	IsVpc      string `json:"is_vpc,omitempty"`
 	VpcNetwork string `json:"vpc_network"`
 }
 
+// NodepoolDetails contains details about a node pool in a Kubernetes cluster.
 type NodepoolDetails struct {
 	ID        string       `json:"id"`
 	Size      string       `json:"size"`
@@ -134,6 +144,8 @@ type NodepoolDetails struct {
 	Policies  []any        `json:"policies" faker:"-"`
 	Workers   []WorkerNode `json:"workers"`
 }
+
+// WorkerNode represents a worker node in a Kubernetes cluster.
 type WorkerNode struct {
 	ID             int            `json:"cloudid,string"`
 	Nodepool       string         `json:"nodepool"`
@@ -150,6 +162,7 @@ type WorkerNode struct {
 	PrivateNetwork PrivateNetwork `json:"private_network"`
 }
 
+// PrivateNetwork contains private network information for a node or cluster.
 // Generic
 type PrivateNetwork struct {
 	Ip         string `json:"ip"`
@@ -157,6 +170,7 @@ type PrivateNetwork struct {
 	VpcNetwork string `json:"vpc_network"`
 }
 
+// K8sDclocation contains datacenter location information for a Kubernetes cluster.
 type K8sDclocation struct {
 	Location string `json:"location"`
 	Country  string `json:"country"`
@@ -164,12 +178,14 @@ type K8sDclocation struct {
 	Dccc     string `json:"dccc"`
 }
 
+// K8sLoadbalancers represents a load balancer in a Kubernetes cluster.
 type K8sLoadbalancers struct {
 	ID   int    `json:"lbid,string"`
 	Name string `json:"name"`
 	IP   string `json:"ip" faker:"ipv4"`
 }
 
+// K8sTargetGroups represents a target group in a Kubernetes cluster.
 type K8sTargetGroups struct {
 	ID       int    `json:"id,string"`
 	Name     string `json:"name"`
@@ -177,11 +193,13 @@ type K8sTargetGroups struct {
 	Port     string `json:"port"`
 }
 
+// K8sSecurityGroups represents a security group in a Kubernetes cluster.
 type K8sSecurityGroups struct {
 	ID   int    `json:"id,string"`
 	Name string `json:"name"`
 }
 
+// CreateKubernetesParams contains parameters for creating a Kubernetes cluster.
 type CreateKubernetesParams struct {
 	Dcslug         string                  `json:"dcslug"`
 	ClusterLabel   string                  `json:"cluster_label"`
@@ -195,6 +213,8 @@ type CreateKubernetesParams struct {
 	Cpumodel       string                  `json:"cpumodel"`
 	SecurityGroups string                  `json:"security_groups"`
 }
+
+// CreateNodepoolsParams contains parameters for creating a node pool in a Kubernetes cluster.
 type CreateNodepoolsParams struct {
 	Label    string                           `json:"label"`
 	Size     string                           `json:"size"`
@@ -204,6 +224,8 @@ type CreateNodepoolsParams struct {
 	Ebs      []CreateNodePoolEbs              `json:"ebs"`
 	Policies []CreateKubernetesPoliciesParams `json:"policies,omitempty"`
 }
+
+// CreateKubernetesPoliciesParams contains parameters for creating policies in a Kubernetes cluster.
 type CreateKubernetesPoliciesParams struct {
 	Adjust   int    `json:"adjust"`
 	Compare  string `json:"compare"`
@@ -217,16 +239,21 @@ type CreateKubernetesPoliciesParams struct {
 	Minsize  string `json:"minsize"`
 }
 
+// CreateKubernetesNodePoolParams contains parameters for creating a node pool in a Kubernetes cluster.
 type CreateKubernetesNodePoolParams struct {
 	ClusterId int
 	Nodepools []CreateNodepoolsDetails `json:"nodepools"`
 }
+
+// CreateNodepoolsDetails contains details for creating a node pool in a Kubernetes cluster.
 type CreateNodepoolsDetails struct {
 	Label string              `json:"label"`
 	Size  string              `json:"size"`
 	Count string              `json:"count"`
 	Ebs   []CreateNodePoolEbs `json:"ebs"`
 }
+
+// CreateNodePoolEbs contains EBS configuration for a node pool in a Kubernetes cluster.
 type CreateNodePoolEbs struct {
 	Disk string `json:"disk"`
 	Type string `json:"type"`
@@ -283,6 +310,7 @@ func (k *KubernetesService) List(ctx context.Context) ([]K8s, error) {
 	return kubernetes.K8s, nil
 }
 
+// DeleteKubernetesParams contains parameters for deleting a Kubernetes cluster.
 type DeleteKubernetesParams struct {
 	ClusterId int
 	// confirm message"I am aware this action will delete data and cluster permanently"
@@ -305,13 +333,14 @@ func (k *KubernetesService) Delete(ctx context.Context, params DeleteKubernetesP
 	return &delResponse, nil
 }
 
+// CreateKubernetesLoadbalancerParams contains parameters for attaching a load balancer to a Kubernetes cluster.
 type CreateKubernetesLoadbalancerParams struct {
 	ClusterId      int
 	LoadbalancerId int
 }
 
-// Loadbalancer
 // CreateLoadbalancer attaches a load balancer to a Kubernetes cluster.
+// Loadbalancer
 func (k *KubernetesService) CreateLoadbalancer(ctx context.Context, params CreateKubernetesLoadbalancerParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/loadbalancer/%d", params.ClusterId, params.LoadbalancerId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -387,6 +416,7 @@ func (k *KubernetesService) DeleteLoadbalancer(ctx context.Context, clusterId, k
 	return &delResponse, nil
 }
 
+// CreateKubernetesSecurityGroupParams contains parameters for attaching a security group to a Kubernetes cluster.
 type CreateKubernetesSecurityGroupParams struct {
 	ClusterId                 int
 	KubernetesSecurityGroupId int
@@ -469,13 +499,14 @@ func (k *KubernetesService) DeleteSecurityGroup(ctx context.Context, clusterId, 
 	return &delResponse, nil
 }
 
+// CreateKubernetesTargetgroupParams contains parameters for attaching a target group to a Kubernetes cluster.
 type CreateKubernetesTargetgroupParams struct {
 	ClusterId               int
 	KubernetesTargetgroupId int
 }
 
-// Targetgroup
 // CreateTargetgroup attaches a target group to a Kubernetes cluster.
+// Targetgroup
 func (k *KubernetesService) CreateTargetgroup(ctx context.Context, params CreateKubernetesTargetgroupParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/targetgroup/%d", params.ClusterId, params.KubernetesTargetgroupId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -660,6 +691,7 @@ func (k *KubernetesService) ListNodePools(ctx context.Context, clusterId string)
 	return nodepools, nil
 }
 
+// UpdateKubernetesAutoscaleNodepool contains parameters for updating an autoscale node pool in a Kubernetes cluster.
 type UpdateKubernetesAutoscaleNodepool struct {
 	ClusterId  int
 	NodePoolId string
@@ -672,6 +704,7 @@ type UpdateKubernetesAutoscaleNodepool struct {
 	MaxNodes   int                              `json:"max_nodes,omitempty"`
 }
 
+// UpdateKubernetesAutoscaleNodepoolResponse represents the response after updating an autoscale node pool in a Kubernetes cluster.
 type UpdateKubernetesAutoscaleNodepoolResponse struct {
 	ID        string        `json:"id"`
 	Size      string        `json:"size"`
@@ -705,6 +738,7 @@ func (k *KubernetesService) UpdateNodePool(ctx context.Context, params UpdateKub
 	return &kubernetes, nil
 }
 
+// UpdateKubernetesStaticNodepool contains parameters for updating a static node pool in a Kubernetes cluster.
 type UpdateKubernetesStaticNodepool struct {
 	ClusterId  int
 	NodePoolId string
@@ -731,6 +765,7 @@ func (k *KubernetesService) UpdateStaticNodepool(ctx context.Context, params Upd
 	return &kubernetes, nil
 }
 
+// DeleteNodeParams contains parameters for deleting a node from a node pool in a Kubernetes cluster.
 type DeleteNodeParams struct {
 	ClusterId int
 	PoolId    string
