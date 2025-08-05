@@ -340,7 +340,6 @@ type CreateKubernetesLoadbalancerParams struct {
 }
 
 // CreateLoadbalancer attaches a load balancer to a Kubernetes cluster.
-// Loadbalancer
 func (k *KubernetesService) CreateLoadbalancer(ctx context.Context, params CreateKubernetesLoadbalancerParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/loadbalancer/%d", params.ClusterId, params.LoadbalancerId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -422,7 +421,6 @@ type CreateKubernetesSecurityGroupParams struct {
 	KubernetesSecurityGroupId int
 }
 
-// SecurityGroup
 // CreateSecurityGroup attaches a security group to a Kubernetes cluster.
 func (k *KubernetesService) CreateSecurityGroup(ctx context.Context, params CreateKubernetesSecurityGroupParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/securitygroup/%d", params.ClusterId, params.KubernetesSecurityGroupId)
@@ -506,7 +504,6 @@ type CreateKubernetesTargetgroupParams struct {
 }
 
 // CreateTargetgroup attaches a target group to a Kubernetes cluster.
-// Targetgroup
 func (k *KubernetesService) CreateTargetgroup(ctx context.Context, params CreateKubernetesTargetgroupParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/targetgroup/%d", params.ClusterId, params.KubernetesTargetgroupId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -620,7 +617,6 @@ func (k *KubernetesService) PowerOn(ctx context.Context, clusterId int) (*BasicR
 	return &basicResponse, nil
 }
 
-// NodePool
 // CreateNodePool creates a new node pool in a Kubernetes cluster.
 func (k *KubernetesService) CreateNodePool(ctx context.Context, params CreateKubernetesNodePoolParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/nodepool/add", params.ClusterId)

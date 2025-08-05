@@ -778,7 +778,6 @@ func (s *CloudInstancesService) UnmountISO(cloudid string) (*BasicResponse, erro
 	return &basicResponse, nil
 }
 
-// Custom type to handle unmarshaling of V4Public
 // V4PublicArray is a custom type to handle unmarshaling of V4Public.
 type V4PublicArray []V4Public
 
