@@ -35,6 +35,7 @@ type Error struct {
 	Meta        interface{} `json:"meta,omitempty"`
 }
 
+// Error implements the error interface for ErrorResponse.
 func (e *ErrorResponse) Error() string {
 	return fmt.Sprintf("%v %v: %d %+v",
 		e.Response.Request.Method, e.Response.Request.URL,

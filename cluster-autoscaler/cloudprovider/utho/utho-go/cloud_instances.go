@@ -282,6 +282,7 @@ type CreateCloudInstanceResponse struct {
 	Message  string `json:"message,omitempty" faker:"sentence"`
 }
 
+// Create creates a new cloud instance with the provided parameters.
 func (s *CloudInstancesService) Create(params CreateCloudInstanceParams) (*CreateCloudInstanceResponse, error) {
 	reqUrl := "cloud/deploy"
 	req, _ := s.client.NewRequest("POST", reqUrl, &params)
@@ -298,6 +299,7 @@ func (s *CloudInstancesService) Create(params CreateCloudInstanceParams) (*Creat
 	return &cloudInstances, nil
 }
 
+// Read retrieves information about a specific cloud instance by its ID.
 func (s *CloudInstancesService) Read(instanceId string) (*CloudInstance, error) {
 	reqUrl := "cloud/" + instanceId
 	req, _ := s.client.NewRequest("GET", reqUrl)
@@ -317,6 +319,7 @@ func (s *CloudInstancesService) Read(instanceId string) (*CloudInstance, error) 
 	return &cloudInstances.CloudInstance[0], nil
 }
 
+// List retrieves all cloud instances.
 func (s *CloudInstancesService) List() ([]CloudInstance, error) {
 	reqUrl := "cloud"
 	req, _ := s.client.NewRequest("GET", reqUrl)
@@ -339,6 +342,7 @@ type DeleteCloudInstanceParams struct {
 	Confirm string `json:"confirm"`
 }
 
+// Delete deletes a cloud instance specified by the given ID and parameters.
 func (s *CloudInstancesService) Delete(cloudInstancesId string, deleteCloudInstanceParams DeleteCloudInstanceParams) (*DeleteResponse, error) {
 	reqUrl := "cloud/" + cloudInstancesId + "/destroy"
 
@@ -355,6 +359,7 @@ func (s *CloudInstancesService) Delete(cloudInstancesId string, deleteCloudInsta
 	return &delResponse, nil
 }
 
+// ListOsImages retrieves all OS images available for cloud instances.
 func (s *CloudInstancesService) ListOsImages() ([]OsImage, error) {
 	reqUrl := "cloud/images"
 	req, _ := s.client.NewRequest("GET", reqUrl)
@@ -371,6 +376,7 @@ func (s *CloudInstancesService) ListOsImages() ([]OsImage, error) {
 	return osImages.OsImages, nil
 }
 
+// ListResizePlans retrieves all available resize plans for a specific cloud instance.
 func (s *CloudInstancesService) ListResizePlans(instanceId string) ([]Plan, error) {
 	reqUrl := "cloud/" + instanceId + "/resizeplans"
 	req, _ := s.client.NewRequest("GET", reqUrl)
@@ -392,6 +398,7 @@ type CreateSnapshotParams struct {
 	Name string `json:"name"`
 }
 
+// CreateSnapshot creates a snapshot for the specified cloud instance.
 func (s *CloudInstancesService) CreateSnapshot(instanceId string, params CreateSnapshotParams) (*CreateBasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/snapshot/create"
 	req, _ := s.client.NewRequest("POST", reqUrl, &params)
@@ -408,6 +415,7 @@ func (s *CloudInstancesService) CreateSnapshot(instanceId string, params CreateS
 	return &snapshot, nil
 }
 
+// DeleteSnapshot deletes a snapshot from the specified cloud instance.
 func (s *CloudInstancesService) DeleteSnapshot(cloudInstanceId, snapshotId string) (*DeleteResponse, error) {
 	reqUrl := "cloud/" + cloudInstanceId + "/snapshot/" + snapshotId + "/delete"
 	req, _ := s.client.NewRequest("DELETE", reqUrl)
@@ -423,6 +431,7 @@ func (s *CloudInstancesService) DeleteSnapshot(cloudInstanceId, snapshotId strin
 	return &delResponse, nil
 }
 
+// EnableBackup enables backups for the specified cloud instance.
 func (s *CloudInstancesService) EnableBackup(instanceId string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/backups/enable"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -439,6 +448,7 @@ func (s *CloudInstancesService) EnableBackup(instanceId string) (*BasicResponse,
 	return &basicResponse, nil
 }
 
+// DisableBackup disables backups for the specified cloud instance.
 func (s *CloudInstancesService) DisableBackup(instanceId string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/backups/disable"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -460,6 +470,7 @@ type UpdateBillingCycleParams struct {
 	Billingcycle string `json:"billingcycle"`
 }
 
+// UpdateBillingCycle updates the billing cycle for the specified cloud instance.
 func (s *CloudInstancesService) UpdateBillingCycle(cloudid string, params UpdateBillingCycleParams) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudid + "/billingcycle"
 	req, _ := s.client.NewRequest("POST", reqUrl, &params)
@@ -476,6 +487,7 @@ func (s *CloudInstancesService) UpdateBillingCycle(cloudid string, params Update
 	return &basicResponse, nil
 }
 
+// HardReboot performs a hard reboot on the specified cloud instance.
 func (s *CloudInstancesService) HardReboot(instanceId string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/hardreboot"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -492,6 +504,7 @@ func (s *CloudInstancesService) HardReboot(instanceId string) (*BasicResponse, e
 	return &basicResponse, nil
 }
 
+// PowerCycle performs a power cycle on the specified cloud instance.
 func (s *CloudInstancesService) PowerCycle(instanceId string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/powercycle"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -508,6 +521,7 @@ func (s *CloudInstancesService) PowerCycle(instanceId string) (*BasicResponse, e
 	return &basicResponse, nil
 }
 
+// PowerOff powers off the specified cloud instance.
 func (s *CloudInstancesService) PowerOff(instanceId string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/poweroff"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -524,6 +538,7 @@ func (s *CloudInstancesService) PowerOff(instanceId string) (*BasicResponse, err
 	return &basicResponse, nil
 }
 
+// PowerOn powers on the specified cloud instance.
 func (s *CloudInstancesService) PowerOn(instanceId string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/poweron"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -547,6 +562,7 @@ type RebuildCloudInstanceParams struct {
 	Confirm string `json:"confirm"`
 }
 
+// Rebuild rebuilds the specified cloud instance with a new image.
 func (s *CloudInstancesService) Rebuild(instanceId string, rebuildCloudInstanceParams RebuildCloudInstanceParams) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/rebuild"
 	req, _ := s.client.NewRequest("POST", reqUrl, rebuildCloudInstanceParams)
@@ -570,6 +586,7 @@ type ResetPasswordResponse struct {
 	Message  string `json:"message,omitempty" faker:"sentence"`
 }
 
+// ResetPassword resets the password for the specified cloud instance.
 func (s *CloudInstancesService) ResetPassword(instanceId string) (*ResetPasswordResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/resetpassword"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -592,6 +609,7 @@ type ResizeCloudInstanceParams struct {
 	Plan string `json:"plan"`
 }
 
+// Resize resizes the specified cloud instance with the given parameters.
 func (s *CloudInstancesService) Resize(instanceId string, resizeCloudInstanceParams ResizeCloudInstanceParams) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/resize"
 	req, _ := s.client.NewRequest("POST", reqUrl, resizeCloudInstanceParams)
@@ -608,6 +626,7 @@ func (s *CloudInstancesService) Resize(instanceId string, resizeCloudInstancePar
 	return &basicResponse, nil
 }
 
+// RestoreSnapshot restores a snapshot for the specified cloud instance.
 func (s *CloudInstancesService) RestoreSnapshot(instanceId, snapshotId string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + instanceId + "/snapshot/" + snapshotId + "/restore"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -630,6 +649,7 @@ type UpdateStorageParams struct {
 	Type string `json:"type"`
 }
 
+// UpdateStorage updates the storage device attached to the specified cloud instance.
 func (s *CloudInstancesService) UpdateStorage(cloudid, storageid string, params UpdateStorageParams) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudid + "/storage/" + storageid + "/update"
 	req, _ := s.client.NewRequest("POST", reqUrl, &params)
@@ -646,6 +666,7 @@ func (s *CloudInstancesService) UpdateStorage(cloudid, storageid string, params 
 	return &basicResponse, nil
 }
 
+// AssignPublicIP assigns a public IP to the specified cloud instance.
 func (s *CloudInstancesService) AssignPublicIP(cloudid string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudid + "/assignpublicip"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -667,6 +688,7 @@ type UpdateRDNSParams struct {
 	Rdns string `json:"rdns"`
 }
 
+// UpdateRDNS updates the RDNS for the specified IP address of a cloud instance.
 func (s *CloudInstancesService) UpdateRDNS(cloudId, ipAddress string, params UpdateRDNSParams) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudId + "/updaterdns/" + ipAddress
 	req, _ := s.client.NewRequest("POST", reqUrl, &params)
@@ -683,6 +705,7 @@ func (s *CloudInstancesService) UpdateRDNS(cloudId, ipAddress string, params Upd
 	return &basicResponse, nil
 }
 
+// EnableRescue enables rescue mode for the specified cloud instance.
 func (s *CloudInstancesService) EnableRescue(cloudid string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudid + "/enablerescue"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -699,6 +722,7 @@ func (s *CloudInstancesService) EnableRescue(cloudid string) (*BasicResponse, er
 	return &basicResponse, nil
 }
 
+// DisableRescue disables rescue mode for the specified cloud instance.
 func (s *CloudInstancesService) DisableRescue(cloudid string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudid + "/disablerescue"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -720,6 +744,7 @@ type MountISOParams struct {
 	Iso string `json:"iso"`
 }
 
+// MountISO mounts an ISO to the specified cloud instance.
 func (s *CloudInstancesService) MountISO(cloudid string, params MountISOParams) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudid + "/mountiso"
 	req, _ := s.client.NewRequest("POST", reqUrl, &params)
@@ -736,6 +761,7 @@ func (s *CloudInstancesService) MountISO(cloudid string, params MountISOParams) 
 	return &basicResponse, nil
 }
 
+// UnmountISO unmounts an ISO from the specified cloud instance.
 func (s *CloudInstancesService) UnmountISO(cloudid string) (*BasicResponse, error) {
 	reqUrl := "cloud/" + cloudid + "/umountiso"
 	req, _ := s.client.NewRequest("POST", reqUrl, nil)
@@ -756,6 +782,7 @@ func (s *CloudInstancesService) UnmountISO(cloudid string) (*BasicResponse, erro
 // V4PublicArray is a custom type to handle unmarshaling of V4Public.
 type V4PublicArray []V4Public
 
+// UnmarshalJSON implements the json.Unmarshaler interface for V4PublicArray.
 func (v *V4PublicArray) UnmarshalJSON(data []byte) error {
 	var single []V4Public
 	var nested [][]V4Public

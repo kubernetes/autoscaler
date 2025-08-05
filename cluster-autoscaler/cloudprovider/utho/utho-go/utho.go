@@ -86,6 +86,7 @@ func NewClient(token string, options ...UthoOption) (Client, error) {
 	return client, nil
 }
 
+// toURLWithEndingSlash parses the given URL string and ensures the path ends with a slash.
 func toURLWithEndingSlash(u string) (*url.URL, error) {
 	baseURL, err := url.Parse(u)
 	if err != nil {
@@ -162,6 +163,7 @@ func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	return resp, nil
 }
 
+// checkForErrors inspects the HTTP response and returns an error if the status code indicates failure.
 func checkForErrors(resp *http.Response) error {
 	if c := resp.StatusCode; c >= 200 && c < 400 {
 		return nil
@@ -178,6 +180,7 @@ func checkForErrors(resp *http.Response) error {
 	return errorResponse
 }
 
+// Kubernetes returns the KubernetesService for Kubernetes-related API calls.
 func (c *client) Kubernetes() *KubernetesService {
 	return c.kubernetes
 }

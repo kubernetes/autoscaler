@@ -232,6 +232,7 @@ type CreateNodePoolEbs struct {
 	Type string `json:"type"`
 }
 
+// Create creates a new Kubernetes cluster using the provided parameters.
 func (k *KubernetesService) Create(ctx context.Context, params CreateKubernetesParams) (*CreateResponse, error) {
 	reqUrl := "kubernetes/deploy"
 	req, _ := k.client.NewRequest("POST", reqUrl, &params)
@@ -248,6 +249,7 @@ func (k *KubernetesService) Create(ctx context.Context, params CreateKubernetesP
 	return &kubernetes, nil
 }
 
+// Read retrieves information about a specific Kubernetes cluster by its ID.
 func (k *KubernetesService) Read(ctx context.Context, clusterId int) (*KubernetesRead, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -264,6 +266,7 @@ func (k *KubernetesService) Read(ctx context.Context, clusterId int) (*Kubernete
 	return &kubernetes, nil
 }
 
+// List retrieves a list of all Kubernetes clusters.
 func (k *KubernetesService) List(ctx context.Context) ([]K8s, error) {
 	reqUrl := "kubernetes"
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -286,6 +289,7 @@ type DeleteKubernetesParams struct {
 	Confirm string `json:"confirm"`
 }
 
+// Delete deletes a Kubernetes cluster specified by the given parameters.
 func (k *KubernetesService) Delete(ctx context.Context, params DeleteKubernetesParams) (*DeleteResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/destroy", params.ClusterId)
 	req, _ := k.client.NewRequest("DELETE", reqUrl)
@@ -307,6 +311,7 @@ type CreateKubernetesLoadbalancerParams struct {
 }
 
 // Loadbalancer
+// CreateLoadbalancer attaches a load balancer to a Kubernetes cluster.
 func (k *KubernetesService) CreateLoadbalancer(ctx context.Context, params CreateKubernetesLoadbalancerParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/loadbalancer/%d", params.ClusterId, params.LoadbalancerId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -323,6 +328,7 @@ func (k *KubernetesService) CreateLoadbalancer(ctx context.Context, params Creat
 	return &kubernetes, nil
 }
 
+// ReadLoadbalancer retrieves information about a specific load balancer in a Kubernetes cluster.
 func (k *KubernetesService) ReadLoadbalancer(ctx context.Context, clusterId, loadbalancerId int) (*K8sLoadbalancers, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -348,6 +354,7 @@ func (k *KubernetesService) ReadLoadbalancer(ctx context.Context, clusterId, loa
 	return &loadbalancers, nil
 }
 
+// ListLoadbalancers retrieves all load balancers for a given Kubernetes cluster.
 func (k *KubernetesService) ListLoadbalancers(ctx context.Context, clusterId int) ([]K8sLoadbalancers, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -364,6 +371,7 @@ func (k *KubernetesService) ListLoadbalancers(ctx context.Context, clusterId int
 	return kubernetess.LoadBalancers, nil
 }
 
+// DeleteLoadbalancer deletes a load balancer from a Kubernetes cluster.
 func (k *KubernetesService) DeleteLoadbalancer(ctx context.Context, clusterId, kubernetesLoadbalancerId int) (*DeleteResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/loadbalancer/%d", clusterId, kubernetesLoadbalancerId)
 	req, _ := k.client.NewRequest("DELETE", reqUrl)
@@ -385,6 +393,7 @@ type CreateKubernetesSecurityGroupParams struct {
 }
 
 // SecurityGroup
+// CreateSecurityGroup attaches a security group to a Kubernetes cluster.
 func (k *KubernetesService) CreateSecurityGroup(ctx context.Context, params CreateKubernetesSecurityGroupParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/securitygroup/%d", params.ClusterId, params.KubernetesSecurityGroupId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -401,6 +410,7 @@ func (k *KubernetesService) CreateSecurityGroup(ctx context.Context, params Crea
 	return &kubernetes, nil
 }
 
+// ReadSecurityGroup retrieves information about a specific security group in a Kubernetes cluster.
 func (k *KubernetesService) ReadSecurityGroup(ctx context.Context, clusterId, securitygroupId int) (*K8sSecurityGroups, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -426,6 +436,7 @@ func (k *KubernetesService) ReadSecurityGroup(ctx context.Context, clusterId, se
 	return &securitygroups, nil
 }
 
+// ListSecurityGroups retrieves all security groups for a given Kubernetes cluster.
 func (k *KubernetesService) ListSecurityGroups(ctx context.Context, clusterId int) ([]K8sSecurityGroups, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -442,6 +453,7 @@ func (k *KubernetesService) ListSecurityGroups(ctx context.Context, clusterId in
 	return kubernetess.SecurityGroups, nil
 }
 
+// DeleteSecurityGroup deletes a security group from a Kubernetes cluster.
 func (k *KubernetesService) DeleteSecurityGroup(ctx context.Context, clusterId, kubernetesSecurityGroupId int) (*DeleteResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/securitygroup/%d", clusterId, kubernetesSecurityGroupId)
 	req, _ := k.client.NewRequest("DELETE", reqUrl)
@@ -463,6 +475,7 @@ type CreateKubernetesTargetgroupParams struct {
 }
 
 // Targetgroup
+// CreateTargetgroup attaches a target group to a Kubernetes cluster.
 func (k *KubernetesService) CreateTargetgroup(ctx context.Context, params CreateKubernetesTargetgroupParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/targetgroup/%d", params.ClusterId, params.KubernetesTargetgroupId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -479,6 +492,7 @@ func (k *KubernetesService) CreateTargetgroup(ctx context.Context, params Create
 	return &kubernetes, nil
 }
 
+// ReadTargetgroup retrieves information about a specific target group in a Kubernetes cluster.
 func (k *KubernetesService) ReadTargetgroup(ctx context.Context, clusterId, targetgroupId int) (*K8sTargetGroups, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -508,6 +522,7 @@ func (k *KubernetesService) ReadTargetgroup(ctx context.Context, clusterId, targ
 	return &targetgroups, nil
 }
 
+// ListTargetgroups retrieves all target groups for a given Kubernetes cluster.
 func (k *KubernetesService) ListTargetgroups(ctx context.Context, clusterId int) ([]K8sTargetGroups, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -524,6 +539,7 @@ func (k *KubernetesService) ListTargetgroups(ctx context.Context, clusterId int)
 	return kubernetess.TargetGroups, nil
 }
 
+// DeleteTargetgroup deletes a target group from a Kubernetes cluster.
 func (k *KubernetesService) DeleteTargetgroup(ctx context.Context, clusterId, kubernetesTargetgroupId int) (*DeleteResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/targetgroup/%d", clusterId, kubernetesTargetgroupId)
 	req, _ := k.client.NewRequest("DELETE", reqUrl)
@@ -539,6 +555,7 @@ func (k *KubernetesService) DeleteTargetgroup(ctx context.Context, clusterId, ku
 	return &delResponse, nil
 }
 
+// PowerOff powers off a Kubernetes cluster by its ID.
 func (k *KubernetesService) PowerOff(ctx context.Context, clusterId int) (*BasicResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/stop", clusterId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -555,6 +572,7 @@ func (k *KubernetesService) PowerOff(ctx context.Context, clusterId int) (*Basic
 	return &basicResponse, nil
 }
 
+// PowerOn powers on a Kubernetes cluster by its ID.
 func (k *KubernetesService) PowerOn(ctx context.Context, clusterId int) (*BasicResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/start", clusterId)
 	req, _ := k.client.NewRequest("POST", reqUrl, nil)
@@ -572,6 +590,7 @@ func (k *KubernetesService) PowerOn(ctx context.Context, clusterId int) (*BasicR
 }
 
 // NodePool
+// CreateNodePool creates a new node pool in a Kubernetes cluster.
 func (k *KubernetesService) CreateNodePool(ctx context.Context, params CreateKubernetesNodePoolParams) (*CreateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/nodepool/add", params.ClusterId)
 	req, _ := k.client.NewRequest("POST", reqUrl, &params)
@@ -588,6 +607,7 @@ func (k *KubernetesService) CreateNodePool(ctx context.Context, params CreateKub
 	return &kubernetes, nil
 }
 
+// ReadNodePool retrieves information about a specific node pool in a Kubernetes cluster.
 func (k *KubernetesService) ReadNodePool(ctx context.Context, clusterId int, nodePoolId string) (*NodepoolDetails, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -618,6 +638,7 @@ func (k *KubernetesService) ReadNodePool(ctx context.Context, clusterId int, nod
 	return &nodepools, nil
 }
 
+// ListNodePools retrieves all node pools for a given Kubernetes cluster.
 func (k *KubernetesService) ListNodePools(ctx context.Context, clusterId string) ([]NodepoolDetails, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%s", clusterId)
 	req, _ := k.client.NewRequest("GET", reqUrl)
@@ -667,6 +688,7 @@ type UpdateKubernetesAutoscaleNodepoolResponse struct {
 	Message string `json:"message"`
 }
 
+// UpdateNodePool updates an autoscale node pool in a Kubernetes cluster.
 func (k *KubernetesService) UpdateNodePool(ctx context.Context, params UpdateKubernetesAutoscaleNodepool) (*UpdateKubernetesAutoscaleNodepoolResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/nodepool/%s/update", params.ClusterId, params.NodePoolId)
 	req, _ := k.client.NewRequest("POST", reqUrl, &params)
@@ -692,6 +714,7 @@ type UpdateKubernetesStaticNodepool struct {
 	Size       string `json:"size"`
 }
 
+// UpdateStaticNodepool updates a static node pool in a Kubernetes cluster.
 func (k *KubernetesService) UpdateStaticNodepool(ctx context.Context, params UpdateKubernetesStaticNodepool) (*UpdateResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/nodepool/%s/update", params.ClusterId, params.NodePoolId)
 	req, _ := k.client.NewRequest("POST", reqUrl, &params)
@@ -714,6 +737,7 @@ type DeleteNodeParams struct {
 	NodeId    string
 }
 
+// DeleteNode deletes a node from a node pool in a Kubernetes cluster.
 func (k *KubernetesService) DeleteNode(ctx context.Context, params DeleteNodeParams) (*DeleteResponse, error) {
 	reqUrl := fmt.Sprintf("kubernetes/%d/nodepool/%s/%s/delete", params.ClusterId, params.PoolId, params.NodeId)
 	req, _ := k.client.NewRequest("DELETE", reqUrl)
