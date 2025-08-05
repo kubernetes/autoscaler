@@ -149,8 +149,8 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			// Validate OOMMinBumpUp
 			if policy.OOMMinBumpUp != nil {
 				minBump := policy.OOMMinBumpUp.Value()
-				if minBump <= 0 {
-					return fmt.Errorf("OomMinBumpUp must be greater than 0, got %v bytes", minBump)
+				if minBump < 0 {
+					return fmt.Errorf("OOMMinBumpUp must be greater than  or equal to 0, got %v bytes", minBump)
 				}
 			}
 
