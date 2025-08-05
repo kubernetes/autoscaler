@@ -24,7 +24,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/uthoplatforms/utho-go/utho"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho/utho-go"
 )
 
 // Test fixtures

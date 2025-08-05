@@ -23,7 +23,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/uthoplatforms/utho-go/utho"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho/utho-go"
 	"k8s.io/klog/v2"
 )
 

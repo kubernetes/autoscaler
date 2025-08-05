@@ -30,7 +30,6 @@ require (
 	github.com/prometheus/client_golang v1.22.0
 	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.10.0
-	github.com/uthoplatforms/utho-go v0.2.10
 	github.com/vburenin/ifacemaker v1.2.1
 	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.36.0

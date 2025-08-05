@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/stretchr/testify/mock"
-	"github.com/uthoplatforms/utho-go/utho"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho/utho-go"
 )
 
 type uthoClientMock struct {
