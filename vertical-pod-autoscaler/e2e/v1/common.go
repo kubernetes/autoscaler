@@ -37,8 +37,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/component-base/featuregate"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 )
@@ -359,14 +359,30 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 
 // AnnotatePod adds annotation for an existing pod.
 func AnnotatePod(f *framework.Framework, podName, annotationName, annotationValue string) {
-	bytes, err := json.Marshal([]patchRecord{{
+	pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Get(context.TODO(), podName, metav1.GetOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to get pod.")
+
+	patches := []patchRecord{}
+	if pod.Annotations == nil {
+		patches = append(patches, patchRecord{
+			Op:    "add",
+			Path:  "/metadata/annotations",
+			Value: make(map[string]string),
+		})
+	}
+
+	patches = append(patches, patchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%v", annotationName),
+		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
 		Value: annotationValue,
-	}})
-	pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Patch(context.TODO(), podName, types.JSONPatchType, bytes, metav1.PatchOptions{})
+	})
+
+	bytes, err := json.Marshal(patches)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	patchedPod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Patch(context.TODO(), podName, types.JSONPatchType, bytes, metav1.PatchOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch pod.")
-	gomega.Expect(pod.Annotations[annotationName]).To(gomega.Equal(annotationValue))
+	gomega.Expect(patchedPod.Annotations[annotationName]).To(gomega.Equal(annotationValue))
 }
 
 // ParseQuantityOrDie parses quantity from string and dies with an error if
@@ -613,35 +629,35 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 	return err
 }
 
-// checkInPlaceOrRecreateTestsEnabled check for enabled feature gates in the cluster used for the
-// InPlaceOrRecreate VPA feature.
-// Use this in a "beforeEach" call before any suites that use InPlaceOrRecreate featuregate.
-func checkInPlaceOrRecreateTestsEnabled(f *framework.Framework, checkAdmission, checkUpdater bool) {
-	ginkgo.By("Checking InPlacePodVerticalScaling cluster feature gate is on")
+// checkFeatureGateTestsEnabled check for enabled feature gates in the cluster used for the
+// given VPA feature.
+// Use this in a "beforeEach" call before any suites that use a featuregate.
+func checkFeatureGateTestsEnabled(f *framework.Framework, feature featuregate.Feature, checkAdmission, checkUpdater bool) {
+	ginkgo.By(fmt.Sprintf("Checking %s cluster feature gate is on", feature))
 
 	if checkUpdater {
-		ginkgo.By("Checking InPlaceOrRecreate VPA feature gate is enabled for updater")
+		ginkgo.By(fmt.Sprintf("Checking %s VPA feature gate is enabled for updater", feature))
 
 		deploy, err := f.ClientSet.AppsV1().Deployments(VpaNamespace).Get(context.TODO(), "vpa-updater", metav1.GetOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(deploy.Spec.Template.Spec.Containers).To(gomega.HaveLen(1))
 		vpaUpdaterPod := deploy.Spec.Template.Spec.Containers[0]
 		gomega.Expect(vpaUpdaterPod.Name).To(gomega.Equal("updater"))
-		if !anyContainsSubstring(vpaUpdaterPod.Args, fmt.Sprintf("%s=true", string(features.InPlaceOrRecreate))) {
-			ginkgo.Skip("Skipping suite: InPlaceOrRecreate feature gate is not enabled for the VPA updater")
+		if !anyContainsSubstring(vpaUpdaterPod.Args, fmt.Sprintf("%s=true", string(feature))) {
+			ginkgo.Skip(fmt.Sprintf("Skipping suite: %s feature gate is not enabled for the VPA updater", feature))
 		}
 	}
 
 	if checkAdmission {
-		ginkgo.By("Checking InPlaceOrRecreate VPA feature gate is enabled for admission controller")
+		ginkgo.By(fmt.Sprintf("Checking %s VPA feature gate is enabled for admission controller", feature))
 
 		deploy, err := f.ClientSet.AppsV1().Deployments(VpaNamespace).Get(context.TODO(), "vpa-admission-controller", metav1.GetOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(deploy.Spec.Template.Spec.Containers).To(gomega.HaveLen(1))
 		vpaAdmissionPod := deploy.Spec.Template.Spec.Containers[0]
 		gomega.Expect(vpaAdmissionPod.Name).To(gomega.Equal("admission-controller"))
-		if !anyContainsSubstring(vpaAdmissionPod.Args, fmt.Sprintf("%s=true", string(features.InPlaceOrRecreate))) {
-			ginkgo.Skip("Skipping suite: InPlaceOrRecreate feature gate is not enabled for VPA admission controller")
+		if !anyContainsSubstring(vpaAdmissionPod.Args, fmt.Sprintf("%s=true", string(feature))) {
+			ginkgo.Skip(fmt.Sprintf("Skipping suite: %s feature gate is not enabled for VPA admission controller", feature))
 		}
 	}
 }
