@@ -46,6 +46,11 @@ const (
 	// InPlaceOrRecreate enables the InPlaceOrRecreate update mode to be used.
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlaceOrRecreate featuregate.Feature = "InPlaceOrRecreate"
+
+	// alpha: v1.5.0
+	// components: admission-controller, updater
+	// CPUStartupBoost enables the CPU startup boost feature.
+	CPUStartupBoost featuregate.Feature = "CPUStartupBoost"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

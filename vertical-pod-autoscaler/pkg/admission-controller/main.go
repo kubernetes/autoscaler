@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
@@ -78,6 +79,7 @@ var (
 	registerWebhook      = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
 	webhookLabels        = flag.String("webhook-labels", "", "Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2")
 	registerByURL        = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	maxAllowedCpu        = flag.String("container-recommendation-max-allowed-cpu", "", "Maximum amount of CPU that will be recommended for a container.")
 )
 
 func main() {
@@ -91,6 +93,13 @@ func main() {
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if *maxAllowedCpu != "" {
+		if _, err := resource.ParseQuantity(*maxAllowedCpu); err != nil {
+			klog.ErrorS(err, "Failed to parse maxAllowedCpu")
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
 	}
 
 	healthCheck := metrics.NewHealthCheck(time.Minute)
@@ -145,7 +154,7 @@ func main() {
 		hostname,
 	)
 
-	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider), patch.NewObservedContainersCalculator()}
+	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider, *maxAllowedCpu), patch.NewObservedContainersCalculator()}
 	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
