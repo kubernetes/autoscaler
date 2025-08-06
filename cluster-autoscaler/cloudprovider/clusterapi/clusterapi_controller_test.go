@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
 	"math/rand"
 	"path"
 	"reflect"
@@ -36,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/dynamic"
@@ -416,9 +416,9 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 						"template": map[string]interface{}{
 							"spec": map[string]interface{}{
 								"infrastructureRef": map[string]interface{}{
-									"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
-									"kind":       machineTemplateKind,
-									"name":       "TestMachineTemplate",
+									"apiGroup": "infrastructure.cluster.x-k8s.io",
+									"kind":     machineTemplateKind,
+									"name":     "TestMachineTemplate",
 								},
 							},
 						},
@@ -1595,7 +1595,7 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			t.Setenv(CAPIVersionEnvVar, tc.envVar)
-			version, err := getAPIGroupPreferredVersion(discoveryClient, tc.APIGroup)
+			version, err := getCAPIGroupPreferredVersion(discoveryClient, tc.APIGroup)
 			if (err != nil) != tc.error {
 				t.Errorf("expected to have error: %t. Had an error: %t", tc.error, err != nil)
 			}
