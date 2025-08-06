@@ -121,7 +121,7 @@ type objectCounterKey struct {
 // ObjectCounter helps split all VPA objects into buckets
 type ObjectCounter struct {
 	cnt   map[objectCounterKey]int
-	mutex sync.Mutex
+	mutex sync.RWMutex
 }
 
 // Register initializes all metrics for VPA Recommender
@@ -198,6 +198,8 @@ func (oc *ObjectCounter) Add(vpa *model.Vpa) {
 
 // Observe passes all the computed bucket values to metrics
 func (oc *ObjectCounter) Observe() {
+	oc.mutex.RLock()
+	defer oc.mutex.RUnlock()
 	for k, v := range oc.cnt {
 		vpaObjectCount.WithLabelValues(
 			k.mode,
