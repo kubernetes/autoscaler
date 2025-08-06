@@ -159,7 +159,7 @@ func (a *AggregateContainerState) GetControlledResources() []ResourceName {
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
 	a.IsUnderVPA = false
-	a.lastRecommendation = nil
+	a.SetLastRecommendation(nil)
 	a.UpdateMode = nil
 	a.ScalingMode = nil
 	a.ControlledResources = nil
