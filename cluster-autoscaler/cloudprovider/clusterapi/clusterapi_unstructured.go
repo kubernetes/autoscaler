@@ -380,17 +380,33 @@ func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*un
 		return nil, nil
 	}
 
-	apiversion, ok := infraref["apiVersion"]
-	if !ok {
-		return nil, nil
+	var apiversion string
+
+	apiGroup, ok := infraref["apiGroup"]
+	if ok {
+		if apiversion, err = getAPIGroupPreferredVersion(r.controller.managementDiscoveryClient, apiGroup); err != nil {
+			klog.V(4).Infof("Unable to read preferred version from api group %s, error: %v", apiGroup, err)
+			return nil, err
+		}
+		apiversion = fmt.Sprintf("%s/%s", apiGroup, apiversion)
+	} else {
+		// Fall back to ObjectReference in capi v1beta1
+		apiversion, ok = infraref["apiVersion"]
+		if !ok {
+			klog.V(4).Info("Missing apiVersion")
+			return nil, errors.New("Missing apiVersion")
+		}
 	}
+
 	kind, ok := infraref["kind"]
 	if !ok {
-		return nil, nil
+		klog.V(4).Info("Missing kind")
+		return nil, errors.New("Missing kind")
 	}
 	name, ok := infraref["name"]
 	if !ok {
-		return nil, nil
+		klog.V(4).Info("Missing name")
+		return nil, errors.New("Missing name")
 	}
 	// kind needs to be lower case and plural
 	kind = fmt.Sprintf("%ss", strings.ToLower(kind))
