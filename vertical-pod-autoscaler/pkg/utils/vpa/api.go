@@ -38,6 +38,7 @@ import (
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 )
 
 // VpaWithSelector is a pair of VPA and its selector.
@@ -290,4 +291,39 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 		return fmt.Errorf("cannot save checkpoint for vpa %s/%s container %s. Reason: %+v", vpaCheckpoint.Namespace, vpaCheckpoint.Name, vpaCheckpoint.Spec.ContainerName, err)
 	}
 	return nil
+}
+
+// PodReady returns true if the pod is ready.
+func PodReady(pod *core.Pod) bool {
+	for _, cond := range pod.Status.Conditions {
+		if cond.Type == core.PodReady && cond.Status == core.ConditionTrue {
+			return true
+		}
+	}
+	return false
+}
+
+// PodStartupBoostDurationPassed returns true if the startup boost duration has passed.
+func PodStartupBoostDurationPassed(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if vpa.Spec.StartupBoost == nil || vpa.Spec.StartupBoost.CPU.Duration == nil {
+		return true
+	}
+	if !PodReady(pod) {
+		return false
+	}
+	for _, cond := range pod.Status.Conditions {
+		if cond.Type == core.PodReady {
+			return time.Since(cond.LastTransitionTime.Time) > vpa.Spec.StartupBoost.CPU.Duration.Duration
+		}
+	}
+	return false
+}
+
+// PodHasCPUBoostInProgress returns true if the pod has the CPU boost annotation.
+func PodHasCPUBoostInProgress(pod *core.Pod) bool {
+	if pod.Annotations == nil {
+		return false
+	}
+	_, found := pod.Annotations[annotations.StartupCPUBoostAnnotation]
+	return found
 }

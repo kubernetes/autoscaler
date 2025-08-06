@@ -399,3 +399,201 @@ func TestFindParentControllerForPod(t *testing.T) {
 		})
 	}
 }
+
+func TestPodReady(t *testing.T) {
+	testCases := []struct {
+		name     string
+		pod      *core.Pod
+		expected bool
+	}{
+		{
+			name: "PodReady condition is True",
+			pod: &core.Pod{
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:   core.PodReady,
+							Status: core.ConditionTrue,
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "PodReady condition is False",
+			pod: &core.Pod{
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:   core.PodReady,
+							Status: core.ConditionFalse,
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "No PodReady condition",
+			pod: &core.Pod{
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{},
+				},
+			},
+			expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, PodReady(tc.pod))
+		})
+	}
+}
+
+func TestPodStartupBoostDurationPassed(t *testing.T) {
+	now := meta.Now()
+	past := meta.Time{Time: now.Add(-2 * time.Minute)}
+	testCases := []struct {
+		name     string
+		pod      *core.Pod
+		vpa      *vpa_types.VerticalPodAutoscaler
+		expected bool
+	}{
+		{
+			name:     "No StartupBoost config",
+			pod:      &core.Pod{},
+			vpa:      &vpa_types.VerticalPodAutoscaler{},
+			expected: true,
+		},
+		{
+			name: "No duration in StartupBoost",
+			pod:  &core.Pod{},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: vpa_types.CPUStartupBoost{},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Pod not ready",
+			pod: &core.Pod{
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:   core.PodReady,
+							Status: core.ConditionFalse,
+						},
+					},
+				},
+			},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: vpa_types.CPUStartupBoost{
+							Duration: &meta.Duration{Duration: 1 * time.Minute},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Duration passed",
+			pod: &core.Pod{
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:               core.PodReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: past,
+						},
+					},
+				},
+			},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: vpa_types.CPUStartupBoost{
+							Duration: &meta.Duration{Duration: 1 * time.Minute},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Duration not passed",
+			pod: &core.Pod{
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:               core.PodReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: now,
+						},
+					},
+				},
+			},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: vpa_types.CPUStartupBoost{
+							Duration: &meta.Duration{Duration: 1 * time.Minute},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, PodStartupBoostDurationPassed(tc.pod, tc.vpa))
+		})
+	}
+}
+
+func TestPodHasCPUBoostInProgress(t *testing.T) {
+	testCases := []struct {
+		name     string
+		pod      *core.Pod
+		expected bool
+	}{
+		{
+			name:     "No annotations",
+			pod:      &core.Pod{},
+			expected: false,
+		},
+		{
+			name: "Annotation present",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Annotation not present",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"another-annotation": "true",
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, PodHasCPUBoostInProgress(tc.pod))
+		})
+	}
+}
