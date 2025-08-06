@@ -19,6 +19,7 @@ package routines
 import (
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -98,6 +99,8 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 	// Create a channel to send VPA updates to workers
 	vpaUpdates := make(chan *v1.VerticalPodAutoscaler, len(apiObjectVPAs))
 
+	var counter int64
+
 	// Start workers
 	for range updateWorkerCount {
 		wg.Add(1)
@@ -114,6 +117,8 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 					return
 				}
 
+				atomic.AddInt64(&counter, 1)
+
 				processVPAUpdate(r, vpa, observedVpa)
 				cnt.Add(vpa)
 			}
@@ -124,7 +129,9 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 	for _, observedVpa := range apiObjectVPAs {
 		vpaUpdates <- observedVpa
 	}
-	close(vpaUpdates)
 
+	close(vpaUpdates)
 	wg.Wait()
+
+	assert.Equal(t, int64(vpaCount), atomic.LoadInt64(&counter), "Not all VPAs were processed")
 }
