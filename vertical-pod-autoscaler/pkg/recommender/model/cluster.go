@@ -71,6 +71,7 @@ type clusterState struct {
 	// VPA objects in the cluster that have no recommendation mapped to the first
 	// time we've noticed the recommendation missing or last time we logged
 	// a warning about it.
+	// TODO consider switching to a sync.Map for emptyVPAs
 	emptyVPAs map[VpaID]time.Time
 	// Observed VPAs. Used to check if there are updates needed.
 	observedVPAs []*vpa_types.VerticalPodAutoscaler
@@ -323,6 +324,8 @@ func (cluster *clusterState) DeleteVpa(vpaID VpaID) error {
 		state.MarkNotAutoscaled()
 	}
 	delete(cluster.vpas, vpaID)
+	cluster.mutex.Lock()
+	defer cluster.mutex.Unlock()
 	delete(cluster.emptyVPAs, vpaID)
 	return nil
 }
