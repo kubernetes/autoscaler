@@ -115,7 +115,7 @@ type AggregateContainerState struct {
 	mutex sync.RWMutex
 }
 
-// GetLastRecommendation returns last recorded recommendation.
+// GetLastRecommendation returns last recorded recommendation in a thread-safe manner.
 func (a *AggregateContainerState) GetLastRecommendation() corev1.ResourceList {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
