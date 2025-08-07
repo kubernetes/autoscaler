@@ -758,3 +758,100 @@ func TestResourceAmountFromFloat(t *testing.T) {
 		})
 	}
 }
+
+type EnforceCPUMemoryRatioTestCase struct {
+	name     string
+	input    apiv1.ResourceList
+	ratio    *float64
+	expected apiv1.ResourceList
+}
+
+func TestEnforceCPUMemoryRatio2(t *testing.T) {
+	// 1 CPU -> 4 GiB  => bytes per millicore
+	ratio4GiBPerCore := float64(4*1024*1024*1024) / 1000.0 // 4_294_967.296
+
+	tc := []EnforceCPUMemoryRatioTestCase{
+		{
+			name: "no ratio provided",
+			input: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(4*1024*1024*1024, resource.BinarySI),
+			},
+			ratio: nil,
+			expected: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(4*1024*1024*1024, resource.BinarySI),
+			},
+		},
+		{
+			name: "valid ratio already respected",
+			input: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(2000, resource.DecimalSI),       // 2 cores
+				apiv1.ResourceMemory: *resource.NewQuantity(8*1024*1024*1024, resource.BinarySI), // 8Gi
+			},
+			ratio: float64Ptr(ratio4GiBPerCore),
+			expected: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(2000, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(8*1024*1024*1024, resource.BinarySI),
+			},
+		},
+		{
+			name: "too much RAM, should increase CPU",
+			input: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(1000, resource.DecimalSI),       // 1 core
+				apiv1.ResourceMemory: *resource.NewQuantity(8*1024*1024*1024, resource.BinarySI), // 8Gi
+			},
+			ratio: float64Ptr(ratio4GiBPerCore),
+			expected: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(2000, resource.DecimalSI), // 8Gi / 4 = 2 cores
+				apiv1.ResourceMemory: *resource.NewQuantity(8*1024*1024*1024, resource.BinarySI),
+			},
+		},
+		{
+			name: "not enough RAM, should increase RAM",
+			input: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(4000, resource.DecimalSI),       // 4 cores
+				apiv1.ResourceMemory: *resource.NewQuantity(8*1024*1024*1024, resource.BinarySI), // 8Gi
+			},
+			ratio: float64Ptr(ratio4GiBPerCore),
+			expected: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(4000, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(16*1024*1024*1024, resource.BinarySI), // 4 cores * 4 = 16Gi
+			},
+		},
+		{
+			name: "missing memory, no-op",
+			input: apiv1.ResourceList{
+				apiv1.ResourceCPU: *resource.NewMilliQuantity(1000, resource.DecimalSI),
+			},
+			ratio: float64Ptr(ratio4GiBPerCore),
+			expected: apiv1.ResourceList{
+				apiv1.ResourceCPU: *resource.NewMilliQuantity(1000, resource.DecimalSI),
+			},
+		},
+		{
+			name: "zero values, no-op",
+			input: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(0, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(0, resource.BinarySI),
+			},
+			ratio: float64Ptr(ratio4GiBPerCore),
+			expected: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(0, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(0, resource.BinarySI),
+			},
+		},
+	}
+
+	for _, tc := range tc {
+		t.Run(tc.name, func(t *testing.T) {
+			result := EnforceCPUMemoryRatio(tc.input.DeepCopy(), tc.ratio)
+			assert.Equal(t, tc.expected[apiv1.ResourceCPU], result[apiv1.ResourceCPU])
+			assert.Equal(t, tc.expected[apiv1.ResourceMemory], result[apiv1.ResourceMemory])
+		})
+	}
+}
+
+func float64Ptr(v float64) *float64 {
+	return &v
+}

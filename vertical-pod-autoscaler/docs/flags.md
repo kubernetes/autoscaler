@@ -66,6 +66,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `container-recommendation-max-allowed-memory` |  |  | quantity   Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed. |
 | `cpu-histogram-decay-half-life` |  |  24h0m0s | duration                 The amount of time it takes a historical CPU usage sample to lose half of its weight.  |
 | `cpu-integer-post-processor-enabled` |  |  | Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
+| `enforce-cpu-memory-ratio` | float |  | If > 0, enforce a fixed memory-per-CPU ratio expressed as bytes per millicores across all recommendations. |
 | `external-metrics-cpu-metric` | string |  | ALPHA.  Metric to use with external metrics provider for CPU usage. |
 | `external-metrics-memory-metric` | string |  | ALPHA.  Metric to use with external metrics provider for memory usage. |
 | `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true) |
