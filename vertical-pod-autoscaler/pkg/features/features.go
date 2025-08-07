@@ -40,6 +40,12 @@ const (
 	// In each feature gate description, you must specify "components".
 	// The feature must be enabled by the --feature-gates argument on each listed component.
 
+	// alpha: v1.5.0
+	// components: admission-controller, updater
+
+	// CPUStartupBoost enables the CPU startup boost feature.
+	CPUStartupBoost featuregate.Feature = "CPUStartupBoost"
+
 	// alpha: v1.4.0
 	// beta: v1.5.0
 	// ga: v1.6.0
