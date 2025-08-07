@@ -19,6 +19,7 @@ package v1
 import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -107,7 +108,57 @@ type VerticalPodAutoscalerSpec struct {
 	// recommendation) or contain exactly one recommender.
 	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
+
+	// startupBoost specifies the startup boost policy for the pod.
+	// +optional
+	StartupBoost *StartupBoost `json:"startupBoost,omitempty" protobuf:"bytes,5,opt,name=startupBoost"`
 }
+
+// StartupBoost defines the startup boost policy.
+type StartupBoost struct {
+	// cpu specifies the CPU startup boost policy.
+	// If this field is not set, no startup boost is applied.
+	// +optional
+	CPU *GenericStartupBoost `json:"cpu,omitempty" protobuf:"bytes,1,opt,name=cpu"`
+}
+
+// GenericStartupBoost defines the startup boost policy for a resource.
+// +union
+type GenericStartupBoost struct {
+	// type specifies the kind of boost to apply.
+	// Supported values are: "Factor", "Quantity".
+	// +unionDiscriminator
+	// +required
+	Type StartupBoostType `json:"type" protobuf:"bytes,1,opt,name=type"`
+	// factor specifies the factor to apply to the resource request.
+	// This field is to be used only when Type is "Factor".
+	// +unionMember=Factor
+	// +optional
+	Factor *int32 `json:"factor,omitempty" protobuf:"bytes,2,opt,name=factor"`
+
+	// quantity specifies the absolute resource quantity to be used as the
+	// resource request and limit during the boost phase.
+	// This field is to be used only when Type is "Quantity".
+	// +unionMember=Quantity
+	// +optional
+	Quantity *resource.Quantity `json:"quantity,omitempty" protobuf:"bytes,3,opt,name=quantity"`
+
+	// duration indicates for how long to keep the pod boosted after it goes to Ready.
+	// Defaults to 0s.
+	// +optional
+	Duration *metav1.Duration `json:"duration,omitempty" protobuf:"bytes,4,opt,name=duration"`
+}
+
+// StartupBoostType is the type of startup boost.
+// +kubebuilder:validation:Enum=Factor;Quantity
+type StartupBoostType string
+
+const (
+	// FactorStartupBoostType applies a factor to the resource.
+	FactorStartupBoostType StartupBoostType = "Factor"
+	// QuantityStartupBoostType applies a fixed quantity to the resource.
+	QuantityStartupBoostType StartupBoostType = "Quantity"
+)
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
 // +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetLowerThanRequests
@@ -221,6 +272,13 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// startupBoost specifies the startup boost policy for the container.
+	// This overrides any pod-level startup boost policy.
+	// The startup boost policy takes precedence over the rest of the fields in
+	// this struct, except for ContainerName and ControlledValues.
+	// +optional
+	StartupBoost *StartupBoost `json:"startupBoost,omitempty" protobuf:"bytes,7,opt,name=startupBoost"`
 }
 
 const (

@@ -372,8 +372,93 @@ spec:
                           - Auto
                           - "Off"
                           type: string
+                        startupBoost:
+                          description: |-
+                            StartupBoost specifies the startup boost policy for the container.
+                            This overrides any pod-level startup boost policy.
+                          properties:
+                            cpu:
+                              description: |-
+                                CPU specifies the CPU startup boost policy.
+                                If this field is not set, no startup boost is applied.
+                              properties:
+                                duration:
+                                  description: |-
+                                    Duration indicates for how long to keep the pod boosted after it goes to Ready.
+                                    Defaults to 0s.
+                                  type: string
+                                factor:
+                                  description: |-
+                                    Factor specifies the factor to apply to the CPU request.
+                                    This field is to be used only when Type is "Factor".
+                                  format: int32
+                                  type: integer
+                                quantity:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  description: |-
+                                    Quantity specifies the absolute CPU resource quantity.
+                                    This field is to be used only when Type is "Quantity".
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                type:
+                                  description: |-
+                                    Type specifies the kind of boost to apply.
+                                    Supported values are: "Factor", "Quantity".
+                                    Defaults to "Factor".
+                                  enum:
+                                  - Factor
+                                  - Quantity
+                                  type: string
+                              required:
+                              - type
+                              type: object
+                          type: object
                       type: object
                     type: array
+                type: object
+              startupBoost:
+                description: StartupBoost specifies the startup boost policy for the
+                  pod.
+                properties:
+                  cpu:
+                    description: |-
+                      CPU specifies the CPU startup boost policy.
+                      If this field is not set, no startup boost is applied.
+                    properties:
+                      duration:
+                        description: |-
+                          Duration indicates for how long to keep the pod boosted after it goes to Ready.
+                          Defaults to 0s.
+                        type: string
+                      factor:
+                        description: |-
+                          Factor specifies the factor to apply to the CPU request.
+                          This field is to be used only when Type is "Factor".
+                        format: int32
+                        type: integer
+                      quantity:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: |-
+                          Quantity specifies the absolute CPU resource quantity.
+                          This field is to be used only when Type is "Quantity".
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      type:
+                        description: |-
+                          Type specifies the kind of boost to apply.
+                          Supported values are: "Factor", "Quantity".
+                          Defaults to "Factor".
+                        enum:
+                        - Factor
+                        - Quantity
+                        type: string
+                    required:
+                    - type
+                    type: object
                 type: object
               targetRef:
                 description: |-
