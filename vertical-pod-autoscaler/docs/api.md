@@ -50,6 +50,7 @@ _Appears in:_
 | `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br /> |
 | `oomBumpUpRatio` _float_ | OOMBumpUpRatio is the ratio to increase resources when OOM is detected. |  | Minimum: 1 <br /> |
 | `oomMinBumpUp` _float_ | OOMMinBumpUp is the minimum increase in resources when OOM is detected. |  | Minimum: 0 <br /> |
+| `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the container.<br />This overrides any pod-level startup boost policy.<br />The startup boost policy takes precedence over the rest of the fields in<br />this struct, except for ContainerName and ControlledValues. |  |  |
 
 
 #### ContainerScalingMode
@@ -201,6 +202,41 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  |  |
+
+
+#### StartupBoost
+
+
+
+StartupBoost defines the startup boost policy.
+
+
+
+_Appears in:_
+- [ContainerResourcePolicy](#containerresourcepolicy)
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `cpu` _[GenericStartupBoost](#genericstartupboost)_ | cpu specifies the CPU startup boost policy.<br />If this field is not set, no startup boost is applied. |  |  |
+
+
+#### StartupBoostType
+
+_Underlying type:_ _string_
+
+StartupBoostType is the type of startup boost.
+
+_Validation:_
+- Enum: [Factor Quantity]
+
+_Appears in:_
+- [GenericStartupBoost](#genericstartupboost)
+
+| Field | Description |
+| --- | --- |
+| `Factor` | FactorStartupBoostType applies a factor to the resource.<br /> |
+| `Quantity` | QuantityStartupBoostType applies a fixed quantity to the resource.<br /> |
 
 
 #### UpdateMode
@@ -379,6 +415,7 @@ _Appears in:_
 | `updatePolicy` _[PodUpdatePolicy](#podupdatepolicy)_ | Describes the rules on how changes are applied to the pods.<br />If not specified, all fields in the `PodUpdatePolicy` are set to their<br />default values. |  |  |
 | `resourcePolicy` _[PodResourcePolicy](#podresourcepolicy)_ | Controls how the autoscaler computes recommended resources.<br />The resource policy may be used to set constraints on the recommendations<br />for individual containers.<br />If any individual containers need to be excluded from getting the VPA recommendations, then<br />it must be disabled explicitly by setting mode to "Off" under containerPolicies.<br />If not specified, the autoscaler computes recommended resources for all containers in the pod,<br />without additional constraints. |  |  |
 | `recommenders` _[VerticalPodAutoscalerRecommenderSelector](#verticalpodautoscalerrecommenderselector) array_ | Recommender responsible for generating recommendation for this object.<br />List should be empty (then the default recommender will generate the<br />recommendation) or contain exactly one recommender. |  |  |
+| `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the pod. |  |  |
 
 
 #### VerticalPodAutoscalerStatus

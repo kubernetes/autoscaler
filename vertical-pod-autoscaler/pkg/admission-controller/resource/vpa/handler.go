@@ -186,7 +186,14 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 					return fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off")
 				}
 			}
+			if err := validateStartupBoost(policy.StartupBoost, isCreate); err != nil {
+				return fmt.Errorf("invalid startupBoost in container %s: %v", policy.ContainerName, err)
+			}
 		}
+	}
+
+	if err := validateStartupBoost(vpa.Spec.StartupBoost, isCreate); err != nil {
+		return fmt.Errorf("invalid startupBoost: %v", err)
 	}
 
 	if isCreate && vpa.Spec.TargetRef == nil {
@@ -197,6 +204,42 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		return fmt.Errorf("the current version of VPA object shouldn't specify more than one recommenders")
 	}
 
+	return nil
+}
+
+func validateStartupBoost(startupBoost *vpa_types.StartupBoost, isCreate bool) error {
+	if startupBoost == nil {
+		return nil
+	}
+
+	if !features.Enabled(features.CPUStartupBoost) && isCreate {
+		return fmt.Errorf("in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost)
+	}
+
+	cpuBoost := startupBoost.CPU
+	if cpuBoost == nil {
+		return nil
+	}
+	boostType := cpuBoost.Type
+
+	switch boostType {
+	case vpa_types.FactorStartupBoostType:
+		if cpuBoost.Factor == nil {
+			return fmt.Errorf("StartupBoost.CPU.Factor is required when Type is Factor")
+		}
+		if *cpuBoost.Factor < 1 {
+			return fmt.Errorf("invalid StartupBoost.CPU.Factor: must be >= 1 for Type Factor")
+		}
+	case vpa_types.QuantityStartupBoostType:
+		if cpuBoost.Quantity == nil {
+			return fmt.Errorf("StartupBoost.CPU.Quantity is required when Type is Quantity")
+		}
+		if err := validateCPUResolution(*cpuBoost.Quantity); err != nil {
+			return fmt.Errorf("invalid StartupBoost.CPU.Quantity: %v", err)
+		}
+	default:
+		return fmt.Errorf("unexpected StartupBoost.CPU.Type value %s", boostType)
+	}
 	return nil
 }
 
