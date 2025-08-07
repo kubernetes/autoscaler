@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
 	updaterutils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
@@ -57,7 +58,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
-		checkInPlaceOrRecreateTestsEnabled(f, true, true)
+		checkFeatureGateTestsEnabled(f, features.InPlaceOrRecreate, true, true)
 	})
 
 	ginkgo.It("still applies recommendations on restart when update mode is InPlaceOrRecreate", func() {
