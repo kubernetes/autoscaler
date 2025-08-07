@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
@@ -45,6 +46,14 @@ func TestValidateVPA(t *testing.T) {
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
+	badCPUBoostFactor := int32(0)
+	validCPUBoostFactor := int32(2)
+	badCPUBoostQuantity := resource.MustParse("187500u")
+	validCPUBoostQuantity := resource.MustParse("100m")
+	badCPUBoostType := vpa_types.StartupBoostType("bad")
+	validCPUBoostTypeFactor := vpa_types.FactorStartupBoostType
+	validCPUBoostTypeQuantity := vpa_types.QuantityStartupBoostType
+
 	tests := []struct {
 		name                                 string
 		vpa                                  vpa_types.VerticalPodAutoscaler
@@ -52,6 +61,7 @@ func TestValidateVPA(t *testing.T) {
 		expectError                          error
 		inPlaceOrRecreateFeatureGateDisabled bool
 		PerVPAConfigDisabled                 bool
+		cpuStartupBoostFeatureGateDisabled   bool
 	}{
 		{
 			name: "empty update",
@@ -320,6 +330,247 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "top-level startupBoost with feature gate disabled",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Factor: &validCPUBoostFactor,
+						},
+					},
+				},
+			},
+			isCreate:                           true,
+			cpuStartupBoostFeatureGateDisabled: true,
+			expectError:                        fmt.Errorf("invalid startupBoost: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
+		},
+		{
+			name: "container startupBoost with feature gate disabled",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Factor: &validCPUBoostFactor,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate:                           true,
+			cpuStartupBoostFeatureGateDisabled: true,
+			expectError:                        fmt.Errorf("invalid startupBoost in container loot box: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
+		},
+		{
+			name: "top-level startupBoost with bad factor",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Type:   vpa_types.FactorStartupBoostType,
+							Factor: &badCPUBoostFactor,
+						},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost: invalid StartupBoost.CPU.Factor: must be >= 1 for Type Factor"),
+		},
+		{
+			name: "container startupBoost with bad factor",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Type:   vpa_types.FactorStartupBoostType,
+										Factor: &badCPUBoostFactor,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid StartupBoost.CPU.Factor: must be >= 1 for Type Factor"),
+		},
+		{
+			name: "top-level startupBoost with bad quantity",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Type:     validCPUBoostTypeQuantity,
+							Quantity: &badCPUBoostQuantity,
+						},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost: invalid StartupBoost.CPU.Quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
+		},
+		{
+			name: "container startupBoost with bad quantity",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Type:     validCPUBoostTypeQuantity,
+										Quantity: &badCPUBoostQuantity,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid StartupBoost.CPU.Quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
+		},
+		{
+			name: "top-level startupBoost with bad type",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Type: badCPUBoostType,
+						},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost: unexpected StartupBoost.CPU.Type value bad"),
+		},
+		{
+			name: "container startupBoost with bad type",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Type: badCPUBoostType,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: unexpected StartupBoost.CPU.Type value bad"),
+		},
+		{
+			name: "top-level startupBoost with valid factor",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Type:   validCPUBoostTypeFactor,
+							Factor: &validCPUBoostFactor,
+						},
+					},
+				},
+			},
+			isCreate: true,
+		},
+		{
+			name: "container startupBoost with valid factor",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Type:   validCPUBoostTypeFactor,
+										Factor: &validCPUBoostFactor,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate: true,
+		},
+		{
+			name: "top-level startupBoost with valid quantity",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Type:     validCPUBoostTypeQuantity,
+							Quantity: &validCPUBoostQuantity,
+						},
+					},
+				},
+			},
+			isCreate: true,
+		},
+		{
+			name: "container startupBoost with valid quantity",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Type:     validCPUBoostTypeQuantity,
+										Quantity: &validCPUBoostQuantity,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate: true,
+		},
 		{
 			name: "per-vpa config active and used",
 			vpa: vpa_types.VerticalPodAutoscaler{
@@ -378,6 +629,7 @@ func TestValidateVPA(t *testing.T) {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, !tc.cpuStartupBoostFeatureGateDisabled)
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
