@@ -40,6 +40,7 @@ var (
 	humanizeMemory             = flag.Bool("humanize-memory", false, "DEPRECATED: Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. This flag is deprecated and will be removed in a future version. Use --round-memory-bytes instead.")
 	roundCPUMillicores         = flag.Int("round-cpu-millicores", 1, `CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.`)
 	roundMemoryBytes           = flag.Int("round-memory-bytes", 1, `Memory recommendation rounding factor in bytes. The Memory value will always be rounded up to the nearest multiple of this factor.`)
+	enforceCPUMemoryRatio      = flag.Float64("enforce-cpu-memory-ratio", 0, `If > 0, enforce a fixed memory-per-CPU ratio expressed as bytes per millicores across all recommendations.`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -194,10 +195,10 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources)
 	for _, name := range containerNames {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
 			ContainerName:  name,
-			Target:         model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes),
-			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes),
-			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes),
-			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes),
+			Target:         model.EnforceCPUMemoryRatio(model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes), enforceCPUMemoryRatio),
+			LowerBound:     model.EnforceCPUMemoryRatio(model.ResourcesAsResourceList(resources[name].LowerBound, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes), enforceCPUMemoryRatio),
+			UpperBound:     model.EnforceCPUMemoryRatio(model.ResourcesAsResourceList(resources[name].UpperBound, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes), enforceCPUMemoryRatio),
+			UncappedTarget: model.EnforceCPUMemoryRatio(model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory, *roundCPUMillicores, *roundMemoryBytes), enforceCPUMemoryRatio),
 		})
 	}
 	recommendation := &vpa_types.RecommendedPodResources{
