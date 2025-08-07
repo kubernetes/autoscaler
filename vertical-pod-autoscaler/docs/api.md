@@ -48,8 +48,9 @@ _Appears in:_
 | `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  |  |
 | `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
 | `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br /> |
-| `oomBumpUpRatio` _float_ | OOMBumpUpRatio is the ratio to increase resources when OOM is detected. |  | Minimum: 1 <br /> |
-| `oomMinBumpUp` _float_ | OOMMinBumpUp is the minimum increase in resources when OOM is detected. |  | Minimum: 0 <br /> |
+| `oomBumpUpRatio` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#quantity-resource-api)_ | oomBumpUpRatio is the ratio to increase memory when OOM is detected. |  |  |
+| `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  |  |
+| `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the container.<br />This overrides any pod-level startup boost policy.<br />The startup boost policy takes precedence over the rest of the fields in<br />this struct, except for ContainerName and ControlledValues. |  |  |
 
 
 #### ContainerScalingMode
@@ -105,6 +106,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `resources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcename-v1-core) array_ | Resources is a list of one or more resources that the condition applies<br />to. If more than one resource is given, the EvictionRequirement is fulfilled<br />if at least one resource meets `changeRequirement`. |  |  |
 | `changeRequirement` _[EvictionChangeRequirement](#evictionchangerequirement)_ |  |  | Enum: [TargetHigherThanRequests TargetLowerThanRequests] <br /> |
+
+
 
 
 #### HistogramCheckpoint
@@ -203,6 +206,41 @@ _Appears in:_
 | `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  |  |
 
 
+#### StartupBoost
+
+
+
+StartupBoost defines the startup boost policy.
+
+
+
+_Appears in:_
+- [ContainerResourcePolicy](#containerresourcepolicy)
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `cpu` _[GenericStartupBoost](#genericstartupboost)_ | cpu specifies the CPU startup boost policy.<br />If this field is not set, no startup boost is applied. |  |  |
+
+
+#### StartupBoostType
+
+_Underlying type:_ _string_
+
+StartupBoostType is the type of startup boost.
+
+_Validation:_
+- Enum: [Factor Quantity]
+
+_Appears in:_
+- [GenericStartupBoost](#genericstartupboost)
+
+| Field | Description |
+| --- | --- |
+| `Factor` | FactorStartupBoostType applies a factor to the resource.<br /> |
+| `Quantity` | QuantityStartupBoostType applies a fixed quantity to the resource.<br /> |
+
+
 #### UpdateMode
 
 _Underlying type:_ _string_
@@ -220,7 +258,7 @@ _Appears in:_
 | `Off` | UpdateModeOff means that autoscaler never changes Pod resources.<br />The recommender still sets the recommended resources in the<br />VerticalPodAutoscaler object. This can be used for a "dry run".<br /> |
 | `Initial` | UpdateModeInitial means that autoscaler only assigns resources on pod<br />creation and does not change them during the lifetime of the pod.<br /> |
 | `Recreate` | UpdateModeRecreate means that autoscaler assigns resources on pod<br />creation and additionally can update them during the lifetime of the<br />pod by deleting and recreating the pod.<br /> |
-| `Auto` | **Deprecated** - UpdateModeAuto means that autoscaler assigns resources on pod creation<br />and additionally can update them during the lifetime of the pod,<br />using any available update method. Currently this is equivalent to<br />Recreate. **This mode is deprecated and will be removed in a future API version.**<br />**Use explicit modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.**<br />See [issue #8424](https://github.com/kubernetes/autoscaler/issues/8424) for more details.<br /> |
+| `Auto` | UpdateModeAuto means that autoscaler assigns resources on pod creation<br />and additionally can update them during the lifetime of the pod,<br />using any available update method. Currently this is equivalent to<br />Recreate.<br />Deprecated: This value is deprecated and will be removed in a future API version.<br />Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.<br />See https://github.com/kubernetes/autoscaler/issues/8424 for more details.<br /> |
 | `InPlaceOrRecreate` | UpdateModeInPlaceOrRecreate means that autoscaler tries to assign resources in-place.<br />If this is not possible (e.g., resizing takes too long or is infeasible), it falls back to the<br />"Recreate" update mode.<br />Requires VPA level feature gate "InPlaceOrRecreate" to be enabled<br />on the admission and updater pods.<br />Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.<br /> |
 
 
@@ -379,6 +417,7 @@ _Appears in:_
 | `updatePolicy` _[PodUpdatePolicy](#podupdatepolicy)_ | Describes the rules on how changes are applied to the pods.<br />If not specified, all fields in the `PodUpdatePolicy` are set to their<br />default values. |  |  |
 | `resourcePolicy` _[PodResourcePolicy](#podresourcepolicy)_ | Controls how the autoscaler computes recommended resources.<br />The resource policy may be used to set constraints on the recommendations<br />for individual containers.<br />If any individual containers need to be excluded from getting the VPA recommendations, then<br />it must be disabled explicitly by setting mode to "Off" under containerPolicies.<br />If not specified, the autoscaler computes recommended resources for all containers in the pod,<br />without additional constraints. |  |  |
 | `recommenders` _[VerticalPodAutoscalerRecommenderSelector](#verticalpodautoscalerrecommenderselector) array_ | Recommender responsible for generating recommendation for this object.<br />List should be empty (then the default recommender will generate the<br />recommendation) or contain exactly one recommender. |  |  |
+| `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the pod. |  |  |
 
 
 #### VerticalPodAutoscalerStatus
