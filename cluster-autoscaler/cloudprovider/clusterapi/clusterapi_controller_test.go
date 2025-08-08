@@ -107,13 +107,13 @@ func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machin
 	dynamicClientset := fakedynamic.NewSimpleDynamicClientWithCustomListKinds(
 		runtime.NewScheme(),
 		map[schema.GroupVersionResource]string{
-			{Group: "cluster.x-k8s.io", Version: "v1alpha3", Resource: "machinedeployments"}:             "kindList",
-			{Group: "cluster.x-k8s.io", Version: "v1alpha3", Resource: "machines"}:                       "kindList",
-			{Group: "cluster.x-k8s.io", Version: "v1alpha3", Resource: "machinesets"}:                    "kindList",
-			{Group: "cluster.x-k8s.io", Version: "v1alpha3", Resource: "machinepools"}:                   "kindList",
 			{Group: "cluster.x-k8s.io", Version: "v1beta1", Resource: "machinedeployments"}:              "kindList",
 			{Group: "cluster.x-k8s.io", Version: "v1beta1", Resource: "machines"}:                        "kindList",
 			{Group: "cluster.x-k8s.io", Version: "v1beta1", Resource: "machinesets"}:                     "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1beta2", Resource: "machinedeployments"}:              "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1beta2", Resource: "machines"}:                        "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1beta2", Resource: "machinesets"}:                     "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1beta2", Resource: "machinepools"}:                    "kindList",
 			{Group: "custom.x-k8s.io", Version: "v1beta1", Resource: "machinepools"}:                     "kindList",
 			{Group: "custom.x-k8s.io", Version: "v1beta1", Resource: "machinedeployments"}:               "kindList",
 			{Group: "custom.x-k8s.io", Version: "v1beta1", Resource: "machines"}:                         "kindList",
@@ -151,7 +151,7 @@ func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machin
 					},
 				},
 				{
-					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+					GroupVersion: fmt.Sprintf("%s/v1beta2", defaultCAPIGroup),
 					APIResources: []metav1.APIResource{
 						{
 							Name: resourceNameMachineDeployment,
@@ -191,7 +191,7 @@ func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machin
 
 		gvr := schema.GroupVersionResource{
 			Group:    action.GetResource().Group,
-			Version:  "v1alpha3",
+			Version:  "v1beta2",
 			Resource: resource,
 		}
 
@@ -366,7 +366,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 		config.machineSet = &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"kind":       machineSetKind,
-				"apiVersion": "cluster.x-k8s.io/v1alpha3",
+				"apiVersion": "cluster.x-k8s.io/v1beta2",
 				"metadata": map[string]interface{}{
 					"name":      spec.machineSetName,
 					"namespace": spec.namespace,
@@ -404,7 +404,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 			config.machineDeployment = &unstructured.Unstructured{
 				Object: map[string]interface{}{
 					"kind":       machineDeploymentKind,
-					"apiVersion": "cluster.x-k8s.io/v1alpha3",
+					"apiVersion": "cluster.x-k8s.io/v1beta2",
 					"metadata": map[string]interface{}{
 						"name":      spec.machineDeploymentName,
 						"namespace": spec.namespace,
@@ -506,7 +506,7 @@ func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1
 	machine := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"kind":       machineKind,
-			"apiVersion": "cluster.x-k8s.io/v1alpha3",
+			"apiVersion": "cluster.x-k8s.io/v1beta2",
 			"metadata": map[string]interface{}{
 				"name":      fmt.Sprintf("%s-%s-machine-%d", namespace, owner.Name, i),
 				"namespace": namespace,
@@ -1550,7 +1550,7 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 		{
 			description:      "find version for default API group",
 			APIGroup:         defaultCAPIGroup,
-			preferredVersion: "v1alpha3",
+			preferredVersion: "v1beta2",
 			envVar:           "",
 			error:            false,
 		},
@@ -1584,7 +1584,7 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 					GroupVersion: fmt.Sprintf("%s/v1beta1", customCAPIGroup),
 				},
 				{
-					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+					GroupVersion: fmt.Sprintf("%s/v1beta2", defaultCAPIGroup),
 				},
 				{
 					GroupVersion: fmt.Sprintf("%s/%s", customCAPIGroup, customVersion),
@@ -1617,14 +1617,14 @@ func TestGroupVersionHasResource(t *testing.T) {
 		{
 			description:  "true when it finds resource",
 			resourceName: resourceNameMachineDeployment,
-			APIGroup:     fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+			APIGroup:     fmt.Sprintf("%s/v1beta2", defaultCAPIGroup),
 			expected:     true,
 			error:        false,
 		},
 		{
 			description:  "false when it does not find resource",
 			resourceName: "resourceDoesNotExist",
-			APIGroup:     fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+			APIGroup:     fmt.Sprintf("%s/v1beta2", defaultCAPIGroup),
 			expected:     false,
 			error:        false,
 		},
@@ -1641,7 +1641,7 @@ func TestGroupVersionHasResource(t *testing.T) {
 		Fake: &clientgotesting.Fake{
 			Resources: []*metav1.APIResourceList{
 				{
-					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+					GroupVersion: fmt.Sprintf("%s/v1beta2", defaultCAPIGroup),
 					APIResources: []metav1.APIResource{
 						{
 							Name: resourceNameMachineDeployment,
