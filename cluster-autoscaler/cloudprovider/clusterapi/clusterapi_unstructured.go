@@ -321,6 +321,9 @@ func (r unstructuredScalableResource) InstanceMaxPodsCapacityAnnotation() (resou
 }
 
 func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
+	obKind := r.unstructured.GetKind()
+	obName := r.unstructured.GetName()
+
 	infraref, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "infrastructureRef")
 	if !found || err != nil {
 		return nil, nil
@@ -339,20 +342,23 @@ func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*un
 		// Fall back to ObjectReference in capi v1beta1
 		apiversion, ok = infraref["apiVersion"]
 		if !ok {
-			klog.V(4).Info("Missing apiVersion")
-			return nil, errors.New("Missing apiVersion")
+			info := fmt.Sprintf("Missing apiVersion from %s %s's InfrastructureReference", obKind, obName)
+			klog.V(4).Info(info)
+			return nil, errors.New(info)
 		}
 	}
 
 	kind, ok := infraref["kind"]
 	if !ok {
-		klog.V(4).Info("Missing kind")
-		return nil, errors.New("Missing kind")
+		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
 	}
 	name, ok := infraref["name"]
 	if !ok {
-		klog.V(4).Info("Missing name")
-		return nil, errors.New("Missing name")
+		info := fmt.Sprintf("Missing name from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
 	}
 	// kind needs to be lower case and plural
 	kind = fmt.Sprintf("%ss", strings.ToLower(kind))
