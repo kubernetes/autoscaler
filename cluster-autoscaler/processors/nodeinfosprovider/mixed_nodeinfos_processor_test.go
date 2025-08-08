@@ -300,8 +300,8 @@ func TestProcessHandlesTemplateNodeInfoErrors(t *testing.T) {
 	tn := BuildTestNode("tn", 1000, 1000)
 	tni := framework.NewTestNodeInfo(tn)
 
-	provider := testprovider.NewTestCloudProviderBuilder().WithMachineTemplates(
-		map[string]*framework.NodeInfo{"ng2": tni}).Build()
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil, nil, nil, nil, map[string]*framework.NodeInfo{"ng2": tni})
 
 	provider.AddNodeGroup("ng1", 0, 10, 0)
 	provider.AddNodeGroup("ng2", 0, 10, 0)
