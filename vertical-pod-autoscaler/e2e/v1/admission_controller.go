@@ -23,14 +23,12 @@ import (
 	"strings"
 	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
-	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 	podsecurity "k8s.io/pod-security-admission/api"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -55,11 +53,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			AppendRecommendation(
@@ -71,10 +69,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 250m CPU and 200Mi of memory.
@@ -97,11 +95,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -112,10 +110,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 250m CPU and 200Mi of memory.
@@ -130,11 +128,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 		ginkgo.By("Setting up a VPA CRD")
 		removedContainerName := "removed"
-		container1Name := GetHamsterContainerNameByIndex(0)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(removedContainerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -153,10 +151,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 250m CPU and 200Mi of memory.
@@ -174,7 +172,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(removedContainerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -185,10 +183,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 250m CPU and 200Mi of memory.
@@ -199,7 +197,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	})
 
 	ginkgo.It("starts pod with recommendation when one container has a recommendation and one other one doesn't", func() {
-		d := NewNHamstersDeployment(f, 2)
+		d := utils.NewNHamstersDeployment(f, 2)
 		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
 			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
@@ -210,11 +208,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 		framework.Logf("Created hamster deployment %v", d)
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -225,10 +223,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 250m CPU and 200Mi of memory.
@@ -245,12 +243,12 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		InstallLimitRangeWithMax(f, "300m", "1Gi", apiv1.LimitTypeContainer)
 
 		ginkgo.By("Setting up a VPA CRD")
-		container1Name := GetHamsterContainerNameByIndex(0)
-		container2Name := GetHamsterContainerNameByIndex(1)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -269,10 +267,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 250m CPU and 200Mi of memory.
@@ -289,11 +287,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		InstallLimitRangeWithMax(f, "300m", "1Gi", apiv1.LimitTypeContainer)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -304,10 +302,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 250m CPU and 200Mi of memory.
@@ -318,7 +316,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	})
 
 	ginkgo.It("starts pod with default request when one container has a recommendation and one other one doesn't when a limit range applies", func() {
-		d := NewNHamstersDeployment(f, 2)
+		d := utils.NewNHamstersDeployment(f, 2)
 		InstallLimitRangeWithMax(f, "400m", "1Gi", apiv1.LimitTypePod)
 
 		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
@@ -339,11 +337,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 		framework.Logf("Created hamster deployment %v", d)
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -354,10 +352,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally both containers in each Pod had 400m CPU (one from
 		// recommendation the other one from request), 600Mi of memory (similarly),
@@ -375,11 +373,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -390,10 +388,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Verifying hamster deployment")
 		for i, pod := range podList.Items {
@@ -405,7 +403,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 
 		ginkgo.By("Modifying recommendation.")
-		PatchVpaRecommendation(f, vpaCRD, &vpa_types.RecommendedPodResources{
+		utils.PatchVpaRecommendation(f, vpaCRD, &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
@@ -424,11 +422,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithGuaranteedResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -439,10 +437,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to 250m CPU and 200Mi of memory. Limits and requests should stay equal.
@@ -460,11 +458,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("200Mi") /*memory limit*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -475,10 +473,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to 250m CPU and 200Mi of memory. Limits to request ratio should stay unchanged.
@@ -496,11 +494,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			ParseQuantityOrDie("500m") /*cpu limit*/, ParseQuantityOrDie("500Mi") /*memory limit*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			WithControlledValues(containerName, vpa_types.ContainerControlledValuesRequestsOnly).
 			AppendRecommendation(
@@ -512,10 +510,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to 250m CPU and 200Mi of memory. Limits should stay unchanged.
@@ -537,11 +535,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f, startCpuRequest, startMemRequest, startCpuLimit, startMemLimit)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -552,7 +550,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Max CPU limit is 300m and ratio is 1.5, so max request is 200m, while
 		// recommendation is 250m
@@ -561,7 +559,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		InstallLimitRangeWithMax(f, maxCpu.String(), "1Gi", apiv1.LimitTypeContainer)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Verifying hamster deployment")
 		for i, pod := range podList.Items {
@@ -595,11 +593,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -610,7 +608,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Min CPU from limit range is 50m and ratio is 1.5. Min applies to both limit and request so min
 		// request is 50m and min limit is 75
@@ -619,7 +617,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		InstallLimitRangeWithMin(f, "50m", "250Mi", apiv1.LimitTypeContainer)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 200Mi of memory, but admission controller
 		// should change it to 250m CPU and 125Mi of memory, since this is the lowest
@@ -644,11 +642,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d.Spec.Template.Spec.Containers[1].Name = container2Name
 
 		ginkgo.By("Setting up a VPA CRD")
-		container1Name := GetHamsterContainerNameByIndex(0)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -667,7 +665,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Max CPU limit is 600m for pod, 300 per container and ratio is 1.5, so max request is 200m,
 		// while recommendation is 250m
@@ -675,7 +673,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		InstallLimitRangeWithMax(f, "600m", "1Gi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to 200m CPU (as this is the recommendation
@@ -700,11 +698,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d.Spec.Template.Spec.Containers[1].Name = container2Name
 
 		ginkgo.By("Setting up a VPA CRD")
-		container1Name := GetHamsterContainerNameByIndex(0)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -723,7 +721,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Min CPU from limit range is 100m, 50m per pod and ratio is 1.5. Min applies to both limit and
 		// request so min request is 50m and min limit is 75
@@ -732,7 +730,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		InstallLimitRangeWithMin(f, "100m", "500Mi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 200Mi of memory, but admission controller
 		// should change it to 250m CPU and 125Mi of memory, since this is the lowest
@@ -752,11 +750,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -768,10 +766,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			WithMaxAllowed(containerName, "233m", "150Mi").
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to 233m CPU and 150Mi of memory (as this is the recommendation
@@ -786,11 +784,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -802,10 +800,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			WithMinAllowed(containerName, "90m", "80Mi").
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
 		// should change it to recommended 90m CPU and 800Mi of memory (as this the
@@ -820,18 +818,18 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// VPA has no recommendation, so user's request is passed through
 		for _, pod := range podList.Items {
@@ -844,18 +842,18 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeployment(f)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		// VPA has no recommendation, deployment has no request specified
 		for _, pod := range podList.Items {
@@ -960,59 +958,6 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
 	})
 })
-
-func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) *apiv1.PodList {
-	// Apiserver watch can lag depending on cached object count and apiserver resource usage.
-	// We assume that watch can lag up to 5 seconds.
-	const apiserverWatchLag = 5 * time.Second
-	// In admission controller e2e tests a recommendation is created before deployment.
-	// Creating deployment with size greater than 0 would create a race between information
-	// about pods and information about deployment getting to the admission controller.
-	// Any pods that get processed by AC before it receives information about the deployment
-	// don't receive recommendation.
-	// To avoid this create deployment with size 0, then scale it up to the desired size.
-	desiredPodCount := *deployment.Spec.Replicas
-	zero := int32(0)
-	deployment.Spec.Replicas = &zero
-	c, ns := f.ClientSet, f.Namespace.Name
-	deployment, err := c.AppsV1().Deployments(ns).Create(context.TODO(), deployment, metav1.CreateOptions{})
-	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when creating deployment with size 0")
-
-	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for empty deployment to create")
-	// If admission controller receives pod before controller it will not apply recommendation and test will fail.
-	// Wait after creating deployment to ensure VPA knows about it, then scale up.
-	// Normally watch lag is not a problem in terms of correctness:
-	// - Mode "Auto": created pod without assigned resources will be handled by the eviction loop.
-	// - Mode "Initial": calculating recommendations takes more than potential ectd lag.
-	// - Mode "Off": pods are not handled by the admission controller.
-	// In e2e admission controller tests we want to focus on scenarios without considering watch lag.
-	// TODO(#2631): Remove sleep when issue is fixed.
-	time.Sleep(apiserverWatchLag)
-
-	scale := autoscalingv1.Scale{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      deployment.ObjectMeta.Name,
-			Namespace: deployment.ObjectMeta.Namespace,
-		},
-		Spec: autoscalingv1.ScaleSpec{
-			Replicas: desiredPodCount,
-		},
-	}
-	afterScale, err := c.AppsV1().Deployments(ns).UpdateScale(context.TODO(), deployment.Name, &scale, metav1.UpdateOptions{})
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	gomega.Expect(afterScale.Spec.Replicas).To(gomega.Equal(desiredPodCount), fmt.Sprintf("expected %d replicas after scaling", desiredPodCount))
-
-	// After scaling deployment we need to retrieve current version with updated replicas count.
-	deployment, err = c.AppsV1().Deployments(ns).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
-	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when getting scaled deployment")
-	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for deployment to resize")
-
-	podList, err := framework_deployment.GetPodsForDeployment(context.TODO(), c, deployment)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when listing pods after deployment resize")
-	return podList
-}
 
 func waitForVpaWebhookRegistration(f *framework.Framework) {
 	ginkgo.By("Waiting for VPA webhook registration")

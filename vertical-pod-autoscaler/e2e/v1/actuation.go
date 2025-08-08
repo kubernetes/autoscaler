@@ -62,17 +62,17 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 
 	ginkgo.It("still applies recommendations on restart when update mode is InPlaceOrRecreate", func() {
 		ginkgo.By("Setting up a hamster deployment")
-		SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+		SetupHamsterDeployment(f, "100m", "100Mi", utils.DefaultHamsterReplicas)
 		podList, err := GetHamsterPods(f)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		podSet := MakePodSet(podList)
 
 		ginkgo.By("Setting up a VPA CRD in mode InPlaceOrRecreate")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			WithContainer(containerName).
 			AppendRecommendation(
@@ -84,7 +84,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 		updatedCPURequest := ParseQuantityOrDie("200m")
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
@@ -102,13 +102,13 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 				foundUpdated += 1
 			}
 		}
-		gomega.Expect(foundUpdated).To(gomega.Equal(defaultHamsterReplicas))
+		gomega.Expect(foundUpdated).To(gomega.Equal(utils.DefaultHamsterReplicas))
 	})
 
 	// TODO: add e2e test to verify metrics are getting updated
 	ginkgo.It("applies in-place updates to all containers when update mode is InPlaceOrRecreate", func() {
 		ginkgo.By("Setting up a hamster deployment")
-		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
+		d := utils.NewNHamstersDeployment(f, 2 /*number of containers*/)
 		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
 			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
@@ -119,9 +119,9 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 		}
 		targetCPU := "200m"
 		targetMemory := "200Mi"
-		_ = startDeploymentPods(f, d) // 3 replicas
-		container1Name := GetHamsterContainerNameByIndex(0)
-		container2Name := GetHamsterContainerNameByIndex(1)
+		_ = utils.StartDeploymentPods(f, d) // 3 replicas
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
 		podList, err := GetHamsterPods(f)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
@@ -129,7 +129,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			WithContainer(container2Name).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
@@ -149,7 +149,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Checking that resources were modified due to in-place update, not due to evictions")
 		err = WaitForPodsUpdatedWithoutEviction(f, podList)
@@ -187,12 +187,12 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		updatedCPU := "999" // infeasible target
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			AppendRecommendation(
@@ -204,7 +204,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for pods to be evicted")
 		err = WaitForPodsEvicted(f, podList)
@@ -219,7 +219,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 
 		// we can force deferred resize by setting the target CPU to the allocatable CPU of the node
 		// it will be close enough to the node capacity, such that the kubelet defers instead of marking it infeasible
@@ -232,7 +232,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			AppendRecommendation(
@@ -244,7 +244,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for status to be Deferred")
 		gomega.Eventually(func() error {
@@ -292,14 +292,14 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	ginkgo.It("stops when pods get pending", func() {
 
 		ginkgo.By("Setting up a hamster deployment")
-		d := SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+		d := SetupHamsterDeployment(f, "100m", "100Mi", utils.DefaultHamsterReplicas)
 
 		ginkgo.By("Setting up a VPA CRD with ridiculous request")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -310,7 +310,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for pods to be restarted and stuck pending")
 		err := assertPodsPendingForDuration(f.ClientSet, d, 1, 2*time.Minute)
@@ -320,18 +320,18 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 	ginkgo.It("never applies recommendations when update mode is Off", func() {
 		ginkgo.By("Setting up a hamster deployment")
-		d := SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+		d := SetupHamsterDeployment(f, "100m", "100Mi", utils.DefaultHamsterReplicas)
 		cpuRequest := getCPURequest(d.Spec.Template.Spec)
 		podList, err := GetHamsterPods(f)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		podSet := MakePodSet(podList)
 
 		ginkgo.By("Setting up a VPA CRD in mode Off")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithUpdateMode(vpa_types.UpdateModeOff).
 			WithContainer(containerName).
 			AppendRecommendation(
@@ -343,7 +343,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, podSet)
@@ -359,17 +359,17 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 	ginkgo.It("applies recommendations only on restart when update mode is Initial", func() {
 		ginkgo.By("Setting up a hamster deployment")
-		SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+		SetupHamsterDeployment(f, "100m", "100Mi", utils.DefaultHamsterReplicas)
 		podList, err := GetHamsterPods(f)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		podSet := MakePodSet(podList)
 
 		ginkgo.By("Setting up a VPA CRD in mode Initial")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithUpdateMode(vpa_types.UpdateModeInitial).
 			WithContainer(containerName).
 			AppendRecommendation(
@@ -381,7 +381,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 		updatedCPURequest := ParseQuantityOrDie("200m")
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
@@ -477,11 +477,11 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		pdb := setupPDB(f, "hamster-pdb", 0 /* maxUnavailable */)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -492,7 +492,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, podSet)
@@ -522,14 +522,14 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f,
 			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
 			ParseQuantityOrDie("300m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -540,7 +540,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Max CPU limit is 300m and ratio is 3., so max request is 100m, while
 		// recommendation is 200m
@@ -556,14 +556,14 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f,
 			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
 			ParseQuantityOrDie("300m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -574,7 +574,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Min CPU from limit range is 100m and ratio is 3. Min applies both to limit and request so min
 		// request is 100m request and 300m limit
@@ -592,15 +592,15 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 			ParseQuantityOrDie("300m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
 		d.Spec.Template.Spec.Containers[1].Name = "hamster2"
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		container1Name := GetHamsterContainerNameByIndex(0)
-		container2Name := GetHamsterContainerNameByIndex(1)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -619,7 +619,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Max CPU limit is 600m per pod, 300m per container and ratio is 3., so max request is 100m,
 		// while recommendation is 200m
@@ -638,14 +638,14 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
 		container2Name := "hamster2"
 		d.Spec.Template.Spec.Containers[1].Name = container2Name
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		container1Name := GetHamsterContainerNameByIndex(0)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -664,7 +664,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		// Min CPU from limit range is 200m per pod, 100m per container and ratio is 3. Min applies both
 		// to limit and request so min request is 100m request and 300m limit
@@ -705,12 +705,12 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		defer webhookCleanup()
 
 		ginkgo.By("Setting up a hamster vpa")
-		container1Name := GetHamsterContainerNameByIndex(0)
-		container2Name := GetHamsterContainerNameByIndex(1)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -729,12 +729,12 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
 
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m"), ParseQuantityOrDie("100Mi"))
-		podList := startDeploymentPods(f, d)
+		podList := utils.StartDeploymentPods(f, d)
 		for _, pod := range podList.Items {
 			observedContainers, ok := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
 			gomega.Expect(ok).To(gomega.Equal(true))
@@ -769,7 +769,7 @@ func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Depl
 
 	pendingPods := make(map[string]time.Time)
 
-	err := wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, utils.PollTimeout, true, func(ctx context.Context) (done bool, err error) {
 		currentPodList, err := framework_deployment.GetPodsForDeployment(ctx, c, deployment)
 		if err != nil {
 			return false, err
@@ -824,12 +824,12 @@ func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Depl
 
 func testEvictsReplicatedPods(f *framework.Framework, controller *autoscaling.CrossVersionObjectReference) {
 	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
-	setupHamsterController(f, controller.Kind, "100m", "100Mi", defaultHamsterReplicas)
+	setupHamsterController(f, controller.Kind, "100m", "100Mi", utils.DefaultHamsterReplicas)
 	podList, err := GetHamsterPods(f)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	containerName := GetHamsterContainerNameByIndex(0)
+	containerName := utils.GetHamsterContainerNameByIndex(0)
 	vpaCRD := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
@@ -844,7 +844,7 @@ func testEvictsReplicatedPods(f *framework.Framework, controller *autoscaling.Cr
 				GetContainerResources()).
 		Get()
 
-	InstallVPA(f, vpaCRD)
+	utils.InstallVPA(f, vpaCRD)
 
 	ginkgo.By("Waiting for pods to be evicted")
 	err = WaitForPodsEvicted(f, podList)
@@ -858,7 +858,7 @@ func testDoesNotEvictSingletonPodByDefault(f *framework.Framework, controller *a
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	containerName := GetHamsterContainerNameByIndex(0)
+	containerName := utils.GetHamsterContainerNameByIndex(0)
 	vpaCRD := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
@@ -873,7 +873,7 @@ func testDoesNotEvictSingletonPodByDefault(f *framework.Framework, controller *a
 				GetContainerResources()).
 		Get()
 
-	InstallVPA(f, vpaCRD)
+	utils.InstallVPA(f, vpaCRD)
 
 	// No eviction is expected with the default settings of VPA object
 	ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
@@ -888,7 +888,7 @@ func testEvictsSingletonPodWhenConfigured(f *framework.Framework, controller *au
 
 	// Prepare the VPA to allow single-Pod eviction.
 	ginkgo.By("Setting up a VPA CRD")
-	containerName := GetHamsterContainerNameByIndex(0)
+	containerName := utils.GetHamsterContainerNameByIndex(0)
 	vpaCRD := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
@@ -904,7 +904,7 @@ func testEvictsSingletonPodWhenConfigured(f *framework.Framework, controller *au
 				GetContainerResources()).
 		Get()
 
-	InstallVPA(f, vpaCRD)
+	utils.InstallVPA(f, vpaCRD)
 
 	ginkgo.By("Waiting for pods to be evicted")
 	err = WaitForPodsEvicted(f, podList)
@@ -936,7 +936,7 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 
 func setupHamsterReplicationController(f *framework.Framework, cpu, memory string, replicas int32) {
 	hamsterContainer := SetupHamsterContainer(cpu, memory)
-	rc := framework_rc.ByNameContainer("hamster-rc", replicas, hamsterLabels, hamsterContainer, nil)
+	rc := framework_rc.ByNameContainer("hamster-rc", replicas, utils.HamsterLabels, hamsterContainer, nil)
 
 	rc.Namespace = f.Namespace.Name
 	err := testutils.CreateRCWithRetries(f.ClientSet, f.Namespace.Name, rc)
@@ -946,7 +946,7 @@ func setupHamsterReplicationController(f *framework.Framework, cpu, memory strin
 }
 
 func waitForRCPodsRunning(f *framework.Framework, rc *apiv1.ReplicationController) error {
-	return wait.PollUntilContextTimeout(context.Background(), pollInterval, pollTimeout, true, func(ctx context.Context) (done bool, err error) {
+	return wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, utils.PollTimeout, true, func(ctx context.Context) (done bool, err error) {
 		podList, err := GetHamsterPods(f)
 		if err != nil {
 			framework.Logf("Error listing pods, retrying: %v", err)
@@ -966,7 +966,7 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 	job := framework_job.NewTestJob("notTerminate", "hamster-job", apiv1.RestartPolicyOnFailure,
 		replicas, replicas, nil, 10)
 	job.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
-	for label, value := range hamsterLabels {
+	for label, value := range utils.HamsterLabels {
 		job.Spec.Template.Labels[label] = value
 	}
 	_, err := framework_job.CreateJob(context.TODO(), f.ClientSet, f.Namespace.Name, job)
@@ -976,7 +976,7 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 }
 
 func setupHamsterRS(f *framework.Framework, cpu, memory string, replicas int32) {
-	rs := newReplicaSet("hamster-rs", f.Namespace.Name, replicas, hamsterLabels, "", "")
+	rs := newReplicaSet("hamster-rs", f.Namespace.Name, replicas, utils.HamsterLabels, "", "")
 	rs.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	err := createReplicaSetWithRetries(f.ClientSet, f.Namespace.Name, rs)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -986,7 +986,7 @@ func setupHamsterRS(f *framework.Framework, cpu, memory string, replicas int32) 
 
 func setupHamsterStateful(f *framework.Framework, cpu, memory string, replicas int32) {
 	stateful := framework_ss.NewStatefulSet("hamster-stateful", f.Namespace.Name,
-		"hamster-service", replicas, nil, nil, hamsterLabels)
+		"hamster-service", replicas, nil, nil, utils.HamsterLabels)
 
 	stateful.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	err := createStatefulSetSetWithRetries(f.ClientSet, f.Namespace.Name, stateful)
@@ -1003,7 +1003,7 @@ func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1
 		Spec: policyv1.PodDisruptionBudgetSpec{
 			MaxUnavailable: &maxUnavailableIntstr,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: hamsterLabels,
+				MatchLabels: utils.HamsterLabels,
 			},
 		},
 	}

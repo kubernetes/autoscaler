@@ -34,3 +34,7 @@ The local test cases support running the `recommender` with external metrics.  T
 additional permissions we don't want to automatically enable for all customers via the 
 configuration given in `deploy/vpa-rbac.yaml`.  The scripts use a context diff `hack/e2e/vpa-rbac.diff`
 to enable those permission when running locally.
+
+# Quick Integration Tests
+
+`run-integration-locally.sh` is a quicker way to integration test compared to `run-e2e-locally.sh`. Only used for simple tests.
