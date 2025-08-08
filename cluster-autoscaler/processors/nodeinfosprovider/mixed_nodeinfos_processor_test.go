@@ -20,16 +20,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-
-	"github.com/stretchr/testify/assert"
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -288,6 +289,46 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(niProcessor2.nodeInfoCache))
 
+}
+
+func TestProcessHandlesTemplateNodeInfoErrors(t *testing.T) {
+	now := time.Now()
+
+	tn := BuildTestNode("tn", 1000, 1000)
+	tni := schedulerframework.NewNodeInfo()
+	tni.SetNode(tn)
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil, nil, nil, nil, map[string]*schedulerframework.NodeInfo{"ng2": tni})
+
+	provider.AddNodeGroup("ng1", 0, 10, 0)
+	provider.AddNodeGroup("ng2", 0, 10, 0)
+
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+
+	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
+	assert.NoError(t, err)
+
+	ctx := context.AutoscalingContext{
+		CloudProvider:    provider,
+		ClusterSnapshot:  clustersnapshot.NewBasicClusterSnapshot(),
+		PredicateChecker: predicateChecker,
+		AutoscalingKubeClients: context.AutoscalingKubeClients{
+			ListerRegistry: registry,
+		},
+	}
+
+	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+
+	// Should not fail despite ng1 error - continues processing
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(res))
+
+	_, found := res["ng2"]
+	assert.True(t, found)
+	_, found = res["ng1"]
+	assert.False(t, found) // ng1 skipped due to template error
 }
 
 func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {
