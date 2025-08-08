@@ -847,6 +847,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onNodeGroupCreateMock.On("Create", "autoprovisioned-TN2").Return(nil).Once()
 	onScaleUpMock.On("ScaleUp", "autoprovisioned-TN2", 1).Return(nil).Once()
+	onNodeGroupDeleteMock.On("Delete", "autoprovisioned-TN1").Return(nil).Once()
 
 	err = autoscaler.RunOnce(time.Now().Add(time.Hour))
 	assert.NoError(t, err)
@@ -878,8 +879,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	allPodListerMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice()
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
-	onNodeGroupDeleteMock.On("Delete", "autoprovisioned-"+
-		"TN1").Return(nil).Once()
+	onNodeGroupDeleteMock.On("Delete", "autoprovisioned-TN1").Return(nil).Once()
 	onScaleDownMock.On("ScaleDown", "autoprovisioned-TN2", "n2").Return(nil).Once()
 
 	err = autoscaler.RunOnce(time.Now().Add(2 * time.Hour))
