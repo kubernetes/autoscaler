@@ -33,9 +33,14 @@ import (
 )
 
 const (
-	cpuStatusKey       = "cpu"
-	memoryStatusKey    = "memory"
-	nvidiaGpuStatusKey = "nvidia.com/gpu"
+	cpuStatusKey             = "cpu"
+	memoryStatusKey          = "memory"
+	nvidiaGpuStatusKey       = "nvidia.com/gpu"
+	architectureStatusKey    = "architecture"
+	operatingSystemStatusKey = "operatingSystem"
+
+	arm64 = "arm64"
+	linux = "linux"
 )
 
 func TestSetSize(t *testing.T) {
@@ -98,6 +103,7 @@ func TestSetSize(t *testing.T) {
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,
+			nil,
 		))
 	})
 
@@ -110,6 +116,7 @@ func TestSetSize(t *testing.T) {
 				nodeGroupMinSizeAnnotationKey: "1",
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
+			nil,
 			nil,
 		))
 	})
@@ -215,11 +222,11 @@ func TestReplicas(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil, nil))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil, nil))
 	})
 }
 
@@ -275,6 +282,7 @@ func TestSetSizeAndReplicas(t *testing.T) {
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,
+			nil,
 		))
 	})
 
@@ -287,6 +295,7 @@ func TestSetSizeAndReplicas(t *testing.T) {
 				nodeGroupMinSizeAnnotationKey: "1",
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
+			nil,
 			nil,
 		))
 	})
@@ -394,12 +403,12 @@ func TestAnnotations(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil, nil)
 		test(t, testConfig, testConfig.machineSet)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil, nil)
 		test(t, testConfig, testConfig.machineDeployment)
 	})
 }
@@ -504,7 +513,7 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineSet %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
+			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity, nil)
 			controller, stop := mustCreateTestController(t, msTestConfig)
 			defer stop()
 
@@ -525,7 +534,7 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineDeployment %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
+			msTestConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity, nil)
 			controller, stop := mustCreateTestController(t, msTestConfig)
 			defer stop()
 
@@ -539,6 +548,92 @@ func TestCanScaleFromZero(t *testing.T) {
 			canScale := sr.CanScaleFromZero()
 			if canScale != tc.canScale {
 				t.Errorf("expected %v, got %v", tc.canScale, canScale)
+			}
+		})
+	}
+}
+
+func TestInstanceSystemInfo(t *testing.T) {
+	// use a constant capacity as that's necessary for the business logic to consider the resource scalable
+	capacity := map[string]string{
+		cpuStatusKey:    "1",
+		memoryStatusKey: "4G",
+	}
+	testConfigs := []struct {
+		name         string
+		nodeInfo     map[string]string
+		expectedArch string
+		expectedOS   string
+	}{
+		{
+			"with no architecture or operating system in machine template's status' nodeInfo, the system info is empty",
+			map[string]string{},
+			"",
+			"",
+		},
+		{
+			"with architecture in machine template's status' nodeInfo, the system info is filled in the scalable resource",
+			map[string]string{
+				architectureStatusKey: arm64,
+			},
+			arm64,
+			"",
+		},
+		{
+			"with operating system in machine template's status' nodeInfo, the system info is filled in the scalable resource",
+			map[string]string{
+				operatingSystemStatusKey: linux,
+			},
+			"",
+			linux,
+		},
+	}
+
+	for _, tc := range testConfigs {
+		testname := fmt.Sprintf("MachineSet %s", tc.name)
+		t.Run(testname, func(t *testing.T) {
+			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, nil, capacity, tc.nodeInfo)
+			controller, stop := mustCreateTestController(t, msTestConfig)
+			defer stop()
+
+			testResource := msTestConfig.machineSet
+
+			sr, err := newUnstructuredScalableResource(controller, testResource)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			sysInfo := sr.InstanceSystemInfo()
+			if sysInfo.Architecture != tc.expectedArch {
+				t.Errorf("expected architecture %s, got %s", tc.nodeInfo[architectureStatusKey], sysInfo.Architecture)
+			}
+			if sysInfo.OperatingSystem != tc.expectedOS {
+				t.Errorf("expected operating system %s, got %s", tc.nodeInfo[operatingSystemStatusKey], sysInfo.OperatingSystem)
+			}
+		})
+	}
+
+	for _, tc := range testConfigs {
+		testname := fmt.Sprintf("MachineDeployment %s", tc.name)
+		t.Run(testname, func(t *testing.T) {
+			msTestConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, nil, capacity, tc.nodeInfo)
+			controller, stop := mustCreateTestController(t, msTestConfig)
+			defer stop()
+
+			testResource := msTestConfig.machineDeployment
+
+			sr, err := newUnstructuredScalableResource(controller, testResource)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			sysInfo := sr.InstanceSystemInfo()
+			if sysInfo.Architecture != tc.expectedArch {
+				t.Errorf("expected architecture %s, got %s", tc.nodeInfo[architectureStatusKey], sysInfo.Architecture)
+			}
+
+			if sysInfo.OperatingSystem != tc.expectedOS {
+				t.Errorf("expected operating system %s, got %s", tc.nodeInfo[operatingSystemStatusKey], sysInfo.OperatingSystem)
 			}
 		})
 	}

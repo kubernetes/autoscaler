@@ -23,6 +23,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -43,6 +44,8 @@ import (
 type unstructuredScalableResource struct {
 	controller         *machineController
 	unstructured       *unstructured.Unstructured
+	infraObj           *unstructured.Unstructured
+	infraMutex         sync.RWMutex
 	maxSize            int
 	minSize            int
 	autoscalingOptions map[string]string
@@ -304,6 +307,17 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	return capacity, nil
 }
 
+// InstanceSystemInfo sets the nodeSystemInfo from the infrastructure reference resource.
+// If the infrastructure reference resource is not found, returns nil.
+func (r unstructuredScalableResource) InstanceSystemInfo() *apiv1.NodeSystemInfo {
+	infraObj, err := r.readInfrastructureReferenceResource()
+	if err != nil || infraObj == nil {
+		return nil
+	}
+	nsiObj := systemInfoFromInfrastructureObject(infraObj)
+	return &nsiObj
+}
+
 func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([]*resourceapi.ResourceSlice, error) {
 	var result []*resourceapi.ResourceSlice
 	driver := r.InstanceDRADriver()
@@ -375,6 +389,16 @@ func (r unstructuredScalableResource) InstanceDRADriver() string {
 }
 
 func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
+	// Cache w/ lazy loading of the infrastructure reference resource.
+	r.infraMutex.RLock()
+	if r.infraObj != nil {
+		defer r.infraMutex.RUnlock()
+		return r.infraObj, nil
+	}
+	r.infraMutex.RUnlock()
+	r.infraMutex.Lock()
+	defer r.infraMutex.Unlock()
+
 	infraref, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "infrastructureRef")
 	if !found || err != nil {
 		return nil, nil
@@ -402,6 +426,8 @@ func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*un
 		klog.V(4).Infof("Unable to read infrastructure reference, error: %v", err)
 		return nil, err
 	}
+
+	r.infraObj = infra
 
 	return infra, nil
 }
@@ -438,6 +464,25 @@ func resourceCapacityFromInfrastructureObject(infraobj *unstructured.Unstructure
 	}
 
 	return capacity
+}
+
+func systemInfoFromInfrastructureObject(infraobj *unstructured.Unstructured) apiv1.NodeSystemInfo {
+	nsi := apiv1.NodeSystemInfo{}
+	infransi, found, err := unstructured.NestedStringMap(infraobj.Object, "status", "nodeInfo")
+	if !found || err != nil {
+		return nsi
+	}
+
+	for k, v := range infransi {
+		switch k {
+		case "architecture":
+			nsi.Architecture = v
+		case "operatingSystem":
+			nsi.OperatingSystem = v
+		}
+	}
+
+	return nsi
 }
 
 // adapted from https://github.com/kubernetes/kubernetes/blob/release-1.25/pkg/util/taints/taints.go#L39
