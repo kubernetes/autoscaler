@@ -372,6 +372,22 @@ spec:
                           - Auto
                           - "Off"
                           type: string
+                        oomBumpUpRatio:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: oomBumpUpRatio is the ratio to increase memory
+                            when OOM is detected.
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        oomMinBumpUp:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: oomMinBumpUp is the minimum increase in memory
+                            when OOM is detected.
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                       type: object
                     type: array
                 type: object

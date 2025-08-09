@@ -646,6 +646,20 @@ func checkInPlaceOrRecreateTestsEnabled(f *framework.Framework, checkAdmission, 
 	}
 }
 
+// checkPerVPAConfigTestsEnabled checks if the PerVPAConfig feature gate is enabled
+// in the VPA recommender.
+func checkPerVPAConfigTestsEnabled(f *framework.Framework) {
+	ginkgo.By("Checking PerVPAConfig feature gate is enabled for recommender")
+	deploy, err := f.ClientSet.AppsV1().Deployments(VpaNamespace).Get(context.TODO(), "vpa-recommender", metav1.GetOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(deploy.Spec.Template.Spec.Containers).To(gomega.HaveLen(1))
+	vpaRecommenderPod := deploy.Spec.Template.Spec.Containers[0]
+	gomega.Expect(vpaRecommenderPod.Name).To(gomega.Equal("recommender"))
+	if !anyContainsSubstring(vpaRecommenderPod.Args, fmt.Sprintf("%s=true", string(features.PerVPAConfig))) {
+		ginkgo.Skip("Skipping suite: PerVPAConfig feature gate is not enabled for the VPA recommender")
+	}
+}
+
 func anyContainsSubstring(arr []string, substr string) bool {
 	for _, s := range arr {
 		if strings.Contains(s, substr) {
