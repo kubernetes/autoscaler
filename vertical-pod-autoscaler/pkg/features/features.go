@@ -41,6 +41,8 @@ const (
 	// The feature must be enabled by the --feature-gates argument on each listed component.
 
 	// alpha: v1.4.0
+	// beta: v1.5.0
+
 	// components: admission-controller, updater
 
 	// InPlaceOrRecreate enables the InPlaceOrRecreate update mode to be used.
