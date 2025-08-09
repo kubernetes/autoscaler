@@ -29,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -413,20 +412,16 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	})
 })
 
-var _ = RecommenderE2eDescribe("OOM with custom config", func() {
+var _ = RecommenderE2eDescribe("OOM with custom config", ginkgo.Label("FG:PerVPAConfig"), func() {
 	const replicas = 3
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
-
 	var (
 		vpaCRD       *vpa_types.VerticalPodAutoscaler
 		vpaClientSet vpa_clientset.Interface
 	)
-
 	ginkgo.BeforeEach(func() {
-		if !features.Enabled(features.PerVPAConfig) {
-			ginkgo.Skip("Test requires PerVPAConfig feature gate to be enabled")
-		}
+		checkPerVPAConfigTestsEnabled(f)
 		ns := f.Namespace.Name
 		vpaClientSet = getVpaClientSet(f)
 		ginkgo.By("Setting up a hamster deployment")
@@ -442,7 +437,7 @@ var _ = RecommenderE2eDescribe("OOM with custom config", func() {
 			Name:       "hamster",
 		}
 		containerName := GetHamsterContainerNameByIndex(0)
-		vpaCRD := test.VerticalPodAutoscaler().
+		vpaCRD = test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(targetRef).
