@@ -63,8 +63,6 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 
 	ginkgo.Describe("with InPlaceOrRecreate update mode", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
 		ginkgo.BeforeEach(func() {
-			checkInPlaceOrRecreateTestsEnabled(f, true, false)
-
 			ns := f.Namespace.Name
 			ginkgo.By("Setting up a hamster deployment")
 			rc = NewDynamicResourceConsumer("hamster", ns, KindDeployment,

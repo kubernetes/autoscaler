@@ -138,15 +138,6 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
-})
-
-var _ = UpdaterE2eDescribe("Updater", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
-	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
-
-	ginkgo.BeforeEach(func() {
-		checkInPlaceOrRecreateTestsEnabled(f, false, true)
-	})
 
 	ginkgo.It("In-place update pods when Admission Controller status available", func() {
 		const statusUpdateInterval = 10 * time.Second
