@@ -82,6 +82,7 @@ To enable this feature, set the `--round-memory-bytes` flag when running the VPA
 
 > [!WARNING] 
 > FEATURE STATE: VPA v1.4.0 [alpha]
+> FEATURE STATE: VPA v1.5.0 [beta]
 
 VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (which is in beta as of Kubernetes 1.33) to modify container resources without requiring pod recreation.
 For more information, see [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)
