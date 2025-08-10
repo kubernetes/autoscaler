@@ -51,6 +51,16 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
+// logDeprecationWarnings logs deprecation warnings for VPAs using deprecated modes
+func logDeprecationWarnings(vpa *vpa_types.VerticalPodAutoscaler) {
+	if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.UpdateMode != nil &&
+		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto {
+
+		klog.Warningf("VPA %s/%s uses deprecated UpdateMode 'Auto'. This mode is deprecated and will be removed in a future API version. Please use explicit update modes like 'Recreate', 'Initial', or 'InPlaceOrRecreate'. See https://github.com/kubernetes/autoscaler/issues/8424",
+			vpa.Namespace, vpa.Name)
+	}
+}
+
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
 type Updater interface {
 	// RunOnce represents single iteration in the main-loop of Updater
@@ -159,6 +169,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
 			continue
 		}
+
+		// Log deprecation warnings for VPAs using deprecated modes
+		logDeprecationWarnings(vpa)
+
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
 			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))

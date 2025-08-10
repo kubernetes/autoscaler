@@ -504,3 +504,45 @@ func TestNewEventRecorder(t *testing.T) {
 		})
 	}
 }
+
+func TestLogDeprecationWarnings(t *testing.T) {
+	tests := []struct {
+		name       string
+		updateMode *vpa_types.UpdateMode
+	}{
+		{
+			name:       "Auto mode logs deprecation warning",
+			updateMode: &[]vpa_types.UpdateMode{vpa_types.UpdateModeAuto}[0],
+		},
+		{
+			name:       "Recreate mode does not log warning",
+			updateMode: &[]vpa_types.UpdateMode{vpa_types.UpdateModeRecreate}[0],
+		},
+		{
+			name:       "Initial mode does not log warning",
+			updateMode: &[]vpa_types.UpdateMode{vpa_types.UpdateModeInitial}[0],
+		},
+		{
+			name:       "nil update mode does not log warning",
+			updateMode: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			vpa := &vpa_types.VerticalPodAutoscaler{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-vpa",
+					Namespace: "default",
+				},
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: tc.updateMode,
+					},
+				},
+			}
+
+			logDeprecationWarnings(vpa)
+		})
+	}
+}
