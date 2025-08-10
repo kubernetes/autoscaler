@@ -36,6 +36,14 @@ import (
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 )
 
+const (
+	vpaGroup               = "autoscaling.k8s.io"
+	vpaResource            = "verticalpodautoscalers"
+	autoDeprecationWarning = `UpdateMode "Auto" is deprecated and will be removed in a future API version. ` +
+		`Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead. ` +
+		`See https://github.com/kubernetes/autoscaler/issues/8424 for more details.`
+)
+
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
 	limitsChecker    limitrange.LimitRangeCalculator
@@ -71,27 +79,23 @@ func (s *AdmissionServer) addDeprecationWarnings(req *admissionv1.AdmissionReque
 		Resource: req.Resource.Resource,
 	}
 
-	if admittedGroupResource.Group != "autoscaling.k8s.io" || admittedGroupResource.Resource != "verticalpodautoscalers" {
+	if admittedGroupResource.Group != vpaGroup || admittedGroupResource.Resource != vpaResource {
 		return
 	}
 
 	var vpa vpa_types.VerticalPodAutoscaler
 	if err := json.Unmarshal(req.Object.Raw, &vpa); err != nil {
-		// If we can't unmarshal, skip warning
+		klog.V(4).InfoS("Failed to unmarshal VPA object for deprecation warning check", "err", err)
 		return
 	}
 
 	if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.UpdateMode != nil &&
 		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto {
 
-		warning := `UpdateMode "Auto" is deprecated and will be removed in a future API version. ` +
-			`Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead. ` +
-			`See https://github.com/kubernetes/autoscaler/issues/8424 for more details.`
-
 		if resp.Warnings == nil {
 			resp.Warnings = []string{}
 		}
-		resp.Warnings = append(resp.Warnings, warning)
+		resp.Warnings = append(resp.Warnings, autoDeprecationWarning)
 	}
 }
 
