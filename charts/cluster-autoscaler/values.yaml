@@ -137,6 +137,7 @@ cloudConfigPath: ""
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
 # `magnum` for OpenStack Magnum, `clusterapi` for Cluster API.
 # `civo` for Civo Cloud.
+# `coreweave` for CoreWeave.
 cloudProvider: aws
 
 # clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
