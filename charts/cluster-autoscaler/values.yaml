@@ -133,7 +133,7 @@ civoRegion: ""
 cloudConfigPath: ""
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
-# Currently only `gce`, `aws`, `azure`, `magnum`, `clusterapi` and `civo` are supported.
+# Currently only `gce`, `aws`, `azure`, `magnum`, `clusterapi`, `civo` and `coreweave` are supported.
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
 # `magnum` for OpenStack Magnum, `clusterapi` for Cluster API.
 # `civo` for Civo Cloud.
