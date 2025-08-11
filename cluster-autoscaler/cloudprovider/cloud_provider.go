@@ -48,6 +48,8 @@ const (
 	ClusterAPIProviderName = "clusterapi"
 	// DigitalOceanProviderName gets the provider name of digitalocean
 	DigitalOceanProviderName = "digitalocean"
+	// DatacrunchProviderName gets the provider name of datacrunch
+	DatacrunchProviderName = "datacrunch"
 	// ExoscaleProviderName gets the provider name of exoscale
 	ExoscaleProviderName = "exoscale"
 	// GceProviderName gets the provider name of gce
