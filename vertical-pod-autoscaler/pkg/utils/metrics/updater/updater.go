@@ -84,6 +84,14 @@ var (
 		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
+	failedEvictionAttempts = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "failed_eviction_attempts_total",
+			Help:      "Number of failed attempts to update Pods by eviction",
+		}, []string{"vpa_size_log2", "update_mode", "reason"},
+	)
+
 	inPlaceUpdatableCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
@@ -130,7 +138,21 @@ var (
 
 // Register initializes all metrics for VPA Updater
 func Register() {
-	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, inPlaceUpdatableCount, inPlaceUpdatedCount, vpasWithInPlaceUpdatablePodsCount, vpasWithInPlaceUpdatedPodsCount, failedInPlaceUpdateAttempts, functionLatency)
+	collectors := []prometheus.Collector{
+		controlledCount,
+		evictableCount,
+		evictedCount,
+		vpasWithEvictablePodsCount,
+		vpasWithEvictedPodsCount,
+		failedEvictionAttempts,
+		inPlaceUpdatableCount,
+		inPlaceUpdatedCount,
+		vpasWithInPlaceUpdatablePodsCount,
+		vpasWithInPlaceUpdatedPodsCount,
+		failedInPlaceUpdateAttempts,
+		functionLatency,
+	}
+	prometheus.MustRegister(collectors...)
 }
 
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
@@ -181,6 +203,12 @@ func NewVpasWithEvictedPodsCounter() *UpdateModeAndSizeBasedGauge {
 func AddEvictedPod(vpaSize int, mode vpa_types.UpdateMode) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	evictedCount.WithLabelValues(strconv.Itoa(log2), string(mode)).Inc()
+}
+
+// RecordFailedEviction increases the counter of failed eviction attempts by given VPA size, update mode and reason
+func RecordFailedEviction(vpaSize int, mode vpa_types.UpdateMode, reason string) {
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
+	failedEvictionAttempts.WithLabelValues(strconv.Itoa(log2), string(mode), reason).Inc()
 }
 
 // NewInPlaceUpdatablePodsCounter returns a wrapper for counting Pods which are matching in-place update criteria
