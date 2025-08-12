@@ -302,6 +302,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			evictErr := evictionLimiter.Evict(pod, vpa, u.eventRecorder)
 			if evictErr != nil {
 				klog.V(0).InfoS("Eviction failed", "error", evictErr, "pod", klog.KObj(pod))
+				metrics_updater.RecordFailedEviction(vpaSize, updateMode, "EvictionError")
 			} else {
 				withEvicted = true
 				metrics_updater.AddEvictedPod(vpaSize, updateMode)
