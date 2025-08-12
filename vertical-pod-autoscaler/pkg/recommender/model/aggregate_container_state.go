@@ -42,6 +42,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
@@ -312,11 +313,22 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	}
 
 	// Per VPA components - feature flag "PerVPAConfig" must be enabled
-	if resourcePolicy != nil && resourcePolicy.OOMBumpUpRatio != nil && features.Enabled(features.PerVPAConfig) {
-		a.OOMBumpUpRatio = a.convertQuantityToFloat64(resourcePolicy.OOMBumpUpRatio)
-	}
-	if resourcePolicy != nil && resourcePolicy.OOMMinBumpUp != nil && features.Enabled(features.PerVPAConfig) {
-		a.OOMMinBumpUp = a.convertQuantityToFloat64(resourcePolicy.OOMMinBumpUp)
+	if resourcePolicy != nil {
+		if resourcePolicy.OOMBumpUpRatio != nil {
+			if features.Enabled(features.PerVPAConfig) {
+				a.OOMBumpUpRatio = a.convertQuantityToFloat64(resourcePolicy.OOMBumpUpRatio)
+			} else {
+				klog.InfoS("OOMBumpUpRatio is set but PerVPAConfig feature gate is disabled, falling back to default value")
+			}
+		}
+
+		if resourcePolicy.OOMMinBumpUp != nil {
+			if features.Enabled(features.PerVPAConfig) {
+				a.OOMMinBumpUp = a.convertQuantityToFloat64(resourcePolicy.OOMMinBumpUp)
+			} else {
+				klog.InfoS("OOMMinBumpUp is set but PerVPAConfig feature gate is disabled, falling back to default value")
+			}
+		}
 	}
 }
 
