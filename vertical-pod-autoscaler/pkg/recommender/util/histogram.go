@@ -257,10 +257,10 @@ func (h *histogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint
 	for bucket, weight := range checkpoint.BucketWeights {
 		sum += int64(weight)
 		if bucket >= h.options.NumBuckets() {
-			return fmt.Errorf("Checkpoint has bucket %v that is exceeding histogram buckets %v", bucket, h.options.NumBuckets())
+			return fmt.Errorf("checkpoint has bucket %v that is exceeding histogram buckets %v", bucket, h.options.NumBuckets())
 		}
 		if bucket < 0 {
-			return fmt.Errorf("Checkpoint has a negative bucket %v", bucket)
+			return fmt.Errorf("checkpoint has a negative bucket %v", bucket)
 		}
 	}
 	if sum == 0 {

@@ -32,3 +32,18 @@ spec:
         ports:
         - name: prometheus
           containerPort: 8942
+        livenessProbe:
+          httpGet:
+            path: /health-check
+            port: prometheus
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health-check
+            port: prometheus
+            scheme: HTTP
+          periodSeconds: 10
+          failureThreshold: 3

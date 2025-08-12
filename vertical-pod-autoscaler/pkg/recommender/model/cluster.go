@@ -370,7 +370,7 @@ func (cluster *clusterState) MakeAggregateStateKey(pod *PodState, containerName 
 func (cluster *clusterState) aggregateStateKeyForContainerID(containerID ContainerID) AggregateStateKey {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if !podExists {
-		panic(fmt.Sprintf("Pod not present in the ClusterState: %s/%s", containerID.PodID.Namespace, containerID.PodID.PodName))
+		panic(fmt.Sprintf("Pod not present in the ClusterState: %s/%s", containerID.Namespace, containerID.PodName))
 	}
 	return cluster.MakeAggregateStateKey(pod, containerID.ContainerName)
 }

@@ -19,179 +19,35 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-	json "encoding/json"
-	"fmt"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	autoscalingxk8siov1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1"
-	testing "k8s.io/client-go/testing"
+	typedautoscalingxk8siov1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/typed/autoscaling.x-k8s.io/v1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakeProvisioningRequests implements ProvisioningRequestInterface
-type FakeProvisioningRequests struct {
+// fakeProvisioningRequests implements ProvisioningRequestInterface
+type fakeProvisioningRequests struct {
+	*gentype.FakeClientWithListAndApply[*v1.ProvisioningRequest, *v1.ProvisioningRequestList, *autoscalingxk8siov1.ProvisioningRequestApplyConfiguration]
 	Fake *FakeAutoscalingV1
-	ns   string
 }
 
-var provisioningrequestsResource = v1.SchemeGroupVersion.WithResource("provisioningrequests")
-
-var provisioningrequestsKind = v1.SchemeGroupVersion.WithKind("ProvisioningRequest")
-
-// Get takes name of the provisioningRequest, and returns the corresponding provisioningRequest object, and an error if there is any.
-func (c *FakeProvisioningRequests) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.ProvisioningRequest, err error) {
-	emptyResult := &v1.ProvisioningRequest{}
-	obj, err := c.Fake.
-		Invokes(testing.NewGetActionWithOptions(provisioningrequestsResource, c.ns, name, options), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
+func newFakeProvisioningRequests(fake *FakeAutoscalingV1, namespace string) typedautoscalingxk8siov1.ProvisioningRequestInterface {
+	return &fakeProvisioningRequests{
+		gentype.NewFakeClientWithListAndApply[*v1.ProvisioningRequest, *v1.ProvisioningRequestList, *autoscalingxk8siov1.ProvisioningRequestApplyConfiguration](
+			fake.Fake,
+			namespace,
+			v1.SchemeGroupVersion.WithResource("provisioningrequests"),
+			v1.SchemeGroupVersion.WithKind("ProvisioningRequest"),
+			func() *v1.ProvisioningRequest { return &v1.ProvisioningRequest{} },
+			func() *v1.ProvisioningRequestList { return &v1.ProvisioningRequestList{} },
+			func(dst, src *v1.ProvisioningRequestList) { dst.ListMeta = src.ListMeta },
+			func(list *v1.ProvisioningRequestList) []*v1.ProvisioningRequest {
+				return gentype.ToPointerSlice(list.Items)
+			},
+			func(list *v1.ProvisioningRequestList, items []*v1.ProvisioningRequest) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1.ProvisioningRequest), err
-}
-
-// List takes label and field selectors, and returns the list of ProvisioningRequests that match those selectors.
-func (c *FakeProvisioningRequests) List(ctx context.Context, opts metav1.ListOptions) (result *v1.ProvisioningRequestList, err error) {
-	emptyResult := &v1.ProvisioningRequestList{}
-	obj, err := c.Fake.
-		Invokes(testing.NewListActionWithOptions(provisioningrequestsResource, provisioningrequestsKind, c.ns, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1.ProvisioningRequestList{ListMeta: obj.(*v1.ProvisioningRequestList).ListMeta}
-	for _, item := range obj.(*v1.ProvisioningRequestList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested provisioningRequests.
-func (c *FakeProvisioningRequests) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchActionWithOptions(provisioningrequestsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a provisioningRequest and creates it.  Returns the server's representation of the provisioningRequest, and an error, if there is any.
-func (c *FakeProvisioningRequests) Create(ctx context.Context, provisioningRequest *v1.ProvisioningRequest, opts metav1.CreateOptions) (result *v1.ProvisioningRequest, err error) {
-	emptyResult := &v1.ProvisioningRequest{}
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateActionWithOptions(provisioningrequestsResource, c.ns, provisioningRequest, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ProvisioningRequest), err
-}
-
-// Update takes the representation of a provisioningRequest and updates it. Returns the server's representation of the provisioningRequest, and an error, if there is any.
-func (c *FakeProvisioningRequests) Update(ctx context.Context, provisioningRequest *v1.ProvisioningRequest, opts metav1.UpdateOptions) (result *v1.ProvisioningRequest, err error) {
-	emptyResult := &v1.ProvisioningRequest{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateActionWithOptions(provisioningrequestsResource, c.ns, provisioningRequest, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ProvisioningRequest), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeProvisioningRequests) UpdateStatus(ctx context.Context, provisioningRequest *v1.ProvisioningRequest, opts metav1.UpdateOptions) (result *v1.ProvisioningRequest, err error) {
-	emptyResult := &v1.ProvisioningRequest{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceActionWithOptions(provisioningrequestsResource, "status", c.ns, provisioningRequest, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ProvisioningRequest), err
-}
-
-// Delete takes name of the provisioningRequest and deletes it. Returns an error if one occurs.
-func (c *FakeProvisioningRequests) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(provisioningrequestsResource, c.ns, name, opts), &v1.ProvisioningRequest{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeProvisioningRequests) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
-	action := testing.NewDeleteCollectionActionWithOptions(provisioningrequestsResource, c.ns, opts, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1.ProvisioningRequestList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched provisioningRequest.
-func (c *FakeProvisioningRequests) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.ProvisioningRequest, err error) {
-	emptyResult := &v1.ProvisioningRequest{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(provisioningrequestsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ProvisioningRequest), err
-}
-
-// Apply takes the given apply declarative configuration, applies it and returns the applied provisioningRequest.
-func (c *FakeProvisioningRequests) Apply(ctx context.Context, provisioningRequest *autoscalingxk8siov1.ProvisioningRequestApplyConfiguration, opts metav1.ApplyOptions) (result *v1.ProvisioningRequest, err error) {
-	if provisioningRequest == nil {
-		return nil, fmt.Errorf("provisioningRequest provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(provisioningRequest)
-	if err != nil {
-		return nil, err
-	}
-	name := provisioningRequest.Name
-	if name == nil {
-		return nil, fmt.Errorf("provisioningRequest.Name must be provided to Apply")
-	}
-	emptyResult := &v1.ProvisioningRequest{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(provisioningrequestsResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions()), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ProvisioningRequest), err
-}
-
-// ApplyStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *FakeProvisioningRequests) ApplyStatus(ctx context.Context, provisioningRequest *autoscalingxk8siov1.ProvisioningRequestApplyConfiguration, opts metav1.ApplyOptions) (result *v1.ProvisioningRequest, err error) {
-	if provisioningRequest == nil {
-		return nil, fmt.Errorf("provisioningRequest provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(provisioningRequest)
-	if err != nil {
-		return nil, err
-	}
-	name := provisioningRequest.Name
-	if name == nil {
-		return nil, fmt.Errorf("provisioningRequest.Name must be provided to Apply")
-	}
-	emptyResult := &v1.ProvisioningRequest{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(provisioningrequestsResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions(), "status"), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ProvisioningRequest), err
 }

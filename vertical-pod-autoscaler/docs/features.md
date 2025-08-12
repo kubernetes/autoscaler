@@ -5,6 +5,7 @@
 - [Limits control](#limits-control)
 - [Memory Value Humanization](#memory-value-humanization)
 - [CPU Recommendation Rounding](#cpu-recommendation-rounding)
+- [Memory Recommendation Rounding](#memory-recommendation-rounding)
 - [In-Place Updates](#in-place-updates-inplaceorrecreate)
 
 ## Limits control
@@ -21,6 +22,13 @@ range).
 To disable getting VPA recommendations for an individual container, set `mode` to `"Off"` in `containerPolicies`.
 
 ## Memory Value Humanization
+
+> [!WARNING]
+> DEPRECATED: This feature is deprecated as of VPA v1.5.0 and will be removed in a future version. Use `--round-memory-bytes` instead for memory recommendation formatting.
+
+> [!NOTE]
+> This feature was added in v1.3.0.
+
 
 VPA can present memory recommendations in human-readable binary units (KiB, MiB, GiB, TiB) instead of raw bytes, making resource recommendations easier to understand. This feature is controlled by the `--humanize-memory` flag in the recommender component.
 
@@ -54,10 +62,27 @@ To enable this feature, set the --round-cpu-millicores flag when running the VPA
 --round-cpu-millicores=50
 ```
 
+## Memory Recommendation Rounding
+
+VPA can provide Memory recommendations rounded up to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-memory-bytes` flag in the recommender component.
+
+When enabled, Memory recommendations will be:
+- Rounded up to the nearest multiple of the specified bytes value
+- Applied to target, lower bound, and upper bound recommendations
+
+For example, with `--round-memory-bytes=134217728`, a memory recommendation of `200Mi` would be rounded up to `256Mi`, and a recommendation of `80Mi` would be rounded up to `128Mi`.
+
+To enable this feature, set the `--round-memory-bytes` flag when running the VPA recommender:
+
+```bash
+--round-memory-bytes=134217728
+```
+
 ## In-Place Updates (`InPlaceOrRecreate`)
 
 > [!WARNING] 
 > FEATURE STATE: VPA v1.4.0 [alpha]
+> FEATURE STATE: VPA v1.5.0 [beta]
 
 VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (which is in beta as of Kubernetes 1.33) to modify container resources without requiring pod recreation.
 For more information, see [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)

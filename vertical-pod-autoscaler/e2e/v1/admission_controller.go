@@ -47,7 +47,6 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
-		checkInPlaceOrRecreateTestsEnabled(f, true, false)
 		waitForVpaWebhookRegistration(f)
 	})
 

@@ -211,7 +211,7 @@ func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location
 	}, nil
 }
 
-func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
+func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager *AzureManager, enableDynamicInstanceList bool, enableLabelPrediction bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
@@ -272,7 +272,7 @@ func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager 
 	node.Status.Allocatable = node.Status.Capacity
 
 	if template.VMSSNodeTemplate != nil {
-		node = processVMSSTemplate(template, nodeName, node)
+		node = processVMSSTemplate(template, nodeName, node, enableLabelPrediction)
 	} else if template.VMPoolNodeTemplate != nil {
 		node = processVMPoolTemplate(template, nodeName, node)
 	} else {
@@ -298,7 +298,7 @@ func processVMPoolTemplate(template NodeTemplate, nodeName string, node apiv1.No
 	return node
 }
 
-func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node) apiv1.Node {
+func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node, enableLabelPrediction bool) apiv1.Node {
 	// NodeLabels
 	if template.VMSSNodeTemplate.Tags != nil {
 		for k, v := range template.VMSSNodeTemplate.Tags {
@@ -324,45 +324,50 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 		labels = extractLabelsFromTags(template.VMSSNodeTemplate.Tags)
 	}
 
-	// Add the agentpool label, its value should come from the VMSS poolName tag
-	// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
-	// We will have to live with both labels for a while
-	if node.Labels[legacyPoolNameTag] != "" {
-		labels[legacyAgentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
-		labels[agentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
-	}
-	if node.Labels[poolNameTag] != "" {
-		labels[legacyAgentPoolNodeLabelKey] = node.Labels[poolNameTag]
-		labels[agentPoolNodeLabelKey] = node.Labels[poolNameTag]
+	// This is the best-effort to match AKS system labels,
+	// this prediction needs to be constantly worked on and maintained to keep up with the changes in AKS
+	if enableLabelPrediction {
+		// Add the agentpool label, its value should come from the VMSS poolName tag
+		// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
+		// We will have to live with both labels for a while
+		if node.Labels[legacyPoolNameTag] != "" {
+			labels[legacyAgentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
+			labels[agentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
+		}
+		if node.Labels[poolNameTag] != "" {
+			labels[legacyAgentPoolNodeLabelKey] = node.Labels[poolNameTag]
+			labels[agentPoolNodeLabelKey] = node.Labels[poolNameTag]
+		}
+
+		// Add the storage profile and storage tier labels for vmss node
+		if template.VMSSNodeTemplate.OSDisk != nil {
+			// ephemeral
+			if template.VMSSNodeTemplate.OSDisk.DiffDiskSettings != nil && template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option == compute.Local {
+				labels[legacyStorageProfileNodeLabelKey] = "ephemeral"
+				labels[storageProfileNodeLabelKey] = "ephemeral"
+			} else {
+				labels[legacyStorageProfileNodeLabelKey] = "managed"
+				labels[storageProfileNodeLabelKey] = "managed"
+			}
+			if template.VMSSNodeTemplate.OSDisk.ManagedDisk != nil {
+				labels[legacyStorageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
+				labels[storageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
+			}
+		}
+
+		// If we are on GPU-enabled SKUs, append the accelerator
+		// label so that CA makes better decision when scaling from zero for GPU pools
+		if isNvidiaEnabledSKU(template.SkuName) {
+			labels[GPULabel] = "nvidia"
+			labels[legacyGPULabel] = "nvidia"
+		}
 	}
 
-	// Add the storage profile and storage tier labels for vmss node
-	if template.VMSSNodeTemplate.OSDisk != nil {
-		// ephemeral
-		if template.VMSSNodeTemplate.OSDisk.DiffDiskSettings != nil && template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option == compute.Local {
-			labels[legacyStorageProfileNodeLabelKey] = "ephemeral"
-			labels[storageProfileNodeLabelKey] = "ephemeral"
-		} else {
-			labels[legacyStorageProfileNodeLabelKey] = "managed"
-			labels[storageProfileNodeLabelKey] = "managed"
-		}
-		if template.VMSSNodeTemplate.OSDisk.ManagedDisk != nil {
-			labels[legacyStorageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
-			labels[storageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
-		}
-		// Add ephemeral-storage value
-		if template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
-			node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
-			klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
-			klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
-		}
-	}
-
-	// If we are on GPU-enabled SKUs, append the accelerator
-	// label so that CA makes better decision when scaling from zero for GPU pools
-	if isNvidiaEnabledSKU(template.SkuName) {
-		labels[GPULabel] = "nvidia"
-		labels[legacyGPULabel] = "nvidia"
+	// Add ephemeral-storage value
+	if template.VMSSNodeTemplate.OSDisk != nil && template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
+		klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
+		klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
 	}
 
 	// Extract allocatables from tags

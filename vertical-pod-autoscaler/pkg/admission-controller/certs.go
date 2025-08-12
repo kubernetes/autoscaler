@@ -24,10 +24,9 @@ import (
 	"os"
 	"sync"
 
+	"github.com/fsnotify/fsnotify"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-
-	"github.com/fsnotify/fsnotify"
 	admissionregistrationv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	"k8s.io/klog/v2"
 )
@@ -68,12 +67,15 @@ func (cr *certReloader) start(stop <-chan struct{}) error {
 	if err = watcher.Add(cr.tlsKeyPath); err != nil {
 		return err
 	}
-	if err = watcher.Add(cr.clientCaPath); err != nil {
-		return err
+	// we watch the CA file ony when registerWebhook is enabled
+	if cr.mutatingWebhookClient != nil {
+		if err = watcher.Add(cr.clientCaPath); err != nil {
+			return err
+		}
 	}
 
 	go func() {
-		defer watcher.Close()
+		defer watcher.Close() // nolint:errcheck
 		for {
 			select {
 			case event := <-watcher.Events:
@@ -123,6 +125,10 @@ func (cr *certReloader) load() error {
 
 func (cr *certReloader) reloadWebhookCA() error {
 	client := cr.mutatingWebhookClient
+	if client == nil {
+		// this should never happen as we don't watch the file if mutatingWebhookClient is nil
+		return fmt.Errorf("webhook client is not set")
+	}
 	webhook, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err != nil {
 		return err

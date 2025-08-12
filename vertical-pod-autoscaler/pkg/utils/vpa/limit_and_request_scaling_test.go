@@ -20,10 +20,9 @@ import (
 	"math"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func mustParseToPointer(str string) *resource.Quantity {

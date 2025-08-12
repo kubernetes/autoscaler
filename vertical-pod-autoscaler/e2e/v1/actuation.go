@@ -52,13 +52,9 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
+var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
-
-	ginkgo.BeforeEach(func() {
-		checkInPlaceOrRecreateTestsEnabled(f, true, true)
-	})
 
 	ginkgo.It("still applies recommendations on restart when update mode is InPlaceOrRecreate", func() {
 		ginkgo.By("Setting up a hamster deployment")
@@ -283,11 +279,6 @@ var _ = ActuationSuiteE2eDescribe("Actuation", ginkgo.Label("FG:InPlaceOrRecreat
 		err = WaitForPodsEvicted(f, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
-})
-
-var _ = ActuationSuiteE2eDescribe("Actuation", func() {
-	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("stops when pods get pending", func() {
 

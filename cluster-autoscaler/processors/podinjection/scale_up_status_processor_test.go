@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -82,7 +83,7 @@ func createPod(name string, isFake bool) *apiv1.Pod {
 		if !isFake {
 			return
 		}
-		*p = *withFakePodAnnotation(p)
+		*p = *fake.WithFakePodAnnotation(p)
 	})
 }
 

@@ -19,10 +19,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/labels"
-	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	labels "k8s.io/apimachinery/pkg/labels"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // ProvisioningRequestLister helps list ProvisioningRequests.
@@ -30,7 +30,7 @@ import (
 type ProvisioningRequestLister interface {
 	// List lists all ProvisioningRequests in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta1.ProvisioningRequest, err error)
+	List(selector labels.Selector) (ret []*autoscalingxk8siov1beta1.ProvisioningRequest, err error)
 	// ProvisioningRequests returns an object that can list and get ProvisioningRequests.
 	ProvisioningRequests(namespace string) ProvisioningRequestNamespaceLister
 	ProvisioningRequestListerExpansion
@@ -38,17 +38,17 @@ type ProvisioningRequestLister interface {
 
 // provisioningRequestLister implements the ProvisioningRequestLister interface.
 type provisioningRequestLister struct {
-	listers.ResourceIndexer[*v1beta1.ProvisioningRequest]
+	listers.ResourceIndexer[*autoscalingxk8siov1beta1.ProvisioningRequest]
 }
 
 // NewProvisioningRequestLister returns a new ProvisioningRequestLister.
 func NewProvisioningRequestLister(indexer cache.Indexer) ProvisioningRequestLister {
-	return &provisioningRequestLister{listers.New[*v1beta1.ProvisioningRequest](indexer, v1beta1.Resource("provisioningrequest"))}
+	return &provisioningRequestLister{listers.New[*autoscalingxk8siov1beta1.ProvisioningRequest](indexer, autoscalingxk8siov1beta1.Resource("provisioningrequest"))}
 }
 
 // ProvisioningRequests returns an object that can list and get ProvisioningRequests.
 func (s *provisioningRequestLister) ProvisioningRequests(namespace string) ProvisioningRequestNamespaceLister {
-	return provisioningRequestNamespaceLister{listers.NewNamespaced[*v1beta1.ProvisioningRequest](s.ResourceIndexer, namespace)}
+	return provisioningRequestNamespaceLister{listers.NewNamespaced[*autoscalingxk8siov1beta1.ProvisioningRequest](s.ResourceIndexer, namespace)}
 }
 
 // ProvisioningRequestNamespaceLister helps list and get ProvisioningRequests.
@@ -56,15 +56,15 @@ func (s *provisioningRequestLister) ProvisioningRequests(namespace string) Provi
 type ProvisioningRequestNamespaceLister interface {
 	// List lists all ProvisioningRequests in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta1.ProvisioningRequest, err error)
+	List(selector labels.Selector) (ret []*autoscalingxk8siov1beta1.ProvisioningRequest, err error)
 	// Get retrieves the ProvisioningRequest from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1beta1.ProvisioningRequest, error)
+	Get(name string) (*autoscalingxk8siov1beta1.ProvisioningRequest, error)
 	ProvisioningRequestNamespaceListerExpansion
 }
 
 // provisioningRequestNamespaceLister implements the ProvisioningRequestNamespaceLister
 // interface.
 type provisioningRequestNamespaceLister struct {
-	listers.ResourceIndexer[*v1beta1.ProvisioningRequest]
+	listers.ResourceIndexer[*autoscalingxk8siov1beta1.ProvisioningRequest]
 }

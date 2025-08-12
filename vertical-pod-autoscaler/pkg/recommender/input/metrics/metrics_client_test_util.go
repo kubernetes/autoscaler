@@ -20,15 +20,11 @@ import (
 	"math/big"
 	"time"
 
-	k8sapiv1 "k8s.io/api/core/v1"
-
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	core "k8s.io/client-go/testing"
-
 	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"k8s.io/metrics/pkg/client/clientset/versioned/fake"
 
@@ -38,7 +34,7 @@ import (
 type metricsClientTestCase struct {
 	snapshotTimestamp    time.Time
 	snapshotWindow       time.Duration
-	namespace            *v1.Namespace
+	namespace            *corev1.Namespace
 	pod1Snaps, pod2Snaps []*ContainerMetricsSnapshot
 }
 
@@ -48,7 +44,7 @@ func newMetricsClientTestCase() *metricsClientTestCase {
 	testCase := &metricsClientTestCase{
 		snapshotTimestamp: time.Now(),
 		snapshotWindow:    time.Duration(1234),
-		namespace:         &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespaceName}},
+		namespace:         &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespaceName}},
 	}
 
 	id1 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod1"}, ContainerName: "Name1"}
@@ -119,18 +115,18 @@ func makePodMetrics(snaps []*ContainerMetricsSnapshot) metricsapi.PodMetrics {
 	return podMetrics
 }
 
-func calculateResourceList(usage model.Resources) k8sapiv1.ResourceList {
+func calculateResourceList(usage model.Resources) corev1.ResourceList {
 	cpuCores := big.NewRat(int64(usage[model.ResourceCPU]), 1000)
 	cpuQuantityString := cpuCores.FloatString(3)
 
 	memoryBytes := big.NewInt(int64(usage[model.ResourceMemory]))
 	memoryQuantityString := memoryBytes.String()
 
-	resourceMap := map[k8sapiv1.ResourceName]resource.Quantity{
-		k8sapiv1.ResourceCPU:    resource.MustParse(cpuQuantityString),
-		k8sapiv1.ResourceMemory: resource.MustParse(memoryQuantityString),
+	resourceMap := map[corev1.ResourceName]resource.Quantity{
+		corev1.ResourceCPU:    resource.MustParse(cpuQuantityString),
+		corev1.ResourceMemory: resource.MustParse(memoryQuantityString),
 	}
-	return k8sapiv1.ResourceList(resourceMap)
+	return corev1.ResourceList(resourceMap)
 }
 
 func (tc *metricsClientTestCase) getAllSnaps() []*ContainerMetricsSnapshot {

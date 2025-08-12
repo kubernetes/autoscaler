@@ -23,15 +23,11 @@ import (
 	"time"
 
 	"golang.org/x/time/rate"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
-
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
-
 	corescheme "k8s.io/client-go/kubernetes/scheme"
 	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -49,6 +45,7 @@ import (
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -106,7 +103,7 @@ func NewUpdater(
 		patchCalculators,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create restriction factory: %v", err)
+		return nil, fmt.Errorf("failed to create restriction factory: %v", err)
 	}
 
 	return &updater{
@@ -212,12 +209,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 	// wrappers for metrics which are computed every loop run
 	controlledPodsCounter := metrics_updater.NewControlledPodsCounter()
 	evictablePodsCounter := metrics_updater.NewEvictablePodsCounter()
-	inPlaceUpdatablePodsCounter := metrics_updater.NewInPlaceUpdtateablePodsCounter()
+	inPlaceUpdatablePodsCounter := metrics_updater.NewInPlaceUpdatablePodsCounter()
 	vpasWithEvictablePodsCounter := metrics_updater.NewVpasWithEvictablePodsCounter()
 	vpasWithEvictedPodsCounter := metrics_updater.NewVpasWithEvictedPodsCounter()
 
-	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdtateablePodsCounter()
-	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdtatedPodsCounter()
+	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdatablePodsCounter()
+	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdatedPodsCounter()
 
 	// using defer to protect against 'return' after evictionRateLimiter.Wait
 	defer controlledPodsCounter.Observe()
@@ -233,7 +230,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 	// to contain only Pods controlled by a VPA in auto, recreate, or inPlaceOrRecreate mode
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
-		controlledPodsCounter.Add(vpaSize, vpaSize)
+		updateMode := vpa_api_util.GetUpdateMode(vpa)
+		controlledPodsCounter.Add(vpaSize, updateMode, vpaSize)
 		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := u.restrictionFactory.GetCreatorMaps(livePods, vpa)
 		if err != nil {
 			klog.ErrorS(err, "Failed to get creator maps")
@@ -245,7 +243,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		podsForInPlace := make([]*apiv1.Pod, 0)
 		podsForEviction := make([]*apiv1.Pod, 0)
-		updateMode := vpa_api_util.GetUpdateMode(vpa)
 
 		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && features.Enabled(features.InPlaceOrRecreate) {
 			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
@@ -256,7 +253,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
 			}
 			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
-			evictablePodsCounter.Add(vpaSize, len(podsForEviction))
+			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
 		}
 
 		withInPlaceUpdatable := false
@@ -282,8 +279,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 			}
 			err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
 			if err != nil {
-				klog.V(0).InfoS("In-place update failed", "error", err, "pod", klog.KObj(pod))
+				klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, "InPlaceUpdateError")
+				podsForEviction = append(podsForEviction, pod)
 				continue
 			}
 			withInPlaceUpdated = true
@@ -306,7 +304,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.V(0).InfoS("Eviction failed", "error", evictErr, "pod", klog.KObj(pod))
 			} else {
 				withEvicted = true
-				metrics_updater.AddEvictedPod(vpaSize)
+				metrics_updater.AddEvictedPod(vpaSize, updateMode)
 			}
 		}
 
@@ -317,10 +315,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 			vpasWithInPlaceUpdatedPodsCounter.Add(vpaSize, 1)
 		}
 		if withEvictable {
-			vpasWithEvictablePodsCounter.Add(vpaSize, 1)
+			vpasWithEvictablePodsCounter.Add(vpaSize, updateMode, 1)
 		}
 		if withEvicted {
-			vpasWithEvictedPodsCounter.Add(vpaSize, 1)
+			vpasWithEvictedPodsCounter.Add(vpaSize, updateMode, 1)
 		}
 	}
 	timer.ObserveStep("EvictPods")
