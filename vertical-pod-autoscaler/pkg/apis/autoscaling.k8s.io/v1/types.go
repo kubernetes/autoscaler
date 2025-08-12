@@ -19,6 +19,7 @@ package v1
 import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -221,6 +222,14 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// Enforce a fixed memory-per-CPU ratio for this container’s recommendations.
+	// If set, the recommender will adjust memory or CPU so that:
+	//   memory_bytes = cpu_cores * memoryPerCPU (bytes per 1 core).
+	// Applied to Target, LowerBound, UpperBound, and UncappedTarget.
+	// Example: "4Gi" means 1 CPU -> 4 GiB.
+	// +optional
+	MemoryPerCPU *resource.Quantity `json:"memoryPerCPU,omitempty"`
 }
 
 const (

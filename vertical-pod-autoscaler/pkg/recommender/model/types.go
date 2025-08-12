@@ -81,40 +81,6 @@ func ScaleResource(amount ResourceAmount, factor float64) ResourceAmount {
 	return resourceAmountFromFloat(float64(amount) * factor)
 }
 
-// EnforceCPUMemoryRatio adjusts the CPU or Memory to maintain a fixed ratio in bytes per millicore.
-// If the actual memory per millicore is too low, memory is increased.
-// If it is too high, CPU is increased.
-func EnforceCPUMemoryRatio(resources apiv1.ResourceList, ratioBytesPerMillicore *float64) apiv1.ResourceList {
-	if ratioBytesPerMillicore == nil || *ratioBytesPerMillicore <= 0 {
-		// No ratio specified or invalid ratio, nothing to do
-		return resources
-	}
-
-	cpuQty, hasCPU := resources[apiv1.ResourceCPU]
-	memQty, hasMem := resources[apiv1.ResourceMemory]
-
-	if !hasCPU || !hasMem || cpuQty.IsZero() || memQty.IsZero() {
-		return resources
-	}
-
-	cpuMilli := float64(cpuQty.MilliValue())
-	memBytes := float64(memQty.Value())
-
-	currentRatio := memBytes / cpuMilli
-
-	if currentRatio < *ratioBytesPerMillicore {
-		// Not enough RAM for the given CPU → increase memory
-		desiredMem := cpuMilli * *ratioBytesPerMillicore
-		resources[apiv1.ResourceMemory] = *resource.NewQuantity(int64(desiredMem), resource.BinarySI)
-	} else if currentRatio > *ratioBytesPerMillicore {
-		// Too much RAM for the given CPU → increase CPU
-		desiredCPU := memBytes / *ratioBytesPerMillicore
-		resources[apiv1.ResourceCPU] = *resource.NewMilliQuantity(int64(desiredCPU), resource.DecimalSI)
-	}
-
-	return resources
-}
-
 // ResourcesAsResourceList converts internal Resources representation to ResourcesList.
 func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUMillicores, roundMemoryBytes int) apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
