@@ -193,7 +193,7 @@ func TestUpdateRecommendation(t *testing.T) {
 			for container, rec := range tc.containers {
 				state := &AggregateContainerState{}
 				if rec != nil {
-					state.LastRecommendation = corev1.ResourceList{
+					state.lastRecommendation = corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse(rec.cpu),
 						corev1.ResourceMemory: resource.MustParse(rec.mem),
 					}
@@ -209,9 +209,9 @@ func TestUpdateRecommendation(t *testing.T) {
 			for key, state := range vpa.aggregateContainerStates {
 				expected, ok := tc.expectedLast[key.ContainerName()]
 				if !ok {
-					assert.Nil(t, state.LastRecommendation)
+					assert.Nil(t, state.lastRecommendation)
 				} else {
-					assert.Equal(t, expected, state.LastRecommendation)
+					assert.Equal(t, expected, state.lastRecommendation)
 				}
 			}
 		})
