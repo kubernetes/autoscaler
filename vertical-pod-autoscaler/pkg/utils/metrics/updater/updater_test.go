@@ -58,6 +58,40 @@ func TestAddEvictedPod(t *testing.T) {
 	}
 }
 
+func TestRecordFailedEviction(t *testing.T) {
+	testCases := []struct {
+		desc    string
+		vpaSize int
+		mode    vpa_types.UpdateMode
+		reason  string
+		log2    string
+	}{
+		{
+			desc:    "VPA size 2, some reason",
+			vpaSize: 2,
+			reason:  "some_reason",
+			log2:    "1",
+		},
+		{
+			desc:    "VPA size 20, another reason",
+			vpaSize: 20,
+			reason:  "another_reason",
+			log2:    "4",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Cleanup(failedEvictionAttempts.Reset)
+			RecordFailedEviction(tc.vpaSize, tc.mode, tc.reason)
+			val := testutil.ToFloat64(failedEvictionAttempts.WithLabelValues(tc.log2, string(tc.mode), tc.reason))
+			if val != 1 {
+				t.Errorf("Unexpected value for FailedEviction metric with labels (%s, %s): got %v, want 1", tc.log2, tc.reason, val)
+			}
+		})
+	}
+}
+
 func TestAddInPlaceUpdatedPod(t *testing.T) {
 	testCases := []struct {
 		desc    string
