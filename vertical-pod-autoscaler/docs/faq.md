@@ -13,6 +13,7 @@
 - [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
 - [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
 - [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
+- [Why does VPA fail to create a Pod when resource limits are explicitly set to 0?](#why-does-vpa-fail-to-create-a-pod-when-resource-limits-are-explicitly-set-to-0)
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
@@ -244,3 +245,15 @@ The `--webhook-labels` parameter for the VPA admission-controller can be used to
 When running in EKS with Cilium, the EKS API server cannot route traffic to the overlay network. The VPA admission-controller
 Pods either need to use host networking or be exposed through a service or ingress.
 See the [Cilium Helm installation page](https://docs.cilium.io/en/stable/installation/k8s-install-helm/) for more info.
+
+### Why does VPA fail to create a Pod when resource limits are explicitly set to 0?
+VPA currently handles requests=0 and limits=0 inconsistently with Kubernetes, leading to invalid Pod configurations. Here’s the breakdown:
+
+| Scenario                | Kubernetes Behavior                          | VPA Behavior                                  |
+|-------------------------|----------------------------------------------|----------------------------------------------|
+| `requests=0`+`limits=0`| Disables resource fields (BestEffort QoS)    | VPA recommends non-zero requests while keeping limits=0, creating invalid configuration (requests>limits) and changing QoS to `Burstable`|
+| `requests=limits>0`     | Guaranteed QoS                               | Maintains Guaranteed QoS                     |
+| `requests≠limits`       | Burstable QoS                                | Maintains Burstable QoS                       |
+
+VPA avoids modifying QoS classes by design. When a Pod is created with requests=0 and limits=0, Kubernetes treats it as `BestEffort`, but VPA attempts to set non-zero requests (e.g., via recommendations), inadvertently changing the QoS class to `Burstable`. This violates VPA’s principle of preserving QoS. See the [Pod QoS](https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/) for more info.
+
