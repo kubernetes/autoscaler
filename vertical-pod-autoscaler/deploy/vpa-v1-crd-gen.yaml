@@ -354,6 +354,18 @@ spec:
                             Specifies the maximum amount of resources that will be recommended
                             for the container. The default is no maximum.
                           type: object
+                        memoryPerCPU:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: |-
+                            Enforce a fixed memory-per-CPU ratio for this container’s recommendations.
+                            If set, the recommender will adjust memory or CPU so that:
+                              memory_bytes = cpu_cores * memoryPerCPU (bytes per 1 core).
+                            Applied to Target, LowerBound, UpperBound, and UncappedTarget.
+                            Example: "4Gi" means 1 CPU -> 4 GiB.
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                         minAllowed:
                           additionalProperties:
                             anyOf:
