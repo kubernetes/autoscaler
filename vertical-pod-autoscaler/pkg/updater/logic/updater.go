@@ -284,6 +284,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
 			if err != nil {
 				klog.V(0).InfoS("In-place update failed", "error", err, "pod", klog.KObj(pod))
+				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, "InPlaceUpdateError")
 				continue
 			}
 			withInPlaceUpdated = true
