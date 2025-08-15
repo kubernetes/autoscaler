@@ -65,7 +65,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "evicted_pods_total",
 			Help:      "Number of Pods evicted by Updater to apply a new recommendation.",
-		}, []string{"vpa_size_log2", "update_mode"},
+		}, []string{"vpa_size_log2", "update_mode", "vpa_name", "vpa_namespace"},
 	)
 
 	vpasWithEvictablePodsCount = prometheus.NewGaugeVec(
@@ -105,7 +105,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "in_place_updated_pods_total",
 			Help:      "Number of Pods updated in-place by Updater to apply a new recommendation.",
-		}, []string{"vpa_size_log2"},
+		}, []string{"vpa_size_log2", "vpa_name", "vpa_namespace"},
 	)
 
 	vpasWithInPlaceUpdatablePodsCount = prometheus.NewGaugeVec(
@@ -200,9 +200,9 @@ func NewVpasWithEvictedPodsCounter() *UpdateModeAndSizeBasedGauge {
 }
 
 // AddEvictedPod increases the counter of pods evicted by Updater, by given VPA size
-func AddEvictedPod(vpaSize int, mode vpa_types.UpdateMode) {
+func AddEvictedPod(vpaSize int, vpaName string, vpaNamespace string, mode vpa_types.UpdateMode) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
-	evictedCount.WithLabelValues(strconv.Itoa(log2), string(mode)).Inc()
+	evictedCount.WithLabelValues(strconv.Itoa(log2), string(mode), vpaName, vpaNamespace).Inc()
 }
 
 // RecordFailedEviction increases the counter of failed eviction attempts by given VPA size, name, namespace, update mode and reason
@@ -227,9 +227,9 @@ func NewVpasWithInPlaceUpdatedPodsCounter() *SizeBasedGauge {
 }
 
 // AddInPlaceUpdatedPod increases the counter of pods updated in place by Updater, by given VPA size
-func AddInPlaceUpdatedPod(vpaSize int) {
+func AddInPlaceUpdatedPod(vpaSize int, vpaName string, vpaNamespace string) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
-	inPlaceUpdatedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
+	inPlaceUpdatedCount.WithLabelValues(strconv.Itoa(log2), vpaName, vpaNamespace).Inc()
 }
 
 // RecordFailedInPlaceUpdate increases the counter of failed in-place update attempts by given VPA size, name, namespace and reason
