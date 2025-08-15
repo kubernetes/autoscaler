@@ -300,7 +300,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				continue
 			}
 			withInPlaceUpdated = true
-			metrics_updater.AddInPlaceUpdatedPod(vpaSize)
+			metrics_updater.AddInPlaceUpdatedPod(vpaSize, vpa.Name, vpa.Namespace)
 		}
 
 		for _, pod := range podsForEviction {
@@ -321,7 +321,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				metrics_updater.RecordFailedEviction(vpaSize, vpa.Name, vpa.Namespace, updateMode, "EvictionError")
 			} else {
 				withEvicted = true
-				metrics_updater.AddEvictedPod(vpaSize, updateMode)
+				metrics_updater.AddEvictedPod(vpaSize, vpa.Name, vpa.Namespace, updateMode)
 			}
 		}
 
