@@ -289,17 +289,18 @@ func (u *updater) RunOnce(ctx context.Context) {
 			err = u.inPlaceRateLimiter.Wait(ctx)
 			if err != nil {
 				klog.V(0).InfoS("In-place rate limiter wait failed for in-place resize", "error", err)
+				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateRateLimiterWaitFailed")
 				return
 			}
 			err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
 			if err != nil {
 				klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
-				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, "InPlaceUpdateError")
+				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
 				podsForEviction = append(podsForEviction, pod)
 				continue
 			}
 			withInPlaceUpdated = true
-			metrics_updater.AddInPlaceUpdatedPod(vpaSize)
+			metrics_updater.AddInPlaceUpdatedPod(vpaSize, vpa.Name, vpa.Namespace)
 		}
 
 		for _, pod := range podsForEviction {
@@ -310,16 +311,17 @@ func (u *updater) RunOnce(ctx context.Context) {
 			err = u.evictionRateLimiter.Wait(ctx)
 			if err != nil {
 				klog.V(0).InfoS("Eviction rate limiter wait failed", "error", err)
+				metrics_updater.RecordFailedEviction(vpaSize, vpa.Name, vpa.Namespace, updateMode, "EvictionRateLimiterWaitFailed")
 				return
 			}
 			klog.V(2).InfoS("Evicting pod", "pod", klog.KObj(pod))
 			evictErr := evictionLimiter.Evict(pod, vpa, u.eventRecorder)
 			if evictErr != nil {
 				klog.V(0).InfoS("Eviction failed", "error", evictErr, "pod", klog.KObj(pod))
-				metrics_updater.RecordFailedEviction(vpaSize, updateMode, "EvictionError")
+				metrics_updater.RecordFailedEviction(vpaSize, vpa.Name, vpa.Namespace, updateMode, "EvictionError")
 			} else {
 				withEvicted = true
-				metrics_updater.AddEvictedPod(vpaSize, updateMode)
+				metrics_updater.AddEvictedPod(vpaSize, vpa.Name, vpa.Namespace, updateMode)
 			}
 		}
 
