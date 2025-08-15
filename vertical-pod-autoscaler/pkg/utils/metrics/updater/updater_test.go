@@ -60,31 +60,37 @@ func TestAddEvictedPod(t *testing.T) {
 
 func TestRecordFailedEviction(t *testing.T) {
 	testCases := []struct {
-		desc    string
-		vpaSize int
-		mode    vpa_types.UpdateMode
-		reason  string
-		log2    string
+		desc         string
+		vpaSize      int
+		mode         vpa_types.UpdateMode
+		reason       string
+		log2         string
+		vpaName      string
+		vpaNamespace string
 	}{
 		{
-			desc:    "VPA size 2, some reason",
-			vpaSize: 2,
-			reason:  "some_reason",
-			log2:    "1",
+			desc:         "VPA size 2, some reason",
+			vpaSize:      2,
+			reason:       "some_reason",
+			log2:         "1",
+			vpaName:      "vpa-2",
+			vpaNamespace: "vpa-2-ns",
 		},
 		{
-			desc:    "VPA size 20, another reason",
-			vpaSize: 20,
-			reason:  "another_reason",
-			log2:    "4",
+			desc:         "VPA size 20, another reason",
+			vpaSize:      20,
+			reason:       "another_reason",
+			log2:         "4",
+			vpaName:      "vpa-20",
+			vpaNamespace: "vpa-20-ns",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Cleanup(failedEvictionAttempts.Reset)
-			RecordFailedEviction(tc.vpaSize, tc.mode, tc.reason)
-			val := testutil.ToFloat64(failedEvictionAttempts.WithLabelValues(tc.log2, string(tc.mode), tc.reason))
+			RecordFailedEviction(tc.vpaSize, tc.vpaName, tc.vpaNamespace, tc.mode, tc.reason)
+			val := testutil.ToFloat64(failedEvictionAttempts.WithLabelValues(tc.log2, string(tc.mode), tc.reason, tc.vpaName, tc.vpaNamespace))
 			if val != 1 {
 				t.Errorf("Unexpected value for FailedEviction metric with labels (%s, %s): got %v, want 1", tc.log2, tc.reason, val)
 			}
@@ -124,30 +130,36 @@ func TestAddInPlaceUpdatedPod(t *testing.T) {
 
 func TestRecordFailedInPlaceUpdate(t *testing.T) {
 	testCases := []struct {
-		desc    string
-		vpaSize int
-		reason  string
-		log2    string
+		desc         string
+		vpaSize      int
+		reason       string
+		log2         string
+		vpaName      string
+		vpaNamespace string
 	}{
 		{
-			desc:    "VPA size 2, some reason",
-			vpaSize: 2,
-			reason:  "some_reason",
-			log2:    "1",
+			desc:         "VPA size 2, some reason",
+			vpaSize:      2,
+			reason:       "some_reason",
+			log2:         "1",
+			vpaName:      "vpa-2",
+			vpaNamespace: "vpa-2-ns",
 		},
 		{
-			desc:    "VPA size 20, another reason",
-			vpaSize: 20,
-			reason:  "another_reason",
-			log2:    "4",
+			desc:         "VPA size 20, another reason",
+			vpaSize:      20,
+			reason:       "another_reason",
+			log2:         "4",
+			vpaName:      "vpa-20",
+			vpaNamespace: "vpa-20-ns",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Cleanup(failedInPlaceUpdateAttempts.Reset)
-			RecordFailedInPlaceUpdate(tc.vpaSize, tc.reason)
-			val := testutil.ToFloat64(failedInPlaceUpdateAttempts.WithLabelValues(tc.log2, tc.reason))
+			RecordFailedInPlaceUpdate(tc.vpaSize, tc.vpaName, tc.vpaNamespace, tc.reason)
+			val := testutil.ToFloat64(failedInPlaceUpdateAttempts.WithLabelValues(tc.log2, tc.reason, tc.vpaName, tc.vpaNamespace))
 			if val != 1 {
 				t.Errorf("Unexpected value for FailedInPlaceUpdate metric with labels (%s, %s): got %v, want 1", tc.log2, tc.reason, val)
 			}

@@ -89,7 +89,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "failed_eviction_attempts_total",
 			Help:      "Number of failed attempts to update Pods by eviction",
-		}, []string{"vpa_size_log2", "update_mode", "reason"},
+		}, []string{"vpa_size_log2", "update_mode", "reason", "vpa_name", "vpa_namespace"},
 	)
 
 	inPlaceUpdatableCount = prometheus.NewGaugeVec(
@@ -129,7 +129,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "failed_in_place_update_attempts_total",
 			Help:      "Number of failed attempts to update Pods in-place.",
-		}, []string{"vpa_size_log2", "reason"},
+		}, []string{"vpa_size_log2", "reason", "vpa_name", "vpa_namespace"},
 	)
 
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
@@ -205,10 +205,10 @@ func AddEvictedPod(vpaSize int, mode vpa_types.UpdateMode) {
 	evictedCount.WithLabelValues(strconv.Itoa(log2), string(mode)).Inc()
 }
 
-// RecordFailedEviction increases the counter of failed eviction attempts by given VPA size, update mode and reason
-func RecordFailedEviction(vpaSize int, mode vpa_types.UpdateMode, reason string) {
+// RecordFailedEviction increases the counter of failed eviction attempts by given VPA size, name, namespace, update mode and reason
+func RecordFailedEviction(vpaSize int, vpaName string, vpaNamespace string, mode vpa_types.UpdateMode, reason string) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
-	failedEvictionAttempts.WithLabelValues(strconv.Itoa(log2), string(mode), reason).Inc()
+	failedEvictionAttempts.WithLabelValues(strconv.Itoa(log2), string(mode), reason, vpaName, vpaNamespace).Inc()
 }
 
 // NewInPlaceUpdatablePodsCounter returns a wrapper for counting Pods which are matching in-place update criteria
@@ -232,10 +232,10 @@ func AddInPlaceUpdatedPod(vpaSize int) {
 	inPlaceUpdatedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
 }
 
-// RecordFailedInPlaceUpdate increases the counter of failed in-place update attempts by given VPA size and reason
-func RecordFailedInPlaceUpdate(vpaSize int, reason string) {
+// RecordFailedInPlaceUpdate increases the counter of failed in-place update attempts by given VPA size, name, namespace and reason
+func RecordFailedInPlaceUpdate(vpaSize int, vpaName string, vpaNamespace string, reason string) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
-	failedInPlaceUpdateAttempts.WithLabelValues(strconv.Itoa(log2), reason).Inc()
+	failedInPlaceUpdateAttempts.WithLabelValues(strconv.Itoa(log2), reason, vpaName, vpaNamespace).Inc()
 }
 
 // Add increases the counter for the given VPA size
