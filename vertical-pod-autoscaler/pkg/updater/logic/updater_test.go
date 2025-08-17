@@ -18,6 +18,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -57,6 +58,7 @@ func TestRunOnce_Mode(t *testing.T) {
 	tests := []struct {
 		name                  string
 		updateMode            vpa_types.UpdateMode
+		shouldInPlaceFail     bool
 		expectFetchCalls      bool
 		expectedEvictionCount int
 		expectedInPlacedCount int
@@ -66,6 +68,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with Auto mode",
 			updateMode:            vpa_types.UpdateModeAuto,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
 			expectedInPlacedCount: 0,
@@ -75,6 +78,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with Initial mode",
 			updateMode:            vpa_types.UpdateModeInitial,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
@@ -84,6 +88,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with Off mode",
 			updateMode:            vpa_types.UpdateModeOff,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
@@ -93,6 +98,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with InPlaceOrRecreate mode expecting in-place updates",
 			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 5,
@@ -102,6 +108,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with InPlaceOrRecreate mode expecting fallback to evictions",
 			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
 			expectedInPlacedCount: 0,
@@ -111,11 +118,22 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with InPlaceOrRecreate mode expecting no evictions or in-place",
 			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
 			canEvict:              false,
 			canInPlaceUpdate:      utils.InPlaceDeferred,
+		},
+		{
+			name:                  "with InPlaceOrRecreate mode and failed in-place update",
+			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 5, // All pods should be evicted after in-place update fails
+			expectedInPlacedCount: 5, // All pods attempt in-place update first
+			canEvict:              true,
+			canInPlaceUpdate:      utils.InPlaceApproved,
 		},
 	}
 	for _, tc := range tests {
@@ -123,6 +141,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			testRunOnceBase(
 				t,
 				tc.updateMode,
+				tc.shouldInPlaceFail,
 				newFakeValidator(true),
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
@@ -161,6 +180,7 @@ func TestRunOnce_Status(t *testing.T) {
 			testRunOnceBase(
 				t,
 				vpa_types.UpdateModeAuto,
+				false,
 				tc.statusValidator,
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
@@ -174,6 +194,7 @@ func TestRunOnce_Status(t *testing.T) {
 func testRunOnceBase(
 	t *testing.T,
 	updateMode vpa_types.UpdateMode,
+	shouldInPlaceFail bool,
 	statusValidator status.Validator,
 	expectFetchCalls bool,
 	expectedEvictionCount int,
@@ -215,7 +236,11 @@ func testRunOnceBase(
 		pods[i].Labels = labels
 
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(canInPlaceUpdate)
-		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
+		if shouldInPlaceFail {
+			inplace.On("InPlaceUpdate", pods[i], nil).Return(fmt.Errorf("in-place update failed"))
+		} else {
+			inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
+		}
 
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
