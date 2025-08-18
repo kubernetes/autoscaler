@@ -136,8 +136,8 @@ func TestListNodePools_ListError(t *testing.T) {
 		dynamicClient: dynClient,
 	}
 	_, err := manager.ListNodePools()
-	if err == nil {
-		t.Error("expected error, got nil")
+	if err != nil {
+		t.Error("unexpected error, got ", err)
 	}
 }
 
@@ -186,8 +186,8 @@ func TestListNodePools_EmptyList(t *testing.T) {
 	// Create a manager with no nodepool items
 	manager := makeTestManagerWithNodePools(nil)
 	nodePools, err := manager.ListNodePools()
-	if err == nil {
-		t.Errorf("expected error for empty nodepools list, got nil")
+	if err != nil {
+		t.Errorf("unexpected error for empty nodepools list, got %v", err)
 	}
 	if len(nodePools) != 0 {
 		t.Errorf("expected empty nodepools list, got %d", len(nodePools))
@@ -224,5 +224,58 @@ func TestUpdateNodeGroup_EmptyNodePools(t *testing.T) {
 	}
 	if len(nodeGroups) != 0 {
 		t.Errorf("expected empty node groups, got %d", len(nodeGroups))
+	}
+}
+
+func TestUpdateNodeGroup_NoNodePools(t *testing.T) {
+	// Create a manager with no nodepool items at all
+	manager := makeTestManagerWithNodePools(nil) // No items passed
+
+	// UpdateNodeGroup should return an empty slice when ListNodePools fails (no nodepools found)
+	nodeGroups, err := manager.UpdateNodeGroup()
+	if err != nil {
+		t.Errorf("unexpected error when no nodepools exist, got: %v", err)
+	}
+	if nodeGroups == nil {
+		t.Error("expected empty nodeGroups got: nil")
+	}
+
+	// Verify that nodeGroups field remains nil when ListNodePools returns no pools
+	if manager.nodeGroups == nil {
+		t.Error("expected nodeGroups field to be empty when ListNodePools returns no pools")
+	}
+}
+
+func TestGetNodeGroup_NoNodePools(t *testing.T) {
+	// Create a manager with no nodepool items
+	manager := makeTestManagerWithNodePools(nil)
+	_, err := manager.UpdateNodeGroup()
+	if err != nil {
+		t.Errorf("unexpected error when updating node group: %v", err)
+	}
+	// GetNodeGroup should return nil, nil (not found) rather than an error
+	nodeGroup, err := manager.GetNodeGroup("nonexistent-uid")
+	if err != nil {
+		t.Errorf("expected no error when nodegroup not found, got: %v", err)
+	}
+	if nodeGroup != nil {
+		t.Errorf("expected nil nodegroup when not found, got: %v", nodeGroup)
+	}
+}
+
+func TestGetNodeGroup_NotInitialized(t *testing.T) {
+	// Create a manager and don't call UpdateNodeGroup to test uninitialized state
+	manager := makeTestManagerWithNodePools(nil)
+
+	// GetNodeGroup should return an error when nodeGroups is not initialized
+	nodeGroup, err := manager.GetNodeGroup("some-uid")
+	if err == nil {
+		t.Error("expected error when nodeGroups not initialized, got nil")
+	}
+	if nodeGroup != nil {
+		t.Errorf("expected nil nodegroup when error occurs, got: %v", nodeGroup)
+	}
+	if err.Error() != "node groups are not initialized" {
+		t.Errorf("expected specific error message, got: %v", err)
 	}
 }
