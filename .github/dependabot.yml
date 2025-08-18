@@ -8,6 +8,7 @@ updates:
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/recommender"
   schedule:
@@ -19,6 +20,7 @@ updates:
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/updater"
   schedule:
@@ -30,6 +32,7 @@ updates:
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/admission-controller"
   schedule:
@@ -41,6 +44,7 @@ updates:
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: gomod
   directory: "/addon-resizer"
   schedule:
@@ -49,6 +53,8 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "release-note-none"
+    - "area/addon-resizer"
+    - "ok-to-test"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
@@ -57,3 +63,4 @@ updates:
   labels:
     - "area/dependency"
     - "release-note-none"
+    - "ok-to-test"
