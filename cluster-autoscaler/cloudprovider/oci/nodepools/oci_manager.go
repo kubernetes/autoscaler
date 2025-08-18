@@ -461,6 +461,12 @@ func (m *ociManagerImpl) GetExistingNodePoolSizeViaCompute(np NodePool) (int, er
 			if !strings.HasPrefix(*item.DisplayName, displayNamePrefix) {
 				continue
 			}
+			// A node pool can fail to scale up if there's no capacity in the region. In that case, the node pool will be
+			// returned by the API, but it will not actually exist or have an ID, so we don't want to tell the autoscaler about it.
+			if *item.Id == "" {
+				klog.V(4).Infof("skipping node as it doesn't have a scaled-up instance")
+				continue
+			}
 			switch item.LifecycleState {
 			case core.InstanceLifecycleStateStopped, core.InstanceLifecycleStateTerminated:
 				klog.V(4).Infof("skipping instance is in stopped/terminated state: %q", *item.Id)
@@ -519,23 +525,25 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 	nodePool, err := m.nodePoolCache.get(np.Id())
 	if err != nil {
-		klog.Error(err, "error while performing GetNodePoolNodes call")
 		return nil, err
 	}
 
 	var instances []cloudprovider.Instance
 	for _, node := range nodePool.Nodes {
 
+		// A node pool can fail to scale up if there's no capacity in the region. In that case, the node pool will be
+		// returned by the API, but it will not actually exist or have an ID, so we don't want to tell the autoscaler about it.
+		if *node.Id == "" {
+			klog.V(4).Infof("skipping node as it doesn't have a scaled-up instance")
+			continue
+		}
+
 		if node.NodeError != nil {
 
-			// We should move away from the approach of determining a node error as a Out of host capacity
-			// through string comparison. An error code specifically for Out of host capacity must be set
-			// and returned in the API response.
 			errorClass := cloudprovider.OtherErrorClass
 			if *node.NodeError.Code == "LimitExceeded" ||
-				*node.NodeError.Code == "QuotaExceeded" ||
-				(*node.NodeError.Code == "InternalError" &&
-					strings.Contains(*node.NodeError.Message, "Out of host capacity")) {
+				(*node.NodeError.Code == "InternalServerError" &&
+					strings.Contains(*node.NodeError.Message, "quota")) {
 				errorClass = cloudprovider.OutOfResourcesErrorClass
 			}
 

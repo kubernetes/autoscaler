@@ -115,7 +115,7 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUM
 			if humanizeMemory && !quantity.IsZero() {
 				rawValues := quantity.Value()
 				humanizedValue := HumanizeMemoryQuantity(rawValues)
-				klog.V(4).InfoS("DEPRECATED: Converting raw value to humanized value. Use --round-memory-bytes instead.", "rawValue", rawValues, "humanizedValue", humanizedValue)
+				klog.V(4).InfoS("Converting raw value to humanized value", "rawValue", rawValues, "humanizedValue", humanizedValue)
 				quantity = resource.MustParse(humanizedValue)
 			}
 		default:

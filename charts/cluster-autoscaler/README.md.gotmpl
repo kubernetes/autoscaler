@@ -176,7 +176,7 @@ To use Managed Instance Group (MIG) auto-discovery, provide a YAML file setting 
 
 ```console
 $ helm install my-release autoscaler/cluster-autoscaler \
-    --set "autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefix[0].minSize=1" \
+    --set "autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefi[0].minSize=1" \
     --set autoDiscovery.clusterName=<CLUSTER NAME> \
     --set cloudProvider=gce
 ```

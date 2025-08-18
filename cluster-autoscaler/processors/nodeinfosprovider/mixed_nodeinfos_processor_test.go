@@ -302,35 +302,6 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 
 }
 
-func TestProcessHandlesTemplateNodeInfoErrors(t *testing.T) {
-	now := time.Now()
-
-	tn := BuildTestNode("tn", 1000, 1000)
-	tni := framework.NewTestNodeInfo(tn)
-
-	provider := testprovider.NewTestCloudProviderBuilder().WithMachineTemplates(
-		map[string]*framework.NodeInfo{"ng2": tni}).Build()
-
-	provider.AddNodeGroup("ng1", 0, 10, 0)
-	provider.AddNodeGroup("ng2", 0, 10, 0)
-
-	ctx := context.AutoscalingContext{
-		CloudProvider:   provider,
-		ClusterSnapshot: testsnapshot.NewTestSnapshotOrDie(t),
-	}
-
-	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-
-	// Should not fail despite ng1 error - continues processing
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(res))
-
-	_, found := res["ng2"]
-	assert.True(t, found)
-	_, found = res["ng1"]
-	assert.False(t, found) // ng1 skipped due to template error
-}
-
 func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {
 	t.Helper()
 	assert.NotEqual(t, actual.Status, nil, "")

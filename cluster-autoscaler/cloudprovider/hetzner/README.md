@@ -10,16 +10,16 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
 `HCLOUD_IMAGE` Defaults to `ubuntu-20.04`, @see https://docs.hetzner.cloud/#images. You can also use an image ID here (e.g. `15512617`), or a label selector associated with a custom snapshot (e.g. `customized_ubuntu=true`). The most recent snapshot will be used in the latter case.
 
-`HCLOUD_CLUSTER_CONFIG` This is the new format replacing
- * `HCLOUD_CLOUD_INIT`
- * `HCLOUD_IMAGE`
-
+`HCLOUD_CLUSTER_CONFIG` This is the new format replacing 
+ * `HCLOUD_CLOUD_INIT` 
+ * `HCLOUD_IMAGE` 
+ 
  Base64 encoded JSON according to the following structure
 
 ```json
 {
     "imagesForArch": { // These should be the same format as HCLOUD_IMAGE
-        "arm64": "",
+        "arm64": "", 
         "amd64": ""
     },
     "nodeConfigs": {
@@ -28,7 +28,7 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
             "labels": {
                 "node.kubernetes.io/role": "autoscaler-node"
             },
-            "taints":
+            "taints": 
             [
                 {
                     "key": "node.kubernetes.io/role",
@@ -47,13 +47,6 @@ Can be useful when you have many different node pools and run into issues of the
 
 **NOTE**: In contrast to `HCLOUD_CLUSTER_CONFIG`, this file is not base64 encoded.
 
-The global `imagesForArch` configuration can be overridden on a per-nodepool basis by adding an `imagesForArch` field to individual nodepool configurations.
-
-The image selection logic works as follows:
-
-1. If a nodepool has its own `imagesForArch` configuration, it will be used for that specific nodepool
-1. If a nodepool doesn't have `imagesForArch` configured, the global `imagesForArch` configuration will be used as a fallback
-1. If neither is configured, the legacy `HCLOUD_IMAGE` environment variable will be used
 
 `HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
 
@@ -112,5 +105,5 @@ git add hcloud-go/
 
 ## Debugging
 
-To enable debug logging, set the log level of the autoscaler to at least level 5 via cli flag: `--v=5`
+To enable debug logging, set the log level of the autoscaler to at least level 5 via cli flag: `--v=5`  
 The logs will include all requests and responses made towards the Hetzner API including headers and body.

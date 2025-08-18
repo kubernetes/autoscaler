@@ -41,7 +41,6 @@ const (
 func TestSetSize(t *testing.T) {
 	initialReplicas := 1
 	updatedReplicas := 5
-	finalReplicas := 0
 
 	test := func(t *testing.T, testConfig *testConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)
@@ -62,7 +61,6 @@ func TestSetSize(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		// First update to updatedReplicas
 		err = sr.SetSize(updatedReplicas)
 		if err != nil {
 			t.Fatal(err)
@@ -88,33 +86,6 @@ func TestSetSize(t *testing.T) {
 		if replicas != int64(updatedReplicas) {
 			t.Errorf("expected %v, got: %v", updatedReplicas, replicas)
 		}
-
-		// Second update to finalReplicas
-		err = sr.SetSize(finalReplicas)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		s, err = sr.controller.managementScaleClient.Scales(testResource.GetNamespace()).
-			Get(context.TODO(), gvr.GroupResource(), testResource.GetName(), metav1.GetOptions{})
-		if err != nil {
-			t.Fatalf("error getting scale subresource: %v", err)
-		}
-
-		if s.Spec.Replicas != int32(finalReplicas) {
-			t.Errorf("expected %v, got: %v", finalReplicas, s.Spec.Replicas)
-		}
-
-		replicas, found, err = unstructured.NestedInt64(sr.unstructured.Object, "spec", "replicas")
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !found {
-			t.Fatal("replicas = 0")
-		}
-		if replicas != int64(finalReplicas) {
-			t.Errorf("expected %v, got: %v", finalReplicas, replicas)
-		}
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
@@ -123,7 +94,7 @@ func TestSetSize(t *testing.T) {
 			RandomString(6),
 			RandomString(6),
 			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "0",
+				nodeGroupMinSizeAnnotationKey: "1",
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,
@@ -136,7 +107,7 @@ func TestSetSize(t *testing.T) {
 			RandomString(6),
 			RandomString(6),
 			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "0",
+				nodeGroupMinSizeAnnotationKey: "1",
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,

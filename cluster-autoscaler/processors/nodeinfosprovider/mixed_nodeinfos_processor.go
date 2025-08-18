@@ -140,10 +140,12 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		// working nodes in the node groups. By default CA tries to use a real-world example.
 		nodeInfo, err := simulator.SanitizedTemplateNodeInfoFromNodeGroup(nodeGroup, daemonsets, taintConfig)
 		if err != nil {
-			if !errors.Is(err, cloudprovider.ErrNotImplemented) {
+			if errors.Is(err, cloudprovider.ErrNotImplemented) {
+				continue
+			} else {
 				klog.Errorf("Unable to build proper template node for %s: %v", id, err)
+				return map[string]*framework.NodeInfo{}, caerror.ToAutoscalerError(caerror.CloudProviderError, err)
 			}
-			continue
 		}
 		result[id] = nodeInfo
 	}

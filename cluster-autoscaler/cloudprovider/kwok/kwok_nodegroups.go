@@ -29,7 +29,7 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-const (
+var (
 	sizeIncreaseMustBePositiveErr   = "size increase must be positive"
 	maxSizeReachedErr               = "size increase too large"
 	minSizeReachedErr               = "min size reached, nodes will not be deleted"

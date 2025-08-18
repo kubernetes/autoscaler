@@ -79,12 +79,6 @@ in the staging namespace, belonging to the purple cluster, with the label owner=
 
 ## Connecting cluster-autoscaler to Cluster API management and workload Clusters
 
-> [!IMPORTANT]
-> `--cloud-config` is the flag for specifying a mount volume path to the kubernetes configuration (ie KUBECONFIG) to the cluster-autoscaler for communicating with the cluster-api management cluster for the purpose of scaling machines.
-
-> [!IMPORTANT]
-> ``--kubeconfig` is the flag for specifying a mount volume  path to the kubernetes configuration (ie KUBECONFIG) to the cluster-autoscaler for communicating with the cluster-api workload cluster for the purpose of watching Nodes and Pods. This flag can be affected by the desired topology for deploying the cluster-autoscaler, please see the diagrams below for more information.
-
 You will also need to provide the path to the kubeconfig(s) for the management
 and workload cluster you wish cluster-autoscaler to run against. To specify the
 kubeconfig path for the workload cluster to monitor, use the `--kubeconfig`

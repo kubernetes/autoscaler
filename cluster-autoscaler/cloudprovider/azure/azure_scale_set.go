@@ -89,8 +89,6 @@ type ScaleSet struct {
 	dedicatedHost bool
 
 	enableFastDeleteOnFailedProvisioning bool
-
-	enableLabelPredictionsOnTemplate bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -110,11 +108,10 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 			instancesRefreshJitter: az.config.VmssVmsCacheJitter,
 		},
 
-		enableForceDelete:                az.config.EnableForceDelete,
-		enableDynamicInstanceList:        az.config.EnableDynamicInstanceList,
-		enableDetailedCSEMessage:         az.config.EnableDetailedCSEMessage,
-		enableLabelPredictionsOnTemplate: az.config.EnableLabelPredictionsOnTemplate,
-		dedicatedHost:                    dedicatedHost,
+		enableForceDelete:         az.config.EnableForceDelete,
+		enableDynamicInstanceList: az.config.EnableDynamicInstanceList,
+		enableDetailedCSEMessage:  az.config.EnableDetailedCSEMessage,
+		dedicatedHost:             dedicatedHost,
 	}
 
 	if az.config.VmssVirtualMachinesCacheTTLInSeconds != 0 {
@@ -665,7 +662,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList, scaleSet.enableLabelPredictionsOnTemplate)
+	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
 	if err != nil {
 		return nil, err
 	}

@@ -89,14 +89,11 @@ spec:
 * `oomBumpUpRatio` (Quantity):
   - Multiplier applied to memory recommendations after OOM events
   - Represented as a Quantity (e.g., "1.5")
-  - Must be greater than or equal to 1
-  - Setting to 1 effectively disables the OOM ratio-based increase
+  - Must be greater than 1
   - Controls how aggressively memory is increased after container crashes
 
 * `oomMinBumpUp` (bytes): 
   - Minimum absolute memory increase after OOM events
-  - Setting to 0 effectively disables the OOM minimum increase
-  - When both `oomBumpUpRatio` = 1 and `oomMinBumpUp` = 0, OOM-based memory increases are completely disabled
   - Ensures meaningful increases even for small containers
 
 * `memoryAggregationInterval` (duration):
@@ -175,7 +172,7 @@ The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is 
 ### Validation via CEL and Testing
 
 Initial validation rules (CEL):
-* `oomMinBumpUp` >= 0
+* `oomMinBumpUp` > 0
 * `memoryAggregationInterval` > 0
 * `evictAfterOOMThreshold` > 0
 * `memoryAggregationIntervalCount` > 0
@@ -183,7 +180,7 @@ Initial validation rules (CEL):
 Validation via Admission Controller:
 Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
 
-* `oomBumpUpRatio` – Using Kubernetes Quantity type for validation. The value must be greater than or equal to 1.
+* `oomBumpUpRatio` – Using Kubernetes Quantity type for validation. The value must be greater than 1.
 
 Additional validation rules will be added as new parameters are introduced.
 E2E tests will be included to verify:

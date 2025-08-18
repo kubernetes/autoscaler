@@ -29,6 +29,5 @@ import (
 var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.VersionedSpecs{
 	InPlaceOrRecreate: {
 		{Version: version.MustParse("1.4"), Default: false, PreRelease: featuregate.Alpha},
-		{Version: version.MustParse("1.5"), Default: true, PreRelease: featuregate.Beta},
 	},
 }

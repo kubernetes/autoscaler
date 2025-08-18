@@ -23,7 +23,6 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Civo](./cloudprovider/civo/README.md)
 * [CloudStack](./cloudprovider/cloudstack/README.md)
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
-* [CoreWeave](./cloudprovider/coreweave/README.md)
 * [DigitalOcean](./cloudprovider/digitalocean/README.md)
 * [Exoscale](./cloudprovider/exoscale/README.md)
 * [Equinix Metal](cloudprovider/equinixmetal/README.md#notes)
@@ -41,7 +40,6 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Scaleway](./cloudprovider/scaleway/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
 * [Vultr](./cloudprovider/vultr/README.md)
-* [Utho](./cloudprovider/utho/README.md)
 
 # Releases
 
@@ -227,4 +225,3 @@ Supported cloud providers:
 * Scaleway https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/scaleway/README.md
 * TencentCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/tencentcloud/README.md
 * Vultr https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md
-* Utho https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/utho/README.md

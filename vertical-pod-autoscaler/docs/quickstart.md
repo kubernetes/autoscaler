@@ -14,10 +14,9 @@ each controller that you want to have automatically computed resource requiremen
 This will be most commonly a **Deployment**.
 There are five modes in which *VPAs* operate:
 
-- `"Auto"` (**Deprecated**): VPA assigns resource requests on pod creation as well as updates
+- `"Auto"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods using the preferred update mechanism. Currently, this is
-  equivalent to `"Recreate"` (see below). **This mode is deprecated and will be removed in a future API version.**
-  **Use explicit modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.**
+  equivalent to `"Recreate"` (see below).
 - `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by evicting them when the requested resources differ significantly
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
@@ -69,7 +68,7 @@ spec:
     kind:       Deployment
     name:       my-app
   updatePolicy:
-    updateMode: "Recreate"  # Use explicit mode instead of deprecated "Auto"
+    updateMode: "Auto"
 ```
 
 ## Troubleshooting

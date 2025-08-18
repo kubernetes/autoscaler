@@ -14,7 +14,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `address` | string |  ":8944" | The address to expose Prometheus metrics.  |
 | `alsologtostderr` |  |  | log to standard error as well as files (no effect when -logtostderr=true) |
 | `client-ca-file` | string |  "/etc/tls-certs/caCert.pem" | Path to CA PEM file.  |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `kube-api-burst` | float |  100 | QPS burst limit when making requests to Kubernetes apiserver  |
 | `kube-api-qps` | float |  50 | QPS limit when making requests to Kubernetes apiserver  |
@@ -68,10 +68,10 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `cpu-integer-post-processor-enabled` |  |  | Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
 | `external-metrics-cpu-metric` | string |  | ALPHA.  Metric to use with external metrics provider for CPU usage. |
 | `external-metrics-memory-metric` | string |  | ALPHA.  Metric to use with external metrics provider for memory usage. |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (ALPHA - default=false) |
 | `history-length` | string |  "8d" | How much time back prometheus have to be queried to get historical metrics  |
 | `history-resolution` | string |  "1h" | Resolution at which Prometheus is queried for historical metrics  |
-| `humanize-memory` |  |  | DEPRECATED: Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. This flag is deprecated and will be removed in a future version. Use --round-memory-bytes instead. |
+| `humanize-memory` |  |  | Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `kube-api-burst` | float |  100 | QPS burst limit when making requests to Kubernetes apiserver  |
 | `kube-api-qps` | float |  50 | QPS limit when making requests to Kubernetes apiserver  |
@@ -125,7 +125,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `storage` | string |  | Specifies storage mode. Supported values: prometheus, checkpoint  |
 | `target-cpu-percentile` | float |  0.9 | CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.  |
 | `target-memory-percentile` | float |  0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.  |
-| `update-worker-count` | int |  10 | Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.  |
+| `update-worker-count` |  |  10 | kube-api-qps                       Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits (kube-api-qps and `kube-api-burst`) are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.  |
 | `use-external-metrics` |  |  | ALPHA.  Use an external metrics provider instead of metrics_server. |
 | `username` | string |  | The username used in the prometheus server basic auth |
 | `v,` |  | : 4 | , --v Level                                                set the log level verbosity  (default 4) |
@@ -144,7 +144,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `eviction-rate-burst` | int |  1 | Burst of pods that can be evicted.  |
 | `eviction-rate-limit` | float |  | Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable<br>the rate limiter. (default -1) |
 | `eviction-tolerance` | float |  0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted.  |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `in-recommendation-bounds-eviction-lifetime-threshold` |  |  12h0m0s | duration   Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range  |
 | `kube-api-burst` | float |  100 | QPS burst limit when making requests to Kubernetes apiserver  |

@@ -990,7 +990,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `check-capacity-provisioning-request-batch-timebox` | Maximum time to process a batch of provisioning requests. | 10s |
 | `check-capacity-provisioning-request-max-batch-size` | Maximum number of provisioning requests to process in a single batch. | 10 |
 | `cloud-config` | The path to the cloud provider configuration file. Empty string for no configuration file. |  |
-| `cloud-provider` | Cloud provider type. Available values: [aws,azure,gce,alicloud,cherryservers,cloudstack,baiducloud,magnum,digitalocean,exoscale,externalgrpc,huaweicloud,hetzner,oci,ovhcloud,clusterapi,ionoscloud,kamatera,kwok,linode,bizflycloud,brightbox,equinixmetal,vultr,tencentcloud,civo,scaleway,rancher,volcengine,utho] | "gce" |
+| `cloud-provider` | Cloud provider type. Available values: [aws,azure,gce,alicloud,cherryservers,cloudstack,baiducloud,magnum,digitalocean,exoscale,externalgrpc,huaweicloud,hetzner,oci,ovhcloud,clusterapi,ionoscloud,kamatera,kwok,linode,bizflycloud,brightbox,equinixmetal,vultr,tencentcloud,civo,scaleway,rancher,volcengine] | "gce" |
 | `cloud-provider-gce-l7lb-src-cidrs` | CIDRs opened in GCE firewall for L7 LB traffic proxy & health checks | 130.211.0.0/22,35.191.0.0/16 |
 | `cloud-provider-gce-lb-src-cidrs` | CIDRs opened in GCE firewall for L4 LB traffic proxy & health checks | 130.211.0.0/22,209.85.152.0/22,209.85.204.0/22,35.191.0.0/16 |
 | `cluster-name` | Autoscaled cluster name, if available |  |

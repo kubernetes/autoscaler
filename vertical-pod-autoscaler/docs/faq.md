@@ -210,7 +210,7 @@ spec:
     kind: Deployment
     name: my-app
   updatePolicy:
-    updateMode: "Recreate"  # Use explicit mode instead of deprecated "Auto"
+    updateMode: "Auto"
   resourcePolicy:
     containerPolicies:
     - containerName: "*"

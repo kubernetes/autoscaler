@@ -528,20 +528,12 @@ func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Imag
 	// Select correct image based on server type architecture
 	imageName := n.manager.clusterConfig.LegacyConfig.ImageName
 	if n.manager.clusterConfig.IsUsingNewFormat {
-		// Check for nodepool-specific images first, then fall back to global images
-		var imagesForArch *ImageList
-		if nodeConfig, exists := n.manager.clusterConfig.NodeConfigs[n.id]; exists && nodeConfig.ImagesForArch != nil {
-			imagesForArch = nodeConfig.ImagesForArch
-		} else {
-			imagesForArch = &n.manager.clusterConfig.ImagesForArch
-		}
-
 		if serverType.Architecture == hcloud.ArchitectureARM {
-			imageName = imagesForArch.Arm64
+			imageName = n.manager.clusterConfig.ImagesForArch.Arm64
 		}
 
 		if serverType.Architecture == hcloud.ArchitectureX86 {
-			imageName = imagesForArch.Amd64
+			imageName = n.manager.clusterConfig.ImagesForArch.Amd64
 		}
 	}
 
