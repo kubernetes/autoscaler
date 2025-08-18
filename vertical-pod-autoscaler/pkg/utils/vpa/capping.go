@@ -136,7 +136,7 @@ func getCappedRecommendationForContainer(
 		}
 		// TODO: If limits and policy are conflicting, set some condition on the VPA.
 		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsOnly {
-			annotations = capRecommendationToContainerLimit(recommendation, containerLimits)
+			annotations = CapRecommendationToContainerLimit(recommendation, containerLimits)
 			if genAnnotations {
 				cappingAnnotations = append(cappingAnnotations, annotations...)
 			}
@@ -150,9 +150,9 @@ func getCappedRecommendationForContainer(
 	return cappedRecommendations, cappingAnnotations, nil
 }
 
-// capRecommendationToContainerLimit makes sure recommendation is not above current limit for the container.
+// CapRecommendationToContainerLimit makes sure recommendation is not above current limit for the container.
 // If this function makes adjustments appropriate annotations are returned.
-func capRecommendationToContainerLimit(recommendation apiv1.ResourceList, containerLimits apiv1.ResourceList) []string {
+func CapRecommendationToContainerLimit(recommendation apiv1.ResourceList, containerLimits apiv1.ResourceList) []string {
 	annotations := make([]string, 0)
 	// Iterate over limits set in the container. Unset means Infinite limit.
 	for resourceName, limit := range containerLimits {
