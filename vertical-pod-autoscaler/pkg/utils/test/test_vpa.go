@@ -51,6 +51,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
 	WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
 	WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder
+	WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -85,6 +86,7 @@ type verticalPodAutoscalerBuilder struct {
 	maxAllowed              map[string]core.ResourceList
 	controlledValues        map[string]*vpa_types.ContainerControlledValues
 	scalingMode             map[string]*vpa_types.ContainerScalingMode
+	startupBoost            *vpa_types.StartupBoost
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
 	annotations             map[string]string
@@ -259,6 +261,24 @@ func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_t
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder {
+	c := *b
+	parsedDuration, _ := time.ParseDuration(duration)
+	cpuStartupBoost := &vpa_types.GenericStartupBoost{
+		Type:     boostType,
+		Duration: &meta.Duration{Duration: parsedDuration},
+	}
+	if factor != nil {
+		cpuStartupBoost.Factor = factor
+	} else {
+		cpuStartupBoost.Quantity = quantity
+	}
+	c.startupBoost = &vpa_types.StartupBoost{
+		CPU: cpuStartupBoost,
+	}
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	if len(b.containerNames) == 0 {
 		panic("Must call WithContainer() before Get()")
@@ -309,6 +329,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			ResourcePolicy: &resourcePolicy,
 			TargetRef:      b.targetRef,
 			Recommenders:   recommenders,
+			StartupBoost:   b.startupBoost,
 		},
 		Status: vpa_types.VerticalPodAutoscalerStatus{
 			Recommendation: recommendation,
