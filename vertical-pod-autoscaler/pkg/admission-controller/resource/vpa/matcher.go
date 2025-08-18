@@ -69,7 +69,7 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.
 
 	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	for _, vpaConfig := range configs {
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
+		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff && vpaConfig.Spec.StartupBoost == nil {
 			continue
 		}
 		if vpaConfig.Spec.TargetRef == nil {
