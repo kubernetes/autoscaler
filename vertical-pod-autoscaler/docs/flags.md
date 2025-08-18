@@ -30,6 +30,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `log-file` | string |  | If non-empty, use this log file (no effect when -logtostderr=true) |
 | `log-file-max-size` | int |  1800 | uDefines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited.  |
 | `logtostderr` |  |  true | log to standard error instead of files  |
+| `max-allowed-cpu-boost` |  |  | quantity         Maximum amount of CPU that will be applied for a container with boost. |
 | `min-tls-version` | string |  | The minimum TLS version to accept.  Must be set to either tls1_2  or tls1_3. (default "tls1_2") |
 | `one-output` | severity |  | If true, only write logs to their native level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
 | `port` | int |  8000 | The port to listen on.  |
