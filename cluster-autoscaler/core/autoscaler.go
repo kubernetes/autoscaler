@@ -78,7 +78,7 @@ type Autoscaler interface {
 	ExitCleanUp()
 	// LastScaleUpTime is a time of the last scale up
 	LastScaleUpTime() time.Time
-	// LastScaleUpTime is a time of the last scale down
+	// LastScaleDownDeleteTime is a time of the last scale down
 	LastScaleDownDeleteTime() time.Time
 }
 

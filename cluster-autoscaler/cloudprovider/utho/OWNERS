@@ -1,0 +1,8 @@
+approvers:
+# - uthoplatforms
+# - m-kased
+reviewers:
+# - uthoplatforms
+# - m-kased
+labels:
+- area/provider/utho
