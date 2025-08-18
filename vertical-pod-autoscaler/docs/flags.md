@@ -14,6 +14,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `address` | string |  ":8944" | The address to expose Prometheus metrics.  |
 | `alsologtostderr` |  |  | log to standard error as well as files (no effect when -logtostderr=true) |
 | `client-ca-file` | string |  "/etc/tls-certs/caCert.pem" | Path to CA PEM file.  |
+| `container-recommendation-max-allowed-cpu` | string |  | Maximum amount of CPU that will be recommended for a container. |
 | `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlaceOrRecreate=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `kube-api-burst` | float |  100 | QPS burst limit when making requests to Kubernetes apiserver  |
@@ -37,7 +38,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `tls-cert-file` | string |  "/etc/tls-certs/serverCert.pem" | Path to server certificate PEM file.  |
 | `tls-ciphers` | string |  | A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2. |
 | `tls-private-key` | string |  "/etc/tls-certs/serverKey.pem" | Path to server certificate key PEM file.  |
-| `v,` |  | : 4 | , --v Level                                set the log level verbosity  (default 4) |
+| `v,` |  | : 4 | , --v Level                                           set the log level verbosity  (default 4) |
 | `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
 | `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
 | `webhook-address` | string |  | Address under which webhook is registered. Used when registerByURL is set to true. |
