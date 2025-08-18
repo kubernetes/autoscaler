@@ -122,7 +122,7 @@ func (m *CoreWeaveManager) UpdateNodeGroup() ([]cloudprovider.NodeGroup, error) 
 	// If no node pools are found, return an empty slice
 	if len(nodepools) == 0 {
 		klog.Info("No node pools found, returning empty node groups")
-		return nil, nil
+		return []cloudprovider.NodeGroup{}, nil
 	}
 	klog.V(4).Infof("Found %d node pools", len(nodepools))
 	m.nodeGroups = make([]cloudprovider.NodeGroup, len(nodepools))

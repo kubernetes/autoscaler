@@ -193,3 +193,36 @@ func TestListNodePools_EmptyList(t *testing.T) {
 		t.Errorf("expected empty nodepools list, got %d", len(nodePools))
 	}
 }
+
+func TestUpdateNodeGroup_EmptyNodePools(t *testing.T) {
+	// Create a nodepool with autoscaling disabled - this will result in empty list after filtering
+	obj := map[string]interface{}{
+		"apiVersion": coreWeaveGroup + "/" + coreWeaveVersion,
+		"kind":       coreWeaveResource,
+		"metadata": map[string]interface{}{
+			"name":      "np1",
+			"namespace": "default",
+			"uid":       "uid1",
+		},
+		"spec": map[string]interface{}{
+			"minNodes":    int64(1),
+			"maxNodes":    int64(5),
+			"targetNodes": int64(3),
+			"autoscaling": false, // Autoscaling disabled - will be filtered out
+		},
+	}
+	item := unstructured.Unstructured{Object: obj}
+	manager := makeTestManagerWithNodePools(nil, item)
+
+	// UpdateNodeGroup should return empty slice when all nodepools have autoscaling disabled
+	nodeGroups, err := manager.UpdateNodeGroup()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if nodeGroups == nil {
+		t.Error("expected empty slice, got nil")
+	}
+	if len(nodeGroups) != 0 {
+		t.Errorf("expected empty node groups, got %d", len(nodeGroups))
+	}
+}
