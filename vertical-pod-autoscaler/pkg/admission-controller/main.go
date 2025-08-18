@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
@@ -78,7 +79,12 @@ var (
 	registerWebhook      = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
 	webhookLabels        = flag.String("webhook-labels", "", "Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2")
 	registerByURL        = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	maxAllowedCPUBoost   = resource.QuantityValue{}
 )
+
+func init() {
+	flag.Var(&maxAllowedCPUBoost, "max-allowed-cpu-boost", "Maximum amount of CPU that will be applied for a container with boost.")
+}
 
 func main() {
 	commonFlags := common.InitCommonFlags()
@@ -145,7 +151,7 @@ func main() {
 		hostname,
 	)
 
-	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider), patch.NewObservedContainersCalculator()}
+	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider, maxAllowedCPUBoost), patch.NewObservedContainersCalculator()}
 	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)

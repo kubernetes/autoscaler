@@ -21,6 +21,7 @@ import (
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -47,6 +48,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
 	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
 	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
+	WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -81,6 +83,7 @@ type verticalPodAutoscalerBuilder struct {
 	maxAllowed              map[string]core.ResourceList
 	controlledValues        map[string]*vpa_types.ContainerControlledValues
 	scalingMode             map[string]*vpa_types.ContainerScalingMode
+	startupBoost            *vpa_types.StartupBoost
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
 	annotations             map[string]string
@@ -232,6 +235,24 @@ func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_t
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder {
+	c := *b
+	parsedDuration, _ := time.ParseDuration(duration)
+	cpuStartupBoost := &vpa_types.GenericStartupBoost{
+		Type:     boostType,
+		Duration: &meta.Duration{Duration: parsedDuration},
+	}
+	if factor != nil {
+		cpuStartupBoost.Factor = factor
+	} else {
+		cpuStartupBoost.Quantity = quantity
+	}
+	c.startupBoost = &vpa_types.StartupBoost{
+		CPU: cpuStartupBoost,
+	}
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	if len(b.containerNames) == 0 {
 		panic("Must call WithContainer() before Get()")
@@ -280,6 +301,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			ResourcePolicy: &resourcePolicy,
 			TargetRef:      b.targetRef,
 			Recommenders:   recommenders,
+			StartupBoost:   b.startupBoost,
 		},
 		Status: vpa_types.VerticalPodAutoscalerStatus{
 			Recommendation: recommendation,
