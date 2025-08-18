@@ -88,6 +88,9 @@ func TestFindNodesToRemove(t *testing.T) {
 	fullNode := BuildTestNode("n4", 1000, 2000000)
 	fullNodeInfo := framework.NewTestNodeInfo(fullNode)
 
+	// node with no info in cluster snapshot
+	nodeWithoutInfo := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n5"}}
+
 	SetNodeReadyState(emptyNode, true, time.Time{})
 	SetNodeReadyState(drainableNode, true, time.Time{})
 	SetNodeReadyState(nonDrainableNode, true, time.Time{})
@@ -136,6 +139,10 @@ func TestFindNodesToRemove(t *testing.T) {
 	drainableNodeToRemove := NodeToBeRemoved{
 		Node:             drainableNode,
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
+	}
+	nodeWithoutInfoUnremovable := UnremovableNode{
+		Node:   nodeWithoutInfo,
+		Reason: NoNodeInfo,
 	}
 
 	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
@@ -239,6 +246,14 @@ func TestFindNodesToRemove(t *testing.T) {
 				{Node: topoNode2, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker1, Reason: drain.NotReplicated}},
 				{Node: topoNode3, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker2, Reason: drain.NotReplicated}},
 			},
+		},
+		{
+			name:        "candidate not in clusterSnapshot should be marked unremovable",
+			candidates:  []string{nodeWithoutInfo.Name},
+			allNodes:    []*apiv1.Node{},
+			pods:        []*apiv1.Pod{},
+			toRemove:    nil,
+			unremovable: []*UnremovableNode{&nodeWithoutInfoUnremovable},
 		},
 	}
 
