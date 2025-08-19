@@ -7,6 +7,7 @@
 - [CPU Recommendation Rounding](#cpu-recommendation-rounding)
 - [Memory Recommendation Rounding](#memory-recommendation-rounding)
 - [In-Place Updates](#in-place-updates-inplaceorrecreate)
+- [MemoryPerCPU](#memorypercpu-memorypercpuratio)
 
 ## Limits control
 
@@ -153,3 +154,52 @@ VPA provides metrics to track in-place update operations:
 * `vpa_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
 * `vpa_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
 * `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
+
+## MemoryPerCPU (`MemoryPerCPURatio`)
+
+> [!WARNING]
+> FEATURE STATE: VPA v1.5.0 [alpha]
+
+VPA can enforce a fixed memory-per-CPU ratio in its recommendations.  
+When enabled, the recommender adjusts CPU or memory so that:
+```
+memory_bytes = cpu_cores * memoryPerCPU
+```
+
+This applies to Target, LowerBound, UpperBound, and UncappedTarget recommendations.  
+
+### Usage
+
+Enable the feature on the recommender with:
+```bash
+--feature-gates=MemoryPerCPURatio=true
+``` 
+
+Then configure the ratio in your VPA object using the memoryPerCPU field, for example:
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: my-app
+spec:
+  resourcePolicy:
+    containerPolicies:
+    - containerName: app
+      minAllowed:
+        cpu: 1
+        memory: 4Gi
+      maxAllowed:
+        cpu: 4
+        memory: 16Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+      memoryPerCPU: "4Gi"
+``` 
+
+### Behavior
+
+* If both CPU and Memory are controlled, VPA enforces the ratio.
+
+### Limitations
+
+* If `minAllowed` or `maxAllowed` constraints conflict with the ratio, the constraints take precedence and the ratio may not be respected.  
