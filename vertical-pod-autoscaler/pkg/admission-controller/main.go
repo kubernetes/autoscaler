@@ -60,9 +60,9 @@ const (
 
 var (
 	certsConfiguration = &certsConfig{
-		clientCaFile:  flag.String("client-ca-file", "/etc/tls-certs/caCert.pem", "Path to CA PEM file."),
-		tlsCertFile:   flag.String("tls-cert-file", "/etc/tls-certs/serverCert.pem", "Path to server certificate PEM file."),
-		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
+		clientCaFile:  flag.String("client-ca-file", "/etc/tls-certs/ca.crt", "Path to CA PEM file."),
+		tlsCertFile:   flag.String("tls-cert-file", "/etc/tls-certs/tls.crt", "Path to server certificate PEM file."),
+		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/tls.key", "Path to server certificate key PEM file."),
 		reload:        flag.Bool("reload-cert", false, "If set to true, reload leaf and CA certificates when changed."),
 	}
 	ciphers              = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
