@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1beta1"
@@ -124,9 +123,9 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 		return err
 	}
 
-	spec := autoscalingv1.Scale{
-		Spec: autoscalingv1.ScaleSpec{
-			Replicas: int32(nreplicas),
+	spec := autoscalingv1Scale{
+		Spec: autoscalingv1ScaleSpec{
+			Replicas: ptr.To(int32(nreplicas)),
 		},
 	}
 
@@ -142,6 +141,24 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 	}
 
 	return updateErr
+}
+
+// scale is a version of the autoscalingv1.Scale struct that marshals correctly.
+// Specifically the Spec.Replicas field is *int32 instead of int32.
+// Accordingly Spec.Replicas = 0 is not omitted, which is important for autoscale to 0 to work.
+type autoscalingv1Scale struct {
+	// spec defines the behavior of the scale. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
+	// +optional
+	Spec autoscalingv1ScaleSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+}
+
+type autoscalingv1ScaleSpec struct {
+	// replicas is the desired number of instances for the scaled object.
+	// +optional
+	// +k8s:optional
+	// +default=0
+	// +k8s:minimum=0
+	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,1,opt,name=replicas"`
 }
 
 func (r unstructuredScalableResource) UnmarkMachineForDeletion(machine *unstructured.Unstructured) error {
@@ -375,22 +392,44 @@ func (r unstructuredScalableResource) InstanceDRADriver() string {
 }
 
 func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
+	obKind := r.unstructured.GetKind()
+	obName := r.unstructured.GetName()
+
 	infraref, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "infrastructureRef")
 	if !found || err != nil {
 		return nil, nil
 	}
 
-	apiversion, ok := infraref["apiVersion"]
-	if !ok {
-		return nil, nil
+	var apiversion string
+
+	apiGroup, ok := infraref["apiGroup"]
+	if ok {
+		if apiversion, err = getAPIGroupPreferredVersion(r.controller.managementDiscoveryClient, apiGroup); err != nil {
+			klog.V(4).Infof("Unable to read preferred version from api group %s, error: %v", apiGroup, err)
+			return nil, err
+		}
+		apiversion = fmt.Sprintf("%s/%s", apiGroup, apiversion)
+	} else {
+		// Fall back to ObjectReference in capi v1beta1
+		apiversion, ok = infraref["apiVersion"]
+		if !ok {
+			info := fmt.Sprintf("Missing apiVersion from %s %s's InfrastructureReference", obKind, obName)
+			klog.V(4).Info(info)
+			return nil, errors.New(info)
+		}
 	}
+
 	kind, ok := infraref["kind"]
 	if !ok {
-		return nil, nil
+		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
 	}
 	name, ok := infraref["name"]
 	if !ok {
-		return nil, nil
+		info := fmt.Sprintf("Missing name from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
 	}
 	// kind needs to be lower case and plural
 	kind = fmt.Sprintf("%ss", strings.ToLower(kind))

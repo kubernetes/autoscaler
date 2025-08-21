@@ -223,6 +223,7 @@ var (
 	checkCapacityProvisioningRequestMaxBatchSize = flag.Int("check-capacity-provisioning-request-max-batch-size", 10, "Maximum number of provisioning requests to process in a single batch.")
 	checkCapacityProvisioningRequestBatchTimebox = flag.Duration("check-capacity-provisioning-request-batch-timebox", 10*time.Second, "Maximum time to process a batch of provisioning requests.")
 	forceDeleteLongUnregisteredNodes             = flag.Bool("force-delete-unregistered-nodes", false, "Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to.")
+	forceDeleteFailedNodes                       = flag.Bool("force-delete-failed-nodes", false, "Whether to enable force deletion of failed nodes, regardless of the min size of the node group the belong to.")
 	enableDynamicResourceAllocation              = flag.Bool("enable-dynamic-resource-allocation", false, "Whether logic for handling DRA (Dynamic Resource Allocation) objects is enabled.")
 	clusterSnapshotParallelism                   = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation.")
 	checkCapacityProcessorInstance               = flag.String("check-capacity-processor-instance", "", "Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key \"processorInstance\" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.")
@@ -391,6 +392,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CheckCapacityProvisioningRequestMaxBatchSize: *checkCapacityProvisioningRequestMaxBatchSize,
 		CheckCapacityProvisioningRequestBatchTimebox: *checkCapacityProvisioningRequestBatchTimebox,
 		ForceDeleteLongUnregisteredNodes:             *forceDeleteLongUnregisteredNodes,
+		ForceDeleteFailedNodes:                       *forceDeleteFailedNodes,
 		DynamicResourceAllocationEnabled:             *enableDynamicResourceAllocation,
 		ClusterSnapshotParallelism:                   *clusterSnapshotParallelism,
 		CheckCapacityProcessorInstance:               *checkCapacityProcessorInstance,
