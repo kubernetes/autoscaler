@@ -98,7 +98,7 @@ cluster_autoscaler:update_deps() {
   if [ "${pkg}" = "./cluster-autoscaler" ]; then
     go get "k8s.io/kubernetes@v${k8s_version}"
     go mod tidy
-    "${SED}" -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"${k8s_version}\"|" "version/version.go"
+    "${SED}" -i '' "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"${k8s_version}\"|" "version/version.go"
   fi
 
   git rm -r --force --ignore-unmatch kubernetes

@@ -95,7 +95,8 @@ func (h *resourceHandler) GetPatches(_ context.Context, ar *v1.AdmissionRequest)
 	patches := []resource.PatchRecord{}
 	if vpa.Spec.UpdatePolicy == nil {
 		// Sets the default updatePolicy.
-		defaultUpdateMode := vpa_types.UpdateModeAuto
+		// Changed from UpdateModeAuto to UpdateModeRecreate as part of Auto mode deprecation
+		defaultUpdateMode := vpa_types.UpdateModeRecreate
 		patches = append(patches, resource.PatchRecord{
 			Op:    "add",
 			Path:  "/spec/updatePolicy",
