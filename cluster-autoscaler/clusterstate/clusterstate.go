@@ -205,8 +205,11 @@ func (csr *ClusterStateRegistry) MaxNodeProvisionTime(nodeGroup cloudprovider.No
 }
 
 // NodeGroupScaleUpTime returns the start time of the most recent scale-up request for the given node group.
+// NOTE: Don't remove. This is used by providers who import CA as a framework/library.
 func (csr *ClusterStateRegistry) NodeGroupScaleUpTime(nodeGroup cloudprovider.NodeGroup) (time.Time, error) {
-	// NOTE: Don't remove. This is used by providers who import CA as a framework/library.
+	if nodeGroup == nil {
+		return time.Time{}, fmt.Errorf("failed to find scaleUpRequest for node group: unexpected node group passed")
+	}
 	scaleUpRequest, found := csr.scaleUpRequests[nodeGroup.Id()]
 	if !found {
 		return time.Time{}, fmt.Errorf("failed to find scaleUpRequest for node group: %s", nodeGroup.Id())
