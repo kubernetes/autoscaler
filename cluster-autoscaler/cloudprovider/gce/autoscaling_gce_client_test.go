@@ -730,6 +730,13 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
+		"FetchMigWorkloadPolicy_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigWorkloadPolicy(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
 		"FetchMigTemplate_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
 				_, err := client.FetchMigTemplate(GceRef{}, "", false)
@@ -835,6 +842,13 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		"FetchAllMigs_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
 				_, err := client.FetchAllMigs("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigWorkloadPolicy_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigWorkloadPolicy(GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
