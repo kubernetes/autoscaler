@@ -50,7 +50,7 @@ const (
 	InPlaceOrRecreate featuregate.Feature = "InPlaceOrRecreate"
 
 	// alpha: v1.5.0
-	// components: recommender
+	// components: recommender, updater
 
 	// PerVPAConfig enables the ability to specify component-specific configuration
 	// parameters at the individual VPA object level. This allows for different
