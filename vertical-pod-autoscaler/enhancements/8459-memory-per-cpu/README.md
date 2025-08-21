@@ -86,9 +86,12 @@ memory_bytes = cpu_cores * memoryPerCPU
 ### Behavior
 
 * If both CPU and memory are controlled, VPA enforces the ratio.  
-* Applies to Target, LowerBound, UpperBound, and UncappedTarget.  
+* Applies to Target, LowerBound, UpperBound, and UncappedTarget.
+* Ratio enforcement is strict:
+  * If the memory recommendation would exceed `cpu * memoryPerCPU`, then **CPU is increased** to satisfy the ratio.
+  * If the CPU recommendation would exceed `memory / memoryPerCPU`, then **memory is increased** to satisfy the ratio.
 * If ratio cannot be applied (e.g., missing CPU), fallback to standard recommendations.  
-* With feature gate OFF: recommendations are unaffected.
+* With the `MemoryPerCPURatio` feature gate disabled, the `memoryPerCPU` field is ignored and recommendations fall back to standard VPA behavior.
 
 ### Feature Enablement and Rollback
 
@@ -121,6 +124,7 @@ The `memoryPerCPU` feature requires VPA version 1.5.0 or higher. The feature is 
 ### Test Plan
 
 * Unit tests ensuring ratio enforcement logic.  
+* E2E tests comparing behavior with different configurations
 
 ## Implementation History
 
