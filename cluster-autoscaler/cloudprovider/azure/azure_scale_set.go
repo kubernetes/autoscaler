@@ -589,7 +589,7 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 
 // DeleteNodes deletes the nodes from the group.
 func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(8).Infof("Delete nodes requested: %q\n", nodes)
+	klog.V(3).Infof("Delete nodes requested: %q\n", nodes)
 	size, err := scaleSet.getScaleSetSize()
 	if err != nil {
 		return err
@@ -603,7 +603,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
 func (scaleSet *ScaleSet) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(5).Infof("Delete nodes requested: %q\n", nodes)
+	klog.V(3).Infof("Delete nodes requested: %q\n", nodes)
 	refs := make([]*azureRef, 0, len(nodes))
 	hasUnregisteredNodes := false
 	for _, node := range nodes {
