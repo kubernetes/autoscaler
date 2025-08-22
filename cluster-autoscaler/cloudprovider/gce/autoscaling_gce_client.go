@@ -123,6 +123,7 @@ type AutoscalingGceClient interface {
 	FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error)
 	FetchAllInstances(project, zone string, filter string) ([]GceInstance, error)
 	FetchMigTargetSize(GceRef) (int64, error)
+	FetchMigWorkloadPolicy(GceRef) (*string, error)
 	FetchMigBasename(GceRef) (string, error)
 	FetchMigInstances(GceRef) ([]GceInstance, error)
 	FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error)
@@ -237,6 +238,25 @@ func (client *autoscalingGceClientV1) FetchAllMigs(zone string) ([]*gce.Instance
 		return nil, err
 	}
 	return migs, nil
+}
+
+func (client *autoscalingGceClientV1) FetchMigWorkloadPolicy(migRef GceRef) (*string, error) {
+	registerRequest("instance_group_managers", "get")
+	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	defer cancel()
+	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Context(ctx).Do()
+	if err != nil {
+		if err, ok := err.(*googleapi.Error); ok {
+			if err.Code == http.StatusNotFound {
+				return nil, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
+			}
+		}
+		return nil, err
+	}
+	if igm == nil || igm.ResourcePolicies == nil {
+		return nil, nil
+	}
+	return &igm.ResourcePolicies.WorkloadPolicy, nil
 }
 
 func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, error) {

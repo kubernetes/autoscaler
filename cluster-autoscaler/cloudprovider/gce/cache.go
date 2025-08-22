@@ -72,6 +72,7 @@ type GceCache struct {
 	autoscalingOptionsCache          map[GceRef]map[string]string
 	machinesCache                    map[MachineTypeKey]MachineType
 	migTargetSizeCache               map[GceRef]int64
+	migWorkloadPolicyCache           map[GceRef]*string
 	migBaseNameCache                 map[GceRef]string
 	migInstancesStateCountCache      map[GceRef]map[cloudprovider.InstanceState]int64
 	listManagedInstancesResultsCache map[GceRef]string
@@ -91,6 +92,7 @@ func NewGceCache() *GceCache {
 		autoscalingOptionsCache:          map[GceRef]map[string]string{},
 		machinesCache:                    map[MachineTypeKey]MachineType{},
 		migTargetSizeCache:               map[GceRef]int64{},
+		migWorkloadPolicyCache:           map[GceRef]*string{},
 		migBaseNameCache:                 map[GceRef]string{},
 		migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
@@ -350,6 +352,35 @@ func (gc *GceCache) InvalidateAllMigTargetSizes() {
 
 	klog.V(5).Infof("Target size cache invalidated")
 	gc.migTargetSizeCache = map[GceRef]int64{}
+}
+
+// GetMigWorkloadPolicy returns the cached WorkloadPolicy for a GceRef
+func (gc *GceCache) GetMigWorkloadPolicy(ref GceRef) (*string, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	wp, found := gc.migWorkloadPolicyCache[ref]
+	if found {
+		klog.V(5).Infof("WorkloadPolicy cache hit for %s", ref)
+	}
+	return wp, found
+}
+
+// SetMigWorkloadPolicy sets WorkloadPolicy for a GceRef
+func (gc *GceCache) SetMigWorkloadPolicy(ref GceRef, wp *string) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	gc.migWorkloadPolicyCache[ref] = wp
+}
+
+// InvalidateAllMigWorkloadPolicies clears the WorkloadPolicy ref cache
+func (gc *GceCache) InvalidateAllMigWorkloadPolicies() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("WorkloadPolicy cache invalidated")
+	gc.migWorkloadPolicyCache = map[GceRef]*string{}
 }
 
 // GetMigInstanceTemplateName returns the cached instance template ref for a mig GceRef

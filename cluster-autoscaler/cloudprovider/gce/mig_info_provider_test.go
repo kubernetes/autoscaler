@@ -25,6 +25,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	gce "google.golang.org/api/compute/v1"
+	"google.golang.org/protobuf/proto"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
@@ -33,6 +34,7 @@ var (
 	errFetchMig                         = errors.New("fetch migs error")
 	errFetchMigInstances                = errors.New("fetch mig instances error")
 	errFetchMigTargetSize               = errors.New("fetch mig target size error")
+	errFetchMigWorkloadPolicy           = errors.New("fetch mig workload policy error")
 	errFetchMigBaseName                 = errors.New("fetch mig basename error")
 	errFetchMigTemplateName             = errors.New("fetch mig template name error")
 	errFetchMigTemplate                 = errors.New("fetch mig template error")
@@ -112,6 +114,7 @@ type mockAutoscalingGceClient struct {
 	fetchMigs                        func(string) ([]*gce.InstanceGroupManager, error)
 	fetchAllInstances                func(project, zone string, filter string) ([]GceInstance, error)
 	fetchMigTargetSize               func(GceRef) (int64, error)
+	fetchMigWorkloadPolicy           func(GceRef) (*string, error)
 	fetchMigBasename                 func(GceRef) (string, error)
 	fetchMigInstances                func(GceRef) ([]GceInstance, error)
 	fetchMigTemplateName             func(GceRef) (InstanceTemplateName, error)
@@ -138,6 +141,10 @@ func (client *mockAutoscalingGceClient) FetchAllInstances(project, zone string, 
 
 func (client *mockAutoscalingGceClient) FetchMigTargetSize(migRef GceRef) (int64, error) {
 	return client.fetchMigTargetSize(migRef)
+}
+
+func (client *mockAutoscalingGceClient) FetchMigWorkloadPolicy(migRef GceRef) (*string, error) {
+	return client.fetchMigWorkloadPolicy(migRef)
 }
 
 func (client *mockAutoscalingGceClient) FetchMigBasename(migRef GceRef) (string, error) {
@@ -685,6 +692,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				listManagedInstancesResultsCache: map[GceRef]string{},
 				instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 				migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
+				migWorkloadPolicyCache:           map[GceRef]*string{},
 			},
 			fetchMigInstances:                 fetchMigInstancesConst(mig1Instances),
 			fetchMigs:                         fetchMigsConst([]*gce.InstanceGroupManager{mig1Igm}),
@@ -710,6 +718,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				listManagedInstancesResultsCache: map[GceRef]string{},
 				instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 				migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
+				migWorkloadPolicyCache:           map[GceRef]*string{},
 			},
 			fetchMigInstances: fetchMigInstancesConst(mig2Instances),
 			fetchMigs:         fetchMigsConst([]*gce.InstanceGroupManager{mig2Igm}),
@@ -736,6 +745,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				listManagedInstancesResultsCache: map[GceRef]string{},
 				instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 				migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
+				migWorkloadPolicyCache:           map[GceRef]*string{},
 			},
 			fetchMigs:                         fetchMigsConst([]*gce.InstanceGroupManager{mig2Igm}),
 			fetchAllInstances:                 fetchAllInstancesInZone(map[string][]GceInstance{"myzone2": {instance3, instance6}}),
@@ -858,6 +868,90 @@ func TestGetMigTargetSize(t *testing.T) {
 			if tc.expectedErr == nil {
 				assert.Equal(t, tc.expectedTargetSize, targetSize)
 				assert.Equal(t, tc.expectedTargetSize, cachedTargetSize)
+			}
+		})
+	}
+}
+
+func TestGetMigWorkloadPolicy(t *testing.T) {
+	workloadPolicy := proto.String("wp-123")
+	instanceGroupManager := &gce.InstanceGroupManager{
+		Zone: mig.GceRef().Zone,
+		Name: mig.GceRef().Name,
+		ResourcePolicies: &gce.InstanceGroupManagerResourcePolicies{
+			WorkloadPolicy: *workloadPolicy,
+		},
+	}
+
+	testCases := []struct {
+		name                   string
+		cache                  *GceCache
+		fetchMigs              func(string) ([]*gce.InstanceGroupManager, error)
+		fetchMigWorkloadPolicy func(GceRef) (*string, error)
+		expectedWorkloadPolicy *string
+		expectedErr            error
+	}{
+		{
+			name: "workload policy in cache",
+			cache: &GceCache{
+				migs:                   map[GceRef]Mig{mig.GceRef(): mig},
+				migWorkloadPolicyCache: map[GceRef]*string{mig.GceRef(): workloadPolicy},
+			},
+			expectedWorkloadPolicy: workloadPolicy,
+		},
+		{
+			name:                   "workload policy from cache fill",
+			cache:                  emptyCache(),
+			fetchMigs:              fetchMigsConst([]*gce.InstanceGroupManager{instanceGroupManager}),
+			expectedWorkloadPolicy: workloadPolicy,
+		},
+		{
+			name:                   "cache fill without mig, fallback success",
+			cache:                  emptyCache(),
+			fetchMigs:              fetchMigsConst([]*gce.InstanceGroupManager{}),
+			fetchMigWorkloadPolicy: fetchMigWorkloadPolicyConst(workloadPolicy),
+			expectedWorkloadPolicy: workloadPolicy,
+		},
+		{
+			name:                   "cache fill failure, fallback success",
+			cache:                  emptyCache(),
+			fetchMigs:              fetchMigsFail,
+			fetchMigWorkloadPolicy: fetchMigWorkloadPolicyConst(workloadPolicy),
+			expectedWorkloadPolicy: workloadPolicy,
+		},
+		{
+			name:                   "cache fill without mig, fallback failure",
+			cache:                  emptyCache(),
+			fetchMigs:              fetchMigsConst([]*gce.InstanceGroupManager{}),
+			fetchMigWorkloadPolicy: fetchMigWorkloadPolicyFail,
+			expectedErr:            errFetchMigWorkloadPolicy,
+		},
+		{
+			name:                   "cache fill failure, fallback failure",
+			cache:                  emptyCache(),
+			fetchMigs:              fetchMigsFail,
+			fetchMigWorkloadPolicy: fetchMigWorkloadPolicyFail,
+			expectedErr:            errFetchMigWorkloadPolicy,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &mockAutoscalingGceClient{
+				fetchMigs:              tc.fetchMigs,
+				fetchMigWorkloadPolicy: tc.fetchMigWorkloadPolicy,
+			}
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second, false)
+
+			workloadPolicy, err := provider.GetMigWorkloadPolicy(mig.GceRef())
+			cachedWorkloadPolicy, found := tc.cache.GetMigWorkloadPolicy(mig.GceRef())
+
+			assert.Equal(t, tc.expectedErr, err)
+			assert.Equal(t, tc.expectedErr == nil, found)
+			if tc.expectedErr == nil {
+				assert.Equal(t, tc.expectedWorkloadPolicy, workloadPolicy)
+				assert.Equal(t, tc.expectedWorkloadPolicy, cachedWorkloadPolicy)
 			}
 		})
 	}
@@ -1921,6 +2015,7 @@ func emptyCache() *GceCache {
 		instancesUpdateTime:              make(map[GceRef]time.Time),
 		migTargetSizeCache:               make(map[GceRef]int64),
 		migBaseNameCache:                 make(map[GceRef]string),
+		migWorkloadPolicyCache:           make(map[GceRef]*string),
 		migInstancesStateCountCache:      make(map[GceRef]map[cloudprovider.InstanceState]int64),
 		listManagedInstancesResultsCache: make(map[GceRef]string),
 		instanceTemplateNameCache:        make(map[GceRef]InstanceTemplateName),
@@ -1972,8 +2067,18 @@ func fetchMigTargetSizeConst(targetSize int64) func(GceRef) (int64, error) {
 	}
 }
 
+func fetchMigWorkloadPolicyFail(_ GceRef) (*string, error) {
+	return nil, errFetchMigWorkloadPolicy
+}
+
 func fetchMigBasenameFail(_ GceRef) (string, error) {
 	return "", errFetchMigBaseName
+}
+
+func fetchMigWorkloadPolicyConst(workloadPolicy *string) func(GceRef) (*string, error) {
+	return func(GceRef) (*string, error) {
+		return workloadPolicy, nil
+	}
 }
 
 func fetchMigBasenameConst(basename string) func(GceRef) (string, error) {

@@ -42,6 +42,8 @@ type MigInfoProvider interface {
 	RegenerateMigInstancesCache() error
 	// GetMigTargetSize returns target size for given MIG ref
 	GetMigTargetSize(migRef GceRef) (int64, error)
+	// GetMigWorkloadPolicy returns WorkloadPolicy for given MIG ref
+	GetMigWorkloadPolicy(migRef GceRef) (*string, error)
 	// GetMigBasename returns basename for given MIG ref
 	GetMigBasename(migRef GceRef) (string, error)
 	// GetMigInstanceTemplateName returns instance template name for given MIG ref
@@ -348,6 +350,31 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) 
 	return targetSize, nil
 }
 
+func (c *cachingMigInfoProvider) GetMigWorkloadPolicy(migRef GceRef) (*string, error) {
+	c.migInfoMutex.Lock()
+	defer c.migInfoMutex.Unlock()
+
+	wp, found := c.cache.GetMigWorkloadPolicy(migRef)
+	if found {
+		return wp, nil
+	}
+
+	err := c.fillMigInfoCache()
+	wp, found = c.cache.GetMigWorkloadPolicy(migRef)
+	if err == nil && found {
+		return wp, nil
+	}
+
+	// fallback to querying for single mig
+	wp, err = c.gceClient.FetchMigWorkloadPolicy(migRef)
+	if err != nil {
+		c.migLister.HandleMigIssue(migRef, err)
+		return nil, err
+	}
+	c.cache.SetMigWorkloadPolicy(migRef, wp)
+	return wp, nil
+}
+
 func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {
 	c.migInfoMutex.Lock()
 	defer c.migInfoMutex.Unlock()
@@ -490,6 +517,12 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
 				c.cache.SetListManagedInstancesResults(zoneMigRef, zoneMig.ListManagedInstancesResults)
 				c.cache.SetMigInstancesStateCount(zoneMigRef, createInstancesStateCount(zoneMig.TargetSize, zoneMig.CurrentActions))
+
+				if zoneMig.ResourcePolicies == nil {
+					c.cache.SetMigWorkloadPolicy(zoneMigRef, nil)
+				} else {
+					c.cache.SetMigWorkloadPolicy(zoneMigRef, &zoneMig.ResourcePolicies.WorkloadPolicy)
+				}
 
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
