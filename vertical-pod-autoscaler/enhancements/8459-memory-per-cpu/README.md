@@ -26,13 +26,11 @@ The feature is controlled by a new alpha feature gate `MemoryPerCPURatio` (defau
 
 ## Motivation
 
-Many workloads scale their memory requirements proportionally to CPU. Today, VPA independently recommends CPU and memory, which can result in skewed recommendations (too much memory for small CPU, or too little memory for high CPU).
+Many workloads scale their memory requirements proportionally to CPU, but today VPA generates independent CPU and memory recommendations. This can lead to skewed configurations — for example, too much memory for a small CPU allocation, or too little memory for a high CPU allocation.
 
-By introducing `memoryPerCPU`, users can enforce a predictable ratio between CPU and memory, reducing risk of misconfiguration and simplifying tuning for ratio-based workloads.
+The `memoryPerCPU` field addresses this by enforcing a predictable CPU-to-memory ratio in recommendations. This reduces the risk of misconfiguration, ensures consistency, and simplifies tuning for workloads where CPU and memory usage are tightly coupled.
 
-In addition, some environments or organizations prefer to keep a fixed CPU-to-memory ratio for reasons such as:
-* **Billing models** – Many cloud providers price instances based on predefined CPU/memory bundles. Enforcing a fixed ratio makes VPA recommendations align better with billing units, avoiding unexpected cost patterns.
-* **Operational simplicity** – A consistent CPU/memory ratio across workloads reduces variability and simplifies capacity planning.
+This feature is particularly useful in environments where services are billed primarily on CPU with a fixed CPU-to-memory ratio. In such cases, it allows VPA to be used for automatic vertical scaling while preserving the existing billing model and guarantees to customers.
 
 ### Goals
 
