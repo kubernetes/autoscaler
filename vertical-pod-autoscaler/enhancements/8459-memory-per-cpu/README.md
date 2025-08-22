@@ -91,6 +91,35 @@ memory_bytes = cpu_cores * memoryPerCPU
 * If ratio cannot be applied (e.g., missing CPU), fallback to standard recommendations.  
 * With the `MemoryPerCPURatio` feature gate disabled, the `memoryPerCPU` field is ignored and recommendations fall back to standard VPA behavior.
 
+> [!IMPORTANT]
+> The enforced ratio values will be capped by
+> [`--container-recommendation-max-allowed-cpu`](https://github.com/kubernetes/autoscaler/blob/4d294562e505431d518a81e8833accc0ec99c9b8/vertical-pod-autoscaler/pkg/recommender/main.go#L122)
+> and
+> [`--container-recommendation-max-allowed-memory`](https://github.com/kubernetes/autoscaler/blob/4d294562e505431d518a81e8833accc0ec99c9b8/vertical-pod-autoscaler/pkg/recommender/main.go#L123)
+> flag values, if set.
+
+#### Examples
+
+* Example 1: `memoryPerCPU = 4Gi`
+  * Baseline recommendation: 1 CPU, 8Gi memory
+  * UncappedTarget (ratio enforced): 2 CPUs, 8Gi
+  * Target (after policy/caps): 2 CPUs, 8Gi
+
+* Example 2: `memoryPerCPU = 4Gi`
+  * Baseline recommendation: 2 CPUs, 4Gi memory
+  * UncappedTarget (ratio enforced): 2 CPUs, 8Gi
+  * Target (after policy/caps): 2 CPUs, 8Gi
+
+* Example 3: `memoryPerCPU = 4Gi`, with `--container-recommendation-max-allowed-memory=7Gi` or with `maxAllowed.memory=6Gi` set in VPA object
+  * Baseline recommendation: 2 CPUs, 4Gi memory
+  * UncappedTarget (ratio enforced): 2 CPUs, 8Gi
+  * Target (capped): 2 CPUs, 7Gi  ← memory capped by max-allowed-memory; ratio not fully satisfied
+
+* Example 4: Feature gate disabled
+  * Baseline recommendation: 1 CPU, 6Gi memory
+  * UncappedTarget: 1 CPU, 6Gi (ratio not applied)
+  * Target: 1 CPU, 6Gi
+
 ### Feature Enablement and Rollback
 
 #### How can this feature be enabled / disabled in a live cluster?
