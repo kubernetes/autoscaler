@@ -429,14 +429,14 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 		}
 	}
 
-	klog.V(6).Infof("DeleteInstances: invalidating cache")
+	klog.V(3).Infof("DeleteInstances: invalidating cache")
 	as.manager.invalidateCache()
 	return nil
 }
 
 // DeleteNodes deletes the nodes from the group.
 func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(6).Infof("Delete nodes requested: %v\n", nodes)
+	klog.V(3).Infof("Delete nodes requested: %v\n", nodes)
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
 		return err
