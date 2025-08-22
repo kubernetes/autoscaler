@@ -17,10 +17,12 @@ limitations under the License.
 package simulator
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
@@ -89,6 +91,8 @@ const (
 	NoPlaceToMovePods
 	// BlockedByPod - node can't be removed because a pod running on it can't be moved. The reason why should be in BlockingPod.
 	BlockedByPod
+	// NoNodeInfo - node can't be removed because it doesn't have any node info in the cluster snapshot.
+	NoNodeInfo
 	// UnexpectedError - node can't be removed because of an unexpected error.
 	UnexpectedError
 )
@@ -151,6 +155,11 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	nodeInfo, err := r.clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
+		ghostNode := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: nodeName}}
+		if errors.Is(err, clustersnapshot.ErrNodeNotFound) {
+			return nil, &UnremovableNode{Node: ghostNode, Reason: NoNodeInfo}
+		}
+		return nil, &UnremovableNode{Node: ghostNode, Reason: UnexpectedError}
 	}
 	klog.V(2).Infof("Simulating node %s removal", nodeName)
 
