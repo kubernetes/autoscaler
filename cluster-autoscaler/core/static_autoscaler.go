@@ -499,7 +499,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return scaleUpStart
 	}
 
-	postScaleUp := func(scaleUpStart time.Time) (bool, caerrors.AutoscalerError) {
+	postScaleUp := func(scaleUpStart time.Time) {
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
 		if a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
@@ -509,15 +509,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		if typedErr != nil {
 			klog.Errorf("Failed to scale up: %v", typedErr)
-			return true, typedErr
+			return
 		}
 		if scaleUpStatus.Result == status.ScaleUpSuccessful {
 			a.lastScaleUpTime = currentTime
 			// No scale down in this iteration.
 			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
-			return true, nil
 		}
-		return false, nil
 	}
 
 	shouldScaleUp := true
@@ -557,9 +555,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
 		scaleUpStart := preScaleUp()
 		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, false)
-		if exit, err := postScaleUp(scaleUpStart); exit {
-			return err
-		}
+		postScaleUp(scaleUpStart)
 	}
 
 	if a.ScaleDownEnabled {
@@ -664,9 +660,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	if a.EnforceNodeGroupMinSize {
 		scaleUpStart := preScaleUp()
 		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(readyNodes, nodeInfosForGroups)
-		if exit, err := postScaleUp(scaleUpStart); exit {
-			return err
-		}
+		postScaleUp(scaleUpStart)
 	}
 
 	return nil
