@@ -410,6 +410,46 @@ func TestDeleteInstances(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 }
 
+func TestForceDeleteNodes(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	as := newTestAgentPool(newTestAzureManager(t), "as")
+	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID1}] = as1
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testInvalidProviderID}] = as
+
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	as.manager.azClient.virtualMachinesClient = mockVMClient
+
+	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
+	as.manager.azClient.storageAccountsClient = mockSAClient
+
+	err := as.ForceDeleteNodes([]*apiv1.Node{})
+	assert.NoError(t, err)
+
+	nodes := []*apiv1.Node{
+		{
+			Spec:       apiv1.NodeSpec{ProviderID: testInvalidProviderID},
+			ObjectMeta: v1.ObjectMeta{Name: "node"},
+		},
+	}
+	err = as.ForceDeleteNodes(nodes)
+	expectedErr := fmt.Errorf("resource name was missing from identifier")
+	assert.Equal(t, expectedErr, err)
+
+	nodes = []*apiv1.Node{
+		{
+			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID1},
+			ObjectMeta: v1.ObjectMeta{Name: "node1"},
+		},
+	}
+	err = as.ForceDeleteNodes(nodes)
+	expectedErr = fmt.Errorf("node1 belongs to a different asg than as")
+	assert.Equal(t, expectedErr, err)
+}
+
 func TestAgentPoolDeleteNodes(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
