@@ -115,11 +115,6 @@ memory_bytes = cpu_cores * memoryPerCPU
   * UncappedTarget (ratio enforced): 2 CPUs, 8Gi
   * Target (capped): 2 CPUs, 7Gi  ← memory capped by max-allowed-memory; ratio not fully satisfied
 
-* Example 4: Feature gate disabled
-  * Baseline recommendation: 1 CPU, 6Gi memory
-  * UncappedTarget: 1 CPU, 6Gi (ratio not applied)
-  * Target: 1 CPU, 6Gi
-
 ### Feature Enablement and Rollback
 
 #### How can this feature be enabled / disabled in a live cluster?
@@ -127,6 +122,7 @@ memory_bytes = cpu_cores * memoryPerCPU
 * Feature gate name: `MemoryPerCPURatio`  
 * Default: Off (Alpha)  
 * Components depending on the feature gate:
+  * admission-controller
   * recommender
 
 **When enabled**:  
