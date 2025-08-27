@@ -32,6 +32,7 @@ jobs:
         with:
           args: --timeout=30m
           working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/vertical-pod-autoscaler
+          skip-cache: true
 
       - name: Test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
