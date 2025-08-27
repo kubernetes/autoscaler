@@ -115,29 +115,6 @@ func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clust
 	}
 }
 
-// FindNodesToRemove finds nodes that can be removed.
-func (r *RemovalSimulator) FindNodesToRemove(
-	candidates []string,
-	destinations []string,
-	timestamp time.Time,
-	remainingPdbTracker pdb.RemainingPdbTracker,
-) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode) {
-	destinationMap := make(map[string]bool, len(destinations))
-	for _, destination := range destinations {
-		destinationMap[destination] = true
-	}
-
-	for _, nodeName := range candidates {
-		rn, urn := r.SimulateNodeRemoval(nodeName, destinationMap, timestamp, remainingPdbTracker)
-		if rn != nil {
-			nodesToRemove = append(nodesToRemove, *rn)
-		} else if urn != nil {
-			unremovableNodes = append(unremovableNodes, urn)
-		}
-	}
-	return nodesToRemove, unremovableNodes
-}
-
 // SimulateNodeRemoval simulates removing a node from the cluster to check
 // whether it is possible to move its pods. Depending on
 // the outcome, exactly one of (NodeToBeRemoved, UnremovableNode) will be
@@ -176,24 +153,6 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		PodsToReschedule: podsToRemove,
 		DaemonSetPods:    daemonSetPods,
 	}, nil
-}
-
-// FindEmptyNodesToRemove finds empty nodes that can be removed.
-func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp time.Time) []string {
-	result := make([]string, 0)
-	for _, node := range candidates {
-		nodeInfo, err := r.clusterSnapshot.GetNodeInfo(node)
-		if err != nil {
-			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", node, err)
-			continue
-		}
-		// Should block on all pods
-		podsToRemove, _, _, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, nil, nil, timestamp)
-		if err == nil && len(podsToRemove) == 0 {
-			result = append(result, node)
-		}
-	}
-	return result
 }
 
 func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
