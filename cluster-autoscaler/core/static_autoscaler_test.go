@@ -2373,7 +2373,7 @@ func (f *candidateTrackingFakePlanner) NodesToDelete(currentTime time.Time) (emp
 	return nil, nil
 }
 
-func (f *candidateTrackingFakePlanner) UnneededNodes() []*apiv1.Node {
+func (f *candidateTrackingFakePlanner) UnneededNodes() []*scaledown.UnneededNode {
 	return nil
 }
 

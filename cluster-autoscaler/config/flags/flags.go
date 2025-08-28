@@ -232,6 +232,7 @@ var (
 	nodeDeletionCandidateTTL                     = flag.Duration("node-deletion-candidate-ttl", time.Duration(0), "Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive")
 	capacitybufferControllerEnabled              = flag.Bool("capacity-buffer-controller-enabled", false, "Whether to enable the default controller for capacity buffers or not")
 	capacitybufferPodInjectionEnabled            = flag.Bool("capacity-buffer-pod-injection-enabled", false, "Whether to enable pod list processor that processes ready capacity buffers and injects fake pods accordingly")
+	nodeRemovalLatencyTrackingEnabled            = flag.Bool("node-removal-latency-tracking-enabled", false, "Whether to track latency from when an unneeded node is eligible for scale down until it is removed or needed again.")
 	maxNodeSkipEvalTimeTrackerEnabled            = flag.Bool("max-node-skip-eval-time-tracker-enabled", false, "Whether to enable the tracking of the maximum time of node being skipped during ScaleDown")
 
 	// Deprecated flags
@@ -423,6 +424,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeDeletionCandidateTTL:                     *nodeDeletionCandidateTTL,
 		CapacitybufferControllerEnabled:              *capacitybufferControllerEnabled,
 		CapacitybufferPodInjectionEnabled:            *capacitybufferPodInjectionEnabled,
+		NodeRemovalLatencyTrackingEnabled:            *nodeRemovalLatencyTrackingEnabled,
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
 	}
 }
