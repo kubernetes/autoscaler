@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
@@ -170,7 +171,13 @@ func NewStaticAutoscaler(
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
-	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules)
+	var ndlt *latencytracker.NodeLatencyTracker
+	if autoscalingCtx.AutoscalingOptions.NodeRemovalLatencyTrackingEnabled {
+		ndlt = latencytracker.NewNodeLatencyTracker()
+		processors.ScaleDownCandidatesNotifier.Register(ndlt)
+		processors.ScaleDownStatusProcessor = ndlt
+	}
+	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules, ndlt)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)

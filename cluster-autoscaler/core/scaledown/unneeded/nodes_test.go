@@ -98,12 +98,13 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			nodes := NewNodes(nil, nil)
+			nodes := NewNodes(nil, nil, nil)
+
 			nodes.Update(tc.initialNodes, initialTimestamp)
 			nodes.Update(tc.finalNodes, finalTimestamp)
+
 			wantNodes := len(tc.wantTimestamps)
 			assert.Equal(t, wantNodes, len(nodes.AsList()))
 			assert.Equal(t, wantNodes, len(nodes.byName))
@@ -202,9 +203,16 @@ func TestRemovableAt(t *testing.T) {
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
+			expectedThreshold := 5 * time.Minute
+			fakeTimeGetter := &fakeScaleDownTimeGetter{
+				unneededTime: 0,
+				unreadyTime:  expectedThreshold,
+			}
+			fakeTracker := NewFakeLatencyTracker()
+			n := NewNodes(fakeTimeGetter, &resource.LimitsFinder{}, fakeTracker)
 
-			n := NewNodes(&fakeScaleDownTimeGetter{}, &resource.LimitsFinder{})
-			n.Update(removableNodes, time.Now())
+			n.Update(removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
+
 			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
 				ResourcesLeft:       resource.Limits{},
@@ -212,6 +220,16 @@ func TestRemovableAt(t *testing.T) {
 			}, time.Now())
 			if len(gotDrainToRemove) != tc.numDrainToRemove || len(gotEmptyToRemove) != tc.numEmptyToRemove {
 				t.Errorf("%s: getNodesToRemove() return %d, %d, want %d, %d", tc.name, len(gotEmptyToRemove), len(gotDrainToRemove), tc.numEmptyToRemove, tc.numDrainToRemove)
+			}
+
+			for _, node := range gotEmptyToRemove {
+				nodeName := node.Node.Name
+				got, ok := fakeTracker.Observed[nodeName]
+				if !ok {
+					t.Errorf("NodeLatencyTracker.UpdateThreshold not called for node %s", nodeName)
+				} else if got != expectedThreshold {
+					t.Errorf("NodeLatencyTracker.UpdateThreshold called with %v for node %s, want %v", got, nodeName, expectedThreshold)
+				}
 			}
 		})
 	}
@@ -273,8 +291,9 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+			currentTime = time.Now()
 
-			nodes := NewNodes(nil, nil)
+			nodes := NewNodes(nil, nil, nil)
 
 			allNodeLister := kubernetes.NewTestNodeLister(nil)
 			allNodeLister.SetNodes(tc.allNodes)
@@ -330,12 +349,29 @@ func (f *fakeActuationStatus) DeletionsCount(nodeGroup string) int {
 	return f.deletionCount[nodeGroup]
 }
 
-type fakeScaleDownTimeGetter struct{}
+type fakeScaleDownTimeGetter struct {
+	unneededTime time.Duration
+	unreadyTime  time.Duration
+}
 
 func (f *fakeScaleDownTimeGetter) GetScaleDownUnneededTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return 0 * time.Second, nil
+	return f.unneededTime, nil
 }
 
 func (f *fakeScaleDownTimeGetter) GetScaleDownUnreadyTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return 0 * time.Second, nil
+	return f.unreadyTime, nil
+}
+
+// FakeLatencyTracker implements the latencyTracker interface for tests.
+type FakeLatencyTracker struct {
+	Observed map[string]time.Duration
+}
+
+func NewFakeLatencyTracker() *FakeLatencyTracker {
+	return &FakeLatencyTracker{
+		Observed: make(map[string]time.Duration),
+	}
+}
+func (t *FakeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
+	t.Observed[nodeName] = threshold
 }
