@@ -39,6 +39,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
@@ -1279,6 +1280,7 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 		nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
 		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 		configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(ctx.NodeGroupDefaults),
+		nodeLatencyTracker:    latencytracker.NewNodeLatencyTracker(),
 	}
 
 	var gotResult status.ScaleDownResult
@@ -1557,6 +1559,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 				ctx: &ctx, nodeDeletionTracker: ndt,
 				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
 				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
+				nodeLatencyTracker:    latencytracker.NewNodeLatencyTracker(),
 			}
 
 			for _, nodes := range deleteNodes {

@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
@@ -503,7 +504,7 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil, latencytracker.NewNodeLatencyTracker())
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				context.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -699,7 +700,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil, latencytracker.NewNodeLatencyTracker())
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
@@ -998,7 +999,7 @@ func TestNodesToDelete(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil, latencytracker.NewNodeLatencyTracker())
 			p.latestUpdate = time.Now()
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))
