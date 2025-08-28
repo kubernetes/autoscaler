@@ -1,10 +1,8 @@
-// This file contains changes that are only compatible with go 1.10 and onwards.
-
-//go:build go1.10
-// +build go1.10
+//go:build usegocmp
+// +build usegocmp
 
 /*
-Copyright 2021 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,13 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package yaml
+package diff
 
-import "encoding/json"
+import (
+	"github.com/google/go-cmp/cmp" //nolint:depguard
+)
 
-// DisallowUnknownFields configures the JSON decoder to error out if unknown
-// fields come along, instead of dropping them by default.
-func DisallowUnknownFields(d *json.Decoder) *json.Decoder {
-	d.DisallowUnknownFields()
-	return d
+// Diff returns a string representation of the difference between two objects.
+// When built with the usegocmp tag, it uses go-cmp/cmp to generate a diff
+// between the objects.
+func Diff(a, b any) string {
+	return cmp.Diff(a, b)
 }
