@@ -361,7 +361,7 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, ns, name st
 		Namespace:   ns,
 		Timeout:     timeoutRC,
 		Replicas:    replicas,
-		CpuRequest:  cpuRequestMillis,
+		CPURequest:  cpuRequestMillis,
 		MemRequest:  memRequestMb * 1024 * 1024, // MemRequest is in bytes
 		Annotations: podAnnotations,
 	}
