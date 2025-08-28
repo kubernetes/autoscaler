@@ -427,6 +427,15 @@ var (
 			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 6), // 1, 2, 4, ..., 32
 		}, []string{"instance_type", "cpu_count", "namespace_count"},
 	)
+
+	scaleDownNodeDeletionDuration = k8smetrics.NewHistogramVec(
+		&k8smetrics.HistogramOpts{
+			Namespace: caNamespace,
+			Name:      "node_deletion_duration_seconds",
+			Help:      "Latency from planning (node marked) to final outcome (deleted, aborted, rescued).",
+			Buckets:   k8smetrics.ExponentialBuckets(10, 2, 12),
+		}, []string{"deleted"},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -463,6 +472,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeTaintsCount)
 	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
 	legacyregistry.MustRegister(binpackingHeterogeneity)
+	legacyregistry.MustRegister(scaleDownNodeDeletionDuration)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -749,4 +759,8 @@ func UpdateInconsistentInstancesMigsCount(migCount int) {
 // considered in a single binpacking estimation.
 func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount string, pegCount int) {
 	binpackingHeterogeneity.WithLabelValues(instanceType, cpuCount, namespaceCount).Observe(float64(pegCount))
+}
+
+func UpdateScaleDownNodeDeletionDuration(deleted string, duration time.Duration) {
+	scaleDownNodeDeletionDuration.WithLabelValues(deleted).Observe(duration.Seconds())
 }

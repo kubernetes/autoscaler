@@ -342,6 +342,8 @@ type AutoscalingOptions struct {
 	ProactiveScaleupEnabled bool
 	// PodInjectionLimit limits total number of pods while injecting fake pods.
 	PodInjectionLimit int
+	// NodeLatencyTrackingEnabled is used to enable/disable node latency tracking.
+	NodeLatencyTrackingEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
