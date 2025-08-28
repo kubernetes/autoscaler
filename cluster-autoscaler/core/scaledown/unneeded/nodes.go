@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
@@ -39,10 +40,11 @@ import (
 
 // Nodes tracks the state of cluster nodes that are not needed.
 type Nodes struct {
-	sdtg         scaleDownTimeGetter
-	limitsFinder *resource.LimitsFinder
-	cachedList   []*apiv1.Node
-	byName       map[string]*node
+	sdtg              scaleDownTimeGetter
+	limitsFinder      *resource.LimitsFinder
+	cachedList        []*apiv1.Node
+	byName            map[string]*node
+	unneededTimeCache map[string]time.Duration
 }
 
 type node struct {
@@ -60,8 +62,9 @@ type scaleDownTimeGetter interface {
 // NewNodes returns a new initialized Nodes object.
 func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *Nodes {
 	return &Nodes{
-		sdtg:         sdtg,
-		limitsFinder: limitsFinder,
+		sdtg:              sdtg,
+		limitsFinder:      limitsFinder,
+		unneededTimeCache: make(map[string]time.Duration),
 	}
 }
 
@@ -207,6 +210,76 @@ func (n *Nodes) RemovableAt(autoscalingCtx *ca_context.AutoscalingContext, scale
 		needDrain = append(needDrain, v.ntbr)
 	}
 	return
+}
+
+// GetUnneededTimeForNode returns the unneeded timeout for a given node if tracked.
+// Returns (duration, true) if found, otherwise (0, false).
+func (n *Nodes) GetUnneededTimeForNode(ctx *context.AutoscalingContext, nodeName string) (time.Duration, bool) {
+	v, found := n.byName[nodeName]
+	if !found {
+		klog.V(4).Infof("Skipping - node %s not found in unneded list", nodeName)
+		return 0, false
+	}
+
+	node := v.ntbr.Node
+	nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
+	if err != nil {
+		klog.Errorf("Error while getting node group for %s: %v", nodeName, err)
+		return 0, false
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		klog.V(4).Infof("Skipping %s - no node group", nodeName)
+		return 0, false
+	}
+
+	ngID := nodeGroup.Id()
+	if cached, ok := n.unneededTimeCache[ngID]; ok {
+		return cached, true
+	}
+
+	unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
+	if err != nil {
+		klog.Errorf("Error getting ScaleDownUnneededTime for node %s: %v", nodeName, err)
+		return 0, false
+	}
+
+	n.unneededTimeCache[ngID] = unneededTime
+	return unneededTime, true
+}
+
+// GetUnneededTimeForNode returns the unneeded timeout for a given node if tracked.
+// Returns (duration, true) if found, otherwise (0, false).
+func (n *Nodes) GetUnneededTimeForNode(autoscalingCtx *ca_context.AutoscalingContext, nodeName string) (time.Duration, bool) {
+	v, found := n.byName[nodeName]
+	if !found {
+		klog.V(4).Infof("Skipping - node %s not found in unneded list", nodeName)
+		return 0, false
+	}
+
+	node := v.ntbr.Node
+	nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
+	if err != nil {
+		klog.Errorf("Error while getting node group for %s: %v", nodeName, err)
+		return 0, false
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		klog.V(4).Infof("Skipping %s - no node group", nodeName)
+		return 0, false
+	}
+
+	ngID := nodeGroup.Id()
+	if cached, ok := n.unneededTimeCache[ngID]; ok {
+		return cached, true
+	}
+
+	unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
+	if err != nil {
+		klog.Errorf("Error getting ScaleDownUnneededTime for node %s: %v", nodeName, err)
+		return 0, false
+	}
+
+	n.unneededTimeCache[ngID] = unneededTime
+	return unneededTime, true
 }
 
 func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {

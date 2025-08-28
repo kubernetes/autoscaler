@@ -349,6 +349,8 @@ type AutoscalingOptions struct {
 	CapacitybufferControllerEnabled bool
 	// CapacitybufferPodInjectionEnabled tells if CA should injects fake pods for capacity buffers that are ready for provisioning
 	CapacitybufferPodInjectionEnabled bool
+	// NodeLatencyTrackingEnabled is used to enable/disable node latency tracking.
+	NodeLatencyTrackingEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

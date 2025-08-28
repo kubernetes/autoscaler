@@ -230,6 +230,7 @@ var (
 	nodeDeletionCandidateTTL                     = flag.Duration("node-deletion-candidate-ttl", time.Duration(0), "Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive")
 	capacitybufferControllerEnabled              = flag.Bool("capacity-buffer-controller-enabled", false, "Whether to enable the default controller for capacity buffers or not")
 	capacitybufferPodInjectionEnabled            = flag.Bool("capacity-buffer-pod-injection-enabled", false, "Whether to enable pod list processor that processes ready capacity buffers and injects fake pods accordingly")
+	nodeLatencyTrackingEnabled                   = flag.Bool("enable-node-latency-tracking", false, "Whether logic for monitoring of node latency is enabled.")
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
@@ -414,6 +415,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeDeletionCandidateTTL:                     *nodeDeletionCandidateTTL,
 		CapacitybufferControllerEnabled:              *capacitybufferControllerEnabled,
 		CapacitybufferPodInjectionEnabled:            *capacitybufferPodInjectionEnabled,
+		NodeLatencyTrackingEnabled:                   *nodeLatencyTrackingEnabled,
 	}
 }
 
