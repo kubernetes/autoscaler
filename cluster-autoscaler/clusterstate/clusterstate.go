@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
@@ -768,18 +769,18 @@ func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []
 }
 
 // UpdateScaleDownCandidates updates scale down candidates
-func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node, now time.Time) {
+func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*scaledown.UnneededNode, now time.Time) {
 	result := make(map[string][]string)
 	for _, node := range nodes {
-		group, err := csr.cloudProvider.NodeGroupForNode(node)
+		group, err := csr.cloudProvider.NodeGroupForNode(node.Node)
 		if err != nil {
-			klog.Warningf("Failed to get node group for %s: %v", node.Name, err)
+			klog.Warningf("Failed to get node group for %s: %v", node.Node.Name, err)
 			continue
 		}
 		if group == nil || reflect.ValueOf(group).IsNil() {
 			continue
 		}
-		result[group.Id()] = append(result[group.Id()], node.Name)
+		result[group.Id()] = append(result[group.Id()], node.Node.Name)
 	}
 	csr.candidatesForScaleDown = result
 	csr.lastScaleDownUpdateTime = now
