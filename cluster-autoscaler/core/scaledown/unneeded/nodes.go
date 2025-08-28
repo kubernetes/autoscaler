@@ -37,12 +37,20 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+// LatencyTracker defines the interface for tracking node removal latency.
+// Implementations record when nodes become unneeded, observe deletion events,
+// and expose thresholds for measuring node removal duration.
+type LatencyTracker interface {
+	UpdateThreshold(nodeName string, threshold time.Duration)
+}
+
 // Nodes tracks the state of cluster nodes that are not needed.
 type Nodes struct {
-	sdtg         scaleDownTimeGetter
-	limitsFinder *resource.LimitsFinder
-	cachedList   []*apiv1.Node
-	byName       map[string]*node
+	sdtg               scaleDownTimeGetter
+	limitsFinder       *resource.LimitsFinder
+	nodeLatencyTracker LatencyTracker
+	cachedList         []*apiv1.Node
+	byName             map[string]*node
 }
 
 type node struct {
@@ -58,10 +66,11 @@ type scaleDownTimeGetter interface {
 }
 
 // NewNodes returns a new initialized Nodes object.
-func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *Nodes {
+func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, nlt LatencyTracker) *Nodes {
 	return &Nodes{
-		sdtg:         sdtg,
-		limitsFinder: limitsFinder,
+		sdtg:               sdtg,
+		limitsFinder:       limitsFinder,
+		nodeLatencyTracker: nlt,
 	}
 }
 
@@ -231,6 +240,9 @@ func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext,
 	if ready {
 		// Check how long a ready node was underutilized.
 		unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
+		if n.nodeLatencyTracker != nil {
+			n.nodeLatencyTracker.UpdateThreshold(node.Name, unneededTime)
+		}
 		if err != nil {
 			klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 			return simulator.UnexpectedError
@@ -241,6 +253,9 @@ func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext,
 	} else {
 		// Unready nodes may be deleted after a different time than underutilized nodes.
 		unreadyTime, err := n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
+		if n.nodeLatencyTracker != nil {
+			n.nodeLatencyTracker.UpdateThreshold(node.Name, unreadyTime)
+		}
 		if err != nil {
 			klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 			return simulator.UnexpectedError
