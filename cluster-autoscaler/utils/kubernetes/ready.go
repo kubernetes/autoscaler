@@ -41,14 +41,34 @@ const (
 	StartupNodes NodeNotReadyReason = "cluster-autoscaler.kubernetes.io/startup-taint"
 )
 
-// IsNodeReadyAndSchedulable returns true if the node is ready and schedulable.
-func IsNodeReadyAndSchedulable(node *apiv1.Node) bool {
+// IsNodeReady returns true if the node is ready.
+func IsNodeReady(node *apiv1.Node) bool {
 	ready, _, _ := GetReadinessState(node)
 	if !ready {
 		return false
 	}
+	return true
+}
+
+// IsNodeReadyAndSchedulable returns true if the node is ready and schedulable.
+func IsNodeReadyAndSchedulable(node *apiv1.Node) bool {
+	if !IsNodeReady(node) {
+		return false
+	}
 	// Ignore nodes that are marked unschedulable
 	if node.Spec.Unschedulable {
+		return false
+	}
+	return true
+}
+
+// IsNodeReadyAndUnschedulable returns true if the node is ready and has its .spec.unschedulable set true.
+func IsNodeReadyAndUnschedulable(node *apiv1.Node) bool {
+	if !IsNodeReady(node) {
+		return false
+	}
+	// Ignore nodes that are marked schedulable
+	if !node.Spec.Unschedulable {
 		return false
 	}
 	return true
