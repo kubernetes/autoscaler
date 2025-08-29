@@ -90,6 +90,9 @@ func CreateNodePoolManager(cloudConfigPath string, nodeGroupAutoDiscoveryList []
 	var err error
 	var configProvider common.ConfigurationProvider
 
+	// enable SDK to look up the IMDS endpoint to figure out the right realmDomain
+	common.EnableInstanceMetadataServiceLookup()
+
 	if os.Getenv(ipconsts.OciUseWorkloadIdentityEnvVar) == "true" {
 		klog.Info("using workload identity provider")
 		configProvider, err = auth.OkeWorkloadIdentityConfigurationProvider()
@@ -212,19 +215,32 @@ func autoDiscoverNodeGroups(m *ociManagerImpl, okeClient okeClient, nodeGroup no
 		if validateNodepoolTags(nodeGroup.tags, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags) {
 			nodepool := &nodePool{}
 			nodepool.id = *nodePoolSummary.Id
-			nodepool.minSize = nodeGroup.minSize
-			nodepool.maxSize = nodeGroup.maxSize
+			// set minSize-maxSize from nodepool free form tags, or else use nodeGroupAutoDiscovery configuration
+			nodepool.minSize = getIntFromMap(nodePoolSummary.FreeformTags, "minSize", nodeGroup.minSize)
+			nodepool.maxSize = getIntFromMap(nodePoolSummary.FreeformTags, "maxSize", nodeGroup.maxSize)
 
 			nodepool.manager = nodeGroup.manager
 			nodepool.kubeClient = nodeGroup.kubeClient
 
 			m.staticNodePools[nodepool.id] = nodepool
-			klog.V(5).Infof("auto discovered nodepool in compartment : %s , nodepoolid: %s", nodeGroup.compartmentId, nodepool.id)
+			klog.V(4).Infof("auto discovered nodepool in compartment : %s , nodepoolid: %s ,minSize: %d, maxSize:%d", nodeGroup.compartmentId, nodepool.id, nodepool.minSize, nodepool.maxSize)
 		} else {
 			klog.Warningf("nodepool ignored as the tags do not satisfy the requirement : %s , %v, %v", *nodePoolSummary.Id, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags)
 		}
 	}
 	return true, nil
+}
+
+func getIntFromMap(m map[string]string, key string, defaultValue int) int {
+	value, ok := m[key]
+	if !ok {
+		return defaultValue
+	}
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+	return i
 }
 
 func validateNodepoolTags(nodeGroupTags map[string]string, freeFormTags map[string]string, definedTags map[string]map[string]interface{}) bool {
