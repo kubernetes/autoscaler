@@ -23,8 +23,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
 	v1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
