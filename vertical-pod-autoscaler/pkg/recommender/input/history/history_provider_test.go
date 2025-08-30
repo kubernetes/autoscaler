@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -397,5 +398,24 @@ func TestPrometheusAuth(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotContains(t, capturedRequest.Header.Get("Authorization"), "Basic")
 		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Bearer token")
+	})
+
+	t.Run("Basic auth with username/password configured as env", func(t *testing.T) {
+		// clear auth config so only environment variables are used in this test
+		cfg.Authentication = PrometheusCredentials{}
+		_ = os.Setenv("PROMETHEUS_USERNAME", "prom_user")
+		_ = os.Setenv("PROMETHEUS_PASSWORD", "prom_password")
+
+		defer func() {
+			_ = os.Unsetenv("PROMETHEUS_USERNAME")
+			_ = os.Unsetenv("PROMETHEUS_PASSWORD")
+		}()
+
+		prov, _ := NewPrometheusHistoryProvider(cfg)
+		_, err := prov.GetClusterHistory()
+
+		assert.Nil(t, err)
+		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Basic cHJvbV91c2VyOnByb21fcGFzc3dvcmQ=") // "prom_user:prom_password"
+
 	})
 }
