@@ -152,6 +152,55 @@ Here you should see the flags that you set for the VPA recommender and you shoul
 
 This means that the VPA recommender is now using Prometheus as the history provider.
 
+
+For authentication to Prometheus, you can provide credentials in following ways:
+
+1) Set the flags `--username=<user>` and `--password=<password>` in the `VPA recommender deployment`. The `args` for the container should look something like this:
+
+```yaml
+spec:
+  containers:
+  - args:
+    - --v=4
+    - --storage=prometheus
+    - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
+    - --username=example-user
+    - --password=example-password
+```
+
+2) Set the environment variables `PROMETHEUS_USERNAME` and `PROMETHEUS_PASSWORD` in the `VPA recommender deployment`.
+
+```yaml
+spec:
+  containers:
+  - args:
+    - --storage=prometheus
+    - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
+  env:
+  - name: PROMETHEUS_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: prometheus-auth
+        key: example-user
+  - name: PROMETHEUS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: prometheus-auth
+        key: example-password
+```
+
+3) Set the flag `prometheus-bearer-token=<token>`, to use bearer token auth.
+
+```yaml
+spec:
+  containers:
+  - args:
+    - --v=4
+    - --storage=prometheus
+    - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
+    - --prometheus-bearer-token=<example-token>
+```
+
 ### I get recommendations for my single pod replicaset but they are not applied
 
 By default, the [`--min-replicas`](https://github.com/kubernetes/autoscaler/tree/master/pkg/updater/main.go#L44) flag on the updater is set to 2. To change this, you can supply the arg in the [deploys/updater-deployment.yaml](https://github.com/kubernetes/autoscaler/tree/master/deploy/updater-deployment.yaml) file:
