@@ -389,6 +389,7 @@ func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
 
 	labels := map[string]string{
 		apiv1.LabelInstanceType:              n.instanceType,
+		apiv1.LabelInstanceTypeStable:        n.instanceType,
 		apiv1.LabelTopologyRegion:            n.region,
 		apiv1.LabelArchStable:                archLabel,
 		"csi.hetzner.cloud/location":         n.region,
