@@ -32,12 +32,13 @@ import (
 )
 
 type fakeRecommendationProvider struct {
-	resources []vpa_api_util.ContainerResources
-	err       error
+	initResources []vpa_api_util.ContainerResources
+	resources     []vpa_api_util.ContainerResources
+	err           error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
-	return frp.resources, nil, frp.err
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+	return frp.initResources, frp.resources, nil, frp.err
 }
 
 func TestCalculatePatches_MultiContainerResourceUpdates(t *testing.T) {
