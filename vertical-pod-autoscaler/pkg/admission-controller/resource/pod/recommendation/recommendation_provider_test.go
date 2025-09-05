@@ -302,7 +302,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 				},
 			}
 
-			resources, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
+			// TODO @jklaw90 update tests
+			_, resources, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
 
 			if tc.expectedAction {
 				assert.Nil(t, err)
@@ -538,7 +539,7 @@ func TestGetContainersResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			pod := test.Pod().WithName("pod").AddContainer(tc.container).AddContainerStatus(tc.containerStatus).Get()
-			resources := GetContainersResources(pod, tc.vpa.Spec.ResourcePolicy, *tc.vpa.Status.Recommendation, nil, tc.addAll, vpa_api_util.ContainerToAnnotationsMap{})
+			_, resources := GetContainersResources(pod, tc.vpa.Spec.ResourcePolicy, *tc.vpa.Status.Recommendation, nil, tc.addAll, vpa_api_util.ContainerToAnnotationsMap{})
 
 			cpu, cpuPresent := resources[0].Requests[apiv1.ResourceCPU]
 			if tc.expectedCPU == nil {
