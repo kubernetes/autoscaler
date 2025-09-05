@@ -45,20 +45,25 @@ type OnNodeGroupDeleteFunc func(string) error
 // HasInstance is a function called to determine if a node has been removed from the cloud provider.
 type HasInstance func(string) (bool, error)
 
+// IsNodeCandidateForScaleDown is a function called to determine if a cloud provider considers
+// a node a good candidate for scaling down.
+type IsNodeCandidateForScaleDown func(*apiv1.Node) (bool, error)
+
 // TestCloudProvider is a dummy cloud provider to be used in tests.
 type TestCloudProvider struct {
 	sync.Mutex
-	nodes             map[string]string
-	groups            map[string]cloudprovider.NodeGroup
-	onScaleUp         func(string, int) error
-	onScaleDown       func(string, string) error
-	onNodeGroupCreate func(string) error
-	onNodeGroupDelete func(string) error
-	hasInstance       func(string) (bool, error)
-	machineTypes      []string
-	machineTemplates  map[string]*framework.NodeInfo
-	priceModel        cloudprovider.PricingModel
-	resourceLimiter   *cloudprovider.ResourceLimiter
+	nodes                       map[string]string
+	groups                      map[string]cloudprovider.NodeGroup
+	onScaleUp                   func(string, int) error
+	onScaleDown                 func(string, string) error
+	onNodeGroupCreate           func(string) error
+	onNodeGroupDelete           func(string) error
+	hasInstance                 func(string) (bool, error)
+	isNodeCandidateForScaleDown func(*apiv1.Node) (bool, error)
+	machineTypes                []string
+	machineTemplates            map[string]*framework.NodeInfo
+	priceModel                  cloudprovider.PricingModel
+	resourceLimiter             *cloudprovider.ResourceLimiter
 }
 
 // TestCloudProviderBuilder is used to create CloudProvider
@@ -123,6 +128,14 @@ func (b *TestCloudProviderBuilder) WithMachineTemplates(machineTemplates map[str
 func (b *TestCloudProviderBuilder) WithHasInstance(hasInstance HasInstance) *TestCloudProviderBuilder {
 	b.builders = append(b.builders, func(p *TestCloudProvider) {
 		p.hasInstance = hasInstance
+	})
+	return b
+}
+
+// WithIsNodeCandidateForScaleDown adds an IsNodeCandidateForScaleDown handler to provider.
+func (b *TestCloudProviderBuilder) WithIsNodeCandidateForScaleDown(isNodeCandidateForScaleDown IsNodeCandidateForScaleDown) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.isNodeCandidateForScaleDown = isNodeCandidateForScaleDown
 	})
 	return b
 }
@@ -350,6 +363,15 @@ func (tcp *TestCloudProvider) Cleanup() error {
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (tcp *TestCloudProvider) Refresh() error {
 	return nil
+}
+
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (tcp *TestCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	if tcp.isNodeCandidateForScaleDown == nil {
+		return true, cloudprovider.ErrNotImplemented
+	}
+
+	return tcp.isNodeCandidateForScaleDown(node)
 }
 
 // TestNodeGroup is a node group used by TestCloudProvider.

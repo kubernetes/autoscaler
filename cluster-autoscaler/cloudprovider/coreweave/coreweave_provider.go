@@ -181,6 +181,11 @@ func (c *CoreWeaveCloudProvider) Refresh() error {
 	return c.manager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (c *CoreWeaveCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildCoreWeave builds the CoreWeave cloud provider with the given options and returns it.
 func BuildCoreWeave(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	klog.V(4).Infof("Building CoreWeave cloud provider with options: %+v", opts)

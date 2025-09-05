@@ -149,3 +149,8 @@ func (ocp *OciCloudProvider) Cleanup() error {
 func (ocp *OciCloudProvider) Refresh() error {
 	return ocp.manager.Refresh()
 }
+
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (ocp *OciCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}

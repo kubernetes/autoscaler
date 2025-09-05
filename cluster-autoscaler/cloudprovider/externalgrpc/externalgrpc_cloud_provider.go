@@ -316,6 +316,11 @@ func (e *externalGrpcCloudProvider) Refresh() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (e *externalGrpcCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildExternalGrpc builds the externalgrpc cloud provider.
 func BuildExternalGrpc(
 	opts config.AutoscalingOptions,

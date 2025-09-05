@@ -170,6 +170,11 @@ func (ccp *cherryCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (ccp *cherryCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildCherry is called by the autoscaler to build a Cherry Servers cloud provider.
 //
 // The cherryManager is created here, and the node groups are created

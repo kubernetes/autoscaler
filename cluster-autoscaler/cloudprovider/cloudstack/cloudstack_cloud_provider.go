@@ -115,6 +115,11 @@ func (provider *cloudStackCloudProvider) Pricing() (cloudprovider.PricingModel, 
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (provider *cloudStackCloudProvider) IsNodeCandidateForScaleDown(node *v1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 func (provider *cloudStackCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []v1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {

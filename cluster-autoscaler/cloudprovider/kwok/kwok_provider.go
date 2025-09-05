@@ -170,6 +170,11 @@ func (kwok *KwokCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (kwok *KwokCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildKwok builds kwok cloud provider.
 func BuildKwok(opts config.AutoscalingOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,

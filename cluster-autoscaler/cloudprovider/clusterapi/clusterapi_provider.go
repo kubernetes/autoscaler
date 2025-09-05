@@ -140,6 +140,11 @@ func (p *provider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig 
 	return gpu.GetNodeGPUFromCloudProvider(p, node)
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (p *provider) IsNodeCandidateForScaleDown(node *corev1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func newProvider(
 	name string,
 	rl *cloudprovider.ResourceLimiter,
