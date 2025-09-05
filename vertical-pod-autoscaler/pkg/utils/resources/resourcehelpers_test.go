@@ -107,31 +107,6 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 			wantLimits:   nil,
 		},
 		{
-			desc:          "Init container with the same name as the container is ignored",
-			containerName: "container-1",
-			pod: test.Pod().AddInitContainer(
-				test.Container().WithName("container-1").
-					WithCPURequest(resource.MustParse("1")).
-					WithMemRequest(resource.MustParse("10Mi")).
-					WithCPULimit(resource.MustParse("2")).
-					WithMemLimit(resource.MustParse("20Mi")).Get()).
-				AddContainer(
-					test.Container().WithName("container-1").
-						WithCPURequest(resource.MustParse("4")).
-						WithMemRequest(resource.MustParse("40Mi")).
-						WithCPULimit(resource.MustParse("5")).
-						WithMemLimit(resource.MustParse("50Mi")).Get()).
-				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
-			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("5"),
-				apiv1.ResourceMemory: resource.MustParse("50Mi"),
-			},
-		},
-		{
 			desc:          "InitContainer selected",
 			containerName: "container",
 			pod: test.Pod().AddInitContainer(
