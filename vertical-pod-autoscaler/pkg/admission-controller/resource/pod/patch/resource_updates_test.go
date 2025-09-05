@@ -43,13 +43,14 @@ const (
 )
 
 type fakeRecommendationProvider struct {
+	initResources          []vpa_api_util.ContainerResources
 	resources              []vpa_api_util.ContainerResources
 	containerToAnnotations vpa_api_util.ContainerToAnnotationsMap
 	e                      error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
-	return frp.resources, frp.containerToAnnotations, frp.e
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+	return frp.initResources, frp.resources, frp.containerToAnnotations, frp.e
 }
 
 func addResourcesPatch(idx int) resource_admission.PatchRecord {
@@ -111,6 +112,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		name                 string
 		pod                  *corev1.Pod
 		namespace            string
+		initResources        []vpa_api_util.ContainerResources
 		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
 		recommendError       error
@@ -307,7 +309,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
+			frp := fakeRecommendationProvider{tc.initResources, tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().WithContainer("test").WithName("name").Get())
 			if tc.expectError == nil {
@@ -349,7 +351,7 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 		},
 	}
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
-	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, nil}
+	frp := fakeRecommendationProvider{nil, recommendResources, recommendAnnotations, nil}
 	c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 	patches, err := c.CalculatePatches(pod, test.VerticalPodAutoscaler().WithName("name").WithContainer("test").Get())
 	assert.NoError(t, err)
@@ -908,7 +910,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.featureGateEnabled)
 
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
+			frp := fakeRecommendationProvider{nil, tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, tc.maxAllowedCpu)
 			patches, err := c.CalculatePatches(tc.pod, tc.vpa)
 			if tc.expectError == nil {
