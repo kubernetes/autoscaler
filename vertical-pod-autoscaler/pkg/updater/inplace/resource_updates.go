@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -49,9 +50,14 @@ func (*resourcesInplaceUpdatesPatchCalculator) PatchResourceTarget() patch.Patch
 func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
-	containersResources, _, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
+	initContainersResources, containersResources, _, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
 	if err != nil {
 		return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+	}
+
+	for i, containerResources := range initContainersResources {
+		newPatches := getInitContainerPatch(pod, i, containerResources)
+		result = append(result, newPatches...)
 	}
 
 	for i, containerResources := range containersResources {
@@ -62,27 +68,40 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod,
 	return result, nil
 }
 
+func getInitContainerPatch(pod *core.Pod, i int, containerResources vpa_api_util.ContainerResources) []resource_admission.PatchRecord {
+	var patches []resource_admission.PatchRecord
+	// Add empty resources object if missing.
+	if pod.Spec.InitContainers[i].Resources.Limits == nil &&
+		pod.Spec.InitContainers[i].Resources.Requests == nil {
+		patches = append(patches, patch.GetPatchInitializingEmptyResources(i, model.ContainerTypeInitSidecar))
+	}
+
+	patches = appendPatches(patches, pod.Spec.InitContainers[i].Resources.Requests, i, containerResources.Requests, "requests", model.ContainerTypeInitSidecar)
+	patches = appendPatches(patches, pod.Spec.InitContainers[i].Resources.Limits, i, containerResources.Limits, "limits", model.ContainerTypeInitSidecar)
+
+	return patches
+}
 func getContainerPatch(pod *core.Pod, i int, containerResources vpa_api_util.ContainerResources) []resource_admission.PatchRecord {
 	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
 		pod.Spec.Containers[i].Resources.Requests == nil {
-		patches = append(patches, patch.GetPatchInitializingEmptyResources(i))
+		patches = append(patches, patch.GetPatchInitializingEmptyResources(i, model.ContainerTypeStandard))
 	}
 
-	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests")
-	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits")
+	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests", model.ContainerTypeStandard)
+	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits", model.ContainerTypeStandard)
 
 	return patches
 }
 
-func appendPatches(patches []resource_admission.PatchRecord, current core.ResourceList, containerIndex int, resources core.ResourceList, fieldName string) []resource_admission.PatchRecord {
+func appendPatches(patches []resource_admission.PatchRecord, current core.ResourceList, containerIndex int, resources core.ResourceList, fieldName string, containerType model.ContainerType) []resource_admission.PatchRecord {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
-		patches = append(patches, patch.GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
+		patches = append(patches, patch.GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName, containerType))
 	}
 	for resource, request := range resources {
-		patches = append(patches, patch.GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
+		patches = append(patches, patch.GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request, containerType))
 	}
 	return patches
 }

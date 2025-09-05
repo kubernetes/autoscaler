@@ -312,6 +312,11 @@ func getContainer(containerName string, pod *apiv1.Pod) *apiv1.Container {
 			return &pod.Spec.Containers[i]
 		}
 	}
+	for i, container := range pod.Spec.InitContainers {
+		if container.Name == containerName {
+			return &pod.Spec.InitContainers[i]
+		}
+	}
 	return nil
 }
 
@@ -394,6 +399,14 @@ type containerWithRecommendation struct {
 func zipContainersWithRecommendations(resources []vpa_types.RecommendedContainerResources, pod *apiv1.Pod) []containerWithRecommendation {
 	result := make([]containerWithRecommendation, 0)
 	for _, container := range pod.Spec.Containers {
+		recommendation := getRecommendationForContainer(container.Name, resources)
+		result = append(result, containerWithRecommendation{container: &container, recommendation: recommendation})
+	}
+	for _, container := range pod.Spec.InitContainers {
+		if container.RestartPolicy == nil ||
+			*container.RestartPolicy != apiv1.ContainerRestartPolicyAlways {
+			continue
+		}
 		recommendation := getRecommendationForContainer(container.Name, resources)
 		result = append(result, containerWithRecommendation{container: &container, recommendation: recommendation})
 	}
@@ -496,6 +509,19 @@ func insertRequestsForMissingRecommendations(containerRecommendations []vpa_type
 		result = append(result, *r.DeepCopy())
 	}
 	for _, container := range pod.Spec.Containers {
+		if recommendationForContainerExists(container.Name, containerRecommendations) {
+			continue
+		}
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+		if len(requests) == 0 {
+			continue
+		}
+		result = append(result, vpa_types.RecommendedContainerResources{
+			ContainerName: container.Name,
+			Target:        requests,
+		})
+	}
+	for _, container := range pod.Spec.InitContainers {
 		if recommendationForContainerExists(container.Name, containerRecommendations) {
 			continue
 		}
