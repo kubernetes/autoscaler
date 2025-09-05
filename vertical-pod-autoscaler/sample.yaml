@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-deployment
+  labels:
+    app.kubernetes.io/name: MyApp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: MyApp
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: MyApp
+    spec:
+      containers:
+      - name: main
+        image: busybox:1.28
+        command: ['sh', '-c', "while true; do nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; sleep 30; done"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 150m
+            memory: 250Mi
+      initContainers:
+      - name: sidecar
+        image: busybox:1.28
+        command: ['sh', '-c', "while true; do nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; sleep 30; done"]
+        restartPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 150m
+            memory: 250Mi
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: myapp-deployment
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp-deployment
+  updatePolicy:
+    updateMode: Recreate
