@@ -203,6 +203,11 @@ func (mcp *magnumCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (mcp *magnumCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // refreshNodeGroups gets the list of node groups which meet the requirements for autoscaling,
 // creates magnumNodeGroups for any that do not exist in the cloud provider,
 // and drops any node groups which are present in the cloud provider but not in the

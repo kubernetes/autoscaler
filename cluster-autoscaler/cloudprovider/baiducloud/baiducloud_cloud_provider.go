@@ -228,6 +228,11 @@ func (baiducloud *baiducloudCloudProvider) Refresh() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (baiducloud *baiducloudCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BaiducloudRef contains a reference to some entity in baiducloud world.
 type BaiducloudRef struct {
 	Name string

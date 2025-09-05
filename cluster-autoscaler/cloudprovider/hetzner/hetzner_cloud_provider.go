@@ -182,6 +182,11 @@ func (d *HetznerCloudProvider) Refresh() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (d *HetznerCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildHetzner builds the Hetzner cloud provider.
 func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	manager, err := newManager()

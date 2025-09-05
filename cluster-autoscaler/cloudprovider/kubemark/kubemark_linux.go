@@ -180,6 +180,11 @@ func (kubemark *KubemarkCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (kubemark *KubemarkCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // NodeGroup implements NodeGroup interface.
 type NodeGroup struct {
 	Name               string

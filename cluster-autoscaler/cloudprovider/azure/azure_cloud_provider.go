@@ -174,6 +174,11 @@ func (azure *AzureCloudProvider) Refresh() error {
 	return azure.azureManager.Refresh()
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (azure *AzureCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // azureRef contains a reference to some entity in Azure world.
 type azureRef struct {
 	Name string

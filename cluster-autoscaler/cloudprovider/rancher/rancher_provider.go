@@ -219,6 +219,11 @@ func (provider *RancherCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (provider *RancherCloudProvider) IsNodeCandidateForDeletion(node *corev1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (provider *RancherCloudProvider) scalableNodeGroups() ([]*nodeGroup, error) {
 	var result []*nodeGroup
 

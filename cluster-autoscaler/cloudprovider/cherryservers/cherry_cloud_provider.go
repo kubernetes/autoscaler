@@ -170,6 +170,11 @@ func (ccp *cherryCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (ccp *cherryCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildCherry is called by the autoscaler to build a Cherry Servers cloud provider.
 //
 // The cherryManager is created here, and the node groups are created

@@ -276,3 +276,8 @@ func (_m *CloudProvider) Refresh() error {
 
 	return r0
 }
+
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (_m *CloudProvider) IsNodeCandidateForDeletion(node *v1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
