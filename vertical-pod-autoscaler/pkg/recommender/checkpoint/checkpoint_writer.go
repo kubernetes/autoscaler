@@ -163,6 +163,14 @@ func buildAggregateContainerStateMap(vpa *model.Vpa, cluster model.ClusterState,
 				}
 			}
 		}
+		for containerName, container := range pod.InitSidecarsContainers {
+			aggregateKey := cluster.MakeAggregateStateKey(pod, containerName)
+			if vpa.UsesAggregation(aggregateKey) {
+				if aggregateContainerState, exists := aggregateContainerStateMap[containerName]; exists {
+					subtractCurrentContainerMemoryPeak(aggregateContainerState, container, now)
+				}
+			}
+		}
 	}
 	return aggregateContainerStateMap
 }
