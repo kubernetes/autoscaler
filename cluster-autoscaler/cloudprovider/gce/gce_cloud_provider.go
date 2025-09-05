@@ -148,6 +148,11 @@ func (gce *GceCloudProvider) Refresh() error {
 	return gce.gceManager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (gce *GceCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // GceRef contains s reference to some entity in GCE world.
 type GceRef struct {
 	Project string

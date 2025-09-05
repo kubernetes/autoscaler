@@ -22,6 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -48,6 +49,15 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context
 	nodeGroupSize := utils.GetNodeGroupSizeMap(ctx.CloudProvider)
 
 	for _, node := range nodes {
+		if candidate, err := ctx.CloudProvider.IsNodeCandidateForScaleDown(node); err != nil {
+			if err != cloudprovider.ErrNotImplemented {
+				klog.Warningf("Error while checking if node is a candidate for deletion %s: %v", node.Name, err)
+				continue
+			}
+		} else if !candidate {
+			klog.V(5).Infof("Node %s is not a candidate for deletion (cloud provider determined)", node.Name)
+			continue
+		}
 		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)

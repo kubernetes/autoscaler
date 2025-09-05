@@ -173,6 +173,11 @@ func (tencentcloud *tencentCloudProvider) Refresh() error {
 	return tencentcloud.tencentcloudManager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (tencentcloud *tencentCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildTencentcloud returns tencentcloud provider
 func BuildTencentcloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser

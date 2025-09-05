@@ -318,3 +318,8 @@ func (provider *OVHCloudProvider) Refresh() error {
 
 	return nil
 }
+
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (provider *OVHCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}

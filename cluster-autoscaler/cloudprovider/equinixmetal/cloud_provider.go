@@ -176,6 +176,11 @@ func (pcp *equinixMetalCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (pcp *equinixMetalCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildCloudProvider is called by the autoscaler to build an Equinix Metal cloud provider.
 //
 // The equinixMetalManager is created here, and the node groups are created

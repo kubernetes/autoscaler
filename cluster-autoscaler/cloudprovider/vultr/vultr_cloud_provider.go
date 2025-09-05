@@ -140,6 +140,11 @@ func (v *vultrCloudProvider) Refresh() error {
 	return v.manager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (v *vultrCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // toProviderID returns a provider ID from the given node ID.
 func toProviderID(nodeID string) string {
 	return fmt.Sprintf("%s%s", vultrProviderIDPrefix, nodeID)

@@ -147,6 +147,11 @@ func (ocp *OciCloudProvider) Refresh() error {
 	return ocp.poolManager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (ocp *OciCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildOCI constructs the OciCloudProvider object that implements the could provider interface (InstancePoolManager).
 func BuildOCI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	ocidType, err := ocicommon.GetAllPoolTypes(opts.NodeGroups)

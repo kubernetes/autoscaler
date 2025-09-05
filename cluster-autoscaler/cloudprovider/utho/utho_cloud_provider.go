@@ -162,6 +162,11 @@ func (u *uthoCloudProvider) Refresh() error {
 	return u.manager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (u *uthoCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildUtho builds the Utho cloud provider.
 func BuildUtho(
 	opts config.AutoscalingOptions,

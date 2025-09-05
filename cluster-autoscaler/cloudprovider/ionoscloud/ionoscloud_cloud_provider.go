@@ -308,6 +308,11 @@ func (ic *IonosCloudCloudProvider) Refresh() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (ic *IonosCloudCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildIonosCloud builds the IonosCloud cloud provider.
 func BuildIonosCloud(
 	opts config.AutoscalingOptions,
