@@ -48,6 +48,9 @@ const (
 	// InPlaceOrRecreate enables the InPlaceOrRecreate update mode to be used.
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlaceOrRecreate featuregate.Feature = "InPlaceOrRecreate"
+
+	// NativeSidecar enables support for native sidecars in VPA
+	NativeSidecar featuregate.Feature = "NativeSidecar"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.
