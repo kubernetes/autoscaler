@@ -74,10 +74,10 @@ func containerStatusFor(containerName string, containerStatuses []v1.ContainerSt
 }
 
 func isInitContainer(containerName string, pod *v1.Pod) bool {
-	for _, container := range pod.Spec.Containers {
+	for _, container := range pod.Spec.InitContainers {
 		if container.Name == containerName {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
