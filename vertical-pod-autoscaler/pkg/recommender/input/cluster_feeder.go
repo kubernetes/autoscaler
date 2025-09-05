@@ -246,7 +246,9 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 				PodID:         podID,
 				ContainerName: containerName,
 			}
-			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil); err != nil {
+			klog.V(0).InfoS("Adding", "container", containerID)
+			// TODO @jklaw90: pass the container type here
+			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, model.ContainerTypeStandard); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", containerID, "error", err)
 			}
 			klog.V(4).InfoS("Adding samples for container", "sampleCount", len(sampleList), "container", containerID)
@@ -501,13 +503,19 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		}
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
-			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request); err != nil {
+			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
 			}
 		}
 		initContainerNames := make([]string, 0, len(pod.InitContainers))
 		for _, initContainer := range pod.InitContainers {
-			initContainerNames = append(initContainerNames, initContainer.ID.ContainerName)
+			if initContainer.ContainerType == model.ContainerTypeInitSidecar {
+				if err = feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
+					klog.V(0).InfoS("Failed to add initContainer", "container", initContainer.ID, "error", err)
+				}
+			} else {
+				initContainerNames = append(initContainerNames, initContainer.ID.ContainerName)
+			}
 		}
 		if err = feeder.clusterState.SetInitContainers(pod.ID, initContainerNames); err != nil {
 			klog.V(0).InfoS("Failed to set init containers", "pod", klog.KRef(pod.ID.Namespace, pod.ID.PodName), "error", err)
