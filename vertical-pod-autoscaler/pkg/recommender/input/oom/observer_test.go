@@ -47,12 +47,20 @@ metadata:
   name: Pod1
   namespace: mockNamespace
 spec:
+  initContainers:
+  - name: InitName11
+    resources:
+      requests:
+        memory: "1024"
   containers:
   - name: Name11
     resources:
       requests:
         memory: "1024"
 status:
+  initContainerStatuses:
+  - name: InitName11
+    restartCount: 0
   containerStatuses:
   - name: Name11
 `
