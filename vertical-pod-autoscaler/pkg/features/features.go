@@ -57,6 +57,13 @@ const (
 	// optimization strategies to be applied to different workloads within the
 	// same cluster.
 	PerVPAConfig featuregate.Feature = "PerVPAConfig"
+
+
+	// alpha: v1.5.0
+	// components: admission-controller, recommender, updater
+	
+	// NativeSidecar enables support for native sidecars in VPA
+	NativeSidecar featuregate.Feature = "NativeSidecar"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.
