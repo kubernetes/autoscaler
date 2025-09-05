@@ -44,12 +44,20 @@ metadata:
   name: Pod1
   namespace: mockNamespace
 spec:
+  initContainers:
+  - name: InitName11
+    resources:
+      requests:
+        memory: "1024"
   containers:
   - name: Name11
     resources:
       requests:
         memory: "1024"
 status:
+  initContainerStatuses:
+  - name: InitName11
+    restartCount: 0
   containerStatuses:
   - name: Name11
     restartCount: 0
@@ -62,12 +70,20 @@ metadata:
   name: Pod1
   namespace: mockNamespace
 spec:
+  initContainers:
+  - name: InitName11
+    resources:
+      requests:
+        memory: "1024"
   containers:
   - name: Name11
     resources:
       requests:
         memory: "1024"
 status:
+  initContainerStatuses:
+  - name: InitName11
+    restartCount: 0
   containerStatuses:
   - name: Name11
     restartCount: 1
@@ -75,6 +91,36 @@ status:
       terminated:
         finishedAt: 2018-02-23T13:38:48Z
         reason: OOMKilled
+`
+
+const pod3Yaml = `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: Pod1
+  namespace: mockNamespace
+spec:
+  initContainers:
+  - name: InitName11
+    resources:
+      requests:
+        memory: "1024"
+  containers:
+  - name: Name11
+    resources:
+      requests:
+        memory: "1024"
+status:
+  initContainerStatuses:
+  - name: InitName11
+    restartCount: 1
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+  containerStatuses:
+  - name: Name11
+    restartCount: 0
 `
 
 func newPod(yaml string) (*v1.Pod, error) {
@@ -100,6 +146,8 @@ func TestOOMReceived(t *testing.T) {
 	assert.NoError(t, err)
 	p2, err := newPod(pod2Yaml)
 	assert.NoError(t, err)
+	p3, err := newPod(pod3Yaml)
+	assert.NoError(t, err)
 	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
 	assert.NoError(t, err)
 
@@ -116,6 +164,22 @@ func TestOOMReceived(t *testing.T) {
 			wantOOMInfo: OomInfo{
 				ContainerID: model.ContainerID{
 					ContainerName: "Name11",
+					PodID: model.PodID{
+						Namespace: "mockNamespace",
+						PodName:   "Pod1",
+					},
+				},
+				Memory:    model.ResourceAmount(int64(1024)),
+				Timestamp: timestamp,
+			},
+		},
+		{
+			desc:   "OK InitContainer",
+			oldPod: p1,
+			newPod: p3,
+			wantOOMInfo: OomInfo{
+				ContainerID: model.ContainerID{
+					ContainerName: "InitName11",
 					PodID: model.PodID{
 						Namespace: "mockNamespace",
 						PodName:   "Pod1",
