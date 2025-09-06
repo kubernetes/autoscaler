@@ -234,7 +234,7 @@ E2E tests will be included to verify:
 ## Implementation History
 
 - 2025-04-12: Initial proposal
-- 2025-09-06: Specify `oomBumpUpRatio` and `oomMinBumpUp` as container-level paramters
+- 2025-09-06: Specify `oomBumpUpRatio` and `oomMinBumpUp` as container-level parameters
 - Future: Additional parameters will be added based on user feedback and requirements
 
 ## Future Work
