@@ -48,6 +48,7 @@ Currently, supporting these different needs requires running multiple VPA compon
 - Support different optimization strategies for different workloads in the same cluster
 - Maintain backward compatibility with existing global configuration
 - Initially support the following parameters:
+  - oomBumpUpRatio
   - oomMinBumpUp
   - memoryAggregationInterval
   - memoryAggregationIntervalCount
@@ -79,7 +80,8 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
-      oomBumpUp: "1.5"
+      oomBumpUpRatio: "1.5"
+      oomMinBumpUp: 104857600
       memoryAggregationInterval: "12h"
       memoryAggregationIntervalCount: 5
 ```
@@ -87,14 +89,18 @@ spec:
 ### Parameter Descriptions
 
 #### Container Policy Parameters
-* `oomBumpUp` (Quantity):
-  - Controls memory increase after OOM events
-  - Can be specified as either:
-    - A ratio (e.g., "1.5" for 50% increase)
-    - An absolute value (e.g., "100Mi" for fixed increase)
-  - When specified, overrides global OOM configuration
-  - Allows fine-tuning of OOM behavior per container
-  
+* `oomBumpUpRatio` (Quantity):
+  - Multiplier applied to memory recommendations after OOM events
+  - Represented as a Quantity (e.g., "1.5")
+  - Must be greater than or equal to 1
+  - Setting to 1 effectively disables the OOM ratio-based increase
+  - Controls how aggressively memory is increased after container crashes
+
+* `oomMinBumpUp` (bytes): 
+  - Minimum absolute memory increase after OOM events
+  - Setting to 0 effectively disables the OOM minimum increase
+  - When both `oomBumpUpRatio` = 1 and `oomMinBumpUp` = 0, OOM-based memory increases are completely disabled
+  - Ensures meaningful increases even for small containers  
 * `memoryAggregationInterval` (duration):
   - Time window for aggregating memory usage data
   - Affects how quickly VPA responds to memory usage changes
@@ -119,13 +125,13 @@ When designing the configuration parameters, we analyzed each parameter to deter
 
 #### Parameter Level Analysis
 
-1. **OOM-Related Parameters (`oomBumpUp`)**
+1. **OOM-Related Parameters (`oomBumpUpRatio`, `oomMinBumpUp`)**
 - **Recommended Level**: Container-level
 - **Rationale**:
   - Different containers in the same pod may have different memory requirements and OOM patterns
   - Memory recommendations in VPA are already handled at container level
   - Consistent with how VPA handles other resource-related configurations
-  - While `oomBumpUp` is container-level, VPA-wide configuration can still be achieved using the wildcard container name "*"
+  - While these parameters are container-level, VPA-wide configuration can still be achieved using the wildcard container name "*"
 
 2. **Memory Aggregation Parameters (`memoryAggregationInterval`, `memoryAggregationIntervalCount`)**
 - **Recommended Level**: Container-level
@@ -146,61 +152,11 @@ When designing the configuration parameters, we analyzed each parameter to deter
 
 ### API Changes
 
-### OOM Parameter Consolidation
-
-In this proposal, we are consolidating `oomBumpUpRatio` and `oomMinBumpUp` into a single `oomBumpUp` parameter for several reasons:
-1. **Simplified Configuration**:
-   - Instead of managing two separate parameters that affect the same behavior, users can specify their intent with a single parameter
-   - Makes configuration more intuitive and less error-prone
-
-2. **Flexible Expression**:
-   - `oomBumpUp` can express both ratio-based and absolute increases:
-     - Ratio format: "1.5" (50% increase)
-     - Absolute format: "100Mi" (100 MiB increase)
-   - This flexibility eliminates the need for separate parameters while maintaining all functionality
-
-3. **Consistent with Kubernetes Patterns**:
-   - Uses the standard Kubernetes Quantity type
-   - Similar to how other Kubernetes components handle resource specifications
-
-4. **Backward Compatibility**:
-   - The new parameter can express all use cases covered by the previous parameters
-   - Migration path is straightforward:
-     - For ratio-based increases: Use the same value in `oomBumpUp`
-     - For minimum increases: Convert to absolute quantity in `oomBumpUp`
-
-### Parameter Coexistence and Global Configuration
-
-The VPA recommender maintains global configuration values for OOM-related parameters. The new `oomBumpUp` parameter interacts with these global configurations as follows:
-
-1. **Priority Order**:
-   - If `oomBumpUp` is specified in the VPA object, it takes precedence over any global configuration
-   - If `oomBumpUp` is not specified, the global configuration values from the recommender will be used
-   - This allows for a smooth transition and maintains backward compatibility
-
-2. **Validation**:
-   - The admission controller can only validate the syntax and range of `oomBumpUp` when specified
-   - Cannot validate against global configuration as these values live in the recommender
-   - Values must be either:
-     - A ratio >= 1 (e.g., "1.5")
-     - An absolute memory value > 0 (e.g., "100Mi")
-
-3. **Example Scenarios**:
-   ```yaml
-   # Scenario 1: oomBumpUp specified - overrides global config
-   containerPolicies:
-   - containerName: "*"
-     oomBumpUp: "1.5"
-
-   # Scenario 2: No oomBumpUp - uses global config from recommender
-   containerPolicies:
-   - containerName: "*"
-
-
 #### Phase 1 (Current Proposal)
 
 Extend `ContainerResourcePolicy` with:
-* `oomBumpUp`
+* `oomBumpUpRatio`
+* `oomMinBumpUp`
 * `memoryAggregationInterval`
 * `memoryAggregationIntervalCount`
 
@@ -252,7 +208,7 @@ The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is 
 ### Validation via CEL and Testing
 
 Initial validation rules (CEL):
-* `oomBumpUP` >= 1
+* `oomMinBumpUp` >= 0
 * `memoryAggregationInterval` > 0
 * `memoryAggregationIntervalCount` > 0
 * `evictAfterOOMThreshold` > 0
@@ -260,7 +216,7 @@ Initial validation rules (CEL):
 Validation via Admission Controller:
 Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
 
-* `oomBumpUP` – Using Kubernetes Quantity type for validation. The value must be greater than or equal to 1.
+* `oomBumpUpRatio` – Using Kubernetes Quantity type for validation. The value must be greater than or equal to 1.
 
 Additional validation rules will be added as new parameters are introduced.
 E2E tests will be included to verify:
@@ -278,7 +234,7 @@ E2E tests will be included to verify:
 ## Implementation History
 
 - 2025-04-12: Initial proposal
-- 2025-09-06: Consolidated `oomBumpUpRatio` and `oomMinBumpUp` into single `oomBumpUp` parameter
+- 2025-09-06: Specify `oomBumpUpRatio` and `oomMinBumpUp` as container-level paramters
 - Future: Additional parameters will be added based on user feedback and requirements
 
 ## Future Work
