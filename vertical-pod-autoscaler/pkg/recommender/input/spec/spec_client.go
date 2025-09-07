@@ -39,6 +39,22 @@ type BasicPodSpec struct {
 	Phase corev1.PodPhase
 }
 
+// GetContainerSpec is a quick way to get container specs
+func (p *BasicPodSpec) GetContainerSpec(name string) *BasicContainerSpec {
+	for _, container := range p.Containers {
+		if container.ID.ContainerName == name {
+			return &container
+		}
+	}
+	for _, initContainer := range p.InitContainers {
+		if initContainer.ID.ContainerName == name {
+			return &initContainer
+		}
+	}
+
+	return nil
+}
+
 // BasicContainerSpec contains basic information defining a container.
 type BasicContainerSpec struct {
 	// ID identifies the container within a cluster.
