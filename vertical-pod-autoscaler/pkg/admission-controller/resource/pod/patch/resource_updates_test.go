@@ -93,6 +93,44 @@ func addResourceLimitPatch(index int, res, amount string) resource_admission.Pat
 	}
 }
 
+func addInitResourcesPatch(idx int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/initContainers/%d/resources", idx),
+		Value: corev1.ResourceRequirements{},
+	}
+}
+
+func addInitRequestsPatch(idx int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/initContainers/%d/resources/requests", idx),
+		Value: corev1.ResourceList{},
+	}
+}
+
+func addInitResourceRequestPatch(index int, res, amount string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/initContainers/%d/resources/requests/%s", index, res),
+		Value: resource.MustParse(amount),
+	}
+}
+
+func addInitAnnotationRequest(updateResources [][]string, kind string) resource_admission.PatchRecord {
+	requests := make([]string, 0)
+	for idx, podResources := range updateResources {
+		podRequests := make([]string, 0)
+		for _, resource := range podResources {
+			podRequests = append(podRequests, resource+" "+kind)
+		}
+		requests = append(requests, fmt.Sprintf("init-sidecar %d: %s", idx, strings.Join(podRequests, ", ")))
+	}
+
+	vpaUpdates := fmt.Sprintf("Pod resources updated by name: %s", strings.Join(requests, "; "))
+	return GetAddAnnotationPatch(ResourceUpdatesAnnotation, vpaUpdates)
+}
+
 func addAnnotationRequest(updateResources [][]string, kind string) resource_admission.PatchRecord {
 	requests := make([]string, 0)
 	for idx, podResources := range updateResources {
@@ -140,6 +178,29 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 				addRequestsPatch(0),
 				addResourceRequestPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, request),
+			},
+		},
+		{
+			name: "new init cpu recommendation",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{}},
+				},
+			},
+			namespace: "default",
+			initResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches: []resource_admission.PatchRecord{
+				addInitResourcesPatch(0),
+				addInitRequestsPatch(0),
+				addInitResourceRequestPatch(0, cpu, "1"),
+				addInitAnnotationRequest([][]string{{cpu}}, request),
 			},
 		},
 		{

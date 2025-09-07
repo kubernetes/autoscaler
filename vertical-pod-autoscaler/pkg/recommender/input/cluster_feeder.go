@@ -109,6 +109,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		vpaCheckpointClient: m.VpaCheckpointClient,
 		vpaCheckpointLister: m.VpaCheckpointLister,
 		vpaLister:           m.VpaLister,
+		podLister:           m.PodLister,
 		clusterState:        m.ClusterState,
 		specClient:          spec.NewSpecClient(m.PodLister),
 		selectorFetcher:     m.SelectorFetcher,
@@ -223,6 +224,7 @@ type clusterStateFeeder struct {
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaCheckpointLister vpa_lister.VerticalPodAutoscalerCheckpointLister
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
+	podLister           listersv1.PodLister
 	clusterState        model.ClusterState
 	selectorFetcher     target.VpaTargetSelectorFetcher
 	memorySaveMode      bool
@@ -234,22 +236,35 @@ type clusterStateFeeder struct {
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+	pods, err := feeder.podSpecLookup()
+	if err != nil {
+		klog.ErrorS(err, "Cannot get SimplePodSpecs")
+	}
 	klog.V(3).InfoS("Initializing VPA from history provider")
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get cluster history")
 	}
 	for podID, podHistory := range clusterHistory {
+		// no need to load history if the pod no longer exists
+		podSpec, ok := pods[podID]
+		if !ok {
+			continue
+		}
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, corev1.PodUnknown)
+		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, podSpec.Phase)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,
 				ContainerName: containerName,
 			}
 			klog.V(0).InfoS("Adding", "container", containerID)
-			// TODO @jklaw90: pass the container type here
-			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, model.ContainerTypeStandard); err != nil {
+
+			containerSpec := podSpec.GetContainerSpec(containerName)
+			if containerSpec == nil {
+				continue
+			}
+			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, containerSpec.ContainerType); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", containerID, "error", err)
 			}
 			klog.V(4).InfoS("Adding samples for container", "sampleCount", len(sampleList), "container", containerID)
@@ -264,22 +279,6 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
-}
-
-func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
-	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-	vpa, exists := feeder.clusterState.VPAs()[vpaID]
-	if !exists {
-		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
-	}
-
-	cs := model.NewAggregateContainerState()
-	err := cs.LoadFromCheckpoint(&checkpoint.Status)
-	if err != nil {
-		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
-	}
-	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
-	return nil
 }
 
 func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
@@ -386,50 +385,6 @@ func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(ctx context.Con
 	return err
 }
 
-func implicitDefaultRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderSelector) bool {
-	return len(selectors) == 0
-}
-
-func selectsRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderSelector, name *string) bool {
-	for _, s := range selectors {
-		if s.Name == *name {
-			return true
-		}
-	}
-	return false
-}
-
-// Filter VPA objects whose specified recommender names are not default
-func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodAutoscaler) []*vpa_types.VerticalPodAutoscaler {
-	klog.V(3).InfoS("Start selecting the vpaCRDs.")
-	var vpaCRDs []*vpa_types.VerticalPodAutoscaler
-	for _, vpaCRD := range allVpaCRDs {
-		if feeder.recommenderName == DefaultRecommenderName {
-			if !implicitDefaultRecommender(vpaCRD.Spec.Recommenders) && !selectsRecommender(vpaCRD.Spec.Recommenders, &feeder.recommenderName) {
-				klog.V(6).InfoS("Ignoring vpaCRD as current recommender's name doesn't appear among its recommenders", "vpaCRD", klog.KObj(vpaCRD), "recommenderName", feeder.recommenderName)
-				continue
-			}
-		} else {
-			if implicitDefaultRecommender(vpaCRD.Spec.Recommenders) {
-				klog.V(6).InfoS("Ignoring vpaCRD as recommender doesn't process CRDs implicitly destined to default recommender", "vpaCRD", klog.KObj(vpaCRD), "recommenderName", feeder.recommenderName, "defaultRecommenderName", DefaultRecommenderName)
-				continue
-			}
-			if !selectsRecommender(vpaCRD.Spec.Recommenders, &feeder.recommenderName) {
-				klog.V(6).InfoS("Ignoring vpaCRD as current recommender's name doesn't appear among its recommenders", "vpaCRD", klog.KObj(vpaCRD), "recommenderName", feeder.recommenderName)
-				continue
-			}
-		}
-
-		if feeder.shouldIgnoreNamespace(vpaCRD.Namespace) {
-			klog.V(6).InfoS("Ignoring vpaCRD as this namespace is ignored", "vpaCRD", klog.KObj(vpaCRD))
-			continue
-		}
-
-		vpaCRDs = append(vpaCRDs, vpaCRD)
-	}
-	return vpaCRDs
-}
-
 // LoadVPAs fetches VPA objects and loads them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 	// List VPA API objects.
@@ -481,14 +436,10 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 
 // LoadPods loads pod into the cluster state.
 func (feeder *clusterStateFeeder) LoadPods() {
-	podSpecs, err := feeder.specClient.GetPodSpecs()
+	pods, err := feeder.podSpecLookup()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get SimplePodSpecs, skipping LoadPods cycle")
 		return
-	}
-	pods := make(map[model.PodID]*spec.BasicPodSpec)
-	for _, spec := range podSpecs {
-		pods[spec.ID] = spec
 	}
 	feeder.podsToDelete = nil
 	for key := range feeder.clusterState.Pods() {
@@ -504,14 +455,14 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		}
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
-			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
+			if err := feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
 			}
 		}
 		initContainerNames := make([]string, 0, len(pod.InitContainers))
 		for _, initContainer := range pod.InitContainers {
 			if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeInitSidecar {
-				if err = feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
+				if err := feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
 					klog.V(0).InfoS("Failed to add initContainer", "container", initContainer.ID, "error", err)
 				}
 			} else {
@@ -577,6 +528,78 @@ Loop:
 		}
 	}
 	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
+}
+
+func (feeder *clusterStateFeeder) podSpecLookup() (map[model.PodID]*spec.BasicPodSpec, error) {
+	podSpecs, err := feeder.specClient.GetPodSpecs()
+	if err != nil {
+		return nil, err
+	}
+	pods := make(map[model.PodID]*spec.BasicPodSpec)
+	for _, spec := range podSpecs {
+		pods[spec.ID] = spec
+	}
+	return pods, nil
+}
+
+func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+	vpa, exists := feeder.clusterState.VPAs()[vpaID]
+	if !exists {
+		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
+	}
+
+	cs := model.NewAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint.Status)
+	if err != nil {
+		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
+	}
+	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
+	return nil
+}
+
+func implicitDefaultRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderSelector) bool {
+	return len(selectors) == 0
+}
+
+func selectsRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderSelector, name *string) bool {
+	for _, s := range selectors {
+		if s.Name == *name {
+			return true
+		}
+	}
+	return false
+}
+
+// Filter VPA objects whose specified recommender names are not default
+func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodAutoscaler) []*vpa_types.VerticalPodAutoscaler {
+	klog.V(3).InfoS("Start selecting the vpaCRDs.")
+	var vpaCRDs []*vpa_types.VerticalPodAutoscaler
+	for _, vpaCRD := range allVpaCRDs {
+		if feeder.recommenderName == DefaultRecommenderName {
+			if !implicitDefaultRecommender(vpaCRD.Spec.Recommenders) && !selectsRecommender(vpaCRD.Spec.Recommenders, &feeder.recommenderName) {
+				klog.V(6).InfoS("Ignoring vpaCRD as current recommender's name doesn't appear among its recommenders", "vpaCRD", klog.KObj(vpaCRD), "recommenderName", feeder.recommenderName)
+				continue
+			}
+		} else {
+			if implicitDefaultRecommender(vpaCRD.Spec.Recommenders) {
+				klog.V(6).InfoS("Ignoring vpaCRD as recommender doesn't process CRDs implicitly destined to default recommender", "vpaCRD", klog.KObj(vpaCRD), "recommenderName", feeder.recommenderName, "defaultRecommenderName", DefaultRecommenderName)
+				continue
+			}
+			if !selectsRecommender(vpaCRD.Spec.Recommenders, &feeder.recommenderName) {
+				klog.V(6).InfoS("Ignoring vpaCRD as current recommender's name doesn't appear among its recommenders", "vpaCRD", klog.KObj(vpaCRD), "recommenderName", feeder.recommenderName)
+				continue
+			}
+		}
+
+		if feeder.shouldIgnoreNamespace(vpaCRD.Namespace) {
+			klog.V(6).InfoS("Ignoring vpaCRD as this namespace is ignored", "vpaCRD", klog.KObj(vpaCRD))
+			continue
+		}
+
+		vpaCRDs = append(vpaCRDs, vpaCRD)
+	}
+	return vpaCRDs
 }
 
 func (feeder *clusterStateFeeder) matchesVPA(pod *spec.BasicPodSpec) bool {
