@@ -73,6 +73,10 @@ func TestUpdateResourceRequests(t *testing.T) {
 	initialized := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).Get()
 
+	initializedWithInit := test.Pod().WithName("test_initialized").
+		AddContainer(initializedContainer).WithLabels(labels).
+		AddInitContainer(initializedContainer).WithLabels(labels).Get()
+
 	limitsMatchRequestsContainer := test.Container().WithName(containerName).
 		WithCPURequest(resource.MustParse("2")).WithCPULimit(resource.MustParse("2")).
 		WithMemRequest(resource.MustParse("200Mi")).WithMemLimit(resource.MustParse("200Mi")).Get()
@@ -158,6 +162,14 @@ func TestUpdateResourceRequests(t *testing.T) {
 		{
 			name:           "initialized pod",
 			pod:            initialized,
+			vpa:            vpa,
+			expectedAction: true,
+			expectedMem:    resource.MustParse("200Mi"),
+			expectedCPU:    resource.MustParse("2"),
+		},
+		{
+			name:           "pod with init container",
+			pod:            initializedWithInit,
 			vpa:            vpa,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("200Mi"),
@@ -302,13 +314,20 @@ func TestUpdateResourceRequests(t *testing.T) {
 				},
 			}
 
-			// TODO @jklaw90 update tests
-			_, resources, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
+			initResources, resources, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
 
 			if tc.expectedAction {
 				assert.Nil(t, err)
 				if !assert.Equal(t, len(resources), 1) {
 					return
+				}
+
+				assert.Equal(t, len(tc.pod.Spec.InitContainers), len(initResources), "init containers resources length mismatch")
+				if len(tc.pod.Spec.InitContainers) > 0 {
+					cpuRequestInit := initResources[0].Requests[apiv1.ResourceCPU]
+					assert.Equal(t, tc.expectedCPU.Value(), cpuRequestInit.Value(), "init cpu request doesn't match")
+					memoryRequestInit := initResources[0].Requests[apiv1.ResourceMemory]
+					assert.Equal(t, tc.expectedMem.Value(), memoryRequestInit.Value(), "init memory request doesn't match")
 				}
 
 				assert.NotContains(t, resources, "", "expected empty resource to be removed")
