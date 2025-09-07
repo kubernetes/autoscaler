@@ -58,10 +58,9 @@ const (
 	// same cluster.
 	PerVPAConfig featuregate.Feature = "PerVPAConfig"
 
-
 	// alpha: v1.5.0
 	// components: admission-controller, recommender, updater
-	
+
 	// NativeSidecar enables support for native sidecars in VPA
 	NativeSidecar featuregate.Feature = "NativeSidecar"
 )

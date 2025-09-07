@@ -232,10 +232,17 @@ func (cluster *clusterState) DeletePod(podID PodID) {
 // returned.
 // TODO maybe make this take in the containerspec since it has all this info?
 func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, request Resources, containerType ContainerType) error {
+
 	pod, podExists := cluster.pods[containerID.PodID]
 	if !podExists {
 		return NewKeyError(containerID.PodID)
 	}
+
+	if containerType == ContainerTypeInit {
+		pod.InitContainers = append(pod.InitContainers, containerID.ContainerName)
+		return nil
+	}
+
 	containerStateMap := pod.Containers
 	if containerType == ContainerTypeInitSidecar {
 		containerStateMap = pod.InitSidecarsContainers
