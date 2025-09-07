@@ -103,6 +103,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		vpaCheckpointClient: m.VpaCheckpointClient,
 		vpaCheckpointLister: m.VpaCheckpointLister,
 		vpaLister:           m.VpaLister,
+		podLister:           m.PodLister,
 		clusterState:        m.ClusterState,
 		specClient:          spec.NewSpecClient(m.PodLister),
 		selectorFetcher:     m.SelectorFetcher,
@@ -211,6 +212,7 @@ type clusterStateFeeder struct {
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaCheckpointLister vpa_lister.VerticalPodAutoscalerCheckpointLister
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
+	podLister           v1lister.PodLister
 	clusterState        model.ClusterState
 	selectorFetcher     target.VpaTargetSelectorFetcher
 	memorySaveMode      bool
@@ -218,55 +220,6 @@ type clusterStateFeeder struct {
 	recommenderName     string
 	ignoredNamespaces   []string
 	vpaObjectNamespace  string
-}
-
-func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
-	klog.V(3).InfoS("Initializing VPA from history provider")
-	clusterHistory, err := historyProvider.GetClusterHistory()
-	if err != nil {
-		klog.ErrorS(err, "Cannot get cluster history")
-	}
-	for podID, podHistory := range clusterHistory {
-		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, apiv1.PodUnknown)
-		for containerName, sampleList := range podHistory.Samples {
-			containerID := model.ContainerID{
-				PodID:         podID,
-				ContainerName: containerName,
-			}
-			klog.V(0).InfoS("Adding", "container", containerID)
-			// TODO @jklaw90: pass the container type here
-			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, model.ContainerTypeStandard); err != nil {
-				klog.V(0).InfoS("Failed to add container", "container", containerID, "error", err)
-			}
-			klog.V(4).InfoS("Adding samples for container", "sampleCount", len(sampleList), "container", containerID)
-			for _, sample := range sampleList {
-				if err := feeder.clusterState.AddSample(
-					&model.ContainerUsageSampleWithKey{
-						ContainerUsageSample: sample,
-						Container:            containerID,
-					}); err != nil {
-					klog.V(0).InfoS("Failed to add sample", "sample", sample, "error", err)
-				}
-			}
-		}
-	}
-}
-
-func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
-	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-	vpa, exists := feeder.clusterState.VPAs()[vpaID]
-	if !exists {
-		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
-	}
-
-	cs := model.NewAggregateContainerState()
-	err := cs.LoadFromCheckpoint(&checkpoint.Status)
-	if err != nil {
-		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
-	}
-	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
-	return nil
 }
 
 func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
@@ -295,6 +248,49 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 			err = feeder.setVpaCheckpoint(checkpoint)
 			if err != nil {
 				klog.ErrorS(err, "Error while loading checkpoint")
+			}
+		}
+	}
+}
+
+func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+	pods := feeder.podSpecLookup()
+	klog.V(3).InfoS("Initializing VPA from history provider")
+	clusterHistory, err := historyProvider.GetClusterHistory()
+	if err != nil {
+		klog.ErrorS(err, "Cannot get cluster history")
+	}
+	for podID, podHistory := range clusterHistory {
+		// no need to load history if the pod no longer exists
+		podSpec, ok := pods[podID]
+		if !ok {
+			continue
+		}
+		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
+		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, podSpec.Phase)
+		for containerName, sampleList := range podHistory.Samples {
+			containerID := model.ContainerID{
+				PodID:         podID,
+				ContainerName: containerName,
+			}
+			klog.V(0).InfoS("Adding", "container", containerID)
+
+			containerSpec := podSpec.GetContainerSpec(containerName)
+			if containerSpec == nil {
+				continue
+			}
+			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, containerSpec.ContainerType); err != nil {
+				klog.V(0).InfoS("Failed to add container", "container", containerID, "error", err)
+			}
+			klog.V(4).InfoS("Adding samples for container", "sampleCount", len(sampleList), "container", containerID)
+			for _, sample := range sampleList {
+				if err := feeder.clusterState.AddSample(
+					&model.ContainerUsageSampleWithKey{
+						ContainerUsageSample: sample,
+						Container:            containerID,
+					}); err != nil {
+					klog.V(0).InfoS("Failed to add sample", "sample", sample, "error", err)
+				}
 			}
 		}
 	}
@@ -341,6 +337,160 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context)
 	}
 }
 
+// LoadVPAs fetches VPA objects and loads them into the cluster state.
+func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
+	// List VPA API objects.
+	allVpaCRDs, err := feeder.vpaLister.List(labels.Everything())
+	if err != nil {
+		klog.ErrorS(err, "Cannot list VPAs")
+		return
+	}
+
+	// Filter out VPAs that specified recommenders with names not equal to "default"
+	vpaCRDs := filterVPAs(feeder, allVpaCRDs)
+
+	klog.V(3).InfoS("Fetching VPAs", "count", len(vpaCRDs))
+	// Add or update existing VPAs in the model.
+	vpaKeys := make(map[model.VpaID]bool)
+	for _, vpaCRD := range vpaCRDs {
+		vpaID := model.VpaID{
+			Namespace: vpaCRD.Namespace,
+			VpaName:   vpaCRD.Name,
+		}
+
+		selector, conditions := feeder.getSelector(ctx, vpaCRD)
+		klog.V(4).InfoS("Using selector", "selector", selector.String(), "vpa", klog.KObj(vpaCRD))
+
+		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
+			// Successfully added VPA to the model.
+			vpaKeys[vpaID] = true
+
+			for _, condition := range conditions {
+				if condition.delete {
+					delete(feeder.clusterState.VPAs()[vpaID].Conditions, condition.conditionType)
+				} else {
+					feeder.clusterState.VPAs()[vpaID].Conditions.Set(condition.conditionType, true, "", condition.message)
+				}
+			}
+		}
+	}
+	// Delete non-existent VPAs from the model.
+	for vpaID := range feeder.clusterState.VPAs() {
+		if _, exists := vpaKeys[vpaID]; !exists {
+			klog.V(3).InfoS("Deleting VPA", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName))
+			if err := feeder.clusterState.DeleteVpa(vpaID); err != nil {
+				klog.ErrorS(err, "Deleting VPA failed", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName))
+			}
+		}
+	}
+	feeder.clusterState.SetObservedVPAs(vpaCRDs)
+}
+
+// LoadPods loads pod into the cluster state.
+func (feeder *clusterStateFeeder) LoadPods() {
+	pods := feeder.podSpecLookup()
+	for key := range feeder.clusterState.Pods() {
+		if _, exists := pods[key]; !exists {
+			klog.V(3).InfoS("Deleting Pod", "pod", klog.KRef(key.Namespace, key.PodName))
+			feeder.clusterState.DeletePod(key)
+		}
+	}
+	for _, pod := range pods {
+		if feeder.memorySaveMode && !feeder.matchesVPA(pod) {
+			continue
+		}
+		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
+		for _, container := range pod.Containers {
+			if err := feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
+				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
+			}
+		}
+		for _, initContainer := range pod.InitContainers {
+			if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeInitSidecar {
+				if err := feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
+					klog.V(0).InfoS("Failed to add initContainer", "container", initContainer.ID, "error", err)
+				}
+			} else {
+				podInitContainers := feeder.clusterState.Pods()[pod.ID].InitContainers
+				feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
+			}
+		}
+	}
+}
+
+func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
+	containersMetrics, err := feeder.metricsClient.GetContainersMetrics(ctx)
+	if err != nil {
+		klog.ErrorS(err, "Cannot get ContainerMetricsSnapshot from MetricsClient")
+	}
+
+	sampleCount := 0
+	droppedSampleCount := 0
+	for _, containerMetrics := range containersMetrics {
+		// Container metrics are fetched for all pods, however, not all pod states are tracked in memory saver mode.
+		if pod, exists := feeder.clusterState.Pods()[containerMetrics.ID.PodID]; exists && pod != nil {
+			if slices.Contains(pod.InitContainers, containerMetrics.ID.ContainerName) {
+				klog.V(3).InfoS("Skipping metric samples for init container", "pod", klog.KRef(containerMetrics.ID.Namespace, containerMetrics.ID.PodName), "container", containerMetrics.ID.ContainerName)
+				droppedSampleCount += len(containerMetrics.Usage)
+				continue
+			}
+		}
+		for _, sample := range newContainerUsageSamplesWithKey(containerMetrics) {
+			if err := feeder.clusterState.AddSample(sample); err != nil {
+				// Not all pod states are tracked in memory saver mode.
+				if _, isKeyError := err.(model.KeyError); isKeyError && feeder.memorySaveMode {
+					continue
+				}
+				klog.V(0).InfoS("Error adding metric sample", "sample", sample, "error", err)
+				droppedSampleCount++
+			} else {
+				sampleCount++
+			}
+		}
+	}
+	klog.V(3).InfoS("ClusterSpec fed with ContainerUsageSamples", "sampleCount", sampleCount, "containerCount", len(containersMetrics), "droppedSampleCount", droppedSampleCount)
+Loop:
+	for {
+		select {
+		case oomInfo := <-feeder.oomChan:
+			klog.V(3).InfoS("OOM detected", "oomInfo", oomInfo)
+			if err = feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory); err != nil {
+				klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "error", err)
+			}
+		default:
+			break Loop
+		}
+	}
+	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
+}
+
+func (feeder *clusterStateFeeder) podSpecLookup() map[model.PodID]*spec.BasicPodSpec {
+	podSpecs, err := feeder.specClient.GetPodSpecs()
+	if err != nil {
+		klog.ErrorS(err, "Cannot get SimplePodSpecs")
+	}
+	pods := make(map[model.PodID]*spec.BasicPodSpec)
+	for _, spec := range podSpecs {
+		pods[spec.ID] = spec
+	}
+	return pods
+}
+
+func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+	vpa, exists := feeder.clusterState.VPAs()[vpaID]
+	if !exists {
+		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
+	}
+
+	cs := model.NewAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint.Status)
+	if err != nil {
+		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
+	}
+	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
+	return nil
+}
 func (feeder *clusterStateFeeder) shouldIgnoreNamespace(namespace string) bool {
 	// 1. `vpaObjectNamespace` is set but doesn't match the current namespace.
 	if feeder.vpaObjectNamespace != "" && namespace != feeder.vpaObjectNamespace {
@@ -415,140 +565,6 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 		vpaCRDs = append(vpaCRDs, vpaCRD)
 	}
 	return vpaCRDs
-}
-
-// LoadVPAs fetches VPA objects and loads them into the cluster state.
-func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
-	// List VPA API objects.
-	allVpaCRDs, err := feeder.vpaLister.List(labels.Everything())
-	if err != nil {
-		klog.ErrorS(err, "Cannot list VPAs")
-		return
-	}
-
-	// Filter out VPAs that specified recommenders with names not equal to "default"
-	vpaCRDs := filterVPAs(feeder, allVpaCRDs)
-
-	klog.V(3).InfoS("Fetching VPAs", "count", len(vpaCRDs))
-	// Add or update existing VPAs in the model.
-	vpaKeys := make(map[model.VpaID]bool)
-	for _, vpaCRD := range vpaCRDs {
-		vpaID := model.VpaID{
-			Namespace: vpaCRD.Namespace,
-			VpaName:   vpaCRD.Name,
-		}
-
-		selector, conditions := feeder.getSelector(ctx, vpaCRD)
-		klog.V(4).InfoS("Using selector", "selector", selector.String(), "vpa", klog.KObj(vpaCRD))
-
-		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
-			// Successfully added VPA to the model.
-			vpaKeys[vpaID] = true
-
-			for _, condition := range conditions {
-				if condition.delete {
-					delete(feeder.clusterState.VPAs()[vpaID].Conditions, condition.conditionType)
-				} else {
-					feeder.clusterState.VPAs()[vpaID].Conditions.Set(condition.conditionType, true, "", condition.message)
-				}
-			}
-		}
-	}
-	// Delete non-existent VPAs from the model.
-	for vpaID := range feeder.clusterState.VPAs() {
-		if _, exists := vpaKeys[vpaID]; !exists {
-			klog.V(3).InfoS("Deleting VPA", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName))
-			if err := feeder.clusterState.DeleteVpa(vpaID); err != nil {
-				klog.ErrorS(err, "Deleting VPA failed", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName))
-			}
-		}
-	}
-	feeder.clusterState.SetObservedVPAs(vpaCRDs)
-}
-
-// LoadPods loads pod into the cluster state.
-func (feeder *clusterStateFeeder) LoadPods() {
-	podSpecs, err := feeder.specClient.GetPodSpecs()
-	if err != nil {
-		klog.ErrorS(err, "Cannot get SimplePodSpecs")
-	}
-	pods := make(map[model.PodID]*spec.BasicPodSpec)
-	for _, spec := range podSpecs {
-		pods[spec.ID] = spec
-	}
-	for key := range feeder.clusterState.Pods() {
-		if _, exists := pods[key]; !exists {
-			klog.V(3).InfoS("Deleting Pod", "pod", klog.KRef(key.Namespace, key.PodName))
-			feeder.clusterState.DeletePod(key)
-		}
-	}
-	for _, pod := range pods {
-		if feeder.memorySaveMode && !feeder.matchesVPA(pod) {
-			continue
-		}
-		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
-		for _, container := range pod.Containers {
-			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
-				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
-			}
-		}
-		for _, initContainer := range pod.InitContainers {
-			if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeInitSidecar {
-				if err = feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
-					klog.V(0).InfoS("Failed to add initContainer", "container", initContainer.ID, "error", err)
-				}
-			} else {
-				podInitContainers := feeder.clusterState.Pods()[pod.ID].InitContainers
-				feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
-			}
-		}
-	}
-}
-
-func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
-	containersMetrics, err := feeder.metricsClient.GetContainersMetrics(ctx)
-	if err != nil {
-		klog.ErrorS(err, "Cannot get ContainerMetricsSnapshot from MetricsClient")
-	}
-
-	sampleCount := 0
-	droppedSampleCount := 0
-	for _, containerMetrics := range containersMetrics {
-		// Container metrics are fetched for all pods, however, not all pod states are tracked in memory saver mode.
-		if pod, exists := feeder.clusterState.Pods()[containerMetrics.ID.PodID]; exists && pod != nil {
-			if slices.Contains(pod.InitContainers, containerMetrics.ID.ContainerName) {
-				klog.V(3).InfoS("Skipping metric samples for init container", "pod", klog.KRef(containerMetrics.ID.Namespace, containerMetrics.ID.PodName), "container", containerMetrics.ID.ContainerName)
-				droppedSampleCount += len(containerMetrics.Usage)
-				continue
-			}
-		}
-		for _, sample := range newContainerUsageSamplesWithKey(containerMetrics) {
-			if err := feeder.clusterState.AddSample(sample); err != nil {
-				// Not all pod states are tracked in memory saver mode.
-				if _, isKeyError := err.(model.KeyError); isKeyError && feeder.memorySaveMode {
-					continue
-				}
-				klog.V(0).InfoS("Error adding metric sample", "sample", sample, "error", err)
-				droppedSampleCount++
-			} else {
-				sampleCount++
-			}
-		}
-	}
-	klog.V(3).InfoS("ClusterSpec fed with ContainerUsageSamples", "sampleCount", sampleCount, "containerCount", len(containersMetrics), "droppedSampleCount", droppedSampleCount)
-Loop:
-	for {
-		select {
-		case oomInfo := <-feeder.oomChan:
-			klog.V(3).InfoS("OOM detected", "oomInfo", oomInfo)
-			if err = feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory); err != nil {
-				klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "error", err)
-			}
-		default:
-			break Loop
-		}
-	}
-	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
 }
 
 func (feeder *clusterStateFeeder) matchesVPA(pod *spec.BasicPodSpec) bool {
