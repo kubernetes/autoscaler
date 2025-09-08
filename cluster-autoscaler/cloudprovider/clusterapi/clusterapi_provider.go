@@ -21,6 +21,7 @@ import (
 	"path"
 	"reflect"
 
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/discovery"
@@ -34,7 +35,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	caserrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
@@ -92,7 +93,7 @@ func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
 	return false, fmt.Errorf("machine not found for node %s: %v", node.Name, err)
 }
 
-func (*provider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (*provider) Pricing() (cloudprovider.PricingModel, caserrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -142,7 +143,20 @@ func (p *provider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig 
 
 // IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
 func (p *provider) IsNodeCandidateForScaleDown(node *corev1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+	ng, err := p.controller.nodeGroupForNode(node)
+	if err != nil {
+		return false, errors.Wrapf(err, "failed to determine node group for node %s", klog.KObj(node))
+	}
+	if ng == nil {
+		klog.V(5).Infof("node %s is not part of a node group", klog.KObj(node))
+		return false, nil
+	}
+	rollingout, err := ng.IsMachineDeploymentAndRollingOut()
+	if err != nil {
+		return false, errors.Wrapf(err, "failed to determine rolling out status for MachineDeployment %s", ng.scalableResource.ID())
+	}
+	// A node is a good candidate for scale down if it is not currently part of a MachineDeployment that is rolling out.
+	return !rollingout, nil
 }
 
 func newProvider(
