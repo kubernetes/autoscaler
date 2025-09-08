@@ -19,14 +19,14 @@ package builder
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/options"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/client-go/informers"
 
 	klog "k8s.io/klog/v2"
 )
 
 // NewCloudProvider builds a cloud provider from provided parameters.
-func NewCloudProvider(opts *options.AutoscalerOptions, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+func NewCloudProvider(opts *coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	klog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
