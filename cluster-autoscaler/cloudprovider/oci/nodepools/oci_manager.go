@@ -40,6 +40,8 @@ const (
 	nodepoolTags          = "nodepoolTags"
 	min                   = "min"
 	max                   = "max"
+	minSize               = "minSize"
+	maxSize               = "maxSize"
 )
 
 var (
@@ -216,8 +218,8 @@ func autoDiscoverNodeGroups(m *ociManagerImpl, okeClient okeClient, nodeGroup no
 			nodepool := &nodePool{}
 			nodepool.id = *nodePoolSummary.Id
 			// set minSize-maxSize from nodepool free form tags, or else use nodeGroupAutoDiscovery configuration
-			nodepool.minSize = getIntFromMap(nodePoolSummary.FreeformTags, "minSize", nodeGroup.minSize)
-			nodepool.maxSize = getIntFromMap(nodePoolSummary.FreeformTags, "maxSize", nodeGroup.maxSize)
+			nodepool.minSize = getIntFromMap(nodePoolSummary.FreeformTags, minSize, nodeGroup.minSize)
+			nodepool.maxSize = getIntFromMap(nodePoolSummary.FreeformTags, maxSize, nodeGroup.maxSize)
 
 			nodepool.manager = nodeGroup.manager
 			nodepool.kubeClient = nodeGroup.kubeClient
