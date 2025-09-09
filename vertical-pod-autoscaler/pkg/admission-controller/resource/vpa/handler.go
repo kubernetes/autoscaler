@@ -167,8 +167,8 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		}
 	}
 
-	if isCreate && vpa.Spec.TargetRef == nil {
-		return fmt.Errorf("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
+	if isCreate && (vpa.Spec.TargetRef == nil && vpa.Spec.PodLabelSelector == nil) {
+		return fmt.Errorf("targetRef or podLabelSelector are required. If you're using v1beta1 version of the API, please migrate to v1")
 	}
 
 	if len(vpa.Spec.Recommenders) > 1 {

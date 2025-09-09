@@ -84,7 +84,14 @@ type VerticalPodAutoscalerSpec struct {
 	// of scale subresource - it will not use it to modify the replica count.
 	// The only thing retrieved is a label selector matching pods grouped by
 	// the target resource.
+	// +optional
 	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef" protobuf:"bytes,1,name=targetRef"`
+
+	// PodLabelSelector allows selecting pods directly by label selector, instead of using TargetRef.
+	// If specified, pods matching this selector will be managed by the VPA.
+	// If both TargetRef and PodLabelSelector are specified, PodLabelSelector takes precedence.
+	// +optional
+	PodLabelSelector *metav1.LabelSelector `json:"podLabelSelector,omitempty" protobuf:"bytes,5,opt,name=podLabelSelector"`
 
 	// Describes the rules on how changes are applied to the pods.
 	// If not specified, all fields in the `PodUpdatePolicy` are set to their

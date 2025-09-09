@@ -170,23 +170,34 @@ func Stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
 func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
 
-	parentController, err := FindParentControllerForPod(ctx, pod, ctrlFetcher)
-	if err != nil {
-		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
-		return nil
-	}
-	if parentController == nil {
-		return nil
-	}
-
 	var controlling *VpaWithSelector
 	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpaWithSelector := range vpas {
+		// Handle VPAs with podLabelSelector (no targetRef)
 		if vpaWithSelector.Vpa.Spec.TargetRef == nil {
-			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpaWithSelector.Vpa))
+			if vpaWithSelector.Vpa.Spec.PodLabelSelector == nil {
+				klog.V(5).InfoS("Skipping VPA object because neither targetRef nor podLabelSelector is defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpaWithSelector.Vpa))
+				continue
+			}
+			// For podLabelSelector VPAs, just check if pod labels match
+			if PodMatchesVPA(pod, vpaWithSelector) && Stronger(vpaWithSelector.Vpa, controllingVpa) {
+				controlling = vpaWithSelector
+				controllingVpa = controlling.Vpa
+			}
 			continue
 		}
+
+		// Handle VPAs with targetRef - check controller ownership
+		parentController, err := FindParentControllerForPod(ctx, pod, ctrlFetcher)
+		if err != nil {
+			klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
+			continue
+		}
+		if parentController == nil {
+			continue
+		}
+
 		if vpaWithSelector.Vpa.Spec.TargetRef.Kind != parentController.Kind ||
 			vpaWithSelector.Vpa.Namespace != parentController.Namespace ||
 			vpaWithSelector.Vpa.Spec.TargetRef.Name != parentController.Name {

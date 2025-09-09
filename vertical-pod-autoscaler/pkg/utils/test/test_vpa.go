@@ -41,6 +41,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithTargetResource(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
+	WithPodLabelSelector(podLabelSelector *meta.LabelSelector) VerticalPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithAnnotations(map[string]string) VerticalPodAutoscalerBuilder
 	WithRecommender(string2 string) VerticalPodAutoscalerBuilder
@@ -85,6 +86,7 @@ type verticalPodAutoscalerBuilder struct {
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
 	annotations             map[string]string
 	targetRef               *autoscaling.CrossVersionObjectReference
+	podLabelSelector        *meta.LabelSelector
 	appendedRecommendations []vpa_types.RecommendedContainerResources
 	recommender             string
 }
@@ -173,6 +175,13 @@ func (b *verticalPodAutoscalerBuilder) WithUpperBound(cpu, memory string) Vertic
 func (b *verticalPodAutoscalerBuilder) WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.targetRef = targetRef
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithPodLabelSelector(podLabelSelector *meta.LabelSelector) VerticalPodAutoscalerBuilder {
+	c := *b
+
+	c.podLabelSelector = podLabelSelector
 	return &c
 }
 
@@ -276,10 +285,11 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			CreationTimestamp: meta.NewTime(b.creationTimestamp),
 		},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			UpdatePolicy:   b.updatePolicy,
-			ResourcePolicy: &resourcePolicy,
-			TargetRef:      b.targetRef,
-			Recommenders:   recommenders,
+			UpdatePolicy:     b.updatePolicy,
+			ResourcePolicy:   &resourcePolicy,
+			TargetRef:        b.targetRef,
+			PodLabelSelector: b.podLabelSelector,
+			Recommenders:     recommenders,
 		},
 		Status: vpa_types.VerticalPodAutoscalerStatus{
 			Recommendation: recommendation,

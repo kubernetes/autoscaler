@@ -505,19 +505,30 @@ func (cluster *clusterState) GetMatchingPods(vpa *Vpa) []PodID {
 // GetControllerForPodUnderVPA returns controller associated with given Pod. Returns nil if Pod is not controlled by a VPA object.
 func (cluster *clusterState) GetControllerForPodUnderVPA(ctx context.Context, pod *PodState, controllerFetcher controllerfetcher.ControllerFetcher) *controllerfetcher.ControllerKeyWithAPIVersion {
 	controllingVPA := cluster.GetControllingVPA(pod)
-	if controllingVPA != nil {
-		controller := &controllerfetcher.ControllerKeyWithAPIVersion{
-			ControllerKey: controllerfetcher.ControllerKey{
-				Namespace: controllingVPA.ID.Namespace,
-				Kind:      controllingVPA.TargetRef.Kind,
-				Name:      controllingVPA.TargetRef.Name,
-			},
-			ApiVersion: controllingVPA.TargetRef.APIVersion,
-		}
-		topLevelController, _ := controllerFetcher.FindTopMostWellKnownOrScalable(ctx, controller)
-		return topLevelController
+	if controllingVPA == nil {
+		return nil
 	}
-	return nil
+
+	// Handle VPAs with podLabelSelector (no targetRef)
+	if controllingVPA.TargetRef == nil {
+		// For podLabelSelector VPAs, there's no specific controller to check.
+		// Garbage collection for these pods should rely on pod active state rather than controller existence.
+		// Return nil to indicate no controller-based GC should be performed for these pods.
+		return nil
+	}
+
+	// Handle VPAs with targetRef - use the controller specified in the VPA
+	controller := &controllerfetcher.ControllerKeyWithAPIVersion{
+		ControllerKey: controllerfetcher.ControllerKey{
+			Namespace: controllingVPA.ID.Namespace,
+			Kind:      controllingVPA.TargetRef.Kind,
+			Name:      controllingVPA.TargetRef.Name,
+		},
+		ApiVersion: controllingVPA.TargetRef.APIVersion,
+	}
+
+	topLevelController, _ := controllerFetcher.FindTopMostWellKnownOrScalable(ctx, controller)
+	return topLevelController
 }
 
 // GetControllingVPA returns a VPA object controlling given Pod.

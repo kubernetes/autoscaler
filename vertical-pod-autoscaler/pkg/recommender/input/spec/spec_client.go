@@ -53,6 +53,8 @@ type BasicContainerSpec struct {
 type SpecClient interface {
 	// Returns BasicPodSpec for each pod in the cluster
 	GetPodSpecs() ([]*BasicPodSpec, error)
+	// Returns BasicPodSpec for pods matching the given label selector
+	GetPodSpecsWithSelector(selector labels.Selector) ([]*BasicPodSpec, error)
 }
 
 type specClient struct {
@@ -75,13 +77,28 @@ func (client *specClient) GetPodSpecs() ([]*BasicPodSpec, error) {
 		return nil, err
 	}
 	for _, pod := range pods {
-		basicPodSpec := newBasicPodSpec(pod)
+		basicPodSpec := NewBasicPodSpec(pod)
 		podSpecs = append(podSpecs, basicPodSpec)
 	}
 	return podSpecs, nil
 }
 
-func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
+func (client *specClient) GetPodSpecsWithSelector(selector labels.Selector) ([]*BasicPodSpec, error) {
+	var podSpecs []*BasicPodSpec
+
+	pods, err := client.podLister.List(selector)
+	if err != nil {
+		return nil, err
+	}
+	for _, pod := range pods {
+		basicPodSpec := NewBasicPodSpec(pod)
+		podSpecs = append(podSpecs, basicPodSpec)
+	}
+	return podSpecs, nil
+}
+
+// NewBasicPodSpec creates a new BasicPodSpec from a Kubernetes Pod
+func NewBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
 	containerSpecs := newContainerSpecs(pod, pod.Spec.Containers, false /* isInitContainer */)
 	initContainerSpecs := newContainerSpecs(pod, pod.Spec.InitContainers, true /* isInitContainer */)
 

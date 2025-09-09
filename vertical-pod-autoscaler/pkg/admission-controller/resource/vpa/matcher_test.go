@@ -177,3 +177,101 @@ func TestGetMatchingVpa(t *testing.T) {
 		})
 	}
 }
+
+func TestGetMatchingVPA_PodLabelSelector(t *testing.T) {
+	testCases := []struct {
+		name            string
+		pod             *core.Pod
+		vpas            []*vpa_types.VerticalPodAutoscaler
+		labelSelector   string
+		expectedFound   bool
+		expectedVpaName string
+	}{
+		{
+			name: "vpa with podLabelSelector matches pod",
+			pod: test.Pod().WithName("test-pod").WithLabels(map[string]string{
+				"app":     "my-app",
+				"version": "v1",
+			}).Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				test.VerticalPodAutoscaler().WithName("label-selector-vpa").
+					WithContainer("test-container").
+					WithPodLabelSelector(&meta.LabelSelector{
+						MatchLabels: map[string]string{"app": "my-app"},
+					}).Get(),
+			},
+			labelSelector:   "app = my-app",
+			expectedFound:   true,
+			expectedVpaName: "label-selector-vpa",
+		},
+		{
+			name: "vpa with podLabelSelector doesn't match pod",
+			pod: test.Pod().WithName("test-pod").WithLabels(map[string]string{
+				"app": "different-app",
+			}).Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				test.VerticalPodAutoscaler().WithName("label-selector-vpa").
+					WithContainer("test-container").
+					WithPodLabelSelector(&meta.LabelSelector{
+						MatchLabels: map[string]string{"app": "my-app"},
+					}).Get(),
+			},
+			labelSelector: "app = my-app",
+			expectedFound: false,
+		},
+		{
+			name: "pod without controller matches podLabelSelector VPA",
+			pod: test.Pod().WithName("standalone-pod").WithLabels(map[string]string{
+				"app": "standalone",
+			}).Get(), // No owner reference
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				test.VerticalPodAutoscaler().WithName("standalone-vpa").
+					WithContainer("test-container").
+					WithPodLabelSelector(&meta.LabelSelector{
+						MatchLabels: map[string]string{"app": "standalone"},
+					}).Get(),
+			},
+			labelSelector:   "app = standalone",
+			expectedFound:   true,
+			expectedVpaName: "standalone-vpa",
+		},
+		{
+			name: "vpa with neither targetRef nor podLabelSelector should be ignored",
+			pod: test.Pod().WithName("test-pod").WithLabels(map[string]string{
+				"app": "my-app",
+			}).Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				test.VerticalPodAutoscaler().WithName("invalid-vpa").WithContainer("test-container").Get(), // Neither targetRef nor podLabelSelector
+			},
+			expectedFound: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+
+			vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
+			vpaNamespaceLister.On("List").Return(tc.vpas, nil)
+
+			vpaLister := &test.VerticalPodAutoscalerListerMock{}
+			vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
+
+			if tc.labelSelector != "" {
+				mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
+			}
+
+			matcher := NewMatcher(vpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
+
+			vpa := matcher.GetMatchingVPA(context.Background(), tc.pod)
+			if tc.expectedFound && assert.NotNil(t, vpa) {
+				assert.Equal(t, tc.expectedVpaName, vpa.Name)
+			} else {
+				assert.Nil(t, vpa)
+			}
+		})
+	}
+}

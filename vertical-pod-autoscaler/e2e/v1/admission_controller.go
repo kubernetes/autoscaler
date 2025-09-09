@@ -50,6 +50,48 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:
 		waitForVpaWebhookRegistration(f)
 	})
 
+	ginkgo.It("applies recommendations to pods matching labelSelector, not targetRef", func() {
+		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m"), ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA CRD with labelSelector")
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa-labelselector").
+			WithNamespace(f.Namespace.Name).
+			WithPodLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{"app": "hamster"}}).
+			WithContainer(containerName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("250m", "200Mi").
+					WithLowerBound("250m", "200Mi").
+					WithUpperBound("250m", "200Mi").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment with matching and non-matching pods")
+		// Matching pod
+		d.Spec.Template.Labels = map[string]string{"app": "hamster"}
+		podList := startDeploymentPods(f, d)
+
+		// Non-matching pod
+		d2 := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m"), ParseQuantityOrDie("100Mi"))
+		d2.Spec.Template.Labels = map[string]string{"app": "not-hamster"}
+		podList2 := startDeploymentPods(f, d2)
+
+		// Matching pods should get recommended resources
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+		}
+		// Non-matching pods should keep original resources
+		for _, pod := range podList2.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+		}
+	})
 	ginkgo.It("starts pods with new recommended request with InPlaceOrRecreate mode", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 

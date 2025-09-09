@@ -36,6 +36,9 @@ spec:
           properties:
             targetRef:
               type: object
+            podLabelSelector:
+              type: object
+              description: Label selector to match pods for VPA management. If specified, overrides targetRef.
             updatePolicy:
               type: object
               properties:
