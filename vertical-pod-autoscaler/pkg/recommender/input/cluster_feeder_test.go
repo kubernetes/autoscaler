@@ -499,7 +499,7 @@ func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
 
 func TestClusterStateFeeder_LoadPods_PodLabelSelectorOptimization(t *testing.T) {
 	clusterState := model.NewClusterState(testGcPeriod)
-	
+
 	// Create some test pods with different labels
 	podLabels := []map[string]string{
 		{"app": "test1", "version": "v1"},
@@ -507,7 +507,7 @@ func TestClusterStateFeeder_LoadPods_PodLabelSelectorOptimization(t *testing.T) 
 		{"app": "different", "version": "v1"},
 	}
 	client := makeTestSpecClient(podLabels)
-	
+
 	// Create a VPA with podLabelSelector
 	vpaID := model.VpaID{Namespace: "default", VpaName: "test-vpa"}
 	selector := parseLabelSelector("app=test1")
@@ -523,10 +523,10 @@ func TestClusterStateFeeder_LoadPods_PodLabelSelectorOptimization(t *testing.T) 
 		clusterState:   clusterState,
 		memorySaveMode: true, // Enable memory save mode to trigger optimization
 	}
-	
+
 	// Test the optimization methods
 	assert.True(t, feeder.canUseSelectorBasedPodFetching())
-	
+
 	optimizedPods, err := feeder.getPodSpecsWithSelectors()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(optimizedPods)) // Should only return the matching pod
@@ -535,7 +535,7 @@ func TestClusterStateFeeder_LoadPods_PodLabelSelectorOptimization(t *testing.T) 
 
 func TestClusterStateFeeder_ValidateTargetRef_PodLabelSelector(t *testing.T) {
 	feeder := clusterStateFeeder{}
-	
+
 	// Test VPA with only podLabelSelector (no targetRef) - should be valid
 	vpaWithSelector := &vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-vpa", Namespace: "default"},
@@ -543,17 +543,17 @@ func TestClusterStateFeeder_ValidateTargetRef_PodLabelSelector(t *testing.T) {
 			PodLabelSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"app": "test"}},
 		},
 	}
-	
+
 	valid, condition := feeder.validateTargetRef(context.TODO(), vpaWithSelector)
 	assert.True(t, valid, "VPA with podLabelSelector should be valid")
 	assert.Empty(t, condition.message, "Should not have error condition")
-	
+
 	// Test VPA with neither targetRef nor podLabelSelector - should be invalid
 	vpaWithNeither := &vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-vpa", Namespace: "default"},
 		Spec:       vpa_types.VerticalPodAutoscalerSpec{},
 	}
-	
+
 	valid, condition = feeder.validateTargetRef(context.TODO(), vpaWithNeither)
 	assert.False(t, valid, "VPA with neither targetRef nor podLabelSelector should be invalid")
 }

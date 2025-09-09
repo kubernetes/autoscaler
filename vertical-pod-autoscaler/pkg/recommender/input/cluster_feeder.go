@@ -475,7 +475,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 	} else {
 		podSpecs, err = feeder.specClient.GetPodSpecs()
 	}
-	
+
 	if err != nil {
 		klog.ErrorS(err, "Cannot get SimplePodSpecs")
 	}
@@ -660,36 +660,36 @@ func (feeder *clusterStateFeeder) canUseSelectorBasedPodFetching() bool {
 // This reduces memory usage by only fetching pods that are relevant to the VPAs.
 func (feeder *clusterStateFeeder) getPodSpecsWithSelectors() ([]*spec.BasicPodSpec, error) {
 	podsMap := make(map[model.PodID]*spec.BasicPodSpec)
-	
+
 	for _, vpa := range feeder.clusterState.VPAs() {
 		if vpa.PodSelector == nil || vpa.PodSelector == labels.Nothing() {
 			continue
 		}
-		
+
 		// Skip VPA if it's in an ignored namespace
 		if feeder.shouldIgnoreNamespace(vpa.ID.Namespace) {
 			continue
 		}
-		
+
 		// Use the spec client with the VPA's selector to get only relevant pods
 		podSpecs, err := feeder.specClient.GetPodSpecsWithSelector(vpa.PodSelector)
 		if err != nil {
 			klog.V(2).InfoS("Error listing pods with selector", "vpa", vpa.ID, "selector", vpa.PodSelector.String(), "error", err)
 			continue
 		}
-		
+
 		for _, podSpec := range podSpecs {
 			if !feeder.shouldIgnoreNamespace(podSpec.ID.Namespace) {
 				podsMap[podSpec.ID] = podSpec
 			}
 		}
 	}
-	
+
 	// Convert map to slice
 	var podSpecs []*spec.BasicPodSpec
 	for _, podSpec := range podsMap {
 		podSpecs = append(podSpecs, podSpec)
 	}
-	
+
 	return podSpecs, nil
 }

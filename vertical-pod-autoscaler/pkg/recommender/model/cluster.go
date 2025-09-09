@@ -508,7 +508,7 @@ func (cluster *clusterState) GetControllerForPodUnderVPA(ctx context.Context, po
 	if controllingVPA == nil {
 		return nil
 	}
-	
+
 	// Handle VPAs with podLabelSelector (no targetRef)
 	if controllingVPA.TargetRef == nil {
 		// For podLabelSelector VPAs, there's no specific controller to check.
@@ -516,7 +516,7 @@ func (cluster *clusterState) GetControllerForPodUnderVPA(ctx context.Context, po
 		// Return nil to indicate no controller-based GC should be performed for these pods.
 		return nil
 	}
-	
+
 	// Handle VPAs with targetRef - use the controller specified in the VPA
 	controller := &controllerfetcher.ControllerKeyWithAPIVersion{
 		ControllerKey: controllerfetcher.ControllerKey{
@@ -526,7 +526,7 @@ func (cluster *clusterState) GetControllerForPodUnderVPA(ctx context.Context, po
 		},
 		ApiVersion: controllingVPA.TargetRef.APIVersion,
 	}
-	
+
 	topLevelController, _ := controllerFetcher.FindTopMostWellKnownOrScalable(ctx, controller)
 	return topLevelController
 }

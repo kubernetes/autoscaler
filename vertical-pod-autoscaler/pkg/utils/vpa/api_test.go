@@ -210,18 +210,18 @@ func TestGetControllingVPAForPod_PodLabelSelector(t *testing.T) {
 		{vpaWithSelector, parseLabelSelector("app = testingApp")},
 		{nonMatchingVPA, parseLabelSelector("app = different")},
 	}, &controllerfetcher.FakeControllerFetcher{})
-	
+
 	assert.NotNil(t, chosen)
 	assert.Equal(t, vpaWithSelector, chosen.Vpa)
 
 	// Test that pod with different labels doesn't match
 	differentPod := test.Pod().WithName("different-pod").Get()
 	differentPod.Labels = map[string]string{"app": "different"}
-	
+
 	chosen = GetControllingVPAForPod(ctx, differentPod, []*VpaWithSelector{
 		{vpaWithSelector, parseLabelSelector("app = testingApp")},
 	}, &controllerfetcher.FakeControllerFetcher{})
-	
+
 	assert.Nil(t, chosen)
 
 	// Test VPA with neither targetRef nor podLabelSelector should be skipped
@@ -229,11 +229,11 @@ func TestGetControllingVPAForPod_PodLabelSelector(t *testing.T) {
 		WithContainer(containerName).
 		WithCreationTimestamp(time.Unix(1, 0)).Get()
 	// Neither targetRef nor podLabelSelector set
-	
+
 	chosen = GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{
 		{invalidVPA, parseLabelSelector("app = testingApp")},
 	}, &controllerfetcher.FakeControllerFetcher{})
-	
+
 	assert.Nil(t, chosen)
 }
 
