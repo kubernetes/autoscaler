@@ -1,4 +1,4 @@
-# AEP-XXX: Add support for setting a custom request-to-limit ratio at the VPA object level
+# AEP-8515: Add support for setting a custom request-to-limit ratio at the VPA object level
 
 <!-- toc -->
 - [Summary](#summary)
