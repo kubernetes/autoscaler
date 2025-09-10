@@ -38,11 +38,10 @@ The feature is gated by a new alpha feature flag, `RequestToLimitRatio`, which i
 * Provide a feature gate to enable or disable the feature (`RequestToLimitRatio`).  
 * Allow VPA to update the request-to-limit ratio of a Pod's containers during Pod recreation or in-place updates.  
 * Introduce a new `RequestToLimitRatio` block that enables users to adjust the request-to-limit ratio in the following ways:  
-  * **Factor**: Multiplies the recommended request by a specified value, and the result is set as the new limit.  
-    * Example: if `factor` is set to `2`, the limit will be set to twice the recommended request.  
-  * **Quantity**: Adds a buffer on top of the resource request. This can be expressed either:  
-    * As a **percentage** (`QuantityPercentage`), or  
-    * As an **absolute value with units** (`QuantityValue`).  
+  * **Factor**: Multiplies the recommended request by a specified value, and the result is set as the new limit, for example:
+    * If the value for `Factor` is set to `2`, the limit will be twice the recommended request.  
+    * If the value for `Factor` is set to `1.1`, the limit will be 10% higher than the recommended request.  
+  * **Quantity**: Adds a buffer on top of the resource request. This can be expressed as an **absolute value with units** (e.g. `100Mi`, `10m`).  
 
 ## Non-Goals
 
@@ -62,19 +61,16 @@ Some examples of the VPA CRD using the new `RequestToLimitRatio` field are provi
 A new `RequestToLimitRatio` field will be added, with the following sub-fields:
 
 * `RequestToLimitRatio.CPU.Type` or `RequestToLimitRatio.Memory.Type` (type: `string`, required): Specifies how to apply limits proportionally to the requests. `Type` can have the following values:  
-  * `Factor` (type: `integer`): Interpreted as a multiplier for the recommended request.  
+  * `Factor` (type: `floating-point number`): Interpreted as a multiplier for the recommended request.  
     * Example: a value of `2` will double the limits.  
-  * `QuantityValue` (type: `string`): Adds an absolute value on top of the requests to determine the new limit.  
-    * Example: for memory, a value of `100Mi` means the new limit will be: calculated Memory request + `100Mi`.  
-  * `QuantityPercentage` (type: `integer`): Increases the limit by the specified percentage of the resource request.  
-    * Example: if the request is 1000m CPU and the percentage is 20, the limit will be 1000m + (20% of 1000m) = 1200m.
+  * `Quantity` (type: `string`): Adds an absolute value on top of the requests to determine the new limit.  
+    * Example: for memory, a value of `100Mi` means the new limit will be: calculated memory request + `100Mi`.  
 
 * `RequestToLimitRatio.CPU.Value` (type: `string`, required): Specifies the magnitude of the ratio between request and limit, interpreted according to `RequestToLimitRatio.CPU.Type`:  
   * If `Type` is `Factor`: a value of `3` will triple the CPU limits.  
-  * If `Type` is `QuantityValue`: if the value is set to 200m, then the CPU limit will be set to the CPU request plus 200 millicores.
-  * If `Type` is `QuantityPercentage`: a value of `20` increases the CPU limit by 20% of the calculated request.
+  * If `Type` is `Quantity`: if the value is set to 200m, then the CPU limit will be set to the CPU request plus 200 millicores.
 
-* `RequestToLimitRatio.Memory.Value` (type: `string`): Similar to `CPU.Value`, except that for `QuantityValue` the units are memory-based (e.g., `Mi`, `Gi`) rather than CPU millicores (`m`).
+* `RequestToLimitRatio.Memory.Value` (type: `string`, required): Similar to `CPU.Value`, except that for `Quantity` the units are memory-based (e.g., `Mi`, `Gi`) rather than CPU millicores (`m`).
 
 ### Behavior
 
@@ -114,12 +110,11 @@ The behavior after implementing this feature is as follows:
 
 * The `RequestToLimitRatio` configuration will be validated when VPA CRD objects are created or updated. For example:  
   * If `Type` is `Factor`, the value must be greater than or equal to 1 (enforced via CRD validation rules).  
-  * If `Type` is `QuantityPercentage`, the value must be greater than or equal to 1 (enforced via CRD validation rules).  
 
 #### Dynamic Validation via Admission Controller
 
 * When using the new `RequestToLimitRatio` field, the `controlledValues` field must be set to `RequestsAndLimits`. It does not make sense to specify `RequestToLimitRatio` if VPA is not allowed to update limits. This requirement is enforced by the admission controller.  
-* If `Type` is set to `QuantityValue`, then its `Value` will be validated.
+* If `Type` is set to `Quantity`, then its `Value` will be validated.
 
 ### Feature Enablement and Rollback
 
@@ -182,11 +177,11 @@ spec:
             Type: Factor
             Value: 2
           memory:
-            Type: QuantityValue
+            Type: Quantity
             Value: 200Mi
 ```
 
-In the manifest below, we configure VPA to control only the CPU resource's requests and limits for the container named `app`. The CPU limit is calculated by increasing the recommended CPU request by 30%.
+In the manifest below, we configure VPA to control only the CPU resource's requests and limits for the container named `app`. The CPU limit is calculated by increasing the recommended CPU request by 20% (i.e. `recommended request × 1.2`).
 
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
@@ -207,10 +202,11 @@ spec:
         controlledValues: RequestsAndLimits
         RequestToLimitRatio:
           cpu:
-            Type: QuantityPercentage
-            Value: 30
+            Type: Factor
+            Value: 1.2
 ```
 
 ## Implementation History
 
 * 2025-09-10: Initial proposal created.
+* 2025-09-10: Drop `QuantityPercentage` and rename `QuantityValue` to `Quantity`.
