@@ -31,10 +31,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
+	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 )
 
 const (
@@ -143,6 +143,25 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	_, err = GetVpaClientSet(f).AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).Patch(context.TODO(), vpa.Name, types.JSONPatchType, bytes, metav1.PatchOptions{}, "status")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
+}
+
+// NewVPADeployment creates a VPA deployment with n containers
+// for e2e test purposes.
+func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment {
+	d := framework_deployment.NewDeployment(
+		RecommenderDeploymentName,        /*deploymentName*/
+		1,                                /*replicas*/
+		RecommenderLabels,                /*podLabels*/
+		"recommender",                    /*imageName*/
+		"localhost:5001/vpa-recommender", /*image*/
+		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+	)
+	d.ObjectMeta.Namespace = f.Namespace.Name
+	d.Spec.Template.Spec.Containers[0].ImagePullPolicy = apiv1.PullNever // Image must be loaded first
+	d.Spec.Template.Spec.ServiceAccountName = "vpa-recommender"
+	d.Spec.Template.Spec.Containers[0].Command = []string{"/recommender"}
+	d.Spec.Template.Spec.Containers[0].Args = flags
+	return d
 }
 
 // NewNHamstersDeployment creates a simple hamster deployment with n containers
