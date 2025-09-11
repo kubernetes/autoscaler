@@ -409,10 +409,34 @@ func (m *ociManagerImpl) TaintToPreventFurtherSchedulingOnRestart(nodes []*apiv1
 func (m *ociManagerImpl) forceRefresh() error {
 	// auto discover node groups
 	if m.nodeGroups != nil {
-		// empty previous nodepool map to do an auto discovery
+		// create a copy of m.staticNodePools to use it in comparison
+		staticNodePoolsCopy := make(map[string]NodePool)
+		for k, v := range m.staticNodePools {
+			staticNodePoolsCopy[k] = v
+		}
+
+		// empty previous nodepool map to do a fresh auto discovery
 		m.staticNodePools = make(map[string]NodePool)
+
+		// run auto-discovery
 		for _, nodeGroup := range m.nodeGroups {
 			autoDiscoverNodeGroups(m, m.okeClient, nodeGroup)
+		}
+
+		// compare the new and previous nodepool list to log the updates
+		for nodepoolId, nodepool := range m.staticNodePools {
+			if _, ok := staticNodePoolsCopy[nodepoolId]; !ok {
+				klog.Infof("New nodepool discovered. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(), nodepool.MaxSize())
+			} else if staticNodePoolsCopy[nodepoolId].MinSize() != nodepool.MinSize() || staticNodePoolsCopy[nodepoolId].MaxSize() != nodepool.MaxSize() {
+				klog.Infof("Nodepool min/max sizes are updated. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(), nodepool.MaxSize())
+			}
+		}
+
+		// log if there are nodepools removed from the list
+		for k := range staticNodePoolsCopy {
+			if _, ok := m.staticNodePools[k]; !ok {
+				klog.Infof("Previously auto-discovered nodepool removed from the managed nodepool list. nodepoolid: %s", k)
+			}
 		}
 	}
 	// rebuild nodepool cache
