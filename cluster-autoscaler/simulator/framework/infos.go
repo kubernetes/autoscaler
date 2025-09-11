@@ -19,6 +19,7 @@ package framework
 import (
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
@@ -54,6 +55,9 @@ type NodeInfo struct {
 
 	// LocalResourceSlices contains all node-local ResourceSlices exposed by this Node.
 	LocalResourceSlices []*resourceapi.ResourceSlice
+
+	// CSINodes contains all CSINodes exposed by this Node.
+	CSINode *storagev1.CSINode
 }
 
 // SetNode sets the Node in this NodeInfo
@@ -135,6 +139,21 @@ func (n *NodeInfo) ResourceClaims() []*resourceapi.ResourceClaim {
 		}
 	}
 	return result
+}
+
+func (n *NodeInfo) AddNodeResourceSlices(slices []*resourceapi.ResourceSlice) *NodeInfo {
+	n.LocalResourceSlices = slices
+	return n
+}
+
+func (n *NodeInfo) AddCSINode(csiNode *storagev1.CSINode) *NodeInfo {
+	n.CSINode = csiNode
+	return n
+}
+
+func (n *NodeInfo) AddPodExtraInfo(podExtraInfo map[types.UID]PodExtraInfo) *NodeInfo {
+	n.podsExtraInfo = podExtraInfo
+	return n
 }
 
 // NewNodeInfo returns a new internal NodeInfo from the provided data.

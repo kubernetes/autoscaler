@@ -22,6 +22,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/uuid"
@@ -73,9 +74,14 @@ func SanitizedTemplateNodeInfoFromNodeInfo(example *framework.NodeInfo, nodeGrou
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
+	templateNodeInfo := framework.NewNodeInfo(sanitizedExample.Node(), sanitizedExample.LocalResourceSlices, expectedPods...)
+	if example.CSINode != nil {
+		templateNodeInfo.AddCSINode(CreateSanitizedCSINode(example.CSINode, templateNodeInfo))
+	}
+
 	// No need to sanitize the expected pods again - they either come from sanitizedExample and were sanitized above,
 	// or were added by podsExpectedOnFreshNode and sanitized there.
-	return framework.NewNodeInfo(sanitizedExample.Node(), sanitizedExample.LocalResourceSlices, expectedPods...), nil
+	return templateNodeInfo, nil
 }
 
 // SanitizedNodeInfo duplicates the provided template NodeInfo, returning a fresh NodeInfo that can be injected into the cluster snapshot.
@@ -125,6 +131,24 @@ func createSanitizedNode(node *apiv1.Node, newName string, taintConfig *taints.T
 		newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, *taintConfig)
 	}
 	return newNode
+}
+
+func CreateSanitizedCSINode(csiNode *storagev1.CSINode, templateNodeInfo *framework.NodeInfo) *storagev1.CSINode {
+	newCSINode := csiNode.DeepCopy()
+	newCSINode.Name = templateNodeInfo.Node().Name
+	newCSINode.UID = uuid.NewUUID()
+
+	newCSINode.OwnerReferences = []metav1.OwnerReference{
+		{
+			APIVersion: "v1",
+			Kind:       "Node",
+			Name:       templateNodeInfo.Node().Name,
+			UID:        templateNodeInfo.Node().UID,
+		},
+	}
+	// TODO: we could add santized nodeID here, but it should not
+	// be needed for scheduling decisions
+	return newCSINode
 }
 
 func createSanitizedPod(pod *apiv1.Pod, nodeName, nameSuffix string) *apiv1.Pod {
