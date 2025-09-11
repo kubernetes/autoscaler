@@ -109,7 +109,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	if aErr != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
 	}
-	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
+	klog.V(4).Infof("hemant Upcoming %d nodes", len(upcomingNodes))
 
 	nodeGroups := o.autoscalingCtx.CloudProvider.NodeGroups()
 	if o.processors != nil && o.processors.NodeGroupListProcessor != nil {
@@ -137,11 +137,14 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	for nodegroupID := range skippedNodeGroups {
 		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingCtx, nodegroupID)
 	}
+	klog.V(4).Infof("hemant validNodeGroups %d", len(validNodeGroups))
 
 	// Calculate expansion options
 	schedulablePodGroups := map[string][]estimator.PodEquivalenceGroup{}
 	var options []expander.Option
 
+	// This code here runs a simulation to see which pods can be scheduled on which node groups.
+	// TODO: Fix bug with CSI node not being added to the simulation.
 	for _, nodeGroup := range validNodeGroups {
 		schedulablePodGroups[nodeGroup.Id()] = o.SchedulablePodGroups(podEquivalenceGroups, nodeGroup, nodeInfos[nodeGroup.Id()])
 	}
@@ -152,6 +155,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 		if len(option.Pods) == 0 || option.NodeCount == 0 {
 			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
+			klog.Infof("hemant no pod can fit to %s", nodeGroup.Id())
 		} else if allOrNothing && len(option.Pods) < len(unschedulablePods) {
 			klog.V(4).Infof("Some pods can't fit to %s, giving up due to all-or-nothing scale-up strategy", nodeGroup.Id())
 		} else {
@@ -493,6 +497,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		o.autoscalingCtx.ClusterSnapshot,
 		estimator.NewEstimationContext(o.autoscalingCtx.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
 	)
+	klog.Infof("hemant about to run estimater for node group %s", nodeGroup.Id())
 	option.NodeCount, option.Pods = expansionEstimator.Estimate(podGroups, nodeInfo, nodeGroup)
 	metrics.UpdateDurationFromStart(metrics.Estimate, estimateStart)
 

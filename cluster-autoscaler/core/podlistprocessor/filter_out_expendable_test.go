@@ -110,7 +110,7 @@ func TestFilterOutExpendable(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
 			snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			err := snapshot.SetClusterState(tc.nodes, nil, nil)
+			err := snapshot.SetClusterState(tc.nodes, nil, nil, nil)
 			assert.NoError(t, err)
 
 			pods, err := processor.Process(&ca_context.AutoscalingContext{

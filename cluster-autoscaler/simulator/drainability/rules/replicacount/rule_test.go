@@ -329,7 +329,7 @@ func TestDrainable(t *testing.T) {
 			ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
 			assert.NoError(t, err)
 
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
 			drainCtx := &drainability.DrainContext{
 				Listers:   registry,
