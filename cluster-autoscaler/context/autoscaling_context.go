@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -73,6 +74,8 @@ type AutoscalingContext struct {
 	DraProvider *draprovider.Provider
 	// TemplateNodeInfoRegistry allows accessing template node infos.
 	TemplateNodeInfoRegistry TemplateNodeInfoRegistry
+	// CsiProvider is the provider for CSI node aware scheduling.
+	CsiProvider *csinodeprovider.Provider
 }
 
 // TemplateNodeInfoRegistry is the interface for getting template node infos.
@@ -138,6 +141,7 @@ func NewAutoscalingContext(
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	draProvider *draprovider.Provider,
 	templateNodeInfoRegistry TemplateNodeInfoRegistry,
+	csiProvider *csinodeprovider.Provider,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:       options,
@@ -152,6 +156,7 @@ func NewAutoscalingContext(
 		ClusterStateRegistry:     clusterStateRegistry,
 		DraProvider:              draProvider,
 		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
+		CsiProvider:              csiProvider,
 	}
 }
 

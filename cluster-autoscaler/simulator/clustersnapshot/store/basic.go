@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
@@ -32,6 +33,7 @@ import (
 type BasicSnapshotStore struct {
 	data        []*internalBasicSnapshotData
 	draSnapshot *drasnapshot.Snapshot
+	csiSnapshot *csisnapshot.Snapshot
 }
 
 type internalBasicSnapshotData struct {
@@ -213,6 +215,11 @@ func (snapshot *BasicSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
 	return snapshot.draSnapshot
 }
 
+// CsiSnapshot returns the CSI snapshot.
+func (snapshot *BasicSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
+	return snapshot.csiSnapshot
+}
+
 // AddSchedulerNodeInfo adds a NodeInfo.
 func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
 	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
@@ -227,7 +234,7 @@ func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) 
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
+func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
 	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
@@ -249,6 +256,12 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
 	} else {
 		snapshot.draSnapshot = draSnapshot
+	}
+
+	if csiSnapshot == nil {
+		snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.csiSnapshot = csiSnapshot
 	}
 
 	return nil
@@ -279,6 +292,7 @@ func (snapshot *BasicSnapshotStore) Fork() {
 	forkData := snapshot.getInternalData().clone()
 	snapshot.data = append(snapshot.data, forkData)
 	snapshot.draSnapshot.Fork()
+	snapshot.csiSnapshot.Fork()
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -288,6 +302,7 @@ func (snapshot *BasicSnapshotStore) Revert() {
 	}
 	snapshot.data = snapshot.data[:len(snapshot.data)-1]
 	snapshot.draSnapshot.Revert()
+	snapshot.csiSnapshot.Revert()
 }
 
 // Commit commits changes done after forking.
@@ -298,6 +313,7 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 	}
 	snapshot.data = append(snapshot.data[:len(snapshot.data)-2], snapshot.data[len(snapshot.data)-1])
 	snapshot.draSnapshot.Commit()
+	snapshot.csiSnapshot.Commit()
 	return nil
 }
 
@@ -306,6 +322,7 @@ func (snapshot *BasicSnapshotStore) clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
 	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
 }
 
 // implementation of SharedLister interface
@@ -341,6 +358,11 @@ func (snapshot *BasicSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 // DeviceClassResolver exposes the snapshot as DeviceClassResolver.
 func (snapshot *BasicSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
 	return snapshot.DraSnapshot().DeviceClassResolver()
+}
+
+// CSINodes returns the CSI nodes snapshot.
+func (snapshot *BasicSnapshotStore) CSINodes() fwk.CSINodeLister {
+	return snapshot.csiSnapshot.CSINodes()
 }
 
 // List returns the list of nodes in the snapshot.
