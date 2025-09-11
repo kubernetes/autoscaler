@@ -22,6 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
@@ -54,6 +55,7 @@ import (
 type DeltaSnapshotStore struct {
 	data        *internalDeltaSnapshotData
 	draSnapshot *drasnapshot.Snapshot
+	csiSnapshot *csisnapshot.Snapshot
 	parallelism int
 }
 
@@ -432,6 +434,11 @@ func (snapshot *DeltaSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
 	return snapshot.draSnapshot
 }
 
+// CsiSnapshot returns the CSI snapshot.
+func (snapshot *DeltaSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
+	return snapshot.csiSnapshot
+}
+
 // AddSchedulerNodeInfo adds a NodeInfo.
 func (snapshot *DeltaSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
 	if _, err := snapshot.data.addNode(nodeInfo.Node()); err != nil {
@@ -479,7 +486,7 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
+func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
 	snapshot.clear()
 
 	nodeNameToIdx := make(map[string]int, len(nodes))
@@ -510,6 +517,12 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 		snapshot.draSnapshot = draSnapshot
 	}
 
+	if csiSnapshot == nil {
+		snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.csiSnapshot = csiSnapshot
+	}
+
 	return nil
 }
 
@@ -538,6 +551,7 @@ func (snapshot *DeltaSnapshotStore) IsPVCUsedByPods(key string) bool {
 func (snapshot *DeltaSnapshotStore) Fork() {
 	snapshot.data = snapshot.data.fork()
 	snapshot.draSnapshot.Fork()
+	snapshot.csiSnapshot.Fork()
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -547,6 +561,7 @@ func (snapshot *DeltaSnapshotStore) Revert() {
 		snapshot.data = snapshot.data.baseData
 	}
 	snapshot.draSnapshot.Revert()
+	snapshot.csiSnapshot.Revert()
 }
 
 // Commit commits changes done after forking.
@@ -558,6 +573,7 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 	}
 	snapshot.data = newData
 	snapshot.draSnapshot.Commit()
+	snapshot.csiSnapshot.Commit()
 	return nil
 }
 
@@ -566,4 +582,5 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 func (snapshot *DeltaSnapshotStore) clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
 	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
 }
