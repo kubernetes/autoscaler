@@ -199,7 +199,7 @@ func TestRemovableAt(t *testing.T) {
 
 			rsLister, err := kube_util.NewTestReplicaSetLister(nil)
 			assert.NoError(t, err)
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 
@@ -282,7 +282,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			readyNodeLister := kubernetes.NewTestNodeLister(nil)
 			readyNodeLister.SetNodes(tc.allNodes)
 
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister,
 				nil, nil, nil, nil, nil, nil, nil)
 
 			nodes.LoadFromExistingTaints(listerRegistry, currentTime, tc.nodeDeletionCandidateTTL)
