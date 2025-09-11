@@ -97,9 +97,9 @@ type ResourceList map[ResourceName]resource.Quantity
 // CapacityBufferSpec defines the desired state of CapacityBuffer.
 type CapacityBufferSpec struct {
 	// ProvisioningStrategy defines how the buffer is utilized.
-	// "active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
-	// +kubebuilder:validation:Enum=active-capacity
-	// +kubebuilder:default="active-capacity"
+	// "buffer.x-k8s.io/active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
+	// +kubebuilder:validation:Enum=buffer.x-k8s.io/active-capacity
+	// +kubebuilder:default="buffer.x-k8s.io/active-capacity"
 	// +optional
 	ProvisioningStrategy *string `json:"provisioningStrategy,omitempty" protobuf:"bytes,1,opt,name=provisioningStrategy"`
 
@@ -123,24 +123,18 @@ type CapacityBufferSpec struct {
 	// If neither `replicas` nor `percentage` is set, as many chunks as fit within
 	// defined resource limits (if any) will be created. If both are set, the maximum
 	// of the two will be used.
-	// This field is mutually exclusive with `percentage` when `scalableRef` is set.
 	// +optional
 	// +kubebuilder:validation:Minimum=0
 	// +kubebuilder:validation:ExclusiveMinimum=false
-	// +kubebuilder:validation:Xor=replicas,percentage
 	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,4,opt,name=replicas"`
 
 	// Percentage defines the desired buffer capacity as a percentage of the
 	// `scalableRef`'s current replicas. This is only applicable if `scalableRef` is set.
 	// The absolute number of replicas is calculated from the percentage by rounding up to a minimum of 1.
 	// For example, if `scalableRef` has 10 replicas and `percentage` is 20, 2 buffer chunks will be created.
-	// This field is mutually exclusive with `replicas`.
 	// +optional
 	// +kubebuilder:validation:Minimum=0
-	// +kubebuilder:validation:Maximum=100
-	// +kubebuilder:validation:ExclusiveMaximum=false
 	// +kubebuilder:validation:ExclusiveMinimum=false
-	// +kubebuilder:validation:Xor=replicas,percentage
 	Percentage *int32 `json:"percentage,omitempty" protobuf:"varint,5,opt,name=percentage"`
 
 	// Limits, if specified, will limit the number of chunks created for this buffer
