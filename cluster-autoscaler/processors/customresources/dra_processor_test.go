@@ -396,7 +396,7 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 			provider.SetMachineTemplates(machineTemplates)
 			draSnapshot := drasnapshot.NewSnapshot(nil, tc.nodesSlices, nil, nil)
 			clusterSnapshotStore := store.NewBasicSnapshotStore()
-			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot)
+			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 
 			autoscalingCtx := &ca_context.AutoscalingContext{
@@ -405,7 +405,7 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(tc.registryNodeInfos),
 			}
 			processor := DraCustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot, nil)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {
