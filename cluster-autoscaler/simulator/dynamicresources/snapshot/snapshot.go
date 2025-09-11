@@ -126,6 +126,21 @@ func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework
 	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nodeSlices, podExtraInfos), nil
 }
 
+func (s *Snapshot) AddDRAInfo(nodeInfo *framework.NodeInfo) (*framework.NodeInfo, error) {
+	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(nodeInfo.Pods()))
+	for _, pod := range nodeInfo.Pods() {
+		podClaims, err := s.PodClaims(pod.Pod)
+		if err != nil {
+			return nil, err
+		}
+		if len(podClaims) > 0 {
+			podExtraInfos[pod.Pod.UID] = framework.PodExtraInfo{NeededResourceClaims: podClaims}
+		}
+	}
+	nodeSlices, _ := s.NodeResourceSlices(nodeInfo.Node().Name)
+	return nodeInfo.AddNodeResourceSlices(nodeSlices).AddPodExtraInfo(podExtraInfos), nil
+}
+
 // AddClaims adds additional ResourceClaims to the Snapshot. It can be used e.g. if we need to duplicate a Pod that
 // owns ResourceClaims. Returns an error if any of the claims is already tracked in the snapshot.
 func (s *Snapshot) AddClaims(newClaims []*resourceapi.ResourceClaim) error {

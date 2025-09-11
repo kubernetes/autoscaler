@@ -48,6 +48,7 @@ type estimationState struct {
 	newNodeNameIndex int
 	lastNodeName     string
 	newNodeNames     map[string]bool
+	// map of node name that has at least one pod scheduled on it
 	newNodesWithPods map[string]bool
 }
 
@@ -142,6 +143,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 	pods []*apiv1.Pod,
 ) ([]*apiv1.Pod, error) {
 	var index int
+	klog.Infof("hemant about to try to schedule on existing nodes %d", len(pods))
 	for index = 0; index < len(pods); index++ {
 		pod := pods[index]
 
@@ -149,11 +151,13 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 		nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, func(nodeInfo *framework.NodeInfo) bool {
 			return estimationState.newNodeNames[nodeInfo.Node().Name]
 		})
+		klog.Infof("hemant trying scheduling of pod %s on node %s", pod.Name, nodeName)
 		if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 			// Unexpected error.
 			return nil, err
 		} else if err != nil {
 			// The pod couldn't be scheduled on any Node because of scheduling predicates.
+			klog.Infof("hemant failed to schedule pod %s on existing node %s", pod.Name, nodeName)
 			break
 		}
 		// The pod was scheduled on nodeName.
@@ -174,6 +178,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 
 		if estimationState.lastNodeName != "" {
 			// Try to schedule the pod on only newly created node.
+			klog.Infof("hemant - Trying to schedule pod %s on last node %s", pod.Name, estimationState.lastNodeName)
 			err := e.clusterSnapshot.SchedulePod(pod, estimationState.lastNodeName)
 			if err == nil {
 				// The pod was scheduled on the newly created node.
@@ -222,6 +227,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 				return false, nil
 			}
 
+			klog.Infof("hemant - Adding new node %s", estimationState.lastNodeName)
 			// Add new node
 			if err := e.addNewNodeToSnapshot(estimationState, nodeTemplate); err != nil {
 				return false, fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
@@ -249,10 +255,16 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState *estimationState,
 	template *framework.NodeInfo,
 ) error {
+	klog.Infof("hemant adding new node with template %s to snapshot during estimation", template.Node().Name)
 	newNodeInfo, err := core_utils.SanitizedNodeInfo(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
 	if err != nil {
 		return err
 	}
+
+	if template.CSINode != nil {
+		newNodeInfo.AddCSINode(core_utils.CreateSanitizedCSINode(template.CSINode, newNodeInfo))
+	}
+
 	if err := e.clusterSnapshot.AddNodeInfo(newNodeInfo); err != nil {
 		return err
 	}

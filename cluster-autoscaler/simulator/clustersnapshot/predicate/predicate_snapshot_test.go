@@ -49,14 +49,14 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1), nil
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, false), nil
 	},
 	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
 		fwHandle, err := framework.NewTestFrameworkHandle()
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, false), nil
 	},
 }
 
@@ -150,7 +150,7 @@ func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.Cluster
 	}
 
 	draSnapshot := drasnapshot.CloneTestSnapshot(state.draSnapshot)
-	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot)
+	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot, nil)
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -1332,7 +1332,7 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil))
 
 				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
@@ -1343,7 +1343,7 @@ func TestSetClusterState(t *testing.T) {
 
 				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
 				newPodsByNode := clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil))
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, nil))
 
 				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
@@ -1366,7 +1366,7 @@ func TestSetClusterState(t *testing.T) {
 
 				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil))
 
 				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 
@@ -1777,7 +1777,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
+			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 
