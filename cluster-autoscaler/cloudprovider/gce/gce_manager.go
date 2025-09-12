@@ -303,6 +303,7 @@ func (m *gceManagerImpl) Refresh() error {
 	m.cache.InvalidateAllMigBasenames()
 	m.cache.InvalidateAllListManagedInstancesResults()
 	m.cache.InvalidateAllMigInstanceTemplateNames()
+	m.cache.InvalidateAllMigWorkloadPolicies()
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
