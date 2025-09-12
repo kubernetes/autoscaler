@@ -37,6 +37,7 @@ import (
 type ListerRegistry interface {
 	AllNodeLister() NodeLister
 	ReadyNodeLister() NodeLister
+	ReadyUnschedulableNodeLister() NodeLister
 	AllPodLister() PodLister
 	PodDisruptionBudgetLister() PodDisruptionBudgetLister
 	DaemonSetLister() v1appslister.DaemonSetLister
@@ -47,32 +48,34 @@ type ListerRegistry interface {
 }
 
 type listerRegistryImpl struct {
-	allNodeLister               NodeLister
-	readyNodeLister             NodeLister
-	allPodLister                PodLister
-	podDisruptionBudgetLister   PodDisruptionBudgetLister
-	daemonSetLister             v1appslister.DaemonSetLister
-	replicationControllerLister v1lister.ReplicationControllerLister
-	jobLister                   v1batchlister.JobLister
-	replicaSetLister            v1appslister.ReplicaSetLister
-	statefulSetLister           v1appslister.StatefulSetLister
+	allNodeLister                NodeLister
+	readyNodeLister              NodeLister
+	readyUnschedulableNodeLister NodeLister
+	allPodLister                 PodLister
+	podDisruptionBudgetLister    PodDisruptionBudgetLister
+	daemonSetLister              v1appslister.DaemonSetLister
+	replicationControllerLister  v1lister.ReplicationControllerLister
+	jobLister                    v1batchlister.JobLister
+	replicaSetLister             v1appslister.ReplicaSetLister
+	statefulSetLister            v1appslister.StatefulSetLister
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
-func NewListerRegistry(allNode NodeLister, readyNode NodeLister, allPodLister PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
+func NewListerRegistry(allNode NodeLister, readyNode NodeLister, readyUnschedulableNode NodeLister, allPodLister PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
 	daemonSetLister v1appslister.DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
 	jobLister v1batchlister.JobLister, replicaSetLister v1appslister.ReplicaSetLister,
 	statefulSetLister v1appslister.StatefulSetLister) ListerRegistry {
 	return listerRegistryImpl{
-		allNodeLister:               allNode,
-		readyNodeLister:             readyNode,
-		allPodLister:                allPodLister,
-		podDisruptionBudgetLister:   podDisruptionBudgetLister,
-		daemonSetLister:             daemonSetLister,
-		replicationControllerLister: replicationControllerLister,
-		jobLister:                   jobLister,
-		replicaSetLister:            replicaSetLister,
-		statefulSetLister:           statefulSetLister,
+		allNodeLister:                allNode,
+		readyNodeLister:              readyNode,
+		readyUnschedulableNodeLister: readyUnschedulableNode,
+		allPodLister:                 allPodLister,
+		podDisruptionBudgetLister:    podDisruptionBudgetLister,
+		daemonSetLister:              daemonSetLister,
+		replicationControllerLister:  replicationControllerLister,
+		jobLister:                    jobLister,
+		replicaSetLister:             replicaSetLister,
+		statefulSetLister:            statefulSetLister,
 	}
 }
 
@@ -80,6 +83,7 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, allPodLister Po
 func NewListerRegistryWithDefaultListers(informerFactory informers.SharedInformerFactory) ListerRegistry {
 	allPodLister := NewAllPodLister(informerFactory.Core().V1().Pods().Lister())
 	readyNodeLister := NewReadyNodeLister(informerFactory.Core().V1().Nodes().Lister())
+	readyUnschedulableNodeLister := NewReadyUnschedulableNodeLister(informerFactory.Core().V1().Nodes().Lister())
 	allNodeLister := NewAllNodeLister(informerFactory.Core().V1().Nodes().Lister())
 
 	podDisruptionBudgetLister := NewPodDisruptionBudgetLister(informerFactory.Policy().V1().PodDisruptionBudgets().Lister())
@@ -88,7 +92,7 @@ func NewListerRegistryWithDefaultListers(informerFactory informers.SharedInforme
 	jobLister := informerFactory.Batch().V1().Jobs().Lister()
 	replicaSetLister := informerFactory.Apps().V1().ReplicaSets().Lister()
 	statefulSetLister := informerFactory.Apps().V1().StatefulSets().Lister()
-	return NewListerRegistry(allNodeLister, readyNodeLister, allPodLister,
+	return NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedulableNodeLister, allPodLister,
 		podDisruptionBudgetLister, daemonSetLister, replicationControllerLister,
 		jobLister, replicaSetLister, statefulSetLister)
 }
@@ -106,6 +110,11 @@ func (r listerRegistryImpl) AllNodeLister() NodeLister {
 // ReadyNodeLister returns the ReadyNodeLister registered to this registry
 func (r listerRegistryImpl) ReadyNodeLister() NodeLister {
 	return r.readyNodeLister
+}
+
+// ReadyUnschedulableNodeLister returns the ReadyUnschedulableNodeLister registered to this registry
+func (r listerRegistryImpl) ReadyUnschedulableNodeLister() NodeLister {
+	return r.readyUnschedulableNodeLister
 }
 
 // PodDisruptionBudgetLister returns the podDisruptionBudgetLister registered to this registry
@@ -264,6 +273,11 @@ func NewAllNodeLister(nl v1lister.NodeLister) NodeLister {
 // NewReadyNodeLister builds a node lister that returns only ready nodes.
 func NewReadyNodeLister(nl v1lister.NodeLister) NodeLister {
 	return NewNodeLister(nl, IsNodeReadyAndSchedulable)
+}
+
+// NewReadyUnschedulableNodeLister builds a node lister that returns only ready nodes that are also unschedulable.
+func NewReadyUnschedulableNodeLister(nl v1lister.NodeLister) NodeLister {
+	return NewNodeLister(nl, IsNodeReadyAndUnschedulable)
 }
 
 // NewNodeLister builds a node lister.
