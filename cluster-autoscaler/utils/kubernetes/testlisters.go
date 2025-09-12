@@ -17,12 +17,15 @@ limitations under the License.
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -87,6 +90,36 @@ func (l *TestNodeLister) SetNodes(nodes []*apiv1.Node) {
 // NewTestNodeLister returns a lister that returns provided nodes
 func NewTestNodeLister(nodes []*apiv1.Node) *TestNodeLister {
 	return &TestNodeLister{nodes: nodes}
+}
+
+// DynamicTestNodeLister is used in tests involving listers where nodes might change over the test run.
+type DynamicTestNodeLister struct {
+	clientset *fake.Clientset
+}
+
+// List returns all nodes in test lister.
+func (l *DynamicTestNodeLister) List() ([]*apiv1.Node, error) {
+	nodes, err := l.clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	var nodePointers []*apiv1.Node
+	for i := range nodes.Items {
+		nodePointers = append(nodePointers, &nodes.Items[i])
+	}
+	return nodePointers, err
+}
+
+// Get returns node from test lister.
+func (l *DynamicTestNodeLister) Get(name string) (*apiv1.Node, error) {
+	return l.clientset.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
+}
+
+// NewDynamicTestNodeLister is used in tests involving listers where nodes might change over the test run.
+func NewDynamicTestNodeLister(clientset *fake.Clientset) *DynamicTestNodeLister {
+	return &DynamicTestNodeLister{
+		clientset: clientset,
+	}
 }
 
 // NewTestDaemonSetLister returns a lister that returns provided DaemonSets
