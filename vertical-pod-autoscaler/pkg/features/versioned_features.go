@@ -27,6 +27,9 @@ import (
 
 // Entries are alphabetized.
 var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.VersionedSpecs{
+	MemoryPerCPURatio: {
+		{Version: version.MustParse("1.5"), Default: false, PreRelease: featuregate.Alpha},
+	},
 	InPlaceOrRecreate: {
 		{Version: version.MustParse("1.4"), Default: false, PreRelease: featuregate.Alpha},
 		{Version: version.MustParse("1.5"), Default: true, PreRelease: featuregate.Beta},

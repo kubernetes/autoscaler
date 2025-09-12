@@ -40,6 +40,12 @@ const (
 	// In each feature gate description, you must specify "components".
 	// The feature must be enabled by the --feature-gates argument on each listed component.
 
+	// alpha: v1.5.0
+	// components: recommender
+
+	// MemoryPerCPURatio enables enforcing a fixed memory-per-CPU ratio in recommendations.
+	MemoryPerCPURatio featuregate.Feature = "MemoryPerCPURatio"
+
 	// alpha: v1.4.0
 	// beta: v1.5.0
 
