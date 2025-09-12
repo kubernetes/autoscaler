@@ -76,7 +76,7 @@ func filterFakePods[T any](podsWrappers []T, getPod func(T) *apiv1.Pod, resource
 		}
 
 		removedPods = append(removedPods, currentPod)
-		klog.V(5).Infof("Filtering out pod %s from PodsRemainUnschedulable with controller reference %s", currentPod.Name, controllerRef.Name)
+		klog.V(5).Infof("Filtering out pod %s from %v with controller reference %s", currentPod.Name, resourceName, controllerRef.Name)
 	}
 
 	logRemovedPods(removedPods, resourceName)

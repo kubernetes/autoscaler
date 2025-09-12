@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 )
 
@@ -36,50 +36,50 @@ func TestStrategyFilter(t *testing.T) {
 		{
 			name: "Single buffer with accepted strategy",
 			buffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(&testutil.ProvisioningStrategy),
 			},
 			strategiesToConsider: []string{testutil.ProvisioningStrategy},
 			expectedFilteredBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(&testutil.ProvisioningStrategy),
 			},
 			expectedFilteredOutBuffers: []*v1.CapacityBuffer{},
 		},
 		{
 			name: "Nil strategy defaulting to empty",
 			buffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(nil, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(nil),
 			},
 			strategiesToConsider: []string{""},
 			expectedFilteredBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(nil, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(nil),
 			},
 			expectedFilteredOutBuffers: []*v1.CapacityBuffer{},
 		},
 		{
 			name: "Single buffer with rejected strategy",
 			buffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&someRandomStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(&someRandomStrategy),
 			},
 			strategiesToConsider:    []string{testutil.ProvisioningStrategy},
 			expectedFilteredBuffers: []*v1.CapacityBuffer{},
 			expectedFilteredOutBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&someRandomStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(&someRandomStrategy),
 			},
 		},
 		{
 			name: "Multiple buffers different strategies",
 			buffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&someRandomStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
-				testutil.GetBuffer(nil, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(&someRandomStrategy),
+				getTestBufferWithStrategy(&testutil.ProvisioningStrategy),
+				getTestBufferWithStrategy(nil),
 			},
 			strategiesToConsider: []string{testutil.ProvisioningStrategy, ""},
 			expectedFilteredBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
-				testutil.GetBuffer(nil, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(&testutil.ProvisioningStrategy),
+				getTestBufferWithStrategy(nil),
 			},
 			expectedFilteredOutBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&someRandomStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, nil),
+				getTestBufferWithStrategy(&someRandomStrategy),
 			},
 		},
 	}
@@ -91,4 +91,8 @@ func TestStrategyFilter(t *testing.T) {
 			assert.ElementsMatch(t, test.expectedFilteredOutBuffers, filteredOut)
 		})
 	}
+}
+
+func getTestBufferWithStrategy(provisioningStrategy *string) *v1.CapacityBuffer {
+	return testutil.GetBuffer(provisioningStrategy, nil, nil, nil, nil, nil, nil, nil)
 }

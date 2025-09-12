@@ -33,7 +33,7 @@ spec:
       jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    name: v1
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: |-
@@ -80,9 +80,7 @@ spec:
                   `scalableRef`'s current replicas. This is only applicable if `scalableRef` is set.
                   The absolute number of replicas is calculated from the percentage by rounding up to a minimum of 1.
                   For example, if `scalableRef` has 10 replicas and `percentage` is 20, 2 buffer chunks will be created.
-                  This field is mutually exclusive with `replicas`.
                 format: int32
-                maximum: 100
                 minimum: 0
                 type: integer
               podTemplateRef:
@@ -113,7 +111,6 @@ spec:
                   If neither `replicas` nor `percentage` is set, as many chunks as fit within
                   defined resource limits (if any) will be created. If both are set, the maximum
                   of the two will be used.
-                  This field is mutually exclusive with `percentage` when `scalableRef` is set.
                 format: int32
                 minimum: 0
                 type: integer
@@ -143,6 +140,11 @@ spec:
                 - name
                 type: object
             type: object
+            x-kubernetes-validations:
+            - message: If X is set, replicas or limits must also be set
+              rule: '!has(self.podTemplateRef) || has(self.replicas) || has(self.limits)'
+            - message: You must define both PodTemplateRef and ScalableRef
+              rule: '!(has(self.podTemplateRef) && has(self.scalableRef))'
           status:
             description: Status represents the current state of the buffer and its
               readiness for autoprovisioning.
@@ -243,6 +245,10 @@ spec:
                 required:
                 - name
                 type: object
+              provisioningStrategy:
+                description: ProvisioningStrategy defines how the buffer should be
+                  utilized.
+                type: string
               replicas:
                 description: Replicas is the actual number of buffer chunks currently
                   provisioned.
