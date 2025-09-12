@@ -188,7 +188,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		cache:                    cache,
 		GceService:               gceService,
 		migLister:                migLister,
-		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime, bulkGceMigInstancesListingEnabled),
+		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime, bulkGceMigInstancesListingEnabled, false),
 		location:                 location,
 		regional:                 regional,
 		projectId:                projectId,
