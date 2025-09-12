@@ -115,7 +115,8 @@ The behavior after implementing this feature is as follows:
 
 #### Dynamic Validation via Admission Controller
 
-* When using the new `RequestToLimitRatio` field, the `controlledValues` field must be set to `RequestsAndLimits`. It does not make sense to specify `RequestToLimitRatio` if VPA is not allowed to update limits. This requirement is enforced by the admission controller.  
+* When using the new `RequestToLimitRatio` field, the `controlledValues` field must be set to `RequestsAndLimits`. It does not make sense to specify `RequestToLimitRatio` if VPA is not allowed to update limits. This requirement is enforced by the admission controller.
+* Explicitly prohibit the use of `RequestToLimitRatio` for any resource not listed in `controlledResources`. For example, if the intention is to set a custom ratio for CPU, then the value of the `controlledResources` field must include `cpu`.
 * If `Type` is set to `Quantity`, then its `Value` will be validated using the [ParseQuantity](https://github.com/kubernetes/apimachinery/blob/v0.34.1/pkg/api/resource/quantity.go#L277) function from `apimachinery`.
 
 
