@@ -46,6 +46,7 @@ The feature is gated by a new alpha feature flag, `RequestToLimitRatio`, which i
 ## Non-Goals
 
 * This proposal does not change the core VPA algorithm or its decision-making process for when to apply the recommended values or set limits proportionally.
+* This proposal does not change the default request-to-limit behavior when the feature flag is enabled. Pods managed by VPA objects that do not use the new `RequestToLimitRatio` field will continue to follow the existing behavior. For details, see the [Behavior](#behavior) section.
 
 ## Proposal
 
