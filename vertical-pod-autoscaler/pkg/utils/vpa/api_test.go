@@ -182,6 +182,61 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	assert.Nil(t, chosen)
 }
 
+func TestGetControllingVPAForPod_PodLabelSelector(t *testing.T) {
+	ctx := context.Background()
+
+	// Create a pod without any owner reference (standalone pod)
+	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
+	pod.Labels = map[string]string{"app": "testingApp", "version": "v1"}
+
+	// Create VPA with podLabelSelector (no targetRef)
+	vpaWithSelector := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G").
+		WithPodLabelSelector(&meta.LabelSelector{MatchLabels: map[string]string{"app": "testingApp"}}).
+		WithCreationTimestamp(time.Unix(5, 0)).Get()
+
+	// Create non-matching VPA with podLabelSelector
+	nonMatchingVPA := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithPodLabelSelector(&meta.LabelSelector{MatchLabels: map[string]string{"app": "different"}}).
+		WithCreationTimestamp(time.Unix(3, 0)).Get()
+
+	// Test that podLabelSelector VPA matches the pod
+	chosen := GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{
+		{vpaWithSelector, parseLabelSelector("app = testingApp")},
+		{nonMatchingVPA, parseLabelSelector("app = different")},
+	}, &controllerfetcher.FakeControllerFetcher{})
+
+	assert.NotNil(t, chosen)
+	assert.Equal(t, vpaWithSelector, chosen.Vpa)
+
+	// Test that pod with different labels doesn't match
+	differentPod := test.Pod().WithName("different-pod").Get()
+	differentPod.Labels = map[string]string{"app": "different"}
+
+	chosen = GetControllingVPAForPod(ctx, differentPod, []*VpaWithSelector{
+		{vpaWithSelector, parseLabelSelector("app = testingApp")},
+	}, &controllerfetcher.FakeControllerFetcher{})
+
+	assert.Nil(t, chosen)
+
+	// Test VPA with neither targetRef nor podLabelSelector should be skipped
+	invalidVPA := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithCreationTimestamp(time.Unix(1, 0)).Get()
+	// Neither targetRef nor podLabelSelector set
+
+	chosen = GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{
+		{invalidVPA, parseLabelSelector("app = testingApp")},
+	}, &controllerfetcher.FakeControllerFetcher{})
+
+	assert.Nil(t, chosen)
+}
+
 func TestGetContainerResourcePolicy(t *testing.T) {
 	containerPolicy1 := vpa_types.ContainerResourcePolicy{
 		ContainerName: "container1",

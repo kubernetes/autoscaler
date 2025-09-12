@@ -465,7 +465,17 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 
 // LoadPods loads pod into the cluster state.
 func (feeder *clusterStateFeeder) LoadPods() {
-	podSpecs, err := feeder.specClient.GetPodSpecs()
+	var podSpecs []*spec.BasicPodSpec
+	var err error
+
+	// If memory save mode is enabled and we have VPAs with podLabelSelector,
+	// we can optimize by fetching pods using the specific selectors instead of getting all pods
+	if feeder.memorySaveMode && feeder.canUseSelectorBasedPodFetching() {
+		podSpecs, err = feeder.getPodSpecsWithSelectors()
+	} else {
+		podSpecs, err = feeder.specClient.GetPodSpecs()
+	}
+
 	if err != nil {
 		klog.ErrorS(err, "Cannot get SimplePodSpecs")
 	}
@@ -577,8 +587,11 @@ type condition struct {
 }
 
 func (feeder *clusterStateFeeder) validateTargetRef(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (bool, condition) {
-	//
+	// If there's no targetRef but podLabelSelector is used, that's valid
 	if vpa.Spec.TargetRef == nil {
+		if vpa.Spec.PodLabelSelector != nil {
+			return true, condition{} // podLabelSelector is being used, no targetRef validation needed
+		}
 		return false, condition{}
 	}
 
@@ -629,4 +642,54 @@ func (feeder *clusterStateFeeder) getSelector(ctx context.Context, vpa *vpa_type
 		{conditionType: vpa_types.ConfigUnsupported, delete: false, message: msg},
 		{conditionType: vpa_types.ConfigDeprecated, delete: true},
 	}
+}
+
+// canUseSelectorBasedPodFetching returns true if we can optimize pod fetching by using
+// VPA selectors directly instead of fetching all pods and filtering in memory.
+func (feeder *clusterStateFeeder) canUseSelectorBasedPodFetching() bool {
+	// Only optimize if we have VPAs that can benefit from selector-based fetching
+	for _, vpa := range feeder.clusterState.VPAs() {
+		if vpa.PodSelector != nil && vpa.PodSelector != labels.Nothing() {
+			return true
+		}
+	}
+	return false
+}
+
+// getPodSpecsWithSelectors fetches pods using VPA selectors for optimization.
+// This reduces memory usage by only fetching pods that are relevant to the VPAs.
+func (feeder *clusterStateFeeder) getPodSpecsWithSelectors() ([]*spec.BasicPodSpec, error) {
+	podsMap := make(map[model.PodID]*spec.BasicPodSpec)
+
+	for _, vpa := range feeder.clusterState.VPAs() {
+		if vpa.PodSelector == nil || vpa.PodSelector == labels.Nothing() {
+			continue
+		}
+
+		// Skip VPA if it's in an ignored namespace
+		if feeder.shouldIgnoreNamespace(vpa.ID.Namespace) {
+			continue
+		}
+
+		// Use the spec client with the VPA's selector to get only relevant pods
+		podSpecs, err := feeder.specClient.GetPodSpecsWithSelector(vpa.PodSelector)
+		if err != nil {
+			klog.V(2).InfoS("Error listing pods with selector", "vpa", vpa.ID, "selector", vpa.PodSelector.String(), "error", err)
+			continue
+		}
+
+		for _, podSpec := range podSpecs {
+			if !feeder.shouldIgnoreNamespace(podSpec.ID.Namespace) {
+				podsMap[podSpec.ID] = podSpec
+			}
+		}
+	}
+
+	// Convert map to slice
+	var podSpecs []*spec.BasicPodSpec
+	for _, podSpec := range podsMap {
+		podSpecs = append(podSpecs, podSpec)
+	}
+
+	return podSpecs, nil
 }

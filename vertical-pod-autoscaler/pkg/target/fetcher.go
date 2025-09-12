@@ -108,17 +108,24 @@ type vpaTargetSelectorFetcher struct {
 }
 
 func (f *vpaTargetSelectorFetcher) Fetch(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
+	// If PodLabelSelector is set, use it directly
+	if vpa.Spec.PodLabelSelector != nil {
+		sel, err := metav1.LabelSelectorAsSelector(vpa.Spec.PodLabelSelector)
+		if err != nil {
+			return nil, fmt.Errorf("invalid podLabelSelector: %v", err)
+		}
+		return sel, nil
+	}
+	// Otherwise, use TargetRef logic
 	if vpa.Spec.TargetRef == nil {
-		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object, switch to v1")
+		return nil, fmt.Errorf("neither podLabelSelector nor targetRef defined. If this is a v1beta1 object, switch to v1")
 	}
 	kind := wellKnownController(vpa.Spec.TargetRef.Kind)
 	informer, exists := f.informersMap[kind]
 	if exists {
 		return getLabelSelector(informer, vpa.Spec.TargetRef.Kind, vpa.Namespace, vpa.Spec.TargetRef.Name)
 	}
-
 	// not on a list of known controllers, use scale sub-resource
-	// TODO: cache response
 	groupVersion, err := schema.ParseGroupVersion(vpa.Spec.TargetRef.APIVersion)
 	if err != nil {
 		return nil, err
@@ -127,7 +134,6 @@ func (f *vpaTargetSelectorFetcher) Fetch(ctx context.Context, vpa *vpa_types.Ver
 		Group: groupVersion.Group,
 		Kind:  vpa.Spec.TargetRef.Kind,
 	}
-
 	selector, err := f.getLabelSelectorFromResource(ctx, groupKind, vpa.Namespace, vpa.Spec.TargetRef.Name)
 	if err != nil {
 		return nil, fmt.Errorf("unhandled targetRef %s / %s / %s, last error %v",
