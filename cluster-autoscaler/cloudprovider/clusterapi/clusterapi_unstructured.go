@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -338,7 +338,7 @@ func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([
 			},
 			Spec: resourceapi.ResourceSliceSpec{
 				Driver:   driver,
-				NodeName: nodeName,
+				NodeName: &nodeName,
 				Pool: resourceapi.ResourcePool{
 					Name: nodeName,
 				},
@@ -347,11 +347,9 @@ func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([
 		for i := 0; i < int(gpuCount.Value()); i++ {
 			device := resourceapi.Device{
 				Name: "gpu-" + strconv.Itoa(i),
-				Basic: &resourceapi.BasicDevice{
-					Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
-						"type": {
-							StringValue: ptr.To(GpuDeviceType),
-						},
+				Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
+					"type": {
+						StringValue: ptr.To(GpuDeviceType),
 					},
 				},
 			}

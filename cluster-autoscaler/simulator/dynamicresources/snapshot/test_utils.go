@@ -18,7 +18,7 @@ package snapshot
 
 import (
 	"github.com/google/go-cmp/cmp"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 )
 
