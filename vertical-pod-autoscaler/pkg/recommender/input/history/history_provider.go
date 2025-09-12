@@ -21,6 +21,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -150,6 +151,17 @@ func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (Histo
 			Username: config.Authentication.Username,
 			Password: config.Authentication.Password,
 			Base:     prometheusTransport,
+		}
+	} else {
+		// check if env vars for credentials are set
+		prometheusUsername := os.Getenv("PROMETHEUS_USERNAME")
+		prometheusPassword := os.Getenv("PROMETHEUS_PASSWORD")
+		if prometheusUsername != "" && prometheusPassword != "" {
+			prometheusTransport = &PrometheusBasicAuthTransport{
+				Username: prometheusUsername,
+				Password: prometheusPassword,
+				Base:     prometheusTransport,
+			}
 		}
 	}
 

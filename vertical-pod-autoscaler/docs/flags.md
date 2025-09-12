@@ -97,7 +97,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `one-output` | severity |  | If true, only write logs to their native level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
 | `oom-bump-up-ratio` | float |  1.2 | The memory bump up ratio when OOM occurred, default is 1.2.  |
 | `oom-min-bump-up-bytes` | float |  1.048576e+08 | The minimal increase of memory when OOM occurred in bytes, default is 100 * 1024 * 1024  |
-| `password` | string |  | The password used in the prometheus server basic auth |
+| `password` | string |  | The password used in the prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable |
 | `pod-label-prefix` | string |  "pod_label_" | Which prefix to look for pod labels in metrics  |
 | `pod-name-label` | string |  "kubernetes_pod_name" | Label name to look for pod names  |
 | `pod-namespace-label` | string |  "kubernetes_namespace" | Label name to look for pod namespaces  |
@@ -127,7 +127,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `target-memory-percentile` | float |  0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.  |
 | `update-worker-count` | int |  10 | Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.  |
 | `use-external-metrics` |  |  | ALPHA.  Use an external metrics provider instead of metrics_server. |
-| `username` | string |  | The username used in the prometheus server basic auth |
+| `username` | string |  | The username used in the prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable |
 | `v,` |  | : 4 | , --v Level                                                set the log level verbosity  (default 4) |
 | `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
 | `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
