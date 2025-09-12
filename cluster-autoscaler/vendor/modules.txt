@@ -1418,7 +1418,7 @@ k8s.io/apiserver/plugin/pkg/authenticator/token/webhook
 k8s.io/apiserver/plugin/pkg/authorizer/webhook
 k8s.io/apiserver/plugin/pkg/authorizer/webhook/metrics
 # k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-00010101000000-000000000000 => ./apis
-## explicit; go 1.22.14
+## explicit; go 1.22.12
 k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1
 k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1
 k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned
