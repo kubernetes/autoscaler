@@ -149,3 +149,8 @@ func (ocp *OciCloudProvider) Cleanup() error {
 func (ocp *OciCloudProvider) Refresh() error {
 	return ocp.manager.Refresh()
 }
+
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (ocp *OciCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}

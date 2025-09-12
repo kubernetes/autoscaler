@@ -193,6 +193,11 @@ func (aws *awsCloudProvider) Refresh() error {
 	return aws.awsManager.Refresh()
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (aws *awsCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // AwsRef contains a reference to some entity in AWS world.
 type AwsRef struct {
 	Name string

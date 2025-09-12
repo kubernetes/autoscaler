@@ -151,6 +151,11 @@ func (l *linodeCloudProvider) Refresh() error {
 	return l.manager.refresh()
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (l *linodeCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func newLinodeCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	m, err := newManager(config)
 	if err != nil {

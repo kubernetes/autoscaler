@@ -175,6 +175,11 @@ func (ali *aliCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (ali *aliCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // AliRef contains a reference to ECS instance or .
 type AliRef struct {
 	ID     string

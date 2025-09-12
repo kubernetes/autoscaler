@@ -179,6 +179,11 @@ func (hcp *huaweicloudCloudProvider) Refresh() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (hcp *huaweicloudCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (hcp *huaweicloudCloudProvider) buildAsgs(specs []string) error {
 	asgs, err := hcp.cloudServiceManager.ListScalingGroups()
 	if err != nil {

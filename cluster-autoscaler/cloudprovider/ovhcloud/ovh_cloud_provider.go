@@ -318,3 +318,8 @@ func (provider *OVHCloudProvider) Refresh() error {
 
 	return nil
 }
+
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (provider *OVHCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}

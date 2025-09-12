@@ -176,6 +176,11 @@ func (pcp *equinixMetalCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (pcp *equinixMetalCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildCloudProvider is called by the autoscaler to build an Equinix Metal cloud provider.
 //
 // The equinixMetalManager is created here, and the node groups are created

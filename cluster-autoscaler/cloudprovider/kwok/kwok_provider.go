@@ -170,6 +170,11 @@ func (kwok *KwokCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (kwok *KwokCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildKwok builds kwok cloud provider.
 func BuildKwok(opts config.AutoscalingOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,

@@ -129,6 +129,11 @@ func (k *kamateraCloudProvider) Refresh() error {
 	return k.manager.refresh()
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (k *kamateraCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildKamatera builds the Kamatera cloud provider.
 func BuildKamatera(
 	opts config.AutoscalingOptions,

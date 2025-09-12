@@ -169,6 +169,11 @@ func (d *digitaloceanCloudProvider) Refresh() error {
 	return d.manager.Refresh()
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (d *digitaloceanCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildDigitalOcean builds the DigitalOcean cloud provider.
 func BuildDigitalOcean(
 	opts config.AutoscalingOptions,

@@ -219,6 +219,11 @@ func (b *brightboxCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForDeletion returns whether the node is a good candidate for deletion.
+func (b *brightboxCloudProvider) IsNodeCandidateForDeletion(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildBrightbox builds the Brightbox provider
 func BuildBrightbox(
 	opts config.AutoscalingOptions,
