@@ -97,7 +97,8 @@ The behavior after implementing this feature is as follows:
    * **Recreate mode**: When a new request-to-limit ratio is set, the ratio is applied only on Pod creation, after the Updater evicts the running Pod. In this mode, updating the request-to-limit ratio on a running Pod will affect the limits only after the Pod is evicted (either by the Updater or manually, e.g. via `kubectl delete pod`) when the current `resources.requests` differ significantly from the new recommendation.  
    * **InPlaceOrRecreate mode** (alpha in v1.4.0): When a new request-to-limit ratio is set, the VPA Updater will attempt in-place updates using the `/resize` subresource to modify `Pod.Spec.Containers[i].Resources.limits` or `Pod.Spec.Containers[i].Resources.requests` in certain situations. If the in-place update fails, it falls back to evicting the Pod and performing a recreation. For more details, see the [In-Place Updates documentation](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md#in-place-updates-inplaceorrecreate).  
    * **Initial mode**: VPA updates the request-to-limit ratio only during Pod creation and does not change it later.
-2. If the `RequestToLimitRatio` feature gate is disabled, the request-to-limit ratio already set in the workload API (e.g. Deployment API) is used.
+2. If the `RequestToLimitRatio` feature gate is enabled and a user does not specify the sub-field `RequestToLimitRatio` on a VPA object, the request-to-limit ratio already set in the workload API (e.g. Deployment API) is used.
+3. If the `RequestToLimitRatio` feature gate is disabled, the request-to-limit ratio already set in the workload API (e.g. Deployment API) is used.
 
 > [!IMPORTANT]  
 > This new feature can be used together with other features in development, such as the [fixed memory-per-CPU ratio feature](https://github.com/kubernetes/autoscaler/pull/8459).
