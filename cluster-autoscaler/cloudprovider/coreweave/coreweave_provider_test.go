@@ -144,9 +144,12 @@ func TestCoreWeaveCloudProvider_NodeGroupForNode_GetNodePoolByNameError(t *testi
 	manager.UpdateNodeGroup()
 	cp := &CoreWeaveCloudProvider{manager: manager}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1", Labels: map[string]string{coreWeaveNodePoolUID: "missing"}}}
-	_, err := cp.NodeGroupForNode(node)
-	if err == nil {
-		t.Error("expected error from GetNodePoolByName")
+	nodeGroup, err := cp.NodeGroupForNode(node)
+	if err != nil {
+		t.Errorf("unexpected error from NodeGroupForNode: %v", err)
+	}
+	if nodeGroup != nil {
+		t.Error("expected nil nodeGroup for non-existent nodepool UID")
 	}
 }
 
@@ -157,9 +160,12 @@ func TestCoreWeaveCloudProvider_NodeGroupForNode_GetNodePoolByUIDError(t *testin
 	manager.UpdateNodeGroup()
 	cp := &CoreWeaveCloudProvider{manager: manager}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1", Labels: map[string]string{coreWeaveNodePoolUID: "wrong-uid"}}}
-	_, err := cp.NodeGroupForNode(node)
-	if err == nil {
-		t.Error("expected error from GetNodePoolByUID")
+	nodeGroup, err := cp.NodeGroupForNode(node)
+	if err != nil {
+		t.Errorf("unexpected error from NodeGroupForNode: %v", err)
+	}
+	if nodeGroup != nil {
+		t.Error("expected nil nodeGroup for non-existent nodepool UID")
 	}
 }
 

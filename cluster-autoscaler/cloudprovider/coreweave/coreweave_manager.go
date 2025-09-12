@@ -70,7 +70,8 @@ func (m *CoreWeaveManager) ListNodePools() ([]*CoreWeaveNodePool, error) {
 		return nil, fmt.Errorf("failed to list nodepools: %v", err)
 	}
 	if list == nil || len(list.Items) == 0 {
-		return nil, fmt.Errorf("no nodepools found")
+		klog.V(4).Info("No nodepools found")
+		return []*CoreWeaveNodePool{}, nil
 	}
 	klog.V(4).Infof("Found %d node pools", len(list.Items))
 	// Convert unstructured items to CoreWeaveNodePool instances
@@ -122,7 +123,8 @@ func (m *CoreWeaveManager) UpdateNodeGroup() ([]cloudprovider.NodeGroup, error) 
 	// If no node pools are found, return an empty slice
 	if len(nodepools) == 0 {
 		klog.Info("No node pools found, returning empty node groups")
-		return nil, nil
+		m.nodeGroups = []cloudprovider.NodeGroup{}
+		return m.nodeGroups, nil
 	}
 	klog.V(4).Infof("Found %d node pools", len(nodepools))
 	m.nodeGroups = make([]cloudprovider.NodeGroup, len(nodepools))
@@ -143,6 +145,8 @@ func (m *CoreWeaveManager) GetNodeGroup(nodePoolUID string) (cloudprovider.NodeG
 			return ng, nil
 		}
 	}
-	// If no node group is found, return an error
-	return nil, fmt.Errorf("node group for nodepool %s not found", nodePoolUID)
+	// If no node group is found, return nil (not an error) - this handles the case where
+	// nodes exist with CoreWeave labels but no corresponding node pools are configured
+	klog.V(4).Infof("No node group found for nodepool UID %s", nodePoolUID)
+	return nil, nil
 }
