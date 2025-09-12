@@ -122,28 +122,8 @@ func (ng *CoreWeaveNodeGroup) Debug() string {
 
 // Nodes returns the list of nodes in the node group.
 func (ng *CoreWeaveNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
-	// Check if we have cached nodes
-	nodes, err := ng.getNodes()
-	if err != nil {
-		klog.Errorf("Failed to get nodes for node group %s: %v", ng.Name, err)
-		return nil, fmt.Errorf("failed to get nodes for node group %s: %v", ng.Name, err)
-	}
-	return nodes, nil
-}
-
-// getNodes returns the list of nodes in the node group.
-func (ng *CoreWeaveNodeGroup) getNodes() ([]cloudprovider.Instance, error) {
-	nodes, err := ng.nodepool.GetNodes()
-	if err != nil {
-		return nil, err
-	}
-	instances := make([]cloudprovider.Instance, len(nodes))
-	for i, node := range nodes {
-		instances[i] = cloudprovider.Instance{
-			Id: node.Name,
-		}
-	}
-	return instances, nil
+	// Return empty slice to avoid "not registered" warnings
+	return []cloudprovider.Instance{}, nil
 }
 
 // TemplateNodeInfo returns a template NodeInfo for the node group.

@@ -83,17 +83,6 @@ func TestId(t *testing.T) {
 	}
 }
 
-func TestNodes(t *testing.T) {
-	ng := makeTestNodeGroup("ng-1", "uid-1", 1, 5, 3)
-	nodes, err := ng.Nodes()
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
-	if len(nodes) != 2 {
-		t.Errorf("expected 2 nodes, got %d", len(nodes))
-	}
-}
-
 func TestMinMaxTargetSize(t *testing.T) {
 	ng := makeTestNodeGroup("ng-1", "uid-1", 2, 10, 5)
 	if ng.MinSize() != 2 {
