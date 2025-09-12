@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test
 
-go 1.22.14
+go 1.22.12
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.7.0
