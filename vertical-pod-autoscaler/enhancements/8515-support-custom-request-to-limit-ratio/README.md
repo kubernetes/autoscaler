@@ -116,7 +116,8 @@ The behavior after implementing this feature is as follows:
 #### Dynamic Validation via Admission Controller
 
 * When using the new `RequestToLimitRatio` field, the `controlledValues` field must be set to `RequestsAndLimits`. It does not make sense to specify `RequestToLimitRatio` if VPA is not allowed to update limits. This requirement is enforced by the admission controller.  
-* If `Type` is set to `Quantity`, then its `Value` will be validated.
+* If `Type` is set to `Quantity`, then its `Value` will be validated using the [ParseQuantity](https://github.com/kubernetes/apimachinery/blob/v0.34.1/pkg/api/resource/quantity.go#L277) function from `apimachinery`.
+
 
 ### Feature Enablement and Rollback
 
@@ -130,7 +131,13 @@ The behavior after implementing this feature is as follows:
 #### When Enabled
 
 * The admission controller will **accept** new VPA objects that include a configured `RequestToLimitRatio`.  
-* For containers targeted by a VPA object using `RequestToLimitRatio`, the admission controller and/or the updater will enforce the configured ratio.
+* For containers targeted by a VPA object using `RequestToLimitRatio`, the admission controller and/or the updater will enforce the configured ratio. Here are some examples of how this may happen:
+  * **From default to a specific ratio**: This occurs when we have running Pods targeted by a VPA object that does not define `RequestToLimitRatio`. In this case, the Pods use the default ratio derived from the workload API (e.g. Deployment). Once we specify a custom ratio using the `RequestToLimitRatio` field, the new ratio is not applied immediately, as the updater still relies on its current behavior to decide when to evict Pods or perform in-place updates. With the `InPlaceOrRecreate` mode, two possibilities exist:  
+    1. If the new ratio does **not** change the QoS class, the updater will attempt to apply the new ratio using an in-place update. If the in-place update cannot be completed in time, it will evict the Pod to force the change.  
+    2. If the new ratio **does** change the QoS class, the updater will evict the Pod, since the QoS class field is immutable and in-place updates are not possible.  
+  * **From one ratio to another**:  
+  In this case, the default ratio defined in the workload API is ignored, and the ratio specified in the `RequestToLimitRatio` field is enforced. The same logic from the first example applies (see points 1 and 2 above).
+
 
 #### When Disabled
 
