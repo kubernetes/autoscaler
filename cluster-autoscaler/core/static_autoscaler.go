@@ -239,8 +239,8 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 			a.AutoscalingContext.ClientSet, a.Recorder, a.CordonNodeBeforeTerminate)
 		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
 			// Clean old taints if soft taints handling is disabled
-			taints.CleanAllDeletionCandidates(allNodes,
-				a.AutoscalingContext.ClientSet, a.Recorder)
+			taints.CleanStaleDeletionCandidates(allNodes,
+				a.AutoscalingContext.ClientSet, a.Recorder, a.NodeDeletionCandidateTTL)
 		}
 	}
 	a.initialized = true
