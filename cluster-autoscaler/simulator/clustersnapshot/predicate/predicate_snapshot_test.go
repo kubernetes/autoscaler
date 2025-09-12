@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/assert" // TODO: Migrate the rest of the assertions to cmp for consistency.
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/util/feature"

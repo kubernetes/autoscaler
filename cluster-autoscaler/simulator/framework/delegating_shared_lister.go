@@ -19,7 +19,7 @@ package framework
 import (
 	"fmt"
 
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/dynamic-resource-allocation/structured"
@@ -120,6 +120,10 @@ func (u unsetResourceClaimTracker) Get(namespace, claimName string) (*resourceap
 }
 
 func (u unsetResourceClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.DeviceID], error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceClaimTracker) GatherAllocatedState() (*structured.AllocatedState, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
