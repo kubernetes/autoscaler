@@ -21,21 +21,16 @@ import (
 
 	"k8s.io/klog/v2"
 
-	"k8s.io/apimachinery/pkg/labels"
-	buffersclient "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned"
-
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/listers/autoscaling.x-k8s.io/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-
-	common "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	filter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
-
-	client "k8s.io/client-go/kubernetes"
 )
 
-const loopInterval = time.Second * 5
+const defaultloopInterval = time.Second * 5
+const defaultIterationsToReprocessAll = 60
 
 // BufferController performs updates on Buffers and convert them to pods to be injected
 type BufferController interface {
@@ -44,55 +39,65 @@ type BufferController interface {
 }
 
 type bufferController struct {
-	buffersLister  v1.CapacityBufferLister
-	strategyFilter filters.Filter
-	statusFilter   filters.Filter
-	translator     translators.Translator
-	updater        updater.StatusUpdater
-	loopInterval   time.Duration
+	client                   *cbclient.CapacityBufferClient
+	strategyFilter           filters.Filter
+	statusFilter             filters.Filter
+	translator               translators.Translator
+	updater                  updater.StatusUpdater
+	loopInterval             time.Duration
+	iterationsToReprocessAll int
+	currentIteration         int
 }
 
 // NewBufferController creates new bufferController object
 func NewBufferController(
-	buffersLister v1.CapacityBufferLister,
+	client *cbclient.CapacityBufferClient,
 	strategyFilter filters.Filter,
 	statusFilter filters.Filter,
 	translator translators.Translator,
 	updater updater.StatusUpdater,
 	loopInterval time.Duration,
+	iterationsToReprocessAll int,
 ) BufferController {
 	return &bufferController{
-		buffersLister:  buffersLister,
-		strategyFilter: strategyFilter,
-		statusFilter:   statusFilter,
-		translator:     translator,
-		updater:        updater,
-		loopInterval:   loopInterval,
+		client:                   client,
+		strategyFilter:           strategyFilter,
+		statusFilter:             statusFilter,
+		translator:               translator,
+		updater:                  updater,
+		loopInterval:             loopInterval,
+		iterationsToReprocessAll: iterationsToReprocessAll,
 	}
 }
 
 // NewDefaultBufferController creates bufferController with default configs
 func NewDefaultBufferController(
-	listerRegistry kubernetes.ListerRegistry,
-	capacityBufferClinet buffersclient.Clientset,
-	nodeBufferListener v1.CapacityBufferLister,
-	kubeClient client.Clientset,
+	client *cbclient.CapacityBufferClient,
 ) BufferController {
 	return &bufferController{
-		buffersLister: nodeBufferListener,
+		client: client,
 		// Accepting empty string as it represents nil value for ProvisioningStrategy
 		strategyFilter: filters.NewStrategyFilter([]string{common.ActiveProvisioningStrategy, ""}),
-		statusFilter: filters.NewStatusFilter(map[string]string{
-			common.ReadyForProvisioningCondition: common.ConditionTrue,
-			common.ProvisioningCondition:         common.ConditionTrue,
-		}),
-		translator: translators.NewCombinedTranslator(
-			[]translators.Translator{
-				translators.NewPodTemplateBufferTranslator(),
+		statusFilter: filter.NewCombinedAnyFilter(
+			[]filters.Filter{
+				filters.NewStatusFilter(map[string]string{
+					common.ReadyForProvisioningCondition: common.ConditionTrue,
+					common.ProvisioningCondition:         common.ConditionTrue,
+				}),
+				filters.NewBufferGenerationChangedFilter(),
+				filters.NewPodTemplateGenerationChangedFilter(client),
 			},
 		),
-		updater:      *updater.NewStatusUpdater(&capacityBufferClinet),
-		loopInterval: loopInterval,
+		translator: translators.NewCombinedTranslator(
+			[]translators.Translator{
+				translators.NewPodTemplateBufferTranslator(client),
+				translators.NewDefaultScalableObjectsTranslator(client),
+				translators.NewResourceLimitsTranslator(client),
+			},
+		),
+		updater:                  *updater.NewStatusUpdater(client),
+		loopInterval:             defaultloopInterval,
+		iterationsToReprocessAll: defaultIterationsToReprocessAll,
 	}
 }
 
@@ -110,9 +115,10 @@ func (c *bufferController) Run(stopCh <-chan struct{}) {
 
 // Reconcile represents single iteration in the main-loop of Updater
 func (c *bufferController) reconcile() {
+	c.currentIteration += 1
 
 	// List all capacity buffers objects
-	buffers, err := c.buffersLister.List(labels.Everything())
+	buffers, err := c.client.ListCapacityBuffers()
 	if err != nil {
 		klog.Errorf("Capacity buffer controller failed to list buffers with error: %v", err.Error())
 		return
@@ -124,15 +130,20 @@ func (c *bufferController) reconcile() {
 	klog.V(2).Infof("Capacity buffer controller filtered %v buffers with buffers strategy filter", len(filteredBuffers))
 
 	// Filter the desired status
-	toBeTranslatedBuffers, _ := c.statusFilter.Filter(filteredBuffers)
-	klog.V(2).Infof("Capacity buffer controller filtered %v buffers with buffers status filter", len(filteredBuffers))
+	if c.currentIteration < c.iterationsToReprocessAll {
+		filteredBuffers, _ = c.statusFilter.Filter(filteredBuffers)
+		klog.V(2).Infof("Capacity buffer controller filtered %v buffers with buffers status filter", len(filteredBuffers))
+	} else {
+		c.currentIteration = 0
+		klog.V(2).Infof("Capacity buffer controller skipped buffers status filter, translating all %v buffers", len(filteredBuffers))
+	}
 
 	// Extract pod specs and number of replicas from filtered buffers
-	errors := c.translator.Translate(toBeTranslatedBuffers)
+	errors := c.translator.Translate(filteredBuffers)
 	logErrors(errors)
 
 	// Update buffer status by calling API server
-	errors = c.updater.Update(toBeTranslatedBuffers)
+	errors = c.updater.Update(filteredBuffers)
 	logErrors(errors)
 }
 

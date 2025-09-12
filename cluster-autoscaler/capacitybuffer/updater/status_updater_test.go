@@ -24,8 +24,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 	fakeclientset "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
+	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 )
 
 func TestStatusUpdater(t *testing.T) {
@@ -44,6 +45,8 @@ func TestStatusUpdater(t *testing.T) {
 		Spec: v1.CapacityBufferSpec{},
 	}
 	fakeClient := fakeclientset.NewSimpleClientset(exitingBuffer)
+	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+
 	tests := []struct {
 		name                   string
 		buffers                []*v1.CapacityBuffer
@@ -85,7 +88,7 @@ func TestStatusUpdater(t *testing.T) {
 					return false, nil, nil
 				},
 			)
-			buffersUpdater := NewStatusUpdater(fakeClient)
+			buffersUpdater := NewStatusUpdater(fakeCapacityBuffersClient)
 			errors := buffersUpdater.Update(test.buffers)
 			assert.Equal(t, test.expectedNumberOfErrors, len(errors))
 			assert.Equal(t, test.expectedNumberOfCalls, updateCallsCount)

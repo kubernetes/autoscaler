@@ -17,7 +17,7 @@ limitations under the License.
 package filter
 
 import (
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 )
 
 // strategyFilter filters out buffers with provisioning strategies not defined in strategiesToUse
