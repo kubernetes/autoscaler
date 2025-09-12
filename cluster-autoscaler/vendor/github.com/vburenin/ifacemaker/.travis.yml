@@ -1,0 +1,30 @@
+language: go
+sudo: required
+
+go:
+  - 1.11.x
+  - stable
+  - master
+
+matrix:
+  # Failing on the development version of Go isn't too bad.
+  allow_failures:
+    - go: master
+
+env:
+  - GO111MODULE=on
+
+# Override Travis's default 'go get' step, since we use Go modules
+install:
+  - go mod download
+
+script:
+  - go test -cover ./...
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: curl -sL https://git.io/goreleaser | bash
+  on:
+    tags: true
+    condition: $TRAVIS_GO_VERSION =~ ^1\.11
