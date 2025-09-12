@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/cluster-autoscaler
 
-go 1.22.14
+go 1.22.12
 
 toolchain go1.24.4
 
