@@ -159,8 +159,8 @@ The behavior after implementing this feature is as follows:
 #### E2E
 
 * e2e tests with `InPlaceOrRecreate` VPA mode:
-  1. Add a test case where the QoS class **changes**. In this scenario, we expect the updater to evict the affected Pods, since the QoS field is immutable. The resulting limits must be verified as well.
-  2. Add a test case where the QoS class **does not change**. In this scenario the updater should apply the new ratio using the in-place update mechanism and the resulting limits must be verified as well.
+  1. Add a test case where the QoS class **changes**. In this scenario, we expect the updater to evict the affected Pods, since the QoS field is immutable. The resulting limits are verified.
+  2. Add a test case where the QoS class **does not change**. In this scenario the updater should apply the new ratio using the in-place update mechanism. The resulting limits are verified.
 
 ### Examples
 
