@@ -110,7 +110,13 @@ func BenchmarkNodeGroups(b *testing.B) {
 
 	controller, stop := mustCreateTestController(b)
 	defer stop()
-	machineSetConfigs := createMachineSetTestConfigs("namespace", "", RandomString(6), 100, 1, annotations, nil)
+	machineSetConfigs := NewTestConfigBuilder().
+		ForMachineSet().
+		WithNamespace("namespace").
+		WithClusterName("").
+		WithNodeCount(1).
+		WithAnnotations(annotations).
+		BuildMultiple(100)
 	if err := addTestConfigs(b, controller, machineSetConfigs...); err != nil {
 		b.Fatalf("unexpected error: %v", err)
 	}
