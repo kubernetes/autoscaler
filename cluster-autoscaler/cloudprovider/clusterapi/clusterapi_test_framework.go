@@ -37,7 +37,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	fakediscovery "k8s.io/client-go/discovery/fake"
-	"k8s.io/client-go/dynamic"
 	fakedynamic "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/informers"
 	fakekube "k8s.io/client-go/kubernetes/fake"
@@ -418,144 +417,24 @@ func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1
 	return node, machine
 }
 
-func addTestConfigs(t testing.TB, controller *machineController, testConfigs ...*TestConfig) error {
-	t.Helper()
-
-	for _, config := range testConfigs {
-		if config.machineDeployment != nil {
-			if err := createResource(controller.managementClient, controller.machineDeploymentInformer, controller.machineDeploymentResource, config.machineDeployment); err != nil {
-				return err
-			}
-		}
-		if err := createResource(controller.managementClient, controller.machineSetInformer, controller.machineSetResource, config.machineSet); err != nil {
-			return err
-		}
-
-		if config.machinePool != nil {
-			if err := createResource(controller.managementClient, controller.machinePoolInformer, controller.machinePoolResource, config.machinePool); err != nil {
-				return err
-			}
-		}
-
-		for i := range config.machines {
-			if err := createResource(controller.managementClient, controller.machineInformer, controller.machineResource, config.machines[i]); err != nil {
-				return err
-			}
-		}
-
-		for i := range config.nodes {
-			if err := controller.nodeInformer.GetStore().Add(config.nodes[i]); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func createResource(client dynamic.Interface, informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
-	if _, err := client.Resource(gvr).Namespace(resource.GetNamespace()).Create(context.TODO(), resource, metav1.CreateOptions{}); err != nil {
-		return err
-	}
-
-	return wait.PollImmediate(time.Microsecond, fifteenSecondDuration, func() (bool, error) {
-		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				return false, nil
-			}
-			return false, err
-		}
-
-		return true, nil
-	})
-}
-
-func updateResource(client dynamic.Interface, informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
-	updateResult, err := client.Resource(gvr).Namespace(resource.GetNamespace()).Update(context.TODO(), resource, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-
-	return wait.PollImmediate(time.Microsecond, fifteenSecondDuration, func() (bool, error) {
-		result, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
-		if err != nil {
-			return false, err
-		}
-		return reflect.DeepEqual(updateResult, result), nil
-	})
-}
-
-func deleteResource(client dynamic.Interface, informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
-	if err := client.Resource(gvr).Namespace(resource.GetNamespace()).Delete(context.TODO(), resource.GetName(), metav1.DeleteOptions{}); err != nil {
-		return err
-	}
-
-	return wait.PollImmediate(time.Microsecond, fifteenSecondDuration, func() (bool, error) {
-		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
-		if err != nil && apierrors.IsNotFound(err) {
-			return true, nil
-		}
-		return false, err
-	})
-}
-
-func deleteTestConfigs(t *testing.T, controller *machineController, testConfigs ...*TestConfig) error {
-	t.Helper()
-
-	for _, config := range testConfigs {
-		for i := range config.nodes {
-			if err := controller.nodeInformer.GetStore().Delete(config.nodes[i]); err != nil {
-				return err
-			}
-		}
-		for i := range config.machines {
-			if err := deleteResource(controller.managementClient, controller.machineInformer, controller.machineResource, config.machines[i]); err != nil {
-				return err
-			}
-		}
-		if err := deleteResource(controller.managementClient, controller.machineSetInformer, controller.machineSetResource, config.machineSet); err != nil {
-			return err
-		}
-		if config.machineDeployment != nil {
-			if err := deleteResource(controller.managementClient, controller.machineDeploymentInformer, controller.machineDeploymentResource, config.machineDeployment); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 type testControllerShutdownFunc func()
 
 const customCAPIGroup = "custom.x-k8s.io"
 const fifteenSecondDuration = time.Second * 15
 
-func mustCreateTestController(t testing.TB, testConfigs ...*TestConfig) (*machineController, testControllerShutdownFunc) {
+type testMachineController struct {
+	*machineController
+
+	stopCh           chan struct{}
+	testingTb        testing.TB
+	dynamicClientset *fakedynamic.FakeDynamicClient
+}
+
+// NewTestMachineController returns a new machineController wrapped by a test harness and associated with a testing interface.
+func NewTestMachineController(t testing.TB) *testMachineController {
 	t.Helper()
 
-	nodeObjects := make([]runtime.Object, 0)
-	machineObjects := make([]runtime.Object, 0)
-
-	for _, config := range testConfigs {
-		for i := range config.nodes {
-			nodeObjects = append(nodeObjects, config.nodes[i])
-		}
-
-		for i := range config.machines {
-			machineObjects = append(machineObjects, config.machines[i])
-		}
-
-		machineObjects = append(machineObjects, config.machineSet)
-		if config.machineDeployment != nil {
-			machineObjects = append(machineObjects, config.machineDeployment)
-		}
-
-		if config.machineTemplate != nil {
-			machineObjects = append(machineObjects, config.machineTemplate)
-		}
-	}
-
-	kubeclientSet := fakekube.NewSimpleClientset(nodeObjects...)
+	kubeclientSet := fakekube.NewSimpleClientset()
 	dynamicClientset := fakedynamic.NewSimpleDynamicClientWithCustomListKinds(
 		runtime.NewScheme(),
 		map[schema.GroupVersionResource]string{
@@ -572,7 +451,6 @@ func mustCreateTestController(t testing.TB, testConfigs ...*TestConfig) (*machin
 			{Group: "custom.x-k8s.io", Version: "v1beta1", Resource: "machinesets"}:                      "kindList",
 			{Group: "infrastructure.cluster.x-k8s.io", Version: "v1beta1", Resource: "machinetemplates"}: "kindList",
 		},
-		machineObjects...,
 	)
 	discoveryClient := &fakediscovery.FakeDiscovery{
 		Fake: &clientgotesting.Fake{
@@ -754,7 +632,131 @@ func mustCreateTestController(t testing.TB, testConfigs ...*TestConfig) (*machin
 		t.Fatalf("failed to run controller: %v", err)
 	}
 
-	return controller, func() {
-		close(stopCh)
+	return &testMachineController{
+		machineController: controller,
+		stopCh:            stopCh,
+		testingTb:         t,
+		dynamicClientset:  dynamicClientset,
 	}
+}
+
+func (c *testMachineController) Stop() {
+	close(c.stopCh)
+}
+
+func (c *testMachineController) AddTestConfigs(testConfigs ...*TestConfig) error {
+	c.testingTb.Helper()
+
+	for _, config := range testConfigs {
+		if config.machineDeployment != nil {
+			if err := c.CreateResource(c.machineDeploymentInformer, c.machineDeploymentResource, config.machineDeployment); err != nil {
+				return err
+			}
+		}
+		if err := c.CreateResource(c.machineSetInformer, c.machineSetResource, config.machineSet); err != nil {
+			return err
+		}
+
+		if config.machinePool != nil {
+			if err := c.CreateResource(c.machinePoolInformer, c.machinePoolResource, config.machinePool); err != nil {
+				return err
+			}
+		}
+
+		if config.machineTemplate != nil {
+			c.dynamicClientset.Tracker().Add(config.machineTemplate)
+		}
+
+		for i := range config.machines {
+			if err := c.CreateResource(c.machineInformer, c.machineResource, config.machines[i]); err != nil {
+				return err
+			}
+		}
+
+		for i := range config.nodes {
+			if err := c.nodeInformer.GetStore().Add(config.nodes[i]); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (c *testMachineController) DeleteTestConfigs(testConfigs ...*TestConfig) error {
+	c.testingTb.Helper()
+
+	for _, config := range testConfigs {
+		for i := range config.nodes {
+			if err := c.nodeInformer.GetStore().Delete(config.nodes[i]); err != nil {
+				return err
+			}
+		}
+		for i := range config.machines {
+			if err := c.DeleteResource(c.machineInformer, c.machineResource, config.machines[i]); err != nil {
+				return err
+			}
+		}
+		if err := c.DeleteResource(c.machineSetInformer, c.machineSetResource, config.machineSet); err != nil {
+			return err
+		}
+		if config.machineDeployment != nil {
+			if err := c.DeleteResource(c.machineDeploymentInformer, c.machineDeploymentResource, config.machineDeployment); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (c *testMachineController) CreateResource(informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
+	if _, err := c.managementClient.Resource(gvr).Namespace(resource.GetNamespace()).Create(context.TODO(), resource, metav1.CreateOptions{}); err != nil {
+		return err
+	}
+
+	deadlineCtx, deadlineFn := context.WithTimeout(context.Background(), fifteenSecondDuration)
+	defer deadlineFn()
+	return wait.PollUntilContextTimeout(deadlineCtx, time.Microsecond, fifteenSecondDuration, true, func(_ context.Context) (bool, error) {
+		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				return false, nil
+			}
+			return false, err
+		}
+
+		return true, nil
+	})
+}
+
+func (c *testMachineController) UpdateResource(informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
+	updateResult, err := c.managementClient.Resource(gvr).Namespace(resource.GetNamespace()).Update(context.TODO(), resource, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	deadlineCtx, deadlineFn := context.WithTimeout(context.Background(), fifteenSecondDuration)
+	defer deadlineFn()
+	return wait.PollUntilContextTimeout(deadlineCtx, time.Microsecond, fifteenSecondDuration, true, func(_ context.Context) (bool, error) {
+		result, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
+		if err != nil {
+			return false, err
+		}
+		return reflect.DeepEqual(updateResult, result), nil
+	})
+}
+
+func (c *testMachineController) DeleteResource(informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
+	if err := c.managementClient.Resource(gvr).Namespace(resource.GetNamespace()).Delete(context.TODO(), resource.GetName(), metav1.DeleteOptions{}); err != nil {
+		return err
+	}
+
+	deadlineCtx, deadlineFn := context.WithTimeout(context.Background(), fifteenSecondDuration)
+	defer deadlineFn()
+	return wait.PollUntilContextTimeout(deadlineCtx, time.Microsecond, fifteenSecondDuration, true, func(_ context.Context) (bool, error) {
+		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
+		if err != nil && apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	})
 }

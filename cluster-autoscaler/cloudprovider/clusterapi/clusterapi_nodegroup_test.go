@@ -123,16 +123,17 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		expectNil: false,
 	}}
 
-	newNodeGroup := func(controller *machineController, testConfig *TestConfig) (*nodegroup, error) {
+	newNodeGroup := func(controller *testMachineController, testConfig *TestConfig) (*nodegroup, error) {
 		if testConfig.machineDeployment != nil {
-			return newNodeGroupFromScalableResource(controller, testConfig.machineDeployment)
+			return newNodeGroupFromScalableResource(controller.machineController, testConfig.machineDeployment)
 		}
-		return newNodeGroupFromScalableResource(controller, testConfig.machineSet)
+		return newNodeGroupFromScalableResource(controller.machineController, testConfig.machineSet)
 	}
 
 	test := func(t *testing.T, tc testCase, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		ng, err := newNodeGroup(controller, testConfig)
 		if tc.errors && err == nil {
@@ -259,8 +260,9 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 	}}
 
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -356,8 +358,9 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 	}
 
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -451,8 +454,9 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 	}
 
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		// machines in deletion should not be counted towards the active nodes when calculating a decrease in size.
 		if tc.includeDeletingMachine {
@@ -465,7 +469,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			timestamp := metav1.Now()
 			machine.SetDeletionTimestamp(&timestamp)
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
@@ -485,7 +489,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			}
 			unstructured.SetNestedField(machine.Object, "FailureMessage", "status", "failureMessage")
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
@@ -505,7 +509,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			}
 			unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
@@ -515,7 +519,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			for _, machine := range testConfig.machines {
 				updated := machine.DeepCopy()
 				unstructured.RemoveNestedField(updated.Object, "spec", "providerID")
-				if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, updated); err != nil {
+				if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, updated); err != nil {
 					t.Fatalf("unexpected error updating machine, got %v", err)
 				}
 			}
@@ -554,7 +558,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			if u.GetResourceVersion() != scalableResource.GetResourceVersion() {
 				return false, nil
 			}
-			ng, err := newNodeGroupFromScalableResource(controller, u)
+			ng, err := newNodeGroupFromScalableResource(controller.machineController, u)
 			if err != nil {
 				return true, fmt.Errorf("unexpected error: %v", err)
 			}
@@ -761,8 +765,9 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 	}}
 
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -848,8 +853,9 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 
 func TestNodeGroupDeleteNodes(t *testing.T) {
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -944,8 +950,9 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	test := func(t *testing.T, expected int, testConfigs []*TestConfig) {
 		testConfig0, testConfig1 := testConfigs[0], testConfigs[1]
-		controller, stop := mustCreateTestController(t, testConfigs...)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfigs...)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -1074,8 +1081,9 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 	expectedSize := 7
 
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -1133,13 +1141,15 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		}
 
 		for _, node := range nodesToBeDeleted {
-			if err := addDeletionTimestampToMachine(controller, node); err != nil {
+			if err := addDeletionTimestampToMachine(controller.machineController, node); err != nil {
 				t.Fatalf("unexpected err: %v", err)
 			}
 		}
 
 		// Wait for the machineset to have been updated
-		if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) {
+		deadlineCtx, deadlineFn := context.WithTimeout(context.Background(), 5*time.Second)
+		defer deadlineFn()
+		if err := wait.PollUntilContextTimeout(deadlineCtx, 100*time.Millisecond, 5*time.Second, true, func(_ context.Context) (bool, error) {
 			nodegroups, err = controller.nodeGroups()
 			if err != nil {
 				return false, err
@@ -1174,7 +1184,9 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		// when fetched from the API
 		for _, node := range nodesToBeDeleted {
 			// Ensure the update has propogated
-			if err := wait.PollImmediate(100*time.Millisecond, 5*time.Minute, func() (bool, error) {
+			deadlineCtx, deadlineFn := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer deadlineFn()
+			if err := wait.PollUntilContextTimeout(deadlineCtx, 100*time.Millisecond, 5*time.Minute, true, func(_ context.Context) (bool, error) {
 				m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
 				if err != nil {
 					return false, err
@@ -1240,8 +1252,9 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 	expectedSize := 7
 
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -1377,8 +1390,9 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 
 func TestNodeGroupWithFailedMachine(t *testing.T) {
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		// Simulate a failed machine
 		machine := testConfig.machines[3].DeepCopy()
@@ -1388,7 +1402,7 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 			t.Fatalf("unexpected error setting nested field: %v", err)
 		}
 
-		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+		if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 
@@ -1615,8 +1629,9 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 			testConfig.nodes = []*corev1.Node{}
 		}
 
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -1773,8 +1788,9 @@ func TestNodeGroupGetOptions(t *testing.T) {
 	}
 
 	test := func(t *testing.T, testConfig *TestConfig, expectedOptions *config.NodeGroupAutoscalingOptions) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -1860,8 +1876,9 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 	}
 
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		if tc.includePendingMachine {
 			if tc.nodeCount < 1 {
@@ -1872,7 +1889,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 			unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
 			unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
@@ -1886,7 +1903,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 			timestamp := metav1.Now()
 			machine.SetDeletionTimestamp(&timestamp)
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
@@ -1900,7 +1917,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 			unstructured.SetNestedField(machine.Object, "node-1", "status", "nodeRef", "name")
 			unstructured.SetNestedField(machine.Object, "ErrorMessage", "status", "errorMessage")
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
@@ -1914,7 +1931,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 			unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
 			unstructured.SetNestedField(machine.Object, "ErrorMessage", "status", "errorMessage")
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
@@ -1929,7 +1946,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 			machine.SetDeletionTimestamp(&timestamp)
 			unstructured.SetNestedField(machine.Object, "ErrorMessage", "status", "errorMessage")
 
-			if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+			if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 				t.Fatalf("unexpected error updating machine, got %v", err)
 			}
 		}
