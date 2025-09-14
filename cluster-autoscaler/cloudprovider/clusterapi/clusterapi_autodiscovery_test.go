@@ -198,7 +198,7 @@ func Test_parseAutoDiscovery(t *testing.T) {
 func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 	for _, tc := range []struct {
 		name                string
-		testSpec            testSpec
+		testSpec            TestSpec
 		autoDiscoveryConfig *clusterAPIAutoDiscoveryConfig
 		additionalLabels    map[string]string
 		shouldMatch         bool
