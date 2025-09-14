@@ -44,15 +44,16 @@ func TestSetSize(t *testing.T) {
 	finalReplicas := 0
 
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		testResource := testConfig.machineSet
 		if testConfig.machineDeployment != nil {
 			testResource = testConfig.machineDeployment
 		}
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -145,15 +146,16 @@ func TestReplicas(t *testing.T) {
 	updatedReplicas := 5
 
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		testResource := testConfig.machineSet
 		if testConfig.machineDeployment != nil {
 			testResource = testConfig.machineDeployment
 		}
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -187,7 +189,7 @@ func TestReplicas(t *testing.T) {
 			if !ok {
 				return false, nil
 			}
-			sr, err := newUnstructuredScalableResource(controller, u)
+			sr, err := newUnstructuredScalableResource(controller.machineController, u)
 			if err != nil {
 				return true, err
 			}
@@ -261,15 +263,16 @@ func TestSetSizeAndReplicas(t *testing.T) {
 	updatedReplicas := 5
 
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		testResource := testConfig.machineSet
 		if testConfig.machineDeployment != nil {
 			testResource = testConfig.machineDeployment
 		}
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -365,10 +368,11 @@ func TestAnnotations(t *testing.T) {
 	}
 
 	test := func(t *testing.T, testConfig *TestConfig, testResource *unstructured.Unstructured) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -546,12 +550,13 @@ func TestCanScaleFromZero(t *testing.T) {
 				WithAnnotations(tc.annotations).
 				WithCapacity(tc.capacity).
 				Build()
-			controller, stop := mustCreateTestController(t, msTestConfig)
-			defer stop()
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			controller.AddTestConfigs(msTestConfig)
 
 			testResource := msTestConfig.machineSet
 
-			sr, err := newUnstructuredScalableResource(controller, testResource)
+			sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -572,12 +577,13 @@ func TestCanScaleFromZero(t *testing.T) {
 				WithAnnotations(tc.annotations).
 				WithCapacity(tc.capacity).
 				Build()
-			controller, stop := mustCreateTestController(t, mdTestConfig)
-			defer stop()
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			controller.AddTestConfigs(mdTestConfig)
 
 			testResource := mdTestConfig.machineDeployment
 
-			sr, err := newUnstructuredScalableResource(controller, testResource)
+			sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 			if err != nil {
 				t.Fatal(err)
 			}
