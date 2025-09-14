@@ -27,8 +27,10 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -161,6 +163,55 @@ func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment
 	d.Spec.Template.Spec.ServiceAccountName = "vpa-recommender"
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/recommender"}
 	d.Spec.Template.Spec.Containers[0].Args = flags
+
+	runAsNonRoot := true
+	var runAsUser int64 = 65534 // nobody
+	d.Spec.Template.Spec.SecurityContext = &apiv1.PodSecurityContext{
+		RunAsNonRoot: &runAsNonRoot,
+		RunAsUser:    &runAsUser,
+	}
+
+	// Same as deploy/recommender-deployment.yaml
+	d.Spec.Template.Spec.Containers[0].Resources = apiv1.ResourceRequirements{
+		Limits: apiv1.ResourceList{
+			apiv1.ResourceCPU:    resource.MustParse("200m"),
+			apiv1.ResourceMemory: resource.MustParse("1000Mi"),
+		},
+		Requests: apiv1.ResourceList{
+			apiv1.ResourceCPU:    resource.MustParse("50m"),
+			apiv1.ResourceMemory: resource.MustParse("500Mi"),
+		},
+	}
+
+	d.Spec.Template.Spec.Containers[0].Ports = []apiv1.ContainerPort{{
+		Name:          "prometheus",
+		ContainerPort: 8942,
+	}}
+
+	d.Spec.Template.Spec.Containers[0].LivenessProbe = &apiv1.Probe{
+		ProbeHandler: apiv1.ProbeHandler{
+			HTTPGet: &apiv1.HTTPGetAction{
+				Path:   "/health-check",
+				Port:   intstr.FromString("prometheus"),
+				Scheme: apiv1.URISchemeHTTP,
+			},
+		},
+		InitialDelaySeconds: 5,
+		PeriodSeconds:       10,
+		FailureThreshold:    3,
+	}
+	d.Spec.Template.Spec.Containers[0].ReadinessProbe = &apiv1.Probe{
+		ProbeHandler: apiv1.ProbeHandler{
+			HTTPGet: &apiv1.HTTPGetAction{
+				Path:   "/health-check",
+				Port:   intstr.FromString("prometheus"),
+				Scheme: apiv1.URISchemeHTTP,
+			},
+		},
+		PeriodSeconds:    10,
+		FailureThreshold: 3,
+	}
+
 	return d
 }
 
