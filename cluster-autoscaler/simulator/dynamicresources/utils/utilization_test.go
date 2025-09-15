@@ -181,7 +181,7 @@ func testResourceSlices(driverName, poolName, nodeName string, poolGen, deviceCo
 			ObjectMeta: metav1.ObjectMeta{Name: sliceName, UID: types.UID(sliceName)},
 			Spec: resourceapi.ResourceSliceSpec{
 				Driver:   driverName,
-				NodeName: nodeName,
+				NodeName: &nodeName,
 				Pool:     resourceapi.ResourcePool{Name: poolName, Generation: poolGen, ResourceSliceCount: sliceCount},
 				Devices:  devices,
 			},

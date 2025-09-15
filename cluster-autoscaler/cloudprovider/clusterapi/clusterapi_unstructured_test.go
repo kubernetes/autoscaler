@@ -336,18 +336,16 @@ func TestAnnotations(t *testing.T) {
 		},
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   draDriver,
-			NodeName: testNodeName,
+			NodeName: &testNodeName,
 			Pool: resourceapi.ResourcePool{
 				Name: testNodeName,
 			},
 			Devices: []resourceapi.Device{
 				{
 					Name: "gpu-0",
-					Basic: &resourceapi.BasicDevice{
-						Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
-							"type": {
-								StringValue: ptr.To(GpuDeviceType),
-							},
+					Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
+						"type": {
+							StringValue: ptr.To(GpuDeviceType),
 						},
 					},
 				},

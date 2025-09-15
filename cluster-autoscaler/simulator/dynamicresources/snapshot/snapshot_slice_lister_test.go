@@ -31,12 +31,15 @@ import (
 
 func TestSnapshotSliceListerList(t *testing.T) {
 	var (
-		localSlice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-1", UID: "local-slice-1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "n1"}}
-		localSlice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-2", UID: "local-slice-2"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "n1"}}
-		localSlice3  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-3", UID: "local-slice-3"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "n2"}}
-		localSlice4  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-4", UID: "local-slice-4"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "n2"}}
-		globalSlice1 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-1", UID: "global-slice-1"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: true}}
-		globalSlice2 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-2", UID: "global-slice-2"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: true}}
+		n1Name       = "n1"
+		n2Name       = "n2"
+		trueValue    = true
+		localSlice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-1", UID: "local-slice-1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &n1Name}}
+		localSlice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-2", UID: "local-slice-2"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &n1Name}}
+		localSlice3  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-3", UID: "local-slice-3"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &n2Name}}
+		localSlice4  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-4", UID: "local-slice-4"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &n2Name}}
+		globalSlice1 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-1", UID: "global-slice-1"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: &trueValue}}
+		globalSlice2 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-2", UID: "global-slice-2"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: &trueValue}}
 		globalSlice3 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-3", UID: "global-slice-3"}, Spec: resourceapi.ResourceSliceSpec{NodeSelector: &apiv1.NodeSelector{}}}
 	)
 
