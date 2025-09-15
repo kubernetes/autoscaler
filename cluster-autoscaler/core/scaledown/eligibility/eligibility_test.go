@@ -75,11 +75,12 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 	dsPod.Spec.NodeName = "regular"
 
 	brokenUtilNode := BuildTestNode("regular", 0, 0)
+	resourceSliceNodeName := "regular"
 	regularNodeIncompleteResourceSlice := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "regularNodeIncompleteResourceSlice", UID: "regularNodeIncompleteResourceSlice"},
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   "driver.foo.com",
-			NodeName: "regular",
+			NodeName: &resourceSliceNodeName,
 			Pool: resourceapi.ResourcePool{
 				Name:               "regular-pool",
 				ResourceSliceCount: 999,
