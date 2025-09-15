@@ -124,6 +124,7 @@ var (
 	scaleUpFromZero           = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there are 0 ready nodes.")
 	parallelScaleUp           = flag.Bool("parallel-scale-up", false, "Whether to allow parallel node groups scale up. Experimental: may not work on some cloud providers, enable at your own risk.")
 	maxNodeProvisionTime      = flag.Duration("max-node-provision-time", 15*time.Minute, "The default maximum time CA waits for node to be provisioned - the value can be overridden per node group")
+	maxNodeStartupTime        = flag.Duration("max-node-start-up-time", 15*time.Minute, "The maximum time from the moment the node is registered to the time the node is ready - the value can be overridden per node group")
 	maxPodEvictionTime        = flag.Duration("max-pod-eviction-time", 2*time.Minute, "Maximum time CA tries to evict a pod before giving up")
 	nodeGroupsFlag            = multiStringFlag(
 		"nodes",
@@ -294,6 +295,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
 			IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
 			MaxNodeProvisionTime:             *maxNodeProvisionTime,
+			MaxNodeStartupTime:               *maxNodeStartupTime,
 		},
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
