@@ -100,12 +100,12 @@ spec:
                 - name
                 type: object
               provisioningStrategy:
-                default: active-capacity
+                default: buffer.x-k8s.io/active-capacity
                 description: |-
                   ProvisioningStrategy defines how the buffer is utilized.
-                  "active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
+                  "buffer.x-k8s.io/active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
                 enum:
-                - active-capacity
+                - buffer.x-k8s.io/active-capacity
                 type: string
               replicas:
                 description: |-
