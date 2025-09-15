@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/dynamic-resource-allocation/structured"
 	"k8s.io/klog/v2"
+	fwk "k8s.io/kube-scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -88,22 +89,22 @@ type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
 
 // List always returns an error
-func (lister *unsetNodeInfoLister) List() ([]*schedulerframework.NodeInfo, error) {
+func (lister *unsetNodeInfoLister) List() ([]fwk.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 // HavePodsWithAffinityList always returns an error
-func (lister *unsetNodeInfoLister) HavePodsWithAffinityList() ([]*schedulerframework.NodeInfo, error) {
+func (lister *unsetNodeInfoLister) HavePodsWithAffinityList() ([]fwk.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 // HavePodsWithRequiredAntiAffinityList always returns an error.
-func (lister *unsetNodeInfoLister) HavePodsWithRequiredAntiAffinityList() ([]*schedulerframework.NodeInfo, error) {
+func (lister *unsetNodeInfoLister) HavePodsWithRequiredAntiAffinityList() ([]fwk.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 // Get always returns an error
-func (lister *unsetNodeInfoLister) Get(nodeName string) (*schedulerframework.NodeInfo, error) {
+func (lister *unsetNodeInfoLister) Get(nodeName string) (fwk.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 

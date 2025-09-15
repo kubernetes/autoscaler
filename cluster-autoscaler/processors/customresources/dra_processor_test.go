@@ -373,7 +373,7 @@ func buildNodeResourceSlices(nodeName, driverName string, numberOfDevicesInSlice
 			driverName = fmt.Sprintf("driver_%d", sliceIndex)
 		}
 		spec := resourceapi.ResourceSliceSpec{
-			NodeName: nodeName,
+			NodeName: &nodeName,
 			Driver:   driverName,
 			Pool:     resourceapi.ResourcePool{Name: fmt.Sprintf("%s_pool_%d", nodeName, sliceIndex)},
 			Devices:  devices,

@@ -24,10 +24,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	fwk "k8s.io/kube-scheduler/framework"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_scheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
 	scheduler_validation "k8s.io/kubernetes/pkg/scheduler/apis/config/validation"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -79,14 +79,14 @@ func isHugePageResourceName(name apiv1.ResourceName) bool {
 }
 
 // ResourceToResourceList returns a resource list of the resource.
-func ResourceToResourceList(r *schedulerframework.Resource) apiv1.ResourceList {
+func ResourceToResourceList(r fwk.Resource) apiv1.ResourceList {
 	result := apiv1.ResourceList{
-		apiv1.ResourceCPU:              *resource.NewMilliQuantity(r.MilliCPU, resource.DecimalSI),
-		apiv1.ResourceMemory:           *resource.NewQuantity(r.Memory, resource.BinarySI),
-		apiv1.ResourcePods:             *resource.NewQuantity(int64(r.AllowedPodNumber), resource.BinarySI),
-		apiv1.ResourceEphemeralStorage: *resource.NewQuantity(r.EphemeralStorage, resource.BinarySI),
+		apiv1.ResourceCPU:              *resource.NewMilliQuantity(r.GetMilliCPU(), resource.DecimalSI),
+		apiv1.ResourceMemory:           *resource.NewQuantity(r.GetMemory(), resource.BinarySI),
+		apiv1.ResourcePods:             *resource.NewQuantity(int64(r.GetAllowedPodNumber()), resource.BinarySI),
+		apiv1.ResourceEphemeralStorage: *resource.NewQuantity(r.GetEphemeralStorage(), resource.BinarySI),
 	}
-	for rName, rQuant := range r.ScalarResources {
+	for rName, rQuant := range r.GetScalarResources() {
 		if isHugePageResourceName(rName) {
 			result[rName] = *resource.NewQuantity(rQuant, resource.BinarySI)
 		} else {
