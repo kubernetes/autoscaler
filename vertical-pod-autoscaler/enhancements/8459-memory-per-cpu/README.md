@@ -146,8 +146,10 @@ The `memoryPerCPU` feature requires VPA version 1.5.0 or higher. The feature is 
 
 ### Test Plan
 
-* Unit tests ensuring ratio enforcement logic.  
-* E2E tests comparing behavior with different configurations
+* Unit tests covering:
+  - ensuring ratio enforcement logic,
+  - ensuring that when the feature gate is on or off the values and validation are applied accordingly.
+* E2E tests comparing behavior with different configurations.
 
 ## Implementation History
 
