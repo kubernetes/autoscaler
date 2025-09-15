@@ -49,7 +49,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		f.ClientSet.AppsV1().Deployments(utils.RecommenderNamespace).Delete(context.TODO(), utils.RecommenderDeploymentName, metav1.DeleteOptions{})
 	})
 
-	ginkgo.It("--vpa-object-namespace", func() {
+	ginkgo.It("starts recommender with --vpa-object-namespace parameter", func() {
 		ginkgo.By("Setting up VPA deployment")
 		ignoredNamespace, err := f.CreateNamespace(context.TODO(), "ignored-namespace", nil)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -64,7 +64,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		testIncludedAndIgnoredNamespaces(f, vpaClientSet, hamsterNamespace, ignoredNamespace.Name)
 	})
 
-	ginkgo.It("--ignored-vpa-object-namespaces", func() {
+	ginkgo.It("starts recommender with --ignored-vpa-object-namespaces parameter", func() {
 		ginkgo.By("Setting up VPA deployment")
 		ignoredNamespace, err := f.CreateNamespace(context.TODO(), "ignored-namespace", nil)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
