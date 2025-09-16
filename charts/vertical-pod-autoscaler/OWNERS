@@ -1,0 +1,6 @@
+approvers:
+- sig-autoscaling-vpa-approvers
+reviewers:
+- sig-autoscaling-vpa-reviewers
+labels:
+- area/vertical-pod-autoscaler
