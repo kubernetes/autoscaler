@@ -25,8 +25,8 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
 * [CoreWeave](./cloudprovider/coreweave/README.md)
 * [DigitalOcean](./cloudprovider/digitalocean/README.md)
-* [Exoscale](./cloudprovider/exoscale/README.md)
 * [Equinix Metal](cloudprovider/equinixmetal/README.md#notes)
+* [Exoscale](./cloudprovider/exoscale/README.md)
 * [External gRPC](./cloudprovider/externalgrpc/README.md)
 * [Hetzner](./cloudprovider/hetzner/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
@@ -40,8 +40,8 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Rancher](./cloudprovider/rancher/README.md)
 * [Scaleway](./cloudprovider/scaleway/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
-* [Vultr](./cloudprovider/vultr/README.md)
 * [Utho](./cloudprovider/utho/README.md)
+* [Vultr](./cloudprovider/vultr/README.md)
 
 # Releases
 
