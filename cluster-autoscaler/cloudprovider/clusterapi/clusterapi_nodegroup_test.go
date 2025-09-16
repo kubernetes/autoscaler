@@ -1703,6 +1703,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 		ScaleDownUnneededTime:            time.Second,
 		ScaleDownUnreadyTime:             time.Minute,
 		MaxNodeProvisionTime:             15 * time.Minute,
+		MaxNodeStartupTime:               35 * time.Minute,
 	}
 
 	cases := []struct {
@@ -1723,6 +1724,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 				config.DefaultScaleDownUnneededTimeKey:            "1h",
 				config.DefaultScaleDownUnreadyTimeKey:             "30m",
 				config.DefaultMaxNodeProvisionTimeKey:             "60m",
+				config.DefaultMaxNodeStartupTimeKey:               "35m",
 			},
 			expected: &config.NodeGroupAutoscalingOptions{
 				ScaleDownGpuUtilizationThreshold: 0.6,
@@ -1730,6 +1732,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 				ScaleDownUnneededTime:            time.Hour,
 				ScaleDownUnreadyTime:             30 * time.Minute,
 				MaxNodeProvisionTime:             60 * time.Minute,
+				MaxNodeStartupTime:               35 * time.Minute,
 			},
 		},
 		{
@@ -1744,6 +1747,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 				ScaleDownUnneededTime:            time.Minute,
 				ScaleDownUnreadyTime:             defaultOptions.ScaleDownUnreadyTime,
 				MaxNodeProvisionTime:             15 * time.Minute,
+				MaxNodeStartupTime:               35 * time.Minute,
 			},
 		},
 		{
