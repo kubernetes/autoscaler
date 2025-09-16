@@ -110,11 +110,11 @@ func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(nodeGroup c
 	return ngConfig.MaxNodeProvisionTime, nil
 }
 
-// GetMaxNodeProvisionTime returns MaxNodeStartupTime value that should be used for a given NodeGroup.
+// GetMaxNodeStartupTime returns MaxNodeStartupTime value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeStartupTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
-		return time.Duration(0), err
+		return p.nodeGroupDefaults.MaxNodeStartupTime, err
 	}
 	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
 		return p.nodeGroupDefaults.MaxNodeStartupTime, nil
