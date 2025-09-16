@@ -261,7 +261,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "node-1",
 					Labels: map[string]string{
-						"nodepool": ng.Id(),
+						"nodepool": ng.Name,
 					},
 				},
 				Spec: v1.NodeSpec{
@@ -295,7 +295,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "node-1",
 					Labels: map[string]string{
-						"nodepool": ng.Id(),
+						"nodepool": ng.Name,
 					},
 				},
 			},
@@ -303,7 +303,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "node-2",
 					Labels: map[string]string{
-						"nodepool": ng.Id(),
+						"nodepool": ng.Name,
 					},
 				},
 			},
@@ -311,7 +311,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "node-3",
 					Labels: map[string]string{
-						"nodepool": ng.Id(),
+						"nodepool": ng.Name,
 					},
 				},
 			},
@@ -329,10 +329,8 @@ func TestOVHCloudNodeGroup_DecreaseTargetSize(t *testing.T) {
 func TestOVHCloudNodeGroup_Id(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
 
-	t.Run("check node group id fetch", func(t *testing.T) {
-		name := ng.Id()
-
-		assert.Equal(t, "pool-b2-7", name)
+	t.Run("check node group name fetch", func(t *testing.T) {
+		assert.Equal(t, "pool-b2-7", ng.Name)
 	})
 }
 
@@ -379,7 +377,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 		assert.NotNil(t, node)
 
 		assert.Contains(t, node.ObjectMeta.Name, fmt.Sprintf("%s-node-", ng.Id()))
-		assert.Equal(t, map[string]string{"nodepool": ng.Id()}, node.Labels)
+		assert.Equal(t, map[string]string{"nodepool": ng.Name}, node.Labels)
 		assert.Equal(t, map[string]string(nil), node.Annotations)
 		assert.Equal(t, []string(nil), node.Finalizers)
 		assert.Equal(t, []v1.Taint(nil), node.Spec.Taints)
@@ -399,7 +397,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 		assert.NotNil(t, node)
 
 		assert.Contains(t, node.ObjectMeta.Name, fmt.Sprintf("%s-node-", ng.Id()))
-		assert.Equal(t, map[string]string{"nodepool": ng.Id()}, node.Labels)
+		assert.Equal(t, map[string]string{"nodepool": ng.Name}, node.Labels)
 		assert.Equal(t, map[string]string(nil), node.Annotations)
 		assert.Equal(t, []string(nil), node.Finalizers)
 		assert.Equal(t, []v1.Taint(nil), node.Spec.Taints)
@@ -438,7 +436,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 		assert.NotNil(t, node)
 
 		assert.Contains(t, node.ObjectMeta.Name, fmt.Sprintf("%s-node-", ng.Id()))
-		assert.Equal(t, map[string]string{"nodepool": ng.Id(), "label1": "labelValue1"}, node.Labels)
+		assert.Equal(t, map[string]string{"nodepool": ng.Name, "label1": "labelValue1"}, node.Labels)
 		assert.Equal(t, ng.Template.Metadata.Annotations, node.Annotations)
 		assert.Equal(t, ng.Template.Metadata.Finalizers, node.Finalizers)
 		assert.Equal(t, ng.Template.Spec.Taints, node.Spec.Taints)
@@ -538,6 +536,16 @@ func TestOVHCloudNodeGroup_IsGpu(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_GetOptions(t *testing.T) {
+	t.Run("check default autoscaling options", func(t *testing.T) {
+		ng := newTestNodeGroup(t, "b2-7")
+		opts, err := ng.GetOptions(config.NodeGroupAutoscalingOptions{
+			ZeroOrMaxNodeScaling: true,
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, true, opts.ZeroOrMaxNodeScaling)
+		assert.Equal(t, false, opts.IgnoreDaemonSetsUtilization)
+	})
 	t.Run("check get autoscaling options", func(t *testing.T) {
 		ng := newTestNodeGroup(t, "b2-7")
 		opts, err := ng.GetOptions(config.NodeGroupAutoscalingOptions{})

@@ -242,7 +242,7 @@ func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if node.ObjectMeta.Labels == nil {
 		node.ObjectMeta.Labels = make(map[string]string)
 	}
-	node.ObjectMeta.Labels[NodePoolLabel] = ng.Id()
+	node.ObjectMeta.Labels[NodePoolLabel] = ng.Name
 
 	flavor, err := ng.Manager.getFlavorByName(ng.Flavor)
 	if err != nil {
@@ -328,11 +328,12 @@ func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 		return nil, nil
 	}
 
+	// Initialize configuration from defaults
+	cfg := defaults
+
 	// Forge autoscaling configuration from node pool
-	cfg := &config.NodeGroupAutoscalingOptions{
-		ScaleDownUnneededTime: time.Duration(ng.Autoscaling.ScaleDownUnneededTimeSeconds) * time.Second,
-		ScaleDownUnreadyTime:  time.Duration(ng.Autoscaling.ScaleDownUnreadyTimeSeconds) * time.Second,
-	}
+	cfg.ScaleDownUnneededTime = time.Duration(ng.Autoscaling.ScaleDownUnneededTimeSeconds) * time.Second
+	cfg.ScaleDownUnreadyTime = time.Duration(ng.Autoscaling.ScaleDownUnreadyTimeSeconds) * time.Second
 
 	// Switch utilization threshold from defaults given flavor type
 	if ng.isGpu() {
@@ -343,7 +344,7 @@ func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 		cfg.ScaleDownGpuUtilizationThreshold = defaults.ScaleDownGpuUtilizationThreshold
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }
 
 // isGpu checks if a node group is using GPU machines
