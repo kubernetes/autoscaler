@@ -1,6 +1,6 @@
 approvers:
-- sig-autoscaling-vpa-approvers
+- sig-autoscaling-vpa-helm-chart-approvers
 reviewers:
-- sig-autoscaling-vpa-reviewers
+- sig-autoscaling-vpa-helm-chart-reviewers
 labels:
-- area/vertical-pod-autoscaler
+- area/helm-charts-vertical-pod-autoscaler

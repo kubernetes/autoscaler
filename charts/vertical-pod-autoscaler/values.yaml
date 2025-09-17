@@ -56,7 +56,7 @@ admissionController:
 
   # Additional args for the Admission Controller default container.
   extraArgs: []
-  
+
   # Security context for the Admission Controller pod
   podSecurityContext:
     runAsNonRoot: true
@@ -71,7 +71,7 @@ admissionController:
     initialDelaySeconds: 5
     periodSeconds: 10
     failureThreshold: 3
-  
+
   # Readiness probe configuration for the _Updater_ default container.
   readinessProbe:
     httpGet:
@@ -98,9 +98,8 @@ admissionController:
     secret:
       defaultMode: 420
       secretName: vpa-tls-certs
-  
+
   volumeMounts:
     - name: tls-certs
       mountPath: /etc/tls-certs
       readOnly: true
-    

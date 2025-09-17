@@ -20,3 +20,9 @@ aliases:
     - omerap12
   # emeritus:
   # - jbartosik 2025-08-09
+  sig-autoscaling-vpa-helm-chart-approvers:
+    - adrianmoisey
+    - omerap12
+  sig-autoscaling-vpa-helm-chart-reviewers:
+    - adrianmoisey
+    - omerap12
