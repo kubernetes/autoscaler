@@ -21,13 +21,14 @@ import (
 	"maps"
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/klog/v2"
+	fwk "k8s.io/kube-scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -102,18 +103,18 @@ func (s *Snapshot) DeviceClasses() schedulerframework.DeviceClassLister {
 	return snapshotClassLister{snapshot: s}
 }
 
-// WrapSchedulerNodeInfo wraps the provided *schedulerframework.NodeInfo into an internal *framework.NodeInfo, adding
+// WrapSchedulerNodeInfo wraps the provided fwk.NodeInfo into an internal *framework.NodeInfo, adding
 // dra information. Node-local ResourceSlices are added to the NodeInfo, and all ResourceClaims referenced by each Pod
 // are added to each PodInfo. Returns an error if any of the Pods is missing a ResourceClaim.
-func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo *schedulerframework.NodeInfo) (*framework.NodeInfo, error) {
-	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(schedNodeInfo.Pods))
-	for _, pod := range schedNodeInfo.Pods {
-		podClaims, err := s.PodClaims(pod.Pod)
+func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework.NodeInfo, error) {
+	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(schedNodeInfo.GetPods()))
+	for _, pod := range schedNodeInfo.GetPods() {
+		podClaims, err := s.PodClaims(pod.GetPod())
 		if err != nil {
 			return nil, err
 		}
 		if len(podClaims) > 0 {
-			podExtraInfos[pod.Pod.UID] = framework.PodExtraInfo{NeededResourceClaims: podClaims}
+			podExtraInfos[pod.GetPod().UID] = framework.PodExtraInfo{NeededResourceClaims: podClaims}
 		}
 	}
 	nodeSlices, _ := s.NodeResourceSlices(schedNodeInfo.Node().Name)

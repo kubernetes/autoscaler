@@ -28,7 +28,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/controller/daemon"
@@ -396,7 +396,7 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 		{
 			ObjectMeta: metav1.ObjectMeta{Name: "slice1", UID: "slice1Uid"},
 			Spec: resourceapi.ResourceSliceSpec{
-				NodeName: oldNodeName,
+				NodeName: &oldNodeName,
 				Pool: resourceapi.ResourcePool{
 					Name:               "pool1",
 					ResourceSliceCount: 1,
@@ -406,7 +406,7 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 		{
 			ObjectMeta: metav1.ObjectMeta{Name: "slice2", UID: "slice2Uid"},
 			Spec: resourceapi.ResourceSliceSpec{
-				NodeName: oldNodeName,
+				NodeName: &oldNodeName,
 				Pool: resourceapi.ResourcePool{
 					Name:               "pool2",
 					ResourceSliceCount: 1,
