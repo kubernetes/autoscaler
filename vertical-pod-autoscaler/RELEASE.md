@@ -105,7 +105,7 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
 1.  [ ] Create a Kubernetes cluster. If you're using GKE you can use the following command:
 
     ```shell
-    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3
+    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3 --release-channel=rapid
     ```
 
 1. [ ]  Create clusterrole. If you're using GKE you can use the following command:
