@@ -19,7 +19,7 @@ package snapshot
 import (
 	"fmt"
 
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 )
 
 type snapshotClassLister struct {

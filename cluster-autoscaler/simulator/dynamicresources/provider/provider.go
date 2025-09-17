@@ -17,10 +17,10 @@ limitations under the License.
 package provider
 
 import (
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/client-go/informers"
-	resourceapilisters "k8s.io/client-go/listers/resource/v1beta1"
+	resourceapilisters "k8s.io/client-go/listers/resource/v1"
 )
 
 // Provider provides DRA-related objects.
@@ -32,9 +32,9 @@ type Provider struct {
 
 // NewProviderFromInformers returns a new Provider which uses InformerFactory listers to list the DRA resources.
 func NewProviderFromInformers(informerFactory informers.SharedInformerFactory) *Provider {
-	claims := &allObjectsApiLister[resourceapilisters.ResourceClaimLister, *resourceapi.ResourceClaim]{apiLister: informerFactory.Resource().V1beta1().ResourceClaims().Lister()}
-	slices := &allObjectsApiLister[resourceapilisters.ResourceSliceLister, *resourceapi.ResourceSlice]{apiLister: informerFactory.Resource().V1beta1().ResourceSlices().Lister()}
-	devices := &allObjectsApiLister[resourceapilisters.DeviceClassLister, *resourceapi.DeviceClass]{apiLister: informerFactory.Resource().V1beta1().DeviceClasses().Lister()}
+	claims := &allObjectsApiLister[resourceapilisters.ResourceClaimLister, *resourceapi.ResourceClaim]{apiLister: informerFactory.Resource().V1().ResourceClaims().Lister()}
+	slices := &allObjectsApiLister[resourceapilisters.ResourceSliceLister, *resourceapi.ResourceSlice]{apiLister: informerFactory.Resource().V1().ResourceSlices().Lister()}
+	devices := &allObjectsApiLister[resourceapilisters.DeviceClassLister, *resourceapi.DeviceClass]{apiLister: informerFactory.Resource().V1().DeviceClasses().Lister()}
 	return NewProvider(claims, slices, devices)
 }
 
@@ -65,10 +65,10 @@ func (p *Provider) Snapshot() (*drasnapshot.Snapshot, error) {
 	slicesMap := make(map[string][]*resourceapi.ResourceSlice)
 	var nonNodeLocalSlices []*resourceapi.ResourceSlice
 	for _, slice := range slices {
-		if slice.Spec.NodeName == "" {
+		if slice.Spec.NodeName == nil || *slice.Spec.NodeName == "" {
 			nonNodeLocalSlices = append(nonNodeLocalSlices, slice)
 		} else {
-			slicesMap[slice.Spec.NodeName] = append(slicesMap[slice.Spec.NodeName], slice)
+			slicesMap[*slice.Spec.NodeName] = append(slicesMap[*slice.Spec.NodeName], slice)
 		}
 	}
 

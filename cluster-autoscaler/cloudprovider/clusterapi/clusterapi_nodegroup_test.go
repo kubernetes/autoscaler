@@ -1648,8 +1648,8 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				t.Errorf("Expected the number of DRA devices in ResourceSlice to have: %d, but got: %d", config.expectedResourceSlice.gpuCount, len(resourceslice.Spec.Devices))
 			}
 			for _, device := range resourceslice.Spec.Devices {
-				if *device.Basic.Attributes["type"].StringValue != config.expectedResourceSlice.deviceType {
-					t.Errorf("Expected device type to have: %s, but got: %s", config.expectedResourceSlice.deviceType, *device.Basic.Attributes["type"].StringValue)
+				if *device.Attributes["type"].StringValue != config.expectedResourceSlice.deviceType {
+					t.Errorf("Expected device type to have: %s, but got: %s", config.expectedResourceSlice.deviceType, *device.Attributes["type"].StringValue)
 				}
 			}
 		}

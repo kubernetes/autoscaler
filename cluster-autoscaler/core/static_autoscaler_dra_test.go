@@ -30,7 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -603,15 +603,17 @@ func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, 
 			selectors = append(selectors, resourceapi.DeviceSelector{CEL: &resourceapi.CELDeviceSelector{Expression: selector}})
 		}
 		deviceRequest := resourceapi.DeviceRequest{
-			Name:            request.name,
-			DeviceClassName: "default-class",
-			Selectors:       selectors,
+			Name: request.name,
+			Exactly: &resourceapi.ExactDeviceRequest{
+				DeviceClassName: "default-class",
+				Selectors:       selectors,
+			},
 		}
 		if request.all {
-			deviceRequest.AllocationMode = resourceapi.DeviceAllocationModeAll
+			deviceRequest.Exactly.AllocationMode = resourceapi.DeviceAllocationModeAll
 		} else {
-			deviceRequest.AllocationMode = resourceapi.DeviceAllocationModeExactCount
-			deviceRequest.Count = request.count
+			deviceRequest.Exactly.AllocationMode = resourceapi.DeviceAllocationModeExactCount
+			deviceRequest.Exactly.Count = request.count
 		}
 		deviceRequests = append(deviceRequests, deviceRequest)
 	}
@@ -711,9 +713,10 @@ func testResourceSlices(driver, poolName string, poolSliceCount, poolGen int64, 
 		}
 
 		if avail.node != "" {
-			slice.Spec.NodeName = avail.node
+			slice.Spec.NodeName = &avail.node
 		} else if avail.all {
-			slice.Spec.AllNodes = true
+			v := true
+			slice.Spec.AllNodes = &v
 		} else if len(avail.nodes) > 0 {
 			slice.Spec.NodeSelector = &apiv1.NodeSelector{
 				NodeSelectorTerms: []apiv1.NodeSelectorTerm{
@@ -728,18 +731,16 @@ func testResourceSlices(driver, poolName string, poolSliceCount, poolGen int64, 
 	var devices []resourceapi.Device
 	for _, deviceDef := range deviceDefs {
 		device := resourceapi.Device{
-			Name: deviceDef.name,
-			Basic: &resourceapi.BasicDevice{
-				Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{},
-				Capacity:   map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{},
-			},
+			Name:       deviceDef.name,
+			Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{},
+			Capacity:   map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{},
 		}
 		for name, val := range deviceDef.attributes {
 			val := val
-			device.Basic.Attributes[resourceapi.QualifiedName(driver+"/"+name)] = resourceapi.DeviceAttribute{StringValue: &val}
+			device.Attributes[resourceapi.QualifiedName(driver+"/"+name)] = resourceapi.DeviceAttribute{StringValue: &val}
 		}
 		for name, quantity := range deviceDef.capacity {
-			device.Basic.Capacity[resourceapi.QualifiedName(name)] = resourceapi.DeviceCapacity{Value: resource.MustParse(quantity)}
+			device.Capacity[resourceapi.QualifiedName(name)] = resourceapi.DeviceCapacity{Value: resource.MustParse(quantity)}
 		}
 		devices = append(devices, device)
 	}

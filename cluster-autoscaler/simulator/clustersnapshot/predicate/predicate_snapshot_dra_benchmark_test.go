@@ -22,7 +22,7 @@ import (
 
 	"github.com/google/uuid"
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/util/feature"
@@ -35,21 +35,20 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
-func createTestResourceSlice(nodeName string, devicesPerSlice int, slicesPerNode int, driver string, device resourceapi.BasicDevice) *resourceapi.ResourceSlice {
+func createTestResourceSlice(nodeName string, devicesPerSlice int, slicesPerNode int, driver string) *resourceapi.ResourceSlice {
 	sliceId := uuid.New().String()
 	name := fmt.Sprintf("rs-%s", sliceId)
 	uid := types.UID(fmt.Sprintf("rs-%s-uid", sliceId))
 	devices := make([]resourceapi.Device, devicesPerSlice)
 	for deviceIndex := 0; deviceIndex < devicesPerSlice; deviceIndex++ {
 		deviceName := fmt.Sprintf("rs-dev-%s-%d", sliceId, deviceIndex)
-		deviceCopy := device
-		devices[deviceIndex] = resourceapi.Device{Name: deviceName, Basic: &deviceCopy}
+		devices[deviceIndex] = resourceapi.Device{Name: deviceName}
 	}
 
 	return &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: name, UID: uid},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: nodeName,
+			NodeName: &nodeName,
 			Driver:   driver,
 			Pool: resourceapi.ResourcePool{
 				Name:               nodeName,
@@ -69,11 +68,13 @@ func createTestResourceClaim(requestsPerClaim int, devicesPerRequest int, driver
 	requests := make([]resourceapi.DeviceRequest, requestsPerClaim)
 	for requestIndex := 0; requestIndex < requestsPerClaim; requestIndex++ {
 		requests[requestIndex] = resourceapi.DeviceRequest{
-			Name:            fmt.Sprintf("deviceRequest-%d", requestIndex),
-			DeviceClassName: deviceClass,
-			Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: expression}}},
-			AllocationMode:  resourceapi.DeviceAllocationModeExactCount,
-			Count:           int64(devicesPerRequest),
+			Name: fmt.Sprintf("deviceRequest-%d", requestIndex),
+			Exactly: &resourceapi.ExactDeviceRequest{
+				DeviceClassName: deviceClass,
+				Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: expression}}},
+				AllocationMode:  resourceapi.DeviceAllocationModeExactCount,
+				Count:           int64(devicesPerRequest),
+			},
 		}
 	}
 
@@ -102,7 +103,7 @@ func allocateResourceSlicesForClaim(claim *resourceapi.ResourceClaim, nodeName s
 
 allocationLoop:
 	for _, request := range claim.Spec.Devices.Requests {
-		for devicesRequired := request.Count; devicesRequired > 0; devicesRequired-- {
+		for devicesRequired := request.Exactly.Count; devicesRequired > 0; devicesRequired-- {
 			// Skipping resource slices until we find one with at least a single device available
 			for sliceIndex < len(slices) && deviceIndex >= len(slices[sliceIndex].Spec.Devices) {
 				sliceIndex++
@@ -272,7 +273,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 	for nodeIndex := 0; nodeIndex < maxNodesCount; nodeIndex++ {
 		nodeName := fmt.Sprintf("node-%d", nodeIndex)
 		node := BuildTestNode(nodeName, 10000, 10000)
-		nodeSlice := createTestResourceSlice(node.Name, devicesPerSlice, 1, driverName, resourceapi.BasicDevice{})
+		nodeSlice := createTestResourceSlice(node.Name, devicesPerSlice, 1, driverName)
 		nodeInfo := framework.NewNodeInfo(node, []*resourceapi.ResourceSlice{nodeSlice})
 
 		sharedClaim := createTestResourceClaim(devicesPerSlice, 1, driverName, deviceClassName)

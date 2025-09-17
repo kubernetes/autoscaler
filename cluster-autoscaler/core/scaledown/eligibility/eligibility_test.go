@@ -24,7 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -75,11 +75,12 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 	dsPod.Spec.NodeName = "regular"
 
 	brokenUtilNode := BuildTestNode("regular", 0, 0)
+	resourceSliceNodeName := "regular"
 	regularNodeIncompleteResourceSlice := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "regularNodeIncompleteResourceSlice", UID: "regularNodeIncompleteResourceSlice"},
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   "driver.foo.com",
-			NodeName: "regular",
+			NodeName: &resourceSliceNodeName,
 			Pool: resourceapi.ResourcePool{
 				Name:               "regular-pool",
 				ResourceSliceCount: 999,
