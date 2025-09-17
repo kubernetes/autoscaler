@@ -18,6 +18,7 @@ package budgets
 
 import (
 	"reflect"
+	"strconv"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -25,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/annotations"
 )
 
 // NodeGroupView is a subset of nodes from a given NodeGroup
@@ -65,6 +68,12 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 	var err error
 	canOverflow := true
 	emptyToDelete, drainToDelete = []*NodeGroupView{}, []*NodeGroupView{}
+
+	allNodes, err := allNodes(bp.ctx.ClusterSnapshot)
+	if err != nil {
+		klog.Errorf("failed to read all nodes from the cluster snapshot for nodes cropping, err: %s", err)
+	}
+
 	for _, bucket := range emptyAtomic {
 		drainNodes := []*apiv1.Node{}
 		drainBucket, drainFound := drainAtomicMap[bucket.Group.Id()]
@@ -90,9 +99,22 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 			continue
 		}
 		bucket.BatchSize = targetSize
-		if len(bucket.Nodes)+len(drainNodes) != targetSize {
+
+		// If available we consider only registered nodes for the scale down,
+		// excluding failed instances unable to register as K8s nodes. Waiting
+		// for such instances could block scale down indefinitely.
+		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(allNodes, bucket.Group)
+		if err != nil {
+			klog.Errorf("failed to get registered nodes for node group %s: %v", bucket.Group.Id(), err)
+		}
+		currentSize := len(registeredNodes)
+		if len(bucket.Nodes) == currentSize {
+			bucket.BatchSize = currentSize
+		}
+
+		if len(bucket.Nodes)+len(drainNodes) != targetSize && len(bucket.Nodes)+len(drainNodes) != currentSize {
 			// We can't only partially scale down atomic group.
-			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, empty: %v, drainable: %v", bucket.Group.Id(), targetSize, len(bucket.Nodes), len(drainNodes))
+			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, current size: %v empty: %v, drainable: %v", bucket.Group.Id(), targetSize, currentSize, len(bucket.Nodes), len(drainNodes))
 			continue
 		}
 		emptyToDelete = append(emptyToDelete, bucket)
@@ -127,9 +149,22 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 			continue
 		}
 		bucket.BatchSize = targetSize
-		if len(bucket.Nodes) != targetSize {
+
+		// If available we consider only registered nodes for the scale down,
+		// excluding failed instances unable to register as K8s nodes. Waiting
+		// for such instances could block scale down indefinitely.
+		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(allNodes, bucket.Group)
+		if err != nil {
+			klog.Errorf("Failed to get registered nodes for node group %s: %v", bucket.Group.Id(), err)
+		}
+		currentSize := len(registeredNodes)
+		if len(bucket.Nodes) == currentSize {
+			bucket.BatchSize = currentSize
+		}
+
+		if len(bucket.Nodes) != targetSize && len(bucket.Nodes) != currentSize {
 			// We can't only partially scale down atomic group.
-			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, empty: none, drainable: %v", bucket.Group.Id(), targetSize, len(bucket.Nodes))
+			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, current size: %v, empty: none, drainable: %v", bucket.Group.Id(), targetSize, currentSize, len(bucket.Nodes))
 			continue
 		}
 		drainToDelete = append(drainToDelete, bucket)
@@ -209,4 +244,40 @@ func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individ
 		}
 	}
 	return individual, atomic
+}
+
+func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {
+	nodeInfos, err := s.ListNodeInfos()
+	if err != nil {
+		// This should never happen, List() returns err only because scheduler interface requires it.
+		return nil, err
+	}
+	nodes := make([]*apiv1.Node, len(nodeInfos))
+	for i, ni := range nodeInfos {
+		nodes[i] = ni.Node()
+	}
+	return nodes, nil
+}
+
+func (bp *ScaleDownBudgetProcessor) getAllRegisteredNodesForNodeGroup(allNodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]*apiv1.Node, error) {
+	allNodesInNodeGroup, err := nodeGroup.Nodes()
+	if err != nil {
+		return nil, err
+	}
+	nodeByNodeName := map[string]cloudprovider.Instance{}
+	for _, node := range allNodesInNodeGroup {
+		nodeByNodeName[node.Id] = node
+	}
+	var registeredNodesForNodeGroup []*apiv1.Node
+	for _, node := range allNodes {
+		if val, ok := node.Annotations[annotations.NodeUpcomingAnnotation]; ok {
+			if res, ok := strconv.ParseBool(val); ok == nil && res {
+				continue
+			}
+		}
+		if _, ok := nodeByNodeName[node.Spec.ProviderID]; ok {
+			registeredNodesForNodeGroup = append(registeredNodesForNodeGroup, node)
+		}
+	}
+	return registeredNodesForNodeGroup, nil
 }

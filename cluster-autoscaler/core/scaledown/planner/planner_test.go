@@ -842,20 +842,21 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 
 func TestNodesToDelete(t *testing.T) {
 	testCases := []struct {
-		name      string
-		nodes     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
-		wantEmpty []*apiv1.Node
-		wantDrain []*apiv1.Node
+		name           string
+		nodes          map[string][]*apiv1.Node
+		removableNodes map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
+		wantEmpty      []*apiv1.Node
+		wantDrain      []*apiv1.Node
 	}{
 		{
-			name:      "empty",
-			nodes:     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{},
-			wantEmpty: []*apiv1.Node{},
-			wantDrain: []*apiv1.Node{},
+			name:           "empty",
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{},
+			wantEmpty:      []*apiv1.Node{},
+			wantDrain:      []*apiv1.Node{},
 		},
 		{
 			name: "single empty",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("test-ng", 3, false): {
 					buildRemovableNode("test-node", 0),
 				},
@@ -867,7 +868,7 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "single drain",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("test-ng", 3, false): {
 					buildRemovableNode("test-node", 1),
 				},
@@ -879,7 +880,13 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "single empty atomic",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			nodes: map[string][]*apiv1.Node{
+				"atomic-ng": {
+					BuildTestNode("node-0", 1000, 10),
+					BuildTestNode("node-2", 1000, 10),
+				},
+			},
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("atomic-ng", 3, true): {
 					buildRemovableNode("node-1", 0),
 				},
@@ -889,7 +896,7 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "all empty atomic",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("atomic-ng", 3, true): {
 					buildRemovableNode("node-1", 0),
 					buildRemovableNode("node-2", 0),
@@ -905,7 +912,7 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "some drain atomic",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("atomic-ng", 3, true): {
 					buildRemovableNode("node-1", 0),
 					buildRemovableNode("node-2", 0),
@@ -922,55 +929,66 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "different groups",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			nodes: map[string][]*apiv1.Node{
+				"atomic-partial-ng-all-registered": {
+					BuildTestNode("atomic-partial-ng-all-registered-0", 1000, 10),
+				},
+			},
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("standard-empty-ng", 3, false): {
-					buildRemovableNode("node-1", 0),
-					buildRemovableNode("node-2", 0),
-					buildRemovableNode("node-3", 0),
+					buildRemovableNode("standard-empty-ng-0", 0),
+					buildRemovableNode("standard-empty-ng-1", 0),
+					buildRemovableNode("standard-empty-ng-2", 0),
 				},
 				sizedNodeGroup("standard-drain-ng", 3, false): {
-					buildRemovableNode("node-4", 1),
-					buildRemovableNode("node-5", 2),
-					buildRemovableNode("node-6", 3),
+					buildRemovableNode("standard-drain-ng-0", 1),
+					buildRemovableNode("standard-drain-ng-1", 2),
+					buildRemovableNode("standard-drain-ng-2", 3),
 				},
 				sizedNodeGroup("standard-mixed-ng", 3, false): {
-					buildRemovableNode("node-7", 0),
-					buildRemovableNode("node-8", 1),
-					buildRemovableNode("node-9", 2),
+					buildRemovableNode("standard-mixed-ng-0", 0),
+					buildRemovableNode("standard-mixed-ng-1", 1),
+					buildRemovableNode("standard-mixed-ng-2", 2),
 				},
 				sizedNodeGroup("atomic-empty-ng", 3, true): {
-					buildRemovableNode("node-10", 0),
-					buildRemovableNode("node-11", 0),
-					buildRemovableNode("node-12", 0),
+					buildRemovableNode("atomic-empty-ng-0", 0),
+					buildRemovableNode("atomic-empty-ng-1", 0),
+					buildRemovableNode("atomic-empty-ng-2", 0),
 				},
 				sizedNodeGroup("atomic-mixed-ng", 3, true): {
-					buildRemovableNode("node-13", 0),
-					buildRemovableNode("node-14", 1),
-					buildRemovableNode("node-15", 2),
+					buildRemovableNode("atomic-mixed-ng-0", 0),
+					buildRemovableNode("atomic-mixed-ng-1", 1),
+					buildRemovableNode("atomic-mixed-ng-2", 2),
 				},
-				sizedNodeGroup("atomic-partial-ng", 3, true): {
-					buildRemovableNode("node-16", 0),
-					buildRemovableNode("node-17", 1),
+				sizedNodeGroup("atomic-partial-ng-all-registered", 3, true): {
+					buildRemovableNode("atomic-partial-ng-all-registered-1", 0),
+					buildRemovableNode("atomic-partial-ng-all-registered-2", 1),
+				},
+				sizedNodeGroup("atomic-partial-ng-partially-registered", 3, true): {
+					buildRemovableNode("atomic-partial-ng-partially-registered-0", 0),
+					buildRemovableNode("atomic-partial-ng-partially-registered-1", 1),
 				},
 			},
 			wantEmpty: []*apiv1.Node{
-				buildRemovableNode("node-1", 0).Node,
-				buildRemovableNode("node-2", 0).Node,
-				buildRemovableNode("node-3", 0).Node,
-				buildRemovableNode("node-7", 0).Node,
-				buildRemovableNode("node-10", 0).Node,
-				buildRemovableNode("node-11", 0).Node,
-				buildRemovableNode("node-12", 0).Node,
-				buildRemovableNode("node-13", 0).Node,
+				buildRemovableNode("standard-empty-ng-0", 0).Node,
+				buildRemovableNode("standard-empty-ng-1", 0).Node,
+				buildRemovableNode("standard-empty-ng-2", 0).Node,
+				buildRemovableNode("standard-mixed-ng-0", 0).Node,
+				buildRemovableNode("atomic-empty-ng-0", 0).Node,
+				buildRemovableNode("atomic-empty-ng-1", 0).Node,
+				buildRemovableNode("atomic-empty-ng-2", 0).Node,
+				buildRemovableNode("atomic-mixed-ng-0", 0).Node,
+				buildRemovableNode("atomic-partial-ng-partially-registered-0", 0).Node,
 			},
 			wantDrain: []*apiv1.Node{
-				buildRemovableNode("node-4", 0).Node,
-				buildRemovableNode("node-5", 0).Node,
-				buildRemovableNode("node-6", 0).Node,
-				buildRemovableNode("node-8", 0).Node,
-				buildRemovableNode("node-9", 0).Node,
-				buildRemovableNode("node-14", 0).Node,
-				buildRemovableNode("node-15", 0).Node,
+				buildRemovableNode("standard-drain-ng-0", 0).Node,
+				buildRemovableNode("standard-drain-ng-1", 0).Node,
+				buildRemovableNode("standard-drain-ng-2", 0).Node,
+				buildRemovableNode("standard-mixed-ng-1", 0).Node,
+				buildRemovableNode("standard-mixed-ng-2", 0).Node,
+				buildRemovableNode("atomic-mixed-ng-1", 0).Node,
+				buildRemovableNode("atomic-mixed-ng-2", 0).Node,
+				buildRemovableNode("atomic-partial-ng-partially-registered-1", 0).Node,
 			},
 		},
 	}
@@ -981,12 +999,19 @@ func TestNodesToDelete(t *testing.T) {
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			allNodes := []*apiv1.Node{}
 			allRemovables := []simulator.NodeToBeRemoved{}
-			for ng, nodes := range tc.nodes {
+			for ng, nodes := range tc.removableNodes {
+				ng.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
 				provider.InsertNodeGroup(ng)
 				for _, removable := range nodes {
 					allNodes = append(allNodes, removable.Node)
 					allRemovables = append(allRemovables, removable)
 					provider.AddNode(ng.Id(), removable.Node)
+				}
+			}
+			for ng, nodes := range tc.nodes {
+				for _, node := range nodes {
+					allNodes = append(allNodes, node)
+					provider.AddNode(ng, node)
 				}
 			}
 			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
