@@ -63,8 +63,8 @@ type NodeGroup struct {
 
 // NodegroupsConfig defines options for creating nodegroups
 type NodegroupsConfig struct {
-	FromNodeLabelKey        string `json:"fromNodeLabelKey" yaml:"fromNodeLabelKey"`
-	FromNodeLabelAnnotation string `json:"fromNodeLabelAnnotation" yaml:"fromNodeLabelAnnotation"`
+	FromNodeLabelKey      string `json:"fromNodeLabelKey" yaml:"fromNodeLabelKey"`
+	FromNodeAnnotationKey string `json:"fromNodeAnnotationKey" yaml:"fromNodeAnnotationKey"`
 }
 
 // NodeConfig defines config options for the nodes
