@@ -343,7 +343,7 @@ func TestCalculateWithDynamicResources(t *testing.T) {
 			nodeInfo:     nodeInfoGpuAndDra,
 			gpuConfig:    gpuConfig,
 			draEnabled:   true,
-			wantUtilInfo: Info{Utilization: 0, ResourceName: gpuConfig.ResourceName},
+			wantUtilInfo: Info{Utilization: 0, ResourceName: gpuConfig.ExtendedResourceName},
 		},
 		{
 			testName:     "DRA slices and claims present, DRA enabled, error while calculating DRA util -> error returned",
@@ -371,9 +371,9 @@ func getGpuConfigFromNode(node *apiv1.Node) *cloudprovider.GpuConfig {
 	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
 	if hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero()) {
 		return &cloudprovider.GpuConfig{
-			Label:        gpuLabel,
-			Type:         gpuType,
-			ResourceName: gpu.ResourceNvidiaGPU,
+			Label:                gpuLabel,
+			Type:                 gpuType,
+			ExtendedResourceName: gpu.ResourceNvidiaGPU,
 		}
 	}
 	return nil
