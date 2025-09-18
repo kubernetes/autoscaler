@@ -227,6 +227,8 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
+    deprecated: true
+    deprecationWarning: v1beta1 ProvisioningRequest is deprecated
     name: v1beta1
     schema:
       openAPIV3Schema:
