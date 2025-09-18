@@ -23,19 +23,21 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"k8s.io/autoscaler/cluster-autoscaler/version"
-	"k8s.io/klog/v2"
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/version"
+	"k8s.io/klog/v2"
 )
 
 const (
 	defaultApiURL      string = "https://api.scaleway.com"
 	defaultHTTPTimeout        = 30
-	pageSizeListPools  uint32 = 100
-	pageSizeListNodes  uint32 = 100
+	pageSizeListPools  int    = 100
+	pageSizeListNodes  int    = 100
 )
 
 var (
@@ -56,6 +58,14 @@ var (
 	// ErrOther indicates a generic HTTP error
 	ErrOther = errors.New("generic error type")
 )
+
+// Client is used to talk to Scaleway Kapsule API
+type Client interface {
+	ListPools(ctx context.Context, clusterID string) ([]PoolWithGenericNodeSpecs, error)
+	UpdatePool(ctx context.Context, poolID string, size int) (Pool, error)
+	ListNodes(ctx context.Context, cluserID string) ([]Node, error)
+	DeleteNode(ctx context.Context, nodeID string) (Node, error)
+}
 
 // Config is used to deserialize config file passed with flag `cloud-config`
 type Config struct {
@@ -105,18 +115,6 @@ type scalewayRequest struct {
 	Path   string
 	Query  url.Values
 	Body   io.Reader
-}
-
-// Listing queries default to `fetch all resources` if no `page` is provided
-// as CA needs access to all nodes and pools
-
-// Client is used to talk to Scaleway Kapsule API
-type Client interface {
-	GetPool(ctx context.Context, req *GetPoolRequest) (*Pool, error)
-	ListPools(ctx context.Context, req *ListPoolsRequest) (*ListPoolsResponse, error)
-	UpdatePool(ctx context.Context, req *UpdatePoolRequest) (*Pool, error)
-	ListNodes(ctx context.Context, req *ListNodesRequest) (*ListNodesResponse, error)
-	DeleteNode(ctx context.Context, req *DeleteNodeRequest) (*Node, error)
 }
 
 // client contains necessary information to perform API calls
@@ -296,162 +294,79 @@ type Pool struct {
 	// Autoscaling: the enablement of the autoscaling feature for the pool
 	Autoscaling bool `json:"autoscaling"`
 	// Size: the size (number of nodes) of the pool
-	Size uint32 `json:"size"`
+	Size int `json:"size"`
 	// MinSize: the minimum size of the pool
-	MinSize uint32 `json:"min_size"`
+	MinSize int `json:"min_size"`
 	// MaxSize: the maximum size of the pool
-	MaxSize uint32 `json:"max_size"`
+	MaxSize int `json:"max_size"`
 	// Zone: the zone where the nodes will be spawn in
 	Zone string `json:"zone"`
-}
-
-// GetPoolRequest is passed to `GetPool` method
-type GetPoolRequest struct {
-	// PoolID: the ID of the requested pool
-	PoolID string `json:"-"`
-}
-
-// GetPool is used to request a Pool by its id
-func (c *client) GetPool(ctx context.Context, req *GetPoolRequest) (*Pool, error) {
-	var err error
-
-	klog.V(4).Info("GetPool,PoolID=", req.PoolID)
-
-	if fmt.Sprint(req.PoolID) == "" {
-		return nil, errors.New("field PoolID cannot be empty in request")
-	}
-
-	scwReq := &scalewayRequest{
-		Method: "GET",
-		Path:   "/k8s/v1/regions/" + fmt.Sprint(c.region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
-	}
-
-	var resp Pool
-
-	err = c.do(ctx, scwReq, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-// ListPoolsRequest is passed to `ListPools` method
-// it can be used for optional pagination
-type ListPoolsRequest struct {
-	// the ID of the cluster from which the pools will be listed from
-	ClusterID string `json:"-"`
-	// Page: the page number for the returned pools
-	Page *int32 `json:"-"`
-	// PageSize: the maximum number of pools per page
-	PageSize *uint32 `json:"-"`
 }
 
 // GenericNodeSpecs represents NodeType specs used for scale-up simulations.
 // it is used to select the appropriate pool to scale-up.
 type GenericNodeSpecs struct {
-	NodePricePerHour        float32           `json:"node_price_per_hour"`
-	MaxPods                 uint32            `json:"max_pods"`
-	Gpu                     uint32            `json:"gpu"`
-	CpuCapacity             uint32            `json:"cpu_capacity"`
-	CpuAllocatable          uint32            `json:"cpu_allocatable"`
-	MemoryCapacity          uint64            `json:"memory_capacity"`
-	MemoryAllocatable       uint64            `json:"memory_allocatable"`
-	LocalStorageCapacity    uint64            `json:"local_storage_capacity"`
-	LocalStorageAllocatable uint64            `json:"local_storage_allocatable"`
-	Labels                  map[string]string `json:"labels"`
-	Taints                  map[string]string `json:"taints"`
+	NodePricePerHour float32           `json:"node_price_per_hour"`
+	Capacity         map[string]int64  `json:"capacity"`
+	Allocatable      map[string]int64  `json:"allocatable"`
+	Labels           map[string]string `json:"labels"`
+	Taints           map[string]string `json:"taints"`
 }
 
 // PoolWithGenericNodeSpecs contains the requested `Pool` with additional `Specs` information
 type PoolWithGenericNodeSpecs struct {
-	Pool  *Pool            `json:"pool"`
+	Pool  Pool             `json:"pool"`
 	Specs GenericNodeSpecs `json:"specs"`
 }
 
 // ListPoolsResponse is returned from `ListPools` method
 type ListPoolsResponse struct {
-	// TotalCount: the total number of pools that exists for the cluster
-	TotalCount uint32 `json:"total_count"`
 	// Pools: the paginated returned pools
-	Pools []*PoolWithGenericNodeSpecs `json:"pools"`
+	Pools []PoolWithGenericNodeSpecs `json:"pools"`
 }
 
-// ListPools returns pools associated to a cluster id, pagination optional
-func (c *client) ListPools(ctx context.Context, req *ListPoolsRequest) (*ListPoolsResponse, error) {
-	klog.V(4).Info("ListPools,ClusterID=", req.ClusterID)
+// ListPools returns pools associated to a cluster id
+func (c *client) ListPools(ctx context.Context, clusterID string) ([]PoolWithGenericNodeSpecs, error) {
+	klog.V(4).Info("ListPools,ClusterID=", clusterID)
 
-	if req.Page != nil {
-		return c.listPoolsPaginated(ctx, req)
-	}
-
-	listPools := func(page int32) (*ListPoolsResponse, error) {
-
-		return c.listPoolsPaginated(ctx, &ListPoolsRequest{
-			ClusterID: req.ClusterID,
-			Page:      &page,
-		})
-	}
-
-	page := int32(1)
-	resp, err := listPools(page)
-	if err != nil {
-		return nil, err
-	}
-
-	nbPages := (resp.TotalCount + pageSizeListPools - 1) / pageSizeListPools
-
-	for uint32(page) <= nbPages {
-		page++
-		r, err := listPools(page)
+	var currentPage = 1
+	var pools []PoolWithGenericNodeSpecs
+	for {
+		paginatedPools, err := c.listPoolsPaginated(ctx, clusterID, currentPage, pageSizeListPools)
 		if err != nil {
-			return nil, err
+			return []PoolWithGenericNodeSpecs{}, err
+		}
+		pools = append(pools, paginatedPools...)
+
+		if len(paginatedPools) < pageSizeListPools || len(paginatedPools) == 0 {
+			break
 		}
 
-		resp.Pools = append(resp.Pools, r.Pools...)
-
-		if r.TotalCount != resp.TotalCount {
-			// pools have changed on scaleway side, retrying
-			resp.TotalCount = r.TotalCount
-			resp.Pools = []*PoolWithGenericNodeSpecs{}
-			page = int32(1)
-			nbPages = (resp.TotalCount + pageSizeListPools - 1) / pageSizeListPools
-		}
+		currentPage++
 	}
-	return resp, nil
+
+	return pools, nil
 }
 
-func (c *client) listPoolsPaginated(ctx context.Context, req *ListPoolsRequest) (*ListPoolsResponse, error) {
-	var err error
-
-	pageSize := pageSizeListPools
-	if req.PageSize == nil {
-		req.PageSize = &pageSize
+func (c *client) listPoolsPaginated(ctx context.Context, clusterID string, page, pageSize int) ([]PoolWithGenericNodeSpecs, error) {
+	if len(clusterID) == 0 {
+		return nil, errors.New("clusterID cannot be empty in request")
 	}
 
 	query := url.Values{}
-	if req.Page != nil {
-		query.Set("page", fmt.Sprint(*req.Page))
-	}
-	query.Set("page_size", fmt.Sprint(*req.PageSize))
-
-	if fmt.Sprint(req.ClusterID) == "" {
-		return nil, errors.New("field ClusterID cannot be empty in request")
-	}
+	query.Set("page", strconv.Itoa(page))
+	query.Set("page_size", strconv.Itoa(pageSize))
 
 	scwReq := &scalewayRequest{
 		Method: "GET",
-		Path:   "/k8s/v1/regions/" + fmt.Sprint(c.region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/pools-autoscaler",
+		Path:   fmt.Sprintf("/k8s/v1/regions/%s/clusters/%s/pools-autoscaler", c.region, clusterID),
 		Query:  query,
 	}
 
 	var resp ListPoolsResponse
+	err := c.do(ctx, scwReq, &resp)
 
-	err = c.do(ctx, scwReq, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
+	return resp.Pools, err
 }
 
 // UpdatePoolRequest is passed to `UpdatePool` method
@@ -459,166 +374,99 @@ type UpdatePoolRequest struct {
 	// PoolID: the ID of the pool to update
 	PoolID string `json:"-"`
 	// Size: the new size for the pool
-	Size *uint32 `json:"size"`
+	Size int `json:"size"`
 }
 
 // UpdatePool is used to resize a pool, to decrease pool size `DeleteNode` should be used instead
-func (c *client) UpdatePool(ctx context.Context, req *UpdatePoolRequest) (*Pool, error) {
-	var err error
+func (c *client) UpdatePool(ctx context.Context, poolID string, size int) (Pool, error) {
+	klog.V(4).Info("UpdatePool,PoolID=", poolID)
 
-	klog.V(4).Info("UpdatePool,PoolID=", req.PoolID)
-
-	if fmt.Sprint(req.PoolID) == "" {
-		return nil, errors.New("field PoolID cannot be empty in request")
+	if len(poolID) == 0 {
+		return Pool{}, errors.New("field PoolID cannot be empty in request")
 	}
 
 	scwReq := &scalewayRequest{
 		Method: "PATCH",
-		Path:   "/k8s/v1/regions/" + fmt.Sprint(c.region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
+		Path:   fmt.Sprintf("/k8s/v1/regions/%s/pools/%s", c.region, poolID),
 	}
 
-	buf, err := json.Marshal(req)
+	buf, err := json.Marshal(UpdatePoolRequest{PoolID: poolID, Size: size})
 	if err != nil {
-		return nil, err
+		return Pool{}, err
 	}
 	scwReq.Body = bytes.NewReader(buf)
 
 	var resp Pool
-
 	err = c.do(ctx, scwReq, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
 
-// ListNodesRequest is passed to `ListNodes` method
-type ListNodesRequest struct {
-	// ClusterID: the cluster ID from which the nodes will be listed from
-	ClusterID string `json:"-"`
-	// PoolID: the pool ID on which to filter the returned nodes
-	PoolID *string `json:"-"`
-	// Page: the page number for the returned nodes
-	Page *int32 `json:"-"`
-	// PageSize: the maximum number of nodes per page
-	PageSize *uint32 `json:"-"`
+	return resp, err
 }
 
 // ListNodesResponse is returned from `ListNodes` method
 type ListNodesResponse struct {
-	// TotalCount: the total number of nodes
-	TotalCount uint32 `json:"total_count"`
 	// Nodes: the paginated returned nodes
-	Nodes []*Node `json:"nodes"`
+	Nodes []Node `json:"nodes"`
 }
 
-// ListNodes returns the Nodes associated to a Cluster and/or a Pool
-func (c *client) ListNodes(ctx context.Context, req *ListNodesRequest) (*ListNodesResponse, error) {
-	klog.V(4).Info("ListNodes,ClusterID=", req.ClusterID)
+// ListNodes returns the Nodes associated to a Cluster
+func (c *client) ListNodes(ctx context.Context, clusterID string) ([]Node, error) {
+	klog.V(4).Info("ListNodes,ClusterID=", clusterID)
 
-	if req.Page != nil {
-		return c.listNodesPaginated(ctx, req)
-	}
-
-	listNodes := func(page int32) (*ListNodesResponse, error) {
-		ctx := context.Background()
-
-		return c.listNodesPaginated(ctx, &ListNodesRequest{
-			ClusterID: req.ClusterID,
-			PoolID:    req.PoolID,
-			Page:      &page,
-		})
-	}
-
-	page := int32(1)
-	resp, err := listNodes(page)
-	if err != nil {
-		return nil, err
-	}
-
-	nbPages := (resp.TotalCount + pageSizeListNodes - 1) / pageSizeListNodes
-
-	for uint32(page) <= nbPages {
-		page++
-		r, err := listNodes(page)
+	var currentPage = 1
+	var nodes []Node
+	for {
+		paginatedNodes, err := c.listNodesPaginated(ctx, clusterID, currentPage, pageSizeListPools)
 		if err != nil {
-			return nil, err
+			return []Node{}, err
+		}
+		nodes = append(nodes, paginatedNodes...)
+
+		if len(paginatedNodes) < int(pageSizeListNodes) || len(paginatedNodes) == 0 {
+			break
 		}
 
-		resp.Nodes = append(resp.Nodes, r.Nodes...)
-
-		if r.TotalCount != resp.TotalCount {
-			// nodes have changed on scaleway side, retrying
-			resp.TotalCount = r.TotalCount
-			resp.Nodes = []*Node{}
-			page = int32(1)
-			nbPages = (resp.TotalCount + pageSizeListNodes - 1) / pageSizeListNodes
-		}
+		currentPage++
 	}
-	return resp, nil
+
+	return nodes, nil
 }
 
-func (c *client) listNodesPaginated(ctx context.Context, req *ListNodesRequest) (*ListNodesResponse, error) {
-	var err error
-
-	pageSize := pageSizeListNodes
-	if req.PageSize == nil {
-		req.PageSize = &pageSize
+func (c *client) listNodesPaginated(ctx context.Context, clusterID string, page, pageSize int) ([]Node, error) {
+	if len(clusterID) == 0 {
+		return nil, errors.New("clusterID cannot be empty in request")
 	}
 
 	query := url.Values{}
-	if req.PoolID != nil {
-		query.Set("pool_id", fmt.Sprint(*req.PoolID))
-	}
-	if req.Page != nil {
-		query.Set("page", fmt.Sprint(*req.Page))
-	}
-	query.Set("page_size", fmt.Sprint(*req.PageSize))
-
-	if fmt.Sprint(req.ClusterID) == "" {
-		return nil, errors.New("field ClusterID cannot be empty in request")
-	}
+	query.Set("page", strconv.Itoa(page))
+	query.Set("page_size", strconv.Itoa(pageSize))
 
 	scwReq := &scalewayRequest{
 		Method: "GET",
-		Path:   "/k8s/v1/regions/" + fmt.Sprint(c.region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/nodes",
+		Path:   fmt.Sprintf("/k8s/v1/regions/%s/clusters/%s/nodes", c.region, clusterID),
 		Query:  query,
 	}
 
 	var resp ListNodesResponse
+	err := c.do(ctx, scwReq, &resp)
 
-	err = c.do(ctx, scwReq, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-// DeleteNodeRequest is passed to `DeleteNode` method
-type DeleteNodeRequest struct {
-	NodeID string `json:"-"`
+	return resp.Nodes, err
 }
 
 // DeleteNode asynchronously deletes a Node by its id
-func (c *client) DeleteNode(ctx context.Context, req *DeleteNodeRequest) (*Node, error) {
-	var err error
+func (c *client) DeleteNode(ctx context.Context, nodeID string) (Node, error) {
+	klog.V(4).Info("DeleteNode,NodeID=", nodeID)
 
-	klog.V(4).Info("DeleteNode,NodeID=", req.NodeID)
-
-	if fmt.Sprint(req.NodeID) == "" {
-		return nil, errors.New("field NodeID cannot be empty in request")
+	if len(nodeID) == 0 {
+		return Node{}, errors.New("field NodeID cannot be empty in request")
 	}
 
 	scwReq := &scalewayRequest{
 		Method: "DELETE",
-		Path:   "/k8s/v1/regions/" + fmt.Sprint(c.region) + "/nodes/" + fmt.Sprint(req.NodeID) + "",
+		Path:   fmt.Sprintf("/k8s/v1/regions/%s/nodes/%s", c.region, nodeID),
 	}
 
 	var resp Node
+	err := c.do(ctx, scwReq, &resp)
 
-	err = c.do(ctx, scwReq, &resp)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
+	return resp, err
 }
