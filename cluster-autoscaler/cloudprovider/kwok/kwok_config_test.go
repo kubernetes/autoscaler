@@ -49,9 +49,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "kwok-nodegroup"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 nodes:
   gpuConfig:
     # to tell kwok provider what label should be considered as GPU label
@@ -77,9 +77,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "kwok-nodegroup"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 nodes:
   skipTaint: true
   gpuConfig:
@@ -104,9 +104,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "kwok-nodegroup"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 nodes:
   gpuConfig:
     # to tell kwok provider what label should be considered as GPU label
@@ -131,9 +131,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "kwok-nodegroup"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 nodes:
   skipTaint: true
   gpuConfig:
@@ -159,9 +159,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "node.kubernetes.io/instance-type"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 nodes:
   gpuConfig:
     # to tell kwok provider what label should be considered as GPU label
@@ -185,9 +185,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "node.kubernetes.io/instance-type"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 nodes:
   gpuConfig:
     # to tell kwok provider what label should be considered as GPU label
@@ -213,9 +213,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "node.kubernetes.io/instance-type"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 nodes:
   gpuConfig:
     # to tell kwok provider what label should be considered as GPU label

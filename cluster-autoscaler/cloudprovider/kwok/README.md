@@ -81,13 +81,13 @@ kubectl create configmap kwok-provider-templates --from-file=templates=template-
 ```
 Replace `template-nodes.yaml` with the path to your template nodes file.
 
-If you are using your template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotation`. Not doing so will make CA not scale up nodes (it won't throw any error either).
+If you are using your template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotationKey`. Not doing so will make CA not scale up nodes (it won't throw any error either).
 
 If you want to use dynamic template nodes,
 
 Set `readNodesFrom` in `kwok-provider-config` ConfigMap to `cluster`. This tells the kwok provider to use live nodes from the cluster as template nodes.
 
-If you are using live nodes from the cluster as template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotation`. Not doing so will make CA not scale up nodes (it won't throw any error either).
+If you are using live nodes from the cluster as template nodes in the `kwok-provider-templates` ConfigMap, make sure you have set the correct value for `nodegroups.fromNodeLabelKey`/`nodegroups.fromNodeAnnotationKey`. Not doing so will make CA not scale up nodes (it won't throw any error either).
 
 ### For local development
 1. Point your kubeconfig to the cluster where you want to test your changes
@@ -158,11 +158,11 @@ nodegroups:
   # nodegroup2: [node2]
   fromNodeLabelKey: "node.kubernetes.io/instance-type"
 
-  # fromNodeAnnotation's value is used to group nodes together into nodegroups
+  # fromNodeAnnotationKey's value is used to group nodes together into nodegroups
   # (basically same as `fromNodeLabelKey` except based on annotation)
-  # you can specify either of `fromNodeLabelKey` OR `fromNodeAnnotation`
+  # you can specify either of `fromNodeLabelKey` OR `fromNodeAnnotationKey`
   # (both are not allowed)
-  fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 # nodes specifies node level config
 nodes:
   # skipTaint is used to enable/disable adding kwok provider taint on the template nodes
@@ -211,7 +211,7 @@ kwok provider config is a configuration to change the behavior of the kwok provi
 
 ### Gotchas
 1. The kwok provider by default taints the template nodes with `kwok-provider: true` taint so that production workloads don't get scheduled on these nodes accidentally. You have to tolerate the taint to schedule your workload on the nodes created by the kwok provider. You can turn this off by setting `nodes.skipTaint: true` in the kwok provider config.
-2. Make sure the label/annotation for `fromNodeLabelKey`/`fromNodeAnnotation` in the kwok provider config is actually present on the template nodes. If it isn't present on the template nodes, the kwok provider will not be able to create new nodes.
+2. Make sure the label/annotation for `fromNodeLabelKey`/`fromNodeAnnotationKey` in the kwok provider config is actually present on the template nodes. If it isn't present on the template nodes, the kwok provider will not be able to create new nodes.
 3. Note that the kwok provider makes the following changes to all the template nodes:
 (pseudocode)
 ```
