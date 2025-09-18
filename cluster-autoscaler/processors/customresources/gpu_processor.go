@@ -42,13 +42,15 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyGpu := make(map[string]*apiv1.Node)
 	for _, node := range readyNodes {
+		if gpuExposedViaDra(context, node) {
+			newReadyNodes = append(newReadyNodes, node)
+			continue
+		}
+
 		_, hasGpuLabel := node.Labels[context.CloudProvider.GPULabel()]
 		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
 		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[gpu.ResourceDirectX]
-		// We expect node to have GPU based on label, but it doesn't show up
-		// on node object. Assume the node is still not fully started (installing
-		// GPU drivers).
-		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) {
+		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) && !gpuExposedViaDra(context, node) {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
 			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
@@ -70,13 +72,17 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 // GetNodeResourceTargets returns mapping of resource names to their targets.
 // This includes resources which are not yet ready to use and visible in kubernetes.
 func (p *GpuCustomResourcesProcessor) GetNodeResourceTargets(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
-	gpuTarget, err := p.GetNodeGpuTarget(context.CloudProvider.GPULabel(), node, nodeGroup)
+	if gpuExposedViaDra(context, node) {
+		return []CustomResourceTarget{}, nil
+	}
+
+	gpuTarget, err := p.getNodeGpuTarget(context.CloudProvider.GPULabel(), node, nodeGroup)
 	return []CustomResourceTarget{gpuTarget}, err
 }
 
-// GetNodeGpuTarget returns the gpu target of a given node. This includes gpus
+// getNodeGpuTarget returns the gpu target of a given node. This includes gpus
 // that are not ready to use and visible in kubernetes.
-func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(GPULabel string, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
+func (p *GpuCustomResourcesProcessor) getNodeGpuTarget(GPULabel string, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
 	gpuLabel, found := node.Labels[GPULabel]
 	if !found {
 		return CustomResourceTarget{}, nil
@@ -120,4 +126,16 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(GPULabel string, node *ap
 
 // CleanUp cleans up processor's internal structures.
 func (p *GpuCustomResourcesProcessor) CleanUp() {
+}
+
+func gpuExposedViaDra(ctx *context.AutoscalingContext, node *apiv1.Node) bool {
+	gpuConfig := ctx.CloudProvider.GetNodeGpuConfig(node)
+	if gpuConfig == nil {
+		return false
+	}
+
+	// Devices attached through DRA are not using node allocatable
+	// to confirm their attachment, assume that node is ready
+	// and will be checked in the separate processor
+	return gpuConfig.ExposedViaDra()
 }

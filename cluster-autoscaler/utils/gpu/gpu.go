@@ -56,7 +56,7 @@ func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes 
 	if gpuConfig == nil {
 		return "", MetricsNoGPU
 	}
-	resourceName := gpuConfig.ResourceName
+	resourceName := gpuConfig.ExtendedResourceName
 	capacity, capacityFound := node.Status.Capacity[resourceName]
 	// There is no label value, fallback to generic solution
 	if gpuConfig.Type == "" && capacityFound && !capacity.IsZero() {
@@ -116,7 +116,7 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 func GetNodeGPUFromCloudProvider(provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
 	gpuLabel := provider.GPULabel()
 	if NodeHasGpu(gpuLabel, node) {
-		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ResourceName: ResourceNvidiaGPU}
+		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ExtendedResourceName: ResourceNvidiaGPU}
 	}
 	return nil
 }

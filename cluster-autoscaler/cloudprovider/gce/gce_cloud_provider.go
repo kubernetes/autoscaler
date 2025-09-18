@@ -82,9 +82,20 @@ func (gce *GceCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
-// any GPUs, it returns nil.
+// any GPUs, it returns nil. If node has GPU attached using DRA - populates the according field in GpuConfig
 func (gce *GceCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(gce, node)
+	gpuConfig := gpu.GetNodeGPUFromCloudProvider(gce, node)
+
+	// If GPU devices are exposed using DRA - extended resource
+	// won't be present in the node alloctable or capacity
+	// so we overwrite extended resource name as it won't ever
+	// be there
+	if GpuDraDriverEnabled(node) {
+		gpuConfig.DraDriverName = DraGPUDriver
+		gpuConfig.ExtendedResourceName = ""
+	}
+
+	return gpuConfig
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
