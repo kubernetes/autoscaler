@@ -21,7 +21,7 @@ set -o pipefail
 SCRIPT_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}"))/..
 TARGET_FILE="${SCRIPT_ROOT}/docs/flags.md"
 COMPONENTS=("admission-controller" "recommender" "updater")
-DEFAULT_TAG="1.4.2"
+DEFAULT_TAG="1.5.0"
 
 # Function to extract flags from a binary
 extract_flags() {

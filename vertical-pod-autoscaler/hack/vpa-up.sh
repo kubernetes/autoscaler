@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
-DEFAULT_TAG="1.4.2"
+DEFAULT_TAG="1.5.0"
 TAG_TO_APPLY=${TAG-$DEFAULT_TAG}
 
 if [ "${TAG_TO_APPLY}" == "${DEFAULT_TAG}" ]; then
