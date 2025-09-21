@@ -7,8 +7,8 @@
 - [Proposal](#proposal)
 - [Design Details](#design-details)
     - [API Changes](#api-changes)
-    - [Behaviour](#behavior)
-      - [Current behaviour of VPA 1.4.2](#current-behaviour-of-vpa-142)
+    - [Behavior](#behavior)
+      - [Current behavior of VPA 1.4.2](#current-behavior-of-vpa-142)
       - [Proposed feature behavior](#proposed-feature-behavior)
     - [Validation](#validation)
       - [Static Validation via CRD Rules](#static-validation-via-crd-rules)
@@ -86,7 +86,7 @@ VPA enforces the current request-to-limit ratio while respecting cluster-level c
 
 For example, suppose VPA calculates a new recommended CPU request of `200m`, the request-to-limit ratio is set to `1:4`, and a `LimitRange` enforces that a container cannot have more than `600m` CPU. In this case, VPA will set the CPU request to `150m` and the limit to `600m` in order to maintain the `1:4` ratio. This existing behavior is not affected by the new feature.  
 
-#### Current behaviour of VPA 1.4.2
+#### Current behavior of VPA 1.4.2
 
 1. The user sets the initial resource requests and limits at the workload API level, such as in a Kubernetes Deployment.  
 2. When VPA applies new recommended resource request values, it maintains the initially set request-to-limit ratio.
@@ -148,7 +148,7 @@ The behavior after implementing this feature is as follows:
 
 * The admission controller will **reject** new VPA objects that include a configured `RequestToLimitRatio`.  
   * A descriptive error message should be returned to the user, indicating that the feature is feature-gated.  
-* The admission controller and updater will behave as before, according to the behavior described [here](#current-behaviour-of-vpa-142).
+* The admission controller and updater will behave as before, according to the behavior described [here](#current-behavior-of-vpa-142).
 
 ### Kubernetes Version Compatibility
 
