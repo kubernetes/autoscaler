@@ -214,7 +214,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	t.Run("MachineSet", func(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.description, func(t *testing.T) {
-				test(t, tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations, nil))
+				test(t, tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations, nil, nil))
 			})
 		}
 	})
@@ -222,7 +222,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	t.Run("MachineDeployment", func(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.description, func(t *testing.T) {
-				test(t, tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations, nil))
+				test(t, tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations, nil, nil))
 			})
 		}
 	})
@@ -309,7 +309,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 			})
 		}
 	})
@@ -321,7 +321,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 			})
 		}
 	})
@@ -390,7 +390,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			expected:    4,
 			delta:       1,
 		}
-		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
@@ -400,7 +400,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			expected:    4,
 			delta:       1,
 		}
-		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 	})
 }
 
@@ -689,13 +689,13 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+			test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 		})
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+			test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 		})
 	}
 }
@@ -781,7 +781,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 			})
 		}
 	})
@@ -793,7 +793,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
+				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil, nil))
 			})
 		}
 	})
@@ -883,6 +883,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
 				nil,
+				nil,
 			),
 		)
 	})
@@ -899,6 +900,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
+				nil,
 				nil,
 			),
 		)
@@ -972,16 +974,16 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	t.Run("MachineSet", func(t *testing.T) {
 		namespace := RandomString(6)
 		clusterName := RandomString(6)
-		testConfig0 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
-		testConfig1 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
+		testConfig0 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil, nil)
+		testConfig1 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil, nil)
 		test(t, 2, append(testConfig0, testConfig1...))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
 		namespace := RandomString(6)
 		clusterName := RandomString(6)
-		testConfig0 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
-		testConfig1 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
+		testConfig0 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil, nil)
+		testConfig1 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil, nil)
 		test(t, 2, append(testConfig0, testConfig1...))
 	})
 }
@@ -1163,6 +1165,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
 				nil,
+				nil,
 			),
 		)
 	})
@@ -1179,6 +1182,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
+				nil,
 				nil,
 			),
 		)
@@ -1315,6 +1319,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
 				nil,
+				nil,
 			),
 		)
 	})
@@ -1331,6 +1336,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
+				nil,
 				nil,
 			),
 		)
@@ -1418,6 +1424,7 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
 				nil,
+				nil,
 			),
 		)
 	})
@@ -1434,6 +1441,7 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				},
+				nil,
 				nil,
 			),
 		)
@@ -1667,6 +1675,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 						10,
 						cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations),
 						nil,
+						nil,
 					),
 					tc.config,
 				)
@@ -1681,6 +1690,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 						RandomString(6),
 						10,
 						cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations),
+						nil,
 						nil,
 					),
 					tc.config,
@@ -1792,6 +1802,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 						10,
 						cloudprovider.JoinStringMaps(enableScaleAnnotations, annotations),
 						nil,
+						nil,
 					),
 					c.expected,
 				)
@@ -1806,6 +1817,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 						RandomString(6),
 						10,
 						cloudprovider.JoinStringMaps(enableScaleAnnotations, annotations),
+						nil,
 						nil,
 					),
 					c.expected,
@@ -2009,6 +2021,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 						tc.nodeCount,
 						annotations,
 						nil,
+						nil,
 					),
 				)
 			})
@@ -2027,6 +2040,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 						RandomString(6),
 						tc.nodeCount,
 						annotations,
+						nil,
 						nil,
 					),
 				)
