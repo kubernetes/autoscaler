@@ -115,7 +115,6 @@ admissionController:
     nodeSelector: {}
     tolerations: []
     affinity: {}
-  
 
   volumes:
     - name: tls-certs
