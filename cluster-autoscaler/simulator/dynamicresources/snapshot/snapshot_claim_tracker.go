@@ -19,10 +19,12 @@ package snapshot
 import (
 	"fmt"
 
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/dynamic-resource-allocation/structured"
+	"k8s.io/kubernetes/pkg/features"
 )
 
 type snapshotClaimTracker struct {
@@ -45,9 +47,41 @@ func (ct snapshotClaimTracker) Get(namespace, claimName string) (*resourceapi.Re
 func (ct snapshotClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.DeviceID], error) {
 	result := sets.New[structured.DeviceID]()
 	for _, claim := range ct.snapshot.listResourceClaims() {
-		result = result.Union(claimAllocatedDevices(claim))
+		foreachAllocatedDevice(claim,
+			func(deviceID structured.DeviceID) {
+				result.Insert(deviceID)
+			}, false, func(structured.SharedDeviceID) {}, func(capacity structured.DeviceConsumedCapacity) {})
 	}
 	return result, nil
+}
+
+func (ct snapshotClaimTracker) GatherAllocatedState() (*structured.AllocatedState, error) {
+	allocatedDevices := sets.New[structured.DeviceID]()
+	allocatedSharedDeviceIDs := sets.New[structured.SharedDeviceID]()
+	aggregatedCapacity := structured.NewConsumedCapacityCollection()
+
+	enabledConsumableCapacity := utilfeature.DefaultFeatureGate.Enabled(features.DRAConsumableCapacity)
+
+	for _, claim := range ct.snapshot.listResourceClaims() {
+		foreachAllocatedDevice(claim,
+			func(deviceID structured.DeviceID) {
+				allocatedDevices.Insert(deviceID)
+			},
+			enabledConsumableCapacity,
+			func(sharedDeviceID structured.SharedDeviceID) {
+				allocatedSharedDeviceIDs.Insert(sharedDeviceID)
+			},
+			func(capacity structured.DeviceConsumedCapacity) {
+				aggregatedCapacity.Insert(capacity)
+			},
+		)
+	}
+
+	return &structured.AllocatedState{
+		AllocatedDevices:         allocatedDevices,
+		AllocatedSharedDeviceIDs: allocatedSharedDeviceIDs,
+		AggregatedCapacity:       aggregatedCapacity,
+	}, nil
 }
 
 func (ct snapshotClaimTracker) SignalClaimPendingAllocation(claimUid types.UID, allocatedClaim *resourceapi.ResourceClaim) error {
@@ -99,14 +133,38 @@ func (ct snapshotClaimTracker) AssumedClaimRestore(namespace, claimName string) 
 	panic("snapshotClaimTracker.AssumedClaimRestore() was called - this should never happen")
 }
 
-// claimAllocatedDevices returns ids of all devices allocated in the provided claim.
-func claimAllocatedDevices(claim *resourceapi.ResourceClaim) sets.Set[structured.DeviceID] {
+// foreachAllocatedDevice invokes the provided callback for each
+// device in the claim's allocation result which was allocated
+// exclusively for the claim.
+//
+// This method is a fork of a corresponding scheduler logic
+func foreachAllocatedDevice(claim *resourceapi.ResourceClaim,
+	dedicatedDeviceCallback func(deviceID structured.DeviceID),
+	enabledConsumableCapacity bool,
+	sharedDeviceCallback func(structured.SharedDeviceID),
+	consumedCapacityCallback func(structured.DeviceConsumedCapacity)) {
 	if claim.Status.Allocation == nil {
-		return nil
+		return
 	}
-	result := sets.New[structured.DeviceID]()
-	for _, device := range claim.Status.Allocation.Devices.Results {
-		result.Insert(structured.MakeDeviceID(device.Driver, device.Pool, device.Device))
+	for _, result := range claim.Status.Allocation.Devices.Results {
+		deviceID := structured.MakeDeviceID(result.Driver, result.Pool, result.Device)
+
+		// Execute sharedDeviceCallback and consumedCapacityCallback correspondingly
+		// if DRAConsumableCapacity feature is enabled
+		if enabledConsumableCapacity {
+			shared := result.ShareID != nil
+			if shared {
+				sharedDeviceID := structured.MakeSharedDeviceID(deviceID, result.ShareID)
+				sharedDeviceCallback(sharedDeviceID)
+				if result.ConsumedCapacity != nil {
+					deviceConsumedCapacity := structured.NewDeviceConsumedCapacity(deviceID, result.ConsumedCapacity)
+					consumedCapacityCallback(deviceConsumedCapacity)
+				}
+				continue
+			}
+		}
+
+		// Otherwise, execute dedicatedDeviceCallback
+		dedicatedDeviceCallback(deviceID)
 	}
-	return result
 }

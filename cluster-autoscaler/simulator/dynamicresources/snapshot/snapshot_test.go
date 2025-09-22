@@ -24,7 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
@@ -34,14 +34,19 @@ import (
 )
 
 var (
-	node1Slice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-1", UID: "local-slice-1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node1"}}
-	node1Slice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-2", UID: "local-slice-2"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node1"}}
-	node2Slice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-3", UID: "local-slice-3"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node2"}}
-	node2Slice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-4", UID: "local-slice-4"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node2"}}
-	node3Slice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-5", UID: "local-slice-5"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node3"}}
-	node3Slice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-6", UID: "local-slice-6"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node3"}}
-	globalSlice1 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-1", UID: "global-slice-1"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: true}}
-	globalSlice2 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-2", UID: "global-slice-2"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: true}}
+	node1Name = "node1"
+	node2Name = "node2"
+	node3Name = "node3"
+	trueValue = true
+
+	node1Slice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-1", UID: "local-slice-1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &node1Name}}
+	node1Slice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-2", UID: "local-slice-2"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &node1Name}}
+	node2Slice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-3", UID: "local-slice-3"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &node2Name}}
+	node2Slice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-4", UID: "local-slice-4"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &node2Name}}
+	node3Slice1  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-5", UID: "local-slice-5"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &node3Name}}
+	node3Slice2  = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "local-slice-6", UID: "local-slice-6"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &node3Name}}
+	globalSlice1 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-1", UID: "global-slice-1"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: &trueValue}}
+	globalSlice2 = &resourceapi.ResourceSlice{ObjectMeta: metav1.ObjectMeta{Name: "global-slice-2", UID: "global-slice-2"}, Spec: resourceapi.ResourceSliceSpec{AllNodes: &trueValue}}
 
 	node1 = test.BuildTestNode("node1", 1000, 1000)
 	pod1  = test.BuildTestPod("pod1", 1, 1,
@@ -600,7 +605,7 @@ func TestSnapshotForkCommitRevert(t *testing.T) {
 		GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 	}
 	initialDeviceClasses := map[string]*resourceapi.DeviceClass{deviceClass1.Name: deviceClass1.DeepCopy(), deviceClass2.Name: deviceClass2.DeepCopy()}
-	initialLocalSlices := map[string][]*resourceapi.ResourceSlice{node1Slice1.Spec.NodeName: {node1Slice1.DeepCopy()}}
+	initialLocalSlices := map[string][]*resourceapi.ResourceSlice{*node1Slice1.Spec.NodeName: {node1Slice1.DeepCopy()}}
 	initialGlobalSlices := []*resourceapi.ResourceSlice{globalSlice1.DeepCopy(), globalSlice2.DeepCopy()}
 	initialState := NewSnapshot(initialClaims, initialLocalSlices, initialGlobalSlices, initialDeviceClasses)
 
@@ -614,7 +619,7 @@ func TestSnapshotForkCommitRevert(t *testing.T) {
 		GetClaimId(pod1OwnClaim1): drautils.TestClaimWithPodReservations(pod1OwnClaim1, podToReserve),
 		GetClaimId(pod1OwnClaim2): drautils.TestClaimWithPodReservations(pod1OwnClaim2, podToReserve),
 	}
-	modifiedLocalSlices := map[string][]*resourceapi.ResourceSlice{addedNodeSlice.Spec.NodeName: {addedNodeSlice.DeepCopy()}}
+	modifiedLocalSlices := map[string][]*resourceapi.ResourceSlice{*addedNodeSlice.Spec.NodeName: {addedNodeSlice.DeepCopy()}}
 	// Expected state after modifications are applied
 	modifiedState := NewSnapshot(
 		modifiedClaims,
@@ -627,7 +632,7 @@ func TestSnapshotForkCommitRevert(t *testing.T) {
 		t.Helper()
 
 		addedSlices := []*resourceapi.ResourceSlice{addedNodeSlice.DeepCopy()}
-		if err := s.AddNodeResourceSlices(addedNodeSlice.Spec.NodeName, addedSlices); err != nil {
+		if err := s.AddNodeResourceSlices(*addedNodeSlice.Spec.NodeName, addedSlices); err != nil {
 			t.Fatalf("failed to add %s resource slices: %v", addedNodeSlice.Spec.NodeName, err)
 		}
 		if err := s.AddClaims([]*resourceapi.ResourceClaim{addedClaim}); err != nil {
@@ -637,7 +642,7 @@ func TestSnapshotForkCommitRevert(t *testing.T) {
 			t.Fatalf("failed to reserve claim %s for pod %s: %v", sharedClaim1.Name, podToReserve.Name, err)
 		}
 
-		s.RemoveNodeResourceSlices(node1Slice1.Spec.NodeName)
+		s.RemoveNodeResourceSlices(*node1Slice1.Spec.NodeName)
 	}
 
 	compareSnapshots := func(t *testing.T, want, got *Snapshot, msg string) {

@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
@@ -34,14 +34,14 @@ import (
 func SanitizedNodeResourceSlices(nodeLocalSlices []*resourceapi.ResourceSlice, newNodeName, nameSuffix string) (newSlices []*resourceapi.ResourceSlice, oldPoolNames set.Set[string], err error) {
 	oldPoolNames = set.New[string]()
 	for _, slice := range nodeLocalSlices {
-		if slice.Spec.NodeName == "" {
+		if slice.Spec.NodeName == nil || *slice.Spec.NodeName == "" {
 			return nil, nil, fmt.Errorf("can't sanitize slice %s because it isn't node-local", slice.Name)
 		}
 		sliceCopy := slice.DeepCopy()
 		sliceCopy.UID = uuid.NewUUID()
 		sliceCopy.Name = fmt.Sprintf("%s-%s", slice.Name, nameSuffix)
 		sliceCopy.Spec.Pool.Name = fmt.Sprintf("%s-%s", slice.Spec.Pool.Name, nameSuffix)
-		sliceCopy.Spec.NodeName = newNodeName
+		sliceCopy.Spec.NodeName = &newNodeName
 
 		oldPoolNames.Insert(slice.Spec.Pool.Name)
 		newSlices = append(newSlices, sliceCopy)
