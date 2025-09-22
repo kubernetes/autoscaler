@@ -24,7 +24,6 @@ import (
 	v1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	apires "k8s.io/apimachinery/pkg/api/resource"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
@@ -96,7 +95,8 @@ func (h *resourceHandler) GetPatches(_ context.Context, ar *v1.AdmissionRequest)
 	patches := []resource.PatchRecord{}
 	if vpa.Spec.UpdatePolicy == nil {
 		// Sets the default updatePolicy.
-		defaultUpdateMode := vpa_types.UpdateModeAuto
+		// Changed from UpdateModeAuto to UpdateModeRecreate as part of Auto mode deprecation
+		defaultUpdateMode := vpa_types.UpdateModeRecreate
 		patches = append(patches, resource.PatchRecord{
 			Op:    "add",
 			Path:  "/spec/updatePolicy",
@@ -118,7 +118,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	if vpa.Spec.UpdatePolicy != nil {
 		mode := vpa.Spec.UpdatePolicy.UpdateMode
 		if mode == nil {
-			return fmt.Errorf("UpdateMode is required if UpdatePolicy is used")
+			return fmt.Errorf("updateMode is required if UpdatePolicy is used")
 		}
 		if _, found := possibleUpdateModes[*mode]; !found {
 			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
@@ -128,14 +128,14 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		}
 
 		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
-			return fmt.Errorf("MinReplicas has to be positive, got %v", *minReplicas)
+			return fmt.Errorf("minReplicas has to be positive, got %v", *minReplicas)
 		}
 	}
 
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
 			if policy.ContainerName == "" {
-				return fmt.Errorf("ContainerPolicies.ContainerName is required")
+				return fmt.Errorf("containerPolicies.ContainerName is required")
 			}
 			mode := policy.Mode
 			if mode != nil {
@@ -145,7 +145,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			}
 			for resource, min := range policy.MinAllowed {
 				if err := validateResourceResolution(resource, min); err != nil {
-					return fmt.Errorf("MinAllowed: %v", err)
+					return fmt.Errorf("minAllowed: %v", err)
 				}
 				max, found := policy.MaxAllowed[resource]
 				if found && max.Cmp(min) < 0 {
@@ -155,24 +155,24 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 
 			for resource, max := range policy.MaxAllowed {
 				if err := validateResourceResolution(resource, max); err != nil {
-					return fmt.Errorf("MaxAllowed: %v", err)
+					return fmt.Errorf("maxAllowed: %v", err)
 				}
 			}
 			ControlledValues := policy.ControlledValues
 			if mode != nil && ControlledValues != nil {
 				if *mode == vpa_types.ContainerScalingModeOff && *ControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-					return fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off.")
+					return fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off")
 				}
 			}
 		}
 	}
 
 	if isCreate && vpa.Spec.TargetRef == nil {
-		return fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
+		return fmt.Errorf("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
 	}
 
 	if len(vpa.Spec.Recommenders) > 1 {
-		return fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders.")
+		return fmt.Errorf("the current version of VPA object shouldn't specify more than one recommenders")
 	}
 
 	return nil
@@ -197,7 +197,7 @@ func validateCPUResolution(val apires.Quantity) error {
 
 func validateMemoryResolution(val apires.Quantity) error {
 	if _, precissionPreserved := val.AsScale(0); !precissionPreserved {
-		return fmt.Errorf("Memory [%v] must be a whole number of bytes", val)
+		return fmt.Errorf("memory [%v] must be a whole number of bytes", val)
 	}
 	return nil
 }

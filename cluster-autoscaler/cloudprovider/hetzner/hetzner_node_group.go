@@ -389,6 +389,7 @@ func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
 
 	labels := map[string]string{
 		apiv1.LabelInstanceType:              n.instanceType,
+		apiv1.LabelInstanceTypeStable:        n.instanceType,
 		apiv1.LabelTopologyRegion:            n.region,
 		apiv1.LabelArchStable:                archLabel,
 		"csi.hetzner.cloud/location":         n.region,
@@ -528,12 +529,20 @@ func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Imag
 	// Select correct image based on server type architecture
 	imageName := n.manager.clusterConfig.LegacyConfig.ImageName
 	if n.manager.clusterConfig.IsUsingNewFormat {
+		// Check for nodepool-specific images first, then fall back to global images
+		var imagesForArch *ImageList
+		if nodeConfig, exists := n.manager.clusterConfig.NodeConfigs[n.id]; exists && nodeConfig.ImagesForArch != nil {
+			imagesForArch = nodeConfig.ImagesForArch
+		} else {
+			imagesForArch = &n.manager.clusterConfig.ImagesForArch
+		}
+
 		if serverType.Architecture == hcloud.ArchitectureARM {
-			imageName = n.manager.clusterConfig.ImagesForArch.Arm64
+			imageName = imagesForArch.Arm64
 		}
 
 		if serverType.Architecture == hcloud.ArchitectureX86 {
-			imageName = n.manager.clusterConfig.ImagesForArch.Amd64
+			imageName = imagesForArch.Amd64
 		}
 	}
 

@@ -19,11 +19,10 @@ package api
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-
-	"github.com/stretchr/testify/assert"
 )
 
 type fakeProcessor struct {

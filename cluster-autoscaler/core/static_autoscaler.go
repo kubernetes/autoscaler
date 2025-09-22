@@ -239,8 +239,8 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 			a.AutoscalingContext.ClientSet, a.Recorder, a.CordonNodeBeforeTerminate)
 		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
 			// Clean old taints if soft taints handling is disabled
-			taints.CleanAllDeletionCandidates(allNodes,
-				a.AutoscalingContext.ClientSet, a.Recorder)
+			taints.CleanStaleDeletionCandidates(allNodes,
+				a.AutoscalingContext.ClientSet, a.Recorder, a.NodeDeletionCandidateTTL)
 		}
 	}
 	a.initialized = true
@@ -276,8 +276,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	stateUpdateStart := time.Now()
 
+	var draSnapshot *drasnapshot.Snapshot
+	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.AutoscalingContext.DraProvider != nil {
+		var err error
+		draSnapshot, err = a.AutoscalingContext.DraProvider.Snapshot()
+		if err != nil {
+			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
+		}
+	}
+
 	// Get nodes and pods currently living on cluster
-	allNodes, readyNodes, typedErr := a.obtainNodeLists()
+	allNodes, readyNodes, typedErr := a.obtainNodeLists(draSnapshot)
 	if typedErr != nil {
 		klog.Errorf("Failed to get node list: %v", typedErr)
 		return typedErr
@@ -302,6 +311,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to get daemonset list: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
+
 	// Snapshot scale-down actuation status before cache refresh.
 	scaleDownActuationStatus := a.scaleDownActuator.CheckStatus()
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
@@ -334,14 +344,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
-
-	var draSnapshot *drasnapshot.Snapshot
-	if a.AutoscalingContext.DynamicResourceAllocationEnabled && a.AutoscalingContext.DraProvider != nil {
-		draSnapshot, err = a.AutoscalingContext.DraProvider.Snapshot()
-		if err != nil {
-			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
-		}
-	}
 
 	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
@@ -497,7 +499,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return scaleUpStart
 	}
 
-	postScaleUp := func(scaleUpStart time.Time) (bool, caerrors.AutoscalerError) {
+	postScaleUp := func(scaleUpStart time.Time) {
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
 		if a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
@@ -507,15 +509,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		if typedErr != nil {
 			klog.Errorf("Failed to scale up: %v", typedErr)
-			return true, typedErr
+			return
 		}
 		if scaleUpStatus.Result == status.ScaleUpSuccessful {
 			a.lastScaleUpTime = currentTime
 			// No scale down in this iteration.
 			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
-			return true, nil
 		}
-		return false, nil
 	}
 
 	shouldScaleUp := true
@@ -555,9 +555,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
 		scaleUpStart := preScaleUp()
 		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, false)
-		if exit, err := postScaleUp(scaleUpStart); exit {
-			return err
-		}
+		postScaleUp(scaleUpStart)
 	}
 
 	if a.ScaleDownEnabled {
@@ -662,9 +660,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	if a.EnforceNodeGroupMinSize {
 		scaleUpStart := preScaleUp()
 		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(readyNodes, nodeInfosForGroups)
-		if exit, err := postScaleUp(scaleUpStart); exit {
-			return err
-		}
+		postScaleUp(scaleUpStart)
 	}
 
 	return nil
@@ -799,6 +795,10 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 			continue
 		}
 
+		if len(nodesToDelete) == 0 {
+			continue
+		}
+
 		if a.ForceDeleteLongUnregisteredNodes {
 			err = nodeGroup.ForceDeleteNodes(nodesToDelete)
 			if err == cloudprovider.ErrNotImplemented {
@@ -877,13 +877,20 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 		nodeGroup := nodeGroups[nodeGroupId]
 		if nodeGroup == nil {
 			err = fmt.Errorf("node group %s not found", nodeGroupId)
-		} else if nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete); err == nil {
-			err = nodeGroup.DeleteNodes(nodesToDelete)
+		} else if nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete); err == nil && len(nodesToDelete) > 0 {
+			if a.ForceDeleteFailedNodes {
+				err = nodeGroup.ForceDeleteNodes(nodesToDelete)
+				if errors.Is(err, cloudprovider.ErrNotImplemented) {
+					err = nodeGroup.DeleteNodes(nodesToDelete)
+				}
+			} else {
+				err = nodeGroup.DeleteNodes(nodesToDelete)
+			}
 		}
 
 		if err != nil {
 			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
-		} else {
+		} else if len(nodesToDelete) > 0 {
 			deletedAny = true
 			a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
 		}
@@ -896,7 +903,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 }
 
 // overrideNodesToDeleteForZeroOrMax returns a list of nodes to delete, taking into account that
-// node deletion for a "ZeroOrMaxNodeScaling" node group is atomic and should delete all nodes.
+// node deletion for a "ZeroOrMaxNodeScaling" should either keep or remove all the nodes.
 // For a non-"ZeroOrMaxNodeScaling" node group it returns the unchanged list of nodes to delete.
 func overrideNodesToDeleteForZeroOrMax(defaults config.NodeGroupAutoscalingOptions, nodeGroup cloudprovider.NodeGroup, nodesToDelete []*apiv1.Node) ([]*apiv1.Node, error) {
 	opts, err := nodeGroup.GetOptions(defaults)
@@ -904,13 +911,21 @@ func overrideNodesToDeleteForZeroOrMax(defaults config.NodeGroupAutoscalingOptio
 		return []*apiv1.Node{}, fmt.Errorf("Failed to get node group options for %s: %s", nodeGroup.Id(), err)
 	}
 	// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
-	// should stick to the all-or-nothing principle. Deleting all nodes.
+	// node deletion for a "ZeroOrMaxNodeScaling" node group is atomic and should delete all nodes or none.
 	if opts != nil && opts.ZeroOrMaxNodeScaling {
 		instances, err := nodeGroup.Nodes()
 		if err != nil {
 			return []*apiv1.Node{}, fmt.Errorf("Failed to fill in nodes to delete from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroup.Id(), err)
 		}
-		return instancesToFakeNodes(instances), nil
+
+		// Remove all nodes in case when either:
+		// 1. All nodes are failing
+		// 2. AllowNonAtomicScaleUpToMax is false which means we want to atomically remove partially failed node groups
+		if len(instances) == len(nodesToDelete) || !opts.AllowNonAtomicScaleUpToMax {
+			// Remove all nodes
+			return instancesToFakeNodes(instances), nil
+		}
+		return []*apiv1.Node{}, nil
 	}
 	// No override needed.
 	return nodesToDelete, nil
@@ -980,7 +995,7 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	a.clusterStateRegistry.Stop()
 }
 
-func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
+func (a *StaticAutoscaler) obtainNodeLists(draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
 	allNodes, err := a.AllNodeLister().List()
 	if err != nil {
 		klog.Errorf("Failed to list all nodes: %v", err)
@@ -998,7 +1013,7 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caer
 	// Treat those nodes as unready until GPU actually becomes available and let
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
-	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
+	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, draSnapshot)
 	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }

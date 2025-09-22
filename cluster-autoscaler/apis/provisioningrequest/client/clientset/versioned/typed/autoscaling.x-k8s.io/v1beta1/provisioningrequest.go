@@ -19,13 +19,13 @@ limitations under the License.
 package v1beta1
 
 import (
-	"context"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
-	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	applyconfigurationautoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1"
 	scheme "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -38,36 +38,41 @@ type ProvisioningRequestsGetter interface {
 
 // ProvisioningRequestInterface has methods to work with ProvisioningRequest resources.
 type ProvisioningRequestInterface interface {
-	Create(ctx context.Context, provisioningRequest *v1beta1.ProvisioningRequest, opts v1.CreateOptions) (*v1beta1.ProvisioningRequest, error)
-	Update(ctx context.Context, provisioningRequest *v1beta1.ProvisioningRequest, opts v1.UpdateOptions) (*v1beta1.ProvisioningRequest, error)
+	Create(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequest, opts v1.CreateOptions) (*autoscalingxk8siov1beta1.ProvisioningRequest, error)
+	Update(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequest, opts v1.UpdateOptions) (*autoscalingxk8siov1beta1.ProvisioningRequest, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, provisioningRequest *v1beta1.ProvisioningRequest, opts v1.UpdateOptions) (*v1beta1.ProvisioningRequest, error)
+	UpdateStatus(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequest, opts v1.UpdateOptions) (*autoscalingxk8siov1beta1.ProvisioningRequest, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1beta1.ProvisioningRequest, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1beta1.ProvisioningRequestList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*autoscalingxk8siov1beta1.ProvisioningRequest, error)
+	List(ctx context.Context, opts v1.ListOptions) (*autoscalingxk8siov1beta1.ProvisioningRequestList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.ProvisioningRequest, err error)
-	Apply(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *autoscalingxk8siov1beta1.ProvisioningRequest, err error)
+	Apply(ctx context.Context, provisioningRequest *applyconfigurationautoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *autoscalingxk8siov1beta1.ProvisioningRequest, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error)
+	ApplyStatus(ctx context.Context, provisioningRequest *applyconfigurationautoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *autoscalingxk8siov1beta1.ProvisioningRequest, err error)
 	ProvisioningRequestExpansion
 }
 
 // provisioningRequests implements ProvisioningRequestInterface
 type provisioningRequests struct {
-	*gentype.ClientWithListAndApply[*v1beta1.ProvisioningRequest, *v1beta1.ProvisioningRequestList, *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration]
+	*gentype.ClientWithListAndApply[*autoscalingxk8siov1beta1.ProvisioningRequest, *autoscalingxk8siov1beta1.ProvisioningRequestList, *applyconfigurationautoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration]
 }
 
 // newProvisioningRequests returns a ProvisioningRequests
 func newProvisioningRequests(c *AutoscalingV1beta1Client, namespace string) *provisioningRequests {
 	return &provisioningRequests{
-		gentype.NewClientWithListAndApply[*v1beta1.ProvisioningRequest, *v1beta1.ProvisioningRequestList, *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration](
+		gentype.NewClientWithListAndApply[*autoscalingxk8siov1beta1.ProvisioningRequest, *autoscalingxk8siov1beta1.ProvisioningRequestList, *applyconfigurationautoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration](
 			"provisioningrequests",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1beta1.ProvisioningRequest { return &v1beta1.ProvisioningRequest{} },
-			func() *v1beta1.ProvisioningRequestList { return &v1beta1.ProvisioningRequestList{} }),
+			func() *autoscalingxk8siov1beta1.ProvisioningRequest {
+				return &autoscalingxk8siov1beta1.ProvisioningRequest{}
+			},
+			func() *autoscalingxk8siov1beta1.ProvisioningRequestList {
+				return &autoscalingxk8siov1beta1.ProvisioningRequestList{}
+			},
+		),
 	}
 }

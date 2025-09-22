@@ -232,6 +232,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		if aErr != nil {
 			return scaleUpStatus, aErr
 		}
+		nodeGroups = appendCreatedNodeGroups(nodeGroups, oldId, createNodeGroupResults)
 	}
 
 	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups)
@@ -468,6 +469,17 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	}
 
 	option.SimilarNodeGroups = o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
+	if option.SimilarNodeGroups != nil {
+		// if similar node groups are found, log about them
+		similarNodeGroupIds := make([]string, 0)
+		for _, sng := range option.SimilarNodeGroups {
+			similarNodeGroupIds = append(similarNodeGroupIds, sng.Id())
+		}
+		klog.V(5).Infof("Found %d similar node groups: %v", len(option.SimilarNodeGroups), similarNodeGroupIds)
+	} else if o.autoscalingContext.BalanceSimilarNodeGroups {
+		// if no similar node groups are found and the flag is enabled, log about it
+		klog.V(5).Info("No similar node groups found")
+	}
 
 	estimateStart := time.Now()
 	expansionEstimator := o.estimatorBuilder(
@@ -703,6 +715,7 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 ) ([]nodegroupset.ScaleUpInfo, errors.AutoscalerError) {
 	// Recompute similar node groups in case they need to be updated
 	similarNodeGroups := o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
+
 	if similarNodeGroups != nil {
 		// if similar node groups are found, log about them
 		similarNodeGroupIds := make([]string, 0)
@@ -843,4 +856,15 @@ func GetPodsAwaitingEvaluation(egs []*equivalence.PodGroup, bestOption string) [
 		}
 	}
 	return awaitsEvaluation
+}
+
+func appendCreatedNodeGroups(nodeGroups []cloudprovider.NodeGroup, bestOptionNodeGroupId string, results []nodegroups.CreateNodeGroupResult) []cloudprovider.NodeGroup {
+	for _, result := range results {
+		for _, ng := range result.AllCreatedNodeGroups() {
+			if ng.Id() != bestOptionNodeGroupId {
+				nodeGroups = append(nodeGroups, ng)
+			}
+		}
+	}
+	return nodeGroups
 }

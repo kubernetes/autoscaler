@@ -35,7 +35,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
@@ -260,10 +259,8 @@ func TestChangedCAReloader(t *testing.T) {
 	}
 
 	oldCAEncodedString := base64.StdEncoding.EncodeToString(oldWebhookCABundle)
-	for {
-		if patchCalled.Load() {
-			break
-		}
+	for !patchCalled.Load() {
+
 		time.Sleep(1 * time.Second)
 	}
 	newWebhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})

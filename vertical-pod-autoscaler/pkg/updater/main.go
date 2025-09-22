@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -172,6 +173,8 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 }
 
 func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+	stopCh := make(chan struct{})
+	defer close(stopCh)
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
@@ -184,6 +187,16 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
+
+	factory.Start(stopCh)
+	informerMap := factory.WaitForCacheSync(stopCh)
+	for kind, synced := range informerMap {
+		if !synced {
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	}
+
 	admissionControllerStatusNamespace := status.AdmissionControllerStatusNamespace
 	if namespace != "" {
 		admissionControllerStatusNamespace = namespace

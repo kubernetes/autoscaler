@@ -1721,7 +1721,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 			isUpcomingMockMap:       map[string]bool{},
 			machineTypes:            []string{"T1"},
 			machineTemplates:        map[string]*framework.NodeInfo{"T1": ti1},
-			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T1": true},
+			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T1": true, "autoprovisioned-T1-1": true},
 			expectedExpandedGroups:  map[string]int{"autoprovisioned-T1": 1},
 		},
 		{
@@ -1730,7 +1730,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 			isUpcomingMockMap:       map[string]bool{"autoprovisioned-T1": true},
 			machineTypes:            []string{"T1", "T2"},
 			machineTemplates:        map[string]*framework.NodeInfo{"T1": ti1, "T2": ti2},
-			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T2": true},
+			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T2": true, "autoprovisioned-T2-1": true},
 			expectedExpandedGroups:  map[string]int{"autoprovisioned-T2": 2},
 		},
 	}
@@ -1764,7 +1764,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 
 		processors := processorstest.NewTestProcessors(&context)
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
-		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 0}
+		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 1}
 		processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: tc.isUpcomingMockMap}
 
 		nodes := []*apiv1.Node{}
@@ -1780,13 +1780,24 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 		assert.Equal(t, len(tc.expectedExpandedGroups), len(expandedGroups))
 
 		for groupName := range tc.expectedCreatedGroups {
-			assert.True(t, createdGroups[groupName])
+			assert.True(t, createdGroups[groupName], "Missing created node group: %v. Got %v", groupName, createdGroups)
 		}
 		for groupName, expectedExpandedGroupValue := range tc.expectedExpandedGroups {
 			assert.Equal(t, expectedExpandedGroupValue, expandedGroups[groupName])
 		}
+		consideredNodeGroupNames := nodeGroupIds(scaleUpStatus.ConsideredNodeGroups)
+		for name := range tc.expectedCreatedGroups {
+			assert.True(t, consideredNodeGroupNames[name], "Missing considered node group: %v. Got %v", name, consideredNodeGroupNames)
+		}
 	}
+}
 
+func nodeGroupIds(nodeGroups []cloudprovider.NodeGroup) map[string]bool {
+	result := make(map[string]bool)
+	for _, ng := range nodeGroups {
+		result[ng.Id()] = true
+	}
+	return result
 }
 
 func TestCheckDeltaWithinLimits(t *testing.T) {

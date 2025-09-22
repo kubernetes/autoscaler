@@ -32,7 +32,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
@@ -409,19 +408,46 @@ func TestDeleteInstances(t *testing.T) {
 	err = as.DeleteInstances(instances)
 	expectedErr = fmt.Errorf("cannot delete instance (%s) which don't belong to the same node pool (\"as\")", testValidProviderID1)
 	assert.Equal(t, expectedErr, err)
+}
 
-	instances = []*azureRef{
-		{Name: testValidProviderID0},
-	}
-	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
-	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
+func TestForceDeleteNodes(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	as := newTestAgentPool(newTestAzureManager(t), "as")
+	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID1}] = as1
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testInvalidProviderID}] = as
+
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	as.manager.azClient.virtualMachinesClient = mockVMClient
+
+	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
+	as.manager.azClient.storageAccountsClient = mockSAClient
+
+	err := as.ForceDeleteNodes([]*apiv1.Node{})
+	assert.NoError(t, err)
+
+	nodes := []*apiv1.Node{
+		{
+			Spec:       apiv1.NodeSpec{ProviderID: testInvalidProviderID},
+			ObjectMeta: v1.ObjectMeta{Name: "node"},
 		},
-	}, nil)
-	err = as.DeleteInstances(instances)
-	assert.Error(t, err)
+	}
+	err = as.ForceDeleteNodes(nodes)
+	expectedErr := fmt.Errorf("resource name was missing from identifier")
+	assert.Equal(t, expectedErr, err)
+
+	nodes = []*apiv1.Node{
+		{
+			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID1},
+			ObjectMeta: v1.ObjectMeta{Name: "node1"},
+		},
+	}
+	err = as.ForceDeleteNodes(nodes)
+	expectedErr = fmt.Errorf("node1 belongs to a different asg than as")
+	assert.Equal(t, expectedErr, err)
 }
 
 func TestAgentPoolDeleteNodes(t *testing.T) {
@@ -461,22 +487,6 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	})
 	expectedErr = fmt.Errorf("node belongs to a different asg than as")
 	assert.Equal(t, expectedErr, err)
-
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
-	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
-	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
-		},
-	}, nil)
-	err = as.DeleteNodes([]*apiv1.Node{
-		{
-			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID0},
-			ObjectMeta: v1.ObjectMeta{Name: "node"},
-		},
-	})
-	assert.Error(t, err)
 
 	as.minSize = 3
 	err = as.DeleteNodes([]*apiv1.Node{})

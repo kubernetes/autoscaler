@@ -23,7 +23,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -61,7 +60,7 @@ func TestValidateVPA(t *testing.T) {
 			name:        "empty create",
 			vpa:         vpa_types.VerticalPodAutoscaler{},
 			isCreate:    true,
-			expectError: fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1"),
+			expectError: fmt.Errorf("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1"),
 		},
 		{
 			name: "no update mode",
@@ -70,7 +69,7 @@ func TestValidateVPA(t *testing.T) {
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{},
 				},
 			},
-			expectError: fmt.Errorf("UpdateMode is required if UpdatePolicy is used"),
+			expectError: fmt.Errorf("updateMode is required if UpdatePolicy is used"),
 		},
 		{
 			name: "bad update mode",
@@ -129,7 +128,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("MinReplicas has to be positive, got 0"),
+			expectError: fmt.Errorf("minReplicas has to be positive, got 0"),
 		},
 		{
 			name: "no policy name",
@@ -140,7 +139,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("ContainerPolicies.ContainerName is required"),
+			expectError: fmt.Errorf("containerPolicies.ContainerName is required"),
 		},
 		{
 			name: "invalid scaling mode",
@@ -171,7 +170,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders."),
+			expectError: fmt.Errorf("the current version of VPA object shouldn't specify more than one recommenders"),
 		},
 		{
 			name: "bad limits",
@@ -213,7 +212,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("MinAllowed: CPU [%v] must be a whole number of milli CPUs", badCPUResource.String()),
+			expectError: fmt.Errorf("minAllowed: CPU [%v] must be a whole number of milli CPUs", badCPUResource.String()),
 		},
 		{
 			name: "bad minAllowed memory value",
@@ -236,7 +235,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("MinAllowed: Memory [%v] must be a whole number of bytes", resource.MustParse("100m")),
+			expectError: fmt.Errorf("minAllowed: memory [%v] must be a whole number of bytes", resource.MustParse("100m")),
 		},
 		{
 			name: "bad maxAllowed cpu value",
@@ -255,7 +254,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("MaxAllowed: CPU [%s] must be a whole number of milli CPUs", badCPUResource.String()),
+			expectError: fmt.Errorf("maxAllowed: CPU [%s] must be a whole number of milli CPUs", badCPUResource.String()),
 		},
 		{
 			name: "bad maxAllowed memory value",
@@ -276,7 +275,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("MaxAllowed: Memory [%v] must be a whole number of bytes", resource.MustParse("500m")),
+			expectError: fmt.Errorf("maxAllowed: memory [%v] must be a whole number of bytes", resource.MustParse("500m")),
 		},
 		{
 			name: "scaling off with controlled values requests and limits",
@@ -293,7 +292,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off."),
+			expectError: fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off"),
 		},
 		{
 			name: "all valid",
@@ -323,9 +322,7 @@ func TestValidateVPA(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			if !tc.inPlaceOrRecreateFeatureGateDisabled {
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-			}
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)

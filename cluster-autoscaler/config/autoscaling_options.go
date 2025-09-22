@@ -52,6 +52,8 @@ type NodeGroupAutoscalingOptions struct {
 	MaxNodeProvisionTime time.Duration
 	// ZeroOrMaxNodeScaling means that a node group should be scaled up to maximum size or down to zero nodes all at once instead of one-by-one.
 	ZeroOrMaxNodeScaling bool
+	// AllowNonAtomicScaleUpToMax indicates that partially failing scale-ups of ZeroOrMaxNodeScaling node groups should not be cancelled
+	AllowNonAtomicScaleUpToMax bool
 	// IgnoreDaemonSetsUtilization sets if daemonsets utilization should be considered during node scale-down
 	IgnoreDaemonSetsUtilization bool
 }
@@ -305,6 +307,8 @@ type AutoscalingOptions struct {
 	CheckCapacityProvisioningRequestBatchTimebox time.Duration
 	// ForceDeleteLongUnregisteredNodes is used to enable/disable ignoring min size constraints during removal of long unregistered nodes
 	ForceDeleteLongUnregisteredNodes bool
+	// ForceDeleteFailedNodes is used to enable/disable ignoring min size constraints during removal of failed nodes
+	ForceDeleteFailedNodes bool
 	// DynamicResourceAllocationEnabled configures whether logic for handling DRA objects is enabled.
 	DynamicResourceAllocationEnabled bool
 	// ClusterSnapshotParallelism is the maximum parallelism of cluster snapshot creation.
@@ -338,6 +342,9 @@ type AutoscalingOptions struct {
 	ProactiveScaleupEnabled bool
 	// PodInjectionLimit limits total number of pods while injecting fake pods.
 	PodInjectionLimit int
+	// NodeDeletionCandidateTTL is the maximum time a node can be marked as removable without being deleted.
+	// This is used to prevent nodes from being stuck in the removable state during if the CA deployment becomes inactive.
+	NodeDeletionCandidateTTL time.Duration
 }
 
 // KubeClientOptions specify options for kube client

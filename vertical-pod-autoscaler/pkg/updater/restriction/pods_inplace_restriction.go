@@ -18,27 +18,23 @@ package restriction
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
 
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
-
-	"encoding/json"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	k8stypes "k8s.io/apimachinery/pkg/types"
-
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
-
 	resource_updates "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 )
 
 // TODO: Make these configurable by flags
@@ -194,15 +190,16 @@ func CanEvictInPlacingPod(pod *apiv1.Pod, singleGroupStats singleGroupStats, las
 		// - InProgress + more than 1 hour has elapsed since the lastInPlaceUpdateTime
 		resizePendingCondition, ok := utils.GetPodCondition(pod, apiv1.PodResizePending)
 		if ok {
-			if resizePendingCondition.Reason == apiv1.PodReasonDeferred {
+			switch resizePendingCondition.Reason {
+			case apiv1.PodReasonDeferred:
 				if clock.Since(lastUpdate) > DeferredResizeUpdateTimeout {
 					klog.V(4).InfoS(fmt.Sprintf("In-place update deferred for more than %v, falling back to eviction", DeferredResizeUpdateTimeout), "pod", klog.KObj(pod))
 					return true
 				}
-			} else if resizePendingCondition.Reason == apiv1.PodReasonInfeasible {
+			case apiv1.PodReasonInfeasible:
 				klog.V(4).InfoS("In-place update infeasible, falling back to eviction", "pod", klog.KObj(pod))
 				return true
-			} else {
+			default:
 				klog.V(4).InfoS("In-place update condition unknown, falling back to eviction", "pod", klog.KObj(pod), "condition", resizePendingCondition)
 				return true
 			}
