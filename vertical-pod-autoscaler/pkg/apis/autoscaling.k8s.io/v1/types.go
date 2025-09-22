@@ -19,6 +19,7 @@ package v1
 import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -224,6 +225,14 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// oomBumpUpRatio is the ratio to increase memory when OOM is detected.
+	// +optional
+	OOMBumpUpRatio *resource.Quantity `json:"oomBumpUpRatio,omitempty" protobuf:"bytes,7,opt,name=oomBumpUpRatio"`
+
+	// oomMinBumpUp is the minimum increase in memory when OOM is detected.
+	// +optional
+	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
 }
 
 const (
