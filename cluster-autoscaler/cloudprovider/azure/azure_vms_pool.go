@@ -313,7 +313,7 @@ func (vmPool *VMPool) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (agentPool *VMsPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (agentPool *VMPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
