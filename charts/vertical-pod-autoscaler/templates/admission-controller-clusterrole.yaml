@@ -22,19 +22,8 @@ rules:
   resources:
   - mutatingwebhookconfigurations
   verbs:
-  - create
-  - delete
-  - get
   - list
-  - patch
-- apiGroups:
-  - poc.autoscaling.k8s.io
-  resources:
-  - verticalpodautoscalers
-  verbs:
   - get
-  - list
-  - watch
 - apiGroups:
   - autoscaling.k8s.io
   resources:
