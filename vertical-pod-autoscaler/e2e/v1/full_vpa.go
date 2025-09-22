@@ -89,13 +89,6 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 				WithTargetRef(targetRef).
 				WithContainer(containerName).
 				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
-				AppendRecommendation(
-					test.Recommendation().
-						WithContainer(containerName).
-						WithTarget("250m", "200Mi").
-						WithLowerBound("250m", "200Mi").
-						WithUpperBound("250m", "200Mi").
-						GetContainerResources()).
 				Get()
 
 			InstallVPA(f, vpaCRD)
@@ -112,7 +105,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			rc.ConsumeCPU(600 * replicas)
 			err = waitForResourceRequestInRangeInPods(
 				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-				ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
+				ParseQuantityOrDie("600m"), ParseQuantityOrDie("1800m"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
 
@@ -160,13 +153,6 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 				WithNamespace(f.Namespace.Name).
 				WithTargetRef(targetRef).
 				WithContainer(containerName).
-				AppendRecommendation(
-					test.Recommendation().
-						WithContainer(containerName).
-						WithTarget("250m", "200Mi").
-						WithLowerBound("250m", "200Mi").
-						WithUpperBound("250m", "200Mi").
-						GetContainerResources()).
 				Get()
 
 			InstallVPA(f, vpaCRD)
@@ -183,7 +169,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			rc.ConsumeCPU(600 * replicas)
 			err = waitForResourceRequestInRangeInPods(
 				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-				ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
+				ParseQuantityOrDie("600m"), ParseQuantityOrDie("1800m"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
 
@@ -246,13 +232,6 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(targetRef).
 			WithContainer(containerName).
-			AppendRecommendation(
-				test.Recommendation().
-					WithContainer(containerName).
-					WithTarget("250m", "200Mi").
-					WithLowerBound("250m", "200Mi").
-					WithUpperBound("250m", "200Mi").
-					GetContainerResources()).
 			Get()
 
 		InstallVPA(f, vpaCRD)
@@ -270,7 +249,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 		rc.ConsumeCPU(600 * replicas)
 		err = waitForResourceRequestInRangeInPods(
 			f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
+			ParseQuantityOrDie("600m"), ParseQuantityOrDie("1800m"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
