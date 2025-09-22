@@ -18,8 +18,7 @@ package customresources
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1"
-
+	"k8s.io/api/resource/v1beta1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -88,7 +87,7 @@ type resourceSliceSpecs struct {
 	pool   string
 }
 
-func isEqualResourceSlices(nodeResourcesSlices []*resourceapi.ResourceSlice, templateResourcesSlices []*resourceapi.ResourceSlice) bool {
+func isEqualResourceSlices(nodeResourcesSlices []*v1beta1.ResourceSlice, templateResourcesSlices []*v1beta1.ResourceSlice) bool {
 	tempSlicesByPools := getDevicesBySpecs(templateResourcesSlices)
 	nodeSlicesByPools := getDevicesBySpecs(nodeResourcesSlices)
 
@@ -109,7 +108,7 @@ func isEqualResourceSlices(nodeResourcesSlices []*resourceapi.ResourceSlice, tem
 	return true
 }
 
-func getDevicesBySpecs(resourcesSlices []*resourceapi.ResourceSlice) map[resourceSliceSpecs]sets.Set[string] {
+func getDevicesBySpecs(resourcesSlices []*v1beta1.ResourceSlice) map[resourceSliceSpecs]sets.Set[string] {
 	slicesGroupedByPoolAndDriver := make(map[resourceSliceSpecs]sets.Set[string])
 	for _, rs := range resourcesSlices {
 		rsSpecs := resourceSliceSpecs{
@@ -121,7 +120,7 @@ func getDevicesBySpecs(resourcesSlices []*resourceapi.ResourceSlice) map[resourc
 	return slicesGroupedByPoolAndDriver
 }
 
-func getResourceSliceDevicesSet(resourcesSlice *resourceapi.ResourceSlice) sets.Set[string] {
+func getResourceSliceDevicesSet(resourcesSlice *v1beta1.ResourceSlice) sets.Set[string] {
 	devices := sets.New[string]()
 	for _, device := range resourcesSlice.Spec.Devices {
 		devices.Insert(device.Name)
