@@ -765,6 +765,7 @@ func (c *LoadBalancerClient) ChangeAlgorithm(ctx context.Context, loadBalancer *
 type LoadBalancerAttachToNetworkOpts struct {
 	Network *Network
 	IP      net.IP
+	IPRange *net.IPNet
 }
 
 // AttachToNetwork attaches a Load Balancer to a network.
@@ -779,6 +780,9 @@ func (c *LoadBalancerClient) AttachToNetwork(ctx context.Context, loadBalancer *
 	}
 	if opts.IP != nil {
 		reqBody.IP = Ptr(opts.IP.String())
+	}
+	if opts.IPRange != nil {
+		reqBody.IPRange = Ptr(opts.IPRange.String())
 	}
 
 	respBody, resp, err := postRequest[schema.LoadBalancerActionAttachToNetworkResponse](ctx, c.client, reqPath, reqBody)

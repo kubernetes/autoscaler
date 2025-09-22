@@ -15,6 +15,7 @@ type ServerType struct {
 	ID           int64
 	Name         string
 	Description  string
+	Category     string
 	Cores        int
 	Memory       float32
 	Disk         int
