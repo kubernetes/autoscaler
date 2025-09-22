@@ -61,3 +61,22 @@ app.kubernetes.io/component: admission-controller
 {{- define "vertical-pod-autoscaler.admissionController.image" -}}
 {{- printf "%s:%s" .Values.admissionController.image.repository (default .Chart.AppVersion .Values.admissionController.image.tag) }}
 {{- end }}
+
+{{/*
+Create the name of the tls secret to use
+*/}}
+{{- define "vertical-pod-autoscaler.admissionController.tls.secretName" -}}
+{{- if .Values.admissionController.tls.existingSecret -}}
+    {{ .Values.admissionController.tls.existingSecret }}
+{{- else -}}
+    {{- printf "%s-%s" (include "vertical-pod-autoscaler.admissionController.fullname" .) "tls" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Create the name of the namespace to use
+*/}}
+{{- define "common.names.namespace" -}}
+{{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

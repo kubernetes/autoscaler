@@ -1,4 +1,4 @@
-{{- if not .Values.recommenderOnly -}}
+{{- if .Values.admissionController.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:

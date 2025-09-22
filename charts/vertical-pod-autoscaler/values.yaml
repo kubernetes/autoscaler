@@ -14,9 +14,8 @@ rbac:
   # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
   create: true
 
-recommenderOnly: false
-
 admissionController:
+  enabled: true
   image:
     # Image repository for the Admission Controller default container.
     repository: registry.k8s.io/autoscaling/vpa-admission-controller
@@ -93,28 +92,12 @@ admissionController:
   # Node selector labels for scheduling the Admission Controller.
   nodeSelector: {}
 
-  certGen:
-    enabled: true
-    image:
-      repository: registry.k8s.io/ingress-nginx/kube-webhook-certgen
-      tag: v20230312-helm-chart-4.5.2-28-g66a760794
-      pullPolicy: Always
-    env: {}
-    resources: {}
-    podSecurityContext:
-      runAsNonRoot: true
-      runAsUser: 65534
-      seccompProfile:
-        type: RuntimeDefault
-    securityContext:
-      readOnlyRootFilesystem: true
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-          - ALL
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
+  tls:
+    secretName: vpa-tls-certs
+    caCert: ""
+    cert: ""
+    key: ""
+    existingSecret: ""
 
   volumes:
     - name: tls-certs
