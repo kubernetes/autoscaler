@@ -61,4 +61,3 @@ app.kubernetes.io/component: admission-controller
 {{- define "vertical-pod-autoscaler.admissionController.image" -}}
 {{- printf "%s:%s" .Values.admissionController.image.repository (default .Chart.AppVersion .Values.admissionController.image.tag) }}
 {{- end }}
-

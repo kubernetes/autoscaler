@@ -93,6 +93,30 @@ admissionController:
   # Node selector labels for scheduling the Admission Controller.
   nodeSelector: {}
 
+  certGen:
+    enabled: true
+    image:
+      repository: registry.k8s.io/ingress-nginx/kube-webhook-certgen
+      tag: v20230312-helm-chart-4.5.2-28-g66a760794
+      pullPolicy: Always
+    env: {}
+    resources: {}
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  
+
   volumes:
     - name: tls-certs
       secret:
