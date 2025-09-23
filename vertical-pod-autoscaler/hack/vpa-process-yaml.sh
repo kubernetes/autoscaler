@@ -54,7 +54,7 @@ if [ $# -eq 0 ]; then
 fi
 
 DEFAULT_REGISTRY="registry.k8s.io/autoscaling"
-DEFAULT_TAG="1.4.2"
+DEFAULT_TAG="1.5.0"
 
 REGISTRY_TO_APPLY=${REGISTRY-$DEFAULT_REGISTRY}
 TAG_TO_APPLY=${TAG-$DEFAULT_TAG}
