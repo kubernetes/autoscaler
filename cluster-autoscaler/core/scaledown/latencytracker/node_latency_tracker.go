@@ -4,10 +4,13 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-
 	"k8s.io/klog/v2"
 )
 
+type LatencyTracker interface {
+	ObserveDeletion(nodeName string, timestamp time.Time)
+	UpdateStateWithUnneededList(list []NodeInfo, timestamp time.Time)
+}
 type NodeInfo struct {
 	Name          string
 	UnneededSince time.Time
