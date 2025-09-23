@@ -39,7 +39,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
@@ -89,6 +88,19 @@ type startDeletionTestCase struct {
 	wantTaintUpdates      map[string][][]apiv1.Taint
 	wantNodeDeleteResults map[string]status.NodeDeleteResult
 }
+
+// FakeLatencyTracker implements the same interface as NodeLatencyTracker
+type fakeLatencyTracker struct {
+	ObservedNodes []string
+}
+
+// ObserveDeletion simply records the node name
+func (f *fakeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Time) {
+	f.ObservedNodes = append(f.ObservedNodes, nodeName)
+}
+func (f *fakeLatencyTracker) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
+}
+func (f *fakeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {}
 
 func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, force bool, suffix string) map[string]startDeletionTestCase {
 	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
@@ -1275,12 +1287,13 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	ndb := NewNodeDeletionBatcher(&autoscalingCtx, scaleStateNotifier, ndt, 0*time.Second)
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
 	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, shutdownGracePeriodByPodPriority: legacyFlagDrainConfig, fullDsEviction: force}
+	fakeNodeLatencyTracker := &fakeLatencyTracker{}
 	actuator := Actuator{
 		autoscalingCtx: &autoscalingCtx, nodeDeletionTracker: ndt,
 		nodeDeletionScheduler: NewGroupDeletionScheduler(&autoscalingCtx, ndt, ndb, evictor),
 		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&autoscalingCtx),
 		configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults),
-		nodeLatencyTracker:    latencytracker.NewNodeLatencyTracker(),
+		nodeLatencyTracker:    fakeNodeLatencyTracker,
 	}
 
 	var gotResult status.ScaleDownResult
@@ -1376,6 +1389,19 @@ taintsLoop:
 	nodeDeleteResults, _ := actuator.DeletionResults()
 	if diff := cmp.Diff(tc.wantNodeDeleteResults, nodeDeleteResults, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
 		t.Errorf("NodeDeleteResults diff (-want +got):\n%s", diff)
+	}
+	// Verify ObserveDeletion was called for all nodes that were actually deleted
+	for _, expectedNode := range tc.wantDeletedNodes {
+		found := false
+		for _, observed := range fakeNodeLatencyTracker.ObservedNodes {
+			if observed == expectedNode {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected ObserveDeletion to be called for node %s, but it wasn't", expectedNode)
+		}
 	}
 }
 
@@ -1555,10 +1581,12 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			ndb := NewNodeDeletionBatcher(&autoscalingCtx, scaleStateNotifier, ndt, deleteInterval)
 			legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
 			evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, shutdownGracePeriodByPodPriority: legacyFlagDrainConfig}
+			fakeNodeLatencyTracker := &fakeLatencyTracker{}
 			actuator := Actuator{
 				autoscalingCtx: &autoscalingCtx, nodeDeletionTracker: ndt,
 				nodeDeletionScheduler: NewGroupDeletionScheduler(&autoscalingCtx, ndt, ndb, evictor),
 				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&autoscalingCtx),
+				nodeLatencyTracker:    fakeNodeLatencyTracker,
 			}
 
 			for _, nodes := range deleteNodes {
@@ -1585,6 +1613,20 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			}
 			if diff := cmp.Diff(test.wantSuccessfulDeletion, gotDeletedNodes); diff != "" {
 				t.Errorf("Successful deleteions per node group diff (-want +got):\n%s", diff)
+			}
+			for _, nodes := range deleteNodes {
+				for _, node := range nodes {
+					found := false
+					for _, observedNode := range fakeNodeLatencyTracker.ObservedNodes {
+						if observedNode == node.Name {
+							found = true
+							break
+						}
+					}
+					if !found {
+						t.Errorf("Expected ObserveDeletion to be called for node %s", node.Name)
+					}
+				}
 			}
 		})
 	}
