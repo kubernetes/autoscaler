@@ -489,6 +489,10 @@ vpa:
   updateMode: "Auto"
   # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
   containerPolicy: {}
+  # vpa.recommenders -- VPA recommenders that will provide recommendations for vertical scaling
+  # When the recommenders list is empty, the recommender 'default' is used
+  recommenders: []
+  #  - name: my-recommender
 
 # secretKeyRefNameOverride -- Overrides the name of the Secret to use when loading the secretKeyRef for AWS, Azure and Civo env variables
 secretKeyRefNameOverride: ""

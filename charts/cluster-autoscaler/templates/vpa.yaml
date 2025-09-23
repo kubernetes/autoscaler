@@ -13,6 +13,9 @@ spec:
     name: {{ template "cluster-autoscaler.fullname" . }}
   updatePolicy:
     updateMode: {{ .Values.vpa.updateMode | quote }}
+  {{- with .Values.vpa.recommenders }}
+  recommenders: {{- . | toYaml | nindent 4 }}
+  {{- end }}
   resourcePolicy:
     containerPolicies:
     - containerName: {{ template "cluster-autoscaler.name" . }}
