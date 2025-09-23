@@ -522,6 +522,13 @@ func TestUpdateClusterState(t *testing.T) {
 				assert.Equal(t, wantUnneeded[n.Name], p.unneededNodes.Contains(n.Name), []string{n.Name, "unneeded"})
 				assert.Equal(t, wantUnremovable[n.Name], p.unremovableNodes.Contains(n.Name), []string{n.Name, "unremovable"})
 			}
+			tracked := p.nodeLatencyTracker.GetTrackedNodes()
+			for _, name := range tc.wantUnneeded {
+				assert.Contains(t, tracked, name, "expected node in latency tracker")
+			}
+			for _, name := range tc.wantUnremovable {
+				assert.NotContains(t, tracked, name, "expected node not in latency tracker")
+			}
 		})
 	}
 }

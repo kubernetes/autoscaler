@@ -74,3 +74,12 @@ func (t *NodeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Tim
 		delete(t.nodes, nodeName)
 	}
 }
+
+// GetTrackedNodes returns the names of all nodes currently tracked as unneeded.
+func (t *NodeLatencyTracker) GetTrackedNodes() []string {
+	names := make([]string, 0, len(t.nodes))
+	for name := range t.nodes {
+		names = append(names, name)
+	}
+	return names
+}
