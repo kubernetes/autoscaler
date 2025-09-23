@@ -433,7 +433,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "node_deletion_duration_seconds",
 			Help:      "Latency from planning (node marked) to final outcome (deleted, aborted, rescued).",
-			Buckets:   k8smetrics.ExponentialBuckets(10, 2, 12),
+			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 12), //1, 2, 4, 8, ..., 2048
 		}, []string{"deleted"},
 	)
 )
