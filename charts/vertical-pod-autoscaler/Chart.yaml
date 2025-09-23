@@ -26,5 +26,7 @@ appVersion: "1.4.2"
 icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
 
 maintainers:
-  - email: omerap12@gmail.com
+  - email: kubernetes-sig-autoscaling@googlegroups.com
+    name: adrianmoisey
+  - email: kubernetes-sig-autoscaling@googlegroups.com
     name: omerap12
