@@ -327,9 +327,6 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	}
 
 	for _, node := range nodes {
-		if a.nodeLatencyTracker != nil {
-			a.nodeLatencyTracker.ObserveDeletion(node.Name, time.Now())
-		}
 		nodeInfo, err := clusterSnapshot.GetNodeInfo(node.Name)
 		if err != nil {
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "nodeInfos.Get for %q returned error: %v", node.Name, err)}
@@ -352,10 +349,16 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 
 		if force {
 			go a.nodeDeletionScheduler.scheduleForceDeletion(nodeInfo, nodeGroup, batchSize, drain)
+			if a.nodeLatencyTracker != nil {
+				a.nodeLatencyTracker.ObserveDeletion(node.Name, time.Now())
+			}
 			continue
 		}
 
 		go a.nodeDeletionScheduler.ScheduleDeletion(nodeInfo, nodeGroup, batchSize, drain)
+		if a.nodeLatencyTracker != nil {
+			a.nodeLatencyTracker.ObserveDeletion(node.Name, time.Now())
+		}
 	}
 }
 
