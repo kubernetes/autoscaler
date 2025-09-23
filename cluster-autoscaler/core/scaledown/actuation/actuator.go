@@ -59,7 +59,7 @@ const (
 type Actuator struct {
 	autoscalingCtx        *ca_context.AutoscalingContext
 	nodeDeletionTracker   *deletiontracker.NodeDeletionTracker
-	nodeLatencyTracker    *latencytracker.NodeLatencyTracker
+	nodeLatencyTracker    latencytracker.LatencyTracker
 	nodeDeletionScheduler *GroupDeletionScheduler
 	deleteOptions         options.NodeDeleteOptions
 	drainabilityRules     rules.Rules

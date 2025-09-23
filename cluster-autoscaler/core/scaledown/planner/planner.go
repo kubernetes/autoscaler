@@ -77,7 +77,7 @@ type Planner struct {
 	cc                    controllerReplicasCalculator
 	scaleDownSetProcessor nodes.ScaleDownSetProcessor
 	scaleDownContext      *nodes.ScaleDownContext
-	nodeLatencyTracker    *latencytracker.NodeLatencyTracker
+	nodeLatencyTracker    latencytracker.LatencyTracker
 }
 
 // New creates a new Planner object.
