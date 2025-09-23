@@ -139,6 +139,11 @@ func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *magnumNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the cluster node_count in magnum.
 func (ng *magnumNodeGroup) DecreaseTargetSize(delta int) error {
 	ng.clusterUpdateLock.Lock()

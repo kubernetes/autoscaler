@@ -271,6 +271,7 @@ var (
 	asyncNodeGroupsEnabled      = flag.Bool("async-node-groups", false, "Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk.")
 	proactiveScaleupEnabled     = flag.Bool("enable-proactive-scaleup", false, "Whether to enable/disable proactive scale-ups, defaults to false")
 	podInjectionLimit           = flag.Int("pod-injection-limit", 5000, "Limits total number of pods while injecting fake pods. If unschedulable pods already exceeds the limit, pod injection is disabled but pods are not truncated.")
+	forceDeleteFailedNodes      = flag.Bool("force-delete-failed-nodes", false, "Whether to enable force deletion of failed nodes, regardless of the min size of the node group the belong to.")
 )
 
 func isFlagPassed(name string) bool {
@@ -447,6 +448,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		BypassedSchedulers:                      scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
 		ProvisioningRequestEnabled:              *provisioningRequestsEnabled,
 		AsyncNodeGroupsEnabled:                  *asyncNodeGroupsEnabled,
+		ForceDeleteFailedNodes:                  *forceDeleteFailedNodes,
 	}
 }
 

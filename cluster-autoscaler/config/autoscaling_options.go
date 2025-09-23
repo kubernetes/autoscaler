@@ -297,6 +297,8 @@ type AutoscalingOptions struct {
 	ProvisioningRequestEnabled bool
 	// AsyncNodeGroupsEnabled tells if CA creates/deletes node groups asynchronously.
 	AsyncNodeGroupsEnabled bool
+	// ForceDeleteFailedNodes is used to enable/disable ignoring min size constraints during removal of failed nodes
+	ForceDeleteFailedNodes bool
 }
 
 // KubeClientOptions specify options for kube client
