@@ -26,6 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -119,13 +120,13 @@ func getVpaObserver(vpaClientSet vpa_clientset.Interface, namespace string) *obs
 	return &vpaObserver
 }
 
-var _ = RecommenderE2eDescribe("Checkpoints", func() {
+var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("with missing VPA objects are garbage collected", func() {
 		ns := f.Namespace.Name
-		vpaClientSet := getVpaClientSet(f)
+		vpaClientSet := utils.GetVpaClientSet(f)
 
 		checkpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
 			ObjectMeta: metav1.ObjectMeta{
@@ -159,15 +160,15 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 	})
 })
 
-var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("serves recommendation for CronJob", func() {
 		ginkgo.By("Setting up hamster CronJob")
-		SetupHamsterCronJob(f, "*/5 * * * *", "100m", "100Mi", defaultHamsterReplicas)
+		SetupHamsterCronJob(f, "*/5 * * * *", "100m", "100Mi", utils.DefaultHamsterReplicas)
 
-		vpaClientSet := getVpaClientSet(f)
+		vpaClientSet := utils.GetVpaClientSet(f)
 
 		ginkgo.By("Setting up VPA")
 		targetRef := &autoscaling.CrossVersionObjectReference{
@@ -176,7 +177,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			Name:       "hamster-cronjob",
 		}
 
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
@@ -184,15 +185,15 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			WithContainer(containerName).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled")
-		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
 
-var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
@@ -211,22 +212,22 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD = test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
-		vpaClientSet = getVpaClientSet(f)
+		vpaClientSet = utils.GetVpaClientSet(f)
 	})
 
 	ginkgo.It("serves recommendation", func() {
 		ginkgo.By("Waiting for recommendation to be filled")
-		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
@@ -235,7 +236,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		o := getVpaObserver(vpaClientSet, f.Namespace.Name)
 
 		ginkgo.By("Waiting for recommendation to be filled")
-		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		ginkgo.By("Drain diffs")
 	out:
@@ -270,7 +271,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	})
 })
 
-var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
@@ -287,26 +288,26 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			1,       /* number of replicas */
 		)
 
-		vpaClientSet = getVpaClientSet(f)
+		vpaClientSet = utils.GetVpaClientSet(f)
 	})
 
 	ginkgo.It("respects min allowed recommendation", func() {
 		const minMilliCpu = 10000
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD2 := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			WithMinAllowed(containerName, "10000", "").
 			Get()
 
-		InstallVPA(f, vpaCRD2)
+		utils.InstallVPA(f, vpaCRD2)
 		vpaCRD := vpaCRD2
 
 		ginkgo.By("Waiting for recommendation to be filled")
-		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
 		cpu := getMilliCpu(vpa.Status.Recommendation.ContainerRecommendations[0].Target)
@@ -320,16 +321,16 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	ginkgo.It("respects max allowed recommendation", func() {
 		const maxMilliCpu = 1
 		ginkgo.By("Setting up a VPA CRD")
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			WithMaxAllowed(containerName, "1m", "").
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled")
 		vpa, err := WaitForUncappedCPURecommendationAbove(vpaClientSet, vpaCRD, maxMilliCpu)
@@ -347,67 +348,67 @@ func getMilliCpu(resources apiv1.ResourceList) int64 {
 	return cpu.MilliValue()
 }
 
-var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	var vpaClientSet vpa_clientset.Interface
 
 	ginkgo.BeforeEach(func() {
-		vpaClientSet = getVpaClientSet(f)
+		vpaClientSet = utils.GetVpaClientSet(f)
 	})
 
 	ginkgo.It("with no containers opted out all containers get recommendations", func() {
 		ginkgo.By("Setting up a hamster deployment")
-		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
-		_ = startDeploymentPods(f, d)
+		d := utils.NewNHamstersDeployment(f, 2 /*number of containers*/)
+		_ = utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Setting up VPA CRD")
-		container1Name := GetHamsterContainerNameByIndex(0)
-		container2Name := GetHamsterContainerNameByIndex(1)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			WithContainer(container2Name).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled for both containers")
-		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(2))
 	})
 
 	ginkgo.It("only containers not-opted-out get recommendations", func() {
 		ginkgo.By("Setting up a hamster deployment")
-		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
-		_ = startDeploymentPods(f, d)
+		d := utils.NewNHamstersDeployment(f, 2 /*number of containers*/)
+		_ = utils.StartDeploymentPods(f, d)
 
 		ginkgo.By("Setting up VPA CRD")
-		container1Name := GetHamsterContainerNameByIndex(0)
-		container2Name := GetHamsterContainerNameByIndex(1)
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(hamsterTargetRef).
+			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(container1Name).
 			WithScalingMode(container1Name, vpa_types.ContainerScalingModeOff).
 			WithContainer(container2Name).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled for just one container")
-		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		errMsg := fmt.Sprintf("%s container has recommendations turned off. We expect expect only recommendations for %s",
-			GetHamsterContainerNameByIndex(0),
-			GetHamsterContainerNameByIndex(1))
+			utils.GetHamsterContainerNameByIndex(0),
+			utils.GetHamsterContainerNameByIndex(1))
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
-		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(GetHamsterContainerNameByIndex(1)), errMsg)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(utils.GetHamsterContainerNameByIndex(1)), errMsg)
 	})
 })
 
