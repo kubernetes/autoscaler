@@ -50,7 +50,7 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 		_, hasGpuLabel := node.Labels[context.CloudProvider.GPULabel()]
 		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
 		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[gpu.ResourceDirectX]
-		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) && !gpuExposedViaDra(context, node) {
+		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
 			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
@@ -72,19 +72,19 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 // GetNodeResourceTargets returns mapping of resource names to their targets.
 // This includes resources which are not yet ready to use and visible in kubernetes.
 func (p *GpuCustomResourcesProcessor) GetNodeResourceTargets(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
-	if gpuExposedViaDra(context, node) {
-		return []CustomResourceTarget{}, nil
-	}
-
-	gpuTarget, err := p.getNodeGpuTarget(context.CloudProvider.GPULabel(), node, nodeGroup)
+	gpuTarget, err := p.GetNodeGpuTarget(context, node, nodeGroup)
 	return []CustomResourceTarget{gpuTarget}, err
 }
 
-// getNodeGpuTarget returns the gpu target of a given node. This includes gpus
+// GetNodeGpuTarget returns the gpu target of a given node. This includes gpus
 // that are not ready to use and visible in kubernetes.
-func (p *GpuCustomResourcesProcessor) getNodeGpuTarget(GPULabel string, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
-	gpuLabel, found := node.Labels[GPULabel]
+func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
+	gpuLabel, found := node.Labels[context.CloudProvider.GPULabel()]
 	if !found {
+		return CustomResourceTarget{}, nil
+	}
+
+	if gpuExposedViaDra(context, node) {
 		return CustomResourceTarget{}, nil
 	}
 

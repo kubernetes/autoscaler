@@ -104,6 +104,8 @@ type GpuConfig struct {
 	DraDriverName        string
 }
 
+// ExposedViaDra determines whether a GPU described in the config
+// is exposed via device plugin or DRA driver
 func (gpu *GpuConfig) ExposedViaDra() bool {
 	return gpu.DraDriverName != ""
 }
