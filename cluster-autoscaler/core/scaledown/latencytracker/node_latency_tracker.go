@@ -1,7 +1,6 @@
 package latencytracker
 
 import (
-	"sync"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -16,7 +15,6 @@ type NodeInfo struct {
 }
 
 type NodeLatencyTracker struct {
-	sync.Mutex
 	nodes map[string]NodeInfo
 }
 
@@ -28,9 +26,6 @@ func NewNodeLatencyTracker() *NodeLatencyTracker {
 }
 
 func (t *NodeLatencyTracker) UpdateStateWithUnneededList(list []NodeInfo, timestamp time.Time) {
-	t.Lock()
-	defer t.Unlock()
-
 	currentSet := make(map[string]struct{}, len(list))
 	for _, info := range list {
 		currentSet[info.Name] = struct{}{}
@@ -49,9 +44,6 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(list []NodeInfo, timest
 
 // ObserveDeletion is called by the actuator just before node deletion.
 func (t *NodeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Time) {
-	t.Lock()
-	defer t.Unlock()
-
 	if info, exists := t.nodes[nodeName]; exists {
 		duration := timestamp.Sub(info.UnneededSince)
 
