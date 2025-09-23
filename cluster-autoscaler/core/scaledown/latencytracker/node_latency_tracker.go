@@ -3,16 +3,16 @@ package latencytracker
 import (
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/klog/v2"
 )
 
 type LatencyTracker interface {
 	ObserveDeletion(nodeName string, timestamp time.Time)
-	UpdateStateWithUnneededList(list []NodeInfo, timestamp time.Time)
+	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
 }
 type NodeInfo struct {
-	Name          string
 	UnneededSince time.Time
 	Threshold     time.Duration
 }
@@ -28,19 +28,34 @@ func NewNodeLatencyTracker() *NodeLatencyTracker {
 	}
 }
 
-func (t *NodeLatencyTracker) UpdateStateWithUnneededList(list []NodeInfo, timestamp time.Time) {
+// UpdateStateWithUnneededList records unneeded nodes and handles missing ones.
+func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
+	list []*apiv1.Node,
+	currentlyInDeletion map[string]bool,
+	timestamp time.Time,
+) {
 	currentSet := make(map[string]struct{}, len(list))
-	for _, info := range list {
-		currentSet[info.Name] = struct{}{}
-		_, exists := t.nodes[info.Name]
-		if !exists {
-			t.nodes[info.Name] = NodeInfo{
-				Name:          info.Name,
-				UnneededSince: info.UnneededSince,
-				Threshold:     info.Threshold,
+	for _, node := range list {
+		currentSet[node.Name] = struct{}{}
+
+		if _, exists := t.nodes[node.Name]; !exists {
+			t.nodes[node.Name] = NodeInfo{
+				UnneededSince: timestamp,
+				Threshold:     0,
 			}
-			klog.V(2).Infof("Started tracking unneeded node %s at %v with ScaleDownUnneededTime=%v",
-				info.Name, info.UnneededSince, info.Threshold)
+			klog.V(2).Infof("Started tracking unneeded node %s at %v", node.Name, timestamp)
+		}
+	}
+
+	for name, info := range t.nodes {
+		if _, stillUnneeded := currentSet[name]; !stillUnneeded {
+			if _, inDeletion := currentlyInDeletion[name]; !inDeletion {
+				duration := timestamp.Sub(info.UnneededSince)
+				metrics.UpdateScaleDownNodeDeletionDuration("false", duration-info.Threshold)
+				delete(t.nodes, name)
+				klog.V(2).Infof("Node %q reported as deleted/missing (unneeded for %s, threshold %s)",
+					name, duration, info.Threshold)
+			}
 		}
 	}
 }

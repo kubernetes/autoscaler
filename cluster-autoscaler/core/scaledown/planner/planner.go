@@ -131,6 +131,9 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	podDestinations = filterOutOngoingDeletions(podDestinations, deletions)
 	scaleDownCandidates = filterOutOngoingDeletions(scaleDownCandidates, deletions)
 	p.categorizeNodes(asMap(nodeNames(podDestinations)), scaleDownCandidates)
+	if p.nodeLatencyTracker != nil {
+		p.nodeLatencyTracker.UpdateStateWithUnneededList(p.unneededNodes.AsList(), deletions, p.latestUpdate)
+	}
 	p.rs.DropOldHints()
 	p.actuationInjector.DropOldHints()
 	return nil
@@ -310,19 +313,6 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 		}
 	}
 	p.unneededNodes.Update(removableList, p.latestUpdate)
-	if p.nodeLatencyTracker != nil {
-		var unneededList []latencytracker.NodeInfo
-		for _, n := range p.unneededNodes.AsList() {
-			if threshold, ok := p.unneededNodes.GetUnneededTimeForNode(p.context, n.Name); ok {
-				unneededList = append(unneededList, latencytracker.NodeInfo{
-					Name:          n.Name,
-					UnneededSince: p.latestUpdate,
-					Threshold:     threshold,
-				})
-			}
-		}
-		p.nodeLatencyTracker.UpdateStateWithUnneededList(unneededList, p.latestUpdate)
-	}
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
 	}
