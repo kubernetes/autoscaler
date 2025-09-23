@@ -12,6 +12,7 @@ type LatencyTracker interface {
 	ObserveDeletion(nodeName string, timestamp time.Time)
 	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
 	UpdateThreshold(nodeName string, threshold time.Duration)
+	GetTrackedNodes() []string
 }
 type NodeInfo struct {
 	UnneededSince time.Time

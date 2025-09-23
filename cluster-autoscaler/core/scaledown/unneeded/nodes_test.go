@@ -366,3 +366,4 @@ func (f *fakeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Tim
 }
 func (f *fakeLatencyTracker) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
 }
+func (f *fakeLatencyTracker) GetTrackedNodes() []string { return nil }
