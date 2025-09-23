@@ -11,6 +11,7 @@ import (
 type LatencyTracker interface {
 	ObserveDeletion(nodeName string, timestamp time.Time)
 	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
+	UpdateThreshold(nodeName string, threshold time.Duration)
 }
 type NodeInfo struct {
 	UnneededSince time.Time
@@ -72,6 +73,17 @@ func (t *NodeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Tim
 
 		metrics.UpdateScaleDownNodeDeletionDuration("true", duration-info.Threshold)
 		delete(t.nodes, nodeName)
+	}
+}
+
+// UpdateThreshold updates the scale-down threshold for a tracked node.
+func (t *NodeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
+	if info, exists := t.nodes[nodeName]; exists {
+		info.Threshold = threshold
+		t.nodes[nodeName] = info
+		klog.V(2).Infof("Updated threshold for node %q to %s", nodeName, threshold)
+	} else {
+		klog.Warningf("Attempted to update threshold for unknown node %q", nodeName)
 	}
 }
 

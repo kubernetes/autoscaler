@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
@@ -39,11 +40,12 @@ import (
 
 // Nodes tracks the state of cluster nodes that are not needed.
 type Nodes struct {
-	sdtg              scaleDownTimeGetter
-	limitsFinder      *resource.LimitsFinder
-	cachedList        []*apiv1.Node
-	byName            map[string]*node
-	unneededTimeCache map[string]time.Duration
+	sdtg               scaleDownTimeGetter
+	limitsFinder       *resource.LimitsFinder
+	nodeLatencyTracker latencytracker.LatencyTracker
+	cachedList         []*apiv1.Node
+	byName             map[string]*node
+	unneededTimeCache  map[string]time.Duration
 }
 
 type node struct {
@@ -59,11 +61,12 @@ type scaleDownTimeGetter interface {
 }
 
 // NewNodes returns a new initialized Nodes object.
-func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *Nodes {
+func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, nlt latencytracker.LatencyTracker) *Nodes {
 	return &Nodes{
-		sdtg:              sdtg,
-		limitsFinder:      limitsFinder,
-		unneededTimeCache: make(map[string]time.Duration),
+		sdtg:               sdtg,
+		limitsFinder:       limitsFinder,
+		unneededTimeCache:  make(map[string]time.Duration),
+		nodeLatencyTracker: nlt,
 	}
 }
 
@@ -268,6 +271,9 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, scaleDown
 	if ready {
 		// Check how long a ready node was underutilized.
 		unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
+		if n.nodeLatencyTracker != nil {
+			n.nodeLatencyTracker.UpdateThreshold(node.Name, unneededTime)
+		}
 		if err != nil {
 			klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 			return simulator.UnexpectedError
@@ -278,6 +284,9 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, scaleDown
 	} else {
 		// Unready nodes may be deleted after a different time than underutilized nodes.
 		unreadyTime, err := n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
+		if n.nodeLatencyTracker != nil {
+			n.nodeLatencyTracker.UpdateThreshold(node.Name, unreadyTime)
+		}
 		if err != nil {
 			klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 			return simulator.UnexpectedError
