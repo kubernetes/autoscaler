@@ -43,7 +43,7 @@ func TestSetSize(t *testing.T) {
 	updatedReplicas := 5
 	finalReplicas := 0
 
-	test := func(t *testing.T, testConfig *testConfig) {
+	test := func(t *testing.T, testConfig *TestConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)
 		defer stop()
 
@@ -117,30 +117,26 @@ func TestSetSize(t *testing.T) {
 		}
 	}
 
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "0",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "0",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "0",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 }
 
@@ -148,7 +144,7 @@ func TestReplicas(t *testing.T) {
 	initialReplicas := 1
 	updatedReplicas := 5
 
-	test := func(t *testing.T, testConfig *testConfig) {
+	test := func(t *testing.T, testConfig *TestConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)
 		defer stop()
 
@@ -244,11 +240,19 @@ func TestReplicas(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(initialReplicas).
+			Build()
+		test(t, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(initialReplicas).
+			Build()
+		test(t, testConfig)
 	})
 }
 
@@ -256,7 +260,7 @@ func TestSetSizeAndReplicas(t *testing.T) {
 	initialReplicas := 1
 	updatedReplicas := 5
 
-	test := func(t *testing.T, testConfig *testConfig) {
+	test := func(t *testing.T, testConfig *TestConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)
 		defer stop()
 
@@ -294,30 +298,27 @@ func TestSetSizeAndReplicas(t *testing.T) {
 		}
 	}
 
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "1",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "1",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 }
 
@@ -363,7 +364,7 @@ func TestAnnotations(t *testing.T) {
 		draDriverKey:    draDriver,
 	}
 
-	test := func(t *testing.T, testConfig *testConfig, testResource *unstructured.Unstructured) {
+	test := func(t *testing.T, testConfig *TestConfig, testResource *unstructured.Unstructured) {
 		controller, stop := mustCreateTestController(t, testConfig)
 		defer stop()
 
@@ -421,12 +422,20 @@ func TestAnnotations(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(1).
+			WithAnnotations(annotations).
+			Build()
 		test(t, testConfig, testConfig.machineSet)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(1).
+			WithAnnotations(annotations).
+			Build()
 		test(t, testConfig, testConfig.machineDeployment)
 	})
 }
@@ -531,7 +540,12 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineSet %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
+			msTestConfig := NewTestConfigBuilder().
+				ForMachineSet().
+				WithNodeCount(1).
+				WithAnnotations(tc.annotations).
+				WithCapacity(tc.capacity).
+				Build()
 			controller, stop := mustCreateTestController(t, msTestConfig)
 			defer stop()
 
@@ -552,11 +566,16 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineDeployment %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
-			controller, stop := mustCreateTestController(t, msTestConfig)
+			mdTestConfig := NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNodeCount(1).
+				WithAnnotations(tc.annotations).
+				WithCapacity(tc.capacity).
+				Build()
+			controller, stop := mustCreateTestController(t, mdTestConfig)
 			defer stop()
 
-			testResource := msTestConfig.machineDeployment
+			testResource := mdTestConfig.machineDeployment
 
 			sr, err := newUnstructuredScalableResource(controller, testResource)
 			if err != nil {
