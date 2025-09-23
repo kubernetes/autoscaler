@@ -32,10 +32,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName:  {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
-      {{- with .Values.admissionController.podSecurityContext }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        runAsNonRoot: true
+        runAsUser: 65534
       containers:
         - name: admission-controller
           image: {{ include "vertical-pod-autoscaler.admissionController.image" . }}
@@ -62,9 +61,20 @@ spec:
               name: prometheus
               protocol: TCP
           livenessProbe:
-            {{- toYaml .Values.admissionController.livenessProbe | nindent 12 }}
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
           readinessProbe:
-            {{- toYaml .Values.admissionController.readinessProbe | nindent 12 }}
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            periodSeconds: 10
+            failureThreshold: 3
           volumeMounts:
             {{- toYaml .Values.admissionController.volumeMounts | nindent 12 }}
           {{- with .Values.admissionController.resources }}

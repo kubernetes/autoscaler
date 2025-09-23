@@ -56,30 +56,6 @@ admissionController:
   # Additional args for the Admission Controller default container.
   extraArgs: []
 
-  # Security context for the Admission Controller pod
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 65534
-
-  # Liveness probe configuration for the Admission Controller default container.
-  livenessProbe:
-    httpGet:
-      path: /health-check
-      port: prometheus
-      scheme: HTTP
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    failureThreshold: 3
-
-  # Readiness probe configuration for the _Updater_ default container.
-  readinessProbe:
-    httpGet:
-      path: /health-check
-      port: prometheus
-      scheme: HTTP
-    periodSeconds: 10
-    failureThreshold: 3
-
   # Resources for the Admission Controller default container.
   resources:
     limits:
