@@ -29,8 +29,6 @@ func TestUpdateStateWithUnneededList_AddsNewNodes(t *testing.T) {
 
 	tracker.UpdateStateWithUnneededList([]NodeInfo{node}, now)
 
-	tracker.Lock()
-	defer tracker.Unlock()
 	if _, ok := tracker.nodes["node1"]; !ok {
 		t.Errorf("expected node1 to be tracked, but was not")
 	}
@@ -44,8 +42,6 @@ func TestUpdateStateWithUnneededList_DoesNotDuplicate(t *testing.T) {
 	tracker.UpdateStateWithUnneededList([]NodeInfo{node}, now)
 	tracker.UpdateStateWithUnneededList([]NodeInfo{node}, now.Add(time.Minute))
 
-	tracker.Lock()
-	defer tracker.Unlock()
 	if len(tracker.nodes) != 1 {
 		t.Errorf("expected 1 tracked node, got %d", len(tracker.nodes))
 	}
@@ -63,8 +59,6 @@ func TestObserveDeletion_RemovesNode(t *testing.T) {
 
 	tracker.ObserveDeletion("node1", now)
 
-	tracker.Lock()
-	defer tracker.Unlock()
 	if _, ok := tracker.nodes["node1"]; ok {
 		t.Errorf("expected node1 removed after ObserveDeletion")
 	}
@@ -76,8 +70,6 @@ func TestObserveDeletion_NoOpIfNodeNotTracked(t *testing.T) {
 
 	tracker.ObserveDeletion("node1", now)
 
-	tracker.Lock()
-	defer tracker.Unlock()
 	if len(tracker.nodes) != 0 {
 		t.Errorf("expected no nodes tracked, got %d", len(tracker.nodes))
 	}
@@ -126,8 +118,6 @@ func TestConcurrentUpdatesAndDeletions(t *testing.T) {
 	close(stop)
 	wg.Wait()
 
-	tracker.Lock()
-	defer tracker.Unlock()
 	if len(tracker.nodes) > 1 {
 		t.Errorf("expected at most 1 tracked node, got %d", len(tracker.nodes))
 	}
