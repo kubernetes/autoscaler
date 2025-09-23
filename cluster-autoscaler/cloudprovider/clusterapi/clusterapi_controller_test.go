@@ -63,8 +63,9 @@ func TestControllerFindMachine(t *testing.T) {
 	}}
 
 	test := func(t *testing.T, tc testCase, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		machine, err := controller.findMachine(path.Join(tc.namespace, tc.name))
 		if err != nil {
@@ -128,8 +129,9 @@ func TestControllerFindMachineOwner(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	// Test #1: Lookup succeeds
 	testResult1, err := controller.findMachineOwner(testConfig.machines[0].DeepCopy())
@@ -159,7 +161,7 @@ func TestControllerFindMachineOwner(t *testing.T) {
 	}
 
 	// Test #3: Delete the MachineSet and lookup should fail
-	if err := deleteResource(controller.managementClient, controller.machineSetInformer, controller.machineSetResource, testConfig.machineSet); err != nil {
+	if err := controller.DeleteResource(controller.machineSetInformer, controller.machineSetResource, testConfig.machineSet); err != nil {
 		t.Fatalf("unexpected error, got %v", err)
 	}
 	testResult3, err := controller.findMachineOwner(testConfig.machines[0].DeepCopy())
@@ -181,8 +183,9 @@ func TestControllerFindMachineByProviderID(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	// Remove all the "machine" annotation values on all the
 	// nodes. We want to force findMachineByProviderID() to only
@@ -224,7 +227,7 @@ func TestControllerFindMachineByProviderID(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+	if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 		t.Fatalf("unexpected error updating machine, got %v", err)
 	}
 
@@ -247,8 +250,9 @@ func TestControllerFindNodeByNodeName(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	// Test #1: Verify known node can be found
 	node, err := controller.findNodeByNodeName(testConfig.nodes[0].Name)
@@ -271,10 +275,11 @@ func TestControllerFindNodeByNodeName(t *testing.T) {
 
 func TestControllerListMachinesForScalableResource(t *testing.T) {
 	test := func(t *testing.T, testConfig1 *TestConfig, testConfig2 *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig1)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig1)
 
-		if err := addTestConfigs(t, controller, testConfig2); err != nil {
+		if err := controller.AddTestConfigs(testConfig2); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -406,8 +411,9 @@ func TestControllerListMachinesForScalableResource(t *testing.T) {
 
 func TestControllerLookupNodeGroupForNonExistentNode(t *testing.T) {
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		node := testConfig.nodes[0].DeepCopy()
 		node.Spec.ProviderID = "does-not-exist"
@@ -452,13 +458,14 @@ func TestControllerLookupNodeGroupForNonExistentNode(t *testing.T) {
 
 func TestControllerNodeGroupForNodeWithMissingMachineOwner(t *testing.T) {
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		machine := testConfig.machines[0].DeepCopy()
 		machine.SetOwnerReferences([]metav1.OwnerReference{})
 
-		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+		if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 
@@ -507,13 +514,14 @@ func TestControllerNodeGroupForNodeWithMissingSetMachineOwner(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	machineSet := testConfig.machineSet.DeepCopy()
 	machineSet.SetOwnerReferences([]metav1.OwnerReference{})
 
-	if err := updateResource(controller.managementClient, controller.machineSetInformer, controller.machineSetResource, machineSet); err != nil {
+	if err := controller.UpdateResource(controller.machineSetInformer, controller.machineSetResource, machineSet); err != nil {
 		t.Fatalf("unexpected error updating machine, got %v", err)
 	}
 
@@ -529,8 +537,9 @@ func TestControllerNodeGroupForNodeWithMissingSetMachineOwner(t *testing.T) {
 
 func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 	test := func(t *testing.T, testConfig *TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		ng, err := controller.nodeGroupForNode(testConfig.nodes[0])
 		if err != nil {
@@ -568,7 +577,7 @@ func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 }
 
 func TestControllerNodeGroups(t *testing.T) {
-	assertNodegroupLen := func(t *testing.T, controller *machineController, expected int) {
+	assertNodegroupLen := func(t *testing.T, controller *testMachineController, expected int) {
 		t.Helper()
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -584,8 +593,8 @@ func TestControllerNodeGroups(t *testing.T) {
 		nodeGroupMaxSizeAnnotationKey: "2",
 	}
 
-	controller, stop := mustCreateTestController(t)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
 
 	namespace := RandomString(6)
 	clusterName := RandomString(6)
@@ -601,7 +610,7 @@ func TestControllerNodeGroups(t *testing.T) {
 		WithNodeCount(1).
 		WithAnnotations(annotations).
 		BuildMultiple(5)
-	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
+	if err := controller.AddTestConfigs(machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 5)
@@ -614,19 +623,19 @@ func TestControllerNodeGroups(t *testing.T) {
 		WithNodeCount(1).
 		WithAnnotations(annotations).
 		BuildMultiple(2)
-	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
+	if err := controller.AddTestConfigs(machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 7)
 
 	// Test #3: delete 5 machineset-backed objects
-	if err := deleteTestConfigs(t, controller, machineSetConfigs...); err != nil {
+	if err := controller.DeleteTestConfigs(machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 2)
 
 	// Test #4: delete 2 machinedeployment-backed objects
-	if err := deleteTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
+	if err := controller.DeleteTestConfigs(machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 0)
@@ -644,7 +653,7 @@ func TestControllerNodeGroups(t *testing.T) {
 		WithNodeCount(1).
 		WithAnnotations(annotations).
 		BuildMultiple(5)
-	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
+	if err := controller.AddTestConfigs(machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 5)
@@ -657,7 +666,7 @@ func TestControllerNodeGroups(t *testing.T) {
 		WithNodeCount(1).
 		WithAnnotations(annotations).
 		BuildMultiple(2)
-	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
+	if err := controller.AddTestConfigs(machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 7)
@@ -675,7 +684,7 @@ func TestControllerNodeGroups(t *testing.T) {
 		WithNodeCount(5).
 		WithAnnotations(annotations).
 		BuildMultiple(1)
-	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
+	if err := controller.AddTestConfigs(machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if _, err := controller.nodeGroups(); err == nil {
@@ -690,7 +699,7 @@ func TestControllerNodeGroups(t *testing.T) {
 		WithNodeCount(2).
 		WithAnnotations(annotations).
 		BuildMultiple(1)
-	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
+	if err := controller.AddTestConfigs(machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if _, err := controller.nodeGroups(); err == nil {
@@ -724,8 +733,9 @@ func TestControllerNodeGroupsNodeCount(t *testing.T) {
 	}}
 
 	test := func(t *testing.T, tc testCase, testConfigs []*TestConfig) {
-		controller, stop := mustCreateTestController(t, testConfigs...)
-		defer stop()
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfigs...)
 
 		nodegroups, err := controller.nodeGroups()
 		if err != nil {
@@ -784,8 +794,9 @@ func TestControllerFindMachineFromNodeAnnotation(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	// Remove all the provider ID values on all the machines. We
 	// want to force findMachineByProviderID() to fallback to
@@ -793,7 +804,7 @@ func TestControllerFindMachineFromNodeAnnotation(t *testing.T) {
 	for _, machine := range testConfig.machines {
 		unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
 
-		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+		if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 	}
@@ -836,8 +847,9 @@ func TestControllerMachineSetNodeNamesWithoutLinkage(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	// Remove all linkage between node and machine.
 	for i := range testConfig.machines {
@@ -846,7 +858,7 @@ func TestControllerMachineSetNodeNamesWithoutLinkage(t *testing.T) {
 		unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
 		unstructured.RemoveNestedField(machine.Object, "status", "nodeRef")
 
-		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+		if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 	}
@@ -889,8 +901,9 @@ func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	nodegroups, err := controller.nodeGroups()
 	if err != nil {
@@ -932,8 +945,9 @@ func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
 		}).
 		Build()
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	// Remove all the provider ID values on all the machines. We
 	// want to force machineSetNodeNames() to fallback to
@@ -943,7 +957,7 @@ func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
 
 		unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
 
-		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
+		if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, machine); err != nil {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 	}
@@ -1034,8 +1048,9 @@ func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
 		machine.SetAPIVersion(fmt.Sprintf("%s/v1beta1", customCAPIGroup))
 	}
 
-	controller, stop := mustCreateTestController(t, testConfig)
-	defer stop()
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	controller.AddTestConfigs(testConfig)
 
 	machineDeployments, err := controller.managementClient.Resource(controller.machineDeploymentResource).Namespace(testConfig.spec.namespace).
 		List(context.TODO(), metav1.ListOptions{})
@@ -1440,8 +1455,9 @@ func Test_machineController_listScalableResources(t *testing.T) {
 		wantErr: false,
 	}} {
 		t.Run(tc.name, func(t *testing.T) {
-			c, stop := mustCreateTestController(t, allTestConfigs...)
-			defer stop()
+			c := NewTestMachineController(t)
+			defer c.Stop()
+			c.AddTestConfigs(allTestConfigs...)
 			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
 
 			got, err := c.listScalableResources()
@@ -1554,8 +1570,9 @@ func Test_machineController_nodeGroupForNode(t *testing.T) {
 		wantErr:          false,
 	}} {
 		t.Run(tc.name, func(t *testing.T) {
-			c, stop := mustCreateTestController(t, allTestConfigs...)
-			defer stop()
+			c := NewTestMachineController(t)
+			defer c.Stop()
+			c.AddTestConfigs(allTestConfigs...)
 			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
 
 			got, err := c.nodeGroupForNode(tc.node)
@@ -1692,8 +1709,9 @@ func Test_machineController_nodeGroups(t *testing.T) {
 		wantErr:                   false,
 	}} {
 		t.Run(tc.name, func(t *testing.T) {
-			c, stop := mustCreateTestController(t, allTestConfigs...)
-			defer stop()
+			c := NewTestMachineController(t)
+			defer c.Stop()
+			c.AddTestConfigs(allTestConfigs...)
 			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
 
 			got, err := c.nodeGroups()
