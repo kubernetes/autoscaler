@@ -284,8 +284,9 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+			currentTime = time.Now()
 
-			nodes := NewNodes(nil, nil)
+			nodes := NewNodes(nil, nil, nil)
 
 			allNodeLister := kubernetes.NewTestNodeLister(nil)
 			allNodeLister.SetNodes(tc.allNodes)
