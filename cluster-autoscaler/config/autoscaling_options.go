@@ -345,6 +345,8 @@ type AutoscalingOptions struct {
 	// NodeDeletionCandidateTTL is the maximum time a node can be marked as removable without being deleted.
 	// This is used to prevent nodes from being stuck in the removable state during if the CA deployment becomes inactive.
 	NodeDeletionCandidateTTL time.Duration
+	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
+	NodeRemovalLatencyTrackingEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
