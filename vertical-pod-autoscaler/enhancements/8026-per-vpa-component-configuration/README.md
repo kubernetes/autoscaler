@@ -31,7 +31,7 @@
 
 ## Summary
 
-Currently, VPA components (recommender, updater, admission controller) are configured through global flags. This makes it challenging to support different workloads with varying resource optimization needs within the same cluster. This proposal introduces the ability to specify configuration parameters at the individual VPA object level, allowing for workload-specific optimization strategies.
+Currently, VPA components (recommender, updater, admission controller) are configured through global flags. This makes it challenging to support different workloads with varying resource optimization needs within the same cluster. This proposal introduces the ability to specify configuration parameters at the individual VPA object level, allowing for workload-specific optimization strategies. The goal is not to introduce new configuration options but rather to make existing internal configurations accessible and customizable per VPA object.
 
 ## Motivation
 
@@ -89,18 +89,42 @@ spec:
 ### Parameter Descriptions
 
 #### Container Policy Parameters
-* `oomBumpUpRatio` (Quantity):
-  - Multiplier applied to memory recommendations after OOM events
-  - Represented as a Quantity (e.g., "1.5")
-  - Must be greater than or equal to 1
-  - Setting to 1 effectively disables the OOM ratio-based increase
-  - Controls how aggressively memory is increased after container crashes
 
-* `oomMinBumpUp` (bytes): 
-  - Minimum absolute memory increase after OOM events
-  - Setting to 0 effectively disables the OOM minimum increase
-  - When both `oomBumpUpRatio` = 1 and `oomMinBumpUp` = 0, OOM-based memory increases are completely disabled
-  - Ensures meaningful increases even for small containers  
+* `oomBumpUpRatio` and `oomMinBumpUp`:
+  These parameters work together to determine memory increases after OOM events.
+  The VPA selects the larger of:
+    - The absolute increase specified by `oomMinBumpUp`
+    - A relative increase calculated using `oomBumpUpRatio`
+    - If both are set to their neutral values (`oomBumpUpRatio = 1`, `oomMinBumpUp = 0`), OOM-based increases are disabled.
+
+  This ensures:
+    - Small containers receive a guaranteed minimum bump (via `oomMinBumpUp`, e.g., +100MB).
+    - Larger containers receive proportional scaling (via `oomBumpUpRatio`, e.g., ×1.5).
+  
+  Implementation logic:
+
+  ```golang
+    memoryNeeded := ResourceAmountMax(
+      memoryUsed + MemoryAmountFromBytes(GetAggregationsConfig().OOMMinBumpUp),
+      ScaleResource(memoryUsed, GetAggregationsConfig().OOMBumpUpRatio)
+    )
+  ```
+  Example: with oomBumpUpRatio: "1.5" and oomMinBumpUp: 104857600 (100MB):
+    - For a container using 50MB: max(50MB + 100MB, 50MB * 1.5) = 150MB
+    - For a container using 1GB: max(1GB + 100MB, 1GB * 1.5) = 1.5GB
+  
+
+  - `oomBumpUpRatio` (Quantity):
+    - Multiplier applied to memory recommendations after OOM events
+    - Represented as a Quantity (e.g., "1.5")
+    - Must be greater than or equal to 1
+    - Setting to 1 effectively disables the OOM ratio-based increase
+    - Controls how aggressively memory is increased after container crashes
+
+  - `oomMinBumpUp` (bytes): 
+    - Minimum absolute memory increase after OOM events
+    - Setting to 0 effectively disables the OOM minimum increase
+
 * `memoryAggregationInterval` (duration):
   - Time window for aggregating memory usage data
   - Affects how quickly VPA responds to memory usage changes
