@@ -761,6 +761,8 @@ func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount strin
 	binpackingHeterogeneity.WithLabelValues(instanceType, cpuCount, namespaceCount).Observe(float64(pegCount))
 }
 
+// UpdateScaleDownNodeDeletionDuration records the time after which node was deleted/needed
+// again after being marked unneded
 func UpdateScaleDownNodeDeletionDuration(deleted string, duration time.Duration) {
 	scaleDownNodeDeletionDuration.WithLabelValues(deleted).Observe(duration.Seconds())
 }

@@ -1,3 +1,19 @@
+/*
+Copyright 2019 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package latencytracker
 
 import (
@@ -8,25 +24,31 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// LatencyTracker defines the interface for tracking node removal latency.
+// Implementations record when nodes become unneeded, observe deletion events,
+// and expose thresholds for measuring node removal duration.
 type LatencyTracker interface {
 	ObserveDeletion(nodeName string, timestamp time.Time)
 	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
 	UpdateThreshold(nodeName string, threshold time.Duration)
 	GetTrackedNodes() []string
 }
-type NodeInfo struct {
+type nodeInfo struct {
 	UnneededSince time.Time
 	Threshold     time.Duration
 }
 
+// NodeLatencyTracker is a concrete implementation of LatencyTracker.
+// It keeps track of nodes that are marked as unneeded, when they became unneeded,
+// and thresholds to adjust node removal latency metrics.
 type NodeLatencyTracker struct {
-	nodes map[string]NodeInfo
+	nodes map[string]nodeInfo
 }
 
 // NewNodeLatencyTracker creates a new tracker.
 func NewNodeLatencyTracker() *NodeLatencyTracker {
 	return &NodeLatencyTracker{
-		nodes: make(map[string]NodeInfo),
+		nodes: make(map[string]nodeInfo),
 	}
 }
 
@@ -41,7 +63,7 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
 		currentSet[node.Name] = struct{}{}
 
 		if _, exists := t.nodes[node.Name]; !exists {
-			t.nodes[node.Name] = NodeInfo{
+			t.nodes[node.Name] = nodeInfo{
 				UnneededSince: timestamp,
 				Threshold:     0,
 			}
