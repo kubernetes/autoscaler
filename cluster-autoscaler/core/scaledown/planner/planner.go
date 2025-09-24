@@ -96,7 +96,7 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 	return &Planner{
 		context:               context,
 		unremovableNodes:      unremovable.NewNodes(),
-		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder, nlt),
+		unneededNodes:         unneededNodes,
 		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, deleteOptions, drainabilityRules, true),
 		actuationInjector:     scheduling.NewHintingSimulator(),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
