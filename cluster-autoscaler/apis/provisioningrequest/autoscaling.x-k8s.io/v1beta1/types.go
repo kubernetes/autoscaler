@@ -40,9 +40,9 @@ import (
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:prerelease-lifecycle-gen:introduced=1.29.0
-// +k8s:prerelease-lifecycle-gen:deprecated=1.35.0
+// +k8s:prerelease-lifecycle-gen:deprecated=1.34.0
 // +k8s:prerelease-lifecycle-gen:replacement=autoscaling,v1,ProvisioningRequest
-// +kubebuilder:deprecatedversion:warning=v1beta1 ProvisioningRequest is deprecated
+// +kubebuilder:deprecatedversion:warning=autoscaling.k8s.io/v1beta1 API is deprecated
 type ProvisioningRequest struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
