@@ -18,6 +18,7 @@ package actuation
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -1618,6 +1619,19 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			}
 			for _, nodes := range deleteNodes {
 				for _, node := range nodes {
+					// Extract node group from node name
+					parts := strings.Split(node.Name, "-")
+					if len(parts) < 3 {
+						continue
+					}
+					ngName := strings.Join(parts[:2], "-")
+
+					// Skip check if no successful deletions expected for this group
+					if test.wantSuccessfulDeletion[ngName] == 0 {
+						continue
+					}
+
+					// Verify ObserveDeletion was called
 					found := false
 					for _, observedNode := range fakeNodeLatencyTracker.ObservedNodes {
 						if observedNode == node.Name {
