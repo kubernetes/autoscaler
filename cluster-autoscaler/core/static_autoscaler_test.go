@@ -1712,7 +1712,7 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 			}
 			processors := processorstest.NewTestProcessors(&context)
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
-			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 			suOrchestrator := orchestrator.New()
 			suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 

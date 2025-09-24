@@ -88,7 +88,7 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 		minUpdateInterval = 1 * time.Nanosecond
 	}
 
-	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
+	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder, nlt)
 	if context.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
 		unneededNodes.LoadFromExistingTaints(context.ListerRegistry, time.Now(), context.AutoscalingOptions.NodeDeletionCandidateTTL)
 	}

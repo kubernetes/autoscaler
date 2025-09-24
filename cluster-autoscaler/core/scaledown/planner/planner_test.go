@@ -841,7 +841,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 			assert.NoError(t, err)
 
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil, nil)
 
 			p.unneededNodes.AsList()
 		})
