@@ -177,7 +177,7 @@ func NewStaticAutoscaler(
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
 	var nldt *latencytracker.NodeLatencyTracker
-	if autoscalingContext.AutoscalingOptions.NodeLatencyTrackingEnabled {
+	if autoscalingContext.AutoscalingOptions.NodeRemovalLatencyTrackingEnabled {
 		nldt = latencytracker.NewNodeLatencyTracker()
 	}
 	scaleDownPlanner := planner.New(autoscalingContext, processors, deleteOptions, drainabilityRules, nldt)
