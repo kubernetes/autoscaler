@@ -20,7 +20,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 )
@@ -28,54 +29,58 @@ import (
 func TestStatusFilter(t *testing.T) {
 	tests := []struct {
 		name                       string
-		conditions                 map[string]string
+		conditionsToFilterOut      map[string]string
 		buffers                    []*v1.CapacityBuffer
 		expectedFilteredBuffers    []*v1.CapacityBuffer
 		expectedFilteredOutBuffers []*v1.CapacityBuffer
 	}{
 		{
-			name:       "Empty conditions, filter none",
-			conditions: map[string]string{},
+			name:                  "Empty conditions map, filter all",
+			conditionsToFilterOut: map[string]string{},
 			buffers: []*v1.CapacityBuffer{
-				testutil.GetPodTemplateRefBuffer(&v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil),
+				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
 			},
 			expectedFilteredBuffers: []*v1.CapacityBuffer{
-				testutil.GetPodTemplateRefBuffer(&v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil),
+				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
 			},
 			expectedFilteredOutBuffers: []*v1.CapacityBuffer{},
 		},
 		{
-			name:       "Some condition, filter one",
-			conditions: map[string]string{common.ReadyForProvisioningCondition: common.ConditionTrue},
+			name:                  "One buffer, filter out ready for provisioning",
+			conditionsToFilterOut: map[string]string{common.ReadyForProvisioningCondition: common.ConditionTrue},
 			buffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, testutil.GetConditionReady()),
+				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
 			},
 			expectedFilteredBuffers: []*v1.CapacityBuffer{},
 			expectedFilteredOutBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, testutil.GetConditionReady()),
+				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
 			},
 		},
 		{
-			name:       "Some condition, filter one in and one out",
-			conditions: map[string]string{common.ReadyForProvisioningCondition: common.ConditionTrue},
+			name:                  "Two buffers, one Filtered",
+			conditionsToFilterOut: map[string]string{common.ReadyForProvisioningCondition: common.ConditionTrue},
 			buffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, testutil.GetConditionReady()),
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.AnotherPodTemplateRefName}, nil, nil, nil, testutil.GetConditionNotReady()),
+				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
+				getTestBufferWithCondition(testutil.AnotherPodTemplateRefName, testutil.GetConditionNotReady()),
 			},
 			expectedFilteredBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.AnotherPodTemplateRefName}, nil, nil, nil, testutil.GetConditionNotReady()),
+				getTestBufferWithCondition(testutil.AnotherPodTemplateRefName, testutil.GetConditionNotReady()),
 			},
 			expectedFilteredOutBuffers: []*v1.CapacityBuffer{
-				testutil.GetBuffer(&testutil.ProvisioningStrategy, &v1.LocalObjectRef{Name: testutil.SomePodTemplateRefName}, nil, nil, nil, testutil.GetConditionReady()),
+				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			statusFilter := NewStatusFilter(test.conditions)
+			statusFilter := NewStatusFilter(test.conditionsToFilterOut)
 			filtered, filteredOut := statusFilter.Filter(test.buffers)
 			assert.ElementsMatch(t, test.expectedFilteredBuffers, filtered)
 			assert.ElementsMatch(t, test.expectedFilteredOutBuffers, filteredOut)
 		})
 	}
+}
+
+func getTestBufferWithCondition(podTemplateRefName string, condition []metav1.Condition) *v1.CapacityBuffer {
+	return testutil.GetBuffer(nil, &v1.LocalObjectRef{Name: podTemplateRefName}, nil, nil, nil, nil, condition, nil)
 }

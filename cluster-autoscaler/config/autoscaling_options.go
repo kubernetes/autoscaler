@@ -345,6 +345,10 @@ type AutoscalingOptions struct {
 	// NodeDeletionCandidateTTL is the maximum time a node can be marked as removable without being deleted.
 	// This is used to prevent nodes from being stuck in the removable state during if the CA deployment becomes inactive.
 	NodeDeletionCandidateTTL time.Duration
+	//CapacitybufferControllerEnabled tells if CA should run default capacity buffer as sub-process or not
+	CapacitybufferControllerEnabled bool
+	// CapacitybufferPodInjectionEnabled tells if CA should injects fake pods for capacity buffers that are ready for provisioning
+	CapacitybufferPodInjectionEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
