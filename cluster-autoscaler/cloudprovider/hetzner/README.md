@@ -22,6 +22,7 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
         "arm64": "",
         "amd64": ""
     },
+    "ipRange": "10.0.0.0/16", // Optional, make sure to match your private network configuration and to use the cidr notation - if not set the hetzner cloud default will be used
     "nodeConfigs": {
         "pool1": { // This equals the pool name. Required for each pool that you have
             "cloudInit": "", // HCLOUD_CLOUD_INIT make sure it isn't base64 encoded twice ;]
@@ -47,7 +48,11 @@ Can be useful when you have many different node pools and run into issues of the
 
 **NOTE**: In contrast to `HCLOUD_CLUSTER_CONFIG`, this file is not base64 encoded.
 
-The global `imagesForArch` configuration can be overridden on a per-nodepool basis by adding an `imagesForArch` field to individual nodepool configurations.
+The `ipRange` configuration can be used to place nodes within a specific IP range. This only applies to private networks. Make sure that the IP range is within the configured private network IP Range. If you do not set this value, the default setting from Hetzner Cloud will be used.
+
+Following global configuration options can be overriden on a per-nodepool basis by adding them to the individual nodepool configurations:
+- `imagesForArch`
+- `ipRange`
 
 The image selection logic works as follows:
 
