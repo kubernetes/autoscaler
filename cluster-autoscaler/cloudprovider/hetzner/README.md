@@ -50,7 +50,7 @@ Can be useful when you have many different node pools and run into issues of the
 
 The `ipRange` configuration can be used to place nodes within a specific IP range. This only applies to private networks. Make sure that the IP range is within the configured private network IP Range. If you do not set this value, the default setting from Hetzner Cloud will be used.
 
-Following global configuration options can be overriden on a per-nodepool basis by adding them to the individual nodepool configurations:
+Following global configuration options can be overridden on a per-nodepool basis by adding them to the individual nodepool configurations:
 - `imagesForArch`
 - `ipRange`
 
