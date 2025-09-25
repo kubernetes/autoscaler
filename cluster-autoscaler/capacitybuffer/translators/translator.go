@@ -17,11 +17,7 @@ limitations under the License.
 package translator
 
 import (
-	"time"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 )
 
 // Translator translates the passed buffers to pod template and number of replicas
@@ -61,34 +57,4 @@ func (b *combinedTranslator) CleanUp() {
 	for _, translator := range b.translators {
 		translator.CleanUp()
 	}
-}
-
-func setBufferAsReadyForProvisioning(buffer *v1.CapacityBuffer, podTemplateName string, replicas int32) {
-	buffer.Status.PodTemplateRef = &v1.LocalObjectRef{
-		Name: podTemplateName,
-	}
-	buffer.Status.Replicas = &replicas
-	buffer.Status.PodTemplateGeneration = nil
-	readyCondition := metav1.Condition{
-		Type:               common.ReadyForProvisioningCondition,
-		Status:             common.ConditionTrue,
-		Message:            "ready",
-		Reason:             "atrtibutesSetSuccessfully",
-		LastTransitionTime: metav1.Time{Time: time.Now()},
-	}
-	buffer.Status.Conditions = []metav1.Condition{readyCondition}
-}
-
-func setBufferAsNotReadyForProvisioning(buffer *v1.CapacityBuffer, errorMessage string) {
-	buffer.Status.PodTemplateRef = nil
-	buffer.Status.Replicas = nil
-	buffer.Status.PodTemplateGeneration = nil
-	notReadyCondition := metav1.Condition{
-		Type:               common.ReadyForProvisioningCondition,
-		Status:             common.ConditionFalse,
-		Message:            errorMessage,
-		Reason:             "error",
-		LastTransitionTime: metav1.Time{Time: time.Now()},
-	}
-	buffer.Status.Conditions = []metav1.Condition{notReadyCondition}
 }

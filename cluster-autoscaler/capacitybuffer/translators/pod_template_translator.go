@@ -19,41 +19,54 @@ package translator
 import (
 	"fmt"
 
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 )
 
 // podTemplateBufferTranslator translates podTemplateRef buffers specs to fill their status.
 type podTemplateBufferTranslator struct {
+	client *cbclient.CapacityBufferClient
 }
 
 // NewPodTemplateBufferTranslator creates an instance of podTemplateBufferTranslator.
-func NewPodTemplateBufferTranslator() *podTemplateBufferTranslator {
-	return &podTemplateBufferTranslator{}
+func NewPodTemplateBufferTranslator(client *cbclient.CapacityBufferClient) *podTemplateBufferTranslator {
+	return &podTemplateBufferTranslator{
+		client: client,
+	}
 }
 
 // Translate translates buffers processors into pod capacity.
 func (t *podTemplateBufferTranslator) Translate(buffers []*v1.CapacityBuffer) []error {
 	errors := []error{}
+	var numberOfPods *int32
+	var podTemplateRef *v1.LocalObjectRef
 	for _, buffer := range buffers {
 		if isPodTemplateBasedBuffer(buffer) {
-			podTemplateRef, numberOfPods, err := t.translate(buffer)
+			podTemplateRef = buffer.Spec.PodTemplateRef
+			podTemplate, err := t.client.GetPodTemplate(buffer.Namespace, podTemplateRef.Name)
 			if err != nil {
-				setBufferAsNotReadyForProvisioning(buffer, err.Error())
+				common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
 				errors = append(errors, err)
-			} else {
-				setBufferAsReadyForProvisioning(buffer, podTemplateRef.Name, numberOfPods)
+				continue
 			}
+			numberOfPods = t.getNumberOfReplicas(buffer)
+			if numberOfPods == nil {
+				common.SetBufferAsNotReadyForProvisioning(buffer, podTemplateRef, &podTemplate.Generation, nil, buffer.Spec.ProvisioningStrategy, fmt.Errorf("Failed to get buffer's number of pods"))
+				continue
+			}
+			common.SetBufferAsReadyForProvisioning(buffer, podTemplateRef, &podTemplate.Generation, numberOfPods, buffer.Spec.ProvisioningStrategy)
 		}
 	}
 	return errors
 }
 
-func (t *podTemplateBufferTranslator) translate(buffer *v1.CapacityBuffer) (*v1.LocalObjectRef, int32, error) {
-	// Fixed Replicas will be used if both Replicas and Percent are defined
+func (t *podTemplateBufferTranslator) getNumberOfReplicas(buffer *v1.CapacityBuffer) *int32 {
 	if buffer.Spec.Replicas != nil {
-		return buffer.Spec.PodTemplateRef, max(1, int32(*buffer.Spec.Replicas)), nil
+		replicas := max(0, int32(*buffer.Spec.Replicas))
+		return &replicas
 	}
-	return nil, 0, fmt.Errorf("Failed to translate buffer %v, Replicas should have a value when PodTemplateRef is set", buffer.Name)
+	return nil
 }
 
 func isPodTemplateBasedBuffer(buffer *v1.CapacityBuffer) bool {
