@@ -17,7 +17,7 @@ limitations under the License.
 package snapshot
 
 import (
-	resourceapi "k8s.io/api/resource/v1"
+	resourceapi "k8s.io/api/resource/v1beta1"
 )
 
 type snapshotSliceLister struct {

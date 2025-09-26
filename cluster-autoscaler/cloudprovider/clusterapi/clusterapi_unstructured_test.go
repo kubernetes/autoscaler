@@ -24,7 +24,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1"
+	resourceapi "k8s.io/api/resource/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -340,16 +340,18 @@ func TestAnnotations(t *testing.T) {
 		},
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   draDriver,
-			NodeName: &testNodeName,
+			NodeName: testNodeName,
 			Pool: resourceapi.ResourcePool{
 				Name: testNodeName,
 			},
 			Devices: []resourceapi.Device{
 				{
 					Name: "gpu-0",
-					Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
-						"type": {
-							StringValue: ptr.To(GpuDeviceType),
+					Basic: &resourceapi.BasicDevice{
+						Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
+							"type": {
+								StringValue: ptr.To(GpuDeviceType),
+							},
 						},
 					},
 				},
