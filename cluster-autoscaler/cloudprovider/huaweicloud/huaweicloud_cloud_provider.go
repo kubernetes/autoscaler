@@ -179,6 +179,11 @@ func (hcp *huaweicloudCloudProvider) Refresh() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (hcp *huaweicloudCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (hcp *huaweicloudCloudProvider) buildAsgs(specs []string) error {
 	asgs, err := hcp.cloudServiceManager.ListScalingGroups()
 	if err != nil {

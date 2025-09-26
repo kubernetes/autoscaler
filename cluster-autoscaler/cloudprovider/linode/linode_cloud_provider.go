@@ -151,6 +151,11 @@ func (l *linodeCloudProvider) Refresh() error {
 	return l.manager.refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (l *linodeCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func newLinodeCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	m, err := newManager(config)
 	if err != nil {

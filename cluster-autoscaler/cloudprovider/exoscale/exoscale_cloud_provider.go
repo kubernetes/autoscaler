@@ -224,6 +224,11 @@ func (e *exoscaleCloudProvider) Refresh() error {
 	return e.manager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (e *exoscaleCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildExoscale builds the Exoscale cloud provider.
 func BuildExoscale(_ config.AutoscalingOptions, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	manager, err := newManager(discoveryOpts)

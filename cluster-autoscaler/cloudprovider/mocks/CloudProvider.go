@@ -276,3 +276,8 @@ func (_m *CloudProvider) Refresh() error {
 
 	return r0
 }
+
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (_m *CloudProvider) IsNodeCandidateForScaleDown(node *v1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}

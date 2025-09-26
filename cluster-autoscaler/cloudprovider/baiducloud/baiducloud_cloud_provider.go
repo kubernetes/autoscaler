@@ -228,6 +228,11 @@ func (baiducloud *baiducloudCloudProvider) Refresh() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (baiducloud *baiducloudCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BaiducloudRef contains a reference to some entity in baiducloud world.
 type BaiducloudRef struct {
 	Name string

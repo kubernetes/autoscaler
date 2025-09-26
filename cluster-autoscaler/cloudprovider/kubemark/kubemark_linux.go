@@ -180,6 +180,11 @@ func (kubemark *KubemarkCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (kubemark *KubemarkCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // NodeGroup implements NodeGroup interface.
 type NodeGroup struct {
 	Name               string

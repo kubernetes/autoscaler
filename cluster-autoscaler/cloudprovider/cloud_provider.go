@@ -154,6 +154,14 @@ type CloudProvider interface {
 	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 	Refresh() error
+
+	// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down. This function
+	// will be called during prefiltering of nodes for scaledown to allow cloud providers the opportunity
+	// to reject a node for scale down. This may be used in cases where nodes are undergoing upgrades or other
+	// cloud-specific behavior where the cluster autoscaler should not begin cordoning, draining, and tainting
+	// the node.
+	// Returns true if the node can be safely scaled down or false otherwise.
+	IsNodeCandidateForScaleDown(*apiv1.Node) (bool, error)
 }
 
 // ErrNotImplemented is returned if a method is not implemented.

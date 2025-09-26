@@ -167,6 +167,11 @@ func (d *civoCloudProvider) Refresh() error {
 	return d.manager.Refresh()
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (d *civoCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildCivo builds the Civo cloud provider.
 func BuildCivo(
 	opts config.AutoscalingOptions,

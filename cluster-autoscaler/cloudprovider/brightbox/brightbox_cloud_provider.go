@@ -219,6 +219,11 @@ func (b *brightboxCloudProvider) Cleanup() error {
 	return nil
 }
 
+// IsNodeCandidateForScaleDown returns whether the node is a good candidate for scaling down.
+func (b *brightboxCloudProvider) IsNodeCandidateForScaleDown(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // BuildBrightbox builds the Brightbox provider
 func BuildBrightbox(
 	opts config.AutoscalingOptions,
