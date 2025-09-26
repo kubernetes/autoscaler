@@ -63,6 +63,7 @@ type ClusterConfig struct {
 	NodeConfigs      map[string]*NodeConfig
 	IsUsingNewFormat bool
 	LegacyConfig     LegacyConfig
+	IPRange          string
 }
 
 // ImageList holds the image id/names for the different architectures
@@ -78,6 +79,7 @@ type NodeConfig struct {
 	Taints         []apiv1.Taint
 	Labels         map[string]string
 	ImagesForArch  *ImageList
+	IPRange        string
 }
 
 // LegacyConfig holds the configuration in the legacy format
