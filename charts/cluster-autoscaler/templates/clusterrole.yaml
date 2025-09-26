@@ -42,7 +42,7 @@ rules:
     resources:
       - endpoints
     resourceNames:
-      - cluster-autoscaler
+      - {{ template "cluster-autoscaler.fullname" . }}
     verbs:
       - get
       - update
@@ -135,6 +135,7 @@ rules:
       - list
       - watch
       - get
+      - update
   - apiGroups:
     - coordination.k8s.io
     resources:
@@ -144,7 +145,7 @@ rules:
   - apiGroups:
     - coordination.k8s.io
     resourceNames:
-    - cluster-autoscaler
+    - {{ default "cluster-autoscaler" (index .Values.extraArgs "leader-elect-resource-name") }}
     resources:
     - leases
     verbs:
