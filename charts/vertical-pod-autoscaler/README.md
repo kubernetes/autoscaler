@@ -15,8 +15,8 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 
 | Name | Email | Url |
 | ---- | ------ | --- |
-| adrianmoisey | <kubernetes-sig-autoscaling@googlegroups.com> |  |
-| omerap12 | <kubernetes-sig-autoscaling@googlegroups.com> |  |
+| adrianmoisey | kubernetes-sig-autoscaling@googlegroups.com |  |
+| omerap12 | kubernetes-sig-autoscaling@googlegroups.com |  |
 
 ## Values
 
