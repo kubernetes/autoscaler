@@ -50,7 +50,6 @@ spec:
           args:
           - --v=4
           - --stderrthreshold=info
-          - --reload-cert
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
