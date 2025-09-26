@@ -23,25 +23,25 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
-type combinedScaleDownCandidatesProcessor struct {
+type CombinedScaleDownCandidatesProcessor struct {
 	processors []nodes.ScaleDownNodeProcessor
 }
 
 // NewCombinedScaleDownCandidatesProcessor returns a default implementation of the scale down candidates
 // processor, which wraps and sequentially runs other sub-processors.
-func NewCombinedScaleDownCandidatesProcessor() *combinedScaleDownCandidatesProcessor {
-	return &combinedScaleDownCandidatesProcessor{}
+func NewCombinedScaleDownCandidatesProcessor() *CombinedScaleDownCandidatesProcessor {
+	return &CombinedScaleDownCandidatesProcessor{}
 
 }
 
 // Register registers a new ScaleDownNodeProcessor
-func (p *combinedScaleDownCandidatesProcessor) Register(np nodes.ScaleDownNodeProcessor) {
+func (p *CombinedScaleDownCandidatesProcessor) Register(np nodes.ScaleDownNodeProcessor) {
 	p.processors = append(p.processors, np)
 }
 
 // GetPodDestinationCandidates returns nodes that potentially could act as destinations for pods
 // that would become unscheduled after a scale down.
-func (p *combinedScaleDownCandidatesProcessor) GetPodDestinationCandidates(ctx *context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
+func (p *CombinedScaleDownCandidatesProcessor) GetPodDestinationCandidates(ctx *context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	var err errors.AutoscalerError
 	for _, processor := range p.processors {
 		nodes, err = processor.GetPodDestinationCandidates(ctx, nodes)
@@ -53,7 +53,7 @@ func (p *combinedScaleDownCandidatesProcessor) GetPodDestinationCandidates(ctx *
 }
 
 // GetScaleDownCandidates returns nodes that potentially could be scaled down.
-func (p *combinedScaleDownCandidatesProcessor) GetScaleDownCandidates(ctx *context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
+func (p *CombinedScaleDownCandidatesProcessor) GetScaleDownCandidates(ctx *context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	var err errors.AutoscalerError
 	for _, processor := range p.processors {
 		nodes, err = processor.GetScaleDownCandidates(ctx, nodes)
@@ -65,7 +65,7 @@ func (p *combinedScaleDownCandidatesProcessor) GetScaleDownCandidates(ctx *conte
 }
 
 // CleanUp is called at CA termination
-func (p *combinedScaleDownCandidatesProcessor) CleanUp() {
+func (p *CombinedScaleDownCandidatesProcessor) CleanUp() {
 	for _, processor := range p.processors {
 		processor.CleanUp()
 	}

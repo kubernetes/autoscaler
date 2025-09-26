@@ -27,7 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/options"
 )
 
 var testAwsManager = &AwsManager{
@@ -133,7 +133,7 @@ func TestInstanceTypeFallback(t *testing.T) {
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{}
-	opts := config.AutoscalingOptions{}
+	opts := &options.AutoscalerOptions{}
 
 	t.Setenv("AWS_REGION", "non-existent-region")
 
