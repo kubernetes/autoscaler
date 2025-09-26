@@ -1,0 +1,87 @@
+# Image pull secrets.
+imagePullSecrets: []
+
+# Override the name of the chart.
+nameOverride:
+
+# Override the full name of the chart.
+fullnameOverride:
+
+# Labels to add to all chart resources.
+commonLabels: {}
+
+rbac:
+  # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
+  create: true
+
+admissionController:
+  enabled: true
+  image:
+    # Image repository for the Admission Controller default container.
+    repository: registry.k8s.io/autoscaling/vpa-admission-controller
+    # Image tag for the Admission Controller default container; this will default to `.Chart.AppVersion` if not set
+    tag:
+    # Image pull policy for the Admission Controller default container.
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    # If `true`, create a new `ServiceAccount` for the Admission Controller.
+    create: true
+    # Labels to add to the Admission Controller service account.
+    labels: {}
+    # Annotations to add to the Admission Controller service account.
+    annotations: {}
+
+  service:
+    name: vpa-webhook
+    # Annotations to add to the Admission Controller service.
+    annotations: {}
+    ports:
+      - port: 443
+        protocol: TCP
+        targetPort: 8000
+
+  # Number of Admission Controller replicas to create.
+  replicas: 1
+
+  # Labels to add to the Admission Controller pod.
+  podLabels: {}
+
+  # Annotations to add to the Admission Controller pod.
+  podAnnotations: {}
+
+  # Additional environment variables for the Admission Controller default container.
+  extraEnv: []
+
+  # Additional args for the Admission Controller default container.
+  extraArgs: []
+
+  # Resources for the Admission Controller default container.
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 50m
+      memory: 200Mi
+
+  # Node selector labels for scheduling the Admission Controller.
+  nodeSelector: {}
+
+  tls:
+    secretName: vpa-tls-certs
+    caCert: ""
+    cert: ""
+    key: ""
+    existingSecret: ""
+
+  volumes:
+    - name: tls-certs
+      secret:
+        defaultMode: 420
+        secretName: vpa-tls-certs
+
+  volumeMounts:
+    - name: tls-certs
+      mountPath: /etc/tls-certs
+      readOnly: true
