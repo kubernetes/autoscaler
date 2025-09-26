@@ -485,7 +485,9 @@ func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	id := tng.id
 	tng.targetSize -= len(nodes)
 	tng.Unlock()
-	if tng.opts != nil && tng.opts.ZeroOrMaxNodeScaling && tng.targetSize != 0 {
+	allNodes, _ := tng.Nodes()
+	currentSize := len(allNodes)
+	if tng.opts != nil && tng.opts.ZeroOrMaxNodeScaling && tng.targetSize != 0 && currentSize != len(nodes) {
 		return fmt.Errorf("TestNodeGroup: attempted to partially scale down a node group that should be scaled down atomically")
 	}
 	for _, node := range nodes {

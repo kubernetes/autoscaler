@@ -50,6 +50,7 @@ import (
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/annotations"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -68,12 +69,6 @@ const (
 	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
 	// a bit more latency to wait for more pods and make a more informed scale-up decision.
 	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
-
-	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
-	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
-
-	// podScaleUpDelayAnnotationKey is an annotation how long pod can wait to be scaled up.
-	podScaleUpDelayAnnotationKey = "cluster-autoscaler.kubernetes.io/pod-scale-up-delay"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -958,13 +953,13 @@ func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod,
 		podAge := currentTime.Sub(pod.CreationTimestamp.Time)
 		podScaleUpDelay := newPodScaleUpDelay
 
-		if podScaleUpDelayAnnotationStr, ok := pod.Annotations[podScaleUpDelayAnnotationKey]; ok {
+		if podScaleUpDelayAnnotationStr, ok := pod.Annotations[annotations.PodScaleUpDelayAnnotationKey]; ok {
 			podScaleUpDelayAnnotation, err := time.ParseDuration(podScaleUpDelayAnnotationStr)
 			if err != nil {
-				klog.Errorf("Failed to parse pod %q annotation %s: %v", pod.Name, podScaleUpDelayAnnotationKey, err)
+				klog.Errorf("Failed to parse pod %q annotation %s: %v", pod.Name, annotations.PodScaleUpDelayAnnotationKey, err)
 			} else {
 				if podScaleUpDelayAnnotation < podScaleUpDelay {
-					klog.Errorf("Failed to set pod scale up delay for %q through annotation %s: %d is less then %d", pod.Name, podScaleUpDelayAnnotationKey, podScaleUpDelayAnnotation, newPodScaleUpDelay)
+					klog.Errorf("Failed to set pod scale up delay for %q through annotation %s: %d is less then %d", pod.Name, annotations.PodScaleUpDelayAnnotationKey, podScaleUpDelayAnnotation, newPodScaleUpDelay)
 				} else {
 					podScaleUpDelay = podScaleUpDelayAnnotation
 				}
@@ -1069,7 +1064,7 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*f
 		if nodeTemplate.Node().Annotations == nil {
 			nodeTemplate.Node().Annotations = make(map[string]string)
 		}
-		nodeTemplate.Node().Annotations[NodeUpcomingAnnotation] = "true"
+		nodeTemplate.Node().Annotations[annotations.NodeUpcomingAnnotation] = "true"
 
 		var nodes []*framework.NodeInfo
 		for i := 0; i < numberOfNodes; i++ {
