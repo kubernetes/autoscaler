@@ -110,6 +110,11 @@ func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[
 		}
 
 		for _, deviceAlloc := range alloc.Devices.Results {
+			if deviceAlloc.AdminAccess != nil && *deviceAlloc.AdminAccess {
+				// devices with admin access don't count for utilization
+				continue
+			}
+
 			if result[deviceAlloc.Driver] == nil {
 				result[deviceAlloc.Driver] = map[string][]string{}
 			}
