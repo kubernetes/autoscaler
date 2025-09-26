@@ -480,7 +480,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 	}
 
 	podLister := kube_util.NewTestPodLister(nil)
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	options := config.AutoscalingOptions{}
 	if batchProcessing {
@@ -498,7 +498,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 	}
-	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(

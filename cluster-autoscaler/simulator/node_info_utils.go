@@ -115,6 +115,8 @@ func createSanitizedNode(node *apiv1.Node, newName string, taintConfig *taints.T
 	}
 	newNode.Labels[apiv1.LabelHostname] = newName
 
+	newNode.Spec.Unschedulable = false
+
 	if taintConfig != nil {
 		newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, *taintConfig)
 	}

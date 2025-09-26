@@ -205,6 +205,7 @@ func (l *fakeAllObjectsLister[T]) ListAll() ([]T, error) {
 
 type commonMocks struct {
 	readyNodeLister           *kube_util.TestNodeLister
+	readyUnschedNodeLister    *kube_util.TestNodeLister
 	allNodeLister             *kube_util.TestNodeLister
 	allPodLister              *podListerMock
 	podDisruptionBudgetLister *podDisruptionBudgetListerMock
@@ -222,6 +223,7 @@ type commonMocks struct {
 func newCommonMocks() *commonMocks {
 	return &commonMocks{
 		readyNodeLister:           kubernetes.NewTestNodeLister(nil),
+		readyUnschedNodeLister:    kubernetes.NewTestNodeLister(nil),
 		allNodeLister:             kubernetes.NewTestNodeLister(nil),
 		allPodLister:              &podListerMock{},
 		podDisruptionBudgetLister: &podDisruptionBudgetListerMock{},
@@ -294,7 +296,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 
 	// Create all necessary autoscaler dependencies, applying the mocks from config.
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-	listerRegistry := kube_util.NewListerRegistry(config.mocks.allNodeLister, config.mocks.readyNodeLister, config.mocks.allPodLister,
+	listerRegistry := kube_util.NewListerRegistry(config.mocks.allNodeLister, config.mocks.readyNodeLister, config.mocks.readyUnschedNodeLister, config.mocks.allPodLister,
 		config.mocks.podDisruptionBudgetLister, config.mocks.daemonSetLister, nil, nil, nil, nil)
 	ctx, err := NewScaleTestAutoscalingContext(config.autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil)
 	if err != nil {
@@ -343,6 +345,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 
 func TestStaticAutoscalerRunOnce(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -400,7 +403,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	setUpScaleDownActuator(&context, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
 
@@ -628,6 +631,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			readyNodeLister := kubernetes.NewTestNodeLister(nil)
+			readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 			allNodeLister := kubernetes.NewTestNodeLister(nil)
 			allPodListerMock := &podListerMock{}
 			podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -659,7 +663,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 
 			setUpScaleDownActuator(&context, options)
 
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 				nil, nil, nil, nil)
 			context.ListerRegistry = listerRegistry
 
@@ -740,6 +744,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 
 func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -811,7 +816,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	processors.NodeGroupManager = nodeGroupManager
 	processors.NodeGroupListProcessor = nodeGroupListProcessor
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
@@ -893,6 +898,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	for _, forceDeleteLongUnregisteredNodes := range []bool{false, true} {
 		t.Run(fmt.Sprintf("forceDeleteLongUnregisteredNodes=%v", forceDeleteLongUnregisteredNodes), func(t *testing.T) {
 			readyNodeLister := kubernetes.NewTestNodeLister(nil)
+			readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 			allNodeLister := kubernetes.NewTestNodeLister(nil)
 			allPodListerMock := &podListerMock{}
 			podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -954,7 +960,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 			setUpScaleDownActuator(&context, options)
 
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister, allPodListerMock,
 				podDisruptionBudgetListerMock, daemonSetListerMock,
 				nil, nil, nil, nil)
 			context.ListerRegistry = listerRegistry
@@ -1031,6 +1037,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -1118,7 +1125,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	setUpScaleDownActuator(&context, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
@@ -1192,6 +1199,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -1249,7 +1257,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 	setUpScaleDownActuator(&context, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
@@ -1290,6 +1298,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -1347,7 +1356,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	setUpScaleDownActuator(&context, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
@@ -2446,9 +2455,10 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	// Create fake listers for the generated nodes, nothing returned by the rest (but the ones used in the tested path have to be defined).
 	allNodeLister := kubernetes.NewTestNodeLister(allNodes)
 	readyNodeLister := kubernetes.NewTestNodeLister(readyNodes)
+	readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 	daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
 	assert.NoError(t, err)
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister,
 		kubernetes.NewTestPodLister(nil),
 		kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister, nil, nil, nil, nil)
 
@@ -3241,10 +3251,11 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 
 	allNodeLister := kubernetes.NewTestNodeLister(allNodes)
 	readyNodeLister := kubernetes.NewTestNodeLister(readyNodes)
+	readyUnschedNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{})
 
 	daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
 	assert.NoError(t, err)
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, readyUnschedNodeLister,
 		kubernetes.NewTestPodLister(nil),
 		kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister, nil, nil, nil, nil)
 
