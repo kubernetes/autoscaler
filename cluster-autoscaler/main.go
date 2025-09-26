@@ -51,6 +51,7 @@ import (
 	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
@@ -122,7 +123,7 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 	drainabilityRules := rules.Default(deleteOptions)
 
 	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
-	opts := core.AutoscalerOptions{
+	opts := coreoptions.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		FrameworkHandle:      fwHandle,
 		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled),
@@ -234,6 +235,10 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 	if len(autoscalingOptions.BalancingLabels) > 0 {
 		nodeInfoComparator = nodegroupset.CreateLabelNodeInfoComparator(autoscalingOptions.BalancingLabels)
 	} else {
+		// TODO elmiko - now that we are passing the AutoscalerOptions in to the
+		// NewCloudProvider function, we should migrate these cloud provider specific
+		// configurations to the NewCloudProvider method so that we remove more provider
+		// code from the core.
 		nodeInfoComparatorBuilder := nodegroupset.CreateGenericNodeInfoComparator
 		if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
 			nodeInfoComparatorBuilder = nodegroupset.CreateAzureNodeInfoComparator

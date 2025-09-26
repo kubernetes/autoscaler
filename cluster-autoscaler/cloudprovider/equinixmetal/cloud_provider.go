@@ -28,8 +28,8 @@ import (
 	klog "k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
@@ -180,7 +180,7 @@ func (pcp *equinixMetalCloudProvider) Cleanup() error {
 //
 // The equinixMetalManager is created here, and the node groups are created
 // based on the specs provided via the command line parameters.
-func BuildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildCloudProvider(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 
 	if opts.CloudConfig != "" {
@@ -192,7 +192,7 @@ func BuildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		defer config.Close()
 	}
 
-	manager, err := createEquinixMetalManager(config, do, opts)
+	manager, err := createEquinixMetalManager(config, do, opts.AutoscalingOptions)
 	if err != nil {
 		klog.Fatalf("Failed to create equinix metal manager: %v", err)
 	}

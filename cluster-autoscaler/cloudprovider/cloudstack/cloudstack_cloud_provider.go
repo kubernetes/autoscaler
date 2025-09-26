@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 
@@ -149,9 +150,9 @@ func createClusterConfig(opts config.AutoscalingOptions) (*clusterConfig, error)
 }
 
 // BuildCloudStack builds CloudProvider implementation for CloudStack
-func BuildCloudStack(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildCloudStack(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 
-	config, err := createClusterConfig(opts)
+	config, err := createClusterConfig(opts.AutoscalingOptions)
 	if err != nil {
 		klog.Fatal(err)
 	}
