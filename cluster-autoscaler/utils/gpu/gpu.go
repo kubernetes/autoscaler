@@ -17,6 +17,8 @@ limitations under the License.
 package gpu
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -56,11 +58,18 @@ func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes 
 	if gpuConfig == nil {
 		return "", MetricsNoGPU
 	}
-	resourceName := gpuConfig.ResourceName
+
+	resourceName := gpuConfig.ExtendedResourceName
 	capacity, capacityFound := node.Status.Capacity[resourceName]
 	// There is no label value, fallback to generic solution
 	if gpuConfig.Type == "" && capacityFound && !capacity.IsZero() {
 		return resourceName.String(), MetricsGenericGPU
+	}
+
+	// GPU is exposed using DRA, capacity won't be present
+	if gpuConfig.ExposedViaDra() {
+		draResourceName := fmt.Sprintf("dra_%s", gpuConfig.DraDriverName)
+		return draResourceName, validateGpuType(availableGPUTypes, gpuConfig.Type)
 	}
 
 	// GKE-specific label & capacity are present - consistent state
@@ -116,7 +125,7 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 func GetNodeGPUFromCloudProvider(provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
 	gpuLabel := provider.GPULabel()
 	if NodeHasGpu(gpuLabel, node) {
-		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ResourceName: ResourceNvidiaGPU}
+		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ExtendedResourceName: ResourceNvidiaGPU}
 	}
 	return nil
 }

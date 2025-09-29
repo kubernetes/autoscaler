@@ -98,9 +98,16 @@ const (
 
 // GpuConfig contains the label, type and the resource name for a GPU.
 type GpuConfig struct {
-	Label        string
-	Type         string
-	ResourceName apiv1.ResourceName
+	Label                string
+	Type                 string
+	ExtendedResourceName apiv1.ResourceName
+	DraDriverName        string
+}
+
+// ExposedViaDra determines whether a GPU described in the config
+// is exposed via device plugin or DRA driver
+func (gpu *GpuConfig) ExposedViaDra() bool {
+	return gpu.DraDriverName != ""
 }
 
 // CloudProvider contains configuration info and functions for interacting with

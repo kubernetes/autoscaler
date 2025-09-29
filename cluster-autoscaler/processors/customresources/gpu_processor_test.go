@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -152,6 +153,20 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 	}
 	expectedReadiness[nodeNoGpuUnready.Name] = false
 
+	nodeGPUReadyDra := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "nodeGPUViaDra",
+			Labels: map[string]string{
+				gce.DraGPULabel: "true",
+			},
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	expectedReadiness[nodeGPUReadyDra.Name] = true
+
 	initialReadyNodes := []*apiv1.Node{
 		nodeGpuReady,
 		nodeGpuUnready,
@@ -159,6 +174,7 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		nodeDirectXReady,
 		nodeDirectXUnready,
 		nodeNoGpuReady,
+		nodeGPUReadyDra,
 	}
 	initialAllNodes := []*apiv1.Node{
 		nodeGpuReady,
@@ -168,6 +184,7 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		nodeDirectXUnready,
 		nodeNoGpuReady,
 		nodeNoGpuUnready,
+		nodeGPUReadyDra,
 	}
 
 	processor := GpuCustomResourcesProcessor{}
