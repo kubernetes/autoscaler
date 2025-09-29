@@ -17,7 +17,7 @@
 
 ## Summary
 
-Starting with Kubernetes version 1.33, it is now possible to specify CPU and memory `resources` for Pods at the pod level in addition to the existing container-level `resources` specifications. For example:
+Starting with Kubernetes version 1.34, it is now possible to specify CPU and memory `resources` for Pods at the pod level in addition to the existing container-level `resources` specifications. For example:
 
 ```yaml
 apiVersion: v1
@@ -101,7 +101,7 @@ Scenarios with no resources defined, or with both pod-level and container-level 
 
 #### Container-level resources
 
-For workloads that define only container-level resources, VPA should continue controlling resources at the container level, consistent with current behavior prior to this KEP. In other words, for a multi-container Pod without pod-level resources but with at least one container specifying resources, VPA should, by default, autoscale all containers.
+For workloads that define only container-level resources, VPA should continue controlling resources at the container level, consistent with current behavior prior to this KEP. In other words, for a multi-container Pod without pod-level resources but with at least one container specifying resources, VPA should by default autoscale all containers.
 
 #### Pod-level resources
 
@@ -148,7 +148,7 @@ spec:
 With this option, VPA manages only the pod-level resources stanza. To follow this approach, the initially defined container-level resources for `ide` must be removed so that changes in usage are reflected only in pod-level recommendations.
 
 **Pros**:
-* Simplifies implementation: VPA does not need to track which container-level resources were initially set.
+* VPA does not need to track which container-level resources were initially set.
 * Straightforward for users: only the pod-level resources stanza is updated, while container-level stanzas are dropped.
 * Enables shared headroom across containers in the same Pod. With container-only limits, a sidecar (`tool1` or `tool2`) hitting its own CPU limit could get throttled even if other containers in the Pod have idle CPU. Pod-level resources allow a container experiencing a spike to access idle resources from others, optimizing overall utilization.
 
