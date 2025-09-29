@@ -1,9 +1,13 @@
 aliases:
   sig-autoscaling-leads:
+    - adrianmoisey
     - gjtempleton
     - jackfrancis
-    - raywainman
     - towca
+  # emeritus:
+  # - maciekpytel
+  # - mwielgus
+  # - raywainman 2025-09-29
   sig-autoscaling-vpa-approvers:
     - kwiesmueller
     - voelzmo
