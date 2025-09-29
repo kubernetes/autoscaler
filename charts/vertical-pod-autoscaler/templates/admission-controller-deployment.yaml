@@ -1,0 +1,85 @@
+{{- if .Values.admissionController.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.admissionController.replicas }}
+  {{- with .Values.admissionController.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "vertical-pod-autoscaler.admissionController.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "vertical-pod-autoscaler.admissionController.selectorLabels" . | nindent 8 }}
+      {{- with .Values.admissionController.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName:  {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      containers:
+        - name: admission-controller
+          image: {{ include "vertical-pod-autoscaler.admissionController.image" . }}
+          imagePullPolicy: {{ .Values.admissionController.image.pullPolicy }}
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          {{- with .Values.admissionController.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+          - --v=4
+          - --stderrthreshold=info
+          {{- with .Values.admissionController.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+            - containerPort: 8944
+              name: prometheus
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            periodSeconds: 10
+            failureThreshold: 3
+          volumeMounts:
+            {{- toYaml .Values.admissionController.volumeMounts | nindent 12 }}
+          {{- with .Values.admissionController.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- toYaml .Values.admissionController.volumes | nindent 12 }}
+{{- end -}}
