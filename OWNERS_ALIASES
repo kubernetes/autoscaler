@@ -1,8 +1,8 @@
 aliases:
   sig-autoscaling-leads:
+    - adrianmoisey
     - gjtempleton
     - jackfrancis
-    - raywainman
     - towca
   sig-autoscaling-vpa-approvers:
     - kwiesmueller
