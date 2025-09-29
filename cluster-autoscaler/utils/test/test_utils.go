@@ -359,6 +359,24 @@ func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64) *apiv
 	return node
 }
 
+// WithSchedulingGatedStatus upserts the condition with type PodScheduled to be of status false
+// and reason PodReasonSchedulingGated
+func WithSchedulingGatedStatus(pod *apiv1.Pod) *apiv1.Pod {
+	gatedPodCondition := apiv1.PodCondition{
+		Type:   apiv1.PodScheduled,
+		Status: apiv1.ConditionFalse,
+		Reason: apiv1.PodReasonSchedulingGated,
+	}
+	for index := range pod.Status.Conditions {
+		if pod.Status.Conditions[index].Type == apiv1.PodScheduled {
+			pod.Status.Conditions[index] = gatedPodCondition
+			return pod
+		}
+	}
+	pod.Status.Conditions = append(pod.Status.Conditions, gatedPodCondition)
+	return pod
+}
+
 // WithAllocatable adds specified milliCpu and memory to Allocatable of the node in-place.
 func WithAllocatable(node *apiv1.Node, millicpuAllocatable, memAllocatable int64) *apiv1.Node {
 	node.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(millicpuAllocatable, resource.DecimalSI)
