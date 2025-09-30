@@ -58,7 +58,7 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test --test.short -race ./... ${TAGS_FLAG}
+	go test --test.short -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 dev-release: dev-release-arch-$(GOARCH)
 
