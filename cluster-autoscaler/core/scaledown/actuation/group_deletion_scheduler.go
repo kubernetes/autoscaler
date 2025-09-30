@@ -128,7 +128,11 @@ func (ds *GroupDeletionScheduler) prepareNodeForDeletion(nodeInfo *framework.Nod
 			evictionResults, err = ds.evictor.DrainNode(ds.ctx, nodeInfo)
 		}
 		if err != nil {
-			return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
+			if allEvictionFailuresDueToTimeout(evictionResults) {
+				klog.Warningf("Failed to drain node %s within timeout: pods remaining after timeout. Proceeding with node deletion.", node.Name)
+			} else {
+				return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
+			}
 		}
 	} else {
 		if _, err := ds.evictor.EvictDaemonSetPods(ds.ctx, nodeInfo); err != nil {
@@ -180,4 +184,19 @@ func (ds *GroupDeletionScheduler) AbortNodeDeletion(node *apiv1.Node, nodeGroupI
 		CleanUpAndRecordFailedScaleDownEvent(ds.ctx, otherNode, nodeGroupId, drain, ds.nodeDeletionTracker, "scale down failed for node group as a whole", nodeDeleteResult, logAsWarning)
 	}
 	delete(ds.nodeQueue, nodeGroupId)
+}
+
+// allEvictionFailuresDueToTimeout checks if all eviction failures are due to pods not disappearing within max-graceful-termination-sec,
+// rather than eviction API errors. Returns true only if all failures have TimedOut=true and Err=nil.
+func allEvictionFailuresDueToTimeout(evictionResults map[string]status.PodEvictionResult) bool {
+	hasFailures := false
+	for _, result := range evictionResults {
+		if !result.WasEvictionSuccessful() {
+			hasFailures = true
+			if result.Err != nil || !result.TimedOut {
+				return false
+			}
+		}
+	}
+	return hasFailures
 }

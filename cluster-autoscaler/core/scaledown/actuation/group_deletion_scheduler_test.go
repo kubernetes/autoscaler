@@ -227,3 +227,66 @@ func mergeLists(lists ...[]*budgets.NodeGroupView) []*budgets.NodeGroupView {
 	}
 	return merged
 }
+
+func TestAllEvictionFailuresDueToTimeout(t *testing.T) {
+	testCases := []struct {
+		name            string
+		evictionResults map[string]status.PodEvictionResult
+		expected        bool
+	}{
+		{
+			name: "all evictions timed out without errors - should allow deletion",
+			evictionResults: map[string]status.PodEvictionResult{
+				"pod1": {Pod: &apiv1.Pod{}, TimedOut: true, Err: nil},
+				"pod2": {Pod: &apiv1.Pod{}, TimedOut: true, Err: nil},
+			},
+			expected: true,
+		},
+		{
+			name: "some evictions timed out, some succeeded - should allow deletion",
+			evictionResults: map[string]status.PodEvictionResult{
+				"pod1": {Pod: &apiv1.Pod{}, TimedOut: true, Err: nil},
+				"pod2": {Pod: &apiv1.Pod{}, TimedOut: false, Err: nil},
+			},
+			expected: true,
+		},
+		{
+			name: "eviction failed with API error - should block deletion",
+			evictionResults: map[string]status.PodEvictionResult{
+				"pod1": {Pod: &apiv1.Pod{}, TimedOut: true, Err: nil},
+				"pod2": {Pod: &apiv1.Pod{}, TimedOut: true, Err: fmt.Errorf("eviction API error")},
+			},
+			expected: false,
+		},
+		{
+			name: "eviction failed without timeout - should block deletion",
+			evictionResults: map[string]status.PodEvictionResult{
+				"pod1": {Pod: &apiv1.Pod{}, TimedOut: true, Err: nil},
+				"pod2": {Pod: &apiv1.Pod{}, TimedOut: false, Err: fmt.Errorf("some error")},
+			},
+			expected: false,
+		},
+		{
+			name: "all evictions successful - should not trigger timeout path",
+			evictionResults: map[string]status.PodEvictionResult{
+				"pod1": {Pod: &apiv1.Pod{}, TimedOut: false, Err: nil},
+				"pod2": {Pod: &apiv1.Pod{}, TimedOut: false, Err: nil},
+			},
+			expected: false,
+		},
+		{
+			name:            "empty eviction results - should not trigger timeout path",
+			evictionResults: map[string]status.PodEvictionResult{},
+			expected:        false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := allEvictionFailuresDueToTimeout(tc.evictionResults)
+			if result != tc.expected {
+				t.Errorf("allEvictionFailuresDueToTimeout() = %v, want %v", result, tc.expected)
+			}
+		})
+	}
+}
