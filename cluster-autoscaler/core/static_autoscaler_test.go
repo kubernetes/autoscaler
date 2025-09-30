@@ -67,6 +67,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/annotations"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -2800,17 +2801,17 @@ func TestFilterOutYoungPods(t *testing.T) {
 	p2 := BuildTestPod("p2", 500, 1000)
 	p2.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
 	p2.Annotations = map[string]string{
-		podScaleUpDelayAnnotationKey: "5m",
+		annotations.PodScaleUpDelayAnnotationKey: "5m",
 	}
 	p3 := BuildTestPod("p3", 500, 1000)
 	p3.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
 	p3.Annotations = map[string]string{
-		podScaleUpDelayAnnotationKey: "2m",
+		annotations.PodScaleUpDelayAnnotationKey: "2m",
 	}
 	p4 := BuildTestPod("p4", 500, 1000)
 	p4.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
 	p4.Annotations = map[string]string{
-		podScaleUpDelayAnnotationKey: "error",
+		annotations.PodScaleUpDelayAnnotationKey: "error",
 	}
 
 	tests := []struct {
