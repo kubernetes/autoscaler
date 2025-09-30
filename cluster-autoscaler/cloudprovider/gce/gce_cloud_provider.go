@@ -91,7 +91,7 @@ func (gce *GceCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.G
 	// so we overwrite extended resource name as it won't ever
 	// be there
 	if GpuDraDriverEnabled(node) {
-		gpuConfig.DraDriverName = DraGPUDriver
+		gpuConfig.DraDriverName = gpu.DraGPUDriver
 		gpuConfig.ExtendedResourceName = ""
 	}
 

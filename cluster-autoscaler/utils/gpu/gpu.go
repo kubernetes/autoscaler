@@ -50,6 +50,13 @@ const (
 	MetricsNoGPU = ""
 )
 
+const (
+	// DraGPUDriver name of the driver used to expose NVIDIA GPU resources
+	DraGPUDriver = "gpu.nvidia.com"
+	// DraGPULabelGKE is the label added to nodes with GPU resource exposed via DRA.
+	DraGPULabelGKE = "cloud.google.com/gke-gpu-dra-driver"
+)
+
 // GetGpuInfoForMetrics returns the name of the custom resource and the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
