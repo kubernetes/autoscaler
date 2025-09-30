@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
+	nodeprocessors "k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -205,7 +205,7 @@ func TestRemovableAt(t *testing.T) {
 
 			n := NewNodes(&fakeScaleDownTimeGetter{}, &resource.LimitsFinder{})
 			n.Update(removableNodes, time.Now())
-			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&ctx, nodes.ScaleDownContext{
+			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&ctx, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
 				ResourcesLeft:       resource.Limits{},
 				ResourcesWithLimits: []string{},
@@ -218,7 +218,6 @@ func TestRemovableAt(t *testing.T) {
 }
 
 func TestNodeLoadFromExistingTaints(t *testing.T) {
-
 	deletionCandidateTaint := taints.DeletionCandidateTaint()
 	currentTime := time.Now()
 
@@ -274,8 +273,6 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-
-			currentTime = time.Now()
 
 			nodes := NewNodes(nil, nil)
 
