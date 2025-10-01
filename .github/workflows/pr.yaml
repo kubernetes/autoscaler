@@ -59,9 +59,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
       - name: Run helm-docs
-        uses: docker://jnorwood/helm-docs:v1.3.0
+        uses: docker://jnorwood/helm-docs:v1.14.2
       - name: Check for changes
-        run: git diff --quiet charts/*/README.md
+        run: |
+          if ! git diff --exit-code charts/*/README.md; then
+            echo "ERROR: Helm chart README.md files are out of date"
+            echo "Run from charts/: docker run --rm --volume \"\$(pwd):/helm-docs\" -u \$(id -u) jnorwood/helm-docs:v1.14.2"
+            exit 1
+          fi
 
 name: Lint and Test Charts
 on: pull_request
