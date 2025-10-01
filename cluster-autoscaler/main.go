@@ -349,12 +349,13 @@ func main() {
 
 	autoscalingOpts := flags.AutoscalingOptions()
 
-	// If the DRA flag is passed, we need to set the DRA feature gate as well. The selection of scheduler plugins for the default
-	// scheduling profile depends on feature gates, and the DRA plugin is only included if the DRA feature gate is enabled. The DRA
-	// plugin itself also checks the DRA feature gate and doesn't do anything if it's not enabled.
-	if autoscalingOpts.DynamicResourceAllocationEnabled && !featureGate.Enabled(features.DynamicResourceAllocation) {
-		if err := featureGate.SetFromMap(map[string]bool{string(features.DynamicResourceAllocation): true}); err != nil {
-			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
+	// The DRA feature controls whether the DRA scheduler plugin is selected in scheduler framework. The local DRA flag controls whether
+	// DRA logic is enabled in Cluster Autoscaler. The 2 values should be in sync - enabling DRA logic in CA without selecting the DRA scheduler
+	// plugin doesn't actually do anything, and selecting the DRA scheduler plugin without enabling DRA logic in CA means the plugin is not set up
+	// correctly and can panic.
+	if autoscalingOpts.DynamicResourceAllocationEnabled != featureGate.Enabled(features.DynamicResourceAllocation) {
+		if err := featureGate.SetFromMap(map[string]bool{string(features.DynamicResourceAllocation): autoscalingOpts.DynamicResourceAllocationEnabled}); err != nil {
+			klog.Fatalf("couldn't set the DRA feature gate to %v: %v", autoscalingOpts.DynamicResourceAllocationEnabled, err)
 		}
 	}
 
