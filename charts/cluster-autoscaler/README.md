@@ -421,8 +421,6 @@ vpa:
     minAllowed:
       cpu: 20m
       memory: 50Mi
-  recommenders:
-    - name: default
 ```
 
 ## Values
@@ -538,5 +536,5 @@ vpa:
 | vpa | object | `{"containerPolicy":{},"enabled":false,"updateMode":"Auto"}` | Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment. |
 | vpa.containerPolicy | object | `{}` | [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled. |
 | vpa.enabled | bool | `false` | If true, creates a VerticalPodAutoscaler. |
-| vpa.recommenders | list | `[]` | List of recommender selectors that will apply to this VerticalPodAutoscaler.  An empty list uses the `default` recommender. |
+| vpa.recommender | string | `"default"` | Name of the recommender that will apply to this VerticalPodAutoscaler. |
 | vpa.updateMode | string | `"Auto"` | [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124) |
