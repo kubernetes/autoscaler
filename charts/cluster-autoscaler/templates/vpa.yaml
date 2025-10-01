@@ -14,7 +14,7 @@ spec:
   updatePolicy:
     updateMode: {{ .Values.vpa.updateMode | quote }}
   recommenders:
-    - name:  {{ .Values.vpa.recommender  | quote }}
+    - name: {{ .Values.vpa.recommender  | quote }}
   resourcePolicy:
     containerPolicies:
     - containerName: {{ template "cluster-autoscaler.name" . }}
