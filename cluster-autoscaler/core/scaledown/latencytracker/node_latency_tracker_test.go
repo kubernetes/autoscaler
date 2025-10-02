@@ -28,65 +28,65 @@ func TestNodeLatencyTracker(t *testing.T) {
 	baseTime := time.Now()
 
 	tests := []struct {
-		name                  string
-		setupNodes            map[string]nodeInfo
-		unneededList          []string
-		currentlyInDeletion   map[string]bool
-		updateThresholds      map[string]time.Duration
-		observeDeletion       []string
-		expectedTrackedNodes  []string
-		expectedDeletionTimes map[string]time.Duration
+		name                string
+		setupNodes          map[string]nodeInfo
+		unneededList        []string
+		currentlyInDeletion map[string]bool
+		updateThresholds    map[string]time.Duration
+		observeDeletion     []string
+		wantTrackedNodes    []string
+		wantDeletionTimes   map[string]time.Duration
 	}{
 		{
-			name:                 "add new unneeded nodes",
-			setupNodes:           map[string]nodeInfo{},
-			unneededList:         []string{"node1", "node2"},
-			currentlyInDeletion:  map[string]bool{},
-			updateThresholds:     map[string]time.Duration{},
-			observeDeletion:      []string{},
-			expectedTrackedNodes: []string{"node1", "node2"},
+			name:                "add new unneeded nodes",
+			setupNodes:          map[string]nodeInfo{},
+			unneededList:        []string{"node1", "node2"},
+			currentlyInDeletion: map[string]bool{},
+			updateThresholds:    map[string]time.Duration{},
+			observeDeletion:     []string{},
+			wantTrackedNodes:    []string{"node1", "node2"},
 		},
 		{
 			name: "observe deletion with threshold",
 			setupNodes: map[string]nodeInfo{
-				"node1": {UnneededSince: baseTime, Threshold: 2 * time.Second},
+				"node1": {unneededSince: baseTime, threshold: 2 * time.Second},
 			},
-			unneededList:         []string{},
-			currentlyInDeletion:  map[string]bool{},
-			updateThresholds:     map[string]time.Duration{},
-			observeDeletion:      []string{"node1"},
-			expectedTrackedNodes: []string{},
-			expectedDeletionTimes: map[string]time.Duration{
+			unneededList:        []string{},
+			currentlyInDeletion: map[string]bool{},
+			updateThresholds:    map[string]time.Duration{},
+			observeDeletion:     []string{"node1"},
+			wantTrackedNodes:    []string{},
+			wantDeletionTimes: map[string]time.Duration{
 				"node1": 3 * time.Second, // simulate observation 5s after UnneededSince, threshold 2s
 			},
 		},
 		{
 			name: "remove unneeded node not in deletion",
 			setupNodes: map[string]nodeInfo{
-				"node1": {UnneededSince: baseTime, Threshold: 1 * time.Second},
-				"node2": {UnneededSince: baseTime, Threshold: 0},
+				"node1": {unneededSince: baseTime, threshold: 1 * time.Second},
+				"node2": {unneededSince: baseTime, threshold: 0},
 			},
-			unneededList:         []string{"node2"}, // node1 is removed from unneeded
-			currentlyInDeletion:  map[string]bool{},
-			updateThresholds:     map[string]time.Duration{},
-			observeDeletion:      []string{},
-			expectedTrackedNodes: []string{"node2"},
-			expectedDeletionTimes: map[string]time.Duration{
+			unneededList:        []string{"node2"}, // node1 is removed from unneeded
+			currentlyInDeletion: map[string]bool{},
+			updateThresholds:    map[string]time.Duration{},
+			observeDeletion:     []string{},
+			wantTrackedNodes:    []string{"node2"},
+			wantDeletionTimes: map[string]time.Duration{
 				"node1": 5*time.Second - 1*time.Second, // assume current timestamp baseTime+5s
 			},
 		},
 		{
 			name: "update threshold",
 			setupNodes: map[string]nodeInfo{
-				"node1": {UnneededSince: baseTime, Threshold: 1 * time.Second},
+				"node1": {unneededSince: baseTime, threshold: 1 * time.Second},
 			},
 			unneededList:        []string{"node1"},
 			currentlyInDeletion: map[string]bool{},
 			updateThresholds: map[string]time.Duration{
 				"node1": 4 * time.Second,
 			},
-			observeDeletion:      []string{},
-			expectedTrackedNodes: []string{"node1"},
+			observeDeletion:  []string{},
+			wantTrackedNodes: []string{"node1"},
 		},
 	}
 
@@ -116,7 +116,7 @@ func TestNodeLatencyTracker(t *testing.T) {
 			// Check tracked nodes
 			gotTracked := tracker.GetTrackedNodes()
 			expectedMap := make(map[string]struct{})
-			for _, n := range tt.expectedTrackedNodes {
+			for _, n := range tt.wantTrackedNodes {
 				expectedMap[n] = struct{}{}
 			}
 			for _, n := range gotTracked {
@@ -129,12 +129,12 @@ func TestNodeLatencyTracker(t *testing.T) {
 				t.Errorf("expected node %q to be tracked, but was not", n)
 			}
 
-			for node, expectedDuration := range tt.expectedDeletionTimes {
+			for node, expectedDuration := range tt.wantDeletionTimes {
 				info, ok := tt.setupNodes[node]
 				if !ok {
 					continue
 				}
-				duration := currentTime.Sub(info.UnneededSince) - info.Threshold
+				duration := currentTime.Sub(info.unneededSince) - info.threshold
 				if duration != expectedDuration {
 					t.Errorf("node %q expected deletion duration %v, got %v", node, expectedDuration, duration)
 				}

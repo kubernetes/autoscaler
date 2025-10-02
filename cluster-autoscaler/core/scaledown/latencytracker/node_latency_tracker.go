@@ -34,8 +34,8 @@ type LatencyTracker interface {
 	GetTrackedNodes() []string
 }
 type nodeInfo struct {
-	UnneededSince time.Time
-	Threshold     time.Duration
+	unneededSince time.Time
+	threshold     time.Duration
 }
 
 // NodeLatencyTracker is a concrete implementation of LatencyTracker.
@@ -64,21 +64,21 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
 
 		if _, exists := t.nodes[node.Name]; !exists {
 			t.nodes[node.Name] = nodeInfo{
-				UnneededSince: timestamp,
-				Threshold:     0,
+				unneededSince: timestamp,
+				threshold:     0,
 			}
-			klog.V(2).Infof("Started tracking unneeded node %s at %v", node.Name, timestamp)
+			klog.V(4).Infof("Started tracking unneeded node %s at %v", node.Name, timestamp)
 		}
 	}
 
 	for name, info := range t.nodes {
 		if _, stillUnneeded := currentSet[name]; !stillUnneeded {
 			if _, inDeletion := currentlyInDeletion[name]; !inDeletion {
-				duration := timestamp.Sub(info.UnneededSince)
-				metrics.UpdateScaleDownNodeDeletionDuration("false", duration-info.Threshold)
+				duration := timestamp.Sub(info.unneededSince)
+				metrics.UpdateScaleDownNodeRemovalLatency(false, duration-info.threshold)
 				delete(t.nodes, name)
-				klog.V(2).Infof("Node %q reported as deleted/missing (unneeded for %s, threshold %s)",
-					name, duration, info.Threshold)
+				klog.V(4).Infof("Node %q reported as deleted/missing (unneeded for %s, threshold %s)",
+					name, duration, info.threshold)
 			}
 		}
 	}
@@ -87,14 +87,14 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
 // ObserveDeletion is called by the actuator just before node deletion.
 func (t *NodeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Time) {
 	if info, exists := t.nodes[nodeName]; exists {
-		duration := timestamp.Sub(info.UnneededSince)
+		duration := timestamp.Sub(info.unneededSince)
 
-		klog.V(2).Infof(
+		klog.V(4).Infof(
 			"Observing deletion for node %s, unneeded for %s (threshold was %s).",
-			nodeName, duration, info.Threshold,
+			nodeName, duration, info.threshold,
 		)
 
-		metrics.UpdateScaleDownNodeDeletionDuration("true", duration-info.Threshold)
+		metrics.UpdateScaleDownNodeRemovalLatency(true, duration-info.threshold)
 		delete(t.nodes, nodeName)
 	}
 }
@@ -102,9 +102,9 @@ func (t *NodeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Tim
 // UpdateThreshold updates the scale-down threshold for a tracked node.
 func (t *NodeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
 	if info, exists := t.nodes[nodeName]; exists {
-		info.Threshold = threshold
+		info.threshold = threshold
 		t.nodes[nodeName] = info
-		klog.V(2).Infof("Updated threshold for node %q to %s", nodeName, threshold)
+		klog.V(4).Infof("Updated threshold for node %q to %s", nodeName, threshold)
 	} else {
 		klog.Warningf("Attempted to update threshold for unknown node %q", nodeName)
 	}

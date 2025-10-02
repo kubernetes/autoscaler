@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -426,12 +427,12 @@ var (
 		}, []string{"instance_type", "cpu_count", "namespace_count"},
 	)
 
-	scaleDownNodeDeletionDuration = k8smetrics.NewHistogramVec(
+	scaleDownNodeRemovalLatency = k8smetrics.NewHistogramVec(
 		&k8smetrics.HistogramOpts{
 			Namespace: caNamespace,
-			Name:      "node_deletion_duration_seconds",
+			Name:      "node_removal_latency_seconds",
 			Help:      "Latency from planning (node marked) to final outcome (deleted, aborted, rescued).",
-			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 12), //1, 2, 4, 8, ..., 2048
+			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 18), //1, 2, 4, 8, ..., 131072 approx 1.5 days
 		}, []string{"deleted"},
 	)
 )
@@ -470,7 +471,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeTaintsCount)
 	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
 	legacyregistry.MustRegister(binpackingHeterogeneity)
-	legacyregistry.MustRegister(scaleDownNodeDeletionDuration)
+	legacyregistry.MustRegister(scaleDownNodeRemovalLatency)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -759,8 +760,8 @@ func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount strin
 	binpackingHeterogeneity.WithLabelValues(instanceType, cpuCount, namespaceCount).Observe(float64(pegCount))
 }
 
-// UpdateScaleDownNodeDeletionDuration records the time after which node was deleted/needed
+// UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
 // again after being marked unneded
-func UpdateScaleDownNodeDeletionDuration(deleted string, duration time.Duration) {
-	scaleDownNodeDeletionDuration.WithLabelValues(deleted).Observe(duration.Seconds())
+func UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration) {
+	scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted)).Observe(duration.Seconds())
 }
