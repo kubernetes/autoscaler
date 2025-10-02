@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
@@ -89,13 +89,13 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	devicesWithoutCounters := 0
 
 	for _, device := range allocated {
-		if device.Basic == nil || device.Basic.ConsumesCounters == nil {
+		if device.ConsumesCounters == nil {
 			devicesWithoutCounters++
 			allocatedDevicesWithoutCounters++
 		}
 	}
 	for _, device := range unallocated {
-		if device.Basic == nil || device.Basic.ConsumesCounters == nil {
+		if device.ConsumesCounters == nil {
 			devicesWithoutCounters++
 		}
 	}
@@ -126,13 +126,10 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[string]resource.Quantity {
 	countersConsumed := map[string]map[string]resource.Quantity{}
 	for _, device := range devices {
-		if device.Basic == nil {
+		if device.ConsumesCounters == nil {
 			continue
 		}
-		if device.Basic.ConsumesCounters == nil {
-			continue
-		}
-		for _, consumedCounter := range device.Basic.ConsumesCounters {
+		for _, consumedCounter := range device.ConsumesCounters {
 			if _, ok := countersConsumed[consumedCounter.CounterSet]; !ok {
 				countersConsumed[consumedCounter.CounterSet] = map[string]resource.Quantity{}
 			}

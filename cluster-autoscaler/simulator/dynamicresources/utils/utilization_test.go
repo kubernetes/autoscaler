@@ -24,7 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -220,19 +220,17 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName str
 			devices,
 			resourceapi.Device{
 				Name: fmt.Sprintf("gpu-0-partition-%d", i),
-				Basic: &resourceapi.BasicDevice{
-					Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
-						"memory": {
-							Value: resource.MustParse("10Gi"),
-						},
+				Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
+					"memory": {
+						Value: resource.MustParse("10Gi"),
 					},
-					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
-						{
-							CounterSet: "gpu-0-counter-set",
-							Counters: map[string]resourceapi.Counter{
-								"memory": {
-									Value: resource.MustParse("10Gi"),
-								},
+				},
+				ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+					{
+						CounterSet: "gpu-0-counter-set",
+						Counters: map[string]resourceapi.Counter{
+							"memory": {
+								Value: resource.MustParse("10Gi"),
 							},
 						},
 					},
@@ -243,19 +241,17 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName str
 	devices = append(devices,
 		resourceapi.Device{
 			Name: "gpu-0",
-			Basic: &resourceapi.BasicDevice{
-				Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
-					"memory": {
-						Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
-					},
+			Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
+				"memory": {
+					Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
 				},
-				ConsumesCounters: []resourceapi.DeviceCounterConsumption{
-					{
-						CounterSet: "gpu-0-counter-set",
-						Counters: map[string]resourceapi.Counter{
-							"memory": {
-								Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
-							},
+			},
+			ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+				{
+					CounterSet: "gpu-0-counter-set",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {
+							Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
 						},
 					},
 				},
@@ -266,7 +262,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName str
 		ObjectMeta: metav1.ObjectMeta{Name: sliceName, UID: types.UID(sliceName)},
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   driverName,
-			NodeName: nodeName,
+			NodeName: &nodeName,
 			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: 1},
 			Devices:  devices,
 			SharedCounters: []resourceapi.CounterSet{
