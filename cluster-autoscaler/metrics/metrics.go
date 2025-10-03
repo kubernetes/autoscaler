@@ -100,8 +100,6 @@ const (
 const (
 	ScaleDown                  FunctionLabel = "scaleDown"
 	ScaleDownNodeDeletion      FunctionLabel = "scaleDown:nodeDeletion"
-	ScaleDownFindNodesToRemove FunctionLabel = "scaleDown:findNodesToRemove"
-	ScaleDownMiscOperations    FunctionLabel = "scaleDown:miscOperations"
 	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
 	ScaleUp                    FunctionLabel = "scaleUp"
 	BuildPodEquivalenceGroups  FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
