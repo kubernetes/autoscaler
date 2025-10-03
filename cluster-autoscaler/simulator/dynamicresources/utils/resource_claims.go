@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/component-helpers/scheduling/corev1"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
+	"k8s.io/utils/ptr"
 )
 
 // ClaimAllocated returns whether the provided claim is allocated.
@@ -125,7 +126,7 @@ func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resource
 	for _, deviceRequestAllocationResult := range claimCopy.Status.Allocation.Devices.Results {
 		// Device requests with AdminAccess don't reserve their allocated resources, and are ignored when scheuling.
 		devReq := getDeviceResultRequest(claim, &deviceRequestAllocationResult)
-		if devReq != nil && devReq.Exactly != nil && devReq.Exactly.AdminAccess != nil && *devReq.Exactly.AdminAccess {
+		if ptr.Deref(devReq.Exactly.AdminAccess, false) {
 			continue
 		}
 		deviceRequestAllocationResults = append(deviceRequestAllocationResults, deviceRequestAllocationResult)

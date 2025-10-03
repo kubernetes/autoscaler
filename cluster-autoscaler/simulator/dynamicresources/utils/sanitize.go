@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
+	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 )
 
@@ -89,7 +90,7 @@ func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceap
 
 		var sanitizedAllocations []resourceapi.DeviceRequestAllocationResult
 		for _, devAlloc := range claim.Status.Allocation.Devices.Results {
-			if devAlloc.AdminAccess != nil && *devAlloc.AdminAccess {
+			if ptr.Deref(devAlloc.AdminAccess, false) {
 				// Device requests with AdminAccess don't reserve their allocated resources, so we can safely ignore them when sanitizing.
 				sanitizedAllocations = append(sanitizedAllocations, devAlloc)
 				continue
