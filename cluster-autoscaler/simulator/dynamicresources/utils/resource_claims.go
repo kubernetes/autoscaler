@@ -125,7 +125,7 @@ func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resource
 	for _, deviceRequestAllocationResult := range claimCopy.Status.Allocation.Devices.Results {
 		// Device requests with AdminAccess don't reserve their allocated resources, and are ignored when scheuling.
 		devReq := getDeviceResultRequest(claim, &deviceRequestAllocationResult)
-		if devReq != nil && devReq.AdminAccess != nil && *devReq.AdminAccess {
+		if devReq != nil && devReq.Exactly != nil && devReq.Exactly.AdminAccess != nil && *devReq.Exactly.AdminAccess {
 			continue
 		}
 		deviceRequestAllocationResults = append(deviceRequestAllocationResults, deviceRequestAllocationResult)

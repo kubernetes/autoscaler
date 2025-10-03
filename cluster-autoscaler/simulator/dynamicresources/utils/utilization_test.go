@@ -238,8 +238,10 @@ func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devi
 			devName := fmt.Sprintf("%s-%s-dev-%d", driverName, poolName, deviceIndex)
 			devReqName := fmt.Sprintf("request-%d", podDevIndex)
 			devReq := resourceapi.DeviceRequest{
-				Name:        devReqName,
-				AdminAccess: adminaccess,
+				Name: devReqName,
+				Exactly: &resourceapi.ExactDeviceRequest{
+					AdminAccess: adminaccess,
+				},
 			}
 			claims = append(claims, &resourceapi.ResourceClaim{
 				ObjectMeta: metav1.ObjectMeta{Name: claimName, UID: types.UID(claimName)},
