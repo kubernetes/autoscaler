@@ -18,13 +18,15 @@ package framework
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
+	fwk "k8s.io/kube-scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // PodInfo contains all necessary information about a Pod that Cluster Autoscaler needs to track.
+// TODO: Rewrite PodInfo to be an interface extending fwk.PodInfo
 type PodInfo struct {
 	// This type embeds *apiv1.Pod to make the accesses easier - most of the code just needs to access the Pod.
 	*apiv1.Pod
@@ -41,9 +43,10 @@ type PodExtraInfo struct {
 
 // NodeInfo contains all necessary information about a Node that Cluster Autoscaler needs to track.
 // It's essentially a wrapper around schedulerframework.NodeInfo, with extra data on top.
+// TODO: Rewrite NodeInfo to be an interface extending fwk.NodeInfo
 type NodeInfo struct {
 	// schedNodeInfo is the part of information needed by the scheduler.
-	schedNodeInfo *schedulerframework.NodeInfo
+	schedNodeInfo fwk.NodeInfo
 	// podsExtraInfo contains extra pod-level data needed only by CA.
 	podsExtraInfo map[types.UID]PodExtraInfo
 
@@ -66,9 +69,9 @@ func (n *NodeInfo) Node() *apiv1.Node {
 // Pods returns the Pods scheduled on this NodeInfo, along with all their associated data.
 func (n *NodeInfo) Pods() []*PodInfo {
 	var result []*PodInfo
-	for _, pod := range n.schedNodeInfo.Pods {
-		extraInfo := n.podsExtraInfo[pod.Pod.UID]
-		podInfo := &PodInfo{Pod: pod.Pod, PodExtraInfo: extraInfo}
+	for _, pod := range n.schedNodeInfo.GetPods() {
+		extraInfo := n.podsExtraInfo[pod.GetPod().UID]
+		podInfo := &PodInfo{Pod: pod.GetPod(), PodExtraInfo: extraInfo}
 		result = append(result, podInfo)
 	}
 	return result
@@ -76,7 +79,8 @@ func (n *NodeInfo) Pods() []*PodInfo {
 
 // AddPod adds the given Pod and associated data to the NodeInfo.
 func (n *NodeInfo) AddPod(pod *PodInfo) {
-	n.schedNodeInfo.AddPod(pod.Pod)
+	podInfo, _ := schedulerframework.NewPodInfo(pod.Pod)
+	n.schedNodeInfo.AddPodInfo(podInfo)
 	if len(pod.PodExtraInfo.NeededResourceClaims) > 0 {
 		n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
 	}
@@ -92,8 +96,8 @@ func (n *NodeInfo) RemovePod(pod *apiv1.Pod) error {
 	return nil
 }
 
-// ToScheduler returns the embedded *schedulerframework.NodeInfo portion of the tracked data.
-func (n *NodeInfo) ToScheduler() *schedulerframework.NodeInfo {
+// ToScheduler returns the embedded fwk.NodeInfo portion of the tracked data.
+func (n *NodeInfo) ToScheduler() fwk.NodeInfo {
 	return n.schedNodeInfo
 }
 
@@ -149,8 +153,8 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 	return result
 }
 
-// WrapSchedulerNodeInfo wraps a *schedulerframework.NodeInfo into an internal *NodeInfo.
-func WrapSchedulerNodeInfo(schedNodeInfo *schedulerframework.NodeInfo, slices []*resourceapi.ResourceSlice, podExtraInfos map[types.UID]PodExtraInfo) *NodeInfo {
+// WrapSchedulerNodeInfo wraps a fwk.NodeInfo into an internal *NodeInfo.
+func WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo, slices []*resourceapi.ResourceSlice, podExtraInfos map[types.UID]PodExtraInfo) *NodeInfo {
 	if podExtraInfos == nil {
 		podExtraInfos = map[types.UID]PodExtraInfo{}
 	}

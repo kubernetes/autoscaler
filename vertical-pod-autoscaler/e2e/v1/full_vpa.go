@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -63,8 +64,6 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 
 	ginkgo.Describe("with InPlaceOrRecreate update mode", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
 		ginkgo.BeforeEach(func() {
-			checkInPlaceOrRecreateTestsEnabled(f, true, false)
-
 			ns := f.Namespace.Name
 			ginkgo.By("Setting up a hamster deployment")
 			rc = NewDynamicResourceConsumer("hamster", ns, KindDeployment,
@@ -84,7 +83,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 				Name:       "hamster",
 			}
 
-			containerName := GetHamsterContainerNameByIndex(0)
+			containerName := utils.GetHamsterContainerNameByIndex(0)
 			vpaCRD := test.VerticalPodAutoscaler().
 				WithName("hamster-vpa").
 				WithNamespace(f.Namespace.Name).
@@ -100,20 +99,20 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 						GetContainerResources()).
 				Get()
 
-			InstallVPA(f, vpaCRD)
+			utils.InstallVPA(f, vpaCRD)
 		})
 
 		ginkgo.It("have cpu requests growing with usage", func() {
 			// initial CPU usage is low so a minimal recommendation is expected
 			err := waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// consume more CPU to get a higher recommendation
 			rc.ConsumeCPU(600 * replicas)
 			err = waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
@@ -121,7 +120,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		ginkgo.It("have memory requests growing with usage", func() {
 			// initial memory usage is low so a minimal recommendation is expected
 			err := waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie(minimalMemoryLowerBound), ParseQuantityOrDie(minimalMemoryUpperBound))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
@@ -129,7 +128,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			// NOTE: large range given due to unpredictability of actual memory usage
 			rc.ConsumeMem(1024 * replicas)
 			err = waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie("900Mi"), ParseQuantityOrDie("4000Mi"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
@@ -156,7 +155,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 				Name:       "hamster",
 			}
 
-			containerName := GetHamsterContainerNameByIndex(0)
+			containerName := utils.GetHamsterContainerNameByIndex(0)
 			vpaCRD := test.VerticalPodAutoscaler().
 				WithName("hamster-vpa").
 				WithNamespace(f.Namespace.Name).
@@ -171,20 +170,20 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 						GetContainerResources()).
 				Get()
 
-			InstallVPA(f, vpaCRD)
+			utils.InstallVPA(f, vpaCRD)
 		})
 
 		ginkgo.It("have cpu requests growing with usage", func() {
 			// initial CPU usage is low so a minimal recommendation is expected
 			err := waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// consume more CPU to get a higher recommendation
 			rc.ConsumeCPU(600 * replicas)
 			err = waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
@@ -192,7 +191,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		ginkgo.It("have memory requests growing with usage", func() {
 			// initial memory usage is low so a minimal recommendation is expected
 			err := waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie(minimalMemoryLowerBound), ParseQuantityOrDie(minimalMemoryUpperBound))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
@@ -200,7 +199,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			// NOTE: large range given due to unpredictability of actual memory usage
 			rc.ConsumeMem(1024 * replicas)
 			err = waitForResourceRequestInRangeInPods(
-				f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie("900Mi"), ParseQuantityOrDie("4000Mi"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
@@ -242,7 +241,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 			Name:       "hamster",
 		}
 
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
@@ -257,21 +256,21 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 	})
 
 	ginkgo.It("have cpu requests growing with usage", func() {
 		// initial CPU usage is low so a minimal recommendation is expected
 		err := waitForResourceRequestInRangeInPods(
-			f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		// consume more CPU to get a higher recommendation
 		rc.ConsumeCPU(600 * replicas)
 		err = waitForResourceRequestInRangeInPods(
-			f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
@@ -312,7 +311,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 			Name:       "hamster",
 		}
 
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithRecommender("non-recognized").
@@ -328,20 +327,20 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 					GetContainerResources()).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 
 	})
 
 	ginkgo.It("deployment not updated by non-recognized recommender", func() {
 		err := waitForResourceRequestInRangeInPods(
-			f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		// consume more CPU to get a higher recommendation
 		rc.ConsumeCPU(600 * replicas)
 		err = waitForResourceRequestInRangeInPods(
-			f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1000m"))
 		gomega.Expect(err).To(gomega.HaveOccurred())
 	})
@@ -369,7 +368,7 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 			Name:       "hamster",
 		}
 
-		containerName := GetHamsterContainerNameByIndex(0)
+		containerName := utils.GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
@@ -377,7 +376,7 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 			WithContainer(containerName).
 			Get()
 
-		InstallVPA(f, vpaCRD)
+		utils.InstallVPA(f, vpaCRD)
 	})
 
 	ginkgo.It("have memory requests growing with OOMs", func() {
@@ -393,7 +392,7 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 })
 
 func waitForPodsMatch(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, matcher func(pod apiv1.Pod) bool) error {
-	return wait.PollUntilContextTimeout(context.Background(), pollInterval, timeout, true, func(ctx context.Context) (done bool, err error) {
+	return wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, timeout, true, func(ctx context.Context) (done bool, err error) {
 		ns := f.Namespace.Name
 		c := f.ClientSet
 

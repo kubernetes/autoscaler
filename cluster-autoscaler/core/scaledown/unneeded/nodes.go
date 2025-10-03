@@ -17,6 +17,7 @@ limitations under the License.
 package unneeded
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
@@ -63,19 +65,85 @@ func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *No
 	}
 }
 
+// LoadFromExistingTaints loads any existing DeletionCandidateTaint taints from the kubernetes cluster. given a TTL for the taint
+func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, ts time.Time, DeletionCandidateStalenessTTL time.Duration) error {
+	allNodes, err := listerRegistry.AllNodeLister().List()
+	if err != nil {
+		return fmt.Errorf("failed to list nodes when initializing unneeded nodes: %v", err)
+	}
+
+	var nodesWithTaints []simulator.NodeToBeRemoved
+	for _, node := range allNodes {
+		if since, err := taints.GetDeletionCandidateTime(node); err == nil && since != nil {
+			if err != nil {
+				klog.Errorf("Failed to get pods to move for node %s: %v", node.Name, err)
+				continue
+			}
+			if since.Add(DeletionCandidateStalenessTTL).Before(ts) {
+				klog.V(4).Infof("Skipping node %s with deletion candidate taint from %s, since it is older than TTL %s", node.Name, since.String(), DeletionCandidateStalenessTTL.String())
+				continue
+			}
+			nodeToBeRemoved := simulator.NodeToBeRemoved{
+				Node: node,
+			}
+			nodesWithTaints = append(nodesWithTaints, nodeToBeRemoved)
+			klog.V(4).Infof("Found node %s with deletion candidate taint from %s", node.Name, since.String())
+		}
+	}
+
+	if len(nodesWithTaints) > 0 {
+		klog.V(1).Infof("Initializing unneeded nodes with %d nodes that have deletion candidate taints", len(nodesWithTaints))
+		n.initialize(nodesWithTaints, ts)
+	}
+
+	return nil
+}
+
+// initialize initializes the Nodes object with the given node list.
+// It sets the initial state of unneeded nodes reflect the taint status of nodes in the cluster.
+// This is in order the avoid state loss between deployment restarts.
+func (n *Nodes) initialize(nodes []simulator.NodeToBeRemoved, ts time.Time) {
+	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
+		name := nn.Node.Name
+		if since, err := taints.GetDeletionCandidateTime(nn.Node); err == nil {
+			klog.V(4).Infof("Found node %s with deletion candidate taint from %s", name, since.String())
+			return since
+		} else if since == nil {
+			klog.Errorf("Failed to get deletion candidate taint time for node %s: %v", name, err)
+			return nil
+		}
+		klog.V(4).Infof("Found node %s with deletion candidate taint from now", name)
+		return nil
+	})
+}
+
 // Update stores nodes along with a time at which they were found to be
 // unneeded. Previously existing timestamps are preserved.
 func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
+	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
+		return nil
+	})
+}
+
+func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.Time, timestampGetter func(simulator.NodeToBeRemoved) *time.Time) {
 	updated := make(map[string]*node, len(nodes))
 	for _, nn := range nodes {
 		name := nn.Node.Name
-		updated[name] = &node{
-			ntbr: nn,
-		}
 		if val, found := n.byName[name]; found {
-			updated[name].since = val.since
+			updated[name] = &node{
+				ntbr:  nn,
+				since: val.since,
+			}
+		} else if existingts := timestampGetter(nn); existingts != nil {
+			updated[name] = &node{
+				ntbr:  nn,
+				since: *existingts,
+			}
 		} else {
-			updated[name].since = ts
+			updated[name] = &node{
+				ntbr:  nn,
+				since: ts,
+			}
 		}
 	}
 	n.byName = updated

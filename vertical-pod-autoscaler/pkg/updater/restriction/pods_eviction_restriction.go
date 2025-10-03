@@ -102,7 +102,7 @@ func (e *PodsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, vpa *vpa_type
 	if podToEvict.Status.Phase != apiv1.PodPending {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
 		if !present {
-			return fmt.Errorf("Internal error - cannot find stats for replication group %v", cr)
+			return fmt.Errorf("internal error - cannot find stats for replication group %v", cr)
 		}
 		singleGroupStats.evicted = singleGroupStats.evicted + 1
 		e.creatorToSingleGroupStatsMap[cr] = singleGroupStats

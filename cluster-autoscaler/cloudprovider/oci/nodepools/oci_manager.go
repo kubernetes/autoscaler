@@ -40,6 +40,8 @@ const (
 	nodepoolTags          = "nodepoolTags"
 	min                   = "min"
 	max                   = "max"
+	minSize               = "minSize"
+	maxSize               = "maxSize"
 )
 
 var (
@@ -89,6 +91,9 @@ func CreateNodePoolManager(cloudConfigPath string, nodeGroupAutoDiscoveryList []
 
 	var err error
 	var configProvider common.ConfigurationProvider
+
+	// enable SDK to look up the IMDS endpoint to figure out the right realmDomain
+	common.EnableInstanceMetadataServiceLookup()
 
 	if os.Getenv(ipconsts.OciUseWorkloadIdentityEnvVar) == "true" {
 		klog.Info("using workload identity provider")
@@ -214,19 +219,32 @@ func autoDiscoverNodeGroups(m *ociManagerImpl, okeClient okeClient, nodeGroup no
 		if validateNodepoolTags(nodeGroup.tags, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags) {
 			nodepool := &nodePool{}
 			nodepool.id = *nodePoolSummary.Id
-			nodepool.minSize = nodeGroup.minSize
-			nodepool.maxSize = nodeGroup.maxSize
+			// set minSize-maxSize from nodepool free form tags, or else use nodeGroupAutoDiscovery configuration
+			nodepool.minSize = getIntFromMap(nodePoolSummary.FreeformTags, minSize, nodeGroup.minSize)
+			nodepool.maxSize = getIntFromMap(nodePoolSummary.FreeformTags, maxSize, nodeGroup.maxSize)
 
 			nodepool.manager = nodeGroup.manager
 			nodepool.kubeClient = nodeGroup.kubeClient
 
 			m.staticNodePools[nodepool.id] = nodepool
-			klog.V(5).Infof("auto discovered nodepool in compartment : %s , nodepoolid: %s", nodeGroup.compartmentId, nodepool.id)
+			klog.V(4).Infof("auto discovered nodepool in compartment : %s , nodepoolid: %s ,minSize: %d, maxSize:%d", nodeGroup.compartmentId, nodepool.id, nodepool.minSize, nodepool.maxSize)
 		} else {
 			klog.Warningf("nodepool ignored as the tags do not satisfy the requirement : %s , %v, %v", *nodePoolSummary.Id, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags)
 		}
 	}
 	return true, nil
+}
+
+func getIntFromMap(m map[string]string, key string, defaultValue int) int {
+	value, ok := m[key]
+	if !ok {
+		return defaultValue
+	}
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+	return i
 }
 
 func validateNodepoolTags(nodeGroupTags map[string]string, freeFormTags map[string]string, definedTags map[string]map[string]interface{}) bool {
@@ -394,10 +412,34 @@ func (m *ociManagerImpl) TaintToPreventFurtherSchedulingOnRestart(nodes []*apiv1
 func (m *ociManagerImpl) forceRefresh() error {
 	// auto discover node groups
 	if m.nodeGroups != nil {
-		// empty previous nodepool map to do an auto discovery
+		// create a copy of m.staticNodePools to use it in comparison
+		staticNodePoolsCopy := make(map[string]NodePool)
+		for k, v := range m.staticNodePools {
+			staticNodePoolsCopy[k] = v
+		}
+
+		// empty previous nodepool map to do a fresh auto discovery
 		m.staticNodePools = make(map[string]NodePool)
+
+		// run auto-discovery
 		for _, nodeGroup := range m.nodeGroups {
 			autoDiscoverNodeGroups(m, m.okeClient, nodeGroup)
+		}
+
+		// compare the new and previous nodepool list to log the updates
+		for nodepoolId, nodepool := range m.staticNodePools {
+			if _, ok := staticNodePoolsCopy[nodepoolId]; !ok {
+				klog.Infof("New nodepool discovered. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(), nodepool.MaxSize())
+			} else if staticNodePoolsCopy[nodepoolId].MinSize() != nodepool.MinSize() || staticNodePoolsCopy[nodepoolId].MaxSize() != nodepool.MaxSize() {
+				klog.Infof("Nodepool min/max sizes are updated. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(), nodepool.MaxSize())
+			}
+		}
+
+		// log if there are nodepools removed from the list
+		for k := range staticNodePoolsCopy {
+			if _, ok := m.staticNodePools[k]; !ok {
+				klog.Infof("Previously auto-discovered nodepool removed from the managed nodepool list. nodepoolid: %s", k)
+			}
 		}
 	}
 	// rebuild nodepool cache
@@ -461,12 +503,6 @@ func (m *ociManagerImpl) GetExistingNodePoolSizeViaCompute(np NodePool) (int, er
 			if !strings.HasPrefix(*item.DisplayName, displayNamePrefix) {
 				continue
 			}
-			// A node pool can fail to scale up if there's no capacity in the region. In that case, the node pool will be
-			// returned by the API, but it will not actually exist or have an ID, so we don't want to tell the autoscaler about it.
-			if *item.Id == "" {
-				klog.V(4).Infof("skipping node as it doesn't have a scaled-up instance")
-				continue
-			}
 			switch item.LifecycleState {
 			case core.InstanceLifecycleStateStopped, core.InstanceLifecycleStateTerminated:
 				klog.V(4).Infof("skipping instance is in stopped/terminated state: %q", *item.Id)
@@ -525,25 +561,23 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 	nodePool, err := m.nodePoolCache.get(np.Id())
 	if err != nil {
+		klog.Error(err, "error while performing GetNodePoolNodes call")
 		return nil, err
 	}
 
 	var instances []cloudprovider.Instance
 	for _, node := range nodePool.Nodes {
 
-		// A node pool can fail to scale up if there's no capacity in the region. In that case, the node pool will be
-		// returned by the API, but it will not actually exist or have an ID, so we don't want to tell the autoscaler about it.
-		if *node.Id == "" {
-			klog.V(4).Infof("skipping node as it doesn't have a scaled-up instance")
-			continue
-		}
-
 		if node.NodeError != nil {
 
+			// We should move away from the approach of determining a node error as a Out of host capacity
+			// through string comparison. An error code specifically for Out of host capacity must be set
+			// and returned in the API response.
 			errorClass := cloudprovider.OtherErrorClass
 			if *node.NodeError.Code == "LimitExceeded" ||
-				(*node.NodeError.Code == "InternalServerError" &&
-					strings.Contains(*node.NodeError.Message, "quota")) {
+				*node.NodeError.Code == "QuotaExceeded" ||
+				(*node.NodeError.Code == "InternalError" &&
+					strings.Contains(*node.NodeError.Message, "Out of host capacity")) {
 				errorClass = cloudprovider.OutOfResourcesErrorClass
 			}
 

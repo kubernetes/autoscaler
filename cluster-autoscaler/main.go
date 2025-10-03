@@ -27,6 +27,8 @@ import (
 
 	"github.com/spf13/pflag"
 
+	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -46,12 +48,14 @@ import (
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	cbprocessor "k8s.io/autoscaler/cluster-autoscaler/processors/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/podinjection"
@@ -118,12 +122,6 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	drainabilityRules := rules.Default(deleteOptions)
 
 	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
-	if autoscalingOptions.DynamicResourceAllocationEnabled {
-		// TODO(DRA): Remove this once DeltaSnapshotStore is integrated with DRA.
-		klog.Warningf("Using BasicSnapshotStore instead of DeltaSnapshotStore because DRA is enabled. Autoscaling performance/scalability might be decreased.")
-		snapshotStore = store.NewBasicSnapshotStore()
-	}
-
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		FrameworkHandle:      fwHandle,
@@ -175,6 +173,29 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		podListProcessor.AddProcessor(provreqProcesor)
 
 		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
+	}
+
+	var capacitybufferClient *capacityclient.CapacityBufferClient
+	var capacitybufferClientError error
+	if autoscalingOptions.CapacitybufferControllerEnabled {
+		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+		capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
+		if capacitybufferClientError == nil && capacitybufferClient != nil {
+			nodeBufferController := capacitybuffer.NewDefaultBufferController(capacitybufferClient)
+			go nodeBufferController.Run(make(chan struct{}))
+		}
+	}
+
+	if autoscalingOptions.CapacitybufferPodInjectionEnabled {
+		if capacitybufferClient == nil {
+			restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
+		}
+		if capacitybufferClientError == nil && capacitybufferClient != nil {
+			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(capacitybufferClient, []string{common.ActiveProvisioningStrategy})
+			podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{bufferPodInjector, podListProcessor})
+			opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{cbprocessor.NewFakePodsScaleUpStatusProcessor(), opts.Processors.ScaleUpStatusProcessor})
+		}
 	}
 
 	if autoscalingOptions.ProactiveScaleupEnabled {

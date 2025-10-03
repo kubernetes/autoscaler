@@ -4,3 +4,19 @@ aliases:
     - jackfrancis
     - raywainman
     - towca
+  sig-autoscaling-vpa-approvers:
+    - kwiesmueller
+    - voelzmo
+    - raywainman
+    - adrianmoisey
+    - omerap12
+  # emeritus:
+  # - jbartosik 2025-08-09
+  sig-autoscaling-vpa-reviewers:
+    - kwiesmueller
+    - voelzmo
+    - raywainman
+    - adrianmoisey
+    - omerap12
+  # emeritus:
+  # - jbartosik 2025-08-09

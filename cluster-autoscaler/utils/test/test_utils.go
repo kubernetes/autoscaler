@@ -160,8 +160,8 @@ func WithHostPort(hostport int32) func(*apiv1.Pod) {
 	}
 }
 
-// WithMaxSkew sets a namespace to the pod.
-func WithMaxSkew(maxSkew int32, topologySpreadingKey string) func(*apiv1.Pod) {
+// WithMaxSkew sets a topology spread constraint to the pod.
+func WithMaxSkew(maxSkew int32, topologySpreadingKey string, minDomains int32) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		if maxSkew > 0 {
 			pod.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{
@@ -174,6 +174,7 @@ func WithMaxSkew(maxSkew int32, topologySpreadingKey string) func(*apiv1.Pod) {
 							"app": "estimatee",
 						},
 					},
+					MinDomains: &minDomains,
 				},
 			}
 		}

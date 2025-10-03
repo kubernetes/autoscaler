@@ -32,6 +32,7 @@ import (
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -382,8 +383,7 @@ func TestMakeFakePods(t *testing.T) {
 		assert.Equal(t, fakePod.Name, fmt.Sprintf("%s-copy-%d", samplePod.Name, idx+1))
 		assert.Equal(t, fakePod.UID, types.UID(fmt.Sprintf("%s-%d", string(ownerUid), idx+1)))
 		assert.Equal(t, "", fakePod.Spec.NodeName)
-		assert.NotNil(t, fakePod.Annotations)
-		assert.Equal(t, fakePod.Annotations[FakePodAnnotationKey], FakePodAnnotationValue)
+		assert.True(t, fake.IsFake(fakePod))
 	}
 
 	// Test case: Zero fake pod count

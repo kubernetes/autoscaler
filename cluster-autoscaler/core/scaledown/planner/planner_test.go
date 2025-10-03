@@ -36,11 +36,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -463,7 +466,7 @@ func TestUpdateClusterState(t *testing.T) {
 			wantUnremovable: []string{"n1", "n2", "n3", "n4"},
 		},
 		{
-			name: "Simulation timeout is hitted",
+			name: "Simulation timeout is hit",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 1000, 10),
 				BuildTestNode("n2", 1000, 10),
@@ -702,6 +705,137 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
 			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
 			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
+		})
+	}
+}
+
+// TestNewPlannerWithExistingDeletionCandidateNodes tests that the newPlanner correctly handles existing deletion candidate taints on nodes.
+func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
+	// Use a table-driven approach where each test case includes its own set of nodes and expected behavior
+	type testCase struct {
+		name                           string
+		allNodes                       []*apiv1.Node
+		expectedDeletionCandidateNodes []*apiv1.Node
+		nodeDeletionCandidateTTL       time.Duration
+	}
+
+	// Common test setup
+	deletionCandidateTaint := taints.DeletionCandidateTaint()
+	currentTime := time.Now()
+
+	// Node that should be deleted
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, currentTime)
+	nt1 := deletionCandidateTaint
+	ntt1 := currentTime.Add(-time.Minute * 2)
+	nt1.Value = fmt.Sprint(ntt1.Unix())
+	n1.Spec.Taints = append(n1.Spec.Taints, nt1)
+
+	// Node whose DeletionCandidateTaint has lapsed, shouldn't be deleted
+	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, true, currentTime)
+	nt2 := deletionCandidateTaint
+	ntt2 := currentTime.Add(-time.Minute * 10)
+	nt2.Value = fmt.Sprint(ntt2.Unix())
+	n2.Spec.Taints = append(n2.Spec.Taints, nt2)
+
+	// Node that is marked for deletion, but should have that mark removed
+	n3 := BuildTestNode("n3", 1000, 1000)
+	SetNodeReadyState(n3, true, currentTime)
+	nt3 := deletionCandidateTaint
+	ntt3 := currentTime.Add(-time.Minute * 2)
+	nt3.Value = fmt.Sprint(ntt3.Unix())
+	n3.Spec.Taints = append(n3.Spec.Taints, nt3)
+
+	// Node with invalid DeletionCandidateTaint, taint should be deleted
+	n4 := BuildTestNode("n4", 1000, 1000)
+	SetNodeReadyState(n4, true, currentTime)
+	nt4 := deletionCandidateTaint
+	nt4.Value = "invalid-value"
+	n4.Spec.Taints = append(n4.Spec.Taints, nt4)
+
+	// Node with no DeletionCandidateTaint, should not be deleted
+	n5 := BuildTestNode("n5", 1000, 1000)
+	SetNodeReadyState(n5, true, currentTime)
+
+	// Pod that blocks eviction on node n3
+	p1 := BuildTestPod("p1", 600, 100)
+	p1.Spec.NodeName = n3.Name
+	p1.SetAnnotations(
+		map[string]string{
+			drain.PodSafeToEvictKey: "false",
+		},
+	)
+
+	testCases := []testCase{
+		{
+			name:                           "All deletion candidate nodes with standard TTL",
+			allNodes:                       []*apiv1.Node{n1, n2, n3},
+			expectedDeletionCandidateNodes: []*apiv1.Node{n1},
+			nodeDeletionCandidateTTL:       time.Minute * 5,
+		},
+		{
+			name:                           "Node without deletion candidate taint should not be deleted",
+			allNodes:                       []*apiv1.Node{n5},
+			expectedDeletionCandidateNodes: []*apiv1.Node{},
+			nodeDeletionCandidateTTL:       time.Minute * 5,
+		},
+		{
+			name:                           "Node with invalid deletion candidate taint should be deleted",
+			allNodes:                       []*apiv1.Node{n4},
+			expectedDeletionCandidateNodes: []*apiv1.Node{},
+			nodeDeletionCandidateTTL:       time.Minute * 5,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			readyNodeLister := kubernetes.NewTestNodeLister(nil)
+			allNodeLister := kubernetes.NewTestNodeLister(nil)
+
+			readyNodeLister.SetNodes(tc.allNodes)
+			allNodeLister.SetNodes(tc.allNodes)
+
+			autoscalingOptions := config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime:         time.Minute,
+					ScaleDownUnreadyTime:          time.Minute,
+					ScaleDownUtilizationThreshold: 0.5,
+					MaxNodeProvisionTime:          10 * time.Second,
+				},
+				EstimatorName:            estimator.BinpackingEstimatorName,
+				EnforceNodeGroupMinSize:  true,
+				ScaleDownEnabled:         true,
+				MaxNodesTotal:            100,
+				MaxCoresTotal:            100,
+				MaxMemoryTotal:           100000,
+				NodeDeletionCandidateTTL: tc.nodeDeletionCandidateTTL,
+			}
+
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			for _, node := range tc.allNodes {
+				provider.AddNode("ng1", node)
+			}
+
+			context, err := NewScaleTestAutoscalingContext(
+				autoscalingOptions,
+				&fake.Clientset{},
+				kube_util.NewListerRegistry(
+					allNodeLister,
+					readyNodeLister,
+					nil, nil, nil, nil, nil, nil, nil,
+				),
+
+				provider,
+				nil,
+				nil,
+			)
+			assert.NoError(t, err)
+
+			deleteOptions := options.NodeDeleteOptions{}
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+
+			p.unneededNodes.AsList()
 		})
 	}
 }

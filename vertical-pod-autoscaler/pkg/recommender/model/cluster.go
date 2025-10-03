@@ -19,6 +19,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -70,6 +71,7 @@ type clusterState struct {
 	// VPA objects in the cluster that have no recommendation mapped to the first
 	// time we've noticed the recommendation missing or last time we logged
 	// a warning about it.
+	// TODO consider switching to a sync.Map for emptyVPAs
 	emptyVPAs map[VpaID]time.Time
 	// Observed VPAs. Used to check if there are updates needed.
 	observedVPAs []*vpa_types.VerticalPodAutoscaler
@@ -82,6 +84,9 @@ type clusterState struct {
 
 	lastAggregateContainerStateGC time.Time
 	gcInterval                    time.Duration
+
+	// Mutex to protect concurrent access to maps
+	mutex sync.RWMutex
 }
 
 // StateMapSize is the number of pods being tracked by the VPA
@@ -319,6 +324,8 @@ func (cluster *clusterState) DeleteVpa(vpaID VpaID) error {
 		state.MarkNotAutoscaled()
 	}
 	delete(cluster.vpas, vpaID)
+	cluster.mutex.Lock()
+	defer cluster.mutex.Unlock()
 	delete(cluster.emptyVPAs, vpaID)
 	return nil
 }
@@ -370,7 +377,7 @@ func (cluster *clusterState) MakeAggregateStateKey(pod *PodState, containerName 
 func (cluster *clusterState) aggregateStateKeyForContainerID(containerID ContainerID) AggregateStateKey {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if !podExists {
-		panic(fmt.Sprintf("Pod not present in the ClusterState: %s/%s", containerID.PodID.Namespace, containerID.PodID.PodName))
+		panic(fmt.Sprintf("Pod not present in the ClusterState: %s/%s", containerID.Namespace, containerID.PodName))
 	}
 	return cluster.MakeAggregateStateKey(pod, containerID.ContainerName)
 }
@@ -464,6 +471,8 @@ func (cluster *clusterState) getContributiveAggregateStateKeys(ctx context.Conte
 // keep track of empty recommendations and log information about them
 // periodically.
 func (cluster *clusterState) RecordRecommendation(vpa *Vpa, now time.Time) error {
+	cluster.mutex.Lock()
+	defer cluster.mutex.Unlock()
 	if vpa.Recommendation != nil && len(vpa.Recommendation.ContainerRecommendations) > 0 {
 		delete(cluster.emptyVPAs, vpa.ID)
 		return nil

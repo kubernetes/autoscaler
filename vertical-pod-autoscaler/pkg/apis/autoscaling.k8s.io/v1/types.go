@@ -170,6 +170,9 @@ const (
 	// and additionally can update them during the lifetime of the pod,
 	// using any available update method. Currently this is equivalent to
 	// Recreate.
+	// Deprecated: This value is deprecated and will be removed in a future API version.
+	// Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.
+	// See https://github.com/kubernetes/autoscaler/issues/8424 for more details.
 	UpdateModeAuto UpdateMode = "Auto"
 	// UpdateModeInPlaceOrRecreate means that autoscaler tries to assign resources in-place.
 	// If this is not possible (e.g., resizing takes too long or is infeasible), it falls back to the

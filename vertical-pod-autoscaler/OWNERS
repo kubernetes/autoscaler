@@ -1,17 +1,7 @@
 approvers:
-- kwiesmueller
-- jbartosik
-- voelzmo
-- raywainman
-- adrianmoisey
-- omerap12
+- sig-autoscaling-vpa-approvers
 reviewers:
-- kwiesmueller
-- jbartosik
-- voelzmo
-- raywainman
-- adrianmoisey
-- omerap12
+- sig-autoscaling-vpa-reviewers
 emeritus_approvers:
 - schylek # 2022-09-30
 - kgolab # 2025-02-21

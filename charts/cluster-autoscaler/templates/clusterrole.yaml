@@ -6,6 +6,17 @@ metadata:
 {{ include "cluster-autoscaler.labels" . | indent 4 }}
   name: {{ template "cluster-autoscaler.fullname" . }}
 rules:
+{{- if (eq .Values.cloudProvider "coreweave") }}
+  - apiGroups:
+    - "compute.coreweave.com"
+    resources:
+    - nodepools
+    verbs:
+    - get
+    - list
+    - patch
+    - update
+{{- end }}
   - apiGroups:
       - ""
     resources:
@@ -172,5 +183,8 @@ rules:
     - get
     - patch
     - update
+{{- end }}
+{{- if .Values.rbac.additionalRules }}
+{{ toYaml .Values.rbac.additionalRules | indent 2 }}
 {{- end }}
 {{- end -}}

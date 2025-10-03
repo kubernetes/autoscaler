@@ -555,6 +555,37 @@ func TestRegisterScaleDown(t *testing.T) {
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 }
 
+func TestNodeGroupScaleUpTime(t *testing.T) {
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	assert.NotNil(t, provider)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+
+	// nil node group
+	_, err := clusterstate.NodeGroupScaleUpTime(nil)
+	assert.ErrorContains(t, err, "failed to find scaleUpRequest for node group: unexpected node group passed")
+
+	// node group that's not being scaled up
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	ng := provider.GetNodeGroup("ng1")
+
+	_, err = clusterstate.NodeGroupScaleUpTime(ng)
+	assert.ErrorContains(t, err, "failed to find scaleUpRequest for node group")
+
+	// node group currently being scaled up
+	wantScaleUpTime := time.Now()
+	clusterstate.RegisterScaleUp(ng, 1, wantScaleUpTime)
+
+	gotScaleUpTime, err := clusterstate.NodeGroupScaleUpTime(ng)
+	assert.NoError(t, err)
+	assert.Equal(t, wantScaleUpTime, gotScaleUpTime)
+}
+
 func TestUpcomingNodes(t *testing.T) {
 	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	now := time.Now()

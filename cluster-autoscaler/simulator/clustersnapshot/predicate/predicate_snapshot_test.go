@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/assert" // TODO: Migrate the rest of the assertions to cmp for consistency.
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/util/feature"
@@ -102,11 +102,11 @@ func compareStates(t *testing.T, a, b snapshotState) {
 		t.Errorf("ResourceClaims().List(): unexpected diff (-want +got): %s", diff)
 	}
 
-	aSlices, err := a.draSnapshot.ResourceSlices().List()
+	aSlices, err := a.draSnapshot.ResourceSlices().ListWithDeviceTaintRules()
 	if err != nil {
 		t.Errorf("ResourceSlices().List(): unexpected error: %v", err)
 	}
-	bSlices, err := b.draSnapshot.ResourceSlices().List()
+	bSlices, err := b.draSnapshot.ResourceSlices().ListWithDeviceTaintRules()
 	if err != nil {
 		t.Errorf("ResourceSlices().List(): unexpected error: %v", err)
 	}
@@ -204,32 +204,32 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 		{
 			ObjectMeta: metav1.ObjectMeta{Name: "slice1", UID: "slice1Uid"},
 			Spec: resourceapi.ResourceSliceSpec{
-				NodeName: node.Name,
+				NodeName: &node.Name,
 				Driver:   "driver.foo.com",
 				Pool: resourceapi.ResourcePool{
 					Name:               "pool1",
 					ResourceSliceCount: 1,
 				},
 				Devices: []resourceapi.Device{
-					{Name: "dev1", Basic: &resourceapi.BasicDevice{}},
-					{Name: "dev2", Basic: &resourceapi.BasicDevice{}},
-					{Name: "dev3", Basic: &resourceapi.BasicDevice{}},
+					{Name: "dev1"},
+					{Name: "dev2"},
+					{Name: "dev3"},
 				},
 			},
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{Name: "slice2", UID: "slice2Uid"},
 			Spec: resourceapi.ResourceSliceSpec{
-				NodeName: node.Name,
+				NodeName: &node.Name,
 				Driver:   "driver.bar.com",
 				Pool: resourceapi.ResourcePool{
 					Name:               "pool2",
 					ResourceSliceCount: 1,
 				},
 				Devices: []resourceapi.Device{
-					{Name: "dev1", Basic: &resourceapi.BasicDevice{}},
-					{Name: "dev2", Basic: &resourceapi.BasicDevice{}},
-					{Name: "dev3", Basic: &resourceapi.BasicDevice{}},
+					{Name: "dev1"},
+					{Name: "dev2"},
+					{Name: "dev3"},
 				},
 			},
 		},
@@ -247,11 +247,13 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				Devices: resourceapi.DeviceClaim{
 					Requests: []resourceapi.DeviceRequest{
 						{
-							Name:            "req1",
-							DeviceClassName: "defaultClass",
-							Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: `device.driver == "driver.foo.com"`}}},
-							AllocationMode:  resourceapi.DeviceAllocationModeExactCount,
-							Count:           3,
+							Name: "req1",
+							Exactly: &resourceapi.ExactDeviceRequest{
+								DeviceClassName: "defaultClass",
+								Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: `device.driver == "driver.foo.com"`}}},
+								AllocationMode:  resourceapi.DeviceAllocationModeExactCount,
+								Count:           3,
+							},
 						},
 					},
 				},
@@ -284,10 +286,12 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			Devices: resourceapi.DeviceClaim{
 				Requests: []resourceapi.DeviceRequest{
 					{
-						Name:            "req1",
-						DeviceClassName: "defaultClass",
-						Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: `device.driver == "driver.bar.com"`}}},
-						AllocationMode:  resourceapi.DeviceAllocationModeAll,
+						Name: "req1",
+						Exactly: &resourceapi.ExactDeviceRequest{
+							DeviceClassName: "defaultClass",
+							Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: `device.driver == "driver.bar.com"`}}},
+							AllocationMode:  resourceapi.DeviceAllocationModeAll,
+						},
 					},
 				},
 			},

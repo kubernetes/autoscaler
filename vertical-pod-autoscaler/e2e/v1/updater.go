@@ -24,6 +24,7 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -138,15 +139,6 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
-})
-
-var _ = UpdaterE2eDescribe("Updater", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
-	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
-
-	ginkgo.BeforeEach(func() {
-		checkInPlaceOrRecreateTestsEnabled(f, false, true)
-	})
 
 	ginkgo.It("In-place update pods when Admission Controller status available", func() {
 		const statusUpdateInterval = 10 * time.Second
@@ -226,12 +218,12 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 		Name:       "hamster-deployment",
 	}
 	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
-	setupHamsterController(f, controller.Kind, hamsterCPU, hamsterMemory, defaultHamsterReplicas)
+	setupHamsterController(f, controller.Kind, hamsterCPU, hamsterMemory, utils.DefaultHamsterReplicas)
 	podList, err := GetHamsterPods(f)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	containerName := GetHamsterContainerNameByIndex(0)
+	containerName := utils.GetHamsterContainerNameByIndex(0)
 	vpaCRD := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
@@ -248,7 +240,7 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 				GetContainerResources()).
 		Get()
 
-	InstallVPA(f, vpaCRD)
+	utils.InstallVPA(f, vpaCRD)
 
 	return podList
 }
@@ -268,12 +260,12 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 		Name:       "hamster-deployment",
 	}
 	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
-	setupHamsterController(f, controller.Kind, hamsterCPU, hamsterMemory, defaultHamsterReplicas)
+	setupHamsterController(f, controller.Kind, hamsterCPU, hamsterMemory, utils.DefaultHamsterReplicas)
 	podList, err := GetHamsterPods(f)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	containerName := GetHamsterContainerNameByIndex(0)
+	containerName := utils.GetHamsterContainerNameByIndex(0)
 	vpaBuilder := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
@@ -293,7 +285,7 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 	}
 
 	vpaCRD := vpaBuilder.Get()
-	InstallVPA(f, vpaCRD)
+	utils.InstallVPA(f, vpaCRD)
 
 	return podList
 }

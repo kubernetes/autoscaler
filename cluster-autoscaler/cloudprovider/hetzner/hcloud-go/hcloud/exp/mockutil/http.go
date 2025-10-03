@@ -28,6 +28,8 @@ type Request struct {
 }
 
 // Handler is using a [Server] to mock http requests provided by the user.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func Handler(t *testing.T, requests []Request) http.HandlerFunc {
 	t.Helper()
 
@@ -38,6 +40,8 @@ func Handler(t *testing.T, requests []Request) http.HandlerFunc {
 }
 
 // NewServer returns a new mock server that closes itself at the end of the test.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func NewServer(t *testing.T, requests []Request) *Server {
 	t.Helper()
 
@@ -56,6 +60,8 @@ func NewServer(t *testing.T, requests []Request) *Server {
 // iterated over.
 //
 // A Server must be created using the [NewServer] function.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 type Server struct {
 	*httptest.Server
 
@@ -66,6 +72,8 @@ type Server struct {
 }
 
 // Expect adds requests to the list of requests expected by the [Server].
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func (m *Server) Expect(requests []Request) {
 	m.requests = append(m.requests, requests...)
 }

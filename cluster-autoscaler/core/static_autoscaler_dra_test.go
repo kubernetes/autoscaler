@@ -30,7 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -181,8 +181,8 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 	req1Nic := testDeviceRequest{name: "req1Nic", count: 1, selectors: singleAttrSelector(exampleDriver, nicAttribute, nicTypeA)}
 	req1Global := testDeviceRequest{name: "req1Global", count: 1, selectors: singleAttrSelector(exampleDriver, globalDevAttribute, globalDevTypeA)}
 
-	sharedGpuBClaim := testResourceClaim("sharedGpuBClaim", nil, "", []testDeviceRequest{req1GpuB}, nil, nil)
-	sharedAllocatedGlobalClaim := testResourceClaim("sharedGlobalClaim", nil, "", []testDeviceRequest{req1Global}, []testAllocation{{request: req1Global.name, driver: exampleDriver, pool: "global-pool", device: globalDevice + "-0"}}, nil)
+	sharedGpuBClaim := testResourceClaim("sharedGpuBClaim", nil, "", []testDeviceRequest{req1GpuB}, nil)
+	sharedAllocatedGlobalClaim := testResourceClaim("sharedGlobalClaim", nil, "", []testDeviceRequest{req1Global}, []testAllocation{{request: req1Global.name, driver: exampleDriver, pool: "global-pool", device: globalDevice + "-0"}})
 
 	testCases := map[string]struct {
 		nodeGroups           map[*testNodeGroupDef]int
@@ -250,10 +250,8 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 			expectedScaleUps: map[string]int{node1Gpu1Nic1slice.name: 3},
 		},
 		"scale-up: scale from 0 nodes in a node group": {
-			nodeGroups: map[*testNodeGroupDef]int{node1Gpu1Nic1slice: 0},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
-			),
+			nodeGroups:       map[*testNodeGroupDef]int{node1Gpu1Nic1slice: 0},
+			pods:             unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
 			expectedScaleUps: map[string]int{node1Gpu1Nic1slice.name: 3},
 		},
 		"scale-up: scale from 0 nodes in a node group, with pods on the template nodes consuming DRA resources": {
@@ -264,9 +262,7 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 					scheduledPod(baseSmallPod, "template-1", node3GpuA1slice.name+"-template", map[*testDeviceRequest][]string{&req1GpuA: {gpuDevice + "-1"}}),
 				},
 			},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}),
-			),
+			pods:             unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}),
 			expectedScaleUps: map[string]int{node3GpuA1slice.name: 3},
 		},
 		"scale-up: scale from 0 nodes in a node group, with pods on the template nodes consuming DRA resources, including shared claims": {
@@ -278,16 +274,12 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 					scheduledPod(baseSmallPod, "template-1", node3GpuA1slice.name+"-template", map[*testDeviceRequest][]string{&req1GpuA: {gpuDevice + "-1"}}, sharedAllocatedGlobalClaim),
 				},
 			},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}, sharedAllocatedGlobalClaim),
-			),
+			pods:             unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA}, sharedAllocatedGlobalClaim),
 			expectedScaleUps: map[string]int{node3GpuA1slice.name: 3},
 		},
 		"no scale-up: pods requesting multiple different devices, but they're on different nodes": {
 			nodeGroups: map[*testNodeGroupDef]int{node1GpuA1slice: 1, node1Nic1slice: 1},
-			pods: append(
-				unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
-			),
+			pods:       unscheduledPods(baseSmallPod, "unschedulable", 3, []testDeviceRequest{req1GpuA, req1Nic}),
 		},
 		"scale-up: pods requesting a shared, unallocated claim": {
 			extraResourceClaims: []*resourceapi.ResourceClaim{sharedGpuBClaim},
@@ -597,13 +589,13 @@ func resourceClaimsForPod(pod *apiv1.Pod, nodeName string, claimCount int, reque
 			}
 		}
 
-		claims = append(claims, testResourceClaim(name, pod, nodeName, claimRequests, claimAllocations, nil))
+		claims = append(claims, testResourceClaim(name, pod, nodeName, claimRequests, claimAllocations))
 	}
 
 	return claims
 }
 
-func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, requests []testDeviceRequest, allocations []testAllocation, reservedFor []*apiv1.Pod) *resourceapi.ResourceClaim {
+func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, requests []testDeviceRequest, allocations []testAllocation) *resourceapi.ResourceClaim {
 	var deviceRequests []resourceapi.DeviceRequest
 	for _, request := range requests {
 		var selectors []resourceapi.DeviceSelector
@@ -611,15 +603,17 @@ func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, 
 			selectors = append(selectors, resourceapi.DeviceSelector{CEL: &resourceapi.CELDeviceSelector{Expression: selector}})
 		}
 		deviceRequest := resourceapi.DeviceRequest{
-			Name:            request.name,
-			DeviceClassName: "default-class",
-			Selectors:       selectors,
+			Name: request.name,
+			Exactly: &resourceapi.ExactDeviceRequest{
+				DeviceClassName: "default-class",
+				Selectors:       selectors,
+			},
 		}
 		if request.all {
-			deviceRequest.AllocationMode = resourceapi.DeviceAllocationModeAll
+			deviceRequest.Exactly.AllocationMode = resourceapi.DeviceAllocationModeAll
 		} else {
-			deviceRequest.AllocationMode = resourceapi.DeviceAllocationModeExactCount
-			deviceRequest.Count = request.count
+			deviceRequest.Exactly.AllocationMode = resourceapi.DeviceAllocationModeExactCount
+			deviceRequest.Exactly.Count = request.count
 		}
 		deviceRequests = append(deviceRequests, deviceRequest)
 	}
@@ -673,15 +667,6 @@ func testResourceClaim(claimName string, owningPod *apiv1.Pod, nodeName string, 
 					UID:      owningPod.UID,
 				},
 			}
-		} else {
-			for _, pod := range podReservations {
-				podReservations = append(podReservations, resourceapi.ResourceClaimConsumerReference{
-					APIGroup: "",
-					Resource: "pods",
-					Name:     pod.Name,
-					UID:      pod.UID,
-				})
-			}
 		}
 		claim.Status = resourceapi.ResourceClaimStatus{
 			Allocation: &resourceapi.AllocationResult{
@@ -728,9 +713,10 @@ func testResourceSlices(driver, poolName string, poolSliceCount, poolGen int64, 
 		}
 
 		if avail.node != "" {
-			slice.Spec.NodeName = avail.node
+			slice.Spec.NodeName = &avail.node
 		} else if avail.all {
-			slice.Spec.AllNodes = true
+			v := true
+			slice.Spec.AllNodes = &v
 		} else if len(avail.nodes) > 0 {
 			slice.Spec.NodeSelector = &apiv1.NodeSelector{
 				NodeSelectorTerms: []apiv1.NodeSelectorTerm{
@@ -745,18 +731,16 @@ func testResourceSlices(driver, poolName string, poolSliceCount, poolGen int64, 
 	var devices []resourceapi.Device
 	for _, deviceDef := range deviceDefs {
 		device := resourceapi.Device{
-			Name: deviceDef.name,
-			Basic: &resourceapi.BasicDevice{
-				Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{},
-				Capacity:   map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{},
-			},
+			Name:       deviceDef.name,
+			Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{},
+			Capacity:   map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{},
 		}
 		for name, val := range deviceDef.attributes {
 			val := val
-			device.Basic.Attributes[resourceapi.QualifiedName(driver+"/"+name)] = resourceapi.DeviceAttribute{StringValue: &val}
+			device.Attributes[resourceapi.QualifiedName(driver+"/"+name)] = resourceapi.DeviceAttribute{StringValue: &val}
 		}
 		for name, quantity := range deviceDef.capacity {
-			device.Basic.Capacity[resourceapi.QualifiedName(name)] = resourceapi.DeviceCapacity{Value: resource.MustParse(quantity)}
+			device.Capacity[resourceapi.QualifiedName(name)] = resourceapi.DeviceCapacity{Value: resource.MustParse(quantity)}
 		}
 		devices = append(devices, device)
 	}

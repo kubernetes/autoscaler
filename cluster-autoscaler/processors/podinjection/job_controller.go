@@ -56,8 +56,8 @@ func desiredReplicasFromJob(job *batchv1.Job) int {
 	return max(desiredReplicas, 0)
 }
 
-// isWorkQueueJob returns true if the job is a work queue job (Completions is 1 or nil and Parallelism >=0)
+// isWorkQueueJob returns true if the job is a work queue job (Completions is nil and Parallelism >=0)
 // work queue jobs should have replicas equal to Parallelism regardless in case of no Succeeded
 func isWorkQueueJob(job *batchv1.Job) bool {
-	return (job.Spec.Completions == nil || *(job.Spec.Completions) == 1) && job.Spec.Parallelism != nil && *(job.Spec.Parallelism) >= 0
+	return job.Spec.Completions == nil && job.Spec.Parallelism != nil && *(job.Spec.Parallelism) >= 0
 }

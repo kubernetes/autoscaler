@@ -17,13 +17,14 @@ limitations under the License.
 package snapshot
 
 import (
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 )
 
 type snapshotSliceLister struct {
 	snapshot *Snapshot
 }
 
-func (sl snapshotSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
+// TODO(DRA): Actually handle the taint rules.
+func (sl snapshotSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
 	return sl.snapshot.listResourceSlices(), nil
 }

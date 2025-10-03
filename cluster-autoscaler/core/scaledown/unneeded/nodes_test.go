@@ -32,7 +32,9 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -213,6 +215,101 @@ func TestRemovableAt(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNodeLoadFromExistingTaints(t *testing.T) {
+
+	deletionCandidateTaint := taints.DeletionCandidateTaint()
+	currentTime := time.Now()
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, currentTime)
+	nt1 := deletionCandidateTaint
+	ntt1 := currentTime.Add(-time.Minute * 2)
+	nt1.Value = fmt.Sprint(ntt1.Unix())
+	n1.Spec.Taints = append(n1.Spec.Taints, nt1)
+
+	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, true, currentTime)
+
+	n3 := BuildTestNode("n3", 1000, 1000)
+	SetNodeReadyState(n3, true, currentTime)
+	nt3 := deletionCandidateTaint
+	ntt3 := currentTime.Add(-time.Minute * 20)
+	nt3.Value = fmt.Sprint(ntt3.Unix())
+	n3.Spec.Taints = append(n3.Spec.Taints, nt3)
+
+	n4 := BuildTestNode("n4", 1000, 1000)
+	SetNodeReadyState(n4, true, currentTime)
+	nt4 := deletionCandidateTaint
+	nt4.Value = "INVALID_VALUE"
+	n4.Spec.Taints = append(n4.Spec.Taints, nt4)
+
+	testCases := []struct {
+		name                     string
+		allNodes                 []*apiv1.Node
+		expectedUnneededNodes    []*apiv1.Node
+		nodeDeletionCandidateTTL time.Duration
+	}{
+		{
+			name:                     "All deletion candidate nodes with standard TTL",
+			allNodes:                 []*apiv1.Node{n1, n2},
+			expectedUnneededNodes:    []*apiv1.Node{n1},
+			nodeDeletionCandidateTTL: time.Minute * 5,
+		},
+		{
+			name:                     "Nodes with expired deletion candidate taint",
+			allNodes:                 []*apiv1.Node{n1, n2, n3},
+			expectedUnneededNodes:    []*apiv1.Node{n1},
+			nodeDeletionCandidateTTL: time.Minute * 5,
+		},
+		{
+			name:                     "Nodes with invalid deletion candidate taint",
+			allNodes:                 []*apiv1.Node{n1, n2, n3, n4},
+			expectedUnneededNodes:    []*apiv1.Node{n1},
+			nodeDeletionCandidateTTL: time.Minute * 5,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			currentTime = time.Now()
+
+			nodes := NewNodes(nil, nil)
+
+			allNodeLister := kubernetes.NewTestNodeLister(nil)
+			allNodeLister.SetNodes(tc.allNodes)
+
+			readyNodeLister := kubernetes.NewTestNodeLister(nil)
+			readyNodeLister.SetNodes(tc.allNodes)
+
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+				nil, nil, nil, nil, nil, nil, nil)
+
+			nodes.LoadFromExistingTaints(listerRegistry, currentTime, tc.nodeDeletionCandidateTTL)
+
+			unneededNodes := nodes.AsList()
+
+			assert.Equal(t, len(tc.expectedUnneededNodes), len(unneededNodes),
+				"Expected %d unneeded nodes but got %d", len(tc.expectedUnneededNodes), len(unneededNodes))
+
+			expectedNodeNames := make(map[string]bool)
+			for _, node := range tc.expectedUnneededNodes {
+				expectedNodeNames[node.Name] = true
+			}
+			for _, node := range unneededNodes {
+				_, found := expectedNodeNames[node.Name]
+				assert.True(t, found, "Node %s was not expected to be unneeded", node.Name)
+			}
+			for _, expectedNode := range tc.expectedUnneededNodes {
+				assert.True(t, nodes.Contains(expectedNode.Name),
+					"Expected node %s to be in unneeded nodes but wasn't found", expectedNode.Name)
+			}
+		})
+	}
+
 }
 
 type fakeActuationStatus struct {

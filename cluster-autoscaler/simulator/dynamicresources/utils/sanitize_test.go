@@ -23,7 +23,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/utils/ptr"
@@ -31,8 +31,10 @@ import (
 )
 
 func TestSanitizedNodeResourceSlices(t *testing.T) {
+	oldNodeName := "oldNode"
 	newNodeName := "newNode"
 	nameSuffix := "abc"
+	trueValue := true
 
 	device1 := resourceapi.Device{Name: "device1"}
 	device2 := resourceapi.Device{Name: "device2"}
@@ -41,7 +43,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	allNodesSlice := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "allNodesSlice", UID: "allNodesSlice"},
 		Spec: resourceapi.ResourceSliceSpec{
-			AllNodes: true,
+			AllNodes: &trueValue,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "all-nodes-pool1", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -59,7 +61,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool1Slice1 := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool1Slice1", UID: "pool1Slice1"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "oldNode",
+			NodeName: &oldNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool1", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -68,7 +70,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool1Slice2 := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool1Slice2", UID: "pool1Slice2"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "oldNode",
+			NodeName: &oldNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool1", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -77,7 +79,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool2Slice1 := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool2Slice1", UID: "pool2Slice1"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "oldNode",
+			NodeName: &oldNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool2", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -86,7 +88,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool2Slice2 := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool2Slice2", UID: "pool2Slice2"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "oldNode",
+			NodeName: &oldNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool2", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -95,7 +97,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool1Slice1Sanitized := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool1Slice1-abc"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "newNode",
+			NodeName: &newNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool1-abc", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -104,7 +106,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool1Slice2Sanitized := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool1Slice2-abc"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "newNode",
+			NodeName: &newNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool1-abc", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -113,7 +115,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool2Slice1Sanitized := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool2Slice1-abc"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "newNode",
+			NodeName: &newNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool2-abc", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,
@@ -122,7 +124,7 @@ func TestSanitizedNodeResourceSlices(t *testing.T) {
 	pool2Slice2Sanitized := &resourceapi.ResourceSlice{
 		ObjectMeta: metav1.ObjectMeta{Name: "pool2Slice2-abc"},
 		Spec: resourceapi.ResourceSliceSpec{
-			NodeName: "newNode",
+			NodeName: &newNodeName,
 			Driver:   "driver.example.com",
 			Pool:     resourceapi.ResourcePool{Name: "oldNode-pool2-abc", Generation: 13, ResourceSliceCount: 37},
 			Devices:  devices,

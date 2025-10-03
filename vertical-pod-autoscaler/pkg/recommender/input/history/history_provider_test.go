@@ -19,6 +19,8 @@ package history
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -344,4 +346,70 @@ func TestGetLabels(t *testing.T) {
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
 	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
+}
+
+func TestPrometheusAuth(t *testing.T) {
+	var capturedRequest *http.Request
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedRequest = r
+		_, _ = w.Write([]byte(`{"status": "success","data": {"resultType": "matrix","result": []}}`))
+	}))
+	defer ts.Close()
+
+	cfg := PrometheusHistoryProviderConfig{
+		Address:           ts.URL,
+		Insecure:          true,
+		HistoryLength:     "8d",
+		HistoryResolution: "30s",
+		QueryTimeout:      30 * time.Second,
+	}
+
+	t.Run("Basic auth", func(t *testing.T) {
+		cfg.Authentication.Username = "user"
+		cfg.Authentication.Password = "password"
+
+		prov, _ := NewPrometheusHistoryProvider(cfg)
+		_, err := prov.GetClusterHistory()
+
+		assert.Nil(t, err)
+		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Basic dXNlcjpwYXNzd29yZA==") // "user:password"
+	})
+
+	t.Run("Bearer token auth", func(t *testing.T) {
+		cfg.Authentication.BearerToken = "token"
+
+		prov, _ := NewPrometheusHistoryProvider(cfg)
+		_, err := prov.GetClusterHistory()
+
+		assert.Nil(t, err)
+		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Bearer token")
+	})
+
+	t.Run("Basic auth and Bearer token auth are set at once", func(t *testing.T) {
+		// if both auth methods are set we prefer Bearer token
+		cfg.Authentication.BearerToken = "token"
+		cfg.Authentication.Username = "user"
+		cfg.Authentication.Password = "password"
+
+		prov, _ := NewPrometheusHistoryProvider(cfg)
+		_, err := prov.GetClusterHistory()
+
+		assert.Nil(t, err)
+		assert.NotContains(t, capturedRequest.Header.Get("Authorization"), "Basic")
+		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Bearer token")
+	})
+
+	t.Run("Basic auth with username/password configured as env", func(t *testing.T) {
+		// clear auth config so only environment variables are used in this test
+		cfg.Authentication = PrometheusCredentials{}
+		t.Setenv("PROMETHEUS_USERNAME", "prom_user")
+		t.Setenv("PROMETHEUS_PASSWORD", "prom_password")
+
+		prov, _ := NewPrometheusHistoryProvider(cfg)
+		_, err := prov.GetClusterHistory()
+
+		assert.Nil(t, err)
+		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Basic cHJvbV91c2VyOnByb21fcGFzc3dvcmQ=") // "prom_user:prom_password"
+
+	})
 }
