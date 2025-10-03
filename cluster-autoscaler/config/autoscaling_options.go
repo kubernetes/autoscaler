@@ -349,6 +349,11 @@ type AutoscalingOptions struct {
 	CapacitybufferControllerEnabled bool
 	// CapacitybufferPodInjectionEnabled tells if CA should injects fake pods for capacity buffers that are ready for provisioning
 	CapacitybufferPodInjectionEnabled bool
+	// LongestNodeScaleDownEvalTimeTrackerEnabled is used to enabled/disable the tracking of longest node ScaleDown evaluation time.
+	// We want to track all the nodes that were present in currentlyUnneededNodeNames, but were neither processed nor deleted during the ScaleDown.
+	// If it happened to a node multiple times consecutively, we store only the earliest time it happened.
+	// The difference between the current time and the earliest time among all unprocessed nodes will give the longest evaluation time
+	LongestNodeScaleDownEvalTimeTrackerEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
