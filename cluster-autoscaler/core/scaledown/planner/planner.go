@@ -26,6 +26,7 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/longestevaluationtracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
@@ -63,19 +64,20 @@ type replicasInfo struct {
 
 // Planner is responsible for deciding which nodes should be deleted during scale down.
 type Planner struct {
-	autoscalingCtx        *ca_context.AutoscalingContext
-	unremovableNodes      *unremovable.Nodes
-	unneededNodes         *unneeded.Nodes
-	rs                    removalSimulator
-	actuationInjector     *scheduling.HintingSimulator
-	latestUpdate          time.Time
-	minUpdateInterval     time.Duration
-	eligibilityChecker    eligibilityChecker
-	nodeUtilizationMap    map[string]utilization.Info
-	resourceLimitsFinder  *resource.LimitsFinder
-	cc                    controllerReplicasCalculator
-	scaleDownSetProcessor nodes.ScaleDownSetProcessor
-	scaleDownContext      *nodes.ScaleDownContext
+	autoscalingCtx               *ca_context.AutoscalingContext
+	unremovableNodes             *unremovable.Nodes
+	unneededNodes                *unneeded.Nodes
+	rs                           removalSimulator
+	actuationInjector            *scheduling.HintingSimulator
+	latestUpdate                 time.Time
+	minUpdateInterval            time.Duration
+	eligibilityChecker           eligibilityChecker
+	nodeUtilizationMap           map[string]utilization.Info
+	resourceLimitsFinder         *resource.LimitsFinder
+	cc                           controllerReplicasCalculator
+	scaleDownSetProcessor        nodes.ScaleDownSetProcessor
+	scaleDownContext             *nodes.ScaleDownContext
+	longestNodeScaleDownEvalTime *longestevaluationtracker.LongestNodeScaleDownEvalTime
 }
 
 // New creates a new Planner object.
@@ -91,19 +93,25 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL)
 	}
 
+	var longestNodeScaleDownEvalTime *longestevaluationtracker.LongestNodeScaleDownEvalTime
+	if autoscalingCtx.AutoscalingOptions.LongestNodeScaleDownEvalTimeTrackerEnabled {
+		longestNodeScaleDownEvalTime = longestevaluationtracker.NewLongestNodeScaleDownEvalTime(time.Now())
+	}
+
 	return &Planner{
-		autoscalingCtx:        autoscalingCtx,
-		unremovableNodes:      unremovable.NewNodes(),
-		unneededNodes:         unneededNodes,
-		rs:                    simulator.NewRemovalSimulator(autoscalingCtx.ListerRegistry, autoscalingCtx.ClusterSnapshot, deleteOptions, drainabilityRules, true),
-		actuationInjector:     scheduling.NewHintingSimulator(),
-		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
-		nodeUtilizationMap:    make(map[string]utilization.Info),
-		resourceLimitsFinder:  resourceLimitsFinder,
-		cc:                    newControllerReplicasCalculator(autoscalingCtx.ListerRegistry),
-		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
-		scaleDownContext:      nodes.NewDefaultScaleDownContext(),
-		minUpdateInterval:     minUpdateInterval,
+		autoscalingCtx:               autoscalingCtx,
+		unremovableNodes:             unremovable.NewNodes(),
+		unneededNodes:                unneededNodes,
+		rs:                           simulator.NewRemovalSimulator(autoscalingCtx.ListerRegistry, autoscalingCtx.ClusterSnapshot, deleteOptions, drainabilityRules, true),
+		actuationInjector:            scheduling.NewHintingSimulator(),
+		eligibilityChecker:           eligibility.NewChecker(processors.NodeGroupConfigProcessor),
+		nodeUtilizationMap:           make(map[string]utilization.Info),
+		resourceLimitsFinder:         resourceLimitsFinder,
+		cc:                           newControllerReplicasCalculator(autoscalingCtx.ListerRegistry),
+		scaleDownSetProcessor:        processors.ScaleDownSetProcessor,
+		scaleDownContext:             nodes.NewDefaultScaleDownContext(),
+		minUpdateInterval:            minUpdateInterval,
+		longestNodeScaleDownEvalTime: longestNodeScaleDownEvalTime,
 	}
 }
 
@@ -277,13 +285,16 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 	p.nodeUtilizationMap = utilizationMap
 	timer := time.NewTimer(p.autoscalingCtx.ScaleDownSimulationTimeout)
+	var skippedNodes []string
 
 	for i, node := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
+			skippedNodes = currentlyUnneededNodeNames[i:]
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
 		}
 		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
+			skippedNodes = currentlyUnneededNodeNames[i:]
 			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
 			break
 		}
@@ -306,6 +317,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			p.unremovableNodes.AddTimeout(unremovable, unremovableTimeout)
 		}
 	}
+	p.handleUnprocessedNodes(skippedNodes)
 	p.unneededNodes.Update(removableList, p.latestUpdate)
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
@@ -370,6 +382,15 @@ func (p *Planner) unneededNodesLimit() int {
 		return upperBound
 	}
 	return limit
+}
+
+// handleUnprocessedNodes is used to track the longest time it take for a node to be evaluated as removable or not
+func (p *Planner) handleUnprocessedNodes(unprocessedNodeNames []string) {
+	// if p.longestNodeScaleDownEvalTime is not set (flag is disabled) or endedPrematurely is already true (nodes were already reported in this iteration) do not do anything
+	if p.longestNodeScaleDownEvalTime == nil {
+		return
+	}
+	p.longestNodeScaleDownEvalTime.Update(unprocessedNodeNames, time.Now())
 }
 
 // getKnownOwnerRef returns ownerRef that is known by CA and CA knows the logic of how this controller recreates pods.

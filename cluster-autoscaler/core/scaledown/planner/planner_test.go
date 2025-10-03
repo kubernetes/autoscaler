@@ -1035,6 +1035,86 @@ func TestNodesToDelete(t *testing.T) {
 	}
 }
 
+func TestLongestUnprocessedNodeScaleDown(t *testing.T) {
+	type testCase struct {
+		name                 string
+		maxParallel          int
+		isSimulationTimeout  bool
+		isFlagEnabled        bool
+		wantUnprocessedNodes int
+	}
+	nodes := []*apiv1.Node{
+		BuildTestNode("n1", 1000, 10),
+		BuildTestNode("n2", 1000, 10),
+		BuildTestNode("n3", 1000, 10),
+	}
+	eligible := []string{"n1", "n2"}
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 0, 0, 0)
+	for _, node := range nodes {
+		provider.AddNode("ng1", node)
+	}
+	testCases := []testCase{
+		{
+			name:                "Unneeded node limit is exceeded",
+			maxParallel:         0,
+			isSimulationTimeout: false,
+			isFlagEnabled:       true,
+			// maxParallel=0 forces p.unneededNodesLimit() to be 0, so we will break in the second check inside p.categorizeNodes() right away
+			wantUnprocessedNodes: 2,
+		},
+		{
+			name:                "Simulation timeout is hit",
+			maxParallel:         1,
+			isSimulationTimeout: true,
+			isFlagEnabled:       true,
+			// first node will be deleted and for the second timeout will be triggered
+			wantUnprocessedNodes: 1,
+		},
+		{
+			name:                "LongestNodeScaleDownEvalTimeTrackerEnabled flag is disabled",
+			maxParallel:         1,
+			isSimulationTimeout: false,
+			isFlagEnabled:       false,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime: 10 * time.Minute,
+				},
+				ScaleDownSimulationTimeout:                 1 * time.Second,
+				MaxScaleDownParallelism:                    tc.maxParallel,
+				LongestNodeScaleDownEvalTimeTrackerEnabled: tc.isFlagEnabled,
+			}, &fake.Clientset{}, registry, provider, nil, nil)
+			assert.NoError(t, err)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
+			deleteOptions := options.NodeDeleteOptions{}
+			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
+			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(eligible)}
+			if tc.isSimulationTimeout {
+				autoscalingCtx.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
+				rs := &fakeRemovalSimulator{
+					nodes: nodes,
+					sleep: 2 * time.Second,
+				}
+				p.rs = rs
+			}
+			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
+			if !tc.isFlagEnabled {
+				// if flag is disabled p.longestNodeScaleDownEvalTime is not initialized
+				assert.Nil(t, p.longestNodeScaleDownEvalTime)
+			} else {
+				assert.Equal(t, tc.wantUnprocessedNodes, len(p.longestNodeScaleDownEvalTime.NodeNamesWithTimeStamps))
+			}
+		})
+	}
+}
+
 func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
 	ng := testprovider.NewTestNodeGroup(id, 10000, 0, size, true, false, "n1-standard-2", nil, nil)
 	ng.SetOptions(&config.NodeGroupAutoscalingOptions{
