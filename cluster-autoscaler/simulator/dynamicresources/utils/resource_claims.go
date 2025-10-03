@@ -131,9 +131,7 @@ func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resource
 		}
 		deviceRequestAllocationResults = append(deviceRequestAllocationResults, deviceRequestAllocationResult)
 	}
-	if claimCopy.Status.Allocation != nil {
-		claimCopy.Status.Allocation.Devices.Results = deviceRequestAllocationResults
-	}
+	claimCopy.Status.Allocation.Devices.Results = deviceRequestAllocationResults
 	return claimCopy
 }
 

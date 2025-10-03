@@ -22,6 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/utils/ptr"
 )
 
 // CalculateDynamicResourceUtilization calculates a map of ResourceSlice pool utilization grouped by the driver and pool. Returns
@@ -110,7 +111,7 @@ func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[
 		}
 
 		for _, deviceAlloc := range alloc.Devices.Results {
-			if deviceAlloc.AdminAccess != nil && *deviceAlloc.AdminAccess {
+			if ptr.Deref(deviceAlloc.AdminAccess, false) {
 				// devices with admin access don't count for utilization
 				continue
 			}
