@@ -26,6 +26,7 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/nodeevaltracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
@@ -76,6 +77,7 @@ type Planner struct {
 	cc                    controllerReplicasCalculator
 	scaleDownSetProcessor nodes.ScaleDownSetProcessor
 	scaleDownContext      *nodes.ScaleDownContext
+	maxNodeSkipEvalTime   *nodeevaltracker.MaxNodeSkipEvalTime
 }
 
 // New creates a new Planner object.
@@ -91,6 +93,11 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL)
 	}
 
+	var maxNodeSkipEvalTime *nodeevaltracker.MaxNodeSkipEvalTime
+	if autoscalingCtx.AutoscalingOptions.MaxNodeSkipEvalTimeTrackerEnabled {
+		maxNodeSkipEvalTime = nodeevaltracker.NewMaxNodeSkipEvalTime(time.Now())
+	}
+
 	return &Planner{
 		autoscalingCtx:        autoscalingCtx,
 		unremovableNodes:      unremovable.NewNodes(),
@@ -104,6 +111,7 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
 		scaleDownContext:      nodes.NewDefaultScaleDownContext(),
 		minUpdateInterval:     minUpdateInterval,
+		maxNodeSkipEvalTime:   maxNodeSkipEvalTime,
 	}
 }
 
@@ -277,13 +285,16 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 	p.nodeUtilizationMap = utilizationMap
 	timer := time.NewTimer(p.autoscalingCtx.ScaleDownSimulationTimeout)
+	var skippedNodes []string
 
 	for i, node := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
+			skippedNodes = currentlyUnneededNodeNames[i:]
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
 		}
 		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
+			skippedNodes = currentlyUnneededNodeNames[i:]
 			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
 			break
 		}
@@ -306,6 +317,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			p.unremovableNodes.AddTimeout(unremovable, unremovableTimeout)
 		}
 	}
+	p.handleUnprocessedNodes(skippedNodes)
 	p.unneededNodes.Update(removableList, p.latestUpdate)
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
@@ -370,6 +382,15 @@ func (p *Planner) unneededNodesLimit() int {
 		return upperBound
 	}
 	return limit
+}
+
+// handleUnprocessedNodes is used to track the longest time that a node is being skipped during ScaleDown
+func (p *Planner) handleUnprocessedNodes(unprocessedNodeNames []string) {
+	// if p.maxNodeSkipEvalTime is nil (flag is disabled) do not do anything
+	if p.maxNodeSkipEvalTime == nil {
+		return
+	}
+	p.maxNodeSkipEvalTime.Update(unprocessedNodeNames, time.Now())
 }
 
 // getKnownOwnerRef returns ownerRef that is known by CA and CA knows the logic of how this controller recreates pods.
