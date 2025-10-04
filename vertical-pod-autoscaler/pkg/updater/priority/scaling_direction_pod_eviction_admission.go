@@ -56,6 +56,18 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *
 			return true
 		}
 	}
+	for _, container := range pod.Spec.InitContainers {
+		recommendedResources := vpa_utils.GetRecommendationForContainer(container.Name, resources)
+		// if a container doesn't have a recommendation, the VPA has set `.containerPolicy.mode: off` for this container,
+		// so we can skip this container
+		if recommendedResources == nil {
+			continue
+		}
+		containerRequests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+		if s.admitContainer(containerRequests, recommendedResources, podEvictionRequirements) {
+			return true
+		}
+	}
 	return false
 }
 
