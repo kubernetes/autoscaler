@@ -48,6 +48,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
@@ -165,7 +166,7 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 
 func setUpScaleDownActuator(ctx *context.AutoscalingContext, autoscalingOptions config.AutoscalingOptions) {
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
-	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(deleteOptions), processorstest.NewTestProcessors(ctx).NodeGroupConfigProcessor)
+	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), nil, deleteOptions, rules.Default(deleteOptions), processorstest.NewTestProcessors(ctx).NodeGroupConfigProcessor)
 }
 
 type nodeGroup struct {
@@ -321,8 +322,8 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 	if nodeDeletionTracker == nil {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	ctx.ScaleDownActuator = actuation.NewActuator(&ctx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
-	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules)
+	ctx.ScaleDownActuator = actuation.NewActuator(&ctx, clusterState, nodeDeletionTracker, nil, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
+	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules, nil)
 
 	processorCallbacks.scaleDownPlanner = sdPlanner
 
@@ -378,6 +379,21 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
 	assert.NotNil(t, ng1)
 	assert.NotNil(t, provider)
+	// NodeLatencyTracker mock
+	nltMock := &latencytrackerMock{}
+	nltMock.On("ObserveDeletion",
+		"n2",
+		mock.MatchedBy(func(t time.Time) bool { return !t.IsZero() }),
+	).Return()
+	nltMock.On("UpdateStateWithUnneededList",
+		mock.MatchedBy(func(nodes []*apiv1.Node) bool { return true }),
+		mock.MatchedBy(func(m map[string]bool) bool { return true }),
+		mock.Anything,
+	).Return()
+	nltMock.On("UpdateThreshold",
+		"n2",
+		time.Minute,
+	).Return()
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
@@ -410,7 +426,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	}
 	processors := processorstest.NewTestProcessors(&context)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
-	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nltMock)
 	suOrchestrator := orchestrator.New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 
@@ -678,7 +694,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 			processors.ScaleStateNotifier.Register(clusterState)
 
-			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 			suOrchestrator := orchestrator.New()
 			suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 
@@ -822,7 +838,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	}
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 
-	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 	suOrchestrator := orchestrator.New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 
@@ -975,7 +991,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 			// broken node failed to register in time
 			clusterState.UpdateNodes(nodes, nil, later)
 
-			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 			suOrchestrator := orchestrator.New()
 			suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 
@@ -1130,7 +1146,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	processors := processorstest.NewTestProcessors(&context)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
-	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 	suOrchestrator := orchestrator.New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 
@@ -1261,7 +1277,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 	processors := processorstest.NewTestProcessors(&context)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
-	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
@@ -1359,7 +1375,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	processors := processorstest.NewTestProcessors(&context)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
-	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
@@ -1707,7 +1723,7 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 			}
 			processors := processorstest.NewTestProcessors(&context)
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
-			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil)
+			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&context, processors, clusterState, nil, nil)
 			suOrchestrator := orchestrator.New()
 			suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 
@@ -2467,7 +2483,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	csr := clusterstate.NewClusterStateRegistry(provider, csrConfig, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
 
 	// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
-	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processorstest.NewTestProcessors(&ctx).NodeGroupConfigProcessor)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), nil, options.NodeDeleteOptions{}, nil, processorstest.NewTestProcessors(&ctx).NodeGroupConfigProcessor)
 	ctx.ScaleDownActuator = actuator
 
 	// Fake planner that keeps track of the scale-down candidates passed to UpdateClusterState.
@@ -3128,7 +3144,7 @@ func waitForDeleteToFinish(t *testing.T, deleteFinished <-chan bool) {
 	}
 }
 
-func newScaleDownPlannerAndActuator(ctx *context.AutoscalingContext, p *ca_processors.AutoscalingProcessors, cs *clusterstate.ClusterStateRegistry, nodeDeletionTracker *deletiontracker.NodeDeletionTracker) (scaledown.Planner, scaledown.Actuator) {
+func newScaleDownPlannerAndActuator(ctx *context.AutoscalingContext, p *ca_processors.AutoscalingProcessors, cs *clusterstate.ClusterStateRegistry, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, nodeDeletionLatencyTracker latencytracker.LatencyTracker) (scaledown.Planner, scaledown.Actuator) {
 	ctx.MaxScaleDownParallelism = 10
 	ctx.MaxDrainParallelism = 1
 	ctx.NodeDeletionBatcherInterval = 0 * time.Second
@@ -3143,8 +3159,8 @@ func newScaleDownPlannerAndActuator(ctx *context.AutoscalingContext, p *ca_proce
 	if nodeDeletionTracker == nil {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	planner := planner.New(ctx, p, deleteOptions, nil)
-	actuator := actuation.NewActuator(ctx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor)
+	planner := planner.New(ctx, p, deleteOptions, nil, nodeDeletionLatencyTracker)
+	actuator := actuation.NewActuator(ctx, cs, nodeDeletionTracker, nodeDeletionLatencyTracker, deleteOptions, nil, p.NodeGroupConfigProcessor)
 	return planner, actuator
 }
 
@@ -3260,13 +3276,13 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 	processors.ScaleDownNodeProcessor = cp
 
 	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{OkTotalUnreadyCount: 1}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
-	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), nil, options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor)
 	ctx.ScaleDownActuator = actuator
 
 	deleteOptions := options.NewNodeDeleteOptions(ctx.AutoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
-	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules)
+	sdPlanner := planner.New(&ctx, processors, deleteOptions, drainabilityRules, nil)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:   &ctx,
@@ -3315,4 +3331,26 @@ func assertNodesSoftTaintsStatus(t *testing.T, fakeClient *fake.Clientset, nodes
 		assert.NoError(t, clientErr)
 		assert.Equal(t, tainted, taints.HasDeletionCandidateTaint(newNode))
 	}
+}
+
+// latencytrackerMock implements LatencyTracker for mocking
+type latencytrackerMock struct {
+	mock.Mock
+}
+
+func (m *latencytrackerMock) ObserveDeletion(nodeName string, timestamp time.Time) {
+	m.Called(nodeName, timestamp)
+}
+
+func (m *latencytrackerMock) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
+	m.Called(list, currentlyInDeletion, timestamp)
+}
+
+func (m *latencytrackerMock) UpdateThreshold(nodeName string, threshold time.Duration) {
+	m.Called(nodeName, threshold)
+}
+
+func (m *latencytrackerMock) GetTrackedNodes() []string {
+	args := m.Called()
+	return args.Get(0).([]string)
 }
