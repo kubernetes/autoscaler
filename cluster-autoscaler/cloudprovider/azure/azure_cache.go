@@ -107,11 +107,15 @@ type azureCache struct {
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
+	nodeResourceGroup := config.ResourceGroup
+	if config.HostedResourceGroup != "" {
+		nodeResourceGroup = config.HostedResourceGroup
+	}
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
 		refreshInterval:      cacheTTL,
-		resourceGroup:        config.ResourceGroup,
+		resourceGroup:        nodeResourceGroup,
 		clusterResourceGroup: config.ClusterResourceGroup,
 		clusterName:          config.ClusterName,
 		enableVMsAgentPool:   config.EnableVMsAgentPool,
