@@ -60,10 +60,17 @@ func (p *PodInjectionPodListProcessor) Process(ctx *context.AutoscalingContext, 
 		return unschedulablePods, fmt.Errorf("failed to list nodeInfos from cluster snapshot: %v", err)
 	}
 	scheduledPods := podsFromNodeInfos(nodeInfos)
-
 	groupedPods := groupPods(append(scheduledPods, unschedulablePods...), controllers)
-	var podsToInject []*apiv1.Pod
 
+	allPods, err := ctx.AllPodLister().List()
+	if err == nil {
+		groupedPods, err = filterOutSchedulingGatedPods(groupedPods, allPods)
+	}
+	if err != nil {
+		klog.Warningf("Pod injection processor failed to filter out scheduling gated pods with error: %v", err.Error())
+	}
+
+	var podsToInject []*apiv1.Pod
 	for _, groupedPod := range groupedPods {
 		var fakePodCount = groupedPod.fakePodCount()
 		fakePods := makeFakePods(groupedPod.ownerUid, groupedPod.sample, fakePodCount)

@@ -17,9 +17,12 @@ limitations under the License.
 package podinjection
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
 type podGroup struct {
@@ -43,6 +46,33 @@ func groupPods(pods []*apiv1.Pod, controllers []controller) map[types.UID]podGro
 		}
 	}
 	return podGroups
+}
+
+func filterOutSchedulingGatedPods(groups map[types.UID]podGroup, allPods []*apiv1.Pod) (map[types.UID]podGroup, error) {
+	if groups == nil {
+		return nil, fmt.Errorf("Pod groups should not be nil")
+	}
+	if len(groups) > 0 {
+		podsWithSchedulingGates := kube_util.SchedulingGatedPods(allPods)
+		for _, pod := range podsWithSchedulingGates {
+			if pod != nil {
+				groups = removeSchedulingGatedPodFromGroups(groups, pod)
+			}
+		}
+	}
+	return groups, nil
+}
+
+func removeSchedulingGatedPodFromGroups(groups map[types.UID]podGroup, pod *apiv1.Pod) map[types.UID]podGroup {
+	for _, podOwnerRef := range pod.OwnerReferences {
+		// SchedulingGated pods can't be unschedualable nor unprocessed nor scheduled so it is not expected
+		// to have them as group sample nor in pod count, so decreasing desiredReplicas by one is enough
+		if grp, found := groups[podOwnerRef.UID]; found {
+			grp.desiredReplicas -= 1
+			groups[podOwnerRef.UID] = grp
+		}
+	}
+	return groups
 }
 
 // updatePodGroups updates the pod group if ownerRef is the controller of the pod
