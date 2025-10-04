@@ -22,7 +22,7 @@ rules:
     resources:
       - configmaps
     resourceNames:
-      - cluster-autoscaler-status
+      - {{ default "cluster-autoscaler-status" (index .Values.extraArgs "status-config-map-name") }}
 {{- if (include "cluster-autoscaler.priorityExpanderEnabled" .) }}
       - cluster-autoscaler-priority-expander
 {{- end }}
@@ -77,7 +77,7 @@ rules:
   - apiGroups:
     - coordination.k8s.io
     resourceNames:
-    - cluster-autoscaler
+    - {{ default "cluster-autoscaler" (index .Values.extraArgs "leader-elect-resource-name") }}
     resources:
     - leases
     verbs:
