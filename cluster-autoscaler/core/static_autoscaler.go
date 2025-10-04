@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
@@ -74,7 +74,7 @@ const (
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
 type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
-	*context.AutoscalingContext
+	*ca_context.AutoscalingContext
 	// ClusterState for maintaining the state of cluster nodes.
 	clusterStateRegistry    *clusterstate.ClusterStateRegistry
 	lastScaleUpTime         time.Time
@@ -129,7 +129,7 @@ func NewStaticAutoscaler(
 	opts config.AutoscalingOptions,
 	fwHandle *framework.Handle,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
-	autoscalingKubeClients *context.AutoscalingKubeClients,
+	autoscalingKubeClients *ca_context.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
 	loopStartNotifier *loopstart.ObserversList,
 	cloudProvider cloudprovider.CloudProvider,
@@ -151,7 +151,7 @@ func NewStaticAutoscaler(
 	}
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-	autoscalingContext := context.NewAutoscalingContext(
+	autoscalingContext := ca_context.NewAutoscalingContext(
 		opts,
 		fwHandle,
 		clusterSnapshot,
@@ -722,9 +722,9 @@ func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time) bool {
 // Sets the target size of node groups to the current number of nodes in them
 // if the difference was constant for a prolonged time. Returns true if managed
 // to fix something.
-func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, currentTime time.Time) (bool, error) {
+func fixNodeGroupSize(autoscalingContext *ca_context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, currentTime time.Time) (bool, error) {
 	fixed := false
-	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
+	for _, nodeGroup := range autoscalingContext.CloudProvider.NodeGroups() {
 		incorrectSize := clusterStateRegistry.GetIncorrectNodeGroupSize(nodeGroup.Id())
 		if incorrectSize == nil {
 			continue

@@ -30,7 +30,7 @@ import (
 	client "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	buffersfilter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 )
 
 // Pods annotation keys and values for fake pods created by capacity buffer pod list processor
@@ -66,7 +66,7 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 }
 
 // Process updates unschedulablePods by injecting fake pods to match replicas defined in buffers status
-func (p *CapacityBufferPodListProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *CapacityBufferPodListProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	buffers, err := p.client.ListCapacityBuffers()
 	if err != nil {
 		klog.Errorf("CapacityBufferPodListProcessor failed to list buffers with error: %v", err.Error())

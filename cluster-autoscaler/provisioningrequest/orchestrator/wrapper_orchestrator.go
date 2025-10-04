@@ -19,9 +19,9 @@ package orchestrator
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -36,7 +36,7 @@ import (
 // Each loop WrapperOrchestrator split out regular and pods from ProvisioningRequest, pick one group that
 // wasn't picked in the last loop and run ScaleUp for it.
 type WrapperOrchestrator struct {
-	autoscalingContext  *context.AutoscalingContext
+	autoscalingContext  *ca_context.AutoscalingContext
 	podsOrchestrator    scaleup.Orchestrator
 	provReqOrchestrator scaleup.Orchestrator
 }
@@ -51,7 +51,7 @@ func NewWrapperOrchestrator(provReqOrchestrator scaleup.Orchestrator) *WrapperOr
 
 // Initialize initializes the orchestrator object with required fields.
 func (o *WrapperOrchestrator) Initialize(
-	autoscalingContext *context.AutoscalingContext,
+	autoscalingContext *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
