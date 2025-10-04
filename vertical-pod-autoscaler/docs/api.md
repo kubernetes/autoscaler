@@ -48,6 +48,7 @@ _Appears in:_
 | `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  |  |
 | `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
 | `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br /> |
+| `memoryPerCPU` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#quantity-resource-api)_ | Enforce a fixed memory-per-CPU ratio for this container’s recommendations.<br />If set, the recommender will adjust memory or CPU so that:<br />  memory_bytes = cpu_cores * memoryPerCPU (bytes per 1 core).<br />Applied to Target, LowerBound, UpperBound, and UncappedTarget.<br />Example: "4Gi" means 1 CPU -> 4 GiB. |  |  |
 
 
 #### ContainerScalingMode
