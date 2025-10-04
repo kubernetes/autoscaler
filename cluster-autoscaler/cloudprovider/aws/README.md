@@ -425,6 +425,8 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 
 ## Using the AWS SDK vendored in the AWS cloudprovider
 
+### v1
+
 If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
 
 The current version vendored is `v1.48.7`.
@@ -435,6 +437,60 @@ If you want to update the vendored AWS SDK to a newer version, please make sure 
 2. Remove folders : models and examples. Remove _test.go file `find . -name '*_test.go' -exec rm {}+`
 3. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`). You can use this command from the aws-sdk-go folder `find . -type f -exec sed -i ‘s#github.com/aws/aws-sdk-go#k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go#’ {} \;`
 4. Update the version number above to indicate the new vendored version.
+
+### v2
+If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
+
+The current version vendored is `2025-06-17`.
+
+The aws-sdk-go-v2 also depends on aws/smithy-go; this is similarly vendored; check the go.mod of the aws-sdk-go-v2 package for the correct version of this package.
+
+The current version vendored is `v1.22.4`
+
+You can use the commands below to update the vendored copy of these modules to a newer version
+
+```shell
+export SDK_VERSION="2025-06-17"
+export SMITHY_VERSION="1.22.4"
+
+# Prepare clean smithy-go folder
+## Clean up old release
+rm -rf smithy-go/
+
+## Download and extract specified release
+curl -L "https://github.com/aws/smithy-go/archive/refs/tags/v${SMITHY_VERSION}.tar.gz" -o smithy-go.tar.gz
+tar xf smithy-go.tar.gz
+mv "smithy-go-${SMITHY_VERSION}" smithy-go
+rm smithy-go.tar.gz
+
+# Adjust for vendoring within cluster-autoscaler 
+## Remove unneeded files, directories, and tests to reduce size
+rm -r ./smithy-go/.github ./smithy-go/codegen ./smithy-go/.travis.yml
+find ./smithy-go \( -name "*_test.go" -o -name 'go.mod' -o -name 'go.sum' \) -exec rm {} \+
+
+## Update paths for local vendoring
+find ./smithy-go -name '*.go' -type f -exec sed -i '' 's#github.com/aws/smithy-go#k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/smithy-go#' {} \+
+
+# Prepare clean sdk-v2 folder
+## Clean up old release
+rm -rf aws-sdk-go-v2/
+
+## Download and extract specified release
+curl -L "https://github.com/aws/aws-sdk-go-v2/archive/refs/tags/release-${SDK_VERSION}.tar.gz" -o aws-sdk-go-v2.tar.gz
+tar xf aws-sdk-go-v2.tar.gz
+mv "aws-sdk-go-v2-release-${SDK_VERSION}" aws-sdk-go-v2
+rm aws-sdk-go-v2.tar.gz
+
+# Adjust for vendoring within cluster-autoscaler
+## Remove unneeded files, directories, and tests to reduce size
+rm ./aws-sdk-go-v2/.travis.yml ./aws-sdk-go-v2/.golangci.toml ./aws-sdk-go-v2/buildspec.yml ./aws-sdk-go-v2/ci-find-smithy-go.sh ./aws-sdk-go-v2/local-mod-replace.sh ./aws-sdk-go-v2/modman.toml
+rm -r ./aws-sdk-go-v2/.github ./aws-sdk-go-v2/codegen ./aws-sdk-go-v2/example ./aws-sdk-go-v2/internal/codegen ./aws-sdk-go-v2/internal/repotools
+find ./aws-sdk-go-v2 \( -name "*_test.go" -o -name "*.go.snap" -o -name 'go.mod' -o -name 'go.sum' \) -exec rm {} \+
+
+## Update imports to local path
+find ./aws-sdk-go-v2 -name '*.go' -type f -exec sed -i '' 's#github.com/aws/aws-sdk-go-v2#k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2#' {} \+
+find ./aws-sdk-go-v2 -name '*.go' -type f -exec sed -i '' 's#github.com/aws/smithy-go#k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/smithy-go#' {} \+
+```
 
 ## Using cloud config with helm
 
