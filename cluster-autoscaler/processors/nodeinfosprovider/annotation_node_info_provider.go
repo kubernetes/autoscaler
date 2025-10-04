@@ -47,8 +47,8 @@ func NewCustomAnnotationNodeInfoProvider(templateNodeInfoProvider TemplateNodeIn
 }
 
 // Process returns the nodeInfos set for this cluster.
-func (p *AnnotationNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
-	nodeInfos, err := p.templateNodeInfoProvider.Process(ctx, nodes, daemonsets, taintConfig, currentTime)
+func (p *AnnotationNodeInfoProvider) Process(ctx *context.AutoscalingContext, readyNodes []*apiv1.Node, allNodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
+	nodeInfos, err := p.templateNodeInfoProvider.Process(ctx, readyNodes, allNodes, daemonsets, taintConfig, currentTime)
 	if err != nil {
 		return nil, err
 	}
