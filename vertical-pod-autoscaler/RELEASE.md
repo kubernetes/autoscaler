@@ -95,6 +95,9 @@ git switch vpa-release-1.${minor}
 
 Once in the freshly cloned repo, build and stage the images.
 
+> [!NOTE]
+> Ensure you have run the following before building the images: `gcloud auth login` and `gcloud auth configure-docker -q`.
+
 ```sh
 cd vertical-pod-autoscaler/
 for component in recommender updater admission-controller ; do TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
