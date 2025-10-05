@@ -210,7 +210,7 @@ func (f *controllerFetcher) getParentOfController(ctx context.Context, controlle
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("unhandled targetRef %s / %s / %s, last error %v",
+		return nil, fmt.Errorf("unhandled targetRef %s / %s / %s, last error %w",
 			controllerKey.ApiVersion, controllerKey.Kind, controllerKey.Name, err)
 	}
 
