@@ -1,6 +1,6 @@
 # charts
 
-The Helm charts for the Autoscaler project reside within this folder. If making changes to the Helm charts, make sure you follow the instructions below for the pre-commit checks.
+The Helm chart for the VPA project resides within this folder. If making changes to the Helm charts, make sure you follow the instructions below for the pre-commit checks.
 
 ## Pre-commit hooks
 
