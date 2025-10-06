@@ -138,20 +138,19 @@ type CPUStartupBoost struct {
 ```
 
 `StartupBoost` will contain the following fields:
-  * [Optional] `StartupBoost.CPU.Type` (type: `string`): A string that specifies
+  * [Required] `StartupBoost.CPU.Type` (type: `string`): A string that specifies
   the kind of boost to apply. Supported values are:
     * `Factor`: The `StartupBoost.CPU.Factor` field will be interpreted as a
     multiplier for the recommended CPU request. For example, a value of `2` will
     double the CPU request.
     * `Quantity`: The `StartupBoost.CPU.Quantity` field will be interpreted as an
-    absolute CPU resource quantity (e.g., `"500m"`, `"1"`) to be used as the CPU
+    additional CPU resource quantity (e.g., `"500m"`, `"1"`) to be added to the existing CPU
     request or limit during the boost phase.
-    * If not specified, `StartupBoost.CPU.Type` defaults to `Factor`.
 
   * [Optional] `StartupBoost.CPU.Factor`: (type: `integer`): The factor to apply to the CPU request. Defaults to 1 if not specified.
      * If `StartupBoost.CPU.Type`is `Factor`, this field is required.
      * If `StartupBoost.CPU.Type`is `Quantity`, this field is not allowed.
-  * [Optional] `StartupBoost.CPU.Quantity`: (type: `resource.Quantity`): The absolute CPU resource quantity.
+  * [Optional] `StartupBoost.CPU.Quantity`: (type: `resource.Quantity`): The additional CPU resource quantity.
      * If `StartupBoost.CPU.Type`is `Quantity`, this field is required.
      * If `StartupBoost.CPU.Type`is `Factor`, this field is not allowed.
   * [Optional] `StartupBoost.CPU.Duration` (type: `duration`): if specified, it
@@ -301,6 +300,7 @@ spec:
     updateMode: "Off"
   startupBoost:
     cpu:
+      type: "Factor"
       factor: 3
       duration: 10s
 ```
@@ -337,6 +337,7 @@ spec:
     updateMode: "Auto"
   startupBoost:
     cpu:
+      type: "Factor"
       factor: 3
       duration: 10s
 ```
@@ -392,12 +393,14 @@ spec:
     name: example
   startupBoost:
     cpu:
+      type: "Factor"
       factor: 2
   resourcePolicy:
     containerPolicies:
       - containerName: "disable-cpu-boost-for-this-container"
         startupBoost:
           cpu:
+            type: "Factor"
             factor: 1
 ```
 
@@ -436,6 +439,7 @@ spec:
 
 ## Implementation History
 
+* 2025-10-04: Update `startupBoost.cpu.type` field to correctly indicate it is a required field, not optional. The field has no default value and must be explicitly set to either "Factor" or "Quantity".
 * 2025-08-05: Make some API changes and clarify behavior during and after boost period in the workflow section.
 * 2025-06-23: Decouple Startup CPU Boost from InPlaceOrRecreate mode, allow
 users to specify a `startupBoost` config in `VerticalPodAutoscalerSpec` and in
