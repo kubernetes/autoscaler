@@ -50,6 +50,7 @@ type hetznerNodeGroup struct {
 
 	clusterUpdateMutex *sync.Mutex
 	placementGroup     *hcloud.PlacementGroup
+	subnetIPRange      *net.IPNet
 }
 
 type hetznerNodeGroupSpec struct {
@@ -453,39 +454,6 @@ func instanceTypeArch(manager *hetznerManager, instanceType string) (string, err
 	}
 }
 
-func findIpRange(nodeId string, clusterConfig *ClusterConfig) (*net.IPNet, error) {
-	if !clusterConfig.IsUsingNewFormat {
-		return nil, nil
-	}
-	if nodeConfig, exists := clusterConfig.NodeConfigs[nodeId]; exists && nodeConfig.IPRange != "" {
-		_, ipNet, err := net.ParseCIDR(nodeConfig.IPRange)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse IP range %s for node %s: %v", nodeConfig.IPRange, nodeId, err)
-		}
-		return ipNet, nil
-	}
-	if clusterConfig.IPRange != "" {
-		_, ipNet, err := net.ParseCIDR(clusterConfig.IPRange)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse global IP range %s: %v", clusterConfig.IPRange, err)
-		}
-		return ipNet, nil
-	}
-	return nil, nil
-}
-
-func isIpRangeInNetwork(ipRange *net.IPNet, network *hcloud.Network) bool {
-	found := false
-	for _, nSubnet := range network.Subnets {
-		_, nSubnetRange, _ := net.ParseCIDR(nSubnet.IPRange.String())
-		if nSubnetRange.String() == ipRange.String() {
-			found = true
-			break
-		}
-	}
-	return found
-}
-
 func createServer(n *hetznerNodeGroup) error {
 	ctx, cancel := context.WithTimeout(n.manager.apiCallContext, n.manager.createTimeout)
 	defer cancel()
@@ -500,14 +468,6 @@ func createServer(n *hetznerNodeGroup) error {
 		return err
 	}
 
-	ipRange, err := findIpRange(n.Id(), n.manager.clusterConfig)
-	if err != nil {
-		return err
-	}
-	if ipRange != nil && n.manager.network != nil && !isIpRangeInNetwork(ipRange, n.manager.network) {
-		return fmt.Errorf("the specified IP range %s for node %s is not part of the network %s", ipRange.String(), n.Id(), n.manager.network.Name)
-	}
-
 	cloudInit := n.manager.clusterConfig.LegacyConfig.CloudInit
 
 	if n.manager.clusterConfig.IsUsingNewFormat {
@@ -515,7 +475,7 @@ func createServer(n *hetznerNodeGroup) error {
 	}
 
 	// dont start the server if we need to attach the server to a private subnet network
-	StartAfterCreate := ipRange == nil
+	StartAfterCreate := n.manager.network != nil && n.subnetIPRange == nil
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
 		UserData:         cloudInit,
@@ -535,7 +495,7 @@ func createServer(n *hetznerNodeGroup) error {
 	if n.manager.sshKey != nil {
 		opts.SSHKeys = []*hcloud.SSHKey{n.manager.sshKey}
 	}
-	if n.manager.network != nil && ipRange == nil {
+	if n.manager.network != nil && n.subnetIPRange == nil {
 		opts.Networks = []*hcloud.Network{n.manager.network}
 	}
 	if n.manager.firewall != nil {
@@ -559,15 +519,15 @@ func createServer(n *hetznerNodeGroup) error {
 		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
 	}
 
-	if n.manager.network != nil && ipRange != nil {
-		// Attach server to private network with ipRange
+	if n.manager.network != nil && n.subnetIPRange != nil {
+		// Attach server to private network with subnetIPRange
 		attachAction, _, err := n.manager.client.Server.AttachToNetwork(ctx, server, hcloud.ServerAttachToNetworkOpts{
 			Network: n.manager.network,
-			IPRange: ipRange,
+			IPRange: n.subnetIPRange,
 		})
 		if err != nil {
 			_ = n.manager.deleteServer(server)
-			return fmt.Errorf("failed to attach server %s to network %s with IP range %s error: %v", server.Name, n.manager.network.Name, ipRange.String(), err)
+			return fmt.Errorf("failed to attach server %s to network %s with IP range %s error: %v", server.Name, n.manager.network.Name, n.subnetIPRange.String(), err)
 		}
 		if err = n.manager.client.Action.WaitFor(ctx, attachAction); err != nil {
 			_ = n.manager.deleteServer(server)
