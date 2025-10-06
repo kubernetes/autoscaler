@@ -59,11 +59,11 @@ type hetznerManager struct {
 
 // ClusterConfig holds the configuration for all the nodepools
 type ClusterConfig struct {
-	ImagesForArch    ImageList
-	NodeConfigs      map[string]*NodeConfig
-	IsUsingNewFormat bool
-	LegacyConfig     LegacyConfig
-	IPRange          string
+	ImagesForArch        ImageList
+	NodeConfigs          map[string]*NodeConfig
+	IsUsingNewFormat     bool
+	LegacyConfig         LegacyConfig
+	DefaultSubnetIPRange string
 }
 
 // ImageList holds the image id/names for the different architectures
@@ -79,7 +79,7 @@ type NodeConfig struct {
 	Taints         []apiv1.Taint
 	Labels         map[string]string
 	ImagesForArch  *ImageList
-	IPRange        string
+	SubnetIPRange  string
 }
 
 // LegacyConfig holds the configuration in the legacy format
