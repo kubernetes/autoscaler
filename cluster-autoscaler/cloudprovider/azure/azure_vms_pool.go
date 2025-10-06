@@ -149,9 +149,16 @@ func (vmPool *VMPool) IncreaseSize(delta int) error {
 	if len(versionedAP.Properties.VirtualMachinesProfile.Scale.Manual) > 0 {
 		requestBody = buildRequestBodyForScaleUp(versionedAP, count, vmPool.sku)
 
-	} else { // AKS-managed CAS will use custom header for setting the target count
+	}
+	// hosted CAS will be using Autoscale scale profile
+	// HostedSystem will be using manual scale profile
+	// Both of them need to set the Target-Count and SKU headers
+	if len(versionedAP.Properties.VirtualMachinesProfile.Scale.Autoscale) > 0 ||
+		(versionedAP.Properties.Mode != nil &&
+			strings.EqualFold(string(*versionedAP.Properties.Mode), "HostedSystem")) {
 		header := make(http.Header)
 		header.Set("Target-Count", fmt.Sprintf("%d", count))
+		header.Set("SKU", fmt.Sprintf("%s", vmPool.sku))
 		updateCtx = policy.WithHTTPHeader(updateCtx, header)
 	}
 
