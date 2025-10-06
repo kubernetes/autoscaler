@@ -139,6 +139,12 @@ func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod) utils.InPl
 	return args.Get(0).(utils.InPlaceDecision)
 }
 
+// CanUnboost is a mock implementation of PodsInPlaceRestriction.CanUnboost
+func (m *PodsInPlaceRestrictionMock) CanUnboost(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	args := m.Called(pod, vpa)
+	return args.Bool(0)
+}
+
 // PodListerMock is a mock of PodLister
 type PodListerMock struct {
 	mock.Mock
