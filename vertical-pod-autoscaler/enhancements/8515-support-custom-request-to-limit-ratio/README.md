@@ -62,12 +62,11 @@ Some examples of the VPA CRD using the new `RequestToLimitRatio` field are provi
 
 A new `RequestToLimitRatio` field will be added, with the following sub-fields:
 
-* [Optional] `RequestToLimitRatio.CPU.Type` or `RequestToLimitRatio.Memory.Type` (type `string`): Specifies how to apply limits proportionally to the requests. `Type` can have the following values:  
+* [Required] `RequestToLimitRatio.CPU.Type` or `RequestToLimitRatio.Memory.Type` (type `string`): Specifies how to apply limits proportionally to the requests. `Type` can have the following values:  
   * `Factor`: Interpreted as a multiplier for the recommended request.  
     * Example: a value of `2` will double the limits.  
   * `Quantity`: Adds an absolute value on top of the requests to determine the new limit.  
     * Example: for memory, a value of `100Mi` means the new limit will be: calculated memory request + `100Mi`. 
-  * If `RequestToLimitRatio.CPU.Type` or `RequestToLimitRatio.Memory.Type` is not specified, the default value is `Factor`.
 
 * [Optional] `RequestToLimitRatio.CPU.Factor` (type `float`): The factor to apply to the CPU request.
   * If `Type` is `Factor` a value of `3` will triple the CPU limits.  
@@ -115,6 +114,7 @@ The behavior after implementing this feature is as follows:
 #### Static Validation via CRD Rules
 
 * The `RequestToLimitRatio` configuration will be validated when VPA CRD objects are created or updated. For example:  
+  * The `Type` field is marked as required, therefore its presence will be validated.
   * If `Type` is `Factor`, the value must be greater than or equal to 1 (enforced via CRD validation rules).  
 
 #### Dynamic Validation via Admission Controller
@@ -192,7 +192,7 @@ spec:
         controlledValues: RequestsAndLimits
         RequestToLimitRatio:
           cpu:
-            type: Factor # this field is optional, if omitted it defaults to "Factor"
+            type: Factor
             factor: 2
           memory:
             type: Quantity
@@ -220,11 +220,12 @@ spec:
         controlledValues: RequestsAndLimits
         RequestToLimitRatio:
           cpu:
-            type: Factor # this field is optional, if omitted it defaults to "Factor"
+            type: Factor
             factor: 1.2
 ```
 
 ## Implementation History
 
-* 2025-09-10: Initial proposal created.
+* 2025-10-06: Update the `Type` field to correctly indicate that it is required, not optional. This field has no default value and must be explicitly set to either "Factor" or "Quantity".
 * 2025-09-18: Update API for consistency. Add e2e tests and other small updates.
+* 2025-09-10: Initial proposal created.
