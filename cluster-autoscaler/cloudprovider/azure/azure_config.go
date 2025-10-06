@@ -65,6 +65,15 @@ type Config struct {
 	// It can override the default public ARM endpoint for VMs pool scale operations.
 	ARMBaseURLForAPClient string `json:"armBaseURLForAPClient" yaml:"armBaseURLForAPClient"`
 
+	// Hosted (on-behalf-of) system pool configuration for automatic cluster.
+	// HostedSubscriptionID is the subscription ID of the hosted resources under AKS internal tenant.
+	HostedSubscriptionID string `json:"hostedSubscriptionID" yaml:"hostedSubscriptionID"`
+	// HostedResourceGroup is the resource group of the hosted resources under AKS internal tenant.
+	HostedResourceGroup string `json:"hostedResourceGroup" yaml:"hostedResourceGroup"`
+	// HostedResourceProxyURL is the URL to use for retrieving hosted resources under AKS internal tenant.
+	// It can override the default public ARM endpoint for operations like VM/SKU GET.
+	HostedResourceProxyURL string `json:"hostedResourceProxyURL" yaml:"hostedResourceProxyURL"`
+
 	// AuthMethod determines how to authorize requests for the Azure
 	// cloud. Valid options are "principal" (= the traditional
 	// service principle approach) and "cli" (= load az command line
@@ -223,6 +232,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	if _, err = assignFromEnvIfExists(&cfg.SubscriptionID, "ARM_SUBSCRIPTION_ID"); err != nil {
 		return nil, err
 	}
+	if _, err = assignFromEnvIfExists(&cfg.HostedResourceProxyURL, "HOSTED_RESOURCE_PROXY_URL"); err != nil {
+		return nil, err
+	}
+	if _, err = assignFromEnvIfExists(&cfg.HostedSubscriptionID, "HOSTED_SUBSCRIPTION_ID"); err != nil {
+		return nil, err
+	}
+	if _, err = assignFromEnvIfExists(&cfg.HostedResourceGroup, "HOSTED_RESOURCE_GROUP"); err != nil {
+		return nil, err
+	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.UseManagedIdentityExtension, "ARM_USE_MANAGED_IDENTITY_EXTENSION"); err != nil {
 		return nil, err
 	}
@@ -378,6 +396,17 @@ func (cfg *Config) getAzureClientConfig(authorizer autorest.Authorizer, env *azu
 			Duration: time.Duration(cfg.CloudProviderBackoffDuration) * time.Second,
 			Jitter:   cfg.CloudProviderBackoffJitter,
 		}
+	}
+
+	// A proxy service is required to access resources for the Hosted (on-behalf-of) system pool within automatic clusters.
+	if cfg.HostedResourceProxyURL != "" {
+		azClientConfig.ResourceManagerEndpoint = cfg.HostedResourceProxyURL
+	}
+
+	// Hosted (on-behalf-of) system pool resources are hosted under AKS internal tenant and subscription.
+	// it is different from the customer subscription where the cluster is created.
+	if cfg.HostedSubscriptionID != "" {
+		azClientConfig.SubscriptionID = cfg.HostedSubscriptionID
 	}
 
 	if cfg.HasExtendedLocation() {
