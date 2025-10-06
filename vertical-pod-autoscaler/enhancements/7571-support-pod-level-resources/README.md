@@ -150,7 +150,7 @@ With this option, VPA manages only the pod-level resources stanza. To follow thi
 **Pros**:
 * VPA does not need to track which container-level resources were initially set.
 * Straightforward for users: only the pod-level resources stanza is updated, while container-level stanzas are dropped.
-* Enables shared headroom across containers in the same Pod. With container-only limits, a sidecar (`tool1` or `tool2`) hitting its own CPU limit could get throttled even if other containers in the Pod have idle CPU. Pod-level resources allow a container experiencing a spike to access idle resources from others, optimizing overall utilization.
+* Enables shared headroom across containers in the same Pod. With container-only limits, a sidecar (`tool1` or `tool2`) or the main workload (`ide` container) hitting its own CPU limit could get throttled even if other containers in the Pod have idle CPU. Pod-level resources allow a container experiencing a spike to access idle resources from others, optimizing overall utilization.
 
 **Cons**:
 * This option currently requires evicting the Pod, because in-place pod-level resource resizing is not yet available, additionally container-level resources cannot be removed via the `resize` subresource (only changed to new values). 
@@ -162,7 +162,7 @@ With this option, VPA controls pod-level resources and the container-level resou
 
 **Pros**:
 - The primary container (`ide`) is less likely to be killed under memory pressure because sidecars (`tool1`, `tool2`) have higher `oom_score_adj` values, the OOM killer targets them first during node pressure evictions. See the [updated OOM killer behavior and formula](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md#oom-killer-behavior) when pod-level resources are present.
-- Sidecars, such as logging agents or mesh proxies (`tool1` or `tool2`) can borrow idle CPU from other containers in the pod. Pod-level resources allow a container experiencing a spike to access idle resources from others, optimizing overall utilization.
+- Sidecars, such as logging agents or mesh proxies (like `tool1` or `tool2`), that don't use container-level limits can borrow idle CPU from other containers in the pod when they experience a spike in usage. Pod-level resources allow a container experiencing a spike to access idle resources from others, optimizing overall utilization.
 
 **Cons**:
 - Applying both pod-level and container-level recommendations requires eviction because [in-place pod-level resource resizing](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/5419-pod-level-resources-in-place-resize) is not yet available.
