@@ -175,9 +175,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 		// Log deprecation warnings for VPAs using deprecated modes
 		logDeprecationWarnings(vpa)
 
-		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
-			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
-			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
+		updateMode := vpa_api_util.GetUpdateMode(vpa)
+		if updateMode != vpa_types.UpdateModeRecreate &&
+			updateMode != vpa_types.UpdateModeAuto &&
+			updateMode != vpa_types.UpdateModeInPlaceOrRecreate &&
+			vpa.Spec.StartupBoost == nil {
+			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\" and it doesn't have startupBoost configured", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
@@ -242,8 +245,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer vpasWithInPlaceUpdatablePodsCounter.Observe()
 	defer vpasWithInPlaceUpdatedPodsCounter.Observe()
 
-	// NOTE: this loop assumes that controlledPods are filtered
-	// to contain only Pods controlled by a VPA in auto, recreate, or inPlaceOrRecreate mode
+	cpuStartupBoostEnabled := features.Enabled(features.CPUStartupBoost)
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
 		updateMode := vpa_api_util.GetUpdateMode(vpa)
@@ -254,31 +256,80 @@ func (u *updater) RunOnce(ctx context.Context) {
 			continue
 		}
 
-		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 		inPlaceLimiter := u.restrictionFactory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+		podsAvailableForUpdate := make([]*apiv1.Pod, 0)
+		podsToUnboost := make([]*apiv1.Pod, 0)
+		withInPlaceUpdated := false
 
-		podsForInPlace := make([]*apiv1.Pod, 0)
+		if cpuStartupBoostEnabled && vpa.Spec.StartupBoost != nil {
+			// First, handle unboosting for pods that have finished their startup period.
+			for _, pod := range livePods {
+				if vpa_api_util.PodHasCPUBoostInProgress(pod) {
+					if vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa) {
+						podsToUnboost = append(podsToUnboost, pod)
+					}
+				} else {
+					podsAvailableForUpdate = append(podsAvailableForUpdate, pod)
+				}
+			}
+
+			// Perform unboosting
+			for _, pod := range podsToUnboost {
+				if inPlaceLimiter.CanUnboost(pod, vpa) {
+					klog.V(2).InfoS("Unboosting pod", "pod", klog.KObj(pod))
+					err = u.inPlaceRateLimiter.Wait(ctx)
+					if err != nil {
+						klog.V(0).InfoS("In-place rate limiter wait failed for unboosting", "error", err)
+						return
+					}
+					err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
+					if err != nil {
+						klog.V(0).InfoS("Unboosting failed", "error", err, "pod", klog.KObj(pod))
+						metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "UnboostError")
+					} else {
+						klog.V(2).InfoS("Successfully unboosted pod", "pod", klog.KObj(pod))
+						withInPlaceUpdated = true
+						metrics_updater.AddInPlaceUpdatedPod(vpaSize, vpa.Name, vpa.Namespace)
+					}
+				}
+			}
+		} else {
+			// CPU Startup Boost is not enabled or configured for this VPA,
+			// so all live pods are available for potential standard VPA updates.
+			podsAvailableForUpdate = livePods
+		}
+
+		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial {
+			continue
+		}
+
+		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 		podsForEviction := make([]*apiv1.Pod, 0)
+		podsForInPlace := make([]*apiv1.Pod, 0)
+		withInPlaceUpdatable := false
+		withEvictable := false
 
 		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceFeatureEnable {
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
+			if len(podsForInPlace) > 0 {
+				withInPlaceUpdatable = true
+			}
 		} else {
 			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
 			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
 			}
-			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
+			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(podsAvailableForUpdate, evictionLimiter), vpa)
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
+			if len(podsForEviction) > 0 {
+				withEvictable = true
+			}
 		}
 
-		withInPlaceUpdatable := false
-		withInPlaceUpdated := false
-		withEvictable := false
 		withEvicted := false
 
 		for _, pod := range podsForInPlace {
-			withInPlaceUpdatable = true
 			decision := inPlaceLimiter.CanInPlaceUpdate(pod)
 
 			if decision == utils.InPlaceDeferred {
@@ -306,7 +357,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 
 		for _, pod := range podsForEviction {
-			withEvictable = true
 			if !evictionLimiter.CanEvict(pod) {
 				continue
 			}

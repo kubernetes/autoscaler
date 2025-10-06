@@ -18,8 +18,15 @@ require (
 	k8s.io/code-generator v0.34.0
 	k8s.io/component-base v0.34.0
 	k8s.io/klog/v2 v2.130.1
+	k8s.io/kubernetes v1.34.1
 	k8s.io/metrics v0.34.0
 	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
+)
+
+require (
+	k8s.io/apiextensions-apiserver v0.0.0 // indirect
+	k8s.io/apiserver v0.34.0 // indirect
+	k8s.io/controller-manager v0.0.0 // indirect
 )
 
 require (
