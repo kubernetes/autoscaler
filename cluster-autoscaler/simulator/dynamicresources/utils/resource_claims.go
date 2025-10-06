@@ -137,9 +137,6 @@ func ClaimWithoutAdminAccessRequests(claim *resourceapi.ResourceClaim) *resource
 
 // getDeviceResultRequest returns the DeviceRequest for the provided DeviceRequestAllocationResult in the provided ResourceClaim. If no result is found, nil is returned.
 func getDeviceResultRequest(claim *resourceapi.ResourceClaim, deviceRequestAllocationResult *resourceapi.DeviceRequestAllocationResult) *resourceapi.DeviceRequest {
-	if claim.Status.Allocation == nil {
-		return nil
-	}
 	for _, deviceRequest := range claim.Spec.Devices.Requests {
 		if deviceRequest.Name == deviceRequestAllocationResult.Request {
 			return &deviceRequest
