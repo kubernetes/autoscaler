@@ -107,11 +107,17 @@ type azureCache struct {
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
+	nodeResourceGroup := config.ResourceGroup
+	// Hosted (on-behalf-of) system pool node resources are in the AKS internal resource group within AME tenants,
+	// which differs from the MC_* resource group found in the customer subscription.
+	if config.HostedResourceGroup != "" {
+		nodeResourceGroup = config.HostedResourceGroup
+	}
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
 		refreshInterval:      cacheTTL,
-		resourceGroup:        config.ResourceGroup,
+		resourceGroup:        nodeResourceGroup,
 		clusterResourceGroup: config.ClusterResourceGroup,
 		clusterName:          config.ClusterName,
 		enableVMsAgentPool:   config.EnableVMsAgentPool,
