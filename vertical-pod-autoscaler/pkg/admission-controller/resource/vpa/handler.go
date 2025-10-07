@@ -221,24 +221,29 @@ func validateStartupBoost(startupBoost *vpa_types.StartupBoost, isCreate bool) e
 		return nil
 	}
 	boostType := cpuBoost.Type
+	if boostType == "" {
+		return fmt.Errorf("startupBoost.cpu.type field is required and must be either %s or %s",
+			vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType)
+	}
 
 	switch boostType {
 	case vpa_types.FactorStartupBoostType:
 		if cpuBoost.Factor == nil {
-			return fmt.Errorf("StartupBoost.CPU.Factor is required when Type is Factor")
+			return fmt.Errorf("startupBoost.cpu.factor is required when type is Factor")
 		}
 		if *cpuBoost.Factor < 1 {
-			return fmt.Errorf("invalid StartupBoost.CPU.Factor: must be >= 1 for Type Factor")
+			return fmt.Errorf("invalid startupBoost.cpu.factor: must be >= 1 for type Factor")
 		}
 	case vpa_types.QuantityStartupBoostType:
 		if cpuBoost.Quantity == nil {
-			return fmt.Errorf("StartupBoost.CPU.Quantity is required when Type is Quantity")
+			return fmt.Errorf("startupBoost.cpu.quantity is required when type is Quantity")
 		}
 		if err := validateCPUResolution(*cpuBoost.Quantity); err != nil {
-			return fmt.Errorf("invalid StartupBoost.CPU.Quantity: %v", err)
+			return fmt.Errorf("invalid startupBoost.cpu.quantity: %v", err)
 		}
 	default:
-		return fmt.Errorf("unexpected StartupBoost.CPU.Type value %s", boostType)
+		return fmt.Errorf("startupBoost.cpu.type field is required and must be either %s or %s, got %v",
+			vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType, boostType)
 	}
 	return nil
 }
