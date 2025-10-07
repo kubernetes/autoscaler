@@ -451,7 +451,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 				NodeDeleteDelayAfterTaint:   1 * time.Second,
 			}
 
-			ctx, err := test.NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+			autoscalingCtx, err := test.NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 			assert.NoError(t, err)
 			ndt := deletiontracker.NewNodeDeletionTracker(1 * time.Hour)
 			for i := 0; i < tc.emptyDeletionsInProgress; i++ {
@@ -468,8 +468,8 @@ func TestCropNodesToBudgets(t *testing.T) {
 				drainList = append(drainList, bucket.Nodes...)
 			}
 
-			clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, allNodes, nil)
-			budgeter := NewScaleDownBudgetProcessor(&ctx)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
+			budgeter := NewScaleDownBudgetProcessor(&autoscalingCtx)
 			gotEmpty, gotDrain := budgeter.CropNodes(ndt, emptyList, drainList)
 			if diff := cmp.Diff(tc.wantEmpty, gotEmpty, cmpopts.EquateEmpty(), transformNodeGroupView); diff != "" {
 				t.Errorf("cropNodesToBudgets empty nodes diff (-want +got):\n%s", diff)

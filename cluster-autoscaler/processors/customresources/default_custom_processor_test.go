@@ -27,7 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -174,7 +174,7 @@ type mockCustomResourcesProcessor struct {
 	customResourceTargetsQuantity int64
 }
 
-func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	filteredReadyNodes := []*apiv1.Node{}
 	for _, node := range readyNodes {
 		if !strings.Contains(node.Name, m.nodeMark) {
@@ -184,7 +184,7 @@ func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *con
 	return allNodes, filteredReadyNodes
 }
 
-func (m *mockCustomResourcesProcessor) GetNodeResourceTargets(_ *context.AutoscalingContext, node *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (m *mockCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.AutoscalingContext, node *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	result := []CustomResourceTarget{}
 	if strings.Contains(node.Name, m.nodeMark) {
 		for _, rt := range m.customResourceTargetsToAdd {

@@ -18,13 +18,13 @@ package pods
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 )
 
 // PodListProcessor processes lists of unschedulable pods.
 type PodListProcessor interface {
 	Process(
-		context *context.AutoscalingContext,
+		autoscalingCtx *ca_context.AutoscalingContext,
 		unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error)
 	CleanUp()
 }
@@ -40,7 +40,7 @@ func NewDefaultPodListProcessor() PodListProcessor {
 
 // Process processes lists of unschedulable and scheduled pods before scaling of the cluster.
 func (p *NoOpPodListProcessor) Process(
-	context *context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	return unschedulablePods, nil
 }
@@ -65,10 +65,10 @@ func (p *CombinedPodListProcessor) AddProcessor(processor PodListProcessor) {
 }
 
 // Process runs sub-processors sequentially
-func (p *CombinedPodListProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *CombinedPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	var err error
 	for _, processor := range p.processors {
-		unschedulablePods, err = processor.Process(ctx, unschedulablePods)
+		unschedulablePods, err = processor.Process(autoscalingCtx, unschedulablePods)
 		if err != nil {
 			return nil, err
 		}

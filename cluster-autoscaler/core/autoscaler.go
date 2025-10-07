@@ -23,7 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -50,7 +50,7 @@ type AutoscalerOptions struct {
 	config.AutoscalingOptions
 	KubeClient             kube_client.Interface
 	InformerFactory        informers.SharedInformerFactory
-	AutoscalingKubeClients *context.AutoscalingKubeClients
+	AutoscalingKubeClients *ca_context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
 	FrameworkHandle        *framework.Handle
 	ClusterSnapshot        clustersnapshot.ClusterSnapshot
@@ -117,7 +117,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 		opts.LoopStartNotifier = loopstart.NewObserversList(nil)
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
+		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
 		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled)

@@ -22,7 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -49,12 +49,12 @@ func NewPodInjectionPodListProcessor(fakePodRegistry *podinjectionbackoff.Contro
 }
 
 // Process updates unschedulablePods by injecting fake pods to match target replica count
-func (p *PodInjectionPodListProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *PodInjectionPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
-	controllers := listControllers(ctx)
+	controllers := listControllers(autoscalingCtx)
 	controllers = p.skipBackedoffControllers(controllers)
 
-	nodeInfos, err := ctx.ClusterSnapshot.ListNodeInfos()
+	nodeInfos, err := autoscalingCtx.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
 		klog.Errorf("Failed to list nodeInfos from cluster snapshot: %v", err)
 		return unschedulablePods, fmt.Errorf("failed to list nodeInfos from cluster snapshot: %v", err)
@@ -118,11 +118,11 @@ func podsFromNodeInfos(nodeInfos []*framework.NodeInfo) []*apiv1.Pod {
 }
 
 // listControllers returns the list of controllers that can be used to inject fake pods
-func listControllers(ctx *context.AutoscalingContext) []controller {
+func listControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	controllers = append(controllers, createReplicaSetControllers(ctx)...)
-	controllers = append(controllers, createJobControllers(ctx)...)
-	controllers = append(controllers, createStatefulSetControllers(ctx)...)
+	controllers = append(controllers, createReplicaSetControllers(autoscalingCtx)...)
+	controllers = append(controllers, createJobControllers(autoscalingCtx)...)
+	controllers = append(controllers, createStatefulSetControllers(autoscalingCtx)...)
 	return controllers
 }
 
