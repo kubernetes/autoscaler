@@ -45,7 +45,7 @@ func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo
 }
 
 // Process filters out pods which are schedulable from list of unschedulable pods.
-func (p *filterOutSchedulablePodListProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// It's likely we added a new node and the scheduler just haven't managed to put the
 	// pod on in yet. In this situation we don't want to trigger another scale-up.
@@ -65,7 +65,7 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingContext *ca_co
 	klog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
 
-	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingContext.ClusterSnapshot)
+	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingCtx.ClusterSnapshot)
 
 	if err != nil {
 		return nil, err
@@ -76,9 +76,9 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingContext *ca_co
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
 		klog.V(2).Info("Schedulable pods present")
 
-		if autoscalingContext.DebuggingSnapshotter.IsDataCollectionAllowed() {
+		if autoscalingCtx.DebuggingSnapshotter.IsDataCollectionAllowed() {
 			schedulablePods := findSchedulablePods(unschedulablePods, unschedulablePodsToHelp)
-			autoscalingContext.DebuggingSnapshotter.SetUnscheduledPodsCanBeScheduled(schedulablePods)
+			autoscalingCtx.DebuggingSnapshotter.SetUnscheduledPodsCanBeScheduled(schedulablePods)
 		}
 
 	} else {

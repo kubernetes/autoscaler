@@ -37,18 +37,18 @@ type ScaleDownCandidatesDelayProcessor struct {
 }
 
 // GetPodDestinationCandidates returns nodes as is no processing is required here
-func (p *ScaleDownCandidatesDelayProcessor) GetPodDestinationCandidates(autoscalingContext *ca_context.AutoscalingContext,
+func (p *ScaleDownCandidatesDelayProcessor) GetPodDestinationCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	return nodes, nil
 }
 
 // GetScaleDownCandidates returns filter nodes based on if scale down is enabled or disabled per nodegroup.
-func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingContext *ca_context.AutoscalingContext,
+func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := []*apiv1.Node{}
 
 	for _, node := range nodes {
-		nodeGroup, err := autoscalingContext.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue
@@ -70,15 +70,15 @@ func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCo
 			return false
 		}
 
-		if recent(p.scaleUps, autoscalingContext.ScaleDownDelayAfterAdd, "scaled up") {
+		if recent(p.scaleUps, autoscalingCtx.ScaleDownDelayAfterAdd, "scaled up") {
 			continue
 		}
 
-		if recent(p.scaleDowns, autoscalingContext.ScaleDownDelayAfterDelete, "scaled down") {
+		if recent(p.scaleDowns, autoscalingCtx.ScaleDownDelayAfterDelete, "scaled down") {
 			continue
 		}
 
-		if recent(p.scaleDownFailures, autoscalingContext.ScaleDownDelayAfterFailure, "failed to scale down") {
+		if recent(p.scaleDownFailures, autoscalingCtx.ScaleDownDelayAfterFailure, "failed to scale down") {
 			continue
 		}
 

@@ -128,8 +128,8 @@ func (p *provReqProcessor) CleanUp() {}
 
 // Process implements PodListProcessor.Process() and inject fake pods to the cluster snapshoot for Provisioned ProvReqs in order to
 // reserve capacity from ScaleDown.
-func (p *provReqProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	err := p.bookCapacity(autoscalingContext)
+func (p *provReqProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	err := p.bookCapacity(autoscalingCtx)
 	if err != nil {
 		klog.Warningf("Failed to book capacity for ProvisioningRequests: %s", err)
 	}
@@ -138,7 +138,7 @@ func (p *provReqProcessor) Process(autoscalingContext *ca_context.AutoscalingCon
 
 // bookCapacity schedule fake pods for ProvisioningRequest that should have reserved capacity
 // in the cluster.
-func (p *provReqProcessor) bookCapacity(autoscalingContext *ca_context.AutoscalingContext) error {
+func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingContext) error {
 	provReqs, err := p.client.ProvisioningRequests()
 	if err != nil {
 		return fmt.Errorf("couldn't fetch ProvisioningRequests in the cluster: %v", err)
@@ -165,7 +165,7 @@ func (p *provReqProcessor) bookCapacity(autoscalingContext *ca_context.Autoscali
 		return nil
 	}
 	// Scheduling the pods to reserve capacity for provisioning request.
-	if _, _, err = p.injector.TrySchedulePods(autoscalingContext.ClusterSnapshot, podsToCreate, scheduling.ScheduleAnywhere, false); err != nil {
+	if _, _, err = p.injector.TrySchedulePods(autoscalingCtx.ClusterSnapshot, podsToCreate, scheduling.ScheduleAnywhere, false); err != nil {
 		return err
 	}
 	return nil

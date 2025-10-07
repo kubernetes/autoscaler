@@ -37,17 +37,17 @@ type GpuCustomResourcesProcessor struct {
 // it in allocatable from ready nodes list and updates their status to unready on all nodes list.
 // This is a hack/workaround for nodes with GPU coming up without installed drivers, resulting
 // in GPU missing from their allocatable and capacity.
-func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingContext *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyGpu := make(map[string]*apiv1.Node)
 	for _, node := range readyNodes {
-		if gpuExposedViaDra(autoscalingContext, node) {
+		if gpuExposedViaDra(autoscalingCtx, node) {
 			newReadyNodes = append(newReadyNodes, node)
 			continue
 		}
 
-		_, hasGpuLabel := node.Labels[autoscalingContext.CloudProvider.GPULabel()]
+		_, hasGpuLabel := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
 		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
 		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[gpu.ResourceDirectX]
 		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) {
@@ -71,20 +71,20 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 
 // GetNodeResourceTargets returns mapping of resource names to their targets.
 // This includes resources which are not yet ready to use and visible in kubernetes.
-func (p *GpuCustomResourcesProcessor) GetNodeResourceTargets(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
-	gpuTarget, err := p.GetNodeGpuTarget(autoscalingContext, node, nodeGroup)
+func (p *GpuCustomResourcesProcessor) GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+	gpuTarget, err := p.GetNodeGpuTarget(autoscalingCtx, node, nodeGroup)
 	return []CustomResourceTarget{gpuTarget}, err
 }
 
 // GetNodeGpuTarget returns the gpu target of a given node. This includes gpus
 // that are not ready to use and visible in kubernetes.
-func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
-	gpuLabel, found := node.Labels[autoscalingContext.CloudProvider.GPULabel()]
+func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
+	gpuLabel, found := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
 	if !found {
 		return CustomResourceTarget{}, nil
 	}
 
-	if gpuExposedViaDra(autoscalingContext, node) {
+	if gpuExposedViaDra(autoscalingCtx, node) {
 		return CustomResourceTarget{}, nil
 	}
 
@@ -128,8 +128,8 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingContext *ca_co
 func (p *GpuCustomResourcesProcessor) CleanUp() {
 }
 
-func gpuExposedViaDra(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node) bool {
-	gpuConfig := autoscalingContext.CloudProvider.GetNodeGpuConfig(node)
+func gpuExposedViaDra(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node) bool {
+	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
 	if gpuConfig == nil {
 		return false
 	}

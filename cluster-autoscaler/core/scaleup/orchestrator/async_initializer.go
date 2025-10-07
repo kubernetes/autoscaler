@@ -49,7 +49,7 @@ type AsyncNodeGroupInitializer struct {
 	taintConfig            taints.TaintConfig
 	daemonSets             []*appsv1.DaemonSet
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor
-	autoscalingContext     *ca_context.AutoscalingContext
+	autoscalingCtx         *ca_context.AutoscalingContext
 	atomicScaleUp          bool
 }
 
@@ -61,7 +61,7 @@ func NewAsyncNodeGroupInitializer(
 	taintConfig taints.TaintConfig,
 	daemonSets []*appsv1.DaemonSet,
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor,
-	autoscalingContext *ca_context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	atomicScaleUp bool,
 ) *AsyncNodeGroupInitializer {
 	return &AsyncNodeGroupInitializer{
@@ -73,7 +73,7 @@ func NewAsyncNodeGroupInitializer(
 		taintConfig:            taintConfig,
 		daemonSets:             daemonSets,
 		scaleUpStatusProcessor: scaleUpStatusProcessor,
-		autoscalingContext:     autoscalingContext,
+		autoscalingCtx:         autoscalingCtx,
 		atomicScaleUp:          atomicScaleUp,
 	}
 }
@@ -167,5 +167,5 @@ func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.Scal
 	if err != nil {
 		status.UpdateScaleUpError(scaleUpStatus, err)
 	}
-	s.scaleUpStatusProcessor.Process(s.autoscalingContext, scaleUpStatus)
+	s.scaleUpStatusProcessor.Process(s.autoscalingCtx, scaleUpStatus)
 }

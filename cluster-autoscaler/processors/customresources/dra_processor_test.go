@@ -336,9 +336,9 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 
-			autoscalingContext := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
+			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
 			processor := DraCustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingContext, initialAllNodes, initialReadyNodes, draSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {

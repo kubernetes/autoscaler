@@ -40,20 +40,20 @@ func NewDefaultCustomResourcesProcessor(draEnabled bool) CustomResourcesProcesso
 }
 
 // FilterOutNodesWithUnreadyResources calls the corresponding method for internal custom resources processors in order.
-func (p *DefaultCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingContext *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *DefaultCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := allNodes
 	newReadyNodes := readyNodes
 	for _, processor := range p.customResourcesProcessors {
-		newAllNodes, newReadyNodes = processor.FilterOutNodesWithUnreadyResources(autoscalingContext, newAllNodes, newReadyNodes, draSnapshot)
+		newAllNodes, newReadyNodes = processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, newAllNodes, newReadyNodes, draSnapshot)
 	}
 	return newAllNodes, newReadyNodes
 }
 
 // GetNodeResourceTargets calls the corresponding method for internal custom resources processors in order.
-func (p *DefaultCustomResourcesProcessor) GetNodeResourceTargets(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (p *DefaultCustomResourcesProcessor) GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	customResourcesTargets := []CustomResourceTarget{}
 	for _, processor := range p.customResourcesProcessors {
-		targets, err := processor.GetNodeResourceTargets(autoscalingContext, node, nodeGroup)
+		targets, err := processor.GetNodeResourceTargets(autoscalingCtx, node, nodeGroup)
 		if err != nil {
 			return nil, err
 		}

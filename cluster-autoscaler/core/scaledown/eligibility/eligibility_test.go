@@ -229,15 +229,15 @@ func TestFilterOutUnremovable(t *testing.T) {
 			for _, n := range tc.nodes {
 				provider.AddNode("ng1", n)
 			}
-			autoscalingContext, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Could not create autoscaling context: %v", err)
 			}
-			if err := autoscalingContext.ClusterSnapshot.SetClusterState(tc.nodes, tc.pods, tc.draSnapshot); err != nil {
+			if err := autoscalingCtx.ClusterSnapshot.SetClusterState(tc.nodes, tc.pods, tc.draSnapshot); err != nil {
 				t.Fatalf("Could not SetClusterState: %v", err)
 			}
 			unremovableNodes := unremovable.NewNodes()
-			gotUnneeded, _, gotUnremovable := c.FilterOutUnremovable(&autoscalingContext, tc.nodes, now, unremovableNodes)
+			gotUnneeded, _, gotUnremovable := c.FilterOutUnremovable(&autoscalingCtx, tc.nodes, now, unremovableNodes)
 			if diff := cmp.Diff(tc.wantUnneeded, gotUnneeded); diff != "" {
 				t.Errorf("FilterOutUnremovable(): unexpected unneeded (-want +got): %s", diff)
 			}

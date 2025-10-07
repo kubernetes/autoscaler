@@ -39,8 +39,8 @@ type MetricsAutoscalingStatusProcessor struct {
 }
 
 // Process queries the health status and backoff situation of all node groups and updates metrics after each autoscaling iteration.
-func (p *MetricsAutoscalingStatusProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
-	for _, nodeGroup := range autoscalingContext.CloudProvider.NodeGroups() {
+func (p *MetricsAutoscalingStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
+	for _, nodeGroup := range autoscalingCtx.CloudProvider.NodeGroups() {
 		if !nodeGroup.Exist() {
 			continue
 		}

@@ -53,7 +53,7 @@ const (
 )
 
 type checkCapacityProvClass struct {
-	autoscalingContext                           *ca_context.AutoscalingContext
+	autoscalingCtx                               *ca_context.AutoscalingContext
 	client                                       *provreqclient.ProvisioningRequestClient
 	schedulingSimulator                          *scheduling.HintingSimulator
 	checkCapacityProvisioningRequestMaxBatchSize int
@@ -70,18 +70,18 @@ func New(
 }
 
 func (o *checkCapacityProvClass) Initialize(
-	autoscalingContext *ca_context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 	schedulingSimulator *scheduling.HintingSimulator,
 ) {
-	o.autoscalingContext = autoscalingContext
+	o.autoscalingCtx = autoscalingCtx
 	o.schedulingSimulator = schedulingSimulator
-	if autoscalingContext.CheckCapacityBatchProcessing {
-		o.checkCapacityProvisioningRequestBatchTimebox = autoscalingContext.CheckCapacityProvisioningRequestBatchTimebox
-		o.checkCapacityProvisioningRequestMaxBatchSize = autoscalingContext.CheckCapacityProvisioningRequestMaxBatchSize
+	if autoscalingCtx.CheckCapacityBatchProcessing {
+		o.checkCapacityProvisioningRequestBatchTimebox = autoscalingCtx.CheckCapacityProvisioningRequestBatchTimebox
+		o.checkCapacityProvisioningRequestMaxBatchSize = autoscalingCtx.CheckCapacityProvisioningRequestMaxBatchSize
 	} else {
 		o.checkCapacityProvisioningRequestMaxBatchSize = 1
 	}
@@ -97,8 +97,8 @@ func (o *checkCapacityProvClass) Provision(
 	combinedStatus := NewCombinedStatusSet()
 	startTime := time.Now()
 
-	o.autoscalingContext.ClusterSnapshot.Fork()
-	defer o.autoscalingContext.ClusterSnapshot.Revert()
+	o.autoscalingCtx.ClusterSnapshot.Fork()
+	defer o.autoscalingCtx.ClusterSnapshot.Revert()
 
 	// Gather ProvisioningRequests.
 	prs, err := o.getProvisioningRequestsAndPods(unschedulablePods)
@@ -132,7 +132,7 @@ func (o *checkCapacityProvClass) getProvisioningRequestsAndPods(unschedulablePod
 	if !o.isBatchEnabled() {
 		klog.Info("Processing single provisioning request (non-batch)")
 		prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
-		prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity, o.autoscalingContext.CheckCapacityProcessorInstance)
+		prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity, o.autoscalingCtx.CheckCapacityProcessorInstance)
 		if len(prs) == 0 {
 			return nil, nil
 		}
@@ -172,14 +172,14 @@ func (o *checkCapacityProvClass) checkCapacityBatch(reqs []provreq.ProvisioningR
 
 // checkCapacity checks if there is capacity, updates combinedStatus and Conditions. If capacity is found, it commits to the clusterSnapshot.
 func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) error {
-	o.autoscalingContext.ClusterSnapshot.Fork()
+	o.autoscalingCtx.ClusterSnapshot.Fork()
 
 	// Case 1: Capacity fits.
-	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingContext.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
+	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 	if err == nil && len(scheduled) == len(unschedulablePods) {
-		commitError := o.autoscalingContext.ClusterSnapshot.Commit()
+		commitError := o.autoscalingCtx.ClusterSnapshot.Commit()
 		if commitError != nil {
-			o.autoscalingContext.ClusterSnapshot.Revert()
+			o.autoscalingCtx.ClusterSnapshot.Revert()
 			return commitError
 		}
 		combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpSuccessful})
@@ -187,7 +187,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 		return nil
 	}
 	// Case 2: Capacity doesn't fit.
-	o.autoscalingContext.ClusterSnapshot.Revert()
+	o.autoscalingCtx.ClusterSnapshot.Revert()
 	combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable})
 	if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry == "true" {
 		// Failed=true condition triggers retry in Kueue. Otherwise ProvisioningRequest with Provisioned=Failed

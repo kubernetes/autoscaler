@@ -33,15 +33,15 @@ type ScaleDownCandidatesSortingProcessor struct {
 
 // GetPodDestinationCandidates returns nodes that potentially could act as destinations for pods
 // that would become unscheduled after a scale down.
-func (p *ScaleDownCandidatesSortingProcessor) GetPodDestinationCandidates(autoscalingContext *ca_context.AutoscalingContext,
+func (p *ScaleDownCandidatesSortingProcessor) GetPodDestinationCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
-	return p.preFilter.GetPodDestinationCandidates(autoscalingContext, nodes)
+	return p.preFilter.GetPodDestinationCandidates(autoscalingCtx, nodes)
 }
 
 // GetScaleDownCandidates returns filter nodes and move previous scale down candidates to the beginning of the list.
-func (p *ScaleDownCandidatesSortingProcessor) GetScaleDownCandidates(autoscalingContext *ca_context.AutoscalingContext,
+func (p *ScaleDownCandidatesSortingProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
-	candidates, err := p.preFilter.GetScaleDownCandidates(autoscalingContext, nodes)
+	candidates, err := p.preFilter.GetScaleDownCandidates(autoscalingCtx, nodes)
 	if err != nil {
 		return candidates, err
 	}

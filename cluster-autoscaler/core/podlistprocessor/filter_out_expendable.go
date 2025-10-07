@@ -35,15 +35,15 @@ func NewFilterOutExpendablePodListProcessor() *filterOutExpendable {
 }
 
 // Process filters out pods which are expendable and adds pods which is waiting for lower priority pods preemption to the cluster snapshot
-func (p *filterOutExpendable) Process(autoscalingContext *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	nodes, err := autoscalingContext.AllNodeLister().List()
+func (p *filterOutExpendable) Process(autoscalingCtx *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	nodes, err := autoscalingCtx.AllNodeLister().List()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to list all nodes while filtering expendable pods: %v", err)
 	}
-	expendablePodsPriorityCutoff := autoscalingContext.AutoscalingOptions.ExpendablePodsPriorityCutoff
+	expendablePodsPriorityCutoff := autoscalingCtx.AutoscalingOptions.ExpendablePodsPriorityCutoff
 
 	unschedulablePods, waitingForLowerPriorityPreemption := core_utils.FilterOutExpendableAndSplit(pods, nodes, expendablePodsPriorityCutoff)
-	if err = p.addPreemptingPodsToSnapshot(waitingForLowerPriorityPreemption, autoscalingContext); err != nil {
+	if err = p.addPreemptingPodsToSnapshot(waitingForLowerPriorityPreemption, autoscalingCtx); err != nil {
 		klog.Warningf("Failed to add preempting pods to snapshot: %v", err)
 		return nil, err
 	}
@@ -54,10 +54,10 @@ func (p *filterOutExpendable) Process(autoscalingContext *ca_context.Autoscaling
 // addPreemptingPodsToSnapshot modifies the snapshot simulating scheduling of pods waiting for preemption.
 // this is not strictly correct as we are not simulating preemption itself but it matches
 // CA logic from before migration to scheduler framework. So let's keep it for now
-func (p *filterOutExpendable) addPreemptingPodsToSnapshot(pods []*apiv1.Pod, autoscalingContext *ca_context.AutoscalingContext) error {
+func (p *filterOutExpendable) addPreemptingPodsToSnapshot(pods []*apiv1.Pod, autoscalingCtx *ca_context.AutoscalingContext) error {
 	for _, p := range pods {
 		// TODO(DRA): Figure out if/how to use the predicate-checking SchedulePod() here instead - otherwise this doesn't work with DRA pods.
-		if err := autoscalingContext.ClusterSnapshot.ForceAddPod(p, p.Status.NominatedNodeName); err != nil {
+		if err := autoscalingCtx.ClusterSnapshot.ForceAddPod(p, p.Status.NominatedNodeName); err != nil {
 			klog.Errorf("Failed to update snapshot with pod %s/%s waiting for preemption: %v", p.Namespace, p.Name, err)
 			return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 		}

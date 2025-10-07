@@ -82,7 +82,7 @@ type fakeScaleUpStatusProcessor struct {
 	lastStatus *status.ScaleUpStatus
 }
 
-func (f *fakeScaleUpStatusProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
+func (f *fakeScaleUpStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
 	f.lastStatus = status
 }
 
@@ -93,7 +93,7 @@ type fakeScaleDownStatusProcessor struct {
 	lastStatus *scaledownstatus.ScaleDownStatus
 }
 
-func (f *fakeScaleDownStatusProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, status *scaledownstatus.ScaleDownStatus) {
+func (f *fakeScaleDownStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *scaledownstatus.ScaleDownStatus) {
 	f.lastStatus = status
 }
 

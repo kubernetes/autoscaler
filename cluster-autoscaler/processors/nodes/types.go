@@ -39,7 +39,7 @@ type ScaleDownSetProcessor interface {
 	// FilterUnremovableNodes divides all candidates into removable nodes and unremovable nodes with reason
 	// Note that len(removableNodes) + len(unremovableNode) should equal len(candidates)
 	// in other words, each candidate should end up in one and only one of the resulting node lists.
-	FilterUnremovableNodes(autoscalingContext *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode)
+	FilterUnremovableNodes(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode)
 	// CleanUp is called at CA termination
 	CleanUp()
 }

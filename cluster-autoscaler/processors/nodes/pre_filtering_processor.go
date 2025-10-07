@@ -35,20 +35,20 @@ type PreFilteringScaleDownNodeProcessor struct {
 
 // GetPodDestinationCandidates returns nodes that potentially could act as destinations for pods
 // that would become unscheduled after a scale down.
-func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(autoscalingContext *ca_context.AutoscalingContext,
+func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	return nodes, nil
 }
 
 // GetScaleDownCandidates returns nodes that potentially could be scaled down and
-func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(autoscalingContext *ca_context.AutoscalingContext,
+func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0, len(nodes))
 
-	nodeGroupSize := utils.GetNodeGroupSizeMap(autoscalingContext.CloudProvider)
+	nodeGroupSize := utils.GetNodeGroupSizeMap(autoscalingCtx.CloudProvider)
 
 	for _, node := range nodes {
-		nodeGroup, err := autoscalingContext.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue

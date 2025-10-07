@@ -36,7 +36,7 @@ import (
 // Each loop WrapperOrchestrator split out regular and pods from ProvisioningRequest, pick one group that
 // wasn't picked in the last loop and run ScaleUp for it.
 type WrapperOrchestrator struct {
-	autoscalingContext  *ca_context.AutoscalingContext
+	autoscalingCtx      *ca_context.AutoscalingContext
 	podsOrchestrator    scaleup.Orchestrator
 	provReqOrchestrator scaleup.Orchestrator
 }
@@ -51,15 +51,15 @@ func NewWrapperOrchestrator(provReqOrchestrator scaleup.Orchestrator) *WrapperOr
 
 // Initialize initializes the orchestrator object with required fields.
 func (o *WrapperOrchestrator) Initialize(
-	autoscalingContext *ca_context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 ) {
-	o.autoscalingContext = autoscalingContext
-	o.podsOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
-	o.provReqOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	o.autoscalingCtx = autoscalingCtx
+	o.podsOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	o.provReqOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 }
 
 // ScaleUp run scaleUp function for regular pods of pods from ProvisioningRequest.
@@ -71,17 +71,17 @@ func (o *WrapperOrchestrator) ScaleUp(
 	allOrNothing bool,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	defer func() {
-		o.autoscalingContext.ProvisioningRequestScaleUpMode = !o.autoscalingContext.ProvisioningRequestScaleUpMode
+		o.autoscalingCtx.ProvisioningRequestScaleUpMode = !o.autoscalingCtx.ProvisioningRequestScaleUpMode
 	}()
 
 	provReqPods, regularPods := splitOut(unschedulablePods)
 	if len(provReqPods) == 0 {
-		o.autoscalingContext.ProvisioningRequestScaleUpMode = false
+		o.autoscalingCtx.ProvisioningRequestScaleUpMode = false
 	} else if len(regularPods) == 0 {
-		o.autoscalingContext.ProvisioningRequestScaleUpMode = true
+		o.autoscalingCtx.ProvisioningRequestScaleUpMode = true
 	}
 
-	if o.autoscalingContext.ProvisioningRequestScaleUpMode {
+	if o.autoscalingCtx.ProvisioningRequestScaleUpMode {
 		return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos, allOrNothing)
 	}
 	return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos, allOrNothing)

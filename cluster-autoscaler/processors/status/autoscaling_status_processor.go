@@ -26,7 +26,7 @@ import (
 // AutoscalingStatusProcessor processes the status of the cluster after each autoscaling iteration.
 // It's triggered at the end of Autoscaler's RunOnce method.
 type AutoscalingStatusProcessor interface {
-	Process(autoscalingContext *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error
+	Process(autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error
 	CleanUp()
 }
 
@@ -41,7 +41,7 @@ func NewDefaultAutoscalingStatusProcessor() AutoscalingStatusProcessor {
 type NoOpAutoscalingStatusProcessor struct{}
 
 // Process processes the status of the cluster after an autoscaling iteration.
-func (p *NoOpAutoscalingStatusProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
+func (p *NoOpAutoscalingStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
 	return nil
 }
 

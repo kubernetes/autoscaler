@@ -34,7 +34,7 @@ import (
 type Orchestrator interface {
 	// Initialize initializes the orchestrator object with required fields.
 	Initialize(
-		autoscalingContext *ca_context.AutoscalingContext,
+		autoscalingCtx *ca_context.AutoscalingContext,
 		processors *ca_processors.AutoscalingProcessors,
 		clusterStateRegistry *clusterstate.ClusterStateRegistry,
 		estimatorBuilder estimator.EstimatorBuilder,

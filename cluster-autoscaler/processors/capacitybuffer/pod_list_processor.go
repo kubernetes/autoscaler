@@ -66,7 +66,7 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 }
 
 // Process updates unschedulablePods by injecting fake pods to match replicas defined in buffers status
-func (p *CapacityBufferPodListProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	buffers, err := p.client.ListCapacityBuffers()
 	if err != nil {
 		klog.Errorf("CapacityBufferPodListProcessor failed to list buffers with error: %v", err.Error())

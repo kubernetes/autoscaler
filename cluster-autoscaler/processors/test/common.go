@@ -38,11 +38,11 @@ import (
 )
 
 // NewTestProcessors returns a set of simple processors for use in tests.
-func NewTestProcessors(autoscalingContext *ca_context.AutoscalingContext) *processors.AutoscalingProcessors {
+func NewTestProcessors(autoscalingCtx *ca_context.AutoscalingContext) *processors.AutoscalingProcessors {
 	return &processors.AutoscalingProcessors{
 		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
-		BinpackingLimiter:      binpacking.NewTimeLimiter(autoscalingContext.MaxNodeGroupBinpackingDuration),
+		BinpackingLimiter:      binpacking.NewTimeLimiter(autoscalingCtx.MaxNodeGroupBinpackingDuration),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor:  nodes.NewAtomicResizeFilteringProcessor(),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
@@ -51,7 +51,7 @@ func NewTestProcessors(autoscalingContext *ca_context.AutoscalingContext) *proce
 		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
-		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingContext.NodeGroupDefaults),
+		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(true),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),

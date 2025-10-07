@@ -23,9 +23,9 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func createReplicaSetControllers(autoscalingContext *ca_context.AutoscalingContext) []controller {
+func createReplicaSetControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	replicaSets, err := autoscalingContext.ListerRegistry.ReplicaSetLister().List(labels.Everything())
+	replicaSets, err := autoscalingCtx.ListerRegistry.ReplicaSetLister().List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Failed to list replicaSets: %v", err)
 		return controllers

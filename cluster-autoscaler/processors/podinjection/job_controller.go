@@ -23,9 +23,9 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func createJobControllers(autoscalingContext *ca_context.AutoscalingContext) []controller {
+func createJobControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	jobs, err := autoscalingContext.ListerRegistry.JobLister().List(labels.Everything())
+	jobs, err := autoscalingCtx.ListerRegistry.JobLister().List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Failed to list jobs: %v", err)
 	}

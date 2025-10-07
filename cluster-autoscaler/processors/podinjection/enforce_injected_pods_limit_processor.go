@@ -43,7 +43,7 @@ func NewEnforceInjectedPodsLimitProcessor(podLimit int) *EnforceInjectedPodsLimi
 }
 
 // Process filters unschedulablePods and enforces the limit of the number of injected pods
-func (p *EnforceInjectedPodsLimitProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *EnforceInjectedPodsLimitProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
 	numberOfFakePodsToRemove := len(unschedulablePods) - p.podLimit
 	removedFakePodsCount := 0

@@ -33,7 +33,7 @@ const maxProvReqEvent = 50
 
 // EventManager is an interface for handling events for provisioning request.
 type EventManager interface {
-	LogIgnoredInScaleUpEvent(autoscalingContext *ca_context.AutoscalingContext, now time.Time, pod *apiv1.Pod, prName string)
+	LogIgnoredInScaleUpEvent(autoscalingCtx *ca_context.AutoscalingContext, now time.Time, pod *apiv1.Pod, prName string)
 	Reset()
 }
 
@@ -48,10 +48,10 @@ func NewDefautlEventManager() *defaultEventManager {
 }
 
 // LogIgnoredInScaleUpEvent adds event about ignored scale up for unscheduled pod, that consumes Provisioning Request.
-func (e *defaultEventManager) LogIgnoredInScaleUpEvent(autoscalingContext *ca_context.AutoscalingContext, now time.Time, pod *apiv1.Pod, prName string) {
+func (e *defaultEventManager) LogIgnoredInScaleUpEvent(autoscalingCtx *ca_context.AutoscalingContext, now time.Time, pod *apiv1.Pod, prName string) {
 	message := fmt.Sprintf("Unschedulable pod didn't trigger scale-up, because it's consuming ProvisioningRequest %s/%s", pod.Namespace, prName)
 	if e.loggedEvents < e.limit {
-		autoscalingContext.Recorder.Event(pod, apiv1.EventTypeNormal, "", message)
+		autoscalingCtx.Recorder.Event(pod, apiv1.EventTypeNormal, "", message)
 		e.loggedEvents++
 	}
 }
@@ -68,7 +68,7 @@ type ProvisioningRequestPodsFilter struct {
 
 // Process filters out all pods that are consuming a Provisioning Request from unschedulable pods list.
 func (p *ProvisioningRequestPodsFilter) Process(
-	autoscalingContext *ca_context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	unschedulablePods []*apiv1.Pod,
 ) ([]*apiv1.Pod, error) {
 	now := time.Now()
@@ -82,7 +82,7 @@ func (p *ProvisioningRequestPodsFilter) Process(
 			continue
 		}
 		klogx.V(1).UpTo(loggingQuota).Infof("Ignoring unschedulable pod %s/%s as it consumes ProvisioningRequest: %s/%s", pod.Namespace, pod.Name, pod.Namespace, prName)
-		p.eventManager.LogIgnoredInScaleUpEvent(autoscalingContext, now, pod, prName)
+		p.eventManager.LogIgnoredInScaleUpEvent(autoscalingCtx, now, pod, prName)
 	}
 	klogx.V(1).Over(loggingQuota).Infof("There are also %v other pods which were ignored", -loggingQuota.Left())
 	return result, nil

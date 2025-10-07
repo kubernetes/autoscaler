@@ -66,17 +66,17 @@ func TestDeltaForNode(t *testing.T) {
 
 	for _, testCase := range testCases {
 		cp := testprovider.NewTestCloudProviderBuilder().Build()
-		autoscalingContext := newAutoscalingContext(t, cp)
-		processors := processorstest.NewTestProcessors(&autoscalingContext)
+		autoscalingCtx := newAutoscalingContext(t, cp)
+		processors := processorstest.NewTestProcessors(&autoscalingCtx)
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := autoscalingContext.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 		assert.NoError(t, err)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
-		delta, err := rm.DeltaForNode(&autoscalingContext, nodeInfos[ng.Name], group)
+		delta, err := rm.DeltaForNode(&autoscalingCtx, nodeInfos[ng.Name], group)
 		assert.NoError(t, err)
 		assert.Equal(t, testCase.expectedOutput, delta)
 	}
@@ -109,17 +109,17 @@ func TestResourcesLeft(t *testing.T) {
 
 	for _, testCase := range testCases {
 		cp := newCloudProvider(t, 1000, 1000)
-		autoscalingContext := newAutoscalingContext(t, cp)
-		processors := processorstest.NewTestProcessors(&autoscalingContext)
+		autoscalingCtx := newAutoscalingContext(t, cp)
+		processors := processorstest.NewTestProcessors(&autoscalingCtx)
 
 		ng := testCase.nodeGroupConfig
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := autoscalingContext.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 		assert.NoError(t, err)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
-		left, err := rm.ResourcesLeft(&autoscalingContext, nodeInfos, nodes)
+		left, err := rm.ResourcesLeft(&autoscalingCtx, nodeInfos, nodes)
 		assert.NoError(t, err)
 		assert.Equal(t, testCase.expectedOutput, left)
 	}
@@ -162,17 +162,17 @@ func TestApplyLimits(t *testing.T) {
 
 	for _, testCase := range testCases {
 		cp := testprovider.NewTestCloudProviderBuilder().Build()
-		autoscalingContext := newAutoscalingContext(t, cp)
-		processors := processorstest.NewTestProcessors(&autoscalingContext)
+		autoscalingCtx := newAutoscalingContext(t, cp)
+		processors := processorstest.NewTestProcessors(&autoscalingCtx)
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := autoscalingContext.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 		assert.NoError(t, err)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
-		newCount, err := rm.ApplyLimits(&autoscalingContext, testCase.newNodeCount, testCase.resourcesLeft, nodeInfos[testCase.nodeGroupConfig.Name], group)
+		newCount, err := rm.ApplyLimits(&autoscalingCtx, testCase.newNodeCount, testCase.resourcesLeft, nodeInfos[testCase.nodeGroupConfig.Name], group)
 		assert.NoError(t, err)
 		assert.Equal(t, testCase.expectedOutput, newCount)
 	}
@@ -222,8 +222,8 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	)
 	provider.SetResourceLimiter(resourceLimiter)
 
-	autoscalingContext := newAutoscalingContext(t, provider)
-	processors := processorstest.NewTestProcessors(&autoscalingContext)
+	autoscalingCtx := newAutoscalingContext(t, provider)
+	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 
 	n1 := newNode(t, "n1", 8, 16)
 	utils_test.AddGpusToNode(n1, 4)
@@ -234,18 +234,18 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodes := []*corev1.Node{n1}
-	err = autoscalingContext.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 	assert.NoError(t, err)
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 	rm := NewManager(processors.CustomResourcesProcessor)
 
-	delta, err := rm.DeltaForNode(&autoscalingContext, nodeInfos["ng1"], ng1)
+	delta, err := rm.DeltaForNode(&autoscalingCtx, nodeInfos["ng1"], ng1)
 	assert.Equal(t, int64(8), delta[cloudprovider.ResourceNameCores])
 	assert.Equal(t, int64(16), delta[cloudprovider.ResourceNameMemory])
 	assert.Equal(t, int64(4), delta["gpu"])
 
-	left, err := rm.ResourcesLeft(&autoscalingContext, nodeInfos, nodes)
+	left, err := rm.ResourcesLeft(&autoscalingCtx, nodeInfos, nodes)
 	assert.NoError(t, err)
 	assert.Equal(t, Limits{"cpu": 312, "memory": 624, "gpu": 12}, left) // cpu: 320-8*1=312; memory: 640-16*1=624; gpu: 16-4*1=12
 
@@ -253,7 +253,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	assert.False(t, result.Exceeded)
 	assert.Zero(t, len(result.ExceededResources))
 
-	newNodeCount, err := rm.ApplyLimits(&autoscalingContext, 10, left, nodeInfos["ng1"], ng1)
+	newNodeCount, err := rm.ApplyLimits(&autoscalingCtx, 10, left, nodeInfos["ng1"], ng1)
 	assert.Equal(t, 3, newNodeCount) // gpu left / grpu per node: 12 / 4 = 3
 }
 
@@ -272,9 +272,9 @@ func newCloudProvider(t *testing.T, cpu, mem int64) *testprovider.TestCloudProvi
 func newAutoscalingContext(t *testing.T, provider cloudprovider.CloudProvider) ca_context.AutoscalingContext {
 	podLister := kube_util.NewTestPodLister([]*corev1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	autoscalingContext, err := test.NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, listers, provider, nil, nil)
+	autoscalingCtx, err := test.NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
-	return autoscalingContext
+	return autoscalingCtx
 }
 
 func newNode(t *testing.T, name string, cpu, mem int64) *corev1.Node {

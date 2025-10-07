@@ -24,8 +24,8 @@ import (
 
 // BinpackingLimiter processes expansion options to stop binpacking early.
 type BinpackingLimiter interface {
-	InitBinpacking(autoscalingContext *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup)
-	MarkProcessed(autoscalingContext *ca_context.AutoscalingContext, nodegroupId string)
-	StopBinpacking(autoscalingContext *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool
-	FinalizeBinpacking(autoscalingContext *ca_context.AutoscalingContext, finalOptions []expander.Option)
+	InitBinpacking(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup)
+	MarkProcessed(autoscalingCtx *ca_context.AutoscalingContext, nodegroupId string)
+	StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool
+	FinalizeBinpacking(autoscalingCtx *ca_context.AutoscalingContext, finalOptions []expander.Option)
 }

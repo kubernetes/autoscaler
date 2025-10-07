@@ -47,13 +47,13 @@ func NewCustomAnnotationNodeInfoProvider(templateNodeInfoProvider TemplateNodeIn
 }
 
 // Process returns the nodeInfos set for this cluster.
-func (p *AnnotationNodeInfoProvider) Process(autoscalingContext *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
-	nodeInfos, err := p.templateNodeInfoProvider.Process(autoscalingContext, nodes, daemonsets, taintConfig, currentTime)
+func (p *AnnotationNodeInfoProvider) Process(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
+	nodeInfos, err := p.templateNodeInfoProvider.Process(autoscalingCtx, nodes, daemonsets, taintConfig, currentTime)
 	if err != nil {
 		return nil, err
 	}
 	// Add annotations to the NodeInfo to use later in expander.
-	nodeGroups := autoscalingContext.CloudProvider.NodeGroups()
+	nodeGroups := autoscalingCtx.CloudProvider.NodeGroups()
 	for _, ng := range nodeGroups {
 		if nodeInfo, ok := nodeInfos[ng.Id()]; ok {
 			template, err := ng.TemplateNodeInfo()

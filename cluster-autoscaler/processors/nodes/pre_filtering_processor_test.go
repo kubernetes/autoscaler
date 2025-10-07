@@ -30,11 +30,11 @@ import (
 func TestPreFilteringScaleDownNodeProcessor_GetPodDestinationCandidates(t *testing.T) {
 	n1 := BuildTestNode("n1", 100, 1000)
 	n2 := BuildTestNode("n2", 100, 1000)
-	autoscalingContext := &ca_context.AutoscalingContext{}
+	autoscalingCtx := &ca_context.AutoscalingContext{}
 	defaultProcessor := NewPreFilteringScaleDownNodeProcessor()
 	expectedNodes := []*apiv1.Node{n1, n2}
 	nodes := []*apiv1.Node{n1, n2}
-	nodes, err := defaultProcessor.GetPodDestinationCandidates(autoscalingContext, nodes)
+	nodes, err := defaultProcessor.GetPodDestinationCandidates(autoscalingCtx, nodes)
 
 	assert.NoError(t, err)
 	assert.Equal(t, nodes, expectedNodes)
@@ -52,14 +52,14 @@ func TestPreFilteringScaleDownNodeProcessor_GetScaleDownCandidateNodes(t *testin
 	provider.AddNode("ng1", ng1_2)
 	provider.AddNode("ng2", ng2_1)
 
-	autoscalingContext := &ca_context.AutoscalingContext{
+	autoscalingCtx := &ca_context.AutoscalingContext{
 		CloudProvider: provider,
 	}
 
 	expectedNodes := []*apiv1.Node{ng1_1, ng1_2}
 	defaultProcessor := NewPreFilteringScaleDownNodeProcessor()
 	inputNodes := []*apiv1.Node{ng1_1, ng1_2, ng2_1, noNg}
-	result, err := defaultProcessor.GetScaleDownCandidates(autoscalingContext, inputNodes)
+	result, err := defaultProcessor.GetScaleDownCandidates(autoscalingCtx, inputNodes)
 
 	assert.NoError(t, err)
 	assert.Equal(t, result, expectedNodes)

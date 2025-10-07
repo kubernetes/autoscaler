@@ -39,16 +39,16 @@ func NewTimeLimiter(maxBinpackingDuration time.Duration) *TimeLimiter {
 }
 
 // InitBinpacking initialises the TimeLimiter.
-func (b *TimeLimiter) InitBinpacking(autoscalingContext *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
+func (b *TimeLimiter) InitBinpacking(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
 	b.startTime = time.Now()
 }
 
 // MarkProcessed marks the nodegroup as processed.
-func (b *TimeLimiter) MarkProcessed(autoscalingContext *ca_context.AutoscalingContext, nodegroupId string) {
+func (b *TimeLimiter) MarkProcessed(autoscalingCtx *ca_context.AutoscalingContext, nodegroupId string) {
 }
 
 // StopBinpacking returns true if the binpacking time exceeds maxBinpackingDuration.
-func (b *TimeLimiter) StopBinpacking(autoscalingContext *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
+func (b *TimeLimiter) StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	now := time.Now()
 	if now.After(b.startTime.Add(b.maxBinpackingDuration)) {
 		klog.Infof("Binpacking is cut short after %v seconds due to exceeding maxBinpackingDuration", now.Sub(b.startTime).Seconds())
@@ -57,5 +57,5 @@ func (b *TimeLimiter) StopBinpacking(autoscalingContext *ca_context.AutoscalingC
 }
 
 // FinalizeBinpacking is called to finalize the BinpackingLimiter.
-func (b *TimeLimiter) FinalizeBinpacking(autoscalingContext *ca_context.AutoscalingContext, finalOptions []expander.Option) {
+func (b *TimeLimiter) FinalizeBinpacking(autoscalingCtx *ca_context.AutoscalingContext, finalOptions []expander.Option) {
 }

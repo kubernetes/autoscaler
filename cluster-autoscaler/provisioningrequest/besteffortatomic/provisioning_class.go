@@ -45,7 +45,7 @@ import (
 // ProvisioningRequest. It's "best effort" as it admits workload immediately
 // after successful request, without waiting to verify that resources started.
 type bestEffortAtomicProvClass struct {
-	autoscalingContext  *ca_context.AutoscalingContext
+	autoscalingCtx      *ca_context.AutoscalingContext
 	client              *provreqclient.ProvisioningRequestClient
 	injector            *scheduling.HintingSimulator
 	scaleUpOrchestrator scaleup.Orchestrator
@@ -59,16 +59,16 @@ func New(
 }
 
 func (o *bestEffortAtomicProvClass) Initialize(
-	autoscalingContext *ca_context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 	injector *scheduling.HintingSimulator,
 ) {
-	o.autoscalingContext = autoscalingContext
+	o.autoscalingCtx = autoscalingCtx
 	o.injector = injector
-	o.scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	o.scaleUpOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 }
 
 // Provision returns success if there is, or has just been requested, sufficient capacity in the cluster for pods from ProvisioningRequest.
@@ -89,8 +89,8 @@ func (o *bestEffortAtomicProvClass) Provision(
 	// Pick 1 ProvisioningRequest.
 	pr := prs[0]
 
-	o.autoscalingContext.ClusterSnapshot.Fork()
-	defer o.autoscalingContext.ClusterSnapshot.Revert()
+	o.autoscalingCtx.ClusterSnapshot.Fork()
+	defer o.autoscalingCtx.ClusterSnapshot.Revert()
 
 	// For provisioning requests, unschedulablePods are actually all injected pods. Some may even be schedulable!
 	actuallyUnschedulablePods, err := o.filterOutSchedulable(unschedulablePods)
@@ -135,7 +135,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 }
 
 func (o *bestEffortAtomicProvClass) filterOutSchedulable(pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	statuses, _, err := o.injector.TrySchedulePods(o.autoscalingContext.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, false)
+	statuses, _, err := o.injector.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, false)
 	if err != nil {
 		return nil, err
 	}

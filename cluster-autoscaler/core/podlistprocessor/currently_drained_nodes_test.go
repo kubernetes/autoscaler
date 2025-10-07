@@ -267,14 +267,14 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			autoscalingContext := ca_context.AutoscalingContext{
+			autoscalingCtx := ca_context.AutoscalingContext{
 				ScaleDownActuator: &mockActuator{&mockActuationStatus{tc.drainedNodes}},
 				ClusterSnapshot:   testsnapshot.NewTestSnapshotOrDie(t),
 			}
-			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingContext.ClusterSnapshot, tc.nodes, tc.pods)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 
 			processor := NewCurrentlyDrainedNodesPodListProcessor()
-			pods, err := processor.Process(&autoscalingContext, tc.unschedulablePods)
+			pods, err := processor.Process(&autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})

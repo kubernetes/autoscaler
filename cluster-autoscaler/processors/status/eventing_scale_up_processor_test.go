@@ -120,12 +120,12 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 
 	for _, tc := range testCases {
 		fakeRecorder := kube_record.NewFakeRecorder(5)
-		autoscalingContext := &ca_context.AutoscalingContext{
+		autoscalingCtx := &ca_context.AutoscalingContext{
 			AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 				Recorder: fakeRecorder,
 			},
 		}
-		p.Process(autoscalingContext, tc.state)
+		p.Process(autoscalingCtx, tc.state)
 		triggered := 0
 		noTriggered := 0
 		for eventsLeft := true; eventsLeft; {

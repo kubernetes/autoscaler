@@ -64,10 +64,10 @@ func TestProcess(t *testing.T) {
 				PodsAwaitEvaluation:     tc.podsAwaitEvaluation,
 				PodsRemainUnschedulable: makeNoScaleUpInfoFromPods(tc.podsRemainUnschedulable),
 			}
-			autoscalingContext := &ca_context.AutoscalingContext{}
+			autoscalingCtx := &ca_context.AutoscalingContext{}
 
 			p := NewFakePodsScaleUpStatusProcessor()
-			p.Process(autoscalingContext, scaleUpStatus)
+			p.Process(autoscalingCtx, scaleUpStatus)
 
 			assert.ElementsMatch(t, tc.expectedPodsRemainUnschedulable, extractPodsFromNoScaleUpInfo(scaleUpStatus.PodsRemainUnschedulable))
 			assert.ElementsMatch(t, tc.expectedPodsAwaitEvaluation, scaleUpStatus.PodsAwaitEvaluation)

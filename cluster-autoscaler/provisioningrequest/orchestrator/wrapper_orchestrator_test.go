@@ -41,7 +41,7 @@ const (
 
 func TestWrapperScaleUp(t *testing.T) {
 	o := WrapperOrchestrator{
-		autoscalingContext:  &ca_context.AutoscalingContext{ProvisioningRequestScaleUpMode: true},
+		autoscalingCtx:      &ca_context.AutoscalingContext{ProvisioningRequestScaleUpMode: true},
 		provReqOrchestrator: &fakeScaleUp{provisioningRequestErrorMsg},
 		podsOrchestrator:    &fakeScaleUp{regularPodsErrorMsg},
 	}
@@ -78,7 +78,7 @@ func (f *fakeScaleUp) ScaleUp(
 }
 
 func (f *fakeScaleUp) Initialize(
-	autoscalingContext *ca_context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,

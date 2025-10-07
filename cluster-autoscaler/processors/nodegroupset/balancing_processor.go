@@ -34,7 +34,7 @@ type BalancingNodeGroupSetProcessor struct {
 
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the given one using the
 // BalancingNodeGroupSetProcessor's comparator function.
-func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 	nodeInfosForGroups map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 
 	result := []cloudprovider.NodeGroup{}
@@ -46,7 +46,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingContex
 			"failed to find template node for node group %s",
 			nodeGroupId)
 	}
-	for _, ng := range autoscalingContext.CloudProvider.NodeGroups() {
+	for _, ng := range autoscalingCtx.CloudProvider.NodeGroups() {
 		ngId := ng.Id()
 		if ngId == nodeGroupId {
 			continue
@@ -76,7 +76,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingContex
 // MaxSize of each group will be respected. If newNodes > total free capacity
 // of all NodeGroups it will be capped to total capacity. In particular if all
 // group already have MaxSize, empty list will be returned.
-func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingContext *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")

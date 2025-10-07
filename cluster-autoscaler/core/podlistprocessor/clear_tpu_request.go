@@ -31,7 +31,7 @@ func NewClearTPURequestsPodListProcessor() *clearTpuRequests {
 }
 
 // Process removes pods' tpu requests
-func (p *clearTpuRequests) Process(autoscalingContext *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *clearTpuRequests) Process(autoscalingCtx *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	return tpu.ClearTPURequests(pods), nil
 }
 

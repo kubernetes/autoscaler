@@ -119,13 +119,13 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 			clusterSnapshot := testsnapshot.NewCustomTestSnapshotOrDie(t, store.NewDeltaSnapshotStore(16))
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.scheduledPods...))
 			assert.NoError(t, err)
-			autoscalingContext := ca_context.AutoscalingContext{
+			autoscalingCtx := ca_context.AutoscalingContext{
 				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
-			pods, err := p.Process(&autoscalingContext, tc.unschedulablePods)
+			pods, err := p.Process(&autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})
@@ -283,12 +283,12 @@ func TestGroupPods(t *testing.T) {
 			statefulsetLister, err := kubernetes.NewTestStatefulSetLister(tc.statefulsets)
 			assert.NoError(t, err)
 
-			autoscalingContext := ca_context.AutoscalingContext{
+			autoscalingCtx := ca_context.AutoscalingContext{
 				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 			}
-			controllers := listControllers(&autoscalingContext)
+			controllers := listControllers(&autoscalingCtx)
 			groupedPods := groupPods(append(tc.scheduledPods, tc.unscheduledPods...), controllers)
 			assert.Equal(t, tc.wantGroupedPods, groupedPods)
 		})

@@ -73,7 +73,7 @@ func TestPriorityEvictor(t *testing.T) {
 		MaxGracefulTerminationSec: 20,
 		MaxPodEvictionTime:        5 * time.Second,
 	}
-	autoscalingContext, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	evictor := Evictor{
@@ -95,10 +95,10 @@ func TestPriorityEvictor(t *testing.T) {
 		},
 		fullDsEviction: true,
 	}
-	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingContext.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3})
-	nodeInfo, err := autoscalingContext.ClusterSnapshot.GetNodeInfo(n1.Name)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3})
+	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	_, err = evictor.DrainNode(&autoscalingContext, nodeInfo)
+	_, err = evictor.DrainNode(&autoscalingCtx, nodeInfo)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))

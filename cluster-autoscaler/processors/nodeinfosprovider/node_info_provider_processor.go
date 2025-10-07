@@ -31,7 +31,7 @@ import (
 // TemplateNodeInfoProvider is provides the initial nodeInfos set.
 type TemplateNodeInfoProvider interface {
 	// Process returns a map of nodeInfos for node groups.
-	Process(autoscalingContext *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError)
+	Process(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }

@@ -41,10 +41,10 @@ func (p *combinedScaleDownCandidatesProcessor) Register(np nodes.ScaleDownNodePr
 
 // GetPodDestinationCandidates returns nodes that potentially could act as destinations for pods
 // that would become unscheduled after a scale down.
-func (p *combinedScaleDownCandidatesProcessor) GetPodDestinationCandidates(autoscalingContext *ca_context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
+func (p *combinedScaleDownCandidatesProcessor) GetPodDestinationCandidates(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	var err errors.AutoscalerError
 	for _, processor := range p.processors {
-		nodes, err = processor.GetPodDestinationCandidates(autoscalingContext, nodes)
+		nodes, err = processor.GetPodDestinationCandidates(autoscalingCtx, nodes)
 		if err != nil {
 			return nil, err
 		}
@@ -53,10 +53,10 @@ func (p *combinedScaleDownCandidatesProcessor) GetPodDestinationCandidates(autos
 }
 
 // GetScaleDownCandidates returns nodes that potentially could be scaled down.
-func (p *combinedScaleDownCandidatesProcessor) GetScaleDownCandidates(autoscalingContext *ca_context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
+func (p *combinedScaleDownCandidatesProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	var err errors.AutoscalerError
 	for _, processor := range p.processors {
-		nodes, err = processor.GetScaleDownCandidates(autoscalingContext, nodes)
+		nodes, err = processor.GetScaleDownCandidates(autoscalingCtx, nodes)
 		if err != nil {
 			return nil, err
 		}

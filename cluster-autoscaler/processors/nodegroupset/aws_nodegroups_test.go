@@ -175,8 +175,8 @@ func TestIsAwsNodeInfoSimilar(t *testing.T) {
 }
 
 func TestFindSimilarNodeGroupsAwsBasic(t *testing.T) {
-	autoscalingContext := &ca_context.AutoscalingContext{}
-	ni1, ni2, ni3 := buildBasicNodeGroups(autoscalingContext)
+	autoscalingCtx := &ca_context.AutoscalingContext{}
+	ni1, ni2, ni3 := buildBasicNodeGroups(autoscalingCtx)
 	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAwsNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
-	basicSimilarNodeGroupsTest(t, autoscalingContext, processor, ni1, ni2, ni3)
+	basicSimilarNodeGroupsTest(t, autoscalingCtx, processor, ni1, ni2, ni3)
 }

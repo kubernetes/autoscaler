@@ -209,16 +209,16 @@ type MockAutoprovisioningNodeGroupManager struct {
 }
 
 // CreateNodeGroup creates a new node group
-func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
-	return p.createNodeGroup(autoscalingContext, nodeGroup)
+func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(autoscalingCtx, nodeGroup)
 }
 
 // CreateNodeGroupAsync simulates async node group creation. Returns upcoming node groups, never calls initializer.
-func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroupAsync(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer nodegroups.AsyncNodeGroupInitializer) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
-	return p.createNodeGroup(autoscalingContext, nodeGroup)
+func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroupAsync(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer nodegroups.AsyncNodeGroupInitializer) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(autoscalingCtx, nodeGroup)
 }
 
-func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingContext *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
 	newNodeGroup, err := nodeGroup.Create()
 	assert.NoError(p.T, err)
 	metrics.RegisterNodeGroupCreation()
@@ -227,9 +227,9 @@ func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingContex
 	if !ok {
 		return nodegroups.CreateNodeGroupResult{}, errors.ToAutoscalerError(errors.InternalError, fmt.Errorf("expected test node group, found %v", reflect.TypeOf(nodeGroup)))
 	}
-	testCloudProvider, ok := autoscalingContext.CloudProvider.(*testcloudprovider.TestCloudProvider)
+	testCloudProvider, ok := autoscalingCtx.CloudProvider.(*testcloudprovider.TestCloudProvider)
 	if !ok {
-		return nodegroups.CreateNodeGroupResult{}, errors.ToAutoscalerError(errors.InternalError, fmt.Errorf("expected test CloudProvider, found %v", reflect.TypeOf(autoscalingContext.CloudProvider)))
+		return nodegroups.CreateNodeGroupResult{}, errors.ToAutoscalerError(errors.InternalError, fmt.Errorf("expected test CloudProvider, found %v", reflect.TypeOf(autoscalingCtx.CloudProvider)))
 	}
 	for i := 0; i < p.ExtraGroups; i++ {
 		extraNodeGroup := testCloudProvider.BuildNodeGroup(fmt.Sprintf("autoprovisioned-%s-%d", testGroup.MachineType(), i+1), 0, 1000, 0, false, true, testGroup.MachineType(), nil)
@@ -247,9 +247,9 @@ func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingContex
 }
 
 // RemoveUnneededNodeGroups removes uneeded node groups
-func (p *MockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(autoscalingContext *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
+func (p *MockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(autoscalingCtx *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
 	removedNodeGroups = make([]cloudprovider.NodeGroup, 0)
-	nodeGroups := autoscalingContext.CloudProvider.NodeGroups()
+	nodeGroups := autoscalingCtx.CloudProvider.NodeGroups()
 	for _, nodeGroup := range nodeGroups {
 		if !nodeGroup.Autoprovisioned() {
 			continue
@@ -281,15 +281,15 @@ type MockAutoprovisioningNodeGroupListProcessor struct {
 }
 
 // Process extends the list of node groups
-func (p *MockAutoprovisioningNodeGroupListProcessor) Process(autoscalingContext *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*framework.NodeInfo,
+func (p *MockAutoprovisioningNodeGroupListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*framework.NodeInfo,
 	unschedulablePods []*apiv1.Pod,
 ) ([]cloudprovider.NodeGroup, map[string]*framework.NodeInfo, error) {
-	machines, err := autoscalingContext.CloudProvider.GetAvailableMachineTypes()
+	machines, err := autoscalingCtx.CloudProvider.GetAvailableMachineTypes()
 	assert.NoError(p.T, err)
 
 	bestLabels := labels.BestLabelSet(unschedulablePods)
 	for _, machineType := range machines {
-		nodeGroup, err := autoscalingContext.CloudProvider.NewNodeGroup(machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
+		nodeGroup, err := autoscalingCtx.CloudProvider.NewNodeGroup(machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
 		assert.NoError(p.T, err)
 		nodeInfo, err := nodeGroup.TemplateNodeInfo()
 		assert.NoError(p.T, err)
@@ -309,21 +309,21 @@ type MockBinpackingLimiter struct {
 }
 
 // InitBinpacking initialises the MockBinpackingLimiter and sets requiredExpansionOptions to 1.
-func (p *MockBinpackingLimiter) InitBinpacking(autoscalingContext *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
+func (p *MockBinpackingLimiter) InitBinpacking(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
 	p.requiredExpansionOptions = 1
 }
 
 // MarkProcessed is here to satisfy the interface.
-func (p *MockBinpackingLimiter) MarkProcessed(autoscalingContext *ca_context.AutoscalingContext, nodegroupId string) {
+func (p *MockBinpackingLimiter) MarkProcessed(autoscalingCtx *ca_context.AutoscalingContext, nodegroupId string) {
 }
 
 // StopBinpacking stops the binpacking early, if we already have requiredExpansionOptions i.e. 1.
-func (p *MockBinpackingLimiter) StopBinpacking(autoscalingContext *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
+func (p *MockBinpackingLimiter) StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	return len(evaluatedOptions) == p.requiredExpansionOptions
 }
 
 // FinalizeBinpacking is here to satisfy the interface.
-func (p *MockBinpackingLimiter) FinalizeBinpacking(autoscalingContext *ca_context.AutoscalingContext, finalOptions []expander.Option) {
+func (p *MockBinpackingLimiter) FinalizeBinpacking(autoscalingCtx *ca_context.AutoscalingContext, finalOptions []expander.Option) {
 }
 
 // NewBackoff creates a new backoff object

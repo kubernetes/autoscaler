@@ -26,11 +26,11 @@ import (
 )
 
 func TestDefaultUnschedulablePodListProcessor(t *testing.T) {
-	autoscalingContext := &ca_context.AutoscalingContext{}
+	autoscalingCtx := &ca_context.AutoscalingContext{}
 	p1 := BuildTestPod("p1", 40, 0)
 	unschedulablePods := []*apiv1.Pod{p1}
 	podListProcessor := NewDefaultPodListProcessor()
-	gotUnschedulablePods, err := podListProcessor.Process(autoscalingContext, unschedulablePods)
+	gotUnschedulablePods, err := podListProcessor.Process(autoscalingCtx, unschedulablePods)
 	if len(gotUnschedulablePods) != 1 || err != nil {
 		t.Errorf("Error podListProcessor.Process() = %v,%v want %v, nil ",
 			gotUnschedulablePods, err, unschedulablePods)

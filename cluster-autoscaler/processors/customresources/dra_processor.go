@@ -36,7 +36,7 @@ type DraCustomResourcesProcessor struct {
 
 // FilterOutNodesWithUnreadyResources removes nodes that should have DRA resource, but don't have
 // it in allocatable from ready nodes list and updates their status to unready on all nodes list.
-func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingContext *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyDraResources := make(map[string]*apiv1.Node)
@@ -46,7 +46,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 	}
 
 	for _, node := range readyNodes {
-		ng, err := autoscalingContext.CloudProvider.NodeGroupForNode(node)
+		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			klog.Warningf("Failed to get node group for node %s, Skipping DRA readiness check and keeping node in ready list. Error: %v", node.Name, err)

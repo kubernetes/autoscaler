@@ -36,9 +36,9 @@ type CustomResourceTarget struct {
 type CustomResourcesProcessor interface {
 	// FilterOutNodesWithUnreadyResources removes nodes that should have a custom resource, but don't have
 	// it in allocatable from ready nodes list and updates their status to unready on all nodes list.
-	FilterOutNodesWithUnreadyResources(autoscalingContext *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node)
+	FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node)
 	// GetNodeResourceTargets returns mapping of resource names to their targets.
-	GetNodeResourceTargets(autoscalingContext *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError)
+	GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
