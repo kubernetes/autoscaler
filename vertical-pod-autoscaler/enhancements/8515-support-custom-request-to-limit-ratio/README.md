@@ -10,6 +10,7 @@
     - [Behavior](#behavior)
       - [Current behavior of VPA 1.4.2](#current-behavior-of-vpa-142)
       - [Proposed feature behavior](#proposed-feature-behavior)
+    - [Notes/Constraints/Caveats](#notesconstraintscaveats)
     - [Validation](#validation)
       - [Static Validation via CRD Rules](#static-validation-via-crd-rules)
       - [Dynamic Validation via Admission Controller](#dynamic-validation-via-admission-controller)
@@ -30,7 +31,7 @@ Currently, when VPA is configured to set both requests and limits automatically 
 
 If the request-to-limit ratio needs to be updated (for example, because the application's resource usage has changed), users must modify the `resources.requests` or `resources.limits` fields in the workload's API object. Since these fields are immutable, this change results in terminating and recreating the existing Pods.
 
-This proposal introduces a new mechanism that allows VPA users to adjust the request-to-limit ratio directly at the VPA CRD level for an already running workload. This avoids the need to manually update the workload's resource requests and limits, and prevents unnecessary Pod restarts.
+This proposal introduces a new mechanism that allows VPA users to adjust the request-to-limit ratio directly at the VPA CRD level. This mechanism can also be used to to update existing workload + VPA configurations, for example to non-disruptively scale workloads beyond what the their requests/limits would predict.
 
 The feature is gated by a new feature gate, `RequestToLimitRatio`, which is disabled by default in alpha.
 
@@ -106,6 +107,10 @@ The behavior after implementing this feature is as follows:
    * **Initial mode**: VPA updates the request-to-limit ratio only during Pod creation and does not change it later.
 2. If the `RequestToLimitRatio` feature gate is enabled and a user does not specify the sub-field `RequestToLimitRatio` on a VPA object, the request-to-limit ratio already set in the workload API (e.g. Deployment API) is used.
 3. If the `RequestToLimitRatio` feature gate is disabled, the request-to-limit ratio already set in the workload API (e.g. Deployment API) is used.
+
+### Notes/Constraints/Caveats
+
+* This proposal could act as a temporary workaround for users who need to handle requests/limits immutability in their workloads. Note that there is already work underway to relax the immutability of requests and limits at the workload level (e.g. Deployments and StatefulSets), tracked in this issue: [Relaxing immutability of Pod Templates resources/limits](https://github.com/kubernetes/kubernetes/issues/132436)
 
 ### Validation
 
