@@ -25,17 +25,17 @@ const ProviderName = "EC2RoleProvider"
 // Example how to configure the EC2RoleProvider with custom http Client, Endpoint
 // or ExpiryWindow
 //
-//     p := &ec2rolecreds.EC2RoleProvider{
-//         // Pass in a custom timeout to be used when requesting
-//         // IAM EC2 Role credentials.
-//         Client: ec2metadata.New(sess, aws.Config{
-//             HTTPClient: &http.Client{Timeout: 10 * time.Second},
-//         }),
+//	p := &ec2rolecreds.EC2RoleProvider{
+//	    // Pass in a custom timeout to be used when requesting
+//	    // IAM EC2 Role credentials.
+//	    Client: ec2metadata.New(sess, aws.Config{
+//	        HTTPClient: &http.Client{Timeout: 10 * time.Second},
+//	    }),
 //
-//         // Do not use early expiry of credentials. If a non zero value is
-//         // specified the credentials will be expired early
-//         ExpiryWindow: 0,
-//     }
+//	    // Do not use early expiry of credentials. If a non zero value is
+//	    // specified the credentials will be expired early
+//	    ExpiryWindow: 0,
+//	}
 type EC2RoleProvider struct {
 	credentials.Expiry
 
