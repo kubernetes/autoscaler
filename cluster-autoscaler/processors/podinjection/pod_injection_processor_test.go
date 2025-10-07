@@ -28,7 +28,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
@@ -119,13 +119,13 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 			clusterSnapshot := testsnapshot.NewCustomTestSnapshotOrDie(t, store.NewDeltaSnapshotStore(16))
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.scheduledPods...))
 			assert.NoError(t, err)
-			ctx := context.AutoscalingContext{
-				AutoscalingKubeClients: context.AutoscalingKubeClients{
+			autoscalingCtx := ca_context.AutoscalingContext{
+				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
-			pods, err := p.Process(&ctx, tc.unschedulablePods)
+			pods, err := p.Process(&autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})
@@ -283,12 +283,12 @@ func TestGroupPods(t *testing.T) {
 			statefulsetLister, err := kubernetes.NewTestStatefulSetLister(tc.statefulsets)
 			assert.NoError(t, err)
 
-			ctx := context.AutoscalingContext{
-				AutoscalingKubeClients: context.AutoscalingKubeClients{
+			autoscalingCtx := ca_context.AutoscalingContext{
+				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 			}
-			controllers := listControllers(&ctx)
+			controllers := listControllers(&autoscalingCtx)
 			groupedPods := groupPods(append(tc.scheduledPods, tc.unscheduledPods...), controllers)
 			assert.Equal(t, tc.wantGroupedPods, groupedPods)
 		})

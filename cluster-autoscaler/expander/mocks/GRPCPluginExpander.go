@@ -17,7 +17,7 @@ limitations under the License.
 package mocks
 
 import (
-	context "context"
+	"context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

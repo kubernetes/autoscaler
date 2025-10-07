@@ -37,7 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -82,7 +82,7 @@ type fakeScaleUpStatusProcessor struct {
 	lastStatus *status.ScaleUpStatus
 }
 
-func (f *fakeScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *status.ScaleUpStatus) {
+func (f *fakeScaleUpStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
 	f.lastStatus = status
 }
 
@@ -93,7 +93,7 @@ type fakeScaleDownStatusProcessor struct {
 	lastStatus *scaledownstatus.ScaleDownStatus
 }
 
-func (f *fakeScaleDownStatusProcessor) Process(context *context.AutoscalingContext, status *scaledownstatus.ScaleDownStatus) {
+func (f *fakeScaleDownStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *scaledownstatus.ScaleDownStatus) {
 	f.lastStatus = status
 }
 

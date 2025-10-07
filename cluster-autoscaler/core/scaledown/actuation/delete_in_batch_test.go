@@ -35,7 +35,7 @@ import (
 
 func TestAddNodeToBucket(t *testing.T) {
 	provider := testprovider.NewTestCloudProviderBuilder().Build()
-	ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, provider, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, provider, nil, nil)
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
 	}
@@ -81,7 +81,7 @@ func TestAddNodeToBucket(t *testing.T) {
 	}
 	for _, test := range testcases {
 		d := NodeDeletionBatcher{
-			ctx:                   &ctx,
+			autoscalingCtx:        &autoscalingCtx,
 			scaleStateNotifier:    nil,
 			nodeDeletionTracker:   nil,
 			deletionsPerNodeGroup: make(map[string][]*apiv1.Node),
@@ -158,7 +158,7 @@ func TestRemove(t *testing.T) {
 					return true, obj, nil
 				})
 
-			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
@@ -170,7 +170,7 @@ func TestRemove(t *testing.T) {
 			nodeGroup := provider.GetNodeGroup(ng)
 
 			d := NodeDeletionBatcher{
-				ctx:                   &ctx,
+				autoscalingCtx:        &autoscalingCtx,
 				nodeDeletionTracker:   deletiontracker.NewNodeDeletionTracker(1 * time.Minute),
 				deletionsPerNodeGroup: make(map[string][]*apiv1.Node),
 				scaleStateNotifier:    scaleStateNotifier,

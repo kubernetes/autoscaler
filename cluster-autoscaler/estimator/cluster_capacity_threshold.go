@@ -28,16 +28,16 @@ type clusterCapacityThreshold struct {
 // NodeLimit returns maximum number of new nodes that can be added to the cluster
 // based on its capacity. Possible return values are:
 //   - -1 when cluster has no available capacity
-//   - 0 when context or cluster-wide node limit is not set. Return value of 0 means that there is no limit.
+//   - 0 when estimationContext or cluster-wide node limit is not set. Return value of 0 means that there is no limit.
 //   - Any positive number representing maximum possible number of new nodes
-func (l *clusterCapacityThreshold) NodeLimit(_ cloudprovider.NodeGroup, context EstimationContext) int {
-	if context == nil || context.ClusterMaxNodeLimit() == 0 {
+func (l *clusterCapacityThreshold) NodeLimit(_ cloudprovider.NodeGroup, estimationContext EstimationContext) int {
+	if estimationContext == nil || estimationContext.ClusterMaxNodeLimit() == 0 {
 		return 0
 	}
-	if (context.ClusterMaxNodeLimit() < 0) || (context.ClusterMaxNodeLimit() <= context.CurrentNodeCount()) {
+	if (estimationContext.ClusterMaxNodeLimit() < 0) || (estimationContext.ClusterMaxNodeLimit() <= estimationContext.CurrentNodeCount()) {
 		return -1
 	}
-	return context.ClusterMaxNodeLimit() - context.CurrentNodeCount()
+	return estimationContext.ClusterMaxNodeLimit() - estimationContext.CurrentNodeCount()
 }
 
 // DurationLimit always returns 0 for this threshold, meaning that no limit is set.

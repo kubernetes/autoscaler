@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -175,8 +175,8 @@ func TestIsAwsNodeInfoSimilar(t *testing.T) {
 }
 
 func TestFindSimilarNodeGroupsAwsBasic(t *testing.T) {
-	context := &context.AutoscalingContext{}
-	ni1, ni2, ni3 := buildBasicNodeGroups(context)
+	autoscalingCtx := &ca_context.AutoscalingContext{}
+	ni1, ni2, ni3 := buildBasicNodeGroups(autoscalingCtx)
 	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAwsNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
-	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
+	basicSimilarNodeGroupsTest(t, autoscalingCtx, processor, ni1, ni2, ni3)
 }

@@ -19,7 +19,7 @@ package actuation
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
@@ -28,11 +28,11 @@ import (
 )
 
 // UpdateSoftDeletionTaints manages soft taints of unneeded nodes.
-func UpdateSoftDeletionTaints(context *context.AutoscalingContext, uneededNodes, neededNodes []*apiv1.Node) (errors []error) {
+func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, uneededNodes, neededNodes []*apiv1.Node) (errors []error) {
 	defer metrics.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
 	b := &budgetTracker{
-		apiCallBudget: context.AutoscalingOptions.MaxBulkSoftTaintCount,
-		timeBudget:    context.AutoscalingOptions.MaxBulkSoftTaintTime,
+		apiCallBudget: autoscalingCtx.AutoscalingOptions.MaxBulkSoftTaintCount,
+		timeBudget:    autoscalingCtx.AutoscalingOptions.MaxBulkSoftTaintTime,
 		startTime:     now(),
 	}
 	for _, node := range neededNodes {
@@ -44,7 +44,7 @@ func UpdateSoftDeletionTaints(context *context.AutoscalingContext, uneededNodes,
 			continue
 		}
 		b.processWithinBudget(func() {
-			_, err := taints.CleanDeletionCandidate(node, context.ClientSet)
+			_, err := taints.CleanDeletionCandidate(node, autoscalingCtx.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
 				klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
@@ -60,7 +60,7 @@ func UpdateSoftDeletionTaints(context *context.AutoscalingContext, uneededNodes,
 			continue
 		}
 		b.processWithinBudget(func() {
-			_, err := taints.MarkDeletionCandidate(node, context.ClientSet)
+			_, err := taints.MarkDeletionCandidate(node, autoscalingCtx.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
 				klog.Warningf("Soft taint on %s adding error %v", node.Name, err)

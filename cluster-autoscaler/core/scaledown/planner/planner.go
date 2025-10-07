@@ -23,7 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
@@ -44,7 +44,7 @@ import (
 )
 
 type eligibilityChecker interface {
-	FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
+	FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
 }
 
 type removalSimulator interface {
@@ -63,7 +63,7 @@ type replicasInfo struct {
 
 // Planner is responsible for deciding which nodes should be deleted during scale down.
 type Planner struct {
-	context               *context.AutoscalingContext
+	autoscalingCtx        *ca_context.AutoscalingContext
 	unremovableNodes      *unremovable.Nodes
 	unneededNodes         *unneeded.Nodes
 	rs                    removalSimulator
@@ -79,28 +79,28 @@ type Planner struct {
 }
 
 // New creates a new Planner object.
-func New(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules) *Planner {
+func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules) *Planner {
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
-	minUpdateInterval := context.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime
+	minUpdateInterval := autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime
 	if minUpdateInterval == 0*time.Nanosecond {
 		minUpdateInterval = 1 * time.Nanosecond
 	}
 
 	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
-	if context.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
-		unneededNodes.LoadFromExistingTaints(context.ListerRegistry, time.Now(), context.AutoscalingOptions.NodeDeletionCandidateTTL)
+	if autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
+		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL)
 	}
 
 	return &Planner{
-		context:               context,
+		autoscalingCtx:        autoscalingCtx,
 		unremovableNodes:      unremovable.NewNodes(),
 		unneededNodes:         unneededNodes,
-		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, deleteOptions, drainabilityRules, true),
+		rs:                    simulator.NewRemovalSimulator(autoscalingCtx.ListerRegistry, autoscalingCtx.ClusterSnapshot, deleteOptions, drainabilityRules, true),
 		actuationInjector:     scheduling.NewHintingSimulator(),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
 		nodeUtilizationMap:    make(map[string]utilization.Info),
 		resourceLimitsFinder:  resourceLimitsFinder,
-		cc:                    newControllerReplicasCalculator(context.ListerRegistry),
+		cc:                    newControllerReplicasCalculator(autoscalingCtx.ListerRegistry),
 		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
 		scaleDownContext:      nodes.NewDefaultScaleDownContext(),
 		minUpdateInterval:     minUpdateInterval,
@@ -118,8 +118,8 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	p.latestUpdate = currentTime
 	p.scaleDownContext.ActuationStatus = as
 	// Avoid persisting changes done by the simulation.
-	p.context.ClusterSnapshot.Fork()
-	defer p.context.ClusterSnapshot.Revert()
+	p.autoscalingCtx.ClusterSnapshot.Fork()
+	defer p.autoscalingCtx.ClusterSnapshot.Revert()
 	err := p.injectRecentlyEvictedPods()
 	if err != nil {
 		klog.Warningf("Not all recently evicted pods could be injected")
@@ -143,25 +143,25 @@ func (p *Planner) CleanUpUnneededNodes() {
 // to the Planner.
 func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	empty, needDrain = []*apiv1.Node{}, []*apiv1.Node{}
-	nodes, err := allNodes(p.context.ClusterSnapshot)
+	nodes, err := allNodes(p.autoscalingCtx.ClusterSnapshot)
 	if err != nil {
 		klog.Errorf("Nothing will scale down, failed to list nodes from ClusterSnapshot: %v", err)
 		return nil, nil
 	}
-	resourceLimiter, err := p.context.CloudProvider.GetResourceLimiter()
+	resourceLimiter, err := p.autoscalingCtx.CloudProvider.GetResourceLimiter()
 	if err != nil {
 		klog.Errorf("Nothing will scale down, failed to create resource limiter: %v", err)
 		return nil, nil
 	}
-	p.scaleDownContext.ResourcesLeft = p.resourceLimitsFinder.LimitsLeft(p.context, nodes, resourceLimiter, p.latestUpdate).DeepCopy()
+	p.scaleDownContext.ResourcesLeft = p.resourceLimitsFinder.LimitsLeft(p.autoscalingCtx, nodes, resourceLimiter, p.latestUpdate).DeepCopy()
 	p.scaleDownContext.ResourcesWithLimits = resourceLimiter.GetResources()
-	emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes := p.unneededNodes.RemovableAt(p.context, *p.scaleDownContext, p.latestUpdate)
+	emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes := p.unneededNodes.RemovableAt(p.autoscalingCtx, *p.scaleDownContext, p.latestUpdate)
 	p.addUnremovableNodes(unremovableNodes)
 
 	needDrainRemovableNodes = sortByRisk(needDrainRemovableNodes)
 	candidatesToBeRemoved := append(emptyRemovableNodes, needDrainRemovableNodes...)
 
-	nodesToRemove, unremovableNodes := p.scaleDownSetProcessor.FilterUnremovableNodes(p.context, p.scaleDownContext, candidatesToBeRemoved)
+	nodesToRemove, unremovableNodes := p.scaleDownSetProcessor.FilterUnremovableNodes(p.autoscalingCtx, p.scaleDownContext, candidatesToBeRemoved)
 	p.addUnremovableNodes(unremovableNodes)
 
 	for _, nodeToRemove := range nodesToRemove {
@@ -253,7 +253,7 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 	pods = pod_util.ClearPodNodeNames(pods)
 	// Note: We're using ScheduleAnywhere, but the pods won't schedule back
 	// on the drained nodes due to taints.
-	statuses, _, err := p.actuationInjector.TrySchedulePods(p.context.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, true)
+	statuses, _, err := p.actuationInjector.TrySchedulePods(p.autoscalingCtx.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, true)
 	if err != nil {
 		return fmt.Errorf("cannot scale down, an unexpected error occurred: %v", err)
 	}
@@ -266,17 +266,17 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 // categorizeNodes determines, for each node, whether it can be eventually
 // removed or if there are reasons preventing that.
 func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCandidates []*apiv1.Node) {
-	unremovableTimeout := p.latestUpdate.Add(p.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
+	unremovableTimeout := p.latestUpdate.Add(p.autoscalingCtx.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
 	atomicScaleDownNodesCount := 0
-	p.unremovableNodes.Update(p.context.ClusterSnapshot, p.latestUpdate)
-	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.context, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
+	p.unremovableNodes.Update(p.autoscalingCtx.ClusterSnapshot, p.latestUpdate)
+	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.autoscalingCtx, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
 	for _, n := range ineligible {
 		p.unremovableNodes.Add(n)
 	}
 	p.nodeUtilizationMap = utilizationMap
-	timer := time.NewTimer(p.context.ScaleDownSimulationTimeout)
+	timer := time.NewTimer(p.autoscalingCtx.ScaleDownSimulationTimeout)
 
 	for i, node := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
@@ -287,14 +287,14 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
 			break
 		}
-		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, p.context.RemainingPdbTracker)
+		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, p.autoscalingCtx.RemainingPdbTracker)
 		if removable != nil {
-			_, inParallel, _ := p.context.RemainingPdbTracker.CanRemovePods(removable.PodsToReschedule)
+			_, inParallel, _ := p.autoscalingCtx.RemainingPdbTracker.CanRemovePods(removable.PodsToReschedule)
 			if !inParallel {
 				removable.IsRisky = true
 			}
 			delete(podDestinations, removable.Node.Name)
-			p.context.RemainingPdbTracker.RemovePods(removable.PodsToReschedule)
+			p.autoscalingCtx.RemainingPdbTracker.RemovePods(removable.PodsToReschedule)
 			removableList = append(removableList, *removable)
 			if p.atomicScaleDownNode(removable) {
 				atomicScaleDownNodesCount++
@@ -314,12 +314,12 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 
 // atomicScaleDownNode checks if the removable node would be considered for atomic scale down.
 func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
-	nodeGroup, err := p.context.CloudProvider.NodeGroupForNode(node.Node)
+	nodeGroup, err := p.autoscalingCtx.CloudProvider.NodeGroupForNode(node.Node)
 	if err != nil {
 		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
 		return false
 	}
-	autoscalingOptions, err := nodeGroup.GetOptions(p.context.NodeGroupDefaults)
+	autoscalingOptions, err := nodeGroup.GetOptions(p.autoscalingCtx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 		return false
@@ -356,12 +356,12 @@ func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 // of unneeded nodes shouldn't really exceed N*U/I - scale down will not be
 // able to keep up with removing them anyway.
 func (p *Planner) unneededNodesLimit() int {
-	n := p.context.AutoscalingOptions.MaxScaleDownParallelism
+	n := p.autoscalingCtx.AutoscalingOptions.MaxScaleDownParallelism
 	extraBuffer := n
 	limit := len(p.unneededNodes.AsList()) + n + extraBuffer
 	// TODO(x13n): Use moving average instead of min.
 	loopInterval := int64(p.minUpdateInterval)
-	u := int64(p.context.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime)
+	u := int64(p.autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime)
 	if u < loopInterval {
 		u = loopInterval
 	}

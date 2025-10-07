@@ -18,7 +18,7 @@ package podlistprocessor
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	klog "k8s.io/klog/v2"
 )
@@ -32,7 +32,7 @@ func NewFilterOutDaemonSetPodListProcessor() *filterOutDaemonSetPodListProcessor
 }
 
 // Process filters out pods which are daemon set pods.
-func (p *filterOutDaemonSetPodListProcessor) Process(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *filterOutDaemonSetPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	// Scale-up cannot help unschedulable Daemon Set pods, as those require a specific node
 	// for scheduling. To improve that we are filtering them here, as the CA won't be
 	// able to help them so there is no point to in passing them to scale-up logic.
