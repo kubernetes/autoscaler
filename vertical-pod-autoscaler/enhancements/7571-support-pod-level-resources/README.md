@@ -166,7 +166,7 @@ With this option, VPA controls pod-level resources and the container-level resou
 
 **Cons**:
 - Applying both pod-level and container-level recommendations requires eviction because [in-place pod-level resource resizing](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/5419-pod-level-resources-in-place-resize) is not yet available.
-- This option adds complexity: VPA must track which container-level resources are under its control by default and avoid mutating others.
+- VPA must track which container-level resources are under its control by default and avoid mutating others.
 - Existing VPA users may find the behavior surprising because VPA does not control all container-level resources stanzas - only those initially set - unless configured otherwise.
 
 #### No resources stanza exists at the pod and container level
