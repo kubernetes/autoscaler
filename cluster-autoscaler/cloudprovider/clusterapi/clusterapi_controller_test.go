@@ -1282,21 +1282,21 @@ func TestMachineKeyFromFailedProviderID(t *testing.T) {
 func Test_machineController_allowedByAutoDiscoverySpecs(t *testing.T) {
 	for _, tc := range []struct {
 		name               string
-		testSpec           TestSpec
+		testConfig         *TestConfig
 		autoDiscoverySpecs []*clusterAPIAutoDiscoveryConfig
 		additionalLabels   map[string]string
 		shouldMatch        bool
 	}{{
-		name:     "autodiscovery specs includes permissive spec that should match any MachineSet",
-		testSpec: createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, false, nil, nil),
+		name:       "autodiscovery specs includes permissive spec that should match any MachineSet",
+		testConfig: NewTestConfigBuilder().ForMachineSet().WithNodeCount(1).Build(),
 		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
 			{labelSelector: labels.NewSelector()},
 			{clusterName: "foo", namespace: "bar", labelSelector: labels.Nothing()},
 		},
 		shouldMatch: true,
 	}, {
-		name:     "autodiscovery specs includes permissive spec that should match any MachineDeployment",
-		testSpec: createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, true, nil, nil),
+		name:       "autodiscovery specs includes permissive spec that should match any MachineDeployment",
+		testConfig: NewTestConfigBuilder().ForMachineDeployment().WithNodeCount(1).Build(),
 		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
 			{labelSelector: labels.NewSelector()},
 			{clusterName: "foo", namespace: "bar", labelSelector: labels.Nothing()},
@@ -1304,7 +1304,7 @@ func Test_machineController_allowedByAutoDiscoverySpecs(t *testing.T) {
 		shouldMatch: true,
 	}, {
 		name:             "autodiscovery specs includes a restrictive spec that should match specific MachineSet",
-		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil, nil),
+		testConfig:       NewTestConfigBuilder().ForMachineSet().WithNamespace("default").WithClusterName("foo").WithNodeCount(1).Build(),
 		additionalLabels: map[string]string{"color": "green"},
 		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
 			{clusterName: "foo", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "green"})},
@@ -1313,7 +1313,7 @@ func Test_machineController_allowedByAutoDiscoverySpecs(t *testing.T) {
 		shouldMatch: true,
 	}, {
 		name:             "autodiscovery specs includes a restrictive spec that should match specific MachineDeployment",
-		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, true, nil, nil),
+		testConfig:       NewTestConfigBuilder().ForMachineDeployment().WithNamespace("default").WithClusterName("foo").WithNodeCount(1).Build(),
 		additionalLabels: map[string]string{"color": "green"},
 		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
 			{clusterName: "foo", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "green"})},
@@ -1322,7 +1322,7 @@ func Test_machineController_allowedByAutoDiscoverySpecs(t *testing.T) {
 		shouldMatch: true,
 	}, {
 		name:             "autodiscovery specs does not include any specs that should match specific MachineSet",
-		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil, nil),
+		testConfig:       NewTestConfigBuilder().ForMachineSet().WithNamespace("default").WithClusterName("foo").WithNodeCount(1).Build(),
 		additionalLabels: map[string]string{"color": "green"},
 		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
 			{clusterName: "test", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "blue"})},
@@ -1331,7 +1331,7 @@ func Test_machineController_allowedByAutoDiscoverySpecs(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:             "autodiscovery specs does not include any specs that should match specific MachineDeployment",
-		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, true, nil, nil),
+		testConfig:       NewTestConfigBuilder().ForMachineDeployment().WithNamespace("default").WithClusterName("foo").WithNodeCount(1).Build(),
 		additionalLabels: map[string]string{"color": "green"},
 		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
 			{clusterName: "test", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "blue"})},
@@ -1340,10 +1340,9 @@ func Test_machineController_allowedByAutoDiscoverySpecs(t *testing.T) {
 		shouldMatch: false,
 	}} {
 		t.Run(tc.name, func(t *testing.T) {
-			testConfigs := createTestConfigs(tc.testSpec)
-			resource := testConfigs[0].machineSet
-			if tc.testSpec.rootIsMachineDeployment {
-				resource = testConfigs[0].machineDeployment
+			resource := tc.testConfig.machineSet
+			if tc.testConfig.machineDeployment != nil {
+				resource = tc.testConfig.machineDeployment
 			}
 			if tc.additionalLabels != nil {
 				resource.SetLabels(labels.Merge(resource.GetLabels(), tc.additionalLabels))
