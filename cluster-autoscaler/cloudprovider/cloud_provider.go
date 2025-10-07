@@ -369,3 +369,12 @@ func ContainsCustomResources(resources []string) bool {
 	}
 	return false
 }
+
+// NodeGroupListToMapById returns a map of node group ID to nonode group
+func NodeGroupListToMapById(nodeGroups []NodeGroup) map[string]NodeGroup {
+	result := make(map[string]NodeGroup)
+	for _, nodeGroup := range nodeGroups {
+		result[nodeGroup.Id()] = nodeGroup
+	}
+	return result
+}
