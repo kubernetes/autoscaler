@@ -70,7 +70,7 @@ spec:
 
 The benefits and implementation details of pod-level `resources` are described in [KEP-2837](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md). A related article is also available in the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/).
 
-Currently, before this KEP, VPA computes recommendations only at the container level, and those recommendations are applied exclusively at the container level. With the new pod-level resources specifications, VPA should be able to read from the pod-level `resources` stanza, calculate pod-level recommendations, and scale at the pod level when users define pod-level `resources`.
+Currently, before this AEP, VPA computes recommendations only at the container level, and those recommendations are applied exclusively at the container level. With the new pod-level resources specifications, VPA should be able to read from the pod-level `resources` stanza, calculate pod-level recommendations, and scale at the pod level when users define pod-level `resources`.
 
 To address this, this KEP proposes extending the VPA object's `spec` and `status` fields, and introducing two new pod-level flags to set constraints directly at the pod level. For more details check the [Proposal](#proposal) section.
 
