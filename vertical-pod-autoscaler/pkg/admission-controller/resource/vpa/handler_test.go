@@ -383,7 +383,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost: invalid StartupBoost.CPU.Factor: must be >= 1 for Type Factor"),
+			expectError: fmt.Errorf("invalid startupBoost: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
 		},
 		{
 			name: "container startupBoost with bad factor",
@@ -405,7 +405,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid StartupBoost.CPU.Factor: must be >= 1 for Type Factor"),
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
 		},
 		{
 			name: "top-level startupBoost with bad quantity",
@@ -424,7 +424,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost: invalid StartupBoost.CPU.Quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
+			expectError: fmt.Errorf("invalid startupBoost: invalid startupBoost.cpu.quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
 		},
 		{
 			name: "container startupBoost with bad quantity",
@@ -450,7 +450,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid StartupBoost.CPU.Quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid startupBoost.cpu.quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
 		},
 		{
 			name: "top-level startupBoost with bad type",
@@ -464,7 +464,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost: unexpected StartupBoost.CPU.Type value bad"),
+			expectError: fmt.Errorf("invalid startupBoost: startupBoost.cpu.type field is required and must be either %s or %s, got %v", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType, badCPUBoostType),
 		},
 		{
 			name: "container startupBoost with bad type",
@@ -485,7 +485,38 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: unexpected StartupBoost.CPU.Type value bad"),
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: startupBoost.cpu.type field is required and must be either %s or %s, got %v", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType, badCPUBoostType),
+		},
+		{
+			name: "top-level startupBoost with empty type",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost: startupBoost.cpu.type field is required and must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
+		},
+		{
+			name: "container startupBoost with empty type",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate:    true,
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: startupBoost.cpu.type field is required and must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
 		},
 		{
 			name: "top-level startupBoost with valid factor",
