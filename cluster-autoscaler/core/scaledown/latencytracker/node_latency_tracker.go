@@ -61,7 +61,7 @@ func NewNodeLatencyTracker() *NodeLatencyTracker {
 // unneeded filter excludes tainted nodes.
 //
 // This means that between two CA loops, a node can disappear from the unneeded list
-// even though it's not fully deleted yet — it's just being processed for deletion.
+// even though it's not fully deleted yet - it's just being processed for deletion.
 // The currentlyInDeletion map allows us to distinguish that case, so we don’t
 // mistakenly treat a node under deletion as "missing" and record incorrect latency
 // or prematurely drop tracking.
@@ -87,10 +87,14 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
 		if _, stillUnneeded := currentSet[name]; !stillUnneeded {
 			if _, inDeletion := currentlyInDeletion[name]; !inDeletion {
 				duration := timestamp.Sub(info.unneededSince)
-				metrics.UpdateScaleDownNodeRemovalLatency(false, duration-info.threshold)
+				// Only report if node was unneeded longer than its threshold
+				if duration > info.threshold {
+					metrics.UpdateScaleDownNodeRemovalLatency(false, duration-info.threshold)
+					klog.V(6).Infof("Node %q reported as deleted/missing (unneeded for %s, threshold %s)",
+						name, duration, info.threshold)
+				}
+				// Remove node regardless
 				delete(t.nodes, name)
-				klog.V(6).Infof("Node %q reported as deleted/missing (unneeded for %s, threshold %s)",
-					name, duration, info.threshold)
 			}
 		}
 	}

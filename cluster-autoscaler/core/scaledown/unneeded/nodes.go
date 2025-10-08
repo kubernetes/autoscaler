@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
@@ -46,7 +45,6 @@ type Nodes struct {
 	nodeLatencyTracker latencytracker.LatencyTracker
 	cachedList         []*apiv1.Node
 	byName             map[string]*node
-	unneededTimeCache  map[string]time.Duration
 }
 
 type node struct {
@@ -214,7 +212,7 @@ func (n *Nodes) RemovableAt(autoscalingCtx *ca_context.AutoscalingContext, scale
 	return
 }
 
-func (n *Nodes) unremovableReason(context *context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
+func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
 	node := v.ntbr.Node
 	// Check if node is marked with no scale down annotation.
 	if eligibility.HasNoScaleDownAnnotation(node) {
