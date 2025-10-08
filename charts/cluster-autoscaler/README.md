@@ -12,6 +12,7 @@ $ helm install my-release autoscaler/cluster-autoscaler \
     --set 'autoDiscovery.clusterName'=<CLUSTER NAME>
 
 # Method 2 - Specifying groups manually
+Adding a line here manually - should fail helm-docs test
 $ helm install my-release autoscaler/cluster-autoscaler \
     --set "autoscalingGroups[0].name=your-asg-name" \
     --set "autoscalingGroups[0].maxSize=10" \
