@@ -74,7 +74,8 @@ type VirtualMachine struct {
 
 // cksService implements the CKSService interface
 type cksService struct {
-	client APIClient
+	client    APIClient
+	projectID string
 }
 
 func virtaulMachinesToMap(vms []*VirtualMachine) map[string]*VirtualMachine {
@@ -89,9 +90,16 @@ func virtaulMachinesToMap(vms []*VirtualMachine) map[string]*VirtualMachine {
 
 func (service *cksService) GetClusterDetails(clusterID string) (*Cluster, error) {
 	var out ListClusterResponse
-	_, err := service.client.NewRequest("listKubernetesClusters", map[string]string{
+	params := map[string]string{
 		"id": clusterID,
-	}, &out)
+	}
+	
+	// Include projectid if configured to support multi-project CloudStack environments
+	if service.projectID != "" {
+		params["projectid"] = service.projectID
+	}
+	
+	_, err := service.client.NewRequest("listKubernetesClusters", params, &out)
 
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch cluster details : %v", err)
@@ -108,10 +116,17 @@ func (service *cksService) GetClusterDetails(clusterID string) (*Cluster, error)
 
 func (service *cksService) ScaleCluster(clusterID string, workerCount int) (*Cluster, error) {
 	var out ClusterResponse
-	_, err := service.client.NewRequest("scaleKubernetesCluster", map[string]string{
+	params := map[string]string{
 		"id":   clusterID,
 		"size": strconv.Itoa(workerCount),
-	}, &out)
+	}
+	
+	// Include projectid if configured to support multi-project CloudStack environments
+	if service.projectID != "" {
+		params["projectid"] = service.projectID
+	}
+	
+	_, err := service.client.NewRequest("scaleKubernetesCluster", params, &out)
 
 	if err != nil {
 		return nil, fmt.Errorf("Unable to scale cluster : %v", err)
@@ -123,10 +138,17 @@ func (service *cksService) ScaleCluster(clusterID string, workerCount int) (*Clu
 
 func (service *cksService) RemoveNodesFromCluster(clusterID string, nodeIDs ...string) (*Cluster, error) {
 	var out ClusterResponse
-	_, err := service.client.NewRequest("scaleKubernetesCluster", map[string]string{
+	params := map[string]string{
 		"id":      clusterID,
 		"nodeids": strings.Join(nodeIDs[:], ","),
-	}, &out)
+	}
+	
+	// Include projectid if configured to support multi-project CloudStack environments
+	if service.projectID != "" {
+		params["projectid"] = service.projectID
+	}
+	
+	_, err := service.client.NewRequest("scaleKubernetesCluster", params, &out)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to delete %v from cluster : %v", nodeIDs, err)
 	}
@@ -143,6 +165,7 @@ func (service *cksService) Close() {
 func NewCKSService(config *Config) CKSService {
 	client := NewAPIClient(config)
 	return &cksService{
-		client: client,
+		client:    client,
+		projectID: config.ProjectID,
 	}
 }
