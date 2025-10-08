@@ -258,10 +258,6 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 				} else {
 					subnetIPRange = defaultSubnetIPRange
 				}
-				klog.Infof("[DEBUG]Using subnet ip range %s for node group %s", subnetIPRange, spec.name)
-				klog.Infof("[DEBUG]Default SubnetIPRange is %s", defaultSubnetIPRange)
-				klog.Infof("[DEBUG]Default and SubnetIPRange in Config is: %s + %s", manager.clusterConfig.DefaultSubnetIPRange, manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange)
-
 			}
 
 		}
