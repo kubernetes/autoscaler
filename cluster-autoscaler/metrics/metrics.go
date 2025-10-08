@@ -432,7 +432,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "node_removal_latency_seconds",
 			Help:      "Latency from planning (node marked) to final outcome (deleted, aborted, rescued).",
-			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 18), //1, 2, 4, 8, ..., 131072 approx 1.5 days
+			Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 18), // ~1s → ~1h
 		}, []string{"deleted"},
 	)
 )
