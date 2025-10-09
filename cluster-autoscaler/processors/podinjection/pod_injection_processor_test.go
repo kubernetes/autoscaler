@@ -45,6 +45,8 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 	scheduledPodRep1Copy1 := buildTestPod("default", "-scheduled-pod-rep1-1", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID), WithNodeName(node.Name))
 	podRep1Copy1 := buildTestPod("default", "pod-rep1-1", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
 	podRep1Copy2 := buildTestPod("default", "pod-rep1-2", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	podRep1Copy3Gated := buildTestPod("default", "pod-rep1-3", WithControllerOwnerRef(replicaSet1.Name, "ReplicaSet", replicaSet1.UID))
+	podRep1Copy3Gated = WithSchedulingGatedStatus(podRep1Copy3Gated)
 
 	job1 := createTestJob("job-1", "default", 10, 10, 0)
 	scheduledPodJob1Copy1 := buildTestPod("default", "scheduled-pod-job1-1", WithControllerOwnerRef(job1.Name, "Job", job1.UID), WithNodeName(node.Name))
@@ -55,6 +57,8 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 	scheduledParallelStatefulsetPod := buildTestPod("default", "parallel-scheduled-pod-statefulset-1", WithControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID), WithNodeName(node.Name))
 	parallelStatefulsetPodCopy1 := buildTestPod("default", "parallel-pod-statefulset1-1", WithControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID))
 	parallelStatefulsetPodCopy2 := buildTestPod("default", "parallel-pod-statefulset1-2", WithControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID))
+	parallelStatefulsetPodCopy3Gated := buildTestPod("default", "parallel-pod-statefulset1-3", WithControllerOwnerRef(parallelStatefulset.Name, "StatefulSet", parallelStatefulset.UID))
+	parallelStatefulsetPodCopy3Gated = WithSchedulingGatedStatus(parallelStatefulsetPodCopy3Gated)
 
 	sequentialStatefulset := createTestStatefulset("sequential-statefulset-1", "default", appsv1.OrderedReadyPodManagement, 10)
 	scheduledSequentialStatefulsetPod := buildTestPod("default", "sequential-scheduled-pod-statefulset-1", WithControllerOwnerRef(sequentialStatefulset.Name, "StatefulSet", sequentialStatefulset.UID), WithNodeName(node.Name))
@@ -72,6 +76,7 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 		name              string
 		scheduledPods     []*apiv1.Pod
 		unschedulablePods []*apiv1.Pod
+		otherPods         []*apiv1.Pod
 		wantPods          []*apiv1.Pod
 	}{
 		{
@@ -111,6 +116,20 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 				makeFakePods(parallelStatefulset.UID, scheduledParallelStatefulsetPod, 7)...,
 			),
 		},
+		{
+			name:              "Mix of controllers with scheduling gated pods",
+			scheduledPods:     []*apiv1.Pod{scheduledPodRep1Copy1, scheduledPodJob1Copy1, scheduledParallelStatefulsetPod},
+			unschedulablePods: []*apiv1.Pod{podRep1Copy1, podRep1Copy2, podJob1Copy1, podJob1Copy2, parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2},
+			otherPods:         []*apiv1.Pod{parallelStatefulsetPodCopy3Gated, podRep1Copy3Gated},
+			wantPods: append(
+				append(
+					append(
+						[]*apiv1.Pod{podRep1Copy1, podRep1Copy2, podJob1Copy1, podJob1Copy2, parallelStatefulsetPodCopy1, parallelStatefulsetPodCopy2},
+						makeFakePods(replicaSet1.UID, scheduledPodRep1Copy1, 1)...),
+					makeFakePods(job1.UID, scheduledPodJob1Copy1, 7)...),
+				makeFakePods(parallelStatefulset.UID, scheduledParallelStatefulsetPod, 6)...,
+			),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -119,9 +138,10 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 			clusterSnapshot := testsnapshot.NewCustomTestSnapshotOrDie(t, store.NewDeltaSnapshotStore(16))
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.scheduledPods...))
 			assert.NoError(t, err)
+			allPodsLister := fakeAllPodsLister{podsToList: append(append(tc.scheduledPods, tc.unschedulablePods...), tc.otherPods...)}
 			autoscalingCtx := ca_context.AutoscalingContext{
 				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
-					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
+					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, &allPodsLister, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
@@ -433,3 +453,11 @@ func buildTestPod(namespace, name string, opts ...podOption) *apiv1.Pod {
 }
 
 type podOption func(*apiv1.Pod)
+
+type fakeAllPodsLister struct {
+	podsToList []*apiv1.Pod
+}
+
+func (l *fakeAllPodsLister) List() ([]*apiv1.Pod, error) {
+	return l.podsToList, nil
+}
