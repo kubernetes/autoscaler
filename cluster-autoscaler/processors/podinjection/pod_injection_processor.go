@@ -26,6 +26,7 @@ import (
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
 )
 
@@ -56,14 +57,19 @@ func (p *PodInjectionPodListProcessor) Process(autoscalingCtx *ca_context.Autosc
 
 	nodeInfos, err := autoscalingCtx.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
-		klog.Errorf("Failed to list nodeInfos from cluster snapshot: %v", err)
 		return unschedulablePods, fmt.Errorf("failed to list nodeInfos from cluster snapshot: %v", err)
 	}
 	scheduledPods := podsFromNodeInfos(nodeInfos)
 
-	groupedPods := groupPods(append(scheduledPods, unschedulablePods...), controllers)
-	var podsToInject []*apiv1.Pod
+	allPods, err := autoscalingCtx.AllPodLister().List()
+	if err != nil {
+		return unschedulablePods, fmt.Errorf("failed to list all pods from all pod lister: %v", err)
+	}
+	schedulingGatedPods := kube_util.SchedulingGatedPods(allPods)
 
+	groupedPods := groupPods(append(append(scheduledPods, unschedulablePods...), schedulingGatedPods...), controllers)
+
+	var podsToInject []*apiv1.Pod
 	for _, groupedPod := range groupedPods {
 		var fakePodCount = groupedPod.fakePodCount()
 		fakePods := makeFakePods(groupedPod.ownerUid, groupedPod.sample, fakePodCount)
