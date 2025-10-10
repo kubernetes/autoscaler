@@ -12,8 +12,8 @@
 - [Design Details](#design-details)
   - [Configuration Level Considerations](#configuration-level-considerations)
     - [Parameter Level Analysis](#parameter-level-analysis)
+    - [Parameter Precedence: Per-VPA vs Global Configuration](#parameter-precedence-per-vpa-vs-global-configuration)
   - [API Changes](#api-changes)
-    - [OOM Parameter Consolidation](#oom-parameter-consolidation)
     - [Parameter Coexistence and Global Configuration](#parameter-coexistence-and-global-configuration)
     - [Phase 1 (Current Proposal)](#phase-1-current-proposal)
     - [Future Extensions](#future-extensions)
@@ -113,6 +113,9 @@ spec:
     - For a container using 50MB: max(50MB + 100MB, 50MB * 1.5) = 150MB
     - For a container using 1GB: max(1GB + 100MB, 1GB * 1.5) = 1.5GB
   
+  Note: Using a single field approach (e.g., a unified `oomBumpUp` field) would not provide sufficient flexibility for users who need both a minimum absolute increase and a proportional ratio.
+  For example, if a user wants to ensure a minimum increase of 100MB while also applying a 1.5x ratio for larger containers, a single field cannot express this combined behavior. The current dual-field design allows users to specify both constraints independently, ensuring small containers get a guaranteed minimum bump while larger containers receive appropriate proportional scaling. This approach provides more precise control over memory recommendation adjustments after OOM events than a simplified single-field model could offer.
+  
 
   - `oomBumpUpRatio` (Quantity):
     - Multiplier applied to memory recommendations after OOM events
@@ -173,6 +176,24 @@ When designing the configuration parameters, we analyzed each parameter to deter
   - Simpler operational model for pod lifecycle management
   - Consistent with how Kubernetes handles pod evictions
 
+#### Parameter Precedence: Per-VPA vs Global Configuration
+
+The per-VPA configuration parameters introduced in this proposal are designed to **override** the corresponding global flags when specified in a VPA object. If a parameter is not defined at the VPA level, the VPA components will fall back to using the value set via global flags.
+
+This approach ensures backward compatibility and allows users to adopt per-VPA configuration incrementally, without requiring changes to existing setups. Users can continue relying on global defaults while gradually introducing workload-specific tuning where needed.
+
+For example:
+- If `oomBumpUpRatio` is set in a VPA's `containerPolicy`, that value will be used for recommendations for that container.
+- If it is omitted, the global flag value (e.g., from the recommender component) will apply.
+
+This override behavior applies to all parameters introduced in this AEP:
+- `oomBumpUpRatio`
+- `oomMinBumpUp`
+- `memoryAggregationInterval`
+- `memoryAggregationIntervalCount`
+- `evictAfterOOMThreshold`
+
+Validation and error handling will ensure that invalid or conflicting values are caught early, either through CEL rules or admission controller logic.
 
 ### API Changes
 
