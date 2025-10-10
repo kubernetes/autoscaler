@@ -204,6 +204,30 @@ func SchedulerUnprocessedPods(allPods []*apiv1.Pod, bypassedSchedulers map[strin
 	return unprocessedPods
 }
 
+// SchedulingGatedPods is a helper method that returns all pods which has scheduling gate
+// SchedulingGated pods are not scheduled nor deleted by the implementation and are not unschedulable nor unprocessed by definition
+func SchedulingGatedPods(allPods []*apiv1.Pod) []*apiv1.Pod {
+	var schedulingGatedPods []*apiv1.Pod
+	for _, pod := range allPods {
+		if pod != nil && isSchedulingGated(pod) {
+			schedulingGatedPods = append(schedulingGatedPods, pod)
+		}
+	}
+	return schedulingGatedPods
+}
+
+// isSchedulingGated returns true in case PodScheduled is false with reason PodReasonSchedulingGated
+func isSchedulingGated(pod *apiv1.Pod) bool {
+	if isScheduled(pod) || isDeleted(pod) {
+		return false
+	}
+	_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+	if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == apiv1.PodReasonSchedulingGated {
+		return true
+	}
+	return false
+}
+
 // UnschedulablePods is a helper method that returns all unschedulable pods from given pod list.
 func UnschedulablePods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	var unschedulablePods []*apiv1.Pod
