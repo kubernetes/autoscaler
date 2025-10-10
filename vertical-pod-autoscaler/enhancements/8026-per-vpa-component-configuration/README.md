@@ -95,7 +95,7 @@ spec:
   The VPA selects the larger of:
     - The absolute increase specified by `oomMinBumpUp`
     - A relative increase calculated using `oomBumpUpRatio`
-    - If both are set to their neutral values (`oomBumpUpRatio = 1`, `oomMinBumpUp = 0`), OOM-based increases are disabled.
+    - If both are unset or set to their neutral values (`oomBumpUpRatio = 1`, `oomMinBumpUp = 0`), OOM-based increases are disabled.
 
   This ensures:
     - Small containers receive a guaranteed minimum bump (via `oomMinBumpUp`, e.g., +100MB).
