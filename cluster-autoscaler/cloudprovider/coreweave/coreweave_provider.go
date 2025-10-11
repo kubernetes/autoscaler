@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
@@ -182,7 +183,7 @@ func (c *CoreWeaveCloudProvider) Refresh() error {
 }
 
 // BuildCoreWeave builds the CoreWeave cloud provider with the given options and returns it.
-func BuildCoreWeave(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	klog.V(4).Infof("Building CoreWeave cloud provider with options: %+v", opts)
-	return NewCoreWeaveCloudProvider(rl, opts)
+func BuildCoreWeave(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	klog.V(4).Infof("Building CoreWeave cloud provider with options: %+v", opts.AutoscalingOptions)
+	return NewCoreWeaveCloudProvider(rl, opts.AutoscalingOptions)
 }

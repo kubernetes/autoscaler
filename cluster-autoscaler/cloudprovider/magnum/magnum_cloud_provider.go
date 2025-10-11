@@ -28,8 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
@@ -317,7 +317,7 @@ func (mcp *magnumCloudProvider) refreshNodeGroups() error {
 //
 // The magnumManager is created here, and the initial node groups are created
 // based on the static or auto discovery specs provided via the command line parameters.
-func BuildMagnum(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildMagnum(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 
 	// Should be loaded with --cloud-config /etc/kubernetes/kube_openstack_config from master node.
@@ -338,7 +338,7 @@ func BuildMagnum(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDisco
 		klog.Fatal("can not use both static node group discovery and node group auto discovery")
 	}
 
-	manager, err := createMagnumManager(config, do, opts)
+	manager, err := createMagnumManager(config, do, opts.AutoscalingOptions)
 	if err != nil {
 		klog.Fatalf("Failed to create magnum manager: %v", err)
 	}

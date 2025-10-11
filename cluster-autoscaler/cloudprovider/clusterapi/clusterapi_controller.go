@@ -849,6 +849,27 @@ func (c *machineController) listMachinesForScalableResource(r *unstructured.Unst
 	}
 }
 
+func (c *machineController) listMachineSetsForMachineDeployment(r *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	selector := labels.SelectorFromSet(map[string]string{
+		machineDeploymentNameLabel: r.GetName(),
+	})
+	objs, err := c.machineSetInformer.Lister().ByNamespace(r.GetNamespace()).List(selector)
+	if err != nil {
+		return nil, fmt.Errorf("unable to list MachineSets for MachineDeployment %s: %w", r.GetName(), err)
+	}
+
+	results := make([]*unstructured.Unstructured, 0, len(objs))
+	for _, x := range objs {
+		u, ok := x.(*unstructured.Unstructured)
+		if !ok {
+			return nil, fmt.Errorf("expected unstructured resource from lister, not %T", x)
+		}
+		results = append(results, u.DeepCopy())
+	}
+
+	return results, nil
+}
+
 func (c *machineController) listScalableResources() ([]*unstructured.Unstructured, error) {
 	scalableResources, err := c.listResources(c.machineSetInformer.Lister())
 	if err != nil {

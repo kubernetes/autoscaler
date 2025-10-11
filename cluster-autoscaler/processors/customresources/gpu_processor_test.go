@@ -25,7 +25,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -157,7 +156,7 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "nodeGPUViaDra",
 			Labels: map[string]string{
-				gce.DraGPULabel: "true",
+				"cloud.google.com/gke-gpu-dra-driver": "true",
 			},
 			CreationTimestamp: metav1.NewTime(start),
 		},
