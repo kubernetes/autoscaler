@@ -268,6 +268,10 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
 
+	if features.Enabled(features.MemoryPerCPURatio) {
+		postProcessors = append(postProcessors, &routines.MemoryPerCPUPostProcessor{})
+	}
+
 	globalMaxAllowed := initGlobalMaxAllowed()
 	// CappingPostProcessor, should always come in the last position for post-processing
 	postProcessors = append(postProcessors, routines.NewCappingRecommendationProcessor(globalMaxAllowed))
