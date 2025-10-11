@@ -244,5 +244,4 @@ Kubernetes v1.32 is not recommended because the alpha implementation of Pod-leve
 
 ## Implementation History
 
-- 2025-10-08: Drop the In-Place Pod-Level Resources Resize feature from the cons sections, and use the AEP term instead of KEP
 - 2025-09-29: initial version
