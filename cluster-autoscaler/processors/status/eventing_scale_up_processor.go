@@ -36,7 +36,7 @@ type EventingScaleUpStatusProcessor struct{}
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
 func (p *EventingScaleUpStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
-	consideredNodeGroupsMap := nodeGroupListToMapById(status.ConsideredNodeGroups)
+	consideredNodeGroupsMap := NodeGroupListToMapById(status.ConsideredNodeGroups)
 	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 			autoscalingCtx.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
@@ -93,7 +93,8 @@ func ReasonsMessage(scaleUpStatus ScaleUpResult, noScaleUpInfo NoScaleUpInfo, co
 	return strings.Join(messages, ", ")
 }
 
-func nodeGroupListToMapById(nodeGroups []cloudprovider.NodeGroup) map[string]cloudprovider.NodeGroup {
+// NodeGroupListToMapById returns a map of node group ID to nonode group
+func NodeGroupListToMapById(nodeGroups []cloudprovider.NodeGroup) map[string]cloudprovider.NodeGroup {
 	result := make(map[string]cloudprovider.NodeGroup)
 	for _, nodeGroup := range nodeGroups {
 		result[nodeGroup.Id()] = nodeGroup
