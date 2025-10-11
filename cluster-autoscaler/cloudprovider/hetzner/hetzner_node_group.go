@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"maps"
 	"math/rand"
+	"net"
 	"strings"
 	"sync"
 
@@ -49,6 +50,7 @@ type hetznerNodeGroup struct {
 
 	clusterUpdateMutex *sync.Mutex
 	placementGroup     *hcloud.PlacementGroup
+	subnetIPRange      *net.IPNet
 }
 
 type hetznerNodeGroupSpec struct {
@@ -472,7 +474,8 @@ func createServer(n *hetznerNodeGroup) error {
 		cloudInit = n.manager.clusterConfig.NodeConfigs[n.id].CloudInit
 	}
 
-	StartAfterCreate := true
+	// dont start the server if we need to attach the server to a private subnet network
+	StartAfterCreate := n.manager.network != nil && n.subnetIPRange == nil
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
 		UserData:         cloudInit,
@@ -492,7 +495,7 @@ func createServer(n *hetznerNodeGroup) error {
 	if n.manager.sshKey != nil {
 		opts.SSHKeys = []*hcloud.SSHKey{n.manager.sshKey}
 	}
-	if n.manager.network != nil {
+	if n.manager.network != nil && n.subnetIPRange == nil {
 		opts.Networks = []*hcloud.Network{n.manager.network}
 	}
 	if n.manager.firewall != nil {
@@ -514,6 +517,34 @@ func createServer(n *hetznerNodeGroup) error {
 	if err != nil {
 		_ = n.manager.deleteServer(server)
 		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
+	}
+
+	if n.manager.network != nil && n.subnetIPRange != nil {
+		// Attach server to private network with subnetIPRange
+		attachAction, _, err := n.manager.client.Server.AttachToNetwork(ctx, server, hcloud.ServerAttachToNetworkOpts{
+			Network: n.manager.network,
+			IPRange: n.subnetIPRange,
+		})
+		if err != nil {
+			_ = n.manager.deleteServer(server)
+			return fmt.Errorf("failed to attach server %s to network %s with IP range %s error: %v", server.Name, n.manager.network.Name, n.subnetIPRange.String(), err)
+		}
+		if err = n.manager.client.Action.WaitFor(ctx, attachAction); err != nil {
+			_ = n.manager.deleteServer(server)
+			return fmt.Errorf("failed waiting for network action for server %s error: %v", server.Name, err)
+		}
+	}
+
+	if !StartAfterCreate {
+		powerOnAction, _, err := n.manager.client.Server.Poweron(ctx, server)
+		if err != nil {
+			_ = n.manager.deleteServer(server)
+			return fmt.Errorf("failed to power on server %s error: %v", server.Name, err)
+		}
+		if err = n.manager.client.Action.WaitFor(ctx, powerOnAction); err != nil {
+			_ = n.manager.deleteServer(server)
+			return fmt.Errorf("failed waiting for power on action for server %s error: %v", server.Name, err)
+		}
 	}
 
 	return nil
