@@ -155,10 +155,7 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 		return fmt.Errorf("no resource patches were calculated to apply")
 	}
 
-	// TODO(maxcao13): If this keeps getting called on the same object with the same reason, it is considered a patch request.
-	// And we fail to have the corresponding rbac for it. So figure out if we need this later.
-	// Do we even need to emit an event? The node might reject the resize request. If so, should we rename this to InPlaceResizeAttempted?
-	// eventRecorder.Event(podToUpdate, apiv1.EventTypeNormal, "InPlaceResizedByVPA", "Pod was resized in place by VPA Updater.")
+	eventRecorder.Event(podToUpdate, apiv1.EventTypeNormal, "InPlaceResizedByVPA", "Pod was resized in place by VPA Updater.")
 
 	singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
 	if !present {
