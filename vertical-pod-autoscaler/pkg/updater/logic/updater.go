@@ -164,6 +164,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
+	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
+
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
@@ -258,7 +260,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		podsForInPlace := make([]*apiv1.Pod, 0)
 		podsForEviction := make([]*apiv1.Pod, 0)
 
-		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && features.Enabled(features.InPlaceOrRecreate) {
+		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceFeatureEnable {
 			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 		} else {
