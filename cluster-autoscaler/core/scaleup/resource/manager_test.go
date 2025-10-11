@@ -73,7 +73,7 @@ func TestDeltaForNode(t *testing.T) {
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
 		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 		assert.NoError(t, err)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*corev1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
 		delta, err := rm.DeltaForNode(&autoscalingCtx, nodeInfos[ng.Name], group)
@@ -116,7 +116,7 @@ func TestResourcesLeft(t *testing.T) {
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
 		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 		assert.NoError(t, err)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*corev1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
 		left, err := rm.ResourcesLeft(&autoscalingCtx, nodeInfos, nodes)
@@ -169,7 +169,7 @@ func TestApplyLimits(t *testing.T) {
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
 		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 		assert.NoError(t, err)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*corev1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
 		newCount, err := rm.ApplyLimits(&autoscalingCtx, testCase.newNodeCount, testCase.resourcesLeft, nodeInfos[testCase.nodeGroupConfig.Name], group)
@@ -236,7 +236,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	nodes := []*corev1.Node{n1}
 	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 	assert.NoError(t, err)
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*corev1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 	rm := NewManager(processors.CustomResourcesProcessor)
 
