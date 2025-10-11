@@ -425,6 +425,14 @@ var (
 			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 6), // 1, 2, 4, ..., 32
 		}, []string{"instance_type", "cpu_count", "namespace_count"},
 	)
+
+	longestLastScaleDownEvalDuration = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "longest_unneeded_node_scale_down_eval_duration_seconds",
+			Help:      "Longest node evaluation time during ScaleDown.",
+		},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -461,6 +469,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeTaintsCount)
 	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
 	legacyregistry.MustRegister(binpackingHeterogeneity)
+	legacyregistry.MustRegister(longestLastScaleDownEvalDuration)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -747,4 +756,12 @@ func UpdateInconsistentInstancesMigsCount(migCount int) {
 // considered in a single binpacking estimation.
 func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount string, pegCount int) {
 	binpackingHeterogeneity.WithLabelValues(instanceType, cpuCount, namespaceCount).Observe(float64(pegCount))
+}
+
+// ObserveLongestNodeScaleDownEvalTime records the longest time during which node was not processed during ScaleDown.
+// If a node is not processed multiple times consecutively, we store only the earliest timestamp.
+// Here we report the difference between current time and the earliest time among all unprocessed nodes in current ScaleDown iteration
+// If we never timedOut in categorizeNodes() or never exceeded p.unneededNodesLimit(), this value will be 0
+func ObserveLongestNodeScaleDownEvalTime(duration time.Duration) {
+	longestLastScaleDownEvalDuration.Set(float64(duration))
 }

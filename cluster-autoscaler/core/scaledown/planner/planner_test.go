@@ -1035,6 +1035,138 @@ func TestNodesToDelete(t *testing.T) {
 	}
 }
 
+func TestLongestUnprocessedNodeScaleDownTime(t *testing.T) {
+	type testCase struct {
+		name             string
+		unprocessedNodes [][]string
+	}
+	start := time.Now()
+	testCases := []testCase{
+		{
+			name:             "Test the functionality of longestNodeScaleDownT with all nodes processed in the first iteration",
+			unprocessedNodes: [][]string{nil, {"n1", "n2"}, {"n2", "n3"}},
+		},
+		{
+			name:             "Test the functionality of longestNodeScaleDownT with not all nodes processed in the first iteration",
+			unprocessedNodes: [][]string{{"n1", "n2"}, {"n1", "n2"}, {"n2", "n3"}},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			timestamp := start
+			longestScaleDownEvalT := newLongestNodeScaleDownEvalTime(start)
+			timestamp = timestamp.Add(1 * time.Second)
+			if tc.unprocessedNodes[0] == nil {
+				assert.Equal(t, longestScaleDownEvalT.update(tc.unprocessedNodes[0], timestamp), time.Duration(0))
+				start = timestamp
+			} else {
+				assert.Equal(t, longestScaleDownEvalT.update(tc.unprocessedNodes[0], timestamp), timestamp.Sub(start))
+			}
+			for range 2 {
+				timestamp = timestamp.Add(1 * time.Second)
+				longestScaleDownEvalT.update(tc.unprocessedNodes[1], timestamp)
+				fmt.Println(len(longestScaleDownEvalT.nodeNamesWithTimeStamps))
+				assert.Equal(t, len(longestScaleDownEvalT.nodeNamesWithTimeStamps), len(tc.unprocessedNodes[1]))
+				for _, val := range longestScaleDownEvalT.nodeNamesWithTimeStamps {
+					assert.Equal(t, val, start)
+				}
+			}
+			timestamp = timestamp.Add(1 * time.Second)
+			currentLastEvalTime := longestScaleDownEvalT.lastEvalTime
+			assert.Equal(t, longestScaleDownEvalT.update(tc.unprocessedNodes[2], timestamp), timestamp.Sub(start)) // longestTime is for node n2
+			assert.Equal(t, longestScaleDownEvalT.get("n1"), longestScaleDownEvalT.lastEvalTime)
+			assert.Equal(t, longestScaleDownEvalT.get("n2"), start)
+			assert.Equal(t, longestScaleDownEvalT.get("n3"), currentLastEvalTime) // timestamp for new nodes is the default time before update
+			timestamp = timestamp.Add(1 * time.Second)
+			assert.Equal(t, longestScaleDownEvalT.update(nil, timestamp), timestamp.Sub(start)) // leftover from the previous iteration is time for node n2
+			timestamp = timestamp.Add(1 * time.Second)
+			assert.Equal(t, longestScaleDownEvalT.update(nil, timestamp), time.Duration(0)) // no leftover, so the longestTime will be 0
+		})
+	}
+}
+
+func TestLongestUnprocessedNodeScaleDownTimeWithTimeout(t *testing.T) {
+	type testCase struct {
+		name                string
+		maxParallel         int
+		isSimulationTimeout bool
+		unprocessedNodes    int
+		isFlagEnabled       bool
+	}
+	nodes := []*apiv1.Node{
+		BuildTestNode("n1", 1000, 10),
+		BuildTestNode("n2", 1000, 10),
+		BuildTestNode("n3", 1000, 10),
+	}
+	eligible := []string{"n1", "n2"}
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 0, 0, 0)
+	for _, node := range nodes {
+		provider.AddNode("ng1", node)
+	}
+	testCases := []testCase{
+		{
+			name:                "Unneeded node limit is exceeded",
+			maxParallel:         0,
+			isSimulationTimeout: false,
+			// maxParallel=0 forces p.unneededNodesLimit() to be 0, so we will break in the second check inside p.categorizeNodes() right away
+			unprocessedNodes: 2,
+			isFlagEnabled:    true,
+		},
+		{
+			name:                "Simulation timeout is hit",
+			maxParallel:         1,
+			isSimulationTimeout: true,
+			// first node will be deleted and for the second timeout will be triggered
+			unprocessedNodes: 1,
+			isFlagEnabled:    true,
+		},
+		{
+			name:                "LongestLastScaleDownEvalDuration flag is disabled",
+			maxParallel:         1,
+			isSimulationTimeout: false,
+			isFlagEnabled:       false,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime: 10 * time.Minute,
+				},
+				ScaleDownSimulationTimeout:                 1 * time.Second,
+				MaxScaleDownParallelism:                    tc.maxParallel,
+				LongestNodeScaleDownEvalTimeTrackerEnabled: tc.isFlagEnabled,
+			}, &fake.Clientset{}, registry, provider, nil, nil)
+			assert.NoError(t, err)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
+			deleteOptions := options.NodeDeleteOptions{}
+			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
+			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(eligible)}
+			if tc.isSimulationTimeout {
+				autoscalingCtx.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
+				rs := &fakeRemovalSimulator{
+					nodes: nodes,
+					sleep: 2 * time.Second,
+				}
+				p.rs = rs
+			}
+			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
+			if !tc.isFlagEnabled {
+				// if flag is disabled p.longestNodeScaleDownT is not initialized
+				assert.Nil(t, p.longestNodeScaleDownT)
+			} else {
+				assert.Equal(t, len(p.longestNodeScaleDownT.nodeNamesWithTimeStamps), tc.unprocessedNodes)
+			}
+		})
+	}
+}
+
 func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
 	ng := testprovider.NewTestNodeGroup(id, 10000, 0, size, true, false, "n1-standard-2", nil, nil)
 	ng.SetOptions(&config.NodeGroupAutoscalingOptions{

@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -76,6 +77,7 @@ type Planner struct {
 	cc                    controllerReplicasCalculator
 	scaleDownSetProcessor nodes.ScaleDownSetProcessor
 	scaleDownContext      *nodes.ScaleDownContext
+	longestNodeScaleDownT *longestNodeScaleDownEvalTime
 }
 
 // New creates a new Planner object.
@@ -91,6 +93,11 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL)
 	}
 
+	var longestNodeScaleDownTime *longestNodeScaleDownEvalTime
+	if autoscalingCtx.AutoscalingOptions.LongestNodeScaleDownEvalTimeTrackerEnabled {
+		longestNodeScaleDownTime = newLongestNodeScaleDownEvalTime(time.Now())
+	}
+
 	return &Planner{
 		autoscalingCtx:        autoscalingCtx,
 		unremovableNodes:      unremovable.NewNodes(),
@@ -104,6 +111,7 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
 		scaleDownContext:      nodes.NewDefaultScaleDownContext(),
 		minUpdateInterval:     minUpdateInterval,
+		longestNodeScaleDownT: longestNodeScaleDownTime,
 	}
 }
 
@@ -277,13 +285,16 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 	p.nodeUtilizationMap = utilizationMap
 	timer := time.NewTimer(p.autoscalingCtx.ScaleDownSimulationTimeout)
+	endedPrematurely := false
 
 	for i, node := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
+			p.handleUnprocessedNodes(currentlyUnneededNodeNames[i:], time.Now(), &endedPrematurely)
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
 		}
 		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
+			p.handleUnprocessedNodes(currentlyUnneededNodeNames[i:], time.Now(), &endedPrematurely)
 			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
 			break
 		}
@@ -306,6 +317,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			p.unremovableNodes.AddTimeout(unremovable, unremovableTimeout)
 		}
 	}
+	p.handleUnprocessedNodes(nil, time.Now(), &endedPrematurely)
 	p.unneededNodes.Update(removableList, p.latestUpdate)
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
@@ -434,4 +446,65 @@ func timedOut(timer *time.Timer) bool {
 	default:
 		return false
 	}
+}
+
+func (p *Planner) handleUnprocessedNodes(unprocessedNodeNames []string, currentTime time.Time, endedPrematurely *bool) {
+	// if p.longestNodeScaleDownT is not set (flag is disabled) or endedPrematurely is already true (ndoes were already reported in this iteration) do not do anything
+	if p.longestNodeScaleDownT == nil || *endedPrematurely {
+		return
+	}
+	*endedPrematurely = true
+	p.longestNodeScaleDownT.update(unprocessedNodeNames, currentTime)
+}
+
+type longestNodeScaleDownEvalTime struct {
+	// lastEvalTime is the time of previous currentlyUnneededNodeNames parsing
+	lastEvalTime            time.Time
+	nodeNamesWithTimeStamps map[string]time.Time
+	// minimumTime is the earliest time stored in nodeNamesWithTimeStamps
+	minimumTime time.Time
+}
+
+func newLongestNodeScaleDownEvalTime(currentTime time.Time) *longestNodeScaleDownEvalTime {
+	return &longestNodeScaleDownEvalTime{lastEvalTime: currentTime}
+}
+
+func (l *longestNodeScaleDownEvalTime) get(nodeName string) time.Time {
+	if _, ok := l.nodeNamesWithTimeStamps[nodeName]; ok {
+		return l.nodeNamesWithTimeStamps[nodeName]
+	}
+	return l.lastEvalTime
+}
+
+func (l *longestNodeScaleDownEvalTime) update(nodeNames []string, currentTime time.Time) time.Duration {
+	var longestTime time.Duration
+	// if nodeNames is nil it means that all nodes were processed
+	if nodeNames == nil {
+		// if l.minimumTime is 0, then in previous iteration we also processed all the nodes, so the longest time is 0
+		// otherwise -> report the longest time from previous iteration and reset the minimumTime
+		if l.minimumTime.IsZero() {
+			longestTime = 0
+		} else {
+			longestTime = currentTime.Sub(l.minimumTime)
+			l.minimumTime = time.Time{}
+		}
+		l.nodeNamesWithTimeStamps = make(map[string]time.Time)
+	} else {
+		newNodes := make(map[string]time.Time, len(nodeNames))
+		l.minimumTime = l.lastEvalTime
+		for _, nodeName := range nodeNames {
+			// if a node is not in nodeNamesWithTimeStamps use the lastEvalTime
+			// if a node is already in nodeNamesWithTimeStamps copy the last value
+			valueFromPrevIter := l.get(nodeName)
+			newNodes[nodeName] = valueFromPrevIter
+			if l.minimumTime.After(valueFromPrevIter) {
+				l.minimumTime = valueFromPrevIter
+			}
+		}
+		l.nodeNamesWithTimeStamps = newNodes
+		longestTime = currentTime.Sub(l.minimumTime)
+	}
+	l.lastEvalTime = currentTime
+	metrics.ObserveLongestNodeScaleDownEvalTime(longestTime)
+	return longestTime
 }
