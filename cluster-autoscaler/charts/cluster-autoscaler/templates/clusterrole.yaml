@@ -53,8 +53,12 @@ rules:
     verbs:
     - watch
     - list
+{{- if (eq .Values.cloudProvider "kwok") }}
     - create
+{{- end }}
+{{- if or (eq .Values.cloudProvider "kwok") (eq .Values.cloudProvider "huaweicloud") }}
     - delete
+{{- end }}
     - get
     - update
   - apiGroups:
