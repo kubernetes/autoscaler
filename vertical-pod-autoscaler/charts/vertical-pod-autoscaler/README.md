@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.5.1](https://img.shields.io/badge/AppVersion-1.5.1-informational?style=flat-square)
 
@@ -30,6 +30,9 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | admissionController.image.tag | string | `nil` |  |
 | admissionController.nodeSelector | object | `{}` |  |
 | admissionController.podAnnotations | object | `{}` |  |
+| admissionController.podDisruptionBudget.enabled | bool | `true` |  |
+| admissionController.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
+| admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.replicas | int | `1` |  |
 | admissionController.resources.limits.cpu | string | `"200m"` |  |
