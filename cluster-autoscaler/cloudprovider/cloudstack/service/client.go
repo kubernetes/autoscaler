@@ -49,6 +49,7 @@ type Config struct {
 	APIKey       string
 	SecretKey    string
 	Endpoint     string
+	ProjectID    string
 	Timeout      int
 	PollInterval int
 }
