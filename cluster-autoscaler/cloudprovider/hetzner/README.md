@@ -37,7 +37,7 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
                     "effect": "NoExecute"
                 }
             ],
-            "subnetIPRange": "10.0.0.0/24", // Optional, if not set the defaultSubnetIPRange will be used - make sure this subnet exists within you private network and to use the cidr notation
+            "subnetIPRange": "10.0.0.0/24" // Optional, if not set the defaultSubnetIPRange will be used - make sure this subnet exists within you private network and to use the cidr notation
         }
     }
 }
