@@ -99,10 +99,6 @@ func (r *ResourceLimiter) AppliesTo(node *apiv1.Node) bool {
 	return true
 }
 
-func (r *ResourceLimiter) MaxLimits() map[string]int64 {
+func (r *ResourceLimiter) Limits() map[string]int64 {
 	return r.maxLimits
-}
-
-func (r *ResourceLimiter) MinLimits() map[string]int64 {
-	return r.minLimits
 }

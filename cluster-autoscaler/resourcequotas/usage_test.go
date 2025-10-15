@@ -1,4 +1,4 @@
-package resourcelimits
+package resourcequotas
 
 import (
 	"testing"
@@ -15,7 +15,7 @@ func TestCalculateUsages(t *testing.T) {
 	testCases := []struct {
 		name          string
 		nodes         []*apiv1.Node
-		limiters      []Limiter
+		limiters      []Quota
 		nodeFilter    func(node *apiv1.Node) bool
 		customTargets map[string][]customresources.CustomResourceTarget
 		wantUsages    map[string]resourceList
@@ -27,8 +27,8 @@ func TestCalculateUsages(t *testing.T) {
 				test.BuildTestNode("n2", 2000, 4000),
 				test.BuildTestNode("n3", 3000, 8000),
 			},
-			limiters: []Limiter{
-				&fakeLimiter{
+			limiters: []Quota{
+				&fakeQuota{
 					id:          "cluster-wide",
 					appliesToFn: includeAll,
 				},
@@ -42,18 +42,18 @@ func TestCalculateUsages(t *testing.T) {
 			},
 		},
 		{
-			name: "multiple limiters",
+			name: "multiple quotas",
 			nodes: []*apiv1.Node{
 				addLabel(test.BuildTestNode("n1", 1000, 2000), "pool", "a"),
 				addLabel(test.BuildTestNode("n2", 2000, 4000), "pool", "b"),
 				addLabel(test.BuildTestNode("n3", 3000, 8000), "pool", "a"),
 			},
-			limiters: []Limiter{
-				&fakeLimiter{
+			limiters: []Quota{
+				&fakeQuota{
 					id:          "pool-a",
 					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "a" },
 				},
-				&fakeLimiter{
+				&fakeQuota{
 					id:          "pool-b",
 					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "b" },
 				},
@@ -78,8 +78,8 @@ func TestCalculateUsages(t *testing.T) {
 				test.BuildTestNode("n2", 2000, 4000),
 				test.BuildTestNode("n3", 3000, 8000),
 			},
-			limiters: []Limiter{
-				&fakeLimiter{
+			limiters: []Quota{
+				&fakeQuota{
 					id:          "cluster-wide",
 					appliesToFn: includeAll,
 				},
@@ -98,8 +98,8 @@ func TestCalculateUsages(t *testing.T) {
 			nodes: []*apiv1.Node{
 				test.BuildTestNode("n1", 1000, 2000),
 			},
-			limiters: []Limiter{
-				&fakeLimiter{
+			limiters: []Quota{
+				&fakeQuota{
 					id:          "no-match",
 					appliesToFn: func(node *apiv1.Node) bool { return false },
 				},
@@ -114,8 +114,8 @@ func TestCalculateUsages(t *testing.T) {
 				test.BuildTestNode("n1", 1000, 2000),
 				test.BuildTestNode("n2", 2000, 4000),
 			},
-			limiters: []Limiter{
-				&fakeLimiter{
+			limiters: []Quota{
+				&fakeQuota{
 					id:          "cluster-wide",
 					appliesToFn: includeAll,
 				},
@@ -135,18 +135,18 @@ func TestCalculateUsages(t *testing.T) {
 			},
 		},
 		{
-			name: "multiple limiters and node filter",
+			name: "multiple quotas and node filter",
 			nodes: []*apiv1.Node{
 				addLabel(test.BuildTestNode("n1", 1000, 2000), "pool", "a"),
 				addLabel(test.BuildTestNode("n2", 2000, 4000), "pool", "b"),
 				addLabel(test.BuildTestNode("n3", 3000, 8000), "pool", "a"),
 			},
-			limiters: []Limiter{
-				&fakeLimiter{
+			limiters: []Quota{
+				&fakeQuota{
 					id:          "pool-a",
 					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "a" },
 				},
-				&fakeLimiter{
+				&fakeQuota{
 					id:          "pool-b",
 					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "b" },
 				},

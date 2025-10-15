@@ -1,4 +1,4 @@
-package resourcelimits
+package resourcequotas
 
 import (
 	apiv1 "k8s.io/api/core/v1"
@@ -8,26 +8,6 @@ import (
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
-
-// fakeProvider is a fake implementation of a resource limit provider.
-type fakeProvider struct {
-	limiters []Limiter
-}
-
-// NewFakeProvider creates a new fakeProvider.
-func NewFakeProvider() *fakeProvider {
-	return &fakeProvider{}
-}
-
-// AddLimiter adds a limiter to the provider.
-func (p *fakeProvider) AddLimiter(limiter Limiter) {
-	p.limiters = append(p.limiters, limiter)
-}
-
-// AllLimiters returns all limiters from the provider.
-func (p *fakeProvider) AllLimiters() ([]Limiter, error) {
-	return p.limiters, nil
-}
 
 type fakeNodeFilter struct {
 	NodeFilterFn func(*apiv1.Node) bool
@@ -41,8 +21,7 @@ func (f *fakeNodeFilter) ExcludeFromTracking(node *apiv1.Node) bool {
 }
 
 type fakeCustomResourcesProcessor struct {
-	NodeResourceTargets         func(*apiv1.Node) []customresources.CustomResourceTarget
-	GetNodeResourceTargetsError errors.AutoscalerError
+	NodeResourceTargets func(*apiv1.Node) []customresources.CustomResourceTarget
 }
 
 func (f *fakeCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
@@ -50,9 +29,6 @@ func (f *fakeCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(contex
 }
 
 func (f *fakeCustomResourcesProcessor) GetNodeResourceTargets(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]customresources.CustomResourceTarget, errors.AutoscalerError) {
-	if f.GetNodeResourceTargetsError != nil {
-		return nil, f.GetNodeResourceTargetsError
-	}
 	if f.NodeResourceTargets == nil {
 		return nil, nil
 	}
@@ -62,25 +38,20 @@ func (f *fakeCustomResourcesProcessor) GetNodeResourceTargets(context *context.A
 func (f *fakeCustomResourcesProcessor) CleanUp() {
 }
 
-type fakeLimiter struct {
+type fakeQuota struct {
 	id          string
 	appliesToFn func(*apiv1.Node) bool
-	minLimits   resourceList
-	maxLimits   resourceList
+	limits      resourceList
 }
 
-func (f *fakeLimiter) ID() string {
+func (f *fakeQuota) ID() string {
 	return f.id
 }
 
-func (f *fakeLimiter) AppliesTo(node *apiv1.Node) bool {
+func (f *fakeQuota) AppliesTo(node *apiv1.Node) bool {
 	return f.appliesToFn(node)
 }
 
-func (f *fakeLimiter) MaxLimits() map[string]int64 {
-	return f.maxLimits
-}
-
-func (f *fakeLimiter) MinLimits() map[string]int64 {
-	return f.minLimits
+func (f *fakeQuota) Limits() map[string]int64 {
+	return f.limits
 }

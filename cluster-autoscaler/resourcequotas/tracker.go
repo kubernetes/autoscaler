@@ -1,4 +1,4 @@
-package resourcelimits
+package resourcequotas
 
 import (
 	"fmt"
@@ -16,12 +16,11 @@ const (
 	ResourceNameNodes  = "nodes"
 )
 
-// Limiter is an interface for a single resource limit.
-type Limiter interface {
+// Quota is an interface for a single quota.
+type Quota interface {
 	ID() string
 	AppliesTo(node *corev1.Node) bool
-	MaxLimits() map[string]int64
-	MinLimits() map[string]int64
+	Limits() map[string]int64
 }
 
 // resourceList is a map of resource names to their quantities.
@@ -30,23 +29,17 @@ type resourceList map[string]int64
 // Tracker tracks resource limits. A single tracker should track either max or min limits.
 type Tracker struct {
 	crp        customresources.CustomResourcesProcessor
-	limiters   []Limiter
+	quotas     []Quota
 	limitsLeft map[string]resourceList
 }
 
 // newTracker creates a new Tracker.
-func newTracker(crp customresources.CustomResourcesProcessor, limiters []Limiter, limitsLeft map[string]resourceList) *Tracker {
+func newTracker(crp customresources.CustomResourcesProcessor, quotas []Quota, limitsLeft map[string]resourceList) *Tracker {
 	return &Tracker{
 		crp:        crp,
-		limiters:   limiters,
+		quotas:     quotas,
 		limitsLeft: limitsLeft,
 	}
-}
-
-type TrackerOptions struct {
-	CRP        customresources.CustomResourcesProcessor
-	Providers  []Provider
-	NodeFilter NodeFilter
 }
 
 // ApplyDelta checks if a delta is within limits and applies it.
@@ -57,21 +50,21 @@ func (t *Tracker) ApplyDelta(
 	if err != nil {
 		return nil, err
 	}
-	matchingLimiters := t.matchingLimiters(node)
+	matchingQuotas := t.matchingQuotas(node)
 
-	result := t.checkDelta(delta, matchingLimiters, nodeDelta)
+	result := t.checkDelta(delta, matchingQuotas, nodeDelta)
 
 	if result.AllowedDelta != nodeDelta {
 		return result, nil
 	}
 
-	for _, rl := range matchingLimiters {
-		if t.limitsLeft[rl.ID()] == nil {
+	for _, rq := range matchingQuotas {
+		if t.limitsLeft[rq.ID()] == nil {
 			continue
 		}
 		for resource, resourceDelta := range delta {
-			if limit, ok := t.limitsLeft[rl.ID()][resource]; ok {
-				t.limitsLeft[rl.ID()][resource] = max(limit-resourceDelta*int64(result.AllowedDelta), 0)
+			if limit, ok := t.limitsLeft[rq.ID()][resource]; ok {
+				t.limitsLeft[rq.ID()][resource] = max(limit-resourceDelta*int64(result.AllowedDelta), 0)
 			}
 		}
 	}
@@ -88,24 +81,24 @@ func (t *Tracker) CheckDelta(
 	if err != nil {
 		return nil, err
 	}
-	matchingLimiters := t.matchingLimiters(node)
-	return t.checkDelta(delta, matchingLimiters, nodeDelta), nil
+	matchingQuotas := t.matchingQuotas(node)
+	return t.checkDelta(delta, matchingQuotas, nodeDelta), nil
 }
 
-func (t *Tracker) checkDelta(delta resourceList, matchingLimiters []Limiter, nodeDelta int) *CheckDeltaResult {
+func (t *Tracker) checkDelta(delta resourceList, matchingQuotas []Quota, nodeDelta int) *CheckDeltaResult {
 	result := &CheckDeltaResult{
 		AllowedDelta: nodeDelta,
 	}
 
 	exceededResources := make(map[string][]string)
-	for _, rl := range matchingLimiters {
-		limiterLimitsLeft := t.limitsLeft[rl.ID()]
+	for _, rq := range matchingQuotas {
+		quotaLimitsLeft := t.limitsLeft[rq.ID()]
 		for resource, resourceDelta := range delta {
 			if resourceDelta <= 0 {
 				continue
 			}
 
-			limitsLeft, ok := limiterLimitsLeft[resource]
+			limitsLeft, ok := quotaLimitsLeft[resource]
 			if !ok {
 				continue
 			}
@@ -115,7 +108,7 @@ func (t *Tracker) checkDelta(delta resourceList, matchingLimiters []Limiter, nod
 				if allowedNodes < int64(result.AllowedDelta) {
 					result.AllowedDelta = int(allowedNodes)
 				}
-				exceededResources[rl.ID()] = append(exceededResources[rl.ID()], resource)
+				exceededResources[rq.ID()] = append(exceededResources[rq.ID()], resource)
 			}
 		}
 	}
@@ -123,14 +116,14 @@ func (t *Tracker) checkDelta(delta resourceList, matchingLimiters []Limiter, nod
 	return result
 }
 
-func (t *Tracker) matchingLimiters(node *corev1.Node) []Limiter {
-	var matchingLimiters []Limiter
-	for _, rl := range t.limiters {
+func (t *Tracker) matchingQuotas(node *corev1.Node) []Quota {
+	var quotas []Quota
+	for _, rl := range t.quotas {
 		if rl.AppliesTo(node) {
-			matchingLimiters = append(matchingLimiters, rl)
+			quotas = append(quotas, rl)
 		}
 	}
-	return matchingLimiters
+	return quotas
 }
 
 // CheckDeltaResult is a result of checking a delta.
@@ -146,6 +139,7 @@ func (r *CheckDeltaResult) Exceeded() bool {
 
 // deltaForNode calculates the amount of resources that will be used from the cluster when creating a node.
 func deltaForNode(ctx *context.AutoscalingContext, crp customresources.CustomResourcesProcessor, node *corev1.Node, nodeGroup cloudprovider.NodeGroup) (resourceList, error) {
+	// TODO: storage?
 	nodeCPU, nodeMemory := utils.GetNodeCoresAndMemory(node)
 	nodeResources := resourceList{
 		ResourceNameCores:  nodeCPU,

@@ -1,4 +1,4 @@
-package resourcelimits
+package resourcequotas
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func newUsageCalculator(crp customresources.CustomResourcesProcessor, nodeFilter
 	}
 }
 
-func (u *usageCalculator) calculateUsages(ctx *context.AutoscalingContext, nodes []*corev1.Node, limiters []Limiter) (map[string]resourceList, error) {
+func (u *usageCalculator) calculateUsages(ctx *context.AutoscalingContext, nodes []*corev1.Node, limiters []Quota) (map[string]resourceList, error) {
 	usages := make(map[string]resourceList)
 	for _, rl := range limiters {
 		usages[rl.ID()] = make(resourceList)
