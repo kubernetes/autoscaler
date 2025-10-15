@@ -31,6 +31,7 @@ type ResourceLimiter struct {
 	maxLimits map[string]int64
 }
 
+// ID returns the identifier of the limiter.
 func (r *ResourceLimiter) ID() string {
 	return "cluster-wide"
 }
@@ -95,14 +96,17 @@ func (r *ResourceLimiter) String() string {
 	return strings.Join(resourceDetails, ", ")
 }
 
+// AppliesTo checks if the limiter applies to node.
+//
+// As this is a compatibility layer for cluster-wide limits, it always returns true.
 func (r *ResourceLimiter) AppliesTo(node *apiv1.Node) bool {
 	return true
 }
 
-func (r *ResourceLimiter) MaxLimits() map[string]int64 {
+// Limits returns max limits of the limiter.
+//
+// New resource quotas system supports only max limits, therefore only max limits
+// are returned here.
+func (r *ResourceLimiter) Limits() map[string]int64 {
 	return r.maxLimits
-}
-
-func (r *ResourceLimiter) MinLimits() map[string]int64 {
-	return r.minLimits
 }
