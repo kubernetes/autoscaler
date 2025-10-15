@@ -3,9 +3,9 @@
 
 module k8s.io/autoscaler/vertical-pod-autoscaler/e2e
 
-go 1.24.0
+go 1.25.0
 
-toolchain go1.24.2
+toolchain go1.25.3
 
 require (
 	github.com/onsi/ginkgo/v2 v2.25.1
