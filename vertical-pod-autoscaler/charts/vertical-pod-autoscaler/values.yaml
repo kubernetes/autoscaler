@@ -42,7 +42,7 @@ admissionController:
         targetPort: 8000
 
   # Number of Admission Controller replicas to create.
-  replicas: 1
+  replicas: 2
 
   # Labels to add to the Admission Controller pod.
   podLabels: {}
@@ -85,3 +85,13 @@ admissionController:
     - name: tls-certs
       mountPath: /etc/tls-certs
       readOnly: true
+
+  podDisruptionBudget:
+    enabled: true
+    # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    minAvailable: 1
+    # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    maxUnavailable:
+    # maxUnavailable: 1

@@ -1,0 +1,22 @@
+{{- if and .Values.admissionController.enabled .Values.admissionController.podDisruptionBudget.enabled -}}
+{{- if and .Values.admissionController.podDisruptionBudget.minAvailable .Values.admissionController.podDisruptionBudget.maxUnavailable }}
+    {{- fail "Only one of admissionController.podDisruptionBudget.minAvailable or admissionController.podDisruptionBudget.maxUnavailable should be set." }}
+{{- end }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "vertical-pod-autoscaler.admissionController.selectorLabels" . | nindent 6 }}
+  {{- if and .Values.admissionController.podDisruptionBudget.minAvailable (not .Values.admissionController.podDisruptionBudget.maxUnavailable) }}
+  minAvailable: {{ .Values.admissionController.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if and .Values.admissionController.podDisruptionBudget.maxUnavailable (not .Values.admissionController.podDisruptionBudget.minAvailable) }}
+  maxUnavailable: {{ .Values.admissionController.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+{{- end -}}
