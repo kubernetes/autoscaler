@@ -142,7 +142,9 @@ The `memoryPerCPU` feature requires VPA version 1.5.0 or higher. The feature is 
 ### Validation
 
 * `memoryPerCPU` must be > 0.  
-* Value must be a valid `resource.Quantity` (e.g., `512Mi`, `4Gi`).  
+* Value must be a valid `resource.Quantity` (e.g., `512Mi`, `4Gi`).
+* Admission ensures the provided `CPU` and `memory` bounds make the configured `memoryPerCPU` reachable—there must exist at least one (`cpu`, `memory`) such that `memory = cpu × memoryPerCPU`, otherwise the object is rejected. 
+  * Example: with cpu=1 and memory=4Gi, memoryPerCPU=5Gi is invalid (1×5Gi > 4Gi), while memoryPerCPU=3Gi is valid (1×3Gi ≤ 4Gi).
 
 ### Test Plan
 
