@@ -3,6 +3,7 @@
 <!-- toc -->
 - [Summary](#summary)
     - [Goals](#goals)
+    - [Non-Goals](#non-goals)
 - [Design Details](#design-details)
     - [Notes/Constraints/Caveats](#notesconstraintscaveats)
     - [Design Principles](#design-principles)
@@ -83,6 +84,10 @@ To address this, this AEP proposes extending the VPA object's `spec` and `status
   * Apply recommendations at the pod level
 * Thoroughly document the new feature, focusing on areas that change default behaviors, in the [VPA documentation](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/docs).
 
+### Non-Goals
+
+* Since the latest VPA does not support `initContainers` ([the native way to use sidecar containers](https://kubernetes.io/blog/2023/08/25/native-sidecar-containers/)), this AEP does not aim to implement support for them. Support for `initContainers` may be explored in future proposals. At the same time, other non-native sidecar containers defined in the Pod `spec.containers` should be included by default in the calculation of pod-level recommendations when a pod-level resources stanza is present.
+
 ## Design Details
 
 ### Notes/Constraints/Caveats
@@ -159,7 +164,7 @@ With this option, VPA manages only the pod-level resources stanza. To follow thi
 **Cons**: 
 * A downside of this approach is that the most important container (`ide`) may be recreated without container-level resources, leading to an `oom_score_adj` that matches other sidecars in the Pod, as a result the OOM killer may target all containers more evenly under node memory pressure. For details on how `oom_score_adj` is computed when pod-level resources are present, see the [KEP section](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md#oom-score-adjustment) on OOM score adjustment.
 
-##### Option 2: VPA controls pod-level resources and the initially set container-level resources
+##### [Selected] Option 2: VPA controls pod-level resources and the initially set container-level resources
 
 With this option, VPA controls pod-level resources and the container-level resources that were initially set. The resources for containers `tool1` and `tool2` are not updated by VPA, however their usage is still observed and contributes to the overall pod-level recommendation.
 
@@ -185,7 +190,7 @@ This option mirrors current VPA behavior by managing only container-level resour
 **Cons**:
 - No cross-container resource sharing: in multi-container Pods, a container can hit its own limit and be throttled even if sibling containers are idle.
 
-##### Option 2: VPA controls only the pod-level resources
+##### [Selected] Option 2: VPA controls only the pod-level resources
 
 With this option, VPA computes and applies only pod-level recommendations.
 
