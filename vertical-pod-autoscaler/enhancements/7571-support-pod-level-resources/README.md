@@ -225,7 +225,13 @@ With this option, VPA computes and applies only pod-level recommendations.
 
 ### Test Plan
 
-TODO
+This AEP aims to propose thoughtful unit test coverage for new code paths and additionally intends to develop the following e2e tests:
+* Enable VPA for a workload that doesn't define any pod- or container-level resources stanzas.
+The expected outcome is that pod-level recommendations are calculated and applied only at the pod level.
+* Enable VPA for a workload that contains only container-level resources stanzas. There is no need to implement this use case, as an existing e2e test already covers it. The outcome should remain the same as in a VPA version prior to this AEP - recommendations are calculated and applied only at the container level.
+* Enable VPA for a workload that defines pod-level and at least one container-level resources stanza.
+The expected outcome is that both the pod-level stanza and the initially defined container-level stanzas are updated.
+* Test use cases where the user adds or removes a container from a workload managed by VPA.
 
 ### Upgrade / Downgrade Strategy
 
