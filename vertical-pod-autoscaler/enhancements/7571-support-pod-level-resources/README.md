@@ -7,10 +7,12 @@
 - [Design Details](#design-details)
     - [Notes/Constraints/Caveats](#notesconstraintscaveats)
     - [Design Principles](#design-principles)
-    - [Container-level resources](#container-level-resources)
-    - [Pod-level resources](#pod-level-resources)
-    - [Pod and Container-Level Resources](#pod-and-container-level-resources)
+      - [Container-level resources](#container-level-resources)
+      - [Pod-level resources](#pod-level-resources)
+      - [Pod and Container-Level Resources](#pod-and-container-level-resources)
     - [Proposal](#proposal)
+    - [Validation](#validation)
+    - [Test Plan](#test-plan)
     - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
     - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
     - [Kubernetes version compatibility](#kubernetes-version-compatibility)
@@ -198,7 +200,7 @@ With this option, VPA computes and applies only pod-level recommendations.
 - Enables shared headroom across containers in the same Pod, previously with container-only limits, a sidecar (e.g. `tool1` or `tool2` container) hitting its own CPU limit could throttle the Pod even if other containers had spare CPU. Pod-level resources allows one container experiencing a spike to access idle resources from others, optimizing overall utilization.
 - Simple to adopt and remains straightforward for users if documented clearly in official documentation.
 
-## Proposal
+### Proposal
 
 - Add a new feature flag named `PodLevelResources`. Because this proposal introduces new code paths across all three VPA components, this flag will be added to each component.
 
@@ -235,11 +237,11 @@ The expected outcome is that both the pod-level stanza and the initially defined
 
 ### Upgrade / Downgrade Strategy
 
-### Upgrade
+#### Upgrade
 
 Use a VPA release that includes this feature across all three components and pass `--feature-gates=PodLevelResources=true` to each component. Begin deploying new workloads that specify a pod-level resources stanza.
 
-### Downgrade
+#### Downgrade
 
 Downgrading VPA from a version that includes this feature should not disrupt existing workloads. Existing pod-level resource specifications remain in Pod specs, and VPA reverts to controlling container-level resources only.
 
