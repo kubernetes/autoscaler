@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -148,9 +149,38 @@ func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPrice
 		}
 		return nil, err
 	}
-	reqPod := req.GetPod()
-	reqStartTime := req.GetStartTime()
-	reqEndTime := req.GetEndTime()
+
+	var reqPod *apiv1.Pod
+	if podBytes := req.GetPodBytes(); podBytes != nil {
+		// decode from opaque bytes into pod if set
+		pod := &apiv1.Pod{}
+		if err := pod.Unmarshal(podBytes); err != nil {
+			return nil, err
+		}
+		reqPod = pod
+	} else {
+		// otherwise fallback to reading inlined pod
+		reqPod = req.GetPod()
+	}
+
+	var reqStartTime *metav1.Time
+	if startTimestamp := req.GetStartTimestamp(); startTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqStartTime = &metav1.Time{Time: startTimestamp.AsTime()}
+	} else {
+		// otherwise fallback to reading metav1.Time
+		reqStartTime = req.GetStartTime()
+	}
+
+	var reqEndTime *metav1.Time
+	if endTimestamp := req.GetEndTimestamp(); endTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqEndTime = &metav1.Time{Time: endTimestamp.AsTime()}
+	} else {
+		// otherwise fallback to reading metav1.Time
+		reqEndTime = req.GetEndTime()
+	}
+
 	if reqPod == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
 	}
