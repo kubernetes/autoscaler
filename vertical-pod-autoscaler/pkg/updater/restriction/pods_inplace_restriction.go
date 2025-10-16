@@ -35,6 +35,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // TODO: Make these configurable by flags
@@ -57,6 +58,8 @@ type PodsInPlaceRestriction interface {
 	InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
 	// CanInPlaceUpdate checks if pod can be safely updated in-place. If not, it will return a decision to potentially evict the pod.
 	CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision
+	// CanUnboost checks if a pod can be safely unboosted.
+	CanUnboost(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool
 }
 
 // PodsInPlaceRestrictionImpl is the implementation of the PodsInPlaceRestriction interface.
@@ -96,6 +99,29 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InP
 	}
 	klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
 	return utils.InPlaceDeferred
+}
+
+// CanUnboost checks if a pod can be safely unboosted.
+func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if !features.Enabled(features.CPUStartupBoost) {
+		return false
+	}
+	durationPassed := vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa)
+	hasAnnotation := vpa_api_util.PodHasCPUBoostInProgress(pod)
+
+	klog.V(2).InfoS("Checking if pod can be unboosted", "pod", klog.KObj(pod), "durationPassed", durationPassed, "hasAnnotation", hasAnnotation)
+
+	if !durationPassed || !hasAnnotation {
+		return false
+	}
+	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
+	if present {
+		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
+		if present {
+			return singleGroupStats.isPodDisruptable()
+		}
+	}
+	return false
 }
 
 // InPlaceUpdate sends calculates patches and sends resize request to api client. Returns error if pod cannot be in-place updated or if client returned error.
