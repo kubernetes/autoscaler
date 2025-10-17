@@ -498,7 +498,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 	}
-	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(

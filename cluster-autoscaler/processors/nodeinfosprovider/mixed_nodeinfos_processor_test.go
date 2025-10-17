@@ -95,7 +95,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&autoscalingCtx, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 6, len(res))
 	info, found := res["ng1"]
@@ -125,7 +125,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	res, err = NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&autoscalingCtx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err = NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&autoscalingCtx, []*apiv1.Node{}, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
@@ -184,7 +184,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 		},
 	}
 	niProcessor := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
-	res, err := niProcessor.Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err := niProcessor.Process(&autoscalingCtx, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 4, len(res))
@@ -218,7 +218,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.Equal(t, "ng3", lastDeletedGroup)
 
 	// Check cache with all nodes removed
-	res, err = niProcessor.Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err = niProcessor.Process(&autoscalingCtx, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 2, len(res))
@@ -239,7 +239,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	// Fill cache manually
 	infoNg4Node6 := framework.NewTestNodeInfo(ready6.DeepCopy())
 	niProcessor.nodeInfoCache = map[string]cacheItem{"ng4": {NodeInfo: infoNg4Node6, added: now}}
-	res, err = niProcessor.Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err = niProcessor.Process(&autoscalingCtx, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	// Check if cache was used
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
@@ -285,7 +285,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	provider.AddNode("ng1", ready1)
 
 	assert.Equal(t, 2, len(niProcessor1.nodeInfoCache))
-	_, err = niProcessor1.Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	_, err = niProcessor1.Process(&autoscalingCtx, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(niProcessor1.nodeInfoCache))
 
@@ -296,7 +296,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 		"ng2": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
 	}
 	assert.Equal(t, 2, len(niProcessor2.nodeInfoCache))
-	_, err = niProcessor1.Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	_, err = niProcessor1.Process(&autoscalingCtx, nodes, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(niProcessor2.nodeInfoCache))
 
@@ -319,7 +319,7 @@ func TestProcessHandlesTemplateNodeInfoErrors(t *testing.T) {
 		ClusterSnapshot: testsnapshot.NewTestSnapshotOrDie(t),
 	}
 
-	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&autoscalingCtx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&autoscalingCtx, []*apiv1.Node{}, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 
 	// Should not fail despite ng1 error - continues processing
 	assert.NoError(t, err)

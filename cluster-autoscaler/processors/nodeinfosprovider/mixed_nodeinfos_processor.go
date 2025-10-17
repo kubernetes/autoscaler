@@ -72,7 +72,7 @@ func (p *MixedTemplateNodeInfoProvider) CleanUp() {
 }
 
 // Process returns the nodeInfos set for this cluster
-func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, now time.Time) (map[string]*framework.NodeInfo, caerror.AutoscalerError) {
+func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.AutoscalingContext, readyNodes []*apiv1.Node, allNodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, now time.Time) (map[string]*framework.NodeInfo, caerror.AutoscalerError) {
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 	result := make(map[string]*framework.NodeInfo)
@@ -103,7 +103,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 		return false, "", nil
 	}
 
-	for _, node := range nodes {
+	for _, node := range readyNodes {
 		// Broken nodes might have some stuff missing. Skipping.
 		if !isNodeGoodTemplateCandidate(node, now) {
 			continue
@@ -156,7 +156,10 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 	}
 
 	// Last resort - unready/unschedulable nodes.
-	for _, node := range nodes {
+	// we want to check not only the ready nodes, but also ready unschedulable nodes.
+	// this needs to combine readyNodes and allNodes due to filtering that occurs at
+	// a higher level.
+	for _, node := range append(readyNodes, allNodes...) {
 		// Allowing broken nodes
 		if isNodeGoodTemplateCandidate(node, now) {
 			continue
