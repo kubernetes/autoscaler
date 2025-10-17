@@ -37,7 +37,6 @@ The feature is gated by a new feature gate, `RequestToLimitRatio`, which is disa
 
 ## Goals
 
-* Provide a feature gate to enable or disable the feature (`RequestToLimitRatio`).  
 * Allow VPA to update the request-to-limit ratio of a Pod's containers during Pod recreation or in-place updates.  
 * Introduce a new `RequestToLimitRatio` block that enables users to adjust the request-to-limit ratio in the following ways:  
   * **Factor**: Multiplies the recommended request by a specified value, and the result is set as the new limit, for example:
