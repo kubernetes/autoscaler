@@ -80,3 +80,26 @@ Create the name of the namespace to use
 {{- define "common.names.namespace" -}}
 {{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+
+{{/*
+recommender
+*/}}
+{{- define "vertical-pod-autoscaler.recommender.fullname" -}}
+{{ include "vertical-pod-autoscaler.fullname" . }}-recommender
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.recommender.labels" -}}
+{{ include "vertical-pod-autoscaler.labels" . }}
+app.kubernetes.io/component: recommender
+app.kubernetes.io/component-instance: {{ .Release.Name }}-recommender
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.recommender.selectorLabels" -}}
+{{ include "vertical-pod-autoscaler.selectorLabels" . }}
+app.kubernetes.io/component: recommender
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.recommender.image" -}}
+{{- printf "%s:%s" .Values.recommender.image.repository (default .Chart.AppVersion .Values.recommender.image.tag) }}
+{{- end }}
