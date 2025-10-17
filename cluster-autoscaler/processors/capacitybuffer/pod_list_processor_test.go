@@ -143,7 +143,7 @@ func TestPodListProcessor(t *testing.T) {
 			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
 
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed})
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, NewDefaultCapacityBuffersFakePodsRegistry())
 			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
 			assert.Equal(t, err != nil, test.expectError)
 

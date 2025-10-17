@@ -17,46 +17,124 @@ limitations under the License.
 package capacitybufferpodlister
 
 import (
+	"fmt"
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
+	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/klog/v2"
 )
 
 // FakePodsScaleUpStatusProcessor is a ScaleUpStatusProcessor used for filtering out fake pods from scaleup status.
-type FakePodsScaleUpStatusProcessor struct{}
+type FakePodsScaleUpStatusProcessor struct {
+	buffersRegistry *capacityBuffersFakePodsRegistry
+}
+
+type bufferInfo struct {
+	buffer         *v1alpha1.CapacityBuffer
+	numberOfPods   int
+	reasonMessages []string
+}
 
 // NewFakePodsScaleUpStatusProcessor return an instance of FakePodsScaleUpStatusProcessor
-func NewFakePodsScaleUpStatusProcessor() *FakePodsScaleUpStatusProcessor {
-	return &FakePodsScaleUpStatusProcessor{}
+func NewFakePodsScaleUpStatusProcessor(buffersRegistry *capacityBuffersFakePodsRegistry) *FakePodsScaleUpStatusProcessor {
+	return &FakePodsScaleUpStatusProcessor{buffersRegistry: buffersRegistry}
 }
 
 // Process updates scaleupStatus to remove all capacity buffer fake pods from
 // PodsRemainUnschedulable, PodsAwaitEvaluation & PodsTriggeredScaleup
-func (a *FakePodsScaleUpStatusProcessor) Process(_ *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
-	scaleUpStatus.PodsRemainUnschedulable = filterFakePods(scaleUpStatus.PodsRemainUnschedulable, func(noScaleUpInfo status.NoScaleUpInfo) *apiv1.Pod { return noScaleUpInfo.Pod }, "PodsRemainUnschedulable")
-	scaleUpStatus.PodsAwaitEvaluation = filterFakePods(scaleUpStatus.PodsAwaitEvaluation, func(pod *apiv1.Pod) *apiv1.Pod { return pod }, "PodsAwaitEvaluation")
-	scaleUpStatus.PodsTriggeredScaleUp = filterFakePods(scaleUpStatus.PodsTriggeredScaleUp, func(pod *apiv1.Pod) *apiv1.Pod { return pod }, "PodsTriggeredScaleUp")
+func (p *FakePodsScaleUpStatusProcessor) Process(context *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
+	var fakePodsRemainUnschedulable []status.NoScaleUpInfo
+	var fakePodsTriggeredScaleUp []*apiv1.Pod
+
+	scaleUpStatus.PodsRemainUnschedulable, fakePodsRemainUnschedulable = filterOutFakeUnschedulablePods(scaleUpStatus.PodsRemainUnschedulable)
+	scaleUpStatus.PodsTriggeredScaleUp, fakePodsTriggeredScaleUp = filterOutFakePods(scaleUpStatus.PodsTriggeredScaleUp)
+	scaleUpStatus.PodsAwaitEvaluation, _ = filterOutFakePods(scaleUpStatus.PodsAwaitEvaluation)
+
+	p.createEventsForBuffersWithUnschedulablePods(context, scaleUpStatus, fakePodsRemainUnschedulable)
+	p.createEventsForBuffersWithPodsTriggeredScaleUp(context, scaleUpStatus, fakePodsTriggeredScaleUp)
 }
 
-// filterFakePods removes capacity buffer fake pods from the input list of T using passed getPod(T)
-// Returns a list containing only non-fake pods
-func filterFakePods[T any](podsWrappers []T, getPod func(T) *apiv1.Pod, resourceName string) []T {
-	filteredPodsSources := make([]T, 0)
-	removedPods := make([]*apiv1.Pod, 0)
+func (p *FakePodsScaleUpStatusProcessor) createEventsForBuffersWithUnschedulablePods(context *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus, fakePodsRemainUnschedulable []status.NoScaleUpInfo) {
+	if scaleUpStatus.Result != status.ScaleUpSuccessful && scaleUpStatus.Result != status.ScaleUpError {
+		consideredNodeGroupsMap := status.NodeGroupListToMapById(scaleUpStatus.ConsideredNodeGroups)
+		buffersInfo := map[string]*bufferInfo{}
+		for _, noScaleUpInfo := range fakePodsRemainUnschedulable {
+			parentCapacityBuffer, found := p.buffersRegistry.fakePodsUIDToBuffer[string(noScaleUpInfo.Pod.UID)]
+			if found {
+				bufferUID := string(parentCapacityBuffer.UID)
+				if _, found := buffersInfo[bufferUID]; !found {
+					buffersInfo[bufferUID] = &bufferInfo{
+						buffer: parentCapacityBuffer,
+					}
+				}
+				buffersInfo[bufferUID].numberOfPods += 1
+				buffersInfo[bufferUID].reasonMessages = append(buffersInfo[bufferUID].reasonMessages,
+					status.ReasonsMessage(scaleUpStatus.Result, noScaleUpInfo, consideredNodeGroupsMap))
+			}
+		}
 
-	for _, podsWrapper := range podsWrappers {
-		currentPod := getPod(podsWrapper)
+		for _, bufferInfo := range buffersInfo {
+			context.Recorder.Event(bufferInfo.buffer, apiv1.EventTypeNormal, "NotTriggerScaleUp",
+				fmt.Sprintf("capacity buffer %d fake pods didn't trigger scale-up: %s",
+					bufferInfo.numberOfPods, strings.Join(bufferInfo.reasonMessages, ",")))
+		}
+	}
+}
+
+func (p *FakePodsScaleUpStatusProcessor) createEventsForBuffersWithPodsTriggeredScaleUp(context *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus, fakePodsTriggeredScaleUp []*apiv1.Pod) {
+	if len(scaleUpStatus.ScaleUpInfos) > 0 && len(fakePodsTriggeredScaleUp) > 0 {
+		buffersInfo := map[string]*bufferInfo{}
+		for _, pod := range fakePodsTriggeredScaleUp {
+			parentCapacityBuffer, found := p.buffersRegistry.fakePodsUIDToBuffer[string(pod.UID)]
+			if found {
+				bufferUID := string(parentCapacityBuffer.UID)
+				if _, found := buffersInfo[bufferUID]; !found {
+					buffersInfo[bufferUID] = &bufferInfo{
+						buffer: parentCapacityBuffer,
+					}
+				}
+				buffersInfo[bufferUID].numberOfPods += 1
+			}
+		}
+		for _, bufferInfo := range buffersInfo {
+			context.Recorder.Eventf(bufferInfo.buffer, apiv1.EventTypeNormal, "TriggeredScaleUp",
+				"capacity buffer %d fake pods triggered scale-up: %v", bufferInfo.numberOfPods, scaleUpStatus.ScaleUpInfos)
+		}
+	}
+}
+
+// filterOutFakeUnschedulablePods filters out NoScaleUpInfo for capacity buffers fake pods
+func filterOutFakeUnschedulablePods(noScaleUpInfo []status.NoScaleUpInfo) ([]status.NoScaleUpInfo, []status.NoScaleUpInfo) {
+	filteredInfo := make([]status.NoScaleUpInfo, 0)
+	filteredOutInfo := make([]status.NoScaleUpInfo, 0)
+
+	for _, info := range noScaleUpInfo {
+		currentPod := info.Pod
 		if !isFakeCapacityBuffersPod(currentPod) {
-			filteredPodsSources = append(filteredPodsSources, podsWrapper)
+			filteredInfo = append(filteredInfo, info)
 			continue
 		}
-		removedPods = append(removedPods, currentPod)
+		filteredOutInfo = append(filteredOutInfo, info)
 	}
+	return filteredInfo, filteredOutInfo
+}
 
-	klog.Infof("Filtered out %d pods from %s", len(removedPods), resourceName)
-	return filteredPodsSources
+// filterFakePods filters out capacity buffer fake pods
+func filterOutFakePods(pods []*apiv1.Pod) ([]*apiv1.Pod, []*apiv1.Pod) {
+	filteredPods := make([]*apiv1.Pod, 0)
+	filteredOutPods := make([]*apiv1.Pod, 0)
+
+	for _, pod := range pods {
+		if !isFakeCapacityBuffersPod(pod) {
+			filteredPods = append(filteredPods, pod)
+			continue
+		}
+		filteredOutPods = append(filteredOutPods, pod)
+	}
+	return filteredPods, filteredOutPods
 }
 
 // CleanUp is called at CA termination
-func (a *FakePodsScaleUpStatusProcessor) CleanUp() {}
+func (p *FakePodsScaleUpStatusProcessor) CleanUp() {}
