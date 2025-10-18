@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - rojanDinc
+reviewers:
+  - rojanDinc
+
+labels:
+  - area/cluster-autoscaler
+  - area/provider/proxmox
