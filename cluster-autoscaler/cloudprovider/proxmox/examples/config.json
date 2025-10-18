@@ -1,0 +1,40 @@
+{
+  "api_endpoint": "https://proxmox.example.com:8006/api2/json",
+  "username": "cluster-autoscaler@pve",
+  "password": "your-secure-password",
+  "insecure_skip_tls_verify": false,
+  "node_groups": [
+    {
+      "name": "worker-pool-small",
+      "min_size": 1,
+      "max_size": 5,
+      "proxmox_node": "pve-node1",
+      "template_id": 9000,
+      "vmid_start": 200,
+      "vmid_end": 249,
+      "vm_config": {
+        "cores": 2,
+        "memory": 4096,
+        "storage": "local-lvm",
+        "network": "vmbr0",
+        "tags": ["kubernetes", "worker", "autoscaler"]
+      }
+    },
+    {
+      "name": "worker-pool-large",
+      "min_size": 0,
+      "max_size": 10,
+      "proxmox_node": "pve-node2",
+      "template_id": 9001,
+      "vmid_start": 300,
+      "vmid_end": 399,
+      "vm_config": {
+        "cores": 4,
+        "memory": 8192,
+        "storage": "ceph-storage",
+        "network": "vmbr0",
+        "tags": ["kubernetes", "worker", "autoscaler", "large"]
+      }
+    }
+  ]
+}
