@@ -51,6 +51,7 @@ func TestValidateVPA(t *testing.T) {
 		isCreate                             bool
 		expectError                          error
 		inPlaceOrRecreateFeatureGateDisabled bool
+		PerVPAConfigDisabled                 bool
 	}{
 		{
 			name: "empty update",
@@ -319,10 +320,64 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "per-vpa config active and used",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								OOMBumpUpRatio: resource.NewQuantity(2, resource.DecimalSI),
+							},
+						},
+					},
+				},
+			},
+			PerVPAConfigDisabled: false,
+		},
+		{
+			name: "per-vpa config disabled and used",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								OOMMinBumpUp: resource.NewQuantity(2, resource.DecimalSI),
+							},
+						},
+					},
+				},
+			},
+			PerVPAConfigDisabled: true,
+			expectError:          fmt.Errorf("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
+		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
