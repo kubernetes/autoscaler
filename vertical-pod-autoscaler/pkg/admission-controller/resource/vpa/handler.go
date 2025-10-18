@@ -137,6 +137,28 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			if policy.ContainerName == "" {
 				return fmt.Errorf("containerPolicies.ContainerName is required")
 			}
+
+			// check that perVPA is on if being used
+			if err := validatePerVPAFeatureFlag(&policy); err != nil {
+				return err
+			}
+
+			// Validate OOMBumpUpRatio
+			if policy.OOMBumpUpRatio != nil {
+				ratio := float64(policy.OOMBumpUpRatio.MilliValue()) / 1000.0
+				if ratio < 1.0 {
+					return fmt.Errorf("oomBumpUpRatio must be greater than or equal to 1.0, got %v", ratio)
+				}
+			}
+
+			// Validate OOMMinBumpUp
+			if policy.OOMMinBumpUp != nil {
+				minBump := policy.OOMMinBumpUp.Value()
+				if minBump < 0 {
+					return fmt.Errorf("oomMinBumpUp must be greater than or equal to 0, got %v bytes", minBump)
+				}
+			}
+
 			mode := policy.Mode
 			if mode != nil {
 				if _, found := possibleScalingModes[*mode]; !found {
@@ -198,6 +220,15 @@ func validateCPUResolution(val apires.Quantity) error {
 func validateMemoryResolution(val apires.Quantity) error {
 	if _, precissionPreserved := val.AsScale(0); !precissionPreserved {
 		return fmt.Errorf("memory [%v] must be a whole number of bytes", val)
+	}
+	return nil
+}
+
+func validatePerVPAFeatureFlag(policy *vpa_types.ContainerResourcePolicy) error {
+	featureFlagOn := features.Enabled(features.PerVPAConfig)
+	perVPA := policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil
+	if !featureFlagOn && perVPA {
+		return fmt.Errorf("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag %s is disabled", features.PerVPAConfig)
 	}
 	return nil
 }
