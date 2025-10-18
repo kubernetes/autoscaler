@@ -74,6 +74,25 @@ func TestBuildProxmox(t *testing.T) {
 	if provider.Name() != cloudprovider.ProxmoxProviderName {
 		t.Errorf("Expected provider name %s, got %s", cloudprovider.ProxmoxProviderName, provider.Name())
 	}
+
+	// Test that we have node groups
+	nodeGroups := provider.NodeGroups()
+	if len(nodeGroups) != 1 {
+		t.Errorf("Expected 1 node group, got %d", len(nodeGroups))
+	}
+
+	if len(nodeGroups) > 0 {
+		ng := nodeGroups[0]
+		if ng.Id() != "test-pool" {
+			t.Errorf("Expected node group ID 'test-pool', got %s", ng.Id())
+		}
+		if ng.MinSize() != 1 {
+			t.Errorf("Expected min size 1, got %d", ng.MinSize())
+		}
+		if ng.MaxSize() != 5 {
+			t.Errorf("Expected max size 5, got %d", ng.MaxSize())
+		}
+	}
 }
 
 func TestToProviderID(t *testing.T) {

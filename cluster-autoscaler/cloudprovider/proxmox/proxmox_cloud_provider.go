@@ -17,9 +17,11 @@ limitations under the License.
 package proxmox
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -72,32 +74,37 @@ func (p *proxmoxCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 	providerID := node.Spec.ProviderID
 	nodeID := toNodeID(providerID)
 
-	klog.V(5).Infof("checking nodegroup for node ID: %q", nodeID)
+	klog.V(4).Infof("🔍 Looking for node group for node %s (providerID: %s, nodeID: %s)", node.Name, providerID, nodeID)
 
 	for _, group := range p.manager.nodeGroups {
-		klog.V(5).Infof("iterating over node group %q", group.Id())
+		klog.V(5).Infof("  Checking node group %q", group.Id())
 		nodes, err := group.Nodes()
 		if err != nil {
+			klog.Warningf("Failed to get nodes for group %s: %v", group.Id(), err)
 			return nil, err
 		}
 
-		for _, node := range nodes {
-			klog.V(6).Infof("checking node has: %q want: %q", node.Id, providerID)
-			if node.Id != providerID {
-				continue
+		klog.V(5).Infof("  Node group %s has %d instances", group.Id(), len(nodes))
+		for _, instance := range nodes {
+			klog.V(6).Infof("    Instance: %s, looking for: %s", instance.Id, providerID)
+			if instance.Id == providerID {
+				klog.V(4).Infof("✅ Found node %s in node group %s", node.Name, group.Id())
+				return group, nil
 			}
-
-			return group, nil
 		}
 	}
 
-	// Node not found in any node group
+	klog.V(4).Infof("❌ Node %s (providerID: %s) not found in any node group", node.Name, providerID)
 	return nil, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (p *proxmoxCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+	vms, err := p.manager.client.GetVMs(context.Background(), toNodeID(node.Spec.ProviderID))
+	if err != nil {
+		return false, err
+	}
+	return len(vms) > 0, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
@@ -193,5 +200,8 @@ func toProviderID(nodeID string) string {
 
 // toNodeID returns a node or VM ID from the given provider ID.
 func toNodeID(providerID string) string {
-	return fmt.Sprintf("%s", providerID)
+	if strings.HasPrefix(providerID, proxmoxProviderIDPrefix) {
+		return strings.TrimPrefix(providerID, proxmoxProviderIDPrefix)
+	}
+	return providerID
 }
