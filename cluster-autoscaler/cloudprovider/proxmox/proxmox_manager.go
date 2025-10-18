@@ -18,13 +18,11 @@ package proxmox
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -130,6 +128,7 @@ type VM struct {
 	Status string `json:"status"`
 	Node   string `json:"node"`
 	Tags   string `json:"tags"`
+	UUID   string `json:"uuid"`
 }
 
 // ProxmoxNode represents a Proxmox cluster node
@@ -137,20 +136,6 @@ type ProxmoxNode struct {
 	ID     string `json:"node"`
 	Status string `json:"status"`
 	Online bool   `json:"online"`
-}
-
-// proxmoxHTTPClient implements ProxmoxClient using HTTP API calls
-type proxmoxHTTPClient struct {
-	endpoint   string
-	httpClient *http.Client
-	auth       authConfig
-}
-
-type authConfig struct {
-	username    string
-	password    string
-	tokenID     string
-	tokenSecret string
 }
 
 func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptions) (*Manager, error) {
@@ -175,23 +160,17 @@ func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptio
 		return nil, errors.New("Proxmox authentication credentials are not provided")
 	}
 
-	// Create HTTP client
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.InsecureSkipTLSVerify},
-	}
-	httpClient := &http.Client{Transport: tr}
-
-	auth := authConfig{
-		username:    cfg.Username,
-		password:    cfg.Password,
-		tokenID:     cfg.TokenID,
-		tokenSecret: cfg.TokenSecret,
-	}
-
-	client := &proxmoxHTTPClient{
-		endpoint:   cfg.APIEndpoint,
-		httpClient: httpClient,
-		auth:       auth,
+	// Create Proxmox client using the go-proxmox library
+	client, err := NewClient(
+		cfg.APIEndpoint,
+		cfg.Username,
+		cfg.Password,
+		cfg.TokenID,
+		cfg.TokenSecret,
+		cfg.InsecureSkipTLSVerify,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Proxmox client: %v", err)
 	}
 
 	manager := &Manager{
@@ -200,8 +179,7 @@ func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptio
 	}
 
 	// Initialize node groups
-	err := manager.initializeNodeGroups()
-	if err != nil {
+	if err := manager.initializeNodeGroups(); err != nil {
 		return nil, fmt.Errorf("failed to initialize node groups: %v", err)
 	}
 
@@ -220,6 +198,7 @@ func (m *Manager) initializeNodeGroups() error {
 			vmIDStart:   ngConfig.VMIDStart,
 			vmIDEnd:     ngConfig.VMIDEnd,
 			vmConfig:    ngConfig.VMConfig,
+			createdVMs:  make(map[int]string),
 		}
 		m.nodeGroups = append(m.nodeGroups, ng)
 		klog.V(4).Infof("Initialized Proxmox node group: %s", ngConfig.Name)
@@ -246,42 +225,6 @@ func (m *Manager) GetNodeGroup(id string) *NodeGroup {
 			return ng
 		}
 	}
-	return nil
-}
-
-// Implementation of ProxmoxClient interface for HTTP API
-
-func (c *proxmoxHTTPClient) CreateVM(ctx context.Context, nodeID string, templateID int, vmID int, config VMConfig) error {
-	// This is a simplified implementation
-	// In a real implementation, you would make HTTP calls to Proxmox API
-	klog.V(4).Infof("Creating VM %d on node %s from template %d", vmID, nodeID, templateID)
-	return nil
-}
-
-func (c *proxmoxHTTPClient) DeleteVM(ctx context.Context, nodeID string, vmID int) error {
-	klog.V(4).Infof("Deleting VM %d on node %s", vmID, nodeID)
-	return nil
-}
-
-func (c *proxmoxHTTPClient) GetVMs(ctx context.Context, nodeID string) ([]VM, error) {
-	klog.V(4).Infof("Getting VMs for node %s", nodeID)
-	// Return empty list for now - in real implementation, query Proxmox API
-	return []VM{}, nil
-}
-
-func (c *proxmoxHTTPClient) GetNodes(ctx context.Context) ([]ProxmoxNode, error) {
-	klog.V(4).Info("Getting Proxmox nodes")
-	// Return empty list for now - in real implementation, query Proxmox API
-	return []ProxmoxNode{}, nil
-}
-
-func (c *proxmoxHTTPClient) StartVM(ctx context.Context, nodeID string, vmID int) error {
-	klog.V(4).Infof("Starting VM %d on node %s", vmID, nodeID)
-	return nil
-}
-
-func (c *proxmoxHTTPClient) StopVM(ctx context.Context, nodeID string, vmID int) error {
-	klog.V(4).Infof("Stopping VM %d on node %s", vmID, nodeID)
 	return nil
 }
 
