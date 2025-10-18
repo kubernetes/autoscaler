@@ -74,6 +74,8 @@ const (
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode
 	LinodeProviderName = "linode"
+	// ProxmoxProviderName gets the provider name of proxmox
+	ProxmoxProviderName = "proxmox"
 	// ScalewayProviderName gets the provider name of scaleway
 	ScalewayProviderName = "scaleway"
 	// VolcengineProviderName gets the provider name of volcengine
