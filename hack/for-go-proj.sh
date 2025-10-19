@@ -21,6 +21,8 @@ set -o nounset
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
 PROJECT_NAMES=(vertical-pod-autoscaler)
 
+df -h
+
 if [[ $# -ne 1 ]]; then
   echo "missing subcommand: [build|install|test]"
   exit 1
@@ -68,6 +70,7 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
   df -h
   go test -run=None ./...
+  df -h
   go clean
   popd
   pushd ${CONTRIB_ROOT}/cluster-autoscaler/
@@ -77,6 +80,8 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
   df -h
   go test -count=1 ./... -vet="${ANALYZERS}"
+  df -h
   go clean
   popd
 fi
+df -h
