@@ -42,6 +42,7 @@ case "${CMD}" in
 esac
 
 for project_name in ${PROJECT_NAMES[*]}; do
+  df -h
   (
     export GO111MODULE=auto
     project=${CONTRIB_ROOT}/${project_name}
@@ -65,6 +66,7 @@ done;
 
 if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
+  df -h
   go test -run=None ./...
   go clean
   popd
@@ -73,6 +75,7 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
   # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
   ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
+  df -h
   go test -count=1 ./... -vet="${ANALYZERS}"
   go clean
   popd
