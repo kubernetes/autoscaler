@@ -19,7 +19,7 @@ set -o pipefail
 set -o nounset
 
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
-PROJECT_NAMES=(addon-resizer vertical-pod-autoscaler)
+PROJECT_NAMES=(vertical-pod-autoscaler)
 
 if [[ $# -ne 1 ]]; then
   echo "missing subcommand: [build|install|test]"
@@ -53,6 +53,7 @@ for project_name in ${PROJECT_NAMES[*]}; do
           godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
         else
           go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/apis)
+	  go clean
         fi
         ;;
       *)
@@ -65,6 +66,7 @@ done;
 if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
   go test -run=None ./...
+  go clean
   popd
   pushd ${CONTRIB_ROOT}/cluster-autoscaler/
   # TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
@@ -72,5 +74,6 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
   ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
   go test -count=1 ./... -vet="${ANALYZERS}"
+  go clean
   popd
 fi
