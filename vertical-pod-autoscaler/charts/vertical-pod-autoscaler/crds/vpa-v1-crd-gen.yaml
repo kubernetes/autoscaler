@@ -76,7 +76,7 @@ spec:
                     type: number
                 type: object
               firstSampleStart:
-                description: Timestamp of the fist sample from the histograms.
+                description: Timestamp of the first sample from the histograms.
                 format: date-time
                 nullable: true
                 type: string
@@ -177,7 +177,7 @@ spec:
                     type: number
                 type: object
               firstSampleStart:
-                description: Timestamp of the fist sample from the histograms.
+                description: Timestamp of the first sample from the histograms.
                 format: date-time
                 nullable: true
                 type: string
