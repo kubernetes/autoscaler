@@ -19,7 +19,9 @@ set -o nounset
 set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-VPA_FLAGS_SCRIPT="${KUBE_ROOT}/vertical-pod-autoscaler/hack/verify-vpa-flags.sh"
+VPA_VERIFY_SCRIPTS="${KUBE_ROOT}/vertical-pod-autoscaler/hack/verify-*.sh"
 
-echo "Running VPA flags verification..."
-"$VPA_FLAGS_SCRIPT"
+for script in $VPA_VERIFY_SCRIPTS; do
+  echo "Running VPA verification script ${script}..."
+  "${script}"
+done
