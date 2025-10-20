@@ -56,7 +56,6 @@ for project_name in ${PROJECT_NAMES[*]}; do
           godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
         else
           go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/apis)
-	  go clean
         fi
         ;;
       *)
@@ -71,7 +70,6 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   df -h
   go test -run=None ./...
   df -h
-  go clean
   popd
   pushd ${CONTRIB_ROOT}/cluster-autoscaler/
   # TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
@@ -81,7 +79,6 @@ if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   df -h
   go test -count=1 ./... -vet="${ANALYZERS}"
   df -h
-  go clean
   popd
 fi
 df -h
