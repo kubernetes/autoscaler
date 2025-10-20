@@ -236,3 +236,70 @@ func TestGetGpuInfoForMetrics(t *testing.T) {
 		})
 	}
 }
+
+func TestDetectNodeGPUResourceName(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		node                 *apiv1.Node
+		expectedResourceName apiv1.ResourceName
+	}{
+		{
+			name: "nvidia gpu",
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "node-with-nvidia-gpu",
+					Labels: map[string]string{},
+				},
+				Status: apiv1.NodeStatus{
+					Capacity: apiv1.ResourceList{
+						gpu.ResourceNvidiaGPU: *resource.NewQuantity(1, resource.DecimalSI),
+					},
+					Allocatable: apiv1.ResourceList{
+						gpu.ResourceNvidiaGPU: *resource.NewQuantity(1, resource.DecimalSI),
+					},
+				},
+			},
+			expectedResourceName: gpu.ResourceNvidiaGPU,
+		},
+		{
+			name: "amd gpu",
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "node-with-amd-gpu",
+					Labels: map[string]string{},
+				},
+				Status: apiv1.NodeStatus{
+					Capacity: apiv1.ResourceList{
+						gpu.ResourceAMDGPU: *resource.NewQuantity(8, resource.DecimalSI),
+					},
+					Allocatable: apiv1.ResourceList{
+						gpu.ResourceAMDGPU: *resource.NewQuantity(8, resource.DecimalSI),
+					},
+				},
+			},
+			expectedResourceName: gpu.ResourceAMDGPU,
+		},
+		{
+			name: "test default gpu resource name",
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "node-without-gpu",
+					Labels: map[string]string{},
+				},
+				Status: apiv1.NodeStatus{
+					Capacity:    apiv1.ResourceList{},
+					Allocatable: apiv1.ResourceList{},
+				},
+			},
+			expectedResourceName: gpu.ResourceNvidiaGPU,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resourceName := gpu.DetectNodeGPUResourceName(tc.node)
+			if resourceName != tc.expectedResourceName {
+				t.Errorf("expected resource name %s but got %s", tc.expectedResourceName, resourceName)
+			}
+		})
+	}
+}
