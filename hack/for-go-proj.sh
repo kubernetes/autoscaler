@@ -19,7 +19,7 @@ set -o pipefail
 set -o nounset
 
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
-PROJECT_NAMES=(vertical-pod-autoscaler)
+PROJECT_NAMES=(addon-resizer vertical-pod-autoscaler)
 
 df -h
 
