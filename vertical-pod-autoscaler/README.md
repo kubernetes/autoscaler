@@ -39,7 +39,8 @@ Also refer to the [FAQ](./docs/faq.md) for more.
 
 ## Components and Architecture
 
-The Vertical Pod Autoscaler consists of three parts. The recommender, updater and admission-controller. Read more about them on the [components](./docs/components.md) page.
+The Vertical Pod Autoscaler consists of three parts. The recommender, updater and admission-controller.
+Read more about them on the [components](./docs/components.md) page.
 
 ## Features and Known limitations
 
