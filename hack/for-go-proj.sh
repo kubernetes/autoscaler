@@ -49,6 +49,7 @@ case "${PROJECT}" in
     pushd ${CONTRIB_ROOT}/addon-resizer
     godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
     popd
+    ;;
   *)
     echo "invalid subcommand: ${CMD}"
     exit 1
