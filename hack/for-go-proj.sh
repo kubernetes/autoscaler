@@ -19,58 +19,38 @@ set -o pipefail
 set -o nounset
 
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
-PROJECT_NAMES=(addon-resizer vertical-pod-autoscaler)
 
 if [[ $# -ne 1 ]]; then
-  echo "missing subcommand: [build|install|test]"
+  echo "missing subcommand: [cluster-autoscaler|vertical-pod-autoscaler|addon-resizer]"
   exit 1
 fi
 
-CMD="${1}"
+PROJECT="${1}"
 
-case "${CMD}" in
-  "build")
+case "${PROJECT}" in
+  "cluster-autoscaler")
+    pushd ${CONTRIB_ROOT}/cluster-autoscaler/
+    # TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
+    # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
+    # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
+    ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
+    go test -count=1 ./... -vet="${ANALYZERS}"
+    popd
     ;;
-  "install")
+  "vertical-pod-autoscaler")
+    pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler
+    go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/apis)
+    popd
+    pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
+    go test -run=None ./...
+    popd
     ;;
-  "test")
-    ;;
+  "addon-resizer")
+    pushd ${CONTRIB_ROOT}/addon-resizer
+    godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
+    popd
   *)
     echo "invalid subcommand: ${CMD}"
     exit 1
     ;;
 esac
-
-for project_name in ${PROJECT_NAMES[*]}; do
-  (
-    export GO111MODULE=auto
-    project=${CONTRIB_ROOT}/${project_name}
-    echo "${CMD}ing ${project}"
-    cd "${project}"
-    case "${CMD}" in
-      "test")
-        if [[ -n $(find . -name "Godeps.json") ]]; then
-          godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
-        else
-          go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/apis)
-        fi
-        ;;
-      *)
-        godep go "${CMD}" ./...
-        ;;
-    esac
-  )
-done;
-
-if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
-  pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
-  go test -run=None ./...
-  popd
-  pushd ${CONTRIB_ROOT}/cluster-autoscaler/
-  # TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
-  # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
-  # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
-  ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
-  go test -count=1 ./... -vet="${ANALYZERS}"
-  popd
-fi
