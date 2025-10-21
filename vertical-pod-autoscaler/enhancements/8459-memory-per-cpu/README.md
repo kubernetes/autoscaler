@@ -113,7 +113,7 @@ memory_bytes = cpu_cores * memoryPerCPU
 * Example 3: `memoryPerCPU = 4Gi`, with `--container-recommendation-max-allowed-memory=7Gi` or with `maxAllowed.memory=6Gi` set in VPA object
   * Baseline recommendation: 2 CPUs, 4Gi memory
   * UncappedTarget (ratio enforced): 2 CPUs, 8Gi
-  * Target (capped): 2 CPUs, 7Gi  ← memory capped by max-allowed-memory; ratio not fully satisfied
+  * Target (capped): 2 CPUs, 6Gi  ← memory capped by max-allowed-memory; ratio not fully satisfied
 
 ### Feature Enablement and Rollback
 
@@ -143,8 +143,11 @@ The `memoryPerCPU` feature requires VPA version 1.5.0 or higher. The feature is 
 
 * `memoryPerCPU` must be > 0.  
 * Value must be a valid `resource.Quantity` (e.g., `512Mi`, `4Gi`).
-* Admission ensures the provided `CPU` and `memory` bounds make the configured `memoryPerCPU` reachable—there must exist at least one (`cpu`, `memory`) such that `memory = cpu × memoryPerCPU`, otherwise the object is rejected. 
-  * Example: with cpu=1 and memory=4Gi, memoryPerCPU=5Gi is invalid (1×5Gi > 4Gi), while memoryPerCPU=3Gi is valid (1×3Gi ≤ 4Gi).
+* Admission ensures that memoryPerCPU is reachable within the VPA bounds.
+  * Reject the object if `minAllowed.cpu` × `memoryPerCPU` > `maxAllowed.memory`.
+  * Reject the object if `maxAllowed.cpu` × `memoryPerCPU` < `minAllowed.memory`.
+    * Example: `minAllowed.cpu=1`, `maxAllowed.memory=4Gi`, `memoryPerCPU`=5Gi ⇒ invalid (1×5Gi > 4Gi).
+    * Example: `minAllowed.cpu=1`, `maxAllowed.memory=4Gi`, `memoryPerCPU=2Gi` ⇒ valid (1×2Gi ≤ 4Gi).
 
 ### Test Plan
 
