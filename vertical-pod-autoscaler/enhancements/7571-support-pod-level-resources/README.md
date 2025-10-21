@@ -88,7 +88,7 @@ To address this, this AEP proposes extending the VPA object's `spec` and `status
 
 ### Non-Goals
 
-* Since the latest VPA does not support `initContainers` ([the native way to use sidecar containers](https://kubernetes.io/blog/2023/08/25/native-sidecar-containers/)), this AEP does not aim to implement support for them. Support for `initContainers` may be explored in a future proposal. At the same time, other non-native sidecar containers defined in the Pod `spec.containers` should be included by default in the calculation of pod-level recommendations when a pod-level resources stanza is present.
+* Since the latest VPA does not support `initContainers` ([the native way to use sidecar containers](https://kubernetes.io/blog/2023/08/25/native-sidecar-containers/)), this AEP does not aim to implement support for them. In other words, `initContainers` are simply ignored when calculating pod-level recommendations. Support for `initContainers` may be explored in a future proposal.
 
 ## Design Details
 
