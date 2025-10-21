@@ -68,6 +68,12 @@ admissionController:
   # Node selector labels for scheduling the Admission Controller.
   nodeSelector: {}
 
+  # Affinity for pod assignment.
+  affinity: {}
+
+  # List of node taints to tolerate.
+  tolerations: []
+
   tls:
     secretName: vpa-tls-certs
     caCert: ""
