@@ -103,18 +103,6 @@ func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFacto
 	if opts.RemainingPdbTracker == nil {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
-	if opts.CloudProvider == nil {
-		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts, informerFactory)
-	}
-	if opts.ExpanderStrategy == nil {
-		expanderFactory := factory.NewFactory()
-		expanderFactory.RegisterDefaultExpanders(opts.CloudProvider, opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
-		expanderStrategy, err := expanderFactory.Build(strings.Split(opts.ExpanderNames, ","))
-		if err != nil {
-			return err
-		}
-		opts.ExpanderStrategy = expanderStrategy
-	}
 	if opts.EstimatorBuilder == nil {
 		thresholds := []estimator.Threshold{
 			estimator.NewStaticThreshold(opts.MaxNodesPerScaleUp, opts.MaxNodeGroupBinpackingDuration),
@@ -141,6 +129,18 @@ func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFacto
 	}
 	if opts.DraProvider == nil && opts.DynamicResourceAllocationEnabled {
 		opts.DraProvider = draprovider.NewProviderFromInformers(informerFactory)
+	}
+	if opts.CloudProvider == nil {
+		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts, informerFactory)
+	}
+	if opts.ExpanderStrategy == nil {
+		expanderFactory := factory.NewFactory()
+		expanderFactory.RegisterDefaultExpanders(opts.CloudProvider, opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
+		expanderStrategy, err := expanderFactory.Build(strings.Split(opts.ExpanderNames, ","))
+		if err != nil {
+			return err
+		}
+		opts.ExpanderStrategy = expanderStrategy
 	}
 
 	return nil
