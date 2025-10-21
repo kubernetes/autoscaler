@@ -17,37 +17,38 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/eks"
 	klog "k8s.io/klog/v2"
 )
 
 // autoScalingI is the interface abstracting specific API calls of the auto-scaling service provided by AWS SDK for use in CA
 type autoScalingI interface {
-	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
-	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
-	DescribeScalingActivities(*autoscaling.DescribeScalingActivitiesInput) (*autoscaling.DescribeScalingActivitiesOutput, error)
-	SetDesiredCapacity(input *autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error)
-	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
+	DescribeAutoScalingGroups(ctx context.Context, input *autoscaling.DescribeAutoScalingGroupsInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
+	DescribeLaunchConfigurations(ctx context.Context, input *autoscaling.DescribeLaunchConfigurationsInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
+	DescribeScalingActivities(ctx context.Context, input *autoscaling.DescribeScalingActivitiesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeScalingActivitiesOutput, error)
+	SetDesiredCapacity(ctx context.Context, input *autoscaling.SetDesiredCapacityInput, optFns ...func(*autoscaling.Options)) (*autoscaling.SetDesiredCapacityOutput, error)
+	TerminateInstanceInAutoScalingGroup(ctx context.Context, input *autoscaling.TerminateInstanceInAutoScalingGroupInput, optFns ...func(*autoscaling.Options)) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
 }
 
 // ec2I is the interface abstracting specific API calls of the EC2 service provided by AWS SDK for use in CA
 type ec2I interface {
-	DescribeImages(input *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error)
-	DescribeLaunchTemplateVersions(input *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
-	GetInstanceTypesFromInstanceRequirementsPages(input *ec2.GetInstanceTypesFromInstanceRequirementsInput, fn func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool) error
+	DescribeImages(ctx context.Context, input *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error)
+	DescribeLaunchTemplateVersions(ctx context.Context, input *ec2.DescribeLaunchTemplateVersionsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
+	GetInstanceTypesFromInstanceRequirements(ctx context.Context, input *ec2.GetInstanceTypesFromInstanceRequirementsInput, optFns ...func(*ec2.Options)) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error)
 }
 
 // eksI is the interface that represents a specific aspect of EKS (Elastic Kubernetes Service) which is provided by AWS SDK for use in CA
 type eksI interface {
-	DescribeNodegroup(input *eks.DescribeNodegroupInput) (*eks.DescribeNodegroupOutput, error)
+	DescribeNodegroup(ctx context.Context, input *eks.DescribeNodegroupInput, optFns ...func(*eks.Options)) (*eks.DescribeNodegroupOutput, error)
 }
 
 // awsWrapper provides several utility methods over the services provided by the AWS SDK
@@ -58,12 +59,13 @@ type awsWrapper struct {
 }
 
 func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName string) ([]apiv1.Taint, map[string]string, map[string]string, error) {
+	ctx := context.Background()
 	params := &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,
 	}
 	start := time.Now()
-	r, err := m.DescribeNodegroup(params)
+	r, err := m.DescribeNodegroup(ctx, params)
 	observeAWSRequest("DescribeNodegroup", err, start)
 	if err != nil {
 		return nil, nil, nil, err
@@ -77,15 +79,15 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 
 	// Labels will include diskSize, amiType, capacityType, version
 	if r.Nodegroup.DiskSize != nil {
-		labels["diskSize"] = strconv.FormatInt(*r.Nodegroup.DiskSize, 10)
+		labels["diskSize"] = strconv.FormatInt(int64(*r.Nodegroup.DiskSize), 10)
 	}
 
-	if r.Nodegroup.AmiType != nil && len(*r.Nodegroup.AmiType) > 0 {
-		labels["amiType"] = *r.Nodegroup.AmiType
+	if r.Nodegroup.AmiType != "" {
+		labels["amiType"] = string(r.Nodegroup.AmiType)
 	}
 
-	if r.Nodegroup.CapacityType != nil && len(*r.Nodegroup.CapacityType) > 0 {
-		labels["eks.amazonaws.com/capacityType"] = *r.Nodegroup.CapacityType
+	if r.Nodegroup.CapacityType != "" {
+		labels["eks.amazonaws.com/capacityType"] = string(r.Nodegroup.CapacityType)
 	}
 
 	if r.Nodegroup.Version != nil && len(*r.Nodegroup.Version) > 0 {
@@ -99,26 +101,22 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 	if r.Nodegroup.Labels != nil && len(r.Nodegroup.Labels) > 0 {
 		labelsMap := r.Nodegroup.Labels
 		for k, v := range labelsMap {
-			if v != nil {
-				labels[k] = *v
-			}
+			labels[k] = v
 		}
 	}
 
 	if r.Nodegroup.Tags != nil && len(r.Nodegroup.Tags) > 0 {
 		tagsMap := r.Nodegroup.Tags
 		for k, v := range tagsMap {
-			if v != nil {
-				tags[k] = *v
-			}
+			tags[k] = v
 		}
 	}
 
 	if r.Nodegroup.Taints != nil && len(r.Nodegroup.Taints) > 0 {
 		taintList := r.Nodegroup.Taints
 		for _, taint := range taintList {
-			if taint != nil && taint.Effect != nil && taint.Key != nil && taint.Value != nil {
-				formattedEffect, err := taintEksTranslator(taint)
+			if taint.Effect != "" && taint.Key != nil && taint.Value != nil {
+				formattedEffect, err := taintEksTranslator(&taint)
 				if err != nil {
 					return nil, nil, nil, err
 				}
@@ -145,10 +143,11 @@ func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*s
 		}
 		params := &autoscaling.DescribeLaunchConfigurationsInput{
 			LaunchConfigurationNames: launchConfigToQuery[i:end],
-			MaxRecords:               aws.Int64(50),
+			MaxRecords:               aws.Int32(50),
 		}
 		start := time.Now()
-		r, err := m.DescribeLaunchConfigurations(params)
+		ctx := context.Background()
+		r, err := m.DescribeLaunchConfigurations(ctx, params)
 		observeAWSRequest("DescribeLaunchConfigurations", err, start)
 		if err != nil {
 			return nil, err
@@ -160,12 +159,13 @@ func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*s
 	return launchConfigurationsToInstanceType, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
-	asgs := make([]*autoscaling.Group, 0)
+func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]autoscaling.Group, error) {
+	asgs := make([]autoscaling.Group, 0)
 	if len(names) == 0 {
 		return asgs, nil
 	}
 
+	ctx := context.Background()
 	// AWS only accepts up to 100 ASG names as input, describe them in batches
 	for i := 0; i < len(names); i += maxAsgNamesPerDescribe {
 		end := i + maxAsgNamesPerDescribe
@@ -175,61 +175,82 @@ func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling
 		}
 
 		input := &autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice(names[i:end]),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: names[i:end],
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		}
 		start := time.Now()
-		err := m.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+		
+		// Use pagination
+		var nextToken *string
+		for {
+			if nextToken != nil {
+				input.NextToken = nextToken
+			}
+			output, err := m.DescribeAutoScalingGroups(ctx, input)
+			if err != nil {
+				observeAWSRequest("DescribeAutoScalingGroups", err, start)
+				return nil, err
+			}
 			asgs = append(asgs, output.AutoScalingGroups...)
-			// We return true while we want to be called with the next page of
-			// results, if any.
-			return true
-		})
-		observeAWSRequest("DescribeAutoScalingGroupsPages", err, start)
-		if err != nil {
-			return nil, err
+			
+			nextToken = output.NextToken
+			if nextToken == nil {
+				break
+			}
 		}
+		observeAWSRequest("DescribeAutoScalingGroups", nil, start)
 	}
 
 	return asgs, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupsByTags(tags map[string]string) ([]*autoscaling.Group, error) {
-	asgs := make([]*autoscaling.Group, 0)
+func (m *awsWrapper) getAutoscalingGroupsByTags(tags map[string]string) ([]autoscaling.Group, error) {
+	asgs := make([]autoscaling.Group, 0)
 	if len(tags) == 0 {
 		return asgs, nil
 	}
 
-	filters := make([]*autoscaling.Filter, 0)
+	filters := make([]autoscaling.Filter, 0)
 	for key, value := range tags {
 		if value != "" {
-			filters = append(filters, &autoscaling.Filter{
+			filters = append(filters, autoscaling.Filter{
 				Name:   aws.String(fmt.Sprintf("tag:%s", key)),
-				Values: []*string{aws.String(value)},
+				Values: []string{value},
 			})
 		} else {
-			filters = append(filters, &autoscaling.Filter{
+			filters = append(filters, autoscaling.Filter{
 				Name:   aws.String("tag-key"),
-				Values: []*string{aws.String(key)},
+				Values: []string{key},
 			})
 		}
 	}
 
+	ctx := context.Background()
 	input := &autoscaling.DescribeAutoScalingGroupsInput{
 		Filters:    filters,
-		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
+		MaxRecords: aws.Int32(maxRecordsReturnedByAPI),
 	}
 	start := time.Now()
-	err := m.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+	
+	// Use pagination
+	var nextToken *string
+	for {
+		if nextToken != nil {
+			input.NextToken = nextToken
+		}
+		output, err := m.DescribeAutoScalingGroups(ctx, input)
+		if err != nil {
+			observeAWSRequest("DescribeAutoScalingGroups", err, start)
+			return nil, err
+		}
 		asgs = append(asgs, output.AutoScalingGroups...)
-		// We return true while we want to be called with the next page of
-		// results, if any.
-		return true
-	})
-	observeAWSRequest("DescribeAutoScalingGroupsPages", err, start)
-	if err != nil {
-		return nil, err
+		
+		nextToken = output.NextToken
+		if nextToken == nil {
+			break
+		}
 	}
+	observeAWSRequest("DescribeAutoScalingGroups", nil, start)
 
 	return asgs, nil
 }
@@ -283,13 +304,14 @@ func (m *awsWrapper) getInstanceTypeFromRequirementsOverrides(policy *mixedInsta
 }
 
 func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion string) (*ec2.ResponseLaunchTemplateData, error) {
+	ctx := context.Background()
 	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
 		LaunchTemplateName: aws.String(templateName),
-		Versions:           []*string{aws.String(templateVersion)},
+		Versions:           []string{templateVersion},
 	}
 
 	start := time.Now()
-	describeData, err := m.DescribeLaunchTemplateVersions(describeTemplateInput)
+	describeData, err := m.DescribeLaunchTemplateVersions(ctx, describeTemplateInput)
 	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
 	if err != nil {
 		return nil, err
@@ -305,19 +327,20 @@ func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion 
 }
 
 func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, requirementsRequest *ec2.InstanceRequirementsRequest) (string, error) {
+	ctx := context.Background()
 	describeImagesInput := &ec2.DescribeImagesInput{
-		ImageIds: []*string{aws.String(imageId)},
+		ImageIds: []string{imageId},
 	}
 
 	start := time.Now()
-	describeImagesOutput, err := m.DescribeImages(describeImagesInput)
+	describeImagesOutput, err := m.DescribeImages(ctx, describeImagesInput)
 	observeAWSRequest("DescribeImages", err, start)
 	if err != nil {
 		return "", err
 	}
 
-	imageArchitectures := []*string{}
-	imageVirtualizationTypes := []*string{}
+	imageArchitectures := []ec2.ArchitectureType{}
+	imageVirtualizationTypes := []ec2.VirtualizationType{}
 	for _, image := range describeImagesOutput.Images {
 		imageArchitectures = append(imageArchitectures, image.Architecture)
 		imageVirtualizationTypes = append(imageVirtualizationTypes, image.VirtualizationType)
@@ -331,16 +354,27 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 
 	start = time.Now()
 	var instanceTypes []string
-	err = m.GetInstanceTypesFromInstanceRequirementsPages(requirementsInput, func(page *ec2.GetInstanceTypesFromInstanceRequirementsOutput, isLastPage bool) bool {
+	
+	// Use pagination
+	var nextToken *string
+	for {
+		if nextToken != nil {
+			requirementsInput.NextToken = nextToken
+		}
+		page, err := m.GetInstanceTypesFromInstanceRequirements(ctx, requirementsInput)
+		if err != nil {
+			observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
+			return "", fmt.Errorf("unable to get instance types from requirements: %w", err)
+		}
 		for _, instanceType := range page.InstanceTypes {
 			instanceTypes = append(instanceTypes, *instanceType.InstanceType)
 		}
-		return !isLastPage
-	})
-	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
-	if err != nil {
-		return "", fmt.Errorf("unable to get instance types from requirements: %w", err)
+		nextToken = page.NextToken
+		if nextToken == nil {
+			break
+		}
 	}
+	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", nil, start)
 
 	if len(instanceTypes) == 0 {
 		return "", fmt.Errorf("no instance types found for requirements")
