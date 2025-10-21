@@ -24,8 +24,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 )
@@ -159,8 +162,8 @@ func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*s
 	return launchConfigurationsToInstanceType, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]autoscaling.Group, error) {
-	asgs := make([]autoscaling.Group, 0)
+func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]autoscalingtypes.AutoScalingGroup, error) {
+	asgs := make([]autoscalingtypes.AutoScalingGroup, 0)
 	if len(names) == 0 {
 		return asgs, nil
 	}
@@ -204,8 +207,8 @@ func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]autoscaling.
 	return asgs, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupsByTags(tags map[string]string) ([]autoscaling.Group, error) {
-	asgs := make([]autoscaling.Group, 0)
+func (m *awsWrapper) getAutoscalingGroupsByTags(tags map[string]string) ([]autoscalingtypes.AutoScalingGroup, error) {
+	asgs := make([]autoscalingtypes.AutoScalingGroup, 0)
 	if len(tags) == 0 {
 		return asgs, nil
 	}
@@ -303,7 +306,7 @@ func (m *awsWrapper) getInstanceTypeFromRequirementsOverrides(policy *mixedInsta
 	return instanceType, nil
 }
 
-func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion string) (*ec2.ResponseLaunchTemplateData, error) {
+func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion string) (*ec2types.ResponseLaunchTemplateData, error) {
 	ctx := context.Background()
 	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
 		LaunchTemplateName: aws.String(templateName),
@@ -326,7 +329,7 @@ func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion 
 	return describeData.LaunchTemplateVersions[0].LaunchTemplateData, nil
 }
 
-func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, requirementsRequest *ec2.InstanceRequirementsRequest) (string, error) {
+func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, requirementsRequest *ec2types.InstanceRequirementsRequest) (string, error) {
 	ctx := context.Background()
 	describeImagesInput := &ec2.DescribeImagesInput{
 		ImageIds: []string{imageId},
@@ -382,8 +385,8 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 	return instanceTypes[0], nil
 }
 
-func (m *awsWrapper) getRequirementsRequestFromAutoscaling(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
-	requirementsRequest := ec2.InstanceRequirementsRequest{}
+func (m *awsWrapper) getRequirementsRequestFromAutoscaling(requirements *autoscalingtypes.InstanceRequirements) (*ec2types.InstanceRequirementsRequest, error) {
+	requirementsRequest := ec2types.InstanceRequirementsRequest{}
 
 	// required instance requirements
 	requirementsRequest.MemoryMiB = &ec2.MemoryMiBRequest{
@@ -494,11 +497,11 @@ func (m *awsWrapper) getRequirementsRequestFromAutoscaling(requirements *autosca
 	return &requirementsRequest, nil
 }
 
-func (m *awsWrapper) getRequirementsRequestFromEC2(requirements *ec2.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
-	requirementsRequest := ec2.InstanceRequirementsRequest{}
+func (m *awsWrapper) getRequirementsRequestFromEC2(requirements *ec2types.InstanceRequirements) (*ec2types.InstanceRequirementsRequest, error) {
+	requirementsRequest := ec2types.InstanceRequirementsRequest{}
 
 	// required instance requirements
-	requirementsRequest.MemoryMiB = &ec2.MemoryMiBRequest{
+	requirementsRequest.MemoryMiB = &ec2types.MemoryMiBRequest{
 		Min: requirements.MemoryMiB.Min,
 		Max: requirements.MemoryMiB.Max,
 	}
@@ -606,11 +609,11 @@ func (m *awsWrapper) getRequirementsRequestFromEC2(requirements *ec2.InstanceReq
 	return &requirementsRequest, nil
 }
 
-func (m *awsWrapper) getEC2RequirementsFromAutoscaling(autoscalingRequirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirements, error) {
-	ec2Requirements := ec2.InstanceRequirements{}
+func (m *awsWrapper) getEC2RequirementsFromAutoscaling(autoscalingRequirements *autoscalingtypes.InstanceRequirements) (*ec2types.InstanceRequirements, error) {
+	ec2Requirements := ec2types.InstanceRequirements{}
 
 	// required instance requirements
-	ec2Requirements.MemoryMiB = &ec2.MemoryMiB{
+	ec2Requirements.MemoryMiB = &ec2types.MemoryMiB{
 		Min: autoscalingRequirements.MemoryMiB.Min,
 		Max: autoscalingRequirements.MemoryMiB.Max,
 	}
@@ -789,7 +792,7 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 	return results, nil
 }
 
-func buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification) *launchTemplate {
+func buildLaunchTemplateFromSpec(ltSpec *autoscalingtypes.LaunchTemplateSpecification) *launchTemplate {
 	// NOTE(jaypipes): The LaunchTemplateSpecification.Version is a pointer to
 	// string. When the pointer is nil, EC2 AutoScaling API considers the value
 	// to be "$Default", however aws.StringValue(ltSpec.Version) will return an
@@ -819,18 +822,18 @@ func buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification
 	}
 }
 
-func taintEksTranslator(t *eks.Taint) (apiv1.TaintEffect, error) {
+func taintEksTranslator(t *ekstypes.Taint) (apiv1.TaintEffect, error) {
 	// Translation between AWS EKS and Kubernetes taints
 	//
 	// See:
 	//
 	// https://docs.aws.amazon.com/eks/latest/APIReference/API_Taint.html
-	switch effect := *t.Effect; effect {
-	case eks.TaintEffectNoSchedule:
+	switch effect := t.Effect; effect {
+	case ekstypes.TaintEffectNoSchedule:
 		return apiv1.TaintEffectNoSchedule, nil
-	case eks.TaintEffectNoExecute:
+	case ekstypes.TaintEffectNoExecute:
 		return apiv1.TaintEffectNoExecute, nil
-	case eks.TaintEffectPreferNoSchedule:
+	case ekstypes.TaintEffectPreferNoSchedule:
 		return apiv1.TaintEffectPreferNoSchedule, nil
 	default:
 		return "", fmt.Errorf("couldn't translate EKS DescribeNodegroup response taint %s into Kubernetes format", effect)

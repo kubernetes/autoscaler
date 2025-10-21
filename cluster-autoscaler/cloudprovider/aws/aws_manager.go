@@ -28,7 +28,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -65,7 +67,7 @@ type asgTemplate struct {
 	InstanceType *InstanceType
 	Region       string
 	Zone         string
-	Tags         []*autoscaling.TagDescription
+	Tags         []*autoscalingtypes.TagDescription
 }
 
 // createAwsManagerInternal allows for custom objects to be passed in by tests
@@ -399,7 +401,7 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 	return result
 }
 
-func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string {
+func extractLabelsFromAsg(tags []*autoscalingtypes.TagDescription) map[string]string {
 	result := make(map[string]string)
 
 	for _, tag := range tags {
@@ -421,7 +423,7 @@ func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string 
 	return result
 }
 
-func extractAutoscalingOptionsFromTags(tags []*autoscaling.TagDescription) map[string]string {
+func extractAutoscalingOptionsFromTags(tags []*autoscalingtypes.TagDescription) map[string]string {
 	options := make(map[string]string)
 	for _, tag := range tags {
 		if !strings.HasPrefix(aws.StringValue(tag.Key), optionsTagsPrefix) {
@@ -436,7 +438,7 @@ func extractAutoscalingOptionsFromTags(tags []*autoscaling.TagDescription) map[s
 	return options
 }
 
-func extractAllocatableResourcesFromAsg(tags []*autoscaling.TagDescription) map[string]*resource.Quantity {
+func extractAllocatableResourcesFromAsg(tags []*autoscalingtypes.TagDescription) map[string]*resource.Quantity {
 	result := make(map[string]*resource.Quantity)
 
 	for _, tag := range tags {
@@ -479,7 +481,7 @@ func extractAllocatableResourcesFromTags(tags map[string]string) map[string]*res
 	return result
 }
 
-func extractTaintsFromAsg(tags []*autoscaling.TagDescription) []apiv1.Taint {
+func extractTaintsFromAsg(tags []*autoscalingtypes.TagDescription) []apiv1.Taint {
 	taints := make([]apiv1.Taint, 0)
 
 	for _, tag := range tags {
