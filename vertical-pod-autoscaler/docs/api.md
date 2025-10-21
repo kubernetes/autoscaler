@@ -301,7 +301,7 @@ _Appears in:_
 | `version` _string_ | Version of the format of the stored data. |  |  |
 | `cpuHistogram` _[HistogramCheckpoint](#histogramcheckpoint)_ | Checkpoint of histogram for consumption of CPU. |  |  |
 | `memoryHistogram` _[HistogramCheckpoint](#histogramcheckpoint)_ | Checkpoint of histogram for consumption of memory. |  |  |
-| `firstSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#time-v1-meta)_ | Timestamp of the fist sample from the histograms. |  |  |
+| `firstSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#time-v1-meta)_ | Timestamp of the first sample from the histograms. |  |  |
 | `lastSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#time-v1-meta)_ | Timestamp of the last sample from the histograms. |  |  |
 | `totalSamplesCount` _integer_ | Total number of samples in the histograms. |  |  |
 
