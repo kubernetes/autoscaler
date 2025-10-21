@@ -130,18 +130,21 @@ var (
 		"n1":  0.033174,
 		"n2":  0.033174,
 		"n2d": 0.028877,
+		"n4d": 0.0342069,
 	}
 	customMemoryPricePerHourPerGb = map[string]float64{
 		"e2":  0.003067,
 		"n1":  0.004446,
 		"n2":  0.004446,
 		"n2d": 0.003870,
+		"n4d": 0.0038871,
 	}
 	customPreemptibleDiscount = map[string]float64{
 		"e2":  0.006867 / 0.022890,
 		"n1":  0.00698 / 0.033174,
 		"n2":  0.00802 / 0.033174,
 		"n2d": 0.002908 / 0.028877,
+		"n4d": 0.0130312 / 0.0342069,
 	}
 
 	// e2-micro and e2-small have allocatable set too high resulting in
