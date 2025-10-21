@@ -135,7 +135,7 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 	return taints, labels, tags, nil
 }
 
-func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*string) (map[string]string, error) {
+func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []string) (map[string]string, error) {
 	launchConfigurationsToInstanceType := map[string]string{}
 
 	for i := 0; i < len(launchConfigToQuery); i += 50 {
@@ -213,15 +213,15 @@ func (m *awsWrapper) getAutoscalingGroupsByTags(tags map[string]string) ([]autos
 		return asgs, nil
 	}
 
-	filters := make([]autoscaling.Filter, 0)
+	filters := make([]autoscalingtypes.Filter, 0)
 	for key, value := range tags {
 		if value != "" {
-			filters = append(filters, autoscaling.Filter{
+			filters = append(filters, autoscalingtypes.Filter{
 				Name:   aws.String(fmt.Sprintf("tag:%s", key)),
 				Values: []string{value},
 			})
 		} else {
-			filters = append(filters, autoscaling.Filter{
+			filters = append(filters, autoscalingtypes.Filter{
 				Name:   aws.String("tag-key"),
 				Values: []string{key},
 			})
@@ -265,8 +265,8 @@ func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTempl
 	}
 
 	instanceType := ""
-	if templateData.InstanceType != nil {
-		instanceType = *templateData.InstanceType
+	if templateData.InstanceType != "" {
+		instanceType = string(templateData.InstanceType)
 	} else if templateData.InstanceRequirements != nil && templateData.ImageId != nil {
 		requirementsRequest, err := m.getRequirementsRequestFromEC2(templateData.InstanceRequirements)
 		if err != nil {
@@ -342,8 +342,8 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 		return "", err
 	}
 
-	imageArchitectures := []ec2.ArchitectureType{}
-	imageVirtualizationTypes := []ec2.VirtualizationType{}
+	imageArchitectures := []ec2types.ArchitectureType{}
+	imageVirtualizationTypes := []ec2types.VirtualizationType{}
 	for _, image := range describeImagesOutput.Images {
 		imageArchitectures = append(imageArchitectures, image.Architecture)
 		imageVirtualizationTypes = append(imageVirtualizationTypes, image.VirtualizationType)
@@ -389,12 +389,12 @@ func (m *awsWrapper) getRequirementsRequestFromAutoscaling(requirements *autosca
 	requirementsRequest := ec2types.InstanceRequirementsRequest{}
 
 	// required instance requirements
-	requirementsRequest.MemoryMiB = &ec2.MemoryMiBRequest{
+	requirementsRequest.MemoryMiB = &ec2types.MemoryMiBRequest{
 		Min: requirements.MemoryMiB.Min,
 		Max: requirements.MemoryMiB.Max,
 	}
 
-	requirementsRequest.VCpuCount = &ec2.VCpuCountRangeRequest{
+	requirementsRequest.VCpuCount = &ec2types.VCpuCountRangeRequest{
 		Min: requirements.VCpuCount.Min,
 		Max: requirements.VCpuCount.Max,
 	}
@@ -506,7 +506,7 @@ func (m *awsWrapper) getRequirementsRequestFromEC2(requirements *ec2types.Instan
 		Max: requirements.MemoryMiB.Max,
 	}
 
-	requirementsRequest.VCpuCount = &ec2.VCpuCountRangeRequest{
+	requirementsRequest.VCpuCount = &ec2types.VCpuCountRangeRequest{
 		Min: requirements.VCpuCount.Min,
 		Max: requirements.VCpuCount.Max,
 	}
@@ -748,9 +748,9 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 	klog.V(4).Infof("%d launch templates to query", len(launchTemplatesToQuery))
 
 	// Query these all at once to minimize AWS API calls
-	launchConfigNames := make([]*string, 0, len(launchConfigsToQuery))
+	launchConfigNames := make([]string, 0, len(launchConfigsToQuery))
 	for _, cfgName := range launchConfigsToQuery {
-		launchConfigNames = append(launchConfigNames, aws.String(cfgName))
+		launchConfigNames = append(launchConfigNames, cfgName)
 	}
 	launchConfigs, err := m.getInstanceTypeByLaunchConfigNames(launchConfigNames)
 	if err != nil {

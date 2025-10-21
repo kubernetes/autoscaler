@@ -27,7 +27,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/aws/smithy-go/middleware"
 	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	provider_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
@@ -79,21 +78,8 @@ func createAWSSDKProvider(configReader io.Reader) (*awsSDKProvider, error) {
 		opts = append(opts, config.WithEndpointResolverWithOptions(getResolverV2(cloudCfg)))
 	}
 	
-	// Add user agent middleware
-	agent := fmt.Sprintf("cluster-autoscaler/v%s", version.ClusterAutoscalerVersion)
-	opts = append(opts, config.WithAPIOptions([]func(*middleware.Stack) error{
-		func(stack *middleware.Stack) error {
-			return stack.Build.Add(
-				middleware.BuildMiddlewareFunc("UserAgent", func(
-					ctx context.Context, in middleware.BuildInput, next middleware.BuildHandler,
-				) (middleware.BuildOutput, middleware.Metadata, error) {
-					// Add custom user agent
-					return next.HandleBuild(ctx, in)
-				}),
-				middleware.After,
-			)
-		},
-	}))
+	// TODO: Add user agent middleware for cluster-autoscaler version tracking
+	// User agent handling in SDK v2 requires custom middleware implementation
 	
 	cfg, err := config.LoadDefaultConfig(ctx, opts...)
 	if err != nil {
@@ -172,7 +158,7 @@ func getResolverV2(cfg *provider_aws.CloudConfig) aws.EndpointResolverWithOption
 					URL:           override.URL,
 					SigningRegion: override.SigningRegion,
 					SigningMethod: override.SigningMethod,
-					SigningName:   &override.SigningName,
+					SigningName:   override.SigningName,
 				}, nil
 			}
 		}
