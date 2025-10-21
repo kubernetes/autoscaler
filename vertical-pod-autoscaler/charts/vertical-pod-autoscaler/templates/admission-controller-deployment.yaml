@@ -35,6 +35,18 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
+      {{- with .Values.admissionController.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: admission-controller
           image: {{ include "vertical-pod-autoscaler.admissionController.image" . }}
