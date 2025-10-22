@@ -633,7 +633,7 @@ func TestSnapshotForkCommitRevert(t *testing.T) {
 
 		addedSlices := []*resourceapi.ResourceSlice{addedNodeSlice.DeepCopy()}
 		if err := s.AddNodeResourceSlices(*addedNodeSlice.Spec.NodeName, addedSlices); err != nil {
-			t.Fatalf("failed to add %s resource slices: %v", addedNodeSlice.Spec.NodeName, err)
+			t.Fatalf("failed to add %s resource slices: %v", *addedNodeSlice.Spec.NodeName, err)
 		}
 		if err := s.AddClaims([]*resourceapi.ResourceClaim{addedClaim}); err != nil {
 			t.Fatalf("failed to add %s claim: %v", addedClaim.Name, err)
