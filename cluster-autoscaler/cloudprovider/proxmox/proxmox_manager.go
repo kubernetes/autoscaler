@@ -22,8 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
@@ -32,9 +30,11 @@ import (
 // ProxmoxClient interface for Proxmox VE API operations
 type ProxmoxClient interface {
 	// CreateVM creates a new VM from a template
-	CreateVM(ctx context.Context, nodeID string, templateID int, vmID int, config VMConfig) error
+	CreateVM(ctx context.Context, nodeID string, templateID int, vmID int, config VMConfig, nodeGroup string) error
+	CreatePool(ctx context.Context, name string) error
 	// DeleteVM deletes a VM
 	DeleteVM(ctx context.Context, nodeID string, vmID int) error
+	GetVM(ctx context.Context, nodeName string, vmID int) (*VM, error)
 	// GetVMs returns list of VMs in a node
 	GetVMs(ctx context.Context, nodeID string) ([]VM, error)
 	// GetNodes returns list of Proxmox nodes
@@ -43,6 +43,7 @@ type ProxmoxClient interface {
 	StartVM(ctx context.Context, nodeID string, vmID int) error
 	// StopVM stops a VM
 	StopVM(ctx context.Context, nodeID string, vmID int) error
+	GetNextFreeVMID(ctx context.Context) (int, error)
 }
 
 // Manager handles Proxmox communication and data caching of node groups
@@ -93,32 +94,17 @@ type NodeGroupConfig struct {
 	// TemplateID is the VM template ID to clone from
 	TemplateID int `json:"template_id"`
 
-	// VMIDStart is the starting VM ID for this node group
-	VMIDStart int `json:"vmid_start"`
-
-	// VMIDEnd is the ending VM ID for this node group
-	VMIDEnd int `json:"vmid_end"`
-
 	// VMConfig contains VM creation parameters
 	VMConfig VMConfig `json:"vm_config"`
 }
 
 // VMConfig represents VM configuration parameters
 type VMConfig struct {
-	// Cores number of CPU cores
-	Cores int `json:"cores"`
-
-	// Memory in MB
-	Memory int `json:"memory"`
-
-	// Storage configuration
-	Storage string `json:"storage"`
-
-	// Network configuration
-	Network string `json:"network"`
-
-	// Additional tags for VM identification
-	Tags []string `json:"tags"`
+	Cores   int      `json:"cores"`
+	Memory  int      `json:"memory"`
+	Storage string   `json:"storage"`
+	Network string   `json:"network"`
+	Tags    []string `json:"tags"`
 }
 
 // VM represents a Proxmox VM
@@ -141,7 +127,7 @@ type ProxmoxNode struct {
 func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptions) (*Manager, error) {
 	cfg := &Config{}
 	if configReader != nil {
-		body, err := ioutil.ReadAll(configReader)
+		body, err := io.ReadAll(configReader)
 		if err != nil {
 			return nil, err
 		}
@@ -168,6 +154,7 @@ func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptio
 		cfg.TokenID,
 		cfg.TokenSecret,
 		cfg.InsecureSkipTLSVerify,
+		"not-available",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Proxmox client: %v", err)
@@ -189,20 +176,20 @@ func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptio
 func (m *Manager) initializeNodeGroups() error {
 	for _, ngConfig := range m.config.NodeGroups {
 		ng := &NodeGroup{
-			id:          ngConfig.Name,
-			manager:     m,
-			minSize:     ngConfig.MinSize,
-			maxSize:     ngConfig.MaxSize,
-			proxmoxNode: ngConfig.ProxmoxNode,
-			templateID:  ngConfig.TemplateID,
-			vmIDStart:   ngConfig.VMIDStart,
-			vmIDEnd:     ngConfig.VMIDEnd,
-			vmConfig:    ngConfig.VMConfig,
-			createdVMs:  make(map[int]string),
+			id:            ngConfig.Name,
+			manager:       m,
+			minSize:       ngConfig.MinSize,
+			maxSize:       ngConfig.MaxSize,
+			proxmoxNode:   ngConfig.ProxmoxNode,
+			templateID:    ngConfig.TemplateID,
+			vmConfig:      ngConfig.VMConfig,
+			createdVMs:    make(map[int]string),
+			instanceCache: NewInstanceCache(),
 		}
 		m.nodeGroups = append(m.nodeGroups, ng)
 		klog.V(4).Infof("Initialized Proxmox node group: %s", ngConfig.Name)
 	}
+
 	return nil
 }
 
@@ -226,51 +213,4 @@ func (m *Manager) GetNodeGroup(id string) *NodeGroup {
 		}
 	}
 	return nil
-}
-
-// Helper functions for VM ID management
-func (ng *NodeGroup) getNextAvailableVMID() (int, error) {
-	// Get existing VMs to determine next available ID
-	vms, err := ng.manager.client.GetVMs(context.Background(), ng.proxmoxNode)
-	if err != nil {
-		return 0, err
-	}
-
-	usedIDs := make(map[int]bool)
-	for _, vm := range vms {
-		if vm.ID >= ng.vmIDStart && vm.ID <= ng.vmIDEnd {
-			usedIDs[vm.ID] = true
-		}
-	}
-
-	// Find first available ID in range
-	for id := ng.vmIDStart; id <= ng.vmIDEnd; id++ {
-		if !usedIDs[id] {
-			return id, nil
-		}
-	}
-
-	return 0, errors.New("no available VM IDs in configured range")
-}
-
-func (ng *NodeGroup) isVMInGroup(vmID int) bool {
-	return vmID >= ng.vmIDStart && vmID <= ng.vmIDEnd
-}
-
-// parseVMTags parses VM tags to extract node group information
-func parseVMTags(tags string) map[string]string {
-	result := make(map[string]string)
-	if tags == "" {
-		return result
-	}
-
-	for _, tag := range strings.Split(tags, ";") {
-		if strings.Contains(tag, "=") {
-			parts := strings.SplitN(tag, "=", 2)
-			result[parts[0]] = parts[1]
-		} else {
-			result[tag] = ""
-		}
-	}
-	return result
 }

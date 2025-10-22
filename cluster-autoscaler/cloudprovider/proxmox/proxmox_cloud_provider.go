@@ -18,10 +18,8 @@ package proxmox
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -72,39 +70,46 @@ func (p *proxmoxCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // occurred. Must be implemented.
 func (p *proxmoxCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	providerID := node.Spec.ProviderID
-	nodeID := toNodeID(providerID)
-
-	klog.V(4).Infof("🔍 Looking for node group for node %s (providerID: %s, nodeID: %s)", node.Name, providerID, nodeID)
-
 	for _, group := range p.manager.nodeGroups {
-		klog.V(5).Infof("  Checking node group %q", group.Id())
 		nodes, err := group.Nodes()
 		if err != nil {
 			klog.Warningf("Failed to get nodes for group %s: %v", group.Id(), err)
 			return nil, err
 		}
 
-		klog.V(5).Infof("  Node group %s has %d instances", group.Id(), len(nodes))
 		for _, instance := range nodes {
-			klog.V(6).Infof("    Instance: %s, looking for: %s", instance.Id, providerID)
 			if instance.Id == providerID {
-				klog.V(4).Infof("✅ Found node %s in node group %s", node.Name, group.Id())
 				return group, nil
 			}
 		}
 	}
 
-	klog.V(4).Infof("❌ Node %s (providerID: %s) not found in any node group", node.Name, providerID)
 	return nil, nil
 }
 
-// HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (p *proxmoxCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	vms, err := p.manager.client.GetVMs(context.Background(), toNodeID(node.Spec.ProviderID))
-	if err != nil {
-		return false, err
+	nodeUUID := toNodeID(node.Spec.ProviderID)
+	if nodeUUID == "" {
+		klog.V(4).Infof("❌ Node %s has no valid UUID in providerID", node.Name)
+		return false, nil
 	}
-	return len(vms) > 0, nil
+
+	// Check all Proxmox nodes for this VM UUID - we need to check if the VM exists anywhere
+	// regardless of whether it belongs to our managed node groups
+	for _, nodeGroup := range p.manager.nodeGroups {
+		vms, err := p.manager.client.GetVMs(context.Background(), nodeGroup.proxmoxNode)
+		if err != nil {
+			return false, err
+		}
+
+		for _, vm := range vms {
+			if vm.UUID == nodeUUID {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
@@ -165,7 +170,6 @@ func (p *proxmoxCloudProvider) Cleanup() error {
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
 func (p *proxmoxCloudProvider) Refresh() error {
-	klog.V(4).Info("Refreshing Proxmox node group cache")
 	return p.manager.Refresh()
 }
 
@@ -191,17 +195,4 @@ func BuildProxmox(
 	}
 
 	return newProxmoxCloudProvider(manager, rl)
-}
-
-// toProviderID returns a provider ID from the given node ID.
-func toProviderID(nodeID string) string {
-	return fmt.Sprintf("%s%s", proxmoxProviderIDPrefix, nodeID)
-}
-
-// toNodeID returns a node or VM ID from the given provider ID.
-func toNodeID(providerID string) string {
-	if strings.HasPrefix(providerID, proxmoxProviderIDPrefix) {
-		return strings.TrimPrefix(providerID, proxmoxProviderIDPrefix)
-	}
-	return providerID
 }

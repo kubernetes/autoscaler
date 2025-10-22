@@ -19,10 +19,8 @@ package proxmox
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -38,13 +36,12 @@ type NodeGroup struct {
 	maxSize     int
 	proxmoxNode string
 	templateID  int
-	vmIDStart   int
-	vmIDEnd     int
 	vmConfig    VMConfig
 
 	// cache for VM instances
-	instances []cloudprovider.Instance
-	mutex     sync.RWMutex
+	instanceCache *InstanceCache
+	// track VMs we've created (VM ID -> Provider ID mapping)
+	createdVMs map[int]string
 }
 
 // MaxSize returns maximum size of the node group.
@@ -59,21 +56,18 @@ func (ng *NodeGroup) MinSize() int {
 
 // TargetSize returns the current target size of the node group.
 func (ng *NodeGroup) TargetSize() (int, error) {
-	ng.mutex.RLock()
-	defer ng.mutex.RUnlock()
-	return len(ng.instances), nil
+	return ng.instanceCache.Len(), nil
 }
 
 // IncreaseSize increases the size of the node group by creating new VMs.
 func (ng *NodeGroup) IncreaseSize(delta int) error {
+	klog.V(4).Infof("🚀 IncreaseSize called for node group %s with delta %d", ng.id, delta)
+
 	if delta <= 0 {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
-
-	ng.mutex.Lock()
-	defer ng.mutex.Unlock()
-
-	currentSize := len(ng.instances)
+	ctx := context.Background()
+	currentSize := ng.instanceCache.Len()
 	targetSize := currentSize + delta
 
 	if targetSize > ng.MaxSize() {
@@ -82,31 +76,32 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 	}
 
 	// Create new VMs
-	for i := 0; i < delta; i++ {
-		vmID, err := ng.getNextAvailableVMID()
+	for range delta {
+		vmID, err := ng.manager.client.GetNextFreeVMID(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get available VM ID: %v", err)
 		}
 
-		err = ng.manager.client.CreateVM(context.Background(), ng.proxmoxNode, ng.templateID, vmID, ng.vmConfig)
-		if err != nil {
+		// Prepare VM config and populate cloud-init from secret if configured
+		vmConfig := ng.vmConfig
+
+		if err := ng.manager.client.CreateVM(ctx, ng.proxmoxNode, ng.templateID, vmID, vmConfig, ng.id); err != nil {
 			return fmt.Errorf("failed to create VM %d: %v", vmID, err)
 		}
 
-		// Start the VM
-		err = ng.manager.client.StartVM(context.Background(), ng.proxmoxNode, vmID)
+		// Add to instances cache
+		vm, err := ng.manager.client.GetVM(ctx, ng.proxmoxNode, vmID)
 		if err != nil {
-			klog.Warningf("Failed to start VM %d: %v", vmID, err)
+			return fmt.Errorf("failed to get VM %d: %v", vmID, err)
 		}
 
-		// Add to instances cache
 		instance := cloudprovider.Instance{
-			Id: toProviderID(fmt.Sprintf("%d", vmID)),
+			Id: toProviderID(vm.UUID),
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceCreating,
 			},
 		}
-		ng.instances = append(ng.instances, instance)
+		ng.instanceCache.Add(instance)
 
 		klog.V(4).Infof("Created VM %d in node group %s", vmID, ng.id)
 	}
@@ -116,48 +111,51 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 
 // AtomicIncreaseSize increases the size of the node group atomically.
 func (ng *NodeGroup) AtomicIncreaseSize(delta int) error {
-	return ng.IncreaseSize(delta)
+	klog.V(4).Infof("🔬 AtomicIncreaseSize called for node group %s with delta %d - returning ErrNotImplemented", ng.id, delta)
+	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this node group.
 func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	ng.mutex.Lock()
-	defer ng.mutex.Unlock()
+	vms, err := ng.manager.client.GetVMs(context.Background(), ng.proxmoxNode)
+	if err != nil {
+		return fmt.Errorf("failed to get VMs for deletion: %v", err)
+	}
 
 	for _, node := range nodes {
-		nodeID := toNodeID(node.Spec.ProviderID)
+		nodeUUID := toNodeID(node.Spec.ProviderID)
 
-		// Extract VM ID from node ID (assuming format like "100")
-		vmID := 0
-		if _, err := fmt.Sscanf(nodeID, "%d", &vmID); err != nil {
-			return fmt.Errorf("failed to parse VM ID from node ID %s: %v", nodeID, err)
-		}
+		// Get all VMs to find the one with matching UUID
 
-		// Verify VM belongs to this node group
-		if !ng.isVMInGroup(vmID) {
-			return fmt.Errorf("VM %d does not belong to node group %s", vmID, ng.id)
-		}
-
-		// Stop and delete VM
-		err := ng.manager.client.StopVM(context.Background(), ng.proxmoxNode, vmID)
-		if err != nil {
-			klog.Warningf("Failed to stop VM %d: %v", vmID, err)
-		}
-
-		err = ng.manager.client.DeleteVM(context.Background(), ng.proxmoxNode, vmID)
-		if err != nil {
-			return fmt.Errorf("failed to delete VM %d: %v", vmID, err)
-		}
-
-		// Remove from instances cache
-		for i, instance := range ng.instances {
-			if instance.Id == node.Spec.ProviderID {
-				ng.instances = append(ng.instances[:i], ng.instances[i+1:]...)
-				break
+		var targetVM *VM
+		for _, vm := range vms {
+			// Check if this VM has the matching UUID and belongs to our node group
+			if vm.UUID == nodeUUID {
+				tags := parseVMTags(vm.Tags)
+				if nodeGroup, exists := tags["node-group"]; exists && nodeGroup == ng.id {
+					targetVM = &vm
+					break
+				}
 			}
 		}
 
-		klog.V(4).Infof("Deleted VM %d from node group %s", vmID, ng.id)
+		if targetVM == nil {
+			return fmt.Errorf("VM with UUID %s not found in node group %s", nodeUUID, ng.id)
+		}
+
+		// Stop and delete VM
+		err = ng.manager.client.StopVM(context.Background(), ng.proxmoxNode, targetVM.ID)
+		if err != nil {
+			klog.Warningf("Failed to stop VM %d: %v", targetVM.ID, err)
+		}
+
+		klog.V(4).Infof("🗑️  Deleting VM %d (UUID: %s)", targetVM.ID, targetVM.UUID)
+		err = ng.manager.client.DeleteVM(context.Background(), ng.proxmoxNode, targetVM.ID)
+		if err != nil {
+			return fmt.Errorf("failed to delete VM %d: %v", targetVM.ID, err)
+		}
+
+		ng.instanceCache.Remove(node.Spec.ProviderID)
 	}
 
 	return nil
@@ -165,7 +163,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 // ForceDeleteNodes deletes nodes from this node group without constraints.
 func (ng *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return ng.DeleteNodes(nodes)
+	return nil
 }
 
 // DecreaseTargetSize decreases the target size of the node group.
@@ -174,60 +172,44 @@ func (ng *NodeGroup) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("delta must be negative, have: %d", delta)
 	}
 
-	ng.mutex.Lock()
-	defer ng.mutex.Unlock()
-
-	currentSize := len(ng.instances)
+	currentSize := ng.instanceCache.Len()
 	targetSize := currentSize + delta // delta is negative
 
 	if targetSize < ng.MinSize() {
+		klog.V(2).Infof("❌ Scale-down rejected: target size %d would be below minimum %d", targetSize, ng.MinSize())
 		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d",
 			currentSize, targetSize, ng.MinSize())
 	}
 
-	// For simplicity, we don't actually delete VMs here, just update the cache
-	// The actual deletion should be handled by DeleteNodes
-	klog.V(4).Infof("Target size for node group %s decreased to %d", ng.id, targetSize)
+	removedInstance := ng.instanceCache.Pop()
+	if removedInstance != nil {
+		klog.V(4).Infof("remove node: %s from cache", removedInstance.Id)
+	}
+
 	return nil
 }
 
-// Id returns an unique identifier of the node group.
 func (ng *NodeGroup) Id() string {
 	return ng.id
 }
 
-// Debug returns a string containing all information regarding this node group.
-func (ng *NodeGroup) Debug() string {
-	ng.mutex.RLock()
-	defer ng.mutex.RUnlock()
-
-	return fmt.Sprintf("NodeGroup{id=%s, minSize=%d, maxSize=%d, currentSize=%d, proxmoxNode=%s, templateID=%d}",
-		ng.id, ng.minSize, ng.maxSize, len(ng.instances), ng.proxmoxNode, ng.templateID)
-}
-
-// Nodes returns a list of all nodes that belong to this node group.
 func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
-	ng.mutex.RLock()
-	defer ng.mutex.RUnlock()
-
-	// Return a copy of the instances slice
-	instances := make([]cloudprovider.Instance, len(ng.instances))
-	copy(instances, ng.instances)
+	instances := make([]cloudprovider.Instance, 0, ng.instanceCache.Len())
+	instances = append(instances, ng.instanceCache.Items()...)
 	return instances, nil
 }
 
-// TemplateNodeInfo returns a framework.NodeInfo structure of an empty node.
 func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	// Create a basic node template based on VM configuration
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: fmt.Sprintf("proxmox-template-%s", ng.id),
 			Labels: map[string]string{
-				"kubernetes.io/os":                 "linux",
-				"kubernetes.io/arch":               "amd64",
-				"node.kubernetes.io/instance-type": fmt.Sprintf("proxmox-%dcpu-%dmb", ng.vmConfig.Cores, ng.vmConfig.Memory),
-				"cloud.proxmox.com/node-group":     ng.id,
-				"cloud.proxmox.com/proxmox-node":   ng.proxmoxNode,
+				"kubernetes.io/os":               "linux",
+				"kubernetes.io/arch":             "amd64",
+				"cloud.proxmox.com/node-group":   ng.id,
+				"cloud.proxmox.com/proxmox-node": ng.proxmoxNode,
+				"cloud.proxmox.com/managed":      "true",
 			},
 		},
 		Spec: apiv1.NodeSpec{
@@ -257,25 +239,21 @@ func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
-// Exist checks if the node group really exists on the cloud provider side.
 func (ng *NodeGroup) Exist() bool {
-	// For now, assume all configured node groups exist
+	// TODO: IMplement this, check with nodes vs nodes on pmox
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
 func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	// Proxmox node groups are configuration-based, no need to create them explicitly
-	return ng, nil
+	return nil, nil
 }
 
 // Delete deletes the node group on the cloud provider side.
 func (ng *NodeGroup) Delete() error {
-	ng.mutex.Lock()
-	defer ng.mutex.Unlock()
-
 	// Delete all VMs in the node group
-	for _, instance := range ng.instances {
+	for _, instance := range ng.instanceCache.Items() {
 		nodeID := toNodeID(instance.Id)
 		vmID := 0
 		if _, err := fmt.Sscanf(nodeID, "%d", &vmID); err != nil {
@@ -294,11 +272,10 @@ func (ng *NodeGroup) Delete() error {
 		}
 	}
 
-	ng.instances = nil
+	ng.instanceCache.Clear()
 	return nil
 }
 
-// Autoprovisioned returns true if the node group is autoprovisioned.
 func (ng *NodeGroup) Autoprovisioned() bool {
 	// For now, all Proxmox node groups are manually configured
 	return false
@@ -306,49 +283,59 @@ func (ng *NodeGroup) Autoprovisioned() bool {
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular NodeGroup.
 func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	return nil, nil
+}
+
+func (ng *NodeGroup) Debug() string {
+	return fmt.Sprintf("node group id=%s, targetSize=%d, minSize=%d, maxSize=%d", ng.id, ng.instanceCache.Len(), ng.MinSize(), ng.MaxSize())
 }
 
 // refresh updates the node group's instance cache from Proxmox
 func (ng *NodeGroup) refresh() error {
-	ng.mutex.Lock()
-	defer ng.mutex.Unlock()
+	klog.V(4).Infof("🔄 Refreshing node group %s on Proxmox node %s", ng.id, ng.proxmoxNode)
+	ctx := context.Background()
 
-	vms, err := ng.manager.client.GetVMs(context.Background(), ng.proxmoxNode)
+	instances, err := ng.getCurrentInstances(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get VMs for node %s: %v", ng.proxmoxNode, err)
+		return err
 	}
 
-	// Filter VMs that belong to this node group
-	var instances []cloudprovider.Instance
-	for _, vm := range vms {
-		if ng.isVMInGroup(vm.ID) {
-			// Check if VM has the node group tag
-			tags := parseVMTags(vm.Tags)
-			if nodeGroup, exists := tags["node-group"]; exists && nodeGroup == ng.id {
-				state := cloudprovider.InstanceRunning
-				if vm.Status != "running" {
-					state = cloudprovider.InstanceCreating
-				}
-
-				instance := cloudprovider.Instance{
-					Id: toProviderID(fmt.Sprintf("%d", vm.ID)),
-					Status: &cloudprovider.InstanceStatus{
-						State: state,
-					},
-				}
-				instances = append(instances, instance)
-			}
-		}
-	}
-
-	ng.instances = instances
-	klog.V(4).Infof("Refreshed node group %s: found %d instances", ng.id, len(instances))
+	ng.instanceCache.Clear()
+	ng.instanceCache.Add(instances...)
 	return nil
 }
 
-// Helper function to create resource.Quantity from int64
-func newIntQuantity(value int64) *resource.Quantity {
-	q := resource.NewQuantity(value, resource.DecimalSI)
-	return q
+func (ng *NodeGroup) getCurrentInstances(ctx context.Context) ([]cloudprovider.Instance, error) {
+	vms, err := ng.manager.client.GetVMs(ctx, ng.proxmoxNode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get VMs for node %s: %v", ng.proxmoxNode, err)
+	}
+
+	// Find VMs that belong to this node group based on tags
+	var instances []cloudprovider.Instance
+	for _, vm := range vms {
+		tags := parseVMTags(vm.Tags)
+		nodeGroup, exists := tags["node-group"]
+		if !exists || nodeGroup != ng.id {
+			continue
+		}
+
+		state := cloudprovider.InstanceCreating
+
+		providerID := toProviderID(vm.UUID)
+
+		if vm.Status == "running" {
+			state = cloudprovider.InstanceRunning
+		}
+
+		instance := cloudprovider.Instance{
+			Id: providerID,
+			Status: &cloudprovider.InstanceStatus{
+				State: state,
+			},
+		}
+		instances = append(instances, instance)
+	}
+
+	return instances, nil
 }
