@@ -17,9 +17,10 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awserr"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/smithy-go"
 	k8smetrics "k8s.io/component-base/metrics"
 	"k8s.io/component-base/metrics/legacyregistry"
 )
@@ -49,11 +50,16 @@ func RegisterMetrics() {
 func observeAWSRequest(endpoint string, err error, start time.Time) {
 	duration := time.Since(start).Seconds()
 	status := "success"
+
 	if err != nil {
 		status = "error"
-		if awsErr, ok := err.(awserr.Error); ok {
-			status = awsErr.Code()
+
+		// Try to extract a meaningful AWS error code
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) {
+			status = apiErr.ErrorCode()
 		}
 	}
+
 	requestSummary.WithLabelValues(endpoint, status).Observe(duration)
 }
