@@ -18,6 +18,8 @@ package customresources
 
 import (
 	"fmt"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -25,8 +27,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
@@ -35,13 +38,17 @@ const (
 	GPULabel = "TestGPULabel/accelerator"
 )
 
+var (
+	gpuLabels = map[string]string{
+		GPULabel: "nvidia-tesla-k80",
+	}
+)
+
 func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 	start := time.Now()
 	later := start.Add(10 * time.Minute)
 	expectedReadiness := make(map[string]bool)
-	gpuLabels := map[string]string{
-		GPULabel: "nvidia-tesla-k80",
-	}
+	originalConditions := make(map[string]int)
 	readyCondition := apiv1.NodeCondition{
 		Type:               apiv1.NodeReady,
 		Status:             apiv1.ConditionTrue,
@@ -52,139 +59,166 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		Status:             apiv1.ConditionFalse,
 		LastTransitionTime: metav1.NewTime(later),
 	}
+	// Any non-zero resource quantity value on a Ready node indicates GPU is ready.
+	resourceQuantityOne := *resource.NewQuantity(1, resource.DecimalSI)
+	// A zero resource quantity value on a Ready node indicates GPU is unready.
+	resourceQuantityZero := *resource.NewQuantity(0, resource.DecimalSI)
 
-	nodeGpuReady := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeGpuReady",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
+	// Here is a set of Ready nodes that do not have any status conditions
+	// that would indicate they should be filtered out for GPU (or other device) allocation.
+	readyNodesForResourceAllocation := []*apiv1.Node{
+		// This node has the sufficient GPU labels and GPU status conditions to
+		// be considered for device allocation.
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "nodeGpuReady",
+				Labels:            gpuLabels,
+				CreationTimestamp: metav1.NewTime(start),
+			},
+			Status: apiv1.NodeStatus{
+				Capacity: apiv1.ResourceList{
+					gpu.ResourceNvidiaGPU: resourceQuantityOne,
+				},
+				Allocatable: apiv1.ResourceList{
+					gpu.ResourceNvidiaGPU: resourceQuantityOne,
+				},
+				Conditions: []apiv1.NodeCondition{readyCondition},
+			},
 		},
-		Status: apiv1.NodeStatus{
-			Capacity:    apiv1.ResourceList{},
-			Allocatable: apiv1.ResourceList{},
-			Conditions:  []apiv1.NodeCondition{readyCondition},
+		// This node has the sufficient GPU labels and DirectX status conditions to
+		// be considered for device allocation.
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "nodeDirectXReady",
+				Labels:            gpuLabels,
+				CreationTimestamp: metav1.NewTime(start),
+			},
+			Status: apiv1.NodeStatus{
+				Capacity: apiv1.ResourceList{
+					gpu.ResourceDirectX: resourceQuantityOne,
+				},
+				Allocatable: apiv1.ResourceList{
+					gpu.ResourceDirectX: resourceQuantityOne,
+				},
+				Conditions: []apiv1.NodeCondition{readyCondition},
+			},
 		},
 	}
-	nodeGpuReady.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeGpuReady.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	expectedReadiness[nodeGpuReady.Name] = true
-
-	nodeGpuUnready := &apiv1.Node{
+	// Here we add a vanilla Ready node (no GPU or other device labels or status conditions)
+	// to ensure that our filter function *does not* filter out Ready nodes.
+	readyNodesForResourceAllocation = append(readyNodesForResourceAllocation, &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeGpuUnready",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Capacity:    apiv1.ResourceList{},
-			Allocatable: apiv1.ResourceList{},
-			Conditions:  []apiv1.NodeCondition{readyCondition},
-		},
-	}
-	nodeGpuUnready.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
-	nodeGpuUnready.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
-	expectedReadiness[nodeGpuUnready.Name] = false
-
-	nodeDirectXReady := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeDirectXReady",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Capacity:    apiv1.ResourceList{},
-			Allocatable: apiv1.ResourceList{},
-			Conditions:  []apiv1.NodeCondition{readyCondition},
-		},
-	}
-	nodeDirectXReady.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeDirectXReady.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
-	expectedReadiness[nodeDirectXReady.Name] = true
-
-	nodeDirectXUnready := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeDirectXUnready",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Capacity:    apiv1.ResourceList{},
-			Allocatable: apiv1.ResourceList{},
-			Conditions:  []apiv1.NodeCondition{readyCondition},
-		},
-	}
-	nodeDirectXUnready.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
-	nodeDirectXUnready.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
-	expectedReadiness[nodeDirectXUnready.Name] = false
-
-	nodeGpuUnready2 := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeGpuUnready2",
-			Labels:            gpuLabels,
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Conditions: []apiv1.NodeCondition{readyCondition},
-		},
-	}
-	expectedReadiness[nodeGpuUnready2.Name] = false
-
-	nodeNoGpuReady := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeNoGpuReady",
+			Name:              "nodeVanillaReady",
 			Labels:            make(map[string]string),
 			CreationTimestamp: metav1.NewTime(start),
 		},
 		Status: apiv1.NodeStatus{
 			Conditions: []apiv1.NodeCondition{readyCondition},
 		},
-	}
-	expectedReadiness[nodeNoGpuReady.Name] = true
+	})
 
-	nodeNoGpuUnready := &apiv1.Node{
+	// Here is a set of nodes that have status conditions that *do not* satisfy
+	// GPU (or other device) allocation requirements. They should be filtered out
+	// of the list of nodes considered for scheduling devices.
+	notReadyNodesForResourceAllocation := []*apiv1.Node{
+		// This node has zero allocatable + capacity resource values for GPU,
+		// so it should be filtered out of the list of nodes considered for resource
+		// allocation, even though it is a Ready node.
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "nodeGpuUnready",
+				Labels:            gpuLabels,
+				CreationTimestamp: metav1.NewTime(start),
+			},
+			Status: apiv1.NodeStatus{
+				Capacity: apiv1.ResourceList{
+					gpu.ResourceNvidiaGPU: resourceQuantityZero,
+				},
+				Allocatable: apiv1.ResourceList{
+					gpu.ResourceNvidiaGPU: resourceQuantityZero,
+				},
+				Conditions: []apiv1.NodeCondition{readyCondition},
+			},
+		},
+		// This node has zero allocatable + capacity resource values for DirectX,
+		// so it should be filtered out of the list of nodes considered for resource
+		// allocation, even though it is a Ready node.
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "nodeDirectXUnready",
+				Labels:            gpuLabels,
+				CreationTimestamp: metav1.NewTime(start),
+			},
+			Status: apiv1.NodeStatus{
+				Capacity: apiv1.ResourceList{
+					gpu.ResourceDirectX: resourceQuantityZero,
+				},
+				Allocatable: apiv1.ResourceList{
+					gpu.ResourceDirectX: resourceQuantityZero,
+				},
+				Conditions: []apiv1.NodeCondition{readyCondition},
+			},
+		},
+		// This node does not have any allocatable + capacity status reported,
+		// so it should be filtered out of the list of nodes considered for resource
+		// allocation, even though it is a Ready node.
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "nodeGpuUnready2",
+				Labels:            gpuLabels,
+				CreationTimestamp: metav1.NewTime(start),
+			},
+			Status: apiv1.NodeStatus{
+				Conditions: []apiv1.NodeCondition{readyCondition},
+			},
+		},
+	}
+	// Here we add a vanilla NotReady node (no GPU or other device labels or status conditions)
+	// to ensure that our filter function *does* filter out NotReady nodes.
+	notReadyNodesForResourceAllocation = append(notReadyNodesForResourceAllocation, &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "nodeNoGpuUnready",
+			Name:              "nodeVanillaNotReady",
 			Labels:            make(map[string]string),
 			CreationTimestamp: metav1.NewTime(start),
 		},
 		Status: apiv1.NodeStatus{
 			Conditions: []apiv1.NodeCondition{unreadyCondition},
 		},
-	}
-	expectedReadiness[nodeNoGpuUnready.Name] = false
+	})
 
-	nodeGPUReadyDra := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "nodeGPUViaDra",
-			Labels: map[string]string{
-				gce.DraGPULabel: "true",
-			},
-			CreationTimestamp: metav1.NewTime(start),
-		},
-		Status: apiv1.NodeStatus{
-			Conditions: []apiv1.NodeCondition{readyCondition},
-		},
+	for _, n := range readyNodesForResourceAllocation {
+		expectedReadiness[n.Name] = true
+		numConditions := 0
+		for _, condition := range n.Status.Conditions {
+			if condition.Type != apiv1.NodeReady {
+				numConditions++
+			}
+		}
+		originalConditions[n.Name] = numConditions
 	}
-	expectedReadiness[nodeGPUReadyDra.Name] = true
+	for _, n := range notReadyNodesForResourceAllocation {
+		expectedReadiness[n.Name] = false
+		numConditions := 0
+		for _, condition := range n.Status.Conditions {
+			if condition.Type != apiv1.NodeReady {
+				numConditions++
+			}
+		}
+		originalConditions[n.Name] = numConditions
+	}
 
-	initialReadyNodes := []*apiv1.Node{
-		nodeGpuReady,
-		nodeGpuUnready,
-		nodeGpuUnready2,
-		nodeDirectXReady,
-		nodeDirectXUnready,
-		nodeNoGpuReady,
-		nodeGPUReadyDra,
+	var initialAllNodes, initialReadyNodes []*apiv1.Node
+	for _, n := range readyNodesForResourceAllocation {
+		initialAllNodes = append(initialAllNodes, n)
+		initialReadyNodes = append(initialReadyNodes, n)
 	}
-	initialAllNodes := []*apiv1.Node{
-		nodeGpuReady,
-		nodeGpuUnready,
-		nodeGpuUnready2,
-		nodeDirectXReady,
-		nodeDirectXUnready,
-		nodeNoGpuReady,
-		nodeNoGpuUnready,
-		nodeGPUReadyDra,
+	for _, n := range notReadyNodesForResourceAllocation {
+		initialAllNodes = append(initialAllNodes, n)
+		for _, condition := range n.Status.Conditions {
+			if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
+				initialReadyNodes = append(initialReadyNodes, n)
+			}
+		}
 	}
 
 	processor := GpuCustomResourcesProcessor{}
@@ -193,21 +227,421 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, nil)
 
 	foundInReady := make(map[string]bool)
-	for _, node := range newReadyNodes {
-		foundInReady[node.Name] = true
-		assert.True(t, expectedReadiness[node.Name], fmt.Sprintf("Node %s found in ready nodes list (it shouldn't be there)", node.Name))
+	for _, n := range newReadyNodes {
+		foundInReady[n.Name] = true
+		assert.True(t, expectedReadiness[n.Name], fmt.Sprintf("Node %s found in ready nodes list (it shouldn't be there)", n.Name))
 	}
 	for nodeName, expected := range expectedReadiness {
 		if expected {
 			assert.True(t, foundInReady[nodeName], fmt.Sprintf("Node %s expected ready, but not found in ready nodes list", nodeName))
 		}
 	}
-	for _, node := range newAllNodes {
-		assert.Equal(t, len(node.Status.Conditions), 1)
-		if expectedReadiness[node.Name] {
-			assert.Equal(t, node.Status.Conditions[0].Status, apiv1.ConditionTrue, fmt.Sprintf("Unexpected ready condition value for node %s", node.Name))
+	for _, n := range newAllNodes {
+		// GetUnreadyNodeCopy called by FilterOutNodesWithUnreadyResources always adds
+		// one Ready=false condition if it's not already set.
+		assert.Equal(t, len(n.Status.Conditions), originalConditions[n.Name]+1)
+		if expectedReadiness[n.Name] {
+			for _, condition := range n.Status.Conditions {
+				if condition.Type != apiv1.NodeReady {
+					assert.Equal(t, condition.Status, apiv1.ConditionTrue, fmt.Sprintf("Unexpected ready condition value for node %s", n.Name))
+				}
+			}
 		} else {
-			assert.Equal(t, node.Status.Conditions[0].Status, apiv1.ConditionFalse, fmt.Sprintf("Unexpected ready condition value for node %s", node.Name))
+			for _, condition := range n.Status.Conditions {
+				if condition.Type != apiv1.NodeReady {
+					assert.Equal(t, n.Status.Conditions[0].Status, apiv1.ConditionFalse, fmt.Sprintf("Unexpected ready condition value for node %s", n.Name))
+				}
+			}
 		}
 	}
+}
+
+// TestFilterOutNodesWithUnreadyResourcesDRA tests that FilterOutNodesWithUnreadyResources
+// does the right thing based on DRA configuration present in the node.
+func TestFilterOutNodesWithUnreadyResourcesDRA(t *testing.T) {
+	start := time.Now()
+	later := start.Add(10 * time.Minute)
+	expectedReadinessDRA := make(map[string]bool)
+	originalConditionsDRA := make(map[string]int)
+	expectedReadiness := make(map[string]bool)
+	originalConditions := make(map[string]int)
+
+	readyCondition := apiv1.NodeCondition{
+		Type:               apiv1.NodeReady,
+		Status:             apiv1.ConditionTrue,
+		LastTransitionTime: metav1.NewTime(later),
+	}
+
+	// Here is a set of Ready Nodes
+	readyNodes := []*apiv1.Node{
+		// This is a GPU-labeled Ready node with no GPU allocatable or capacity.
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "nodeGPUReady",
+				Labels:            gpuLabels,
+				CreationTimestamp: metav1.NewTime(start),
+			},
+			Status: apiv1.NodeStatus{
+				Conditions: []apiv1.NodeCondition{readyCondition},
+			},
+		},
+		// This is a vanilla ready node
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "nodeVanillaReady",
+				Labels:            make(map[string]string),
+				CreationTimestamp: metav1.NewTime(start),
+			},
+			Status: apiv1.NodeStatus{
+				Conditions: []apiv1.NodeCondition{readyCondition},
+			},
+		},
+	}
+
+	for _, n := range readyNodes {
+		// We are going to wire all of our ready nodes up w/ a scenario that includes a DRA driver
+		expectedReadinessDRA[n.Name] = true
+		// We are also going to create a non-DRA driver scenario
+		if n.Labels[GPULabel] == "" {
+			expectedReadiness[n.Name] = true
+		} else {
+			expectedReadiness[n.Name] = false
+		}
+		numConditions := 0
+		for _, condition := range n.Status.Conditions {
+			if condition.Type != apiv1.NodeReady {
+				numConditions++
+			}
+		}
+		originalConditionsDRA[n.Name] = numConditions
+		originalConditions[n.Name] = numConditions
+	}
+
+	var initialAllNodes, initialReadyNodes []*apiv1.Node
+	for _, n := range readyNodes {
+		initialAllNodes = append(initialAllNodes, n)
+		initialReadyNodes = append(initialReadyNodes, n)
+	}
+
+	// DRA-driver node GPU config
+	nodeGpuConfigDRA := func(node *apiv1.Node) *cloudprovider.GpuConfig {
+		return &cloudprovider.GpuConfig{
+			ExtendedResourceName: "",
+			DraDriverName:        "gpu.nvidia.com",
+		}
+	}
+	// non-DRA-driver node GPU config
+	nodeGpuConfig := func(node *apiv1.Node) *cloudprovider.GpuConfig {
+		return &cloudprovider.GpuConfig{
+			DraDriverName: "",
+		}
+	}
+	providerDRA := testprovider.NewTestCloudProviderBuilder().WithNodeGpuConfig(nodeGpuConfigDRA).Build()
+	provider := testprovider.NewTestCloudProviderBuilder().WithNodeGpuConfig(nodeGpuConfig).Build()
+	autoscalingContextDRANodes := &context.AutoscalingContext{CloudProvider: providerDRA}
+	autoscalingContext := &context.AutoscalingContext{CloudProvider: provider}
+	processor := GpuCustomResourcesProcessor{}
+	newAllNodesDRA, newReadyNodesDRA := processor.FilterOutNodesWithUnreadyResources(autoscalingContextDRANodes, initialAllNodes, initialReadyNodes, nil)
+	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingContext, initialAllNodes, initialReadyNodes, nil)
+
+	foundInReadyDRA := make(map[string]bool)
+	for _, n := range newReadyNodesDRA {
+		foundInReadyDRA[n.Name] = true
+		assert.True(t, expectedReadinessDRA[n.Name], fmt.Sprintf("Node %s found in ready nodes list (it shouldn't be there)", n.Name))
+	}
+	for nodeName, expected := range expectedReadinessDRA {
+		if expected {
+			assert.True(t, foundInReadyDRA[nodeName], fmt.Sprintf("Node %s expected ready, but not found in ready nodes list", nodeName))
+		}
+	}
+	for _, n := range newAllNodesDRA {
+		// GetUnreadyNodeCopy called by FilterOutNodesWithUnreadyResources always adds
+		// one Ready=false condition if it's not already set.
+		assert.Equal(t, len(n.Status.Conditions), originalConditionsDRA[n.Name]+1)
+		if expectedReadinessDRA[n.Name] {
+			for _, condition := range n.Status.Conditions {
+				if condition.Type != apiv1.NodeReady {
+					assert.Equal(t, condition.Status, apiv1.ConditionTrue, fmt.Sprintf("Unexpected ready condition value for node %s", n.Name))
+				}
+			}
+		} else {
+			for _, condition := range n.Status.Conditions {
+				if condition.Type != apiv1.NodeReady {
+					assert.Equal(t, n.Status.Conditions[0].Status, apiv1.ConditionFalse, fmt.Sprintf("Unexpected ready condition value for node %s", n.Name))
+				}
+			}
+		}
+	}
+
+	foundInReady := make(map[string]bool)
+	for _, n := range newReadyNodes {
+		foundInReady[n.Name] = true
+		assert.True(t, expectedReadiness[n.Name], fmt.Sprintf("Node %s found in ready nodes list (it shouldn't be there)", n.Name))
+	}
+	for nodeName, expected := range expectedReadiness {
+		if expected {
+			assert.True(t, foundInReady[nodeName], fmt.Sprintf("Node %s expected ready, but not found in ready nodes list", nodeName))
+		}
+	}
+	for _, n := range newAllNodes {
+		// GetUnreadyNodeCopy called by FilterOutNodesWithUnreadyResources always adds
+		// one Ready=false condition if it's not already set.
+		assert.Equal(t, len(n.Status.Conditions), originalConditions[n.Name]+1)
+		if expectedReadiness[n.Name] {
+			for _, condition := range n.Status.Conditions {
+				if condition.Type != apiv1.NodeReady {
+					assert.Equal(t, condition.Status, apiv1.ConditionTrue, fmt.Sprintf("Unexpected ready condition value for node %s", n.Name))
+				}
+			}
+		} else {
+			for _, condition := range n.Status.Conditions {
+				if condition.Type != apiv1.NodeReady {
+					assert.Equal(t, n.Status.Conditions[0].Status, apiv1.ConditionFalse, fmt.Sprintf("Unexpected ready condition value for node %s", n.Name))
+				}
+			}
+		}
+	}
+}
+
+type testCase struct { // Maps keyed by node name
+	allNodes                     map[string]*apiv1.Node
+	readyNodes                   []*apiv1.Node
+	wantNodesWithUnreadyOverride []string
+}
+
+func TestFilterOutNodesWithUnreadyResourcesRefactor(t *testing.T) {
+	start := time.Now()
+	later := start.Add(10 * time.Minute)
+	// Any non-zero resource quantity value on a Ready node indicates GPU is ready.
+	resourceQuantityOne := *resource.NewQuantity(1, resource.DecimalSI)
+	// A zero resource quantity value on a Ready node indicates GPU is unready.
+	resourceQuantityZero := *resource.NewQuantity(0, resource.DecimalSI)
+	readyCondition := apiv1.NodeCondition{
+		Type:               apiv1.NodeReady,
+		Status:             apiv1.ConditionTrue,
+		LastTransitionTime: metav1.NewTime(later),
+	}
+	unreadyCondition := apiv1.NodeCondition{
+		Type:               apiv1.NodeReady,
+		Status:             apiv1.ConditionFalse,
+		LastTransitionTime: metav1.NewTime(later),
+	}
+	cases := []testCase{
+		{
+			allNodes: map[string]*apiv1.Node{
+				"nodeGpuReady": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeGpuReady",
+						Labels:            gpuLabels,
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Capacity: apiv1.ResourceList{
+							gpu.ResourceNvidiaGPU: resourceQuantityOne,
+						},
+						Allocatable: apiv1.ResourceList{
+							gpu.ResourceNvidiaGPU: resourceQuantityOne,
+						},
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				"nodeGpuReadyDRA": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeGpuReadyDRA",
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				"nodeDirectXReady": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeDirectXReady",
+						Labels:            gpuLabels,
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Capacity: apiv1.ResourceList{
+							gpu.ResourceDirectX: resourceQuantityOne,
+						},
+						Allocatable: apiv1.ResourceList{
+							gpu.ResourceDirectX: resourceQuantityOne,
+						},
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				"nodeVanillaReady": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeVanillaReady",
+						Labels:            make(map[string]string),
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				"nodeGpuUnready": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeGpuUnready",
+						Labels:            gpuLabels,
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Capacity: apiv1.ResourceList{
+							gpu.ResourceNvidiaGPU: resourceQuantityZero,
+						},
+						Allocatable: apiv1.ResourceList{
+							gpu.ResourceNvidiaGPU: resourceQuantityZero,
+						},
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				"nodeDirectXUnready": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeDirectXUnready",
+						Labels:            gpuLabels,
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Capacity: apiv1.ResourceList{
+							gpu.ResourceDirectX: resourceQuantityZero,
+						},
+						Allocatable: apiv1.ResourceList{
+							gpu.ResourceDirectX: resourceQuantityZero,
+						},
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				"nodeGpuUnready2": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeGpuUnready2",
+						Labels:            gpuLabels,
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				"nodeVanillaNotReady": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeVanillaNotReady",
+						Labels:            make(map[string]string),
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Conditions: []apiv1.NodeCondition{unreadyCondition},
+					},
+				},
+			},
+			readyNodes: []*apiv1.Node{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeGpuReady",
+						Labels:            gpuLabels,
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Capacity: apiv1.ResourceList{
+							gpu.ResourceNvidiaGPU: resourceQuantityOne,
+						},
+						Allocatable: apiv1.ResourceList{
+							gpu.ResourceNvidiaGPU: resourceQuantityOne,
+						},
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeGpuReadyDRA",
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeDirectXReady",
+						Labels:            gpuLabels,
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Capacity: apiv1.ResourceList{
+							gpu.ResourceDirectX: resourceQuantityOne,
+						},
+						Allocatable: apiv1.ResourceList{
+							gpu.ResourceDirectX: resourceQuantityOne,
+						},
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nodeVanillaReady",
+						Labels:            make(map[string]string),
+						CreationTimestamp: metav1.NewTime(start),
+					},
+					Status: apiv1.NodeStatus{
+						Conditions: []apiv1.NodeCondition{readyCondition},
+					},
+				},
+			},
+			wantNodesWithUnreadyOverride: []string{
+				"nodeGpuUnready",
+				"nodeDirectXUnready",
+				"nodeGpuUnready2",
+			},
+		},
+	}
+
+	nodeGpuConfig := func(node *apiv1.Node) *cloudprovider.GpuConfig {
+		var draDriverName string
+		if strings.Contains(node.Name, "DRA") {
+			draDriverName = "gpu.nvidia.com"
+		}
+		return &cloudprovider.GpuConfig{
+			ExtendedResourceName: "",
+			DraDriverName:        draDriverName,
+		}
+	}
+	provider := testprovider.NewTestCloudProviderBuilder().WithNodeGpuConfig(nodeGpuConfig).Build()
+
+	for _, tc := range cases {
+		processor := GpuCustomResourcesProcessor{}
+		autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider}
+		gotAllNodes, gotReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, toList(tc.allNodes), tc.readyNodes, nil)
+		gotAllNodesSet := toSet(gotAllNodes)
+		for _, v := range tc.allNodes {
+			if _, found := gotAllNodesSet[v.Name]; !found {
+				t.Errorf("FilterOutNodesWithUnreadyResources() missing node %v from all nodes list", v.Name)
+			}
+			if v.Status.Conditions[0].Status == apiv1.ConditionTrue && gotAllNodesSet[v.Name].Status.Conditions[0].Status == apiv1.ConditionFalse {
+				assert.Contains(t, tc.wantNodesWithUnreadyOverride, v.Name, fmt.Sprintf("FilterOutNodesWithUnreadyResources() node %v status condition is unready, but was not expected to be", v.Name))
+				assert.Len(t, gotAllNodesSet[v.Name].Status.Conditions, 1, fmt.Sprintf("FilterOutNodesWithUnreadyResources() node %v status conditions count does not match expected", v.Name))
+				assert.Equal(t, v.ObjectMeta, gotAllNodesSet[v.Name].ObjectMeta, fmt.Sprintf("FilterOutNodesWithUnreadyResources() node %v metadata does not match expected", v.Name))
+			}
+		}
+		assert.Equal(t, gotReadyNodes, tc.readyNodes, fmt.Sprintf("FilterOutNodesWithUnreadyResources() node %v in ready nodes list does not match expected", gotReadyNodes))
+		for _, v := range gotAllNodesSet {
+			if !slices.Contains(tc.wantNodesWithUnreadyOverride, v.Name) {
+				assert.Equal(t, v, tc.allNodes[v.Name], fmt.Sprintf("FilterOutNodesWithUnreadyResources() node %v in all nodes list does not match expected", v.Name))
+			}
+		}
+	}
+}
+
+func toList(m map[string]*apiv1.Node) []*apiv1.Node {
+	var l []*apiv1.Node
+	for _, n := range m {
+		l = append(l, n)
+	}
+	return l
+}
+
+func toSet(l []*apiv1.Node) map[string]*apiv1.Node {
+	m := make(map[string]*apiv1.Node)
+	for _, n := range l {
+		m[n.Name] = n
+	}
+	return m
 }
