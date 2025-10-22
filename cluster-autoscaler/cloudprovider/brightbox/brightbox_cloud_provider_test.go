@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk/mocks"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	klog "k8s.io/klog/v2"
 )
 
@@ -138,9 +139,11 @@ func TestBuildBrightBox(t *testing.T) {
 	defer ts.Close()
 	rl := cloudprovider.NewResourceLimiter(nil, nil)
 	do := cloudprovider.NodeGroupDiscoveryOptions{}
-	opts := config.AutoscalingOptions{
-		CloudProviderName: cloudprovider.BrightboxProviderName,
-		ClusterName:       fakeClusterName,
+	opts := &coreoptions.AutoscalerOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
+			CloudProviderName: cloudprovider.BrightboxProviderName,
+			ClusterName:       fakeClusterName,
+		},
 	}
 	cloud := BuildBrightbox(opts, do, rl)
 	assert.Equal(t, cloud.Name(), cloudprovider.BrightboxProviderName)
@@ -170,8 +173,10 @@ func TestBuildBrightboxMissingClusterName(t *testing.T) {
 		defer ts.Close()
 		rl := cloudprovider.NewResourceLimiter(nil, nil)
 		do := cloudprovider.NodeGroupDiscoveryOptions{}
-		opts := config.AutoscalingOptions{
-			CloudProviderName: cloudprovider.BrightboxProviderName,
+		opts := &coreoptions.AutoscalerOptions{
+			AutoscalingOptions: config.AutoscalingOptions{
+				CloudProviderName: cloudprovider.BrightboxProviderName,
+			},
 		}
 		BuildBrightbox(opts, do, rl)
 	})

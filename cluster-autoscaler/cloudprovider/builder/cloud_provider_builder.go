@@ -18,15 +18,15 @@ package builder
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/client-go/informers"
 
 	klog "k8s.io/klog/v2"
 )
 
 // NewCloudProvider builds a cloud provider from provided parameters.
-func NewCloudProvider(opts config.AutoscalingOptions, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+func NewCloudProvider(opts *coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	klog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
@@ -34,7 +34,7 @@ func NewCloudProvider(opts config.AutoscalingOptions, informerFactory informers.
 		NodeGroupAutoDiscoverySpecs: opts.NodeGroupAutoDiscovery,
 	}
 
-	rl := ca_context.NewResourceLimiterFromAutoscalingOptions(opts)
+	rl := ca_context.NewResourceLimiterFromAutoscalingOptions(opts.AutoscalingOptions)
 
 	if opts.CloudProviderName == "" {
 		// Ideally this would be an error, but several unit tests of the
