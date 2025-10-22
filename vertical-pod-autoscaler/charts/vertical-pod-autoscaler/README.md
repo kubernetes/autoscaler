@@ -22,6 +22,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| admissionController.affinity | object | `{}` |  |
 | admissionController.enabled | bool | `true` |  |
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
@@ -52,6 +53,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | admissionController.tls.existingSecret | string | `""` |  |
 | admissionController.tls.key | string | `""` |  |
 | admissionController.tls.secretName | string | `"vpa-tls-certs"` |  |
+| admissionController.tolerations | list | `[]` |  |
 | admissionController.volumeMounts[0].mountPath | string | `"/etc/tls-certs"` |  |
 | admissionController.volumeMounts[0].name | string | `"tls-certs"` |  |
 | admissionController.volumeMounts[0].readOnly | bool | `true` |  |
