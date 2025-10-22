@@ -1022,6 +1022,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `grpc-expander-cert` | Path to cert used by gRPC server over TLS |  |
 | `grpc-expander-url` | URL to reach gRPC expander server. |  |
 | `ignore-daemonsets-utilization` | Should CA ignore DaemonSet pods when calculating resource utilization for scaling down |  |
+| `ignore-node-unschedulable` | Should CA ignore a node's .spec.unschedulable field when creating a node template for considering to scale a node group. | false |
 | `ignore-mirror-pods-utilization` | Should CA ignore Mirror pods when calculating resource utilization for scaling down |  |
 | `ignore-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead) | [] |
 | `initial-node-group-backoff-duration` | initialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start. | 5m0s |

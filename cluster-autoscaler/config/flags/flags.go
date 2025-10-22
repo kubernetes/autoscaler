@@ -167,6 +167,7 @@ var (
 	balancingIgnoreLabelsFlag = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	balancingLabelsFlag       = multiStringFlag("balancing-label", "Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label.")
 	awsUseStaticInstanceList  = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
+	ignoreNodeUnschedulable   = flag.Bool("ignore-node-unschedulable", false, "Specifies that the CA should ignore a node's .spec.unschedulable field in node templates when considering to scale a node group.")
 
 	// GCE specific flags
 	concurrentGceRefreshes             = flag.Int("gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
@@ -351,6 +352,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		},
 		NodeDeletionDelayTimeout: *nodeDeletionDelayTimeout,
 		AWSUseStaticInstanceList: *awsUseStaticInstanceList,
+		IgnoreNodeUnschedulable:  *ignoreNodeUnschedulable,
 		GCEOptions: config.GCEOptions{
 			ConcurrentRefreshes:            *concurrentGceRefreshes,
 			MigInstancesMinRefreshWaitTime: *gceMigInstancesMinRefreshWaitTime,
