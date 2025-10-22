@@ -348,7 +348,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return typedErr.AddPrefix("failed to initialize RemainingPdbTracker: ")
 	}
 
-	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingCtx, readyNodes, daemonsets, a.taintConfig, currentTime)
+	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingCtx, allNodes, daemonsets, a.taintConfig, currentTime)
 	if autoscalerError != nil {
 		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
