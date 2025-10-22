@@ -97,6 +97,11 @@ type TaintConfig struct {
 	startupTaintPrefixes     []string
 	statusTaintPrefixes      []string
 	explicitlyReportedTaints TaintKeySet
+	// The scaleFromUnschedulable field helps to inform the CA when
+	// to ignore .spec.unschedulable for a node. It is being added to this
+	// struct for convenience as it will be used in similar places that check
+	// for taints to ignore.
+	scaleFromUnschedulable bool
 }
 
 // NewTaintConfig returns the taint config extracted from options
@@ -128,6 +133,7 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 		startupTaintPrefixes:     []string{IgnoreTaintPrefix, StartupTaintPrefix},
 		statusTaintPrefixes:      []string{StatusTaintPrefix},
 		explicitlyReportedTaints: explicitlyReportedTaints,
+		scaleFromUnschedulable:   opts.ScaleFromUnschedulable,
 	}
 }
 
@@ -145,6 +151,11 @@ func (tc TaintConfig) IsStatusTaint(taint string) bool {
 		return true
 	}
 	return matchesAnyPrefix(tc.statusTaintPrefixes, taint)
+}
+
+// ShouldScaleFromUnschedulable returns whether a node's .spec.unschedulable field should be ignored.
+func (tc TaintConfig) ShouldScaleFromUnschedulable() bool {
+	return tc.scaleFromUnschedulable
 }
 
 func (tc TaintConfig) isExplicitlyReportedTaint(taint string) bool {
