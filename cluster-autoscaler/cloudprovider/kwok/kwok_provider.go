@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -171,7 +171,7 @@ func (kwok *KwokCloudProvider) Cleanup() error {
 }
 
 // BuildKwok builds kwok cloud provider.
-func BuildKwok(opts config.AutoscalingOptions,
+func BuildKwok(opts *coreoptions.AutoscalerOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 	informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
@@ -204,7 +204,7 @@ func BuildKwok(opts config.AutoscalingOptions,
 
 	p, err := BuildKwokProvider(&kwokOptions{
 		kubeClient:      kubeClient,
-		autoscalingOpts: &opts,
+		autoscalingOpts: &opts.AutoscalingOptions,
 		discoveryOpts:   &do,
 		resourceLimiter: rl,
 		ngNodeListerFn:  kube_util.NewNodeLister,

@@ -22,7 +22,7 @@ package builder
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kwok"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 
 	"k8s.io/client-go/informers"
 )
@@ -35,7 +35,7 @@ var AvailableCloudProviders = []string{
 // DefaultCloudProvider for Kwok-only build is Kwok.
 const DefaultCloudProvider = cloudprovider.KwokProviderName
 
-func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+func buildCloudProvider(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case cloudprovider.KwokProviderName:
 		return kwok.BuildKwok(opts, do, rl, informerFactory)
