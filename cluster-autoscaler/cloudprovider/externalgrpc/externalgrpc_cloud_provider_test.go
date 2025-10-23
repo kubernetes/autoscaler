@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
@@ -309,7 +310,8 @@ func TestCloudProvider_Pricing(t *testing.T) {
 	// test correct PodPrice call
 	m.On(
 		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
-			return req.Pod.Name == "pod1"
+			pod := &apiv1.Pod{}
+			return pod.Unmarshal(req.PodBytes) == nil && pod.Name == "pod1"
 		}),
 	).Return(
 		&protos.PricingPodPriceResponse{Price: 100},
@@ -317,7 +319,8 @@ func TestCloudProvider_Pricing(t *testing.T) {
 	)
 	m.On(
 		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
-			return req.Pod.Name == "pod2"
+			pod := &apiv1.Pod{}
+			return pod.Unmarshal(req.PodBytes) == nil && pod.Name == "pod2"
 		}),
 	).Return(
 		&protos.PricingPodPriceResponse{Price: 200},
@@ -341,7 +344,8 @@ func TestCloudProvider_Pricing(t *testing.T) {
 	// test grpc error for PodPrice
 	m.On(
 		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
-			return req.Pod.Name == "pod3"
+			pod := &apiv1.Pod{}
+			return pod.Unmarshal(req.PodBytes) == nil && pod.Name == "pod3"
 		}),
 	).Return(
 		&protos.PricingPodPriceResponse{},
@@ -357,7 +361,8 @@ func TestCloudProvider_Pricing(t *testing.T) {
 	// test notImplemented for PodPrice
 	m.On(
 		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
-			return req.Pod.Name == "pod4"
+			pod := &apiv1.Pod{}
+			return pod.Unmarshal(req.PodBytes) == nil && pod.Name == "pod4"
 		}),
 	).Return(
 		&protos.PricingPodPriceResponse{},

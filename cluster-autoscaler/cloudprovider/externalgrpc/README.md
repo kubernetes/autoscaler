@@ -52,30 +52,7 @@ The `CloudProvider` interface was designed with the assumption that its implemen
 
 ### Code Generation
 
-To regenerate the gRPC code:
-
-1. install `protoc` and `protoc-gen-go-grpc`:
-
-```bash
-go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
-```
-
-2. import proto dependencies using go modules
-```bash
-go mod vendor 
-```
-
-3. generate gRPC client and server code:
-
-```bash
-protoc \
-  -I ./cluster-autoscaler \
-  -I ./cluster-autoscaler/vendor \
-  --go_out=. \
-  --go-grpc_out=. \
-  ./cluster-autoscaler/cloudprovider/externalgrpc/protos/externalgrpc.proto
-```
+To regenerate the gRPC code, run the `cluster-autoscaler/hack/update-proto.sh` script
 
 ### General considerations
 

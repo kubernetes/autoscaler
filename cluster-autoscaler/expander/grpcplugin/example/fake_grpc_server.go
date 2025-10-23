@@ -24,6 +24,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
 )
 
@@ -72,7 +73,9 @@ func getNetListener(port uint) net.Listener {
 }
 
 // ExpanderServerImpl is an implementation of Expander Server from proto definition
-type ExpanderServerImpl struct{}
+type ExpanderServerImpl struct {
+	protos.UnsafeExpanderServer
+}
 
 // NewExpanderServerImpl is this Expander's implementation of the server
 func NewExpanderServerImpl() *ExpanderServerImpl {

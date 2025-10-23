@@ -38,4 +38,6 @@ Start Cluster Autoscaler with the `--grpc-expander-url=SERVICE_NAME.NAMESPACE_NA
 
 The gRPC client currently transforms nodeInfo objects passed into the expander to v1.Node objects to save rpc call throughput. As such, the gRPC server will not have access to daemonsets and static pods running on each node.
 
+### Code Generation
 
+To regenerate the gRPC code, run the `cluster-autoscaler/hack/update-proto.sh` script
