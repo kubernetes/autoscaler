@@ -37,6 +37,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -466,6 +467,20 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 	})
 	framework.Logf("finished waiting for at least one pod to be updated without eviction")
 	return err
+}
+
+// checkPerVPAConfigTestsEnabled checks if the PerVPAConfig feature gate is enabled
+// in the VPA recommender.
+func checkPerVPAConfigTestsEnabled(f *framework.Framework) {
+	ginkgo.By("Checking PerVPAConfig feature gate is enabled for recommender")
+	deploy, err := f.ClientSet.AppsV1().Deployments(VpaNamespace).Get(context.TODO(), "vpa-recommender", metav1.GetOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(deploy.Spec.Template.Spec.Containers).To(gomega.HaveLen(1))
+	vpaRecommenderPod := deploy.Spec.Template.Spec.Containers[0]
+	gomega.Expect(vpaRecommenderPod.Name).To(gomega.Equal("recommender"))
+	if !anyContainsSubstring(vpaRecommenderPod.Args, fmt.Sprintf("%s=true", string(features.PerVPAConfig))) {
+		ginkgo.Skip("Skipping suite: PerVPAConfig feature gate is not enabled for the VPA recommender")
+	}
 }
 
 func anyContainsSubstring(arr []string, substr string) bool {

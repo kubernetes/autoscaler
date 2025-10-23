@@ -22,22 +22,23 @@ import (
 	"strings"
 	"time"
 
+	ginkgo "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
-
-	ginkgo "github.com/onsi/ginkgo/v2"
-	"github.com/onsi/gomega"
 )
 
 type resourceRecommendation struct {
@@ -409,6 +410,68 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 			utils.GetHamsterContainerNameByIndex(1))
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(utils.GetHamsterContainerNameByIndex(1)), errMsg)
+	})
+})
+
+var _ = utils.RecommenderE2eDescribe("OOM with custom config", ginkgo.Label("FG:PerVPAConfig"), func() {
+	const replicas = 1
+	const defaultOOMBumpUpRatio = model.DefaultOOMBumpUpRatio
+	const oomBumpUpRatio = 3
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	var (
+		vpaCRD       *vpa_types.VerticalPodAutoscaler
+		vpaClientSet vpa_clientset.Interface
+	)
+	ginkgo.BeforeEach(func() {
+		checkPerVPAConfigTestsEnabled(f)
+		ns := f.Namespace.Name
+		vpaClientSet = utils.GetVpaClientSet(f)
+		ginkgo.By("Setting up a hamster deployment")
+		runOomingReplicationController(
+			f.ClientSet,
+			ns,
+			"hamster",
+			replicas)
+		ginkgo.By("Setting up a VPA CRD")
+		targetRef := &autoscaling.CrossVersionObjectReference{
+			APIVersion: "v1",
+			Kind:       "Deployment",
+			Name:       "hamster",
+		}
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD = test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(targetRef).
+			WithContainer(containerName).
+			WithOOMBumpUpRatio(resource.NewQuantity(oomBumpUpRatio, resource.DecimalSI)).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+	})
+	ginkgo.It("have memory requests growing with OOMs more than the default", func() {
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+
+		currentMemory := vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory().Value()
+		oomReplicationControllerRequestLimit := int64(1024 * 1024 * 1024)                          // from runOomingReplicationController
+		defaultBumpMemory := float64(oomReplicationControllerRequestLimit) * defaultOOMBumpUpRatio // DefaultOOMBumpUpRatio
+		customBumpMemory := float64(oomReplicationControllerRequestLimit) * oomBumpUpRatio         // Custom ratio from VPA config
+
+		// Sanity check: verify that our custom bump ratio is indeed higher than the default
+		gomega.Expect(customBumpMemory).Should(gomega.BeNumerically(">", defaultBumpMemory),
+			fmt.Sprintf("Custom OOM bump ratio (%fx) should be greater than default (%fx)", float64(oomBumpUpRatio), defaultOOMBumpUpRatio))
+
+		// Verify that the actual recommendation is at least the custom bump ratio
+		gomega.Expect(currentMemory).Should(gomega.BeNumerically(">=", int64(customBumpMemory)),
+			fmt.Sprintf("Memory recommendation should be at least custom bump up ratio (%dx). Got: %d bytes (%.2fx), Expected: >= %d bytes (%dx)",
+				oomBumpUpRatio,
+				currentMemory,
+				float64(currentMemory)/float64(oomReplicationControllerRequestLimit),
+				int64(customBumpMemory),
+				oomBumpUpRatio))
 	})
 })
 
