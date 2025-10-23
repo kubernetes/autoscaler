@@ -193,9 +193,14 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		}
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(capacitybufferClient, []string{common.ActiveProvisioningStrategy})
+			buffersPodsRegistry := cbprocessor.NewDefaultCapacityBuffersFakePodsRegistry()
+			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(
+				capacitybufferClient,
+				[]string{common.ActiveProvisioningStrategy},
+				buffersPodsRegistry)
 			podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{bufferPodInjector, podListProcessor})
-			opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{cbprocessor.NewFakePodsScaleUpStatusProcessor(), opts.Processors.ScaleUpStatusProcessor})
+			opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{
+				cbprocessor.NewFakePodsScaleUpStatusProcessor(buffersPodsRegistry), opts.Processors.ScaleUpStatusProcessor})
 		}
 	}
 
