@@ -38,7 +38,7 @@ const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "node.kubernetes.ovhcloud.com/gpu"
 
-	// NodePoolLabel is the label added to nodes grouped by node group.
+	// NodePoolLabel is the label added to nodes containing the node of their parent nodepool.
 	// Should be soon prepend with `node.kubernetes.ovhcloud.com/`
 	NodePoolLabel = "nodepool"
 
@@ -100,7 +100,7 @@ func (provider *OVHCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, 0)
 
 	// Cast API node pools into CA node groups
-	for _, pool := range provider.manager.NodePoolsPerID {
+	for _, pool := range provider.manager.NodePoolsPerName {
 		// Node pools without autoscaling are equivalent to node pools with autoscaling but no scale possible
 		if !pool.Autoscale {
 			pool.MaxNodes = pool.DesiredNodes
@@ -120,33 +120,29 @@ func (provider *OVHCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node
-// should not be processed by cluster autoscaler, or non-nil error if such
-// occurred. Must be implemented.
+// should not be processed by cluster autoscaler, or non-nil error if such occurred.
+// The ovhcloud implementation cannot rely on the providerID to identify nodes for now,
+// as nodes spec.ProviderIDs don't match the nodes IDs in the API.
 func (provider *OVHCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	// If the provider ID is empty (only the prefix), it means that we are processing an UnregisteredNode retrieved
 	// from OVHCloud APIs, which has just started being created, and the OpenStack instance ID is not yet set.
-	// We won't be able to determine the node group of the node with the information at hand.
 	if node.Spec.ProviderID == providerIDPrefix {
 		return nil, nil
 	}
 
-	// Try to retrieve the associated node group from an already built mapping in cache
-	if ng := provider.findNodeGroupFromCache(node.Spec.ProviderID); ng != nil {
+	// Try to find the associated node group from the nodepool label on the node using the cache.
+	ng := provider.findNodeGroupFromLabel(node)
+	if ng != nil {
 		return ng, nil
 	}
 
-	// Try to find the associated node group from the nodepool label on the node
-	if ng := provider.findNodeGroupFromLabel(node); ng != nil {
-		return ng, nil
-	}
-
-	klog.V(4).Infof("trying to find node group of node %s (provider ID %s) by listing all nodes under autoscaled node pools", node.Name, node.Spec.ProviderID)
+	klog.V(4).Infof("node %s not found in cache, trying to find node group by listing all nodes under autoscaled node pools", node.Name)
 
 	// Call the OVHCloud APIs to list all nodes under autoscaled node pools and find the associated node group.
 	// This should also refresh the cache for the next time
 	ng, err := provider.findNodeGroupByListingNodes(node)
 	if ng == nil {
-		klog.Warningf("unable to find which node group the node %s (provider ID %s) belongs to", node.Name, node.Spec.ProviderID)
+		klog.Warningf("unable to find which node group the node %s belongs to based on the %s label: %v", node.Name, NodePoolLabel, node.Labels)
 	}
 
 	return ng, err
@@ -157,51 +153,39 @@ func (provider *OVHCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
-// findNodeGroupFromCache tries to retrieve the associated node group from an already built mapping in cache
-func (provider *OVHCloudProvider) findNodeGroupFromCache(providerID string) cloudprovider.NodeGroup {
-	nodeGroup := provider.manager.getNodeGroupPerProviderID(providerID)
-	if nodeGroup != nil {
-		return nodeGroup
-	}
-	return nil // To avoid returning a (*cloudprovider.NodeGroup)(nil), which is different from nil
-}
-
-// findNodeGroupFromLabel tries to find the associated node group from the nodepool label on the node
+// findNodeGroupFromLabel tries to find the associated node group from the nodepool label on the node.
+// Tries to retrieve the associated node group from an already built mapping in cache.
 func (provider *OVHCloudProvider) findNodeGroupFromLabel(node *apiv1.Node) cloudprovider.NodeGroup {
 	// Retrieve the label specifying the pool the node belongs to
 	labels := node.GetLabels()
-	label, exists := labels[NodePoolLabel]
-	if !exists {
+	nodePoolName, nodePoolNameLabelExists := labels[NodePoolLabel]
+	if !nodePoolNameLabelExists {
 		return nil
 	}
 
-	// Find in the node groups stored in cache the one with the same name
-	for _, ng := range provider.NodeGroups() {
-		if ng.Id() == label {
-			return ng
-		}
+	// Find the nodegroup whose nodepool matches the name label if present.
+	if ng := provider.manager.GetNodeGroupPerName(nodePoolName); ng != nil {
+		return ng
 	}
-
 	return nil
 }
 
 // findNodeGroupByListingNodes finds the associated node group from by listing all nodes under autoscaled node pools
 func (provider *OVHCloudProvider) findNodeGroupByListingNodes(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+
+	// Refresh the NodePoolsPerName cache, used by provider.NodeGroups().
+	provider.Refresh()
+
 	for _, ng := range provider.NodeGroups() {
-		// This calls OVHCloud APIs and refreshes the cache
-		instances, err := ng.Nodes()
+		// This calls OVHCloud APIs and refreshes the NodeGroupPerName cache.
+		_, err := ng.Nodes()
 		if err != nil {
 			return nil, fmt.Errorf("failed to list nodes in node group %s: %w", ng.Id(), err)
 		}
-
-		for _, instance := range instances {
-			if instance.Id == node.Spec.ProviderID {
-				return ng, nil
-			}
-		}
 	}
 
-	return nil, nil
+	// Lookup the node group using the cache.
+	return provider.findNodeGroupFromLabel(node), nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not

@@ -213,7 +213,7 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 		instances = append(instances, instance)
 
 		// Store the associated node group in cache for future reference
-		ng.Manager.setNodeGroupPerProviderID(instance.Id, ng)
+		ng.Manager.setNodeGroupPerName(ng.Name, ng)
 	}
 
 	return instances, nil
@@ -238,7 +238,7 @@ func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		},
 	}
 
-	// Add the nodepool label
+	// Add the nodepool name label
 	if node.ObjectMeta.Labels == nil {
 		node.ObjectMeta.Labels = make(map[string]string)
 	}

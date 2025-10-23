@@ -192,14 +192,14 @@ func TestOvhCloudManager_getFlavorByName(t *testing.T) {
 	})
 }
 
-func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
+func TestOvhCloudManager_setNodeGroupPerName(t *testing.T) {
 	manager := newTestManager(t)
 	ng1 := NodeGroup{
 		CurrentSize: 1,
 	}
 
 	type fields struct {
-		NodeGroupPerProviderID map[string]*NodeGroup
+		NodeGroupPerName map[string]*NodeGroup
 	}
 	type args struct {
 		providerID string
@@ -214,7 +214,7 @@ func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
 		{
 			name: "New entry",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{},
+				NodeGroupPerName: map[string]*NodeGroup{},
 			},
 			args: args{
 				providerID: "providerID1",
@@ -226,7 +226,7 @@ func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
 		}, {
 			name: "Replace entry",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{
+				NodeGroupPerName: map[string]*NodeGroup{
 					"providerID1": {},
 				},
 			},
@@ -241,23 +241,23 @@ func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+			manager.NodeGroupPerName = tt.fields.NodeGroupPerName
 
-			manager.setNodeGroupPerProviderID(tt.args.providerID, tt.args.nodeGroup)
+			manager.setNodeGroupPerName(tt.args.providerID, tt.args.nodeGroup)
 
-			assert.Equal(t, tt.wantCache, manager.NodeGroupPerProviderID)
+			assert.Equal(t, tt.wantCache, manager.NodeGroupPerName)
 		})
 	}
 }
 
-func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
+func TestOvhCloudManager_GetNodeGroupPerName(t *testing.T) {
 	manager := newTestManager(t)
 	ng1 := NodeGroup{
 		CurrentSize: 1,
 	}
 
 	type fields struct {
-		NodeGroupPerProviderID map[string]*NodeGroup
+		NodeGroupPerName map[string]*NodeGroup
 	}
 	type args struct {
 		providerID string
@@ -271,7 +271,7 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 		{
 			name: "Node group found",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{
+				NodeGroupPerName: map[string]*NodeGroup{
 					"providerID1": &ng1,
 				},
 			},
@@ -283,7 +283,7 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 		{
 			name: "Node group not found",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{},
+				NodeGroupPerName: map[string]*NodeGroup{},
 			},
 			args: args{
 				providerID: "providerID1",
@@ -293,9 +293,9 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+			manager.NodeGroupPerName = tt.fields.NodeGroupPerName
 
-			assert.Equalf(t, tt.want, manager.getNodeGroupPerProviderID(tt.args.providerID), "getNodeGroupPerProviderID(%v)", tt.args.providerID)
+			assert.Equalf(t, tt.want, manager.GetNodeGroupPerName(tt.args.providerID), "GetNodeGroupPerName(%v)", tt.args.providerID)
 		})
 	}
 }
@@ -303,61 +303,60 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 func TestOvhCloudManager_cacheConcurrency(t *testing.T) {
 	manager := newTestManager(t)
 
-	t.Run("Check NodeGroupPerProviderID cache is safe for concurrency (needs to be run with -race)", func(t *testing.T) {
+	t.Run("Check NodeGroupPerName cache is safe for concurrency (needs to be run with -race)", func(t *testing.T) {
 		go func() {
-			manager.setNodeGroupPerProviderID("", &NodeGroup{})
+			manager.setNodeGroupPerName("", &NodeGroup{})
 		}()
-		manager.getNodeGroupPerProviderID("")
+		manager.GetNodeGroupPerName("")
 	})
 }
 
 func TestOvhCloudManager_setNodePoolsState(t *testing.T) {
 	manager := newTestManager(t)
-	np1 := sdk.NodePool{ID: "np1", DesiredNodes: 1}
-	np2 := sdk.NodePool{ID: "np2", DesiredNodes: 2}
-	np3 := sdk.NodePool{ID: "np3", DesiredNodes: 3}
+	np1 := sdk.NodePool{Name: "np1", DesiredNodes: 1}
+	np2 := sdk.NodePool{Name: "np2", DesiredNodes: 2}
+	np3 := sdk.NodePool{Name: "np3", DesiredNodes: 3}
 
 	type fields struct {
-		NodePoolsPerID         map[string]*sdk.NodePool
-		NodeGroupPerProviderID map[string]*NodeGroup
+		NodePoolsPerName map[string]*sdk.NodePool
+		NodeGroupPerName map[string]*NodeGroup
 	}
 	type args struct {
 		poolsList []sdk.NodePool
 
-		nodePoolsPerID         map[string]*sdk.NodePool
-		nodeGroupPerProviderID map[string]*NodeGroup
+		NodePoolsPerName map[string]*sdk.NodePool
+		NodeGroupPerName map[string]*NodeGroup
 	}
 	tests := []struct {
-		name                       string
-		fields                     fields
-		args                       args
-		wantNodePoolsPerID         map[string]uint32 // ID => desired nodes
-		wantNodeGroupPerProviderID map[string]uint32 // ID => desired nodes
+		name                 string
+		fields               fields
+		args                 args
+		wantNodePoolsPerName map[string]uint32 // ID => desired nodes
+		wantNodeGroupPerName map[string]uint32 // ID => desired nodes
 	}{
 		{
-			name: "NodePoolsPerID and NodeGroupPerProviderID empty",
+			name: "NodePoolsPerName and NodeGroupPerName empty",
 			fields: fields{
-				NodePoolsPerID:         map[string]*sdk.NodePool{},
-				NodeGroupPerProviderID: map[string]*NodeGroup{},
+				NodePoolsPerName: map[string]*sdk.NodePool{},
+				NodeGroupPerName: map[string]*NodeGroup{},
 			},
 			args: args{
 				poolsList: []sdk.NodePool{
 					np1,
 				},
-				nodePoolsPerID:         map[string]*sdk.NodePool{},
-				nodeGroupPerProviderID: map[string]*NodeGroup{},
+				NodePoolsPerName: map[string]*sdk.NodePool{},
 			},
-			wantNodePoolsPerID:         map[string]uint32{"np1": 1},
-			wantNodeGroupPerProviderID: map[string]uint32{},
+			wantNodePoolsPerName: map[string]uint32{"np1": 1},
+			wantNodeGroupPerName: map[string]uint32{},
 		},
 		{
-			name: "NodePoolsPerID and NodeGroupPerProviderID empty",
+			name: "NodePoolsPerName and NodeGroupPerName empty",
 			fields: fields{
-				NodePoolsPerID: map[string]*sdk.NodePool{
+				NodePoolsPerName: map[string]*sdk.NodePool{
 					"np2": &np2,
 					"np3": &np3,
 				},
-				NodeGroupPerProviderID: map[string]*NodeGroup{
+				NodeGroupPerName: map[string]*NodeGroup{
 					"np2-node-id": {NodePool: &np2},
 					"np3-node-id": {NodePool: &np3},
 				},
@@ -365,23 +364,22 @@ func TestOvhCloudManager_setNodePoolsState(t *testing.T) {
 			args: args{
 				poolsList: []sdk.NodePool{
 					{
-						ID:           "np1",
+						Name:         "np1",
 						DesiredNodes: 1,
 					},
 					{
-						ID:           "np2",
+						Name:         "np2",
 						DesiredNodes: 20,
 					},
 				},
-				nodePoolsPerID:         map[string]*sdk.NodePool{},
-				nodeGroupPerProviderID: map[string]*NodeGroup{},
+				NodeGroupPerName: map[string]*NodeGroup{},
 			},
-			wantNodePoolsPerID: map[string]uint32{
+			wantNodePoolsPerName: map[string]uint32{
 				"np1": 1,  // np1 added
 				"np2": 20, // np2 updated
 				// np3 removed
 			},
-			wantNodeGroupPerProviderID: map[string]uint32{
+			wantNodeGroupPerName: map[string]uint32{
 				"np2-node-id": 20,
 				"np3-node-id": 3, // Node reference that eventually stays in cache must not crash
 			},
@@ -389,19 +387,19 @@ func TestOvhCloudManager_setNodePoolsState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			manager.NodePoolsPerID = tt.fields.NodePoolsPerID
-			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+			manager.NodePoolsPerName = tt.fields.NodePoolsPerName
+			manager.NodeGroupPerName = tt.fields.NodeGroupPerName
 
 			manager.setNodePoolsState(tt.args.poolsList)
 
-			assert.Len(t, manager.NodePoolsPerID, len(tt.wantNodePoolsPerID))
-			for id, desiredNodes := range tt.wantNodePoolsPerID {
-				assert.Equal(t, desiredNodes, manager.NodePoolsPerID[id].DesiredNodes)
+			assert.Len(t, manager.NodePoolsPerName, len(tt.wantNodePoolsPerName))
+			for name, desiredNodes := range tt.wantNodePoolsPerName {
+				assert.Equal(t, desiredNodes, manager.NodePoolsPerName[name].DesiredNodes)
 			}
 
-			assert.Len(t, manager.NodeGroupPerProviderID, len(tt.wantNodeGroupPerProviderID))
-			for nodeID, desiredNodes := range tt.wantNodeGroupPerProviderID {
-				assert.Equal(t, desiredNodes, manager.NodeGroupPerProviderID[nodeID].DesiredNodes)
+			assert.Len(t, manager.NodeGroupPerName, len(tt.wantNodeGroupPerName))
+			for nodeID, desiredNodes := range tt.wantNodeGroupPerName {
+				assert.Equal(t, desiredNodes, manager.NodeGroupPerName[nodeID].DesiredNodes)
 			}
 		})
 	}

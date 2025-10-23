@@ -62,9 +62,9 @@ type OvhCloudManager struct {
 	ClusterID string
 	ProjectID string
 
-	NodePoolsPerID             map[string]*sdk.NodePool
-	NodeGroupPerProviderID     map[string]*NodeGroup
-	NodeGroupPerProviderIDLock sync.RWMutex
+	NodePoolsPerName     map[string]*sdk.NodePool
+	NodeGroupPerName     map[string]*NodeGroup
+	NodeGroupPerNameLock sync.RWMutex
 
 	FlavorsCache               map[string]sdk.Flavor
 	FlavorsCacheExpirationTime time.Time
@@ -162,9 +162,9 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 		ProjectID: cfg.ProjectID,
 		ClusterID: cfg.ClusterID,
 
-		NodePoolsPerID:             make(map[string]*sdk.NodePool),
-		NodeGroupPerProviderID:     make(map[string]*NodeGroup),
-		NodeGroupPerProviderIDLock: sync.RWMutex{},
+		NodePoolsPerName:     make(map[string]*sdk.NodePool),
+		NodeGroupPerName:     make(map[string]*NodeGroup),
+		NodeGroupPerNameLock: sync.RWMutex{},
 
 		FlavorsCache:               make(map[string]sdk.Flavor),
 		FlavorsCacheExpirationTime: time.Time{},
@@ -209,20 +209,20 @@ func (m *OvhCloudManager) getFlavorByName(flavorName string) (sdk.Flavor, error)
 	return sdk.Flavor{}, fmt.Errorf("flavor %s not found in available flavors", flavorName)
 }
 
-// setNodeGroupPerProviderID stores the association provider ID => node group in cache for future reference
-func (m *OvhCloudManager) setNodeGroupPerProviderID(providerID string, nodeGroup *NodeGroup) {
-	m.NodeGroupPerProviderIDLock.Lock()
-	defer m.NodeGroupPerProviderIDLock.Unlock()
+// setNodeGroupPerName stores the node group in cache for future reference
+func (m *OvhCloudManager) setNodeGroupPerName(nodepoolName string, nodeGroup *NodeGroup) {
+	m.NodeGroupPerNameLock.Lock()
+	defer m.NodeGroupPerNameLock.Unlock()
 
-	m.NodeGroupPerProviderID[providerID] = nodeGroup
+	m.NodeGroupPerName[nodepoolName] = nodeGroup
 }
 
-// getNodeGroupPerProviderID gets from cache the node group associated to the given provider ID
-func (m *OvhCloudManager) getNodeGroupPerProviderID(providerID string) *NodeGroup {
-	m.NodeGroupPerProviderIDLock.RLock()
-	defer m.NodeGroupPerProviderIDLock.RUnlock()
+// GetNodeGroupPerName gets from cache the node group using its name
+func (m *OvhCloudManager) GetNodeGroupPerName(nodepoolName string) *NodeGroup {
+	m.NodeGroupPerNameLock.RLock()
+	defer m.NodeGroupPerNameLock.RUnlock()
 
-	return m.NodeGroupPerProviderID[providerID]
+	return m.NodeGroupPerName[nodepoolName]
 }
 
 // ReAuthenticate allows OpenStack keystone token to be revoked and re-created to call API
@@ -247,35 +247,35 @@ func (m *OvhCloudManager) ReAuthenticate() error {
 }
 
 // setNodePoolsState updates nodepool local informations based on given list
-// Updates NodePoolsPerID by modifying data so the reference in NodeGroupPerProviderID can access refreshed data
+// Updates NodePoolsPerName by modifying data so the reference in NodeGroupPerName can access refreshed data
 //
 // - Updates fields on already referenced nodepool
 // - Adds nodepool if not referenced yet
 // - Deletes from map if nodepool is not in the given list (it doesn't exist anymore)
 func (m *OvhCloudManager) setNodePoolsState(pools []sdk.NodePool) {
-	m.NodeGroupPerProviderIDLock.Lock()
-	defer m.NodeGroupPerProviderIDLock.Unlock()
+	m.NodeGroupPerNameLock.Lock()
+	defer m.NodeGroupPerNameLock.Unlock()
 
-	poolIDsToKeep := []string{}
+	poolNamesToKeep := []string{}
 	for _, pool := range pools {
-		poolIDsToKeep = append(poolIDsToKeep, pool.ID)
+		poolNamesToKeep = append(poolNamesToKeep, pool.Name)
 	}
 
 	// Update nodepools state
 	for _, pool := range pools {
-		poolRef, ok := m.NodePoolsPerID[pool.ID]
+		poolRef, ok := m.NodePoolsPerName[pool.Name]
 		if ok {
 			*poolRef = pool // Update existing value
 		} else {
 			poolCopy := pool
-			m.NodePoolsPerID[pool.ID] = &poolCopy
+			m.NodePoolsPerName[pool.Name] = &poolCopy
 		}
 	}
 
 	// Remove nodepools that doesn't exist anymore
-	for poolID := range m.NodePoolsPerID {
-		if !slices.Contains(poolIDsToKeep, poolID) {
-			delete(m.NodePoolsPerID, poolID)
+	for poolName := range m.NodePoolsPerName {
+		if !slices.Contains(poolNamesToKeep, poolName) {
+			delete(m.NodePoolsPerName, poolName)
 		}
 	}
 }
