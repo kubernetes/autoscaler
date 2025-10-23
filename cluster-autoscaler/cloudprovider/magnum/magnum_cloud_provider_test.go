@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -59,10 +59,7 @@ func (m *magnumManagerDiscoveryMock) autoDiscoverNodeGroups(cfgs []magnumAutoDis
 	ngs := []*nodegroups.NodeGroup{}
 	two := 2
 	for i := 0; i < rand.Intn(20); i++ {
-		newUUID, err := uuid.NewV4()
-		if err != nil {
-			return nil, fmt.Errorf("failed to produce a random UUID: %v", err)
-		}
+		newUUID := uuid.New()
 		newUUIDStr := newUUID.String()
 		ngs = append(ngs, &nodegroups.NodeGroup{Name: newUUIDStr, NodeCount: 1, MinNodeCount: 1, MaxNodeCount: &two})
 	}
