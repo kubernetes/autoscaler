@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square)
+![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.5.1](https://img.shields.io/badge/AppVersion-1.5.1-informational?style=flat-square)
 
@@ -93,3 +93,10 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
+| updater.enabled | bool | `true` |  |
+| updater.image.pullPolicy | string | `"IfNotPresent"` |  |
+| updater.image.repository | string | `"registry.k8s.io/autoscaling/vpa-updater"` |  |
+| updater.image.tag | string | `nil` |  |
+| updater.podAnnotations | object | `{}` |  |
+| updater.podLabels | object | `{}` |  |
+| updater.replicas | int | `1` |  |
