@@ -198,3 +198,21 @@ updater:
 
   # Annotations to add to the Updater pod.
   podAnnotations: {}
+
+  # Resources for the Updater default container.
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1000Mi
+    requests:
+      cpu: 50m
+      memory: 500Mi
+
+  # Affinity rules for scheduling the Updater.
+  affinity: {}
+
+  # Node selector labels for scheduling the Updater.
+  nodeSelector: {}
+
+  # Tolerations for scheduling the Updater.
+  tolerations: []
