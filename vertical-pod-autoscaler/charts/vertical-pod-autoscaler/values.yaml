@@ -69,7 +69,16 @@ admissionController:
   nodeSelector: {}
 
   # Affinity for pod assignment.
-  affinity: {}
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/component
+            operator: In
+            values:
+            - admission-controller
+        topologyKey: kubernetes.io/hostname
 
   # List of node taints to tolerate.
   tolerations: []
@@ -148,7 +157,16 @@ recommender:
   nodeSelector: {}
 
   # Affinity rules for scheduling the Recommender.
-  affinity: {}
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/component
+            operator: In
+            values:
+            - recommender
+        topologyKey: kubernetes.io/hostname
 
   # Tolerations for scheduling the Recommender.
   tolerations: []
@@ -191,7 +209,7 @@ updater:
     pullPolicy: IfNotPresent
   
   # Number of Updater replicas to create.
-  replicas: 1
+  replicas: 2
 
   # Labels to add to the Updater pod.
   podLabels: {}
@@ -209,7 +227,16 @@ updater:
       memory: 500Mi
 
   # Affinity rules for scheduling the Updater.
-  affinity: {}
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/component
+            operator: In
+            values:
+            - updater
+        topologyKey: kubernetes.io/hostname
 
   # Node selector labels for scheduling the Updater.
   nodeSelector: {}

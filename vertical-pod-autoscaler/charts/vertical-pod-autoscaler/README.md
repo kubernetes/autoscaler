@@ -22,7 +22,10 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| admissionController.affinity | object | `{}` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].operator | string | `"In"` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values[0] | string | `"admission-controller"` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey | string | `"kubernetes.io/hostname"` |  |
 | admissionController.enabled | bool | `true` |  |
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
@@ -65,7 +68,10 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |
 | rbac.create | bool | `true` |  |
-| recommender.affinity | object | `{}` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].operator | string | `"In"` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values[0] | string | `"recommender"` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey | string | `"kubernetes.io/hostname"` |  |
 | recommender.enabled | bool | `true` |  |
 | recommender.extraArgs | list | `[]` |  |
 | recommender.extraEnv | list | `[]` |  |
@@ -93,7 +99,10 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
-| updater.affinity | object | `{}` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].operator | string | `"In"` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values[0] | string | `"updater"` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey | string | `"kubernetes.io/hostname"` |  |
 | updater.enabled | bool | `true` |  |
 | updater.image.pullPolicy | string | `"IfNotPresent"` |  |
 | updater.image.repository | string | `"registry.k8s.io/autoscaling/vpa-updater"` |  |
@@ -101,7 +110,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | updater.nodeSelector | object | `{}` |  |
 | updater.podAnnotations | object | `{}` |  |
 | updater.podLabels | object | `{}` |  |
-| updater.replicas | int | `1` |  |
+| updater.replicas | int | `2` |  |
 | updater.resources.limits.cpu | string | `"200m"` |  |
 | updater.resources.limits.memory | string | `"1000Mi"` |  |
 | updater.resources.requests.cpu | string | `"50m"` |  |
