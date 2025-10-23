@@ -29,9 +29,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	clientset "k8s.io/client-go/kubernetes"
@@ -40,6 +42,14 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
 )
+
+func init() {
+	// Dynamically register feature gates from the VPA's versioned feature gate configuration
+	// This ensures consistency with the main VPA feature gate definitions
+	if err := utilfeature.DefaultMutableFeatureGate.Add(features.MutableFeatureGate.GetAll()); err != nil {
+		panic(fmt.Sprintf("Failed to add VPA feature gates: %v", err))
+	}
+}
 
 type resourceRecommendation struct {
 	target, lower, upper int64
@@ -51,7 +61,6 @@ func (r *resourceRecommendation) sub(other *resourceRecommendation) resourceReco
 		lower:  r.lower - other.lower,
 		upper:  r.upper - other.upper,
 	}
-
 }
 
 func getResourceRecommendation(containerRecommendation *vpa_types.RecommendedContainerResources, r apiv1.ResourceName) resourceRecommendation {
@@ -411,28 +420,21 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(utils.GetHamsterContainerNameByIndex(1)), errMsg)
 	})
-})
+	f.It("have memory requests growing with OOMs more than the default", framework.WithFeatureGate(features.PerVPAConfig), func() {
+		const replicas = 1
+		const defaultOOMBumpUpRatio = model.DefaultOOMBumpUpRatio
+		const oomBumpUpRatio = 3
 
-var _ = utils.RecommenderE2eDescribe("OOM with custom config", ginkgo.Label("FG:PerVPAConfig"), func() {
-	const replicas = 1
-	const defaultOOMBumpUpRatio = model.DefaultOOMBumpUpRatio
-	const oomBumpUpRatio = 3
-	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
-	var (
-		vpaCRD       *vpa_types.VerticalPodAutoscaler
-		vpaClientSet vpa_clientset.Interface
-	)
-	ginkgo.BeforeEach(func() {
-		checkPerVPAConfigTestsEnabled(f)
 		ns := f.Namespace.Name
 		vpaClientSet = utils.GetVpaClientSet(f)
+
 		ginkgo.By("Setting up a hamster deployment")
 		runOomingReplicationController(
 			f.ClientSet,
 			ns,
 			"hamster",
 			replicas)
+
 		ginkgo.By("Setting up a VPA CRD")
 		targetRef := &autoscaling.CrossVersionObjectReference{
 			APIVersion: "v1",
@@ -440,7 +442,7 @@ var _ = utils.RecommenderE2eDescribe("OOM with custom config", ginkgo.Label("FG:
 			Name:       "hamster",
 		}
 		containerName := utils.GetHamsterContainerNameByIndex(0)
-		vpaCRD = test.VerticalPodAutoscaler().
+		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(targetRef).
@@ -448,8 +450,7 @@ var _ = utils.RecommenderE2eDescribe("OOM with custom config", ginkgo.Label("FG:
 			WithOOMBumpUpRatio(resource.NewQuantity(oomBumpUpRatio, resource.DecimalSI)).
 			Get()
 		utils.InstallVPA(f, vpaCRD)
-	})
-	ginkgo.It("have memory requests growing with OOMs more than the default", func() {
+
 		ginkgo.By("Waiting for recommendation to be filled")
 		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
