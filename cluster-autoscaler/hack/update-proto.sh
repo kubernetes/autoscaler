@@ -40,7 +40,7 @@ if [[ ! -f "${protoc_bin_dir}/protoc" || ! -d "${protoc_include_dir}" ]]; then
     arm64*Linux)
       protoc_url="https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-linux-aarch_64.zip"
       ;;
-    *Darwin)
+    *Darwin*)
       protoc_url="https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-osx-universal_binary.zip"
       ;;
     *)
