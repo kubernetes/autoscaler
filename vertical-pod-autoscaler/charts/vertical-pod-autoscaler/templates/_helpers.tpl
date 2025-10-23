@@ -75,6 +75,29 @@ Create the name of the tls secret to use
 
 
 {{/*
+updater
+*/}}
+{{- define "vertical-pod-autoscaler.updater.fullname" -}}
+{{ include "vertical-pod-autoscaler.fullname" . }}-updater
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.updater.labels" -}}
+{{ include "vertical-pod-autoscaler.labels" . }}
+app.kubernetes.io/component: updater
+app.kubernetes.io/component-instance: {{ .Release.Name }}-updater
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.updater.selectorLabels" -}}
+{{ include "vertical-pod-autoscaler.selectorLabels" . }}
+app.kubernetes.io/component: updater
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.updater.image" -}}
+{{- printf "%s:%s" .Values.updater.image.repository (default .Chart.AppVersion .Values.updater.image.tag) }}
+{{- end }}
+
+
+{{/*
 Create the name of the namespace to use
 */}}
 {{- define "common.names.namespace" -}}
