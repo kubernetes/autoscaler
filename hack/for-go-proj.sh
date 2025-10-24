@@ -21,6 +21,8 @@ set -o nounset
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
 PROJECT_NAMES=(addon-resizer vertical-pod-autoscaler)
 
+df -h
+
 if [[ $# -ne 1 ]]; then
   echo "missing subcommand: [build|install|test]"
   exit 1
@@ -42,6 +44,7 @@ case "${CMD}" in
 esac
 
 for project_name in ${PROJECT_NAMES[*]}; do
+  df -h
   (
     export GO111MODULE=auto
     project=${CONTRIB_ROOT}/${project_name}
@@ -64,13 +67,18 @@ done;
 
 if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
   pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
+  df -h
   go test -run=None ./...
+  df -h
   popd
   pushd ${CONTRIB_ROOT}/cluster-autoscaler/
   # TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
   # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
   # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
   ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
+  df -h
   go test -count=1 ./... -vet="${ANALYZERS}"
+  df -h
   popd
 fi
+df -h
