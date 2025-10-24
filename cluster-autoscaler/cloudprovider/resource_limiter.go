@@ -18,15 +18,21 @@ package cloudprovider
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"math"
 	"strings"
+
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // ResourceLimiter contains limits (max, min) for resources (cores, memory etc.).
 type ResourceLimiter struct {
 	minLimits map[string]int64
 	maxLimits map[string]int64
+}
+
+func (r *ResourceLimiter) ID() string {
+	return "cluster-wide"
 }
 
 // NewResourceLimiter creates new ResourceLimiter for map. Maps are deep copied.
@@ -87,4 +93,12 @@ func (r *ResourceLimiter) String() string {
 		resourceDetails = append(resourceDetails, fmt.Sprintf("{%s : %d - %d}", name, r.GetMin(name), r.GetMax(name)))
 	}
 	return strings.Join(resourceDetails, ", ")
+}
+
+func (r *ResourceLimiter) AppliesTo(node *apiv1.Node) bool {
+	return true
+}
+
+func (r *ResourceLimiter) Limits() map[string]int64 {
+	return r.maxLimits
 }
