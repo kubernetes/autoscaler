@@ -624,14 +624,21 @@ type Readiness struct {
 func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	perNodeGroup := make(map[string]Readiness)
 	total := Readiness{Time: currentTime}
-
+	maxNodeStartupTime := MaxNodeStartupTime
 	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness) Readiness {
+		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
+		if errNg == nil && nodeGroup != nil {
+			if startupTime, err := csr.nodeGroupConfigProcessor.GetMaxNodeStartupTime(nodeGroup); err == nil {
+				maxNodeStartupTime = startupTime
+			}
+		}
+		klog.V(1).Infof("Node %s: using maxNodeStartupTime = %v", node.Name, maxNodeStartupTime)
 		current.Registered = append(current.Registered, node.Name)
 		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
 			current.Deleted = append(current.Deleted, node.Name)
 		} else if nr.Ready {
 			current.Ready = append(current.Ready, node.Name)
-		} else if node.CreationTimestamp.Time.Add(MaxNodeStartupTime).After(currentTime) {
+		} else if node.CreationTimestamp.Time.Add(maxNodeStartupTime).After(currentTime) {
 			current.NotStarted = append(current.NotStarted, node.Name)
 		} else {
 			current.Unready = append(current.Unready, node.Name)
