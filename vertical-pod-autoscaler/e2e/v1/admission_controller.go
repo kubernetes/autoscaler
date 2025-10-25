@@ -25,8 +25,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
@@ -35,12 +37,20 @@ import (
 	"github.com/onsi/gomega"
 )
 
+func init() {
+	// Dynamically register feature gates from the VPA's versioned feature gate configuration
+	// This ensures consistency with the main VPA feature gate definitions
+	if err := utilfeature.DefaultMutableFeatureGate.Add(features.MutableFeatureGate.GetAll()); err != nil {
+		panic(fmt.Sprintf("Failed to add VPA feature gates: %v", err))
+	}
+}
+
 const (
 	webhookConfigName = "vpa-webhook-config"
 	webhookName       = "vpa.k8s.io"
 )
 
-var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:InPlaceOrRecreate"), func() {
+var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
@@ -48,7 +58,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:
 		waitForVpaWebhookRegistration(f)
 	})
 
-	ginkgo.It("starts pods with new recommended request with InPlaceOrRecreate mode", func() {
+	f.It("starts pods with new recommended request with InPlaceOrRecreate mode", framework.WithFeatureGate(features.InPlaceOrRecreate), func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")

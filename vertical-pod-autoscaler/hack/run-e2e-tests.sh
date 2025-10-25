@@ -46,11 +46,17 @@ export GO111MODULE=on
 
 export WORKSPACE=${WORKSPACE:-/workspace/_artifacts}
 
+SKIP="--ginkgo.skip=\[Feature\:OffByDefault\]"
+
+if [ "${TEST_WITH_FEATURE_GATES_ENABLED:-}" == "true" ]; then
+  SKIP=""
+fi
+
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
-    go test ./v1/*go -v --test.timeout=150m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=150m
+    go test ./v1/*go -v --test.timeout=150m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=150m ${SKIP}
     V1_RESULT=$?
     popd
     echo v1 test result: ${V1_RESULT}
