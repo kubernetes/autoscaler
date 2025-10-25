@@ -102,10 +102,9 @@ Before this AEP, the recommender computes recommendations only at the container 
 
 This AEP extends the VPA CRD `spec.resourcePolicy` with a new `podPolicies` stanza that influences pod-level recommendations. The AEP also introduces two global pod-level flags `pod-recommendation-max-allowed-cpu` and `pod-recommendation-max-allowed-memory`. Details are covered in the [Proposal section](#proposal).
 
-Today, the updater and admission controller update resources only at the container level. This proposal enables VPA components to update resources at the pod level as well.
+Today, the updater makes decisions based on the container-level resources stanzas, and both the updater and the admission controller modify resources only at the container level. This proposal enables the updater to evict pods based on their pod-level resource stanzas and allows the admission controller to update resources at the pod level as well.
 
-**This AEP suggests that when a workload defines pod-level resources, VPA should manage those by default because pod-level resources offer benefits over container-only settings** - see the "Better resource utilization" section in [KEP-2837](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md#better-resource-utilization) for details. 
-
+**This AEP suggests that when a workload defines pod-level resources, VPA should manage those by default because pod-level resources offer benefits over container-only settings** - see the "Better resource utilization" section in [KEP-2837](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md#better-resource-utilization) for details.
 
 Scenarios with no resources defined, or with both pod-level and container-level values present, require clear defaulting rules and are discussed in the options below. Note: community feedback should determine the default behavior. 
 
@@ -121,7 +120,7 @@ For workloads that define only pod-level resources, VPA will control resources o
 
 This part of the AEP covers workloads that define resources both at the pod level and for at least one container. To demonstrate multiple implementation options for how VPA should handle such workloads by default, consider the following manifest. It defines three containers:  
   * `ide` - the main workload container  
-  * `tool1` and `tool2` - non-critical sidecar containers  
+  * `tool1` and `tool2` - non-critical sidecar containers (that is, a non-native sidecar pattern is used)
 
 
 ```yaml
@@ -145,10 +144,10 @@ spec:
         limits:
           memory: "256Mi"
           cpu: "1"
-    - image: tool1:latest
-      name: tool1
-    - image: tool2:latest
-      name: tool2
+    - name: tool1 
+      image: tool1:latest
+    - name: tool2
+      image: tool2:latest
 ```
 
 ##### Option 1: VPA Controls Only Pod-Level Resources
