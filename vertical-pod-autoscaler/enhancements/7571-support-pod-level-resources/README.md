@@ -53,13 +53,6 @@ spec:
     limits:
       memory: "1024Mi"
       cpu: "4"
-  initContainers:
-    - image: tool1:latest
-      name: tool1
-      restartPolicy: Always
-    - image: tool2:latest
-      name: tool2
-      restartPolicy: Always
   containers:
     - name: ide
       image: theia:latest
@@ -69,7 +62,11 @@ spec:
           cpu: "0.5"
         limits:
           memory: "256Mi"
-          cpu: "1"
+          cpu: "1" 
+    - name: tool1
+      image: tool1:latest
+    - name: tool2
+      image: tool2:latest
 ```
 
 The benefits and implementation details of pod-level `resources` are described in [KEP-2837](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md). A related article is also available in the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/).
