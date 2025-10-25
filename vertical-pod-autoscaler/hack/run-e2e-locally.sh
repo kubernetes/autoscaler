@@ -87,6 +87,14 @@ echo "  loading image into kind"
 kind load docker-image localhost:5001/write-metrics:dev
 
 
+export FEATURE_GATES=""
+export TEST_WITH_FEATURE_GATES_ENABLED=""
+
+if [ "${ENABLE_ALL_FEATURE_GATES:-}" == "yes" ] ; then
+  export FEATURE_GATES='AllAlpha=true,AllBeta=true'
+  export TEST_WITH_FEATURE_GATES_ENABLED="true"
+fi
+
 case ${SUITE} in
   recommender|recommender-externalmetrics|updater|admission-controller|actuation|full-vpa)
     ${SCRIPT_ROOT}/hack/vpa-down.sh
