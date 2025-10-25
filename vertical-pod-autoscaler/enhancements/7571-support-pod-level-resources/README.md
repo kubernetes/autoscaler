@@ -102,7 +102,7 @@ Before this AEP, the recommender computes recommendations only at the container 
 
 This AEP extends the VPA CRD `spec.resourcePolicy` with a new `podPolicies` stanza that influences pod-level recommendations. The AEP also introduces two global pod-level flags `pod-recommendation-max-allowed-cpu` and `pod-recommendation-max-allowed-memory`. Details are covered in the [Proposal section](#proposal).
 
-Today, the updater makes decisions based on the container-level resources stanzas, and both the updater and the admission controller modify resources only at the container level. This proposal enables the updater to evict pods based on their pod-level resource stanzas and allows the admission controller to update resources at the pod level as well.
+Today, the updater makes decisions based on the container-level resources stanzas, and both the updater and the admission controller modify resources only at the container level. This proposal enables the updater to evict pods based on their pod-level resources stanzas and allows the admission controller to update resources at the pod level as well.
 
 **This AEP suggests that when a workload defines pod-level resources, VPA should manage those by default because pod-level resources offer benefits over container-only settings** - see the "Better resource utilization" section in [KEP-2837](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md#better-resource-utilization) for details.
 
