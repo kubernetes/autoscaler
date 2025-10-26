@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
@@ -884,7 +884,7 @@ func testEvictsSingletonPodWhenConfigured(f *framework.Framework, controller *au
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
 		WithTargetRef(controller).
-		WithMinReplicas(pointer.Int32(1)).
+		WithMinReplicas(ptr.To(int32(1))).
 		WithContainer(containerName).
 		AppendRecommendation(
 			test.Recommendation().
