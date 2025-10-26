@@ -132,7 +132,7 @@ func getVpaObserver(vpaClientSet vpa_clientset.Interface, namespace string) *obs
 
 var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("with missing VPA objects are garbage collected", func() {
 		ns := f.Namespace.Name
@@ -172,7 +172,7 @@ var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("serves recommendation for CronJob", func() {
 		ginkgo.By("Setting up hamster CronJob")
@@ -205,7 +205,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	var (
 		vpaCRD       *vpa_types.VerticalPodAutoscaler
@@ -284,7 +284,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	var (
 		vpaClientSet vpa_clientset.Interface
@@ -361,7 +361,7 @@ func getMilliCpu(resources apiv1.ResourceList) int64 {
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	var vpaClientSet vpa_clientset.Interface
 

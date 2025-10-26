@@ -35,7 +35,7 @@ import (
 
 var _ = utils.RecommenderE2eDescribe("Flags", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	var vpaClientSet vpa_clientset.Interface
 	var hamsterNamespace string
