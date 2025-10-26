@@ -19,10 +19,8 @@ package autoscaling
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"testing"
-	"time"
 
 	// Never, ever remove the line with "/ginkgo". Without it,
 	// the ginkgo test runner will not detect that this
@@ -68,7 +66,6 @@ func TestMain(m *testing.M) {
 		testfiles.AddFileSource(testfiles.RootFileSource{Root: framework.TestContext.RepoRoot})
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	os.Exit(m.Run())
 }
 
