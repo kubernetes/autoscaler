@@ -1003,12 +1003,6 @@ func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1
 	return pdb
 }
 
-func getCurrentPodSetForDeployment(c clientset.Interface, d *appsv1.Deployment) PodSet {
-	podList, err := framework_deployment.GetPodsForDeployment(context.TODO(), c, d)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	return MakePodSet(podList)
-}
-
 func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *appsv1.ReplicaSet) error {
 	if obj == nil {
 		return fmt.Errorf("object provided to create is empty")
