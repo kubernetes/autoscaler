@@ -17,9 +17,11 @@ limitations under the License.
 package simulator
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
@@ -89,6 +91,8 @@ const (
 	BlockedByPod
 	// UnexpectedError - node can't be removed because of an unexpected error.
 	UnexpectedError
+	// NoNodeInfo - node can't be removed because it doesn't have any node info in the cluster snapshot.
+	NoNodeInfo
 )
 
 // RemovalSimulator is a helper object for simulating node removal scenarios.
@@ -152,6 +156,12 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	nodeInfo, err := r.clusterSnapshot.NodeInfos().Get(nodeName)
 	if err != nil {
 		klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
+		unremovableReason := UnexpectedError
+		if errors.Is(err, clustersnapshot.ErrNodeNotFound) {
+			unremovableReason = NoNodeInfo
+		}
+		unremovableNode := &UnremovableNode{Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: nodeName}}, Reason: unremovableReason}
+		return nil, unremovableNode
 	}
 	klog.V(2).Infof("Simulating node %s removal", nodeName)
 
