@@ -431,7 +431,7 @@ var (
 		&k8smetrics.HistogramOpts{
 			Namespace: caNamespace,
 			Name:      "node_removal_latency_seconds",
-			Help:      "Latency from planning (node marked) to final outcome (deleted, aborted, rescued).",
+			Help:      "Latency from when a node is marked unneeded to when its deletion is initiated (deleted=true) or it became needed again (deleted=false).",
 			Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 18), // ~1s → ~1h
 		}, []string{"deleted"},
 	)
