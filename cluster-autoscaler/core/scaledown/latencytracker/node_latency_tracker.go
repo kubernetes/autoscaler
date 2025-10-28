@@ -24,15 +24,6 @@ import (
 	"k8s.io/klog/v2"
 )
 
-// LatencyTracker defines the interface for tracking node removal latency.
-// Implementations record when nodes become unneeded, observe deletion events,
-// and expose thresholds for measuring node removal duration.
-type LatencyTracker interface {
-	ObserveDeletionStart(nodeName string, timestamp time.Time)
-	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
-	UpdateThreshold(nodeName string, threshold time.Duration)
-	GetTrackedNodes() []string
-}
 type unneededNodeState struct {
 	unneededSince time.Time
 	threshold     time.Duration

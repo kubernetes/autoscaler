@@ -356,15 +356,22 @@ type fakeLatencyTracker struct {
 	Observed map[string]time.Duration
 }
 
-func NewFakeLatencyTracker() *fakeLatencyTracker {
-	return &fakeLatencyTracker{Observed: make(map[string]time.Duration)}
+// FakeLatencyTracker implements the latencyTracker interface for tests.
+type FakeLatencyTracker struct {
+	Observed             map[string]time.Duration
+	UpdatedWithList      []*apiv1.Node
+	UpdatedWithDeletions map[string]bool
 }
 
-func (f *fakeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
-	f.Observed[nodeName] = threshold
+func NewFakeLatencyTracker() *FakeLatencyTracker {
+	return &FakeLatencyTracker{
+		Observed: make(map[string]time.Duration),
+	}
 }
-func (f *fakeLatencyTracker) ObserveDeletionStart(nodeName string, timestamp time.Time) {
+func (t *FakeLatencyTracker) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
+	t.UpdatedWithList = list
+	t.UpdatedWithDeletions = currentlyInDeletion
 }
-func (f *fakeLatencyTracker) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
+func (t *FakeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
+	t.Observed[nodeName] = threshold
 }
-func (f *fakeLatencyTracker) GetTrackedNodes() []string { return nil }

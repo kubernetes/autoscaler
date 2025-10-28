@@ -99,11 +99,6 @@ type fakeLatencyTracker struct {
 func (f *fakeLatencyTracker) ObserveDeletionStart(nodeName string, timestamp time.Time) {
 	f.ObservedNodes = append(f.ObservedNodes, nodeName)
 }
-func (f *fakeLatencyTracker) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
-}
-func (f *fakeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {}
-
-func (f *fakeLatencyTracker) GetTrackedNodes() []string { return nil }
 
 func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, force bool, suffix string) map[string]startDeletionTestCase {
 	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}

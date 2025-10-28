@@ -25,7 +25,6 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
@@ -38,11 +37,19 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+// latencyTracker defines the interface for tracking node removal latency.
+// Implementations record when nodes become unneeded, observe deletion events,
+// and expose thresholds for measuring node removal duration.
+type LatencyTracker interface {
+	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
+	UpdateThreshold(nodeName string, threshold time.Duration)
+}
+
 // Nodes tracks the state of cluster nodes that are not needed.
 type Nodes struct {
 	sdtg               scaleDownTimeGetter
 	limitsFinder       *resource.LimitsFinder
-	nodeLatencyTracker latencytracker.LatencyTracker
+	nodeLatencyTracker LatencyTracker
 	cachedList         []*apiv1.Node
 	byName             map[string]*node
 }
@@ -60,7 +67,7 @@ type scaleDownTimeGetter interface {
 }
 
 // NewNodes returns a new initialized Nodes object.
-func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, nlt latencytracker.LatencyTracker) *Nodes {
+func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, nlt LatencyTracker) *Nodes {
 	return &Nodes{
 		sdtg:               sdtg,
 		limitsFinder:       limitsFinder,

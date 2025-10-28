@@ -26,7 +26,6 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
@@ -44,6 +43,11 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+type latencyTracker interface {
+	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
+	UpdateThreshold(nodeName string, threshold time.Duration)
+	GetTrackedNodes() []string
+}
 type eligibilityChecker interface {
 	FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
 }
@@ -77,11 +81,11 @@ type Planner struct {
 	cc                    controllerReplicasCalculator
 	scaleDownSetProcessor nodes.ScaleDownSetProcessor
 	scaleDownContext      *nodes.ScaleDownContext
-	nodeLatencyTracker    latencytracker.LatencyTracker
+	nodeLatencyTracker    latencyTracker
 }
 
 // New creates a new Planner object.
-func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, nlt latencytracker.LatencyTracker) *Planner {
+func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, nlt latencyTracker) *Planner {
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
 	minUpdateInterval := autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime
 	if minUpdateInterval == 0*time.Nanosecond {

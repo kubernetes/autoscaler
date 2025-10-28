@@ -48,7 +48,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
@@ -3144,7 +3143,7 @@ func waitForDeleteToFinish(t *testing.T, deleteFinished <-chan bool) {
 	}
 }
 
-func newScaleDownPlannerAndActuator(autoscalingCtx *ca_context.AutoscalingContext, p *ca_processors.AutoscalingProcessors, cs *clusterstate.ClusterStateRegistry, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, nodeDeletionLatencyTracker latencytracker.LatencyTracker) (scaledown.Planner, scaledown.Actuator) {
+func newScaleDownPlannerAndActuator(autoscalingCtx *ca_context.AutoscalingContext, p *ca_processors.AutoscalingProcessors, cs *clusterstate.ClusterStateRegistry, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, nodeDeletionLatencyTracker testLatencyTracker) (scaledown.Planner, scaledown.Actuator) {
 	autoscalingCtx.MaxScaleDownParallelism = 10
 	autoscalingCtx.MaxDrainParallelism = 1
 	autoscalingCtx.NodeDeletionBatcherInterval = 0 * time.Second
@@ -3353,4 +3352,11 @@ func (m *latencytrackerMock) UpdateThreshold(nodeName string, threshold time.Dur
 func (m *latencytrackerMock) GetTrackedNodes() []string {
 	args := m.Called()
 	return args.Get(0).([]string)
+}
+
+type testLatencyTracker interface {
+	ObserveDeletionStart(nodeName string, timestamp time.Time)
+	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
+	UpdateThreshold(nodeName string, threshold time.Duration)
+	GetTrackedNodes() []string
 }
