@@ -363,7 +363,7 @@ func NewFakeLatencyTracker() *fakeLatencyTracker {
 func (f *fakeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
 	f.Observed[nodeName] = threshold
 }
-func (f *fakeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Time) {
+func (f *fakeLatencyTracker) ObserveDeletionStart(nodeName string, timestamp time.Time) {
 }
 func (f *fakeLatencyTracker) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
 }

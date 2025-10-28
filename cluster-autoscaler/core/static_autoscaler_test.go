@@ -381,7 +381,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	assert.NotNil(t, provider)
 	// NodeLatencyTracker mock
 	nltMock := &latencytrackerMock{}
-	nltMock.On("ObserveDeletion",
+	nltMock.On("ObserveDeletionStart",
 		"n2",
 		mock.MatchedBy(func(t time.Time) bool { return !t.IsZero() }),
 	).Return()
@@ -3338,7 +3338,7 @@ type latencytrackerMock struct {
 	mock.Mock
 }
 
-func (m *latencytrackerMock) ObserveDeletion(nodeName string, timestamp time.Time) {
+func (m *latencytrackerMock) ObserveDeletionStart(nodeName string, timestamp time.Time) {
 	m.Called(nodeName, timestamp)
 }
 

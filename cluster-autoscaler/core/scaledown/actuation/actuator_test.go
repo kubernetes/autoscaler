@@ -95,8 +95,8 @@ type fakeLatencyTracker struct {
 	ObservedNodes []string
 }
 
-// ObserveDeletion simply records the node name
-func (f *fakeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Time) {
+// ObserveDeletionStart simply records the node name
+func (f *fakeLatencyTracker) ObserveDeletionStart(nodeName string, timestamp time.Time) {
 	f.ObservedNodes = append(f.ObservedNodes, nodeName)
 }
 func (f *fakeLatencyTracker) UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time) {
@@ -1393,7 +1393,7 @@ taintsLoop:
 	if diff := cmp.Diff(tc.wantNodeDeleteResults, nodeDeleteResults, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
 		t.Errorf("NodeDeleteResults diff (-want +got):\n%s", diff)
 	}
-	// Verify ObserveDeletion was called for all nodes that were actually deleted
+	// Verify ObserveDeletionStart was called for all nodes that were actually deleted
 	for _, expectedNode := range tc.wantDeletedNodes {
 		found := false
 		for _, observed := range fakeNodeLatencyTracker.ObservedNodes {
@@ -1403,7 +1403,7 @@ taintsLoop:
 			}
 		}
 		if !found {
-			t.Errorf("Expected ObserveDeletion to be called for node %s, but it wasn't", expectedNode)
+			t.Errorf("Expected ObserveDeletionStart to be called for node %s, but it wasn't", expectedNode)
 		}
 	}
 }
@@ -1631,7 +1631,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 						continue
 					}
 
-					// Verify ObserveDeletion was called
+					// Verify ObserveDeletionStart was called
 					found := false
 					for _, observedNode := range fakeNodeLatencyTracker.ObservedNodes {
 						if observedNode == node.Name {
@@ -1640,7 +1640,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 						}
 					}
 					if !found {
-						t.Errorf("Expected ObserveDeletion to be called for node %s", node.Name)
+						t.Errorf("Expected ObserveDeletionStart to be called for node %s", node.Name)
 					}
 				}
 			}

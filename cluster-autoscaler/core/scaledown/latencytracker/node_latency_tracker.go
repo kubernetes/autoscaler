@@ -28,7 +28,7 @@ import (
 // Implementations record when nodes become unneeded, observe deletion events,
 // and expose thresholds for measuring node removal duration.
 type LatencyTracker interface {
-	ObserveDeletion(nodeName string, timestamp time.Time)
+	ObserveDeletionStart(nodeName string, timestamp time.Time)
 	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
 	UpdateThreshold(nodeName string, threshold time.Duration)
 	GetTrackedNodes() []string
@@ -100,8 +100,8 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
 	}
 }
 
-// ObserveDeletion is called by the actuator just before node deletion.
-func (t *NodeLatencyTracker) ObserveDeletion(nodeName string, timestamp time.Time) {
+// ObserveDeletionStart is called by the actuator just before node deletion.
+func (t *NodeLatencyTracker) ObserveDeletionStart(nodeName string, timestamp time.Time) {
 	if info, exists := t.nodes[nodeName]; exists {
 		duration := timestamp.Sub(info.unneededSince)
 

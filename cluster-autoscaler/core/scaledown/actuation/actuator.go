@@ -350,14 +350,14 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 		if force {
 			go a.nodeDeletionScheduler.scheduleForceDeletion(nodeInfo, nodeGroup, batchSize, drain)
 			if a.nodeLatencyTracker != nil {
-				a.nodeLatencyTracker.ObserveDeletion(node.Name, time.Now())
+				a.nodeLatencyTracker.ObserveDeletionStart(node.Name, time.Now())
 			}
 			continue
 		}
 
 		go a.nodeDeletionScheduler.ScheduleDeletion(nodeInfo, nodeGroup, batchSize, drain)
 		if a.nodeLatencyTracker != nil {
-			a.nodeLatencyTracker.ObserveDeletion(node.Name, time.Now())
+			a.nodeLatencyTracker.ObserveDeletionStart(node.Name, time.Now())
 		}
 	}
 }
