@@ -504,7 +504,7 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, latencytracker.NewNodeLatencyTracker())
+			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, latencytracker.NewNodeLatencyTracker(), deletiontracker.NewNodeDeletionTracker(0*time.Second))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				autoscalingCtx.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -521,13 +521,6 @@ func TestUpdateClusterState(t *testing.T) {
 			for _, n := range tc.nodes {
 				assert.Equal(t, wantUnneeded[n.Name], p.unneededNodes.Contains(n.Name), []string{n.Name, "unneeded"})
 				assert.Equal(t, wantUnremovable[n.Name], p.unremovableNodes.Contains(n.Name), []string{n.Name, "unremovable"})
-			}
-			tracked := p.nodeLatencyTracker.GetTrackedNodes()
-			for _, name := range tc.wantUnneeded {
-				assert.Contains(t, tracked, name, "expected node in latency tracker")
-			}
-			for _, name := range tc.wantUnremovable {
-				assert.NotContains(t, tracked, name, "expected node not in latency tracker")
 			}
 		})
 	}
@@ -707,7 +700,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, latencytracker.NewNodeLatencyTracker())
+			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, latencytracker.NewNodeLatencyTracker(), deletiontracker.NewNodeDeletionTracker(0*time.Second))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
@@ -841,7 +834,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 			assert.NoError(t, err)
 
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, nil)
+			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, nil, nil)
 
 			p.unneededNodes.AsList()
 		})
@@ -1031,7 +1024,7 @@ func TestNodesToDelete(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, latencytracker.NewNodeLatencyTracker())
+			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil, latencytracker.NewNodeLatencyTracker(), deletiontracker.NewNodeDeletionTracker(0*time.Second))
 			p.latestUpdate = time.Now()
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))

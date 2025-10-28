@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
@@ -43,11 +44,6 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-type latencyTracker interface {
-	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
-	UpdateThreshold(nodeName string, threshold time.Duration)
-	GetTrackedNodes() []string
-}
 type eligibilityChecker interface {
 	FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
 }
@@ -81,18 +77,17 @@ type Planner struct {
 	cc                    controllerReplicasCalculator
 	scaleDownSetProcessor nodes.ScaleDownSetProcessor
 	scaleDownContext      *nodes.ScaleDownContext
-	nodeLatencyTracker    latencyTracker
 }
 
 // New creates a new Planner object.
-func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, nlt latencyTracker) *Planner {
+func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, nlt unneeded.LatencyTracker, ndt *deletiontracker.NodeDeletionTracker) *Planner {
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
 	minUpdateInterval := autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime
 	if minUpdateInterval == 0*time.Nanosecond {
 		minUpdateInterval = 1 * time.Nanosecond
 	}
 
-	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder, nlt)
+	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder, nlt, ndt)
 	if autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
 		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL)
 	}
@@ -110,7 +105,6 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
 		scaleDownContext:      nodes.NewDefaultScaleDownContext(),
 		minUpdateInterval:     minUpdateInterval,
-		nodeLatencyTracker:    nlt,
 	}
 }
 
@@ -135,9 +129,6 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	podDestinations = filterOutOngoingDeletions(podDestinations, deletions)
 	scaleDownCandidates = filterOutOngoingDeletions(scaleDownCandidates, deletions)
 	p.categorizeNodes(asMap(nodeNames(podDestinations)), scaleDownCandidates)
-	if p.nodeLatencyTracker != nil {
-		p.nodeLatencyTracker.UpdateStateWithUnneededList(p.unneededNodes.AsList(), deletions, p.latestUpdate)
-	}
 	p.rs.DropOldHints()
 	p.actuationInjector.DropOldHints()
 	return nil

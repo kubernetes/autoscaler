@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
@@ -98,12 +99,16 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			nodes := NewNodes(nil, nil, nil)
+			fakeTracker := NewFakeLatencyTracker()
+			ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+			nodes := NewNodes(nil, nil, fakeTracker, ndt)
+
 			nodes.Update(tc.initialNodes, initialTimestamp)
+			assert.Equal(t, len(tc.initialNodes), len(fakeTracker.UpdatedWithList))
 			nodes.Update(tc.finalNodes, finalTimestamp)
+
 			wantNodes := len(tc.wantTimestamps)
 			assert.Equal(t, wantNodes, len(nodes.AsList()))
 			assert.Equal(t, wantNodes, len(nodes.byName))
@@ -204,8 +209,14 @@ func TestRemovableAt(t *testing.T) {
 			assert.NoError(t, err)
 
 			fakeTracker := NewFakeLatencyTracker()
-			n := NewNodes(&fakeScaleDownTimeGetter{}, &resource.LimitsFinder{}, fakeTracker)
+			ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+			n := NewNodes(&fakeScaleDownTimeGetter{}, &resource.LimitsFinder{}, fakeTracker, ndt)
+
 			n.Update(removableNodes, time.Now())
+
+			assert.Equal(t, len(removableNodes), len(fakeTracker.UpdatedWithList), "UpdateStateWithUnneededList not called with correct number of nodes")
+			assert.Empty(t, fakeTracker.UpdatedWithDeletions, "Deletions map should be empty")
+
 			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
 				ResourcesLeft:       resource.Limits{},
@@ -214,20 +225,19 @@ func TestRemovableAt(t *testing.T) {
 			if len(gotDrainToRemove) != tc.numDrainToRemove || len(gotEmptyToRemove) != tc.numEmptyToRemove {
 				t.Errorf("%s: getNodesToRemove() return %d, %d, want %d, %d", tc.name, len(gotEmptyToRemove), len(gotDrainToRemove), tc.numEmptyToRemove, tc.numDrainToRemove)
 			}
-			expectedThreshold := 0 * time.Second // matches fakeScaleDownTimeGetter
+			expectedThreshold := 0 * time.Second
 			for _, node := range removableNodes {
 				nodeName := node.Node.Name
 				got, ok := fakeTracker.Observed[nodeName]
 				if !ok {
-					t.Errorf("NodeLatencyTracker not called for node %s", nodeName)
+					t.Errorf("NodeLatencyTracker.UpdateThreshold not called for node %s", nodeName)
 				} else if got != expectedThreshold {
-					t.Errorf("NodeLatencyTracker called with %v for node %s, want %v", got, nodeName, expectedThreshold)
+					t.Errorf("NodeLatencyTracker.UpdateThreshold called with %v for node %s, want %v", got, nodeName, expectedThreshold)
 				}
 			}
 		})
 	}
 }
-
 func TestNodeLoadFromExistingTaints(t *testing.T) {
 	deletionCandidateTaint := taints.DeletionCandidateTaint()
 	currentTime := time.Now()
@@ -286,7 +296,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			t.Parallel()
 			currentTime = time.Now()
 
-			nodes := NewNodes(nil, nil, nil)
+			nodes := NewNodes(nil, nil, nil, nil)
 
 			allNodeLister := kubernetes.NewTestNodeLister(nil)
 			allNodeLister.SetNodes(tc.allNodes)
@@ -350,10 +360,6 @@ func (f *fakeScaleDownTimeGetter) GetScaleDownUnneededTime(cloudprovider.NodeGro
 
 func (f *fakeScaleDownTimeGetter) GetScaleDownUnreadyTime(cloudprovider.NodeGroup) (time.Duration, error) {
 	return 0 * time.Second, nil
-}
-
-type fakeLatencyTracker struct {
-	Observed map[string]time.Duration
 }
 
 // FakeLatencyTracker implements the latencyTracker interface for tests.
