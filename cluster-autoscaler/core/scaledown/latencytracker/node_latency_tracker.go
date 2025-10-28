@@ -33,7 +33,7 @@ type LatencyTracker interface {
 	UpdateThreshold(nodeName string, threshold time.Duration)
 	GetTrackedNodes() []string
 }
-type nodeInfo struct {
+type unneededNodeState struct {
 	unneededSince time.Time
 	threshold     time.Duration
 }
@@ -42,13 +42,13 @@ type nodeInfo struct {
 // It keeps track of nodes that are marked as unneeded, when they became unneeded,
 // and thresholds to adjust node removal latency metrics.
 type NodeLatencyTracker struct {
-	nodes map[string]nodeInfo
+	nodes map[string]unneededNodeState
 }
 
 // NewNodeLatencyTracker creates a new tracker.
 func NewNodeLatencyTracker() *NodeLatencyTracker {
 	return &NodeLatencyTracker{
-		nodes: make(map[string]nodeInfo),
+		nodes: make(map[string]unneededNodeState),
 	}
 }
 
@@ -75,7 +75,7 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
 		currentSet[node.Name] = struct{}{}
 
 		if _, exists := t.nodes[node.Name]; !exists {
-			t.nodes[node.Name] = nodeInfo{
+			t.nodes[node.Name] = unneededNodeState{
 				unneededSince: timestamp,
 				threshold:     0,
 			}
