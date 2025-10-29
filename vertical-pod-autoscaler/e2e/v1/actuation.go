@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
@@ -884,7 +884,7 @@ func testEvictsSingletonPodWhenConfigured(f *framework.Framework, controller *au
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
 		WithTargetRef(controller).
-		WithMinReplicas(pointer.Int32(1)).
+		WithMinReplicas(ptr.To(int32(1))).
 		WithContainer(containerName).
 		AppendRecommendation(
 			test.Recommendation().
@@ -1001,12 +1001,6 @@ func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1
 	_, err := f.ClientSet.PolicyV1().PodDisruptionBudgets(f.Namespace.Name).Create(context.TODO(), pdb, metav1.CreateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return pdb
-}
-
-func getCurrentPodSetForDeployment(c clientset.Interface, d *appsv1.Deployment) PodSet {
-	podList, err := framework_deployment.GetPodsForDeployment(context.TODO(), c, d)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	return MakePodSet(podList)
 }
 
 func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *appsv1.ReplicaSet) error {
