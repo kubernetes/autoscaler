@@ -7,6 +7,7 @@
 - [CPU Recommendation Rounding](#cpu-recommendation-rounding)
 - [Memory Recommendation Rounding](#memory-recommendation-rounding)
 - [In-Place Updates](#in-place-updates-inplaceorrecreate)
+- [VPA and LimitRange](#vpa-and-limitrange)
 
 ## Limits control
 
@@ -153,3 +154,183 @@ VPA provides metrics to track in-place update operations:
 * `vpa_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
 * `vpa_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
 * `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
+
+
+## VPA and LimitRange
+
+The Admission Controller and the Updater component post-process recommendations to obey the constraints set in [LimitRange API objects](https://kubernetes.io/docs/concepts/policy/limit-range/). There are some edge cases where they might not. This section provides examples of how these components behave with different constraints in place.
+
+We use this Deployment with a Pod that contains two containers in all examples:
+
+```yaml
+containers:
+  - name: main
+    image: main:latest
+    resources:
+      limits:
+        memory: 200Mi
+      requests:
+        memory: 100Mi
+  - name: sidecar1
+    image: alpine/curl:latest
+    resources:
+      limits:
+        memory: 50Mi
+      requests:
+        memory: 50Mi
+```
+
+We use the following `updatePolicy` section of the VPA object, which targets the Deployment object shown above:
+
+```yaml
+updatePolicy:
+  updateMode: Recreate
+  resourcePolicy:
+    containerPolicies:
+      - containerName: main
+        controlledResources:
+          - memory
+      - containerName: sidecar1
+        controlledResources:
+          - memory
+```
+
+The VPA's recommender calculates the following container-level recommendations. These recommendations are used across all examples. In other words, this is how the `status` section of the VPA object looks - irrelevant fields are omitted to make the manifest more compact:
+
+```yaml
+status:
+  recommendation:
+    containerRecommendations:
+    - containerName: main
+      target:
+        memory: 160Mi
+    - containerName: sidecar1
+      target:
+        memory: 25Mi
+```
+
+### Example 1
+
+Here is the defined LimitRange object that applies to our Deployment:
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limitrange1
+  namespace: default
+spec:
+  limits:
+  - type: Container
+    min:
+      memory: 50Mi
+    defaultRequest:
+      memory: 50Mi
+```
+
+When the Pod is killed/evicted, the admission-controller recreates it to obey the constraints set in the LimitRange object, using the following container-level resource sections:
+
+```yaml
+containers:
+  - name: main
+    image: main:latest
+    resources:
+      limits:
+        memory: 320Mi
+      requests:
+        memory: 160Mi
+  - name: sidecar1
+    image: alpine/curl:latest
+    resources:
+      limits:
+        memory: 50Mi
+      requests:
+        memory: 50Mi
+```
+
+There is no constraint in the LimitRange object that is currently violated for the container called `main`. Its request is defined, and the calculated request is greater than the value specified in the `min.memory` field. Similarly, its calculated limit is greater than the value defined in `min.memory`. Therefore, the admission-controller sets the target as the request and increases the limit proportionally to maintain the 1:2 ratio defined in the Deployment object.
+
+For the `sidecar1` container, the recommended memory is 25Mi. However, this violates a constraint defined in the LimitRange object - the request must be higher than the minimum set in the LimitRange (i.e. `min.memory`). Therefore, the admission-controller increases both the requests and limits to make the Pod schedulable. The request-to-limit ratio for this container is 1:1.
+
+### Example 2
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limitrange1
+  namespace: default
+spec:
+  limits:
+  - type: Container
+    max:
+      memory: 250Mi
+    default:
+      memory: 25Mi
+    defaultRequest:
+      memory: 25Mi
+```
+
+By using this LimitRange object and the container-level recommendations, when the Pod is killed, the admission-controller sets the following values:
+* For the container called `main`, the request-to-limit ratio is still 1:2, which initially results in a 160Mi memory request and a 320Mi memory limit. However, the limit now violates the `max` value in the LimitRange object. The admission-controller therefore decreases the request and limit proportionally to maintain the 1:2 ratio, resulting in a 125Mi request and a 250Mi limit.
+* For the container called `sidecar1`, there is no violation based on the LimitRange. Therefore, the admission-controller sets a 25Mi request and a 25Mi limit.
+
+For this example, here are the updated container resource sections:
+
+```yaml
+containers:
+  - name: main
+    image: main:latest
+    resources:
+      limits:
+        memory: 250Mi
+      requests:
+        memory: 125Mi
+  - name: sidecar1
+    image: alpine/curl:latest
+    resources:
+      limits:
+        memory: 25Mi
+      requests:
+        memory: 25Mi
+```
+
+### Example 3
+
+In this example, let's show how a `resourcePolicy` section from a VPA object can make the Pod unschedulable, as the constraints defined there take precedence over the constraints in the LimitRange object. For example:
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limitrange1
+  namespace: default
+spec:
+  limits:
+  - type: Container
+    limits:
+    - type: Container
+      min:
+        memory: 100Mi
+      defaultRequest:
+        memory: 100Mi
+```
+
+The following shows the updated policy from the VPA object:
+
+```yaml
+updatePolicy:
+  updateMode: Recreate
+  resourcePolicy:
+    containerPolicies:
+      - containerName: main
+        controlledResources:
+          - memory
+      - containerName: sidecar1
+        controlledResources:
+          - memory
+        maxAllowed:
+          memory: 50Mi
+```
+
+By using this LimitRange and the slightly modified VPA object, where an upper limit is set for the `sidecar1` container's request, we make this Pod unschedulable. The minimum memory request for a container is 100Mi (`min.memory` from the LimitRange), while the admission-controller is only allowed to set a 50Mi memory request. This implies that extra care is needed when using `maxAllowed` and `minAllowed` if a LimitRange object is in place.
