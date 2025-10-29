@@ -263,7 +263,7 @@ replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.34.1
 
 replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.34.1
 
-replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.34.1
+replace k8s.io/kube-scheduler => github.com/gnufied/kube-scheduler v0.0.0-20251031141056-af9eae347fee
 
 replace k8s.io/kubectl => k8s.io/kubectl v0.34.1
 
@@ -292,3 +292,5 @@ replace k8s.io/autoscaler/cluster-autoscaler/apis => ./apis
 replace k8s.io/cri-client => k8s.io/cri-client v0.34.1
 
 replace k8s.io/externaljwt => k8s.io/externaljwt v0.34.1
+
+replace k8s.io/kubernetes => github.com/gnufied/kubernetes v1.31.0-alpha.3.0.20251031150658-c71e45c73523
