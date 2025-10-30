@@ -53,25 +53,27 @@ const (
 )
 
 type testConfigBuilder struct {
-	scalableType scalableTestType
-	namespace    string
-	clusterName  string
-	namePrefix   string
-	nodeCount    int
-	annotations  map[string]string
-	capacity     map[string]string
-	nodeInfo     map[string]string
+	scalableType  scalableTestType
+	namespace     string
+	clusterName   string
+	namePrefix    string
+	nodeCount     int
+	annotations   map[string]string
+	capacity      map[string]string
+	nodeInfo      map[string]string
+	managedLabels map[string]string
 }
 
 // NewTestConfigBuilder returns a builder for dynamically constructing mock ClusterAPI resources for testing.
 func NewTestConfigBuilder() *testConfigBuilder {
 	return &testConfigBuilder{
-		namespace:   RandomString(6),
-		clusterName: RandomString(6),
-		namePrefix:  RandomString(6),
-		nodeCount:   0,
-		annotations: nil,
-		capacity:    nil,
+		namespace:     RandomString(6),
+		clusterName:   RandomString(6),
+		namePrefix:    RandomString(6),
+		nodeCount:     0,
+		annotations:   nil,
+		capacity:      nil,
+		managedLabels: nil,
 	}
 }
 
@@ -93,6 +95,7 @@ func (b *testConfigBuilder) Build() *TestConfig {
 			b.annotations,
 			b.capacity,
 			b.nodeInfo,
+			b.managedLabels,
 		)[0],
 	)[0]
 }
@@ -114,6 +117,7 @@ func (b *testConfigBuilder) BuildMultiple(configCount int) []*TestConfig {
 			b.annotations,
 			b.capacity,
 			b.nodeInfo,
+			b.managedLabels,
 		)...,
 	)
 }
@@ -186,6 +190,19 @@ func (b *testConfigBuilder) WithNodeInfo(n map[string]string) *testConfigBuilder
 	return b
 }
 
+func (b *testConfigBuilder) WithManagedLabels(l map[string]string) *testConfigBuilder {
+	if l == nil {
+		// explicitly setting managed labels to nil
+		b.managedLabels = nil
+	} else {
+		if b.managedLabels == nil {
+			b.managedLabels = map[string]string{}
+		}
+		maps.Insert(b.managedLabels, maps.All(l))
+	}
+	return b
+}
+
 // TestConfig contains clusterspecific information about a single test configuration.
 type TestConfig struct {
 	spec              *TestSpec
@@ -235,6 +252,9 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 								"kind":       machineTemplateKind,
 								"name":       "TestMachineTemplate",
 							},
+							"metadata": map[string]interface{}{
+								"labels": map[string]interface{}{},
+							},
 						},
 					},
 				},
@@ -243,6 +263,12 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 		}
 
 		config.machineSet.SetAnnotations(make(map[string]string))
+
+		if spec.managedLabels != nil {
+			if err := unstructured.SetNestedStringMap(config.machineSet.Object, spec.managedLabels, "spec", "template", "spec", "metadata", "labels"); err != nil {
+				panic(err)
+			}
+		}
 
 		if !spec.rootIsMachineDeployment {
 			config.machineSet.SetAnnotations(spec.annotations)
@@ -273,6 +299,9 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 									"kind":     machineTemplateKind,
 									"name":     "TestMachineTemplate",
 								},
+								"metadata": map[string]interface{}{
+									"labels": map[string]interface{}{},
+								},
 							},
 						},
 					},
@@ -293,6 +322,12 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 				},
 			}
 			config.machineSet.SetOwnerReferences(ownerRefs)
+
+			if spec.managedLabels != nil {
+				if err := unstructured.SetNestedStringMap(config.machineDeployment.Object, spec.managedLabels, "spec", "template", "spec", "metadata", "labels"); err != nil {
+					panic(err)
+				}
+			}
 		}
 		config.machineSet.SetLabels(machineSetLabels)
 		if err := unstructured.SetNestedStringMap(config.machineSet.Object, machineSetLabels, "spec", "selector", "matchLabels"); err != nil {
@@ -352,6 +387,7 @@ type TestSpec struct {
 	annotations             map[string]string
 	capacity                map[string]string
 	nodeInfo                map[string]string
+	managedLabels           map[string]string
 	machineDeploymentName   string
 	machineSetName          string
 	machinePoolName         string
@@ -361,20 +397,42 @@ type TestSpec struct {
 	rootIsMachineDeployment bool
 }
 
-func createTestSpecs(namespace, clusterName, namePrefix string, scalableResourceCount, nodeCount int, isMachineDeployment bool, annotations map[string]string, capacity map[string]string, nodeInfo map[string]string) []TestSpec {
+func createTestSpecs(
+	namespace string,
+	clusterName string,
+	namePrefix string,
+	scalableResourceCount int,
+	nodeCount int,
+	isMachineDeployment bool,
+	annotations map[string]string,
+	capacity map[string]string,
+	nodeInfo map[string]string,
+	managedLabels map[string]string,
+) []TestSpec {
 	var specs []TestSpec
 
 	for i := 0; i < scalableResourceCount; i++ {
-		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations, capacity, nodeInfo))
+		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations, capacity, nodeInfo, managedLabels))
 	}
 
 	return specs
 }
 
-func createTestSpec(namespace, clusterName, name string, nodeCount int, isMachineDeployment bool, annotations map[string]string, capacity map[string]string, nodeInfo map[string]string) TestSpec {
+func createTestSpec(
+	namespace string,
+	clusterName string,
+	name string,
+	nodeCount int,
+	isMachineDeployment bool,
+	annotations map[string]string,
+	capacity map[string]string,
+	nodeInfo map[string]string,
+	managedLabels map[string]string,
+) TestSpec {
 	return TestSpec{
 		annotations:             annotations,
 		capacity:                capacity,
+		managedLabels:           managedLabels,
 		machineDeploymentName:   name,
 		machineSetName:          name,
 		clusterName:             clusterName,
