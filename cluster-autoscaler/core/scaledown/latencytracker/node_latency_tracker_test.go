@@ -10,8 +10,6 @@ You may obtain a copy of the License at
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
 */
 
 package latencytracker
@@ -22,71 +20,58 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 )
 
 func TestNodeLatencyTracker(t *testing.T) {
 	baseTime := time.Now()
 
 	tests := []struct {
-		name                 string
-		setupNodes           map[string]unneededNodeState
-		unneededList         []string
-		currentlyInDeletion  map[string]bool
-		updateThresholds     map[string]time.Duration
-		observeDeletionStart []string
-		wantTrackedNodes     []string
-		wantDeletionTimes    map[string]time.Duration
+		name             string
+		setupNodes       map[string]unneededNodeState
+		unneededList     []string
+		unremovableList  []string
+		updateThresholds map[string]time.Duration
+		observeDeletions []string
+		wantTrackedNodes []string
 	}{
 		{
-			name:                 "add new unneeded nodes",
-			setupNodes:           map[string]unneededNodeState{},
-			unneededList:         []string{"node1", "node2"},
-			currentlyInDeletion:  map[string]bool{},
-			updateThresholds:     map[string]time.Duration{},
-			observeDeletionStart: []string{},
-			wantTrackedNodes:     []string{"node1", "node2"},
+			name:             "add new unneeded nodes",
+			setupNodes:       map[string]unneededNodeState{},
+			unneededList:     []string{"node1", "node2"},
+			unremovableList:  []string{},
+			updateThresholds: map[string]time.Duration{},
+			wantTrackedNodes: []string{"node1", "node2"},
 		},
 		{
 			name: "observe deletion with threshold",
 			setupNodes: map[string]unneededNodeState{
 				"node1": {unneededSince: baseTime, threshold: 2 * time.Second},
 			},
-			unneededList:         []string{},
-			currentlyInDeletion:  map[string]bool{},
-			updateThresholds:     map[string]time.Duration{},
-			observeDeletionStart: []string{"node1"},
-			wantTrackedNodes:     []string{},
-			wantDeletionTimes: map[string]time.Duration{
-				"node1": 3 * time.Second, // simulate observation 5s after UnneededSince, threshold 2s
-			},
+			unneededList:     []string{},
+			unremovableList:  []string{},
+			observeDeletions: []string{"node1"},
+			wantTrackedNodes: []string{},
 		},
 		{
-			name: "remove unneeded node not in deletion",
+			name: "node removed from unneeded but not unremovable",
 			setupNodes: map[string]unneededNodeState{
 				"node1": {unneededSince: baseTime, threshold: 1 * time.Second},
 				"node2": {unneededSince: baseTime, threshold: 0},
 			},
-			unneededList:         []string{"node2"}, // node1 is removed from unneeded
-			currentlyInDeletion:  map[string]bool{},
-			updateThresholds:     map[string]time.Duration{},
-			observeDeletionStart: []string{},
-			wantTrackedNodes:     []string{"node2"},
-			wantDeletionTimes: map[string]time.Duration{
-				"node1": 5*time.Second - 1*time.Second, // assume current timestamp baseTime+5s
-			},
+			unneededList:     []string{"node1"},
+			unremovableList:  []string{"node2"},
+			wantTrackedNodes: []string{"node1"},
 		},
 		{
 			name: "update threshold",
 			setupNodes: map[string]unneededNodeState{
 				"node1": {unneededSince: baseTime, threshold: 1 * time.Second},
 			},
-			unneededList:        []string{"node1"},
-			currentlyInDeletion: map[string]bool{},
-			updateThresholds: map[string]time.Duration{
-				"node1": 4 * time.Second,
-			},
-			observeDeletionStart: []string{},
-			wantTrackedNodes:     []string{"node1"},
+			unneededList:     []string{"node1"},
+			updateThresholds: map[string]time.Duration{"node1": 4 * time.Second},
+			wantTrackedNodes: []string{"node1"},
 		},
 	}
 
@@ -94,50 +79,55 @@ func TestNodeLatencyTracker(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tracker := NewNodeLatencyTracker()
 			for name, info := range tt.setupNodes {
-				tracker.nodes[name] = info
+				tracker.unneededNodes[name] = info
 			}
 
 			for node, threshold := range tt.updateThresholds {
 				tracker.UpdateThreshold(node, threshold)
 			}
+
+			// Step 1: add unneeded nodes
 			unneededNodes := make([]*apiv1.Node, len(tt.unneededList))
 			for i, name := range tt.unneededList {
 				unneededNodes[i] = &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: name}}
 			}
-			// simulate current timestamp as baseTime + 5s
-			currentTime := baseTime.Add(5 * time.Second)
-			tracker.UpdateStateWithUnneededList(unneededNodes, tt.currentlyInDeletion, currentTime)
 
-			// Observe deletions
-			for _, node := range tt.observeDeletionStart {
-				tracker.ObserveDeletionStart(node, currentTime)
+			currentTime := baseTime.Add(5 * time.Second)
+			tracker.UpdateScaleDownCandidates(unneededNodes, currentTime)
+
+			// Step 2: simulate ScaleDownStatus
+			sd := &status.ScaleDownStatus{}
+			for _, name := range tt.observeDeletions {
+				sd.ScaledDownNodes = append(sd.ScaledDownNodes, &status.ScaleDownNode{Node: &apiv1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: name},
+				}})
+			}
+			for _, name := range tt.unremovableList {
+				sd.UnremovableNodes = append(sd.UnremovableNodes, &status.UnremovableNode{
+					Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: name}},
+				})
 			}
 
+			// Process unremovable/deleted nodes
+			tracker.Process(&ca_context.AutoscalingContext{}, sd)
+
+			// Step 3: call UpdateScaleDownCandidates again with empty list to remove nodes
+			tracker.UpdateScaleDownCandidates([]*apiv1.Node{}, currentTime.Add(5*time.Second))
+
 			// Check tracked nodes
-			gotTracked := tracker.GetTrackedNodes()
+			gotTracked := tracker.getTrackedNodes()
 			expectedMap := make(map[string]struct{})
 			for _, n := range tt.wantTrackedNodes {
 				expectedMap[n] = struct{}{}
 			}
 			for _, n := range gotTracked {
 				if _, ok := expectedMap[n]; !ok {
-					t.Errorf("unexpected tracked node %q", n)
+					t.Errorf("[%s] unexpected tracked node %q", tt.name, n)
 				}
 				delete(expectedMap, n)
 			}
 			for n := range expectedMap {
-				t.Errorf("expected node %q to be tracked, but was not", n)
-			}
-
-			for node, expectedDuration := range tt.wantDeletionTimes {
-				info, ok := tt.setupNodes[node]
-				if !ok {
-					continue
-				}
-				duration := currentTime.Sub(info.unneededSince) - info.threshold
-				if duration != expectedDuration {
-					t.Errorf("node %q expected deletion duration %v, got %v", node, expectedDuration, duration)
-				}
+				t.Errorf("[%s] expected node %q to be tracked, but was not", tt.name, n)
 			}
 		})
 	}

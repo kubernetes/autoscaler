@@ -174,13 +174,15 @@ func NewStaticAutoscaler(
 	var ndlt *latencytracker.NodeLatencyTracker
 	if autoscalingCtx.AutoscalingOptions.NodeRemovalLatencyTrackingEnabled {
 		ndlt = latencytracker.NewNodeLatencyTracker()
+		processors.ScaleDownCandidatesNotifier.Register(ndlt)
+		processors.ScaleDownStatusProcessor = ndlt
 	}
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules, ndlt, ndt)
+	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules, ndlt)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
-	scaleDownActuator := actuation.NewActuator(autoscalingCtx, processors.ScaleStateNotifier, ndt, ndlt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
+	scaleDownActuator := actuation.NewActuator(autoscalingCtx, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingCtx.ScaleDownActuator = scaleDownActuator
 
 	if scaleUpOrchestrator == nil {

@@ -54,16 +54,10 @@ const (
 	maxConcurrentNodesTainting = 5
 )
 
-// latencyTracker defines the interface for tracking node removal latency.
-type latencyTracker interface {
-	ObserveDeletionStart(nodeName string, timestamp time.Time)
-}
-
 // Actuator is responsible for draining and deleting nodes.
 type Actuator struct {
 	autoscalingCtx        *ca_context.AutoscalingContext
 	nodeDeletionTracker   *deletiontracker.NodeDeletionTracker
-	nodeLatencyTracker    latencyTracker
 	nodeDeletionScheduler *GroupDeletionScheduler
 	deleteOptions         options.NodeDeleteOptions
 	drainabilityRules     rules.Rules
@@ -84,7 +78,7 @@ type actuatorNodeGroupConfigGetter interface {
 }
 
 // NewActuator returns a new instance of Actuator.
-func NewActuator(autoscalingCtx *ca_context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, ndt *deletiontracker.NodeDeletionTracker, nlt latencyTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter) *Actuator {
+func NewActuator(autoscalingCtx *ca_context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter) *Actuator {
 	ndb := NewNodeDeletionBatcher(autoscalingCtx, scaleStateNotifier, ndt, autoscalingCtx.NodeDeletionBatcherInterval)
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
 	var evictor Evictor
@@ -96,7 +90,6 @@ func NewActuator(autoscalingCtx *ca_context.AutoscalingContext, scaleStateNotifi
 	return &Actuator{
 		autoscalingCtx:            autoscalingCtx,
 		nodeDeletionTracker:       ndt,
-		nodeLatencyTracker:        nlt,
 		nodeDeletionScheduler:     NewGroupDeletionScheduler(autoscalingCtx, ndt, ndb, evictor),
 		budgetProcessor:           budgets.NewScaleDownBudgetProcessor(autoscalingCtx),
 		deleteOptions:             deleteOptions,
@@ -353,16 +346,10 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 
 		if force {
 			go a.nodeDeletionScheduler.scheduleForceDeletion(nodeInfo, nodeGroup, batchSize, drain)
-			if a.nodeLatencyTracker != nil {
-				a.nodeLatencyTracker.ObserveDeletionStart(node.Name, time.Now())
-			}
 			continue
 		}
 
 		go a.nodeDeletionScheduler.ScheduleDeletion(nodeInfo, nodeGroup, batchSize, drain)
-		if a.nodeLatencyTracker != nil {
-			a.nodeLatencyTracker.ObserveDeletionStart(node.Name, time.Now())
-		}
 	}
 }
 

@@ -24,7 +24,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -42,7 +41,6 @@ import (
 // Implementations record when nodes become unneeded, observe deletion events,
 // and expose thresholds for measuring node removal duration.
 type LatencyTracker interface {
-	UpdateStateWithUnneededList(list []*apiv1.Node, currentlyInDeletion map[string]bool, timestamp time.Time)
 	UpdateThreshold(nodeName string, threshold time.Duration)
 }
 
@@ -51,7 +49,6 @@ type Nodes struct {
 	sdtg               scaleDownTimeGetter
 	limitsFinder       *resource.LimitsFinder
 	nodeLatencyTracker LatencyTracker
-	deletionTracker    *deletiontracker.NodeDeletionTracker
 	cachedList         []*apiv1.Node
 	byName             map[string]*node
 }
@@ -69,12 +66,11 @@ type scaleDownTimeGetter interface {
 }
 
 // NewNodes returns a new initialized Nodes object.
-func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, nlt LatencyTracker, deletionTracker *deletiontracker.NodeDeletionTracker) *Nodes {
+func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder, nlt LatencyTracker) *Nodes {
 	return &Nodes{
 		sdtg:               sdtg,
 		limitsFinder:       limitsFinder,
 		nodeLatencyTracker: nlt,
-		deletionTracker:    deletionTracker,
 	}
 }
 
@@ -136,10 +132,6 @@ func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
 		return nil
 	})
-	if n.nodeLatencyTracker != nil {
-		nodesInDeletion := asMap(merged(n.deletionTracker.DeletionsInProgress()))
-		n.nodeLatencyTracker.UpdateStateWithUnneededList(n.AsList(), nodesInDeletion, ts)
-	}
 }
 
 func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.Time, timestampGetter func(simulator.NodeToBeRemoved) *time.Time) {
@@ -328,16 +320,4 @@ func verifyMinSize(nodeName string, nodeGroup cloudprovider.NodeGroup, nodeGroup
 		return simulator.NodeGroupMinSizeReached
 	}
 	return simulator.NoReason
-}
-
-func merged(a, b []string) []string {
-	return append(append(make([]string, 0, len(a)+len(b)), a...), b...)
-}
-
-func asMap(strs []string) map[string]bool {
-	m := make(map[string]bool, len(strs))
-	for _, s := range strs {
-		m[s] = true
-	}
-	return m
 }

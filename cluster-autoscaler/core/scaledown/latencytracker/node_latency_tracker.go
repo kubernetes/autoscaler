@@ -20,6 +20,8 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/klog/v2"
 )
@@ -33,40 +35,25 @@ type unneededNodeState struct {
 // It keeps track of nodes that are marked as unneeded, when they became unneeded,
 // and thresholds to adjust node removal latency metrics.
 type NodeLatencyTracker struct {
-	nodes map[string]unneededNodeState
+	unneededNodes    map[string]unneededNodeState
+	unremovableNodes map[string]struct{}
 }
 
 // NewNodeLatencyTracker creates a new tracker.
 func NewNodeLatencyTracker() *NodeLatencyTracker {
 	return &NodeLatencyTracker{
-		nodes: make(map[string]unneededNodeState),
+		unneededNodes:    make(map[string]unneededNodeState),
+		unremovableNodes: make(map[string]struct{}),
 	}
 }
 
-// UpdateStateWithUnneededList records unneeded nodes and handles missing ones.
-//
-// CA starts deletions for both empty and drain-needed nodes
-// by first tainting them with ToBeDeletedByClusterAutoscaler. After tainting,
-// nodeDeleteDelayAfterTaint (and other delays) can apply. During this phase,
-// such nodes are no longer returned in the "unneeded" list, because the
-// unneeded filter excludes tainted nodes.
-//
-// This means that between two CA loops, a node can disappear from the unneeded list
-// even though it's not fully deleted yet - it's just being processed for deletion.
-// The currentlyInDeletion map allows us to distinguish that case, so we don’t
-// mistakenly treat a node under deletion as "missing" and record incorrect latency
-// or prematurely drop tracking.
-func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
-	list []*apiv1.Node,
-	currentlyInDeletion map[string]bool,
-	timestamp time.Time,
-) {
+// UpdateScaleDownCandidates updates tracked unneeded nodes and reports those that became needed again.
+func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*apiv1.Node, timestamp time.Time) {
 	currentSet := make(map[string]struct{}, len(list))
 	for _, node := range list {
 		currentSet[node.Name] = struct{}{}
-
-		if _, exists := t.nodes[node.Name]; !exists {
-			t.nodes[node.Name] = unneededNodeState{
+		if _, exists := t.unneededNodes[node.Name]; !exists {
+			t.unneededNodes[node.Name] = unneededNodeState{
 				unneededSince: timestamp,
 				threshold:     0,
 			}
@@ -74,61 +61,74 @@ func (t *NodeLatencyTracker) UpdateStateWithUnneededList(
 		}
 	}
 
-	for name, info := range t.nodes {
+	for name, info := range t.unneededNodes {
 		if _, stillUnneeded := currentSet[name]; !stillUnneeded {
-			if _, inDeletion := currentlyInDeletion[name]; !inDeletion {
+			// This node is no longer a scale-down candidate.
+			if _, isUnremovable := t.unremovableNodes[name]; isUnremovable {
 				duration := timestamp.Sub(info.unneededSince)
-				// Only report if node was unneeded longer than its threshold
-				if duration > info.threshold {
-					metrics.UpdateScaleDownNodeRemovalLatency(false, duration-info.threshold)
-					klog.V(6).Infof("Node %q reported as deleted/missing (unneeded for %s, threshold %s)",
-						name, duration, info.threshold)
-				}
-				// Remove node regardless
-				delete(t.nodes, name)
+				metrics.UpdateScaleDownNodeRemovalLatency(false, duration)
+				klog.V(4).Infof("Node %q is unremovable, became needed again (unneeded for %s)", name, duration)
+				delete(t.unneededNodes, name)
+			} else {
+				klog.V(6).Infof("Node %q no longer a candidate, assuming deletion pending. Continuing to track latency.", name)
 			}
 		}
 	}
 }
 
-// ObserveDeletionStart is called by the actuator just before node deletion.
-func (t *NodeLatencyTracker) ObserveDeletionStart(nodeName string, timestamp time.Time) {
-	if info, exists := t.nodes[nodeName]; exists {
-		duration := timestamp.Sub(info.unneededSince)
-
-		if duration > 3*time.Minute {
-			klog.V(2).Infof(
-				"Observing deletion for node %s, unneeded for %s (threshold was %s).",
-				nodeName, duration, info.threshold,
-			)
-		} else {
-			klog.V(6).Infof(
-				"Observing deletion for node %s, unneeded for %s (threshold was %s).",
-				nodeName, duration, info.threshold,
-			)
+// Process updates unremovableNodes and reports node removal latency based on scale-down status.
+func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleDownStatus) {
+	for k := range t.unremovableNodes {
+		delete(t.unremovableNodes, k)
+	}
+	for _, n := range status.UnremovableNodes {
+		if n != nil && n.Node != nil {
+			t.unremovableNodes[n.Node.Name] = struct{}{}
 		}
+	}
 
-		metrics.UpdateScaleDownNodeRemovalLatency(true, duration-info.threshold)
-		delete(t.nodes, nodeName)
+	for _, scaledDownNode := range status.ScaledDownNodes {
+		nodeName := scaledDownNode.Node.Name
+		if info, exists := t.unneededNodes[nodeName]; exists {
+			duration := time.Since(info.unneededSince)
+			metrics.UpdateScaleDownNodeRemovalLatency(true, duration-info.threshold)
+			if duration > 3*time.Minute {
+				klog.V(2).Infof(
+					"Observing deletion for node %s, unneeded for %s (threshold was %s).",
+					nodeName, duration, info.threshold,
+				)
+			} else {
+				klog.V(6).Infof(
+					"Observing deletion for node %s, unneeded for %s (threshold was %s).",
+					nodeName, duration, info.threshold,
+				)
+			}
+			delete(t.unneededNodes, nodeName)
+		}
 	}
 }
 
 // UpdateThreshold updates the scale-down threshold for a tracked node.
 func (t *NodeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
-	if info, exists := t.nodes[nodeName]; exists {
+	if info, exists := t.unneededNodes[nodeName]; exists {
 		info.threshold = threshold
-		t.nodes[nodeName] = info
+		t.unneededNodes[nodeName] = info
 		klog.V(6).Infof("Updated threshold for node %q to %s", nodeName, threshold)
 	} else {
 		klog.Warningf("Attempted to update threshold for unknown node %q", nodeName)
 	}
 }
 
-// GetTrackedNodes returns the names of all nodes currently tracked as unneeded.
-func (t *NodeLatencyTracker) GetTrackedNodes() []string {
-	names := make([]string, 0, len(t.nodes))
-	for name := range t.nodes {
+// getTrackedNodes returns the names of all nodes currently tracked as unneeded.
+func (t *NodeLatencyTracker) getTrackedNodes() []string {
+	names := make([]string, 0, len(t.unneededNodes))
+	for name := range t.unneededNodes {
 		names = append(names, name)
 	}
 	return names
+}
+
+func (t *NodeLatencyTracker) CleanUp() {
+	t.unneededNodes = make(map[string]unneededNodeState)
+	t.unremovableNodes = make(map[string]struct{})
 }
