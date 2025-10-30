@@ -6,6 +6,7 @@ import (
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	fwk "k8s.io/kube-scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -29,7 +30,7 @@ func (s *Snapshot) listCSINodes() []*storagev1.CSINode {
 	return csiNodesList
 }
 
-func (s *Snapshot) CSINodes() SnapshotCSINodeLister {
+func (s *Snapshot) CSINodes() fwk.CSINodeLister {
 	return SnapshotCSINodeLister{snapshot: s}
 }
 

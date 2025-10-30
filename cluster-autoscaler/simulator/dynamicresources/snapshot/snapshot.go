@@ -29,7 +29,7 @@ import (
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerframework "k8s.io/kube-scheduler/framework"
 )
 
 // ResourceClaimId is a unique identifier for a ResourceClaim.
