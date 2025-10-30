@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	klog "k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 )
@@ -200,20 +201,29 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 }
 
 func (r unstructuredScalableResource) Labels() map[string]string {
+	allLabels := map[string]string{}
+
+	// get the managed labels from the scalable resource, if they exist.
+	if labels, found, err := unstructured.NestedStringMap(r.unstructured.UnstructuredContent(), "spec", "template", "spec", "metadata", "labels"); found && err == nil {
+		managedLabels := getManagedNodeLabelsFromLabels(labels)
+		allLabels = cloudprovider.JoinStringMaps(allLabels, managedLabels)
+	}
+
+	// annotation labels are supplied as an override to other values, we process them last.
 	annotations := r.unstructured.GetAnnotations()
 	// annotation value of the form "key1=value1,key2=value2"
 	if val, found := annotations[labelsKey]; found {
 		labels := strings.Split(val, ",")
-		kv := make(map[string]string, len(labels))
+		annotationLabels := make(map[string]string, len(labels))
 		for _, label := range labels {
 			split := strings.SplitN(label, "=", 2)
 			if len(split) == 2 {
-				kv[split[0]] = split[1]
+				annotationLabels[split[0]] = split[1]
 			}
 		}
-		return kv
+		allLabels = cloudprovider.JoinStringMaps(allLabels, annotationLabels)
 	}
-	return nil
+	return allLabels
 }
 
 func (r unstructuredScalableResource) Taints() []apiv1.Taint {
