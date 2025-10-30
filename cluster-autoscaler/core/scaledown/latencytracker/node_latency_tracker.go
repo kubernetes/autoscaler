@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -128,6 +128,7 @@ func (t *NodeLatencyTracker) getTrackedNodes() []string {
 	return names
 }
 
+// CleanUp cleans up internal structures.
 func (t *NodeLatencyTracker) CleanUp() {
 	t.unneededNodes = make(map[string]unneededNodeState)
 	t.unremovableNodes = make(map[string]struct{})
