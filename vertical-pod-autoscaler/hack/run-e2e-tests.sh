@@ -55,7 +55,10 @@ if [ "${TEST_WITH_FEATURE_GATES_ENABLED:-}" == "true" ]; then
   SKIP=""
 fi
 
-NUMPROC=${NUMPROC:-6}
+NUMPROC=${NUMPROC:-4}
+if [ ${SUITE} == "actuation" ] ;
+	NUMPROC=8
+fi
 
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
