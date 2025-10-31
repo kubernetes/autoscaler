@@ -1111,3 +1111,238 @@ func waitForVpaWebhookRegistration(f *framework.Framework) {
 		return false
 	}, 3*time.Minute, 5*time.Second).Should(gomega.BeTrue(), "Webhook was not registered in the cluster")
 }
+
+var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:PerVPAConfig"), func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		waitForVpaWebhookRegistration(f)
+	})
+
+	ginkgo.It("accepts valid and rejects invalid VPA object", func() {
+		ginkgo.By("Setting up valid VPA object")
+		validVPA := []byte(`{
+			"kind": "VerticalPodAutoscaler",
+			"apiVersion": "autoscaling.k8s.io/v1",
+			"metadata": {"name": "hamster-vpa-valid"},
+			"spec": {
+				"targetRef": {
+					"apiVersion": "apps/v1",
+					"kind": "Deployment",
+					"name":"hamster"
+				},
+		   	"resourcePolicy": {
+		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"cpu":"50m"}}]
+		  	}
+		  }
+		}`)
+		err := InstallRawVPA(f, validVPA)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Valid VPA object rejected")
+
+		ginkgo.By("Setting up invalid VPA objects")
+		testCases := []struct {
+			name        string
+			vpaJSON     string
+			expectedErr string
+		}{
+			{
+				name: "Invalid oomBumpUpRatio (negative value)",
+				vpaJSON: `{
+            "apiVersion": "autoscaling.k8s.io/v1",
+            "kind": "VerticalPodAutoscaler",
+            "metadata": {"name": "oom-test-vpa"},
+            "spec": {
+                "targetRef": {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "oom-test"
+                },
+                "updatePolicy": {
+                    "updateMode": "Auto"
+                },
+                "resourcePolicy": {
+                    "containerPolicies": [{
+                        "containerName": "*",
+                        "oomBumpUpRatio": -1,
+                        "oomMinBumpUp": 104857600
+                    }]
+                }
+            }
+        }`,
+				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: oomBumpUpRatio must be greater than or equal to 1.0, got -1",
+			},
+			{
+				name: "Invalid oomBumpUpRatio (string value)",
+				vpaJSON: `{
+            "apiVersion": "autoscaling.k8s.io/v1",
+            "kind": "VerticalPodAutoscaler",
+            "metadata": {"name": "oom-test-vpa"},
+            "spec": {
+                "targetRef": {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "oom-test"
+                },
+                "updatePolicy": {
+                    "updateMode": "Auto"
+                },
+                "resourcePolicy": {
+                    "containerPolicies": [{
+                        "containerName": "*",
+                        "oomBumpUpRatio": "not-a-number",
+                        "oomMinBumpUp": 104857600
+                    }]
+                }
+            }
+        }`,
+				expectedErr: "admission webhook \"vpa\\.k8s\\.io\" denied the request: quantities must match the regular expression",
+			},
+			{
+				name: "Invalid oomBumpUpRatio (less than 1)",
+				vpaJSON: `{
+            "apiVersion": "autoscaling.k8s.io/v1",
+            "kind": "VerticalPodAutoscaler",
+            "metadata": {"name": "oom-test-vpa"},
+            "spec": {
+                "targetRef": {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "oom-test"
+                },
+                "updatePolicy": {
+                    "updateMode": "Auto"
+                },
+                "resourcePolicy": {
+                    "containerPolicies": [{
+                        "containerName": "*",
+                        "oomBumpUpRatio": 0.5,
+                        "oomMinBumpUp": 104857600
+                    }]
+                }
+            }
+        }`,
+				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: oomBumpUpRatio must be greater than or equal to 1.0, got 0.5",
+			},
+			{
+				name: "Invalid oomMinBumpUp (negative value)",
+				vpaJSON: `{
+            "apiVersion": "autoscaling.k8s.io/v1",
+            "kind": "VerticalPodAutoscaler",
+            "metadata": {"name": "oom-test-vpa"},
+            "spec": {
+                "targetRef": {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "oom-test"
+                },
+                "updatePolicy": {
+                    "updateMode": "Auto"
+                },
+                "resourcePolicy": {
+                    "containerPolicies": [{
+                        "containerName": "*",
+                        "oomBumpUpRatio": 2,
+                        "oomMinBumpUp": -1
+                    }]
+                }
+            }
+        }`,
+				expectedErr: "admission webhook \"vpa\\.k8s\\.io\" denied the request: oomMinBumpUp must be greater than or equal to 0, got -1 bytes",
+			},
+			{
+				name: "Invalid evictAfterOOMThreshold (negative duration)",
+				vpaJSON: `{
+		"apiVersion": "autoscaling.k8s.io/v1",
+		"kind": "VerticalPodAutoscaler",
+		"metadata": {"name": "evict-threshold-vpa"},
+		"spec": {
+			"targetRef": {
+				"apiVersion": "apps/v1",
+				"kind": "Deployment",
+				"name": "hamster"
+			},
+			"updatePolicy": {
+				"updateMode": "Auto",
+				"evictAfterOOMThreshold": "-5m"
+			}
+		}
+	}`,
+				expectedErr: "spec\\.updatePolicy\\.evictAfterOOMThreshold: Invalid value:.*evictAfterOOMThreshold must be greater than 0",
+			},
+			{
+				name: "Invalid evictAfterOOMThreshold (invalid format)",
+				vpaJSON: `{
+		"apiVersion": "autoscaling.k8s.io/v1",
+		"kind": "VerticalPodAutoscaler",
+		"metadata": {"name": "evict-threshold-vpa"},
+		"spec": {
+			"targetRef": {
+				"apiVersion": "apps/v1",
+				"kind": "Deployment",
+				"name": "hamster"
+			},
+			"updatePolicy": {
+				"updateMode": "Auto",
+				"evictAfterOOMThreshold": "not-a-duration"
+			}
+		}
+	}`,
+				expectedErr: "admission webhook.*denied the request:.*invalid duration",
+			},
+			{
+				name: "Invalid evictAfterOOMThreshold (invalid unit)",
+				vpaJSON: `{
+		"apiVersion": "autoscaling.k8s.io/v1",
+		"kind": "VerticalPodAutoscaler",
+		"metadata": {"name": "evict-threshold-vpa"},
+		"spec": {
+			"targetRef": {
+				"apiVersion": "apps/v1",
+				"kind": "Deployment",
+				"name": "hamster"
+			},
+			"updatePolicy": {
+				"updateMode": "Auto",
+				"evictAfterOOMThreshold": "5x"
+			}
+		}
+	}`,
+				expectedErr: "admission webhook.*denied the request:.*unknown unit.*in duration",
+			},
+			{
+				name: "Invalid minAllowed (invalid requests field)",
+				vpaJSON: `{
+            "apiVersion": "autoscaling.k8s.io/v1",
+            "kind": "VerticalPodAutoscaler",
+            "metadata": {"name": "hamster-vpa-invalid"},
+            "spec": {
+                "targetRef": {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "hamster"
+                },
+                "resourcePolicy": {
+                    "containerPolicies": [{
+                        "containerName": "*",
+                        "minAllowed": {
+                            "requests": {
+                                "cpu": "50m"
+                            }
+                        }
+                    }]
+                }
+            }
+        }`,
+				expectedErr: "admission webhook .*vpa.* denied the request:",
+			},
+		}
+		for _, tc := range testCases {
+			err := InstallRawVPA(f, []byte(tc.vpaJSON))
+			gomega.Expect(err).To(gomega.HaveOccurred(),
+				fmt.Sprintf("Test case '%s': Invalid VPA object accepted", tc.name))
+			gomega.Expect(err.Error()).To(gomega.MatchRegexp(tc.expectedErr),
+				fmt.Sprintf("Test case '%s': Expected error pattern not matched. Got error: %v", tc.name, err))
+		}
+	})
+})
