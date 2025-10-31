@@ -56,7 +56,7 @@ if [ "${TEST_WITH_FEATURE_GATES_ENABLED:-}" == "true" ]; then
 fi
 
 NUMPROC=${NUMPROC:-4}
-if [ ${SUITE} == "actuation" ] ;
+if [ ${SUITE} == "actuation" ] ; then
 	NUMPROC=8
 fi
 
