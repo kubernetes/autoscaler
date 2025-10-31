@@ -45,7 +45,7 @@ build:
 	@$(MAKE) build-arch-$(GOARCH)
 
 build-arch-%: clean-arch-%
-	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* -mod=vendor ${LDFLAGS_FLAG} ${TAGS_FLAG}
+	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
 
 test-build-tags:
 	@if [ -z "$(SUPPORTED_BUILD_TAGS)" ]; then \

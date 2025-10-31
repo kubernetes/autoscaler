@@ -44,7 +44,7 @@ func NewTestFrameworkHandle() (*Handle, error) {
 	if err != nil {
 		return nil, err
 	}
-	fwHandle, err := NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true)
+	fwHandle, err := NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true, true)
 	if err != nil {
 		return nil, err
 	}
