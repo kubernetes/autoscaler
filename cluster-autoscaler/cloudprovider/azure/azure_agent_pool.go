@@ -27,7 +27,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
-	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/utils/ptr"
 
 	apiv1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -516,7 +516,7 @@ func (as *AgentPool) deleteBlob(accountName, vhdContainer, vhdBlob string) error
 	}
 
 	keys := *storageKeysResult.Keys
-	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), as.manager.env)
+	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, ptr.Deref(keys[0].Value, ""), as.manager.env)
 	if err != nil {
 		return err
 	}

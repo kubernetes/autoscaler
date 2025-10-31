@@ -27,7 +27,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/Azure/skewer"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -289,11 +288,9 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		if vmPoolName == nil {
 			vmPoolName = tags[legacyAgentpoolNameTag]
 		}
-		if vmPoolName == nil {
-			continue
+		if vmPoolName != nil {
+			instances[*vmPoolName] = append(instances[*vmPoolName], instance)
 		}
-
-		instances[to.String(vmPoolName)] = append(instances[to.String(vmPoolName)], instance)
 	}
 	return instances, nil
 }

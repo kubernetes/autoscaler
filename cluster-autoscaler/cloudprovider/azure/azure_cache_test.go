@@ -23,9 +23,9 @@ import (
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"k8s.io/utils/ptr"
 )
 
 func TestFetchVMsPools(t *testing.T) {
@@ -40,7 +40,7 @@ func TestFetchVMsPools(t *testing.T) {
 	vmsPool := getTestVMsAgentPool(false)
 	vmssPoolType := armcontainerservice.AgentPoolTypeVirtualMachineScaleSets
 	vmssPool := armcontainerservice.AgentPool{
-		Name: to.StringPtr("vmsspool1"),
+		Name: ptr.To("vmsspool1"),
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
 			Type: &vmssPoolType,
 		},
@@ -54,7 +54,7 @@ func TestFetchVMsPools(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vmsPoolMap))
 
-	_, ok := vmsPoolMap[to.String(vmsPool.Name)]
+	_, ok := vmsPoolMap[ptr.Deref(vmsPool.Name, "")]
 	assert.True(t, ok)
 }
 
