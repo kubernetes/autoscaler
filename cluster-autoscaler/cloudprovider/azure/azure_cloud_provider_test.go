@@ -23,10 +23,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
@@ -74,7 +74,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			deploymentClient: &DeploymentClientMock{
 				FakeStore: map[string]resources.DeploymentExtended{
 					"deployment": {
-						Name: to.StringPtr("deployment"),
+						Name: ptr.To("deployment"),
 						Properties: &resources.DeploymentPropertiesExtended{Template: map[string]interface{}{
 							resourcesFieldName: []interface{}{
 								map[string]interface{}{
@@ -166,7 +166,7 @@ func TestHasInstance(t *testing.T) {
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	vmssType := armcontainerservice.AgentPoolTypeVirtualMachineScaleSets
 	vmssPool := armcontainerservice.AgentPool{
-		Name: to.StringPtr("test-asg"),
+		Name: ptr.To("test-asg"),
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
 			Type: &vmssType,
 		},
@@ -303,7 +303,7 @@ func TestMixedNodeGroups(t *testing.T) {
 
 	vmssType := armcontainerservice.AgentPoolTypeVirtualMachineScaleSets
 	vmssPool := armcontainerservice.AgentPool{
-		Name: to.StringPtr("test-asg"),
+		Name: ptr.To("test-asg"),
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
 			Type: &vmssType,
 		},

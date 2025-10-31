@@ -24,11 +24,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/utils/ptr"
 )
 
 func TestExtractLabelsFromTags(t *testing.T) {
@@ -152,10 +152,10 @@ func TestExtractTaintsFromSpecString(t *testing.T) {
 
 func TestExtractAllocatableResourcesFromScaleSet(t *testing.T) {
 	tags := map[string]*string{
-		fmt.Sprintf("%s%s", nodeResourcesTagName, "cpu"):                        to.StringPtr("100m"),
-		fmt.Sprintf("%s%s", nodeResourcesTagName, "memory"):                     to.StringPtr("100M"),
-		fmt.Sprintf("%s%s", nodeResourcesTagName, "ephemeral-storage"):          to.StringPtr("20G"),
-		fmt.Sprintf("%s%s", nodeResourcesTagName, "nvidia.com_Tesla-P100-PCIE"): to.StringPtr("4"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "cpu"):                        ptr.To("100m"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "memory"):                     ptr.To("100M"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "ephemeral-storage"):          ptr.To("20G"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "nvidia.com_Tesla-P100-PCIE"): ptr.To("4"),
 	}
 
 	labels := extractAllocatableResourcesFromScaleSet(tags)
@@ -179,7 +179,7 @@ func TestTopologyFromScaleSet(t *testing.T) {
 		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{OsProfile: nil}},
 		Zones:    &[]string{"1", "2", "3"},
-		Location: to.StringPtr("westus"),
+		Location: ptr.To("westus"),
 	}
 	expectedZoneValues := []string{"westus-1", "westus-2", "westus-3"}
 	template, err := buildNodeTemplateFromVMSS(testVmss, map[string]string{}, "")
@@ -206,7 +206,7 @@ func TestEmptyTopologyFromScaleSet(t *testing.T) {
 		Plan:     nil,
 		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{OsProfile: nil}},
-		Location: to.StringPtr("westus"),
+		Location: ptr.To("westus"),
 	}
 
 	expectedFailureDomain := "0"
@@ -242,13 +242,13 @@ func TestBuildNodeTemplateFromVMPool(t *testing.T) {
 	zone2 := "2"
 
 	vmpool := armcontainerservice.AgentPool{
-		Name: to.StringPtr(agentPoolName),
+		Name: ptr.To(agentPoolName),
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
 			NodeLabels: map[string]*string{
-				"existing":   to.StringPtr("label"),
-				"department": to.StringPtr("engineering"),
+				"existing":   ptr.To("label"),
+				"department": ptr.To("engineering"),
 			},
-			NodeTaints:        []*string{to.StringPtr("group=bar:NoExecute")},
+			NodeTaints:        []*string{ptr.To("group=bar:NoExecute")},
 			OSType:            &osType,
 			OSDiskType:        &osDiskType,
 			AvailabilityZones: []*string{&zone1, &zone2},
@@ -317,7 +317,7 @@ func TestBuildNodeFromTemplateWithLabelPrediction(t *testing.T) {
 			"poolName": &poolName,
 		},
 		Zones:    &[]string{"1", "2"},
-		Location: to.StringPtr("westus"),
+		Location: ptr.To("westus"),
 	}
 
 	template, err := buildNodeTemplateFromVMSS(vmss, map[string]string{}, "")
@@ -362,7 +362,7 @@ func TestBuildNodeFromTemplateWithEphemeralStorage(t *testing.T) {
 			"poolName": &poolName,
 		},
 		Zones:    &[]string{"1", "2"},
-		Location: to.StringPtr("westus"),
+		Location: ptr.To("westus"),
 	}
 
 	template, err := buildNodeTemplateFromVMSS(vmss, map[string]string{}, "")

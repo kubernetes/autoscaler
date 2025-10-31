@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient/mockstorageaccountclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -33,7 +34,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/date"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -62,14 +62,14 @@ func newTestAgentPool(manager *AzureManager, name string) *AgentPool {
 func getExpectedVMs() []compute.VirtualMachine {
 	expectedVMs := []compute.VirtualMachine{
 		{
-			Name: to.StringPtr("000-0-00000000-0"),
-			ID:   to.StringPtr("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
+			Name: ptr.To("000-0-00000000-0"),
+			ID:   ptr.To("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
 				StorageProfile: &compute.StorageProfile{
 					OsDisk: &compute.OSDisk{
 						OsType: compute.OperatingSystemTypesLinux,
-						Vhd:    &compute.VirtualHardDisk{URI: to.StringPtr("https://foo.blob/vhds/bar.vhd")},
+						Vhd:    &compute.VirtualHardDisk{URI: ptr.To("https://foo.blob/vhds/bar.vhd")},
 					},
 				},
 				NetworkProfile: &compute.NetworkProfile{
@@ -80,9 +80,9 @@ func getExpectedVMs() []compute.VirtualMachine {
 			},
 		},
 		{
-			Name: to.StringPtr("00000000001"),
-			ID:   to.StringPtr("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
+			Name: ptr.To("00000000001"),
+			ID:   ptr.To("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
 				StorageProfile: &compute.StorageProfile{
 					OsDisk: &compute.OSDisk{OsType: compute.OperatingSystemTypesWindows},
@@ -115,30 +115,30 @@ func TestDeleteOutdatedDeployments(t *testing.T) {
 		{
 			deployments: map[string]resources.DeploymentExtended{
 				"non-cluster-autoscaler-0000": {
-					Name: to.StringPtr("non-cluster-autoscaler-0000"),
+					Name: ptr.To("non-cluster-autoscaler-0000"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark.Add(2 * time.Minute)},
 					},
 				},
 				"cluster-autoscaler-0000": {
-					Name: to.StringPtr("cluster-autoscaler-0000"),
+					Name: ptr.To("cluster-autoscaler-0000"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark},
 					},
 				},
 				"cluster-autoscaler-0001": {
-					Name: to.StringPtr("cluster-autoscaler-0001"),
+					Name: ptr.To("cluster-autoscaler-0001"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark.Add(time.Minute)},
 					},
 				},
 				"cluster-autoscaler-0002": {
-					Name: to.StringPtr("cluster-autoscaler-0002"),
+					Name: ptr.To("cluster-autoscaler-0002"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark.Add(2 * time.Minute)},
 					},
 				},
@@ -177,7 +177,7 @@ func TestAgentPoolGetVMsFromCache(t *testing.T) {
 	testAS := newTestAgentPool(newTestAzureManager(t), "testAS")
 	expectedVMs := []compute.VirtualMachine{
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("testAS")},
+			Tags: map[string]*string{"poolName": ptr.To("testAS")},
 		},
 	}
 
@@ -213,7 +213,7 @@ func TestGetVMIndexes(t *testing.T) {
 	assert.Equal(t, 2, len(sortedIndexes))
 	assert.Equal(t, 2, len(indexToVM))
 
-	expectedVMs[0].ID = to.StringPtr("foo")
+	expectedVMs[0].ID = ptr.To("foo")
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
 	err = as.manager.forceRefresh()
 	assert.NoError(t, err)
@@ -223,7 +223,7 @@ func TestGetVMIndexes(t *testing.T) {
 	assert.Nil(t, sortedIndexes)
 	assert.Nil(t, indexToVM)
 
-	expectedVMs[0].Name = to.StringPtr("foo")
+	expectedVMs[0].Name = ptr.To("foo")
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
 	err = as.manager.forceRefresh()
 	sortedIndexes, indexToVM, err = as.GetVMIndexes()
@@ -501,11 +501,11 @@ func TestAgentPoolNodes(t *testing.T) {
 	as := newTestAgentPool(newTestAzureManager(t), "as")
 	expectedVMs := []compute.VirtualMachine{
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
-			ID:   to.StringPtr(""),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
+			ID:   ptr.To(""),
 		},
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
+			Tags: map[string]*string{"poolName": ptr.To("as")},
 			ID:   &testValidProviderID0,
 		},
 	}
@@ -524,8 +524,8 @@ func TestAgentPoolNodes(t *testing.T) {
 
 	expectedVMs = []compute.VirtualMachine{
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
-			ID:   to.StringPtr("foo"),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
+			ID:   ptr.To("foo"),
 		},
 	}
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
