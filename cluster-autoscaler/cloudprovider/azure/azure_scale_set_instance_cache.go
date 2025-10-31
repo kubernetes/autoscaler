@@ -23,10 +23,10 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 )
 
 /*
@@ -227,7 +227,7 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 	case string(compute.GalleryProvisioningStateFailed):
 		status.State = cloudprovider.InstanceRunning
 
-		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", to.String(vm.ID), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
+		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", ptr.Deref(vm.ID, ""), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
 		if scaleSet.enableFastDeleteOnFailedProvisioning {
 			// Provisioning can fail both during instance creation or after the instance is running.
 			// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
@@ -253,12 +253,12 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 	// Add vmssCSE Provisioning Failed Message in error info body for vmssCSE Extensions if enableDetailedCSEMessage is true
 	if scaleSet.enableDetailedCSEMessage && vm.InstanceView != nil {
 		if err, failed := scaleSet.cseErrors(vm.InstanceView.Extensions); failed {
-			klog.V(3).Infof("VM %s reports CSE failure: %v, with provisioning state %s, power state %s", to.String(vm.ID), err, to.String(vm.ProvisioningState), powerState)
+			klog.V(3).Infof("VM %s reports CSE failure: %v, with provisioning state %s, power state %s", ptr.Deref(vm.ID, ""), err, ptr.Deref(vm.ProvisioningState, ""), powerState)
 			status.State = cloudprovider.InstanceCreating
 			errorInfo := &cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OtherErrorClass,
 				ErrorCode:    vmssExtensionProvisioningFailed,
-				ErrorMessage: fmt.Sprintf("%s: %v", to.String(vm.Name), err),
+				ErrorMessage: fmt.Sprintf("%s: %v", ptr.Deref(vm.Name, ""), err),
 			}
 			status.ErrorInfo = errorInfo
 		}
