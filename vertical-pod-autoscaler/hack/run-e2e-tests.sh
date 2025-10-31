@@ -43,6 +43,9 @@ fi
 SUITE=$1
 
 export GO111MODULE=on
+# todo(adrianmoisey): Make the setting of GOBIN nicer
+ABSOLUTE_PATH=$(realpath "${SCRIPT_ROOT}")
+export GOBIN="${ABSOLUTE_PATH}/e2e/_output/bin"
 
 export WORKSPACE=${WORKSPACE:-/workspace/_artifacts}
 
@@ -52,11 +55,14 @@ if [ "${TEST_WITH_FEATURE_GATES_ENABLED:-}" == "true" ]; then
   SKIP=""
 fi
 
+NUMPROC=${NUMPROC:-4}
+
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
-    go test ./v1/*go -v --test.timeout=150m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=150m ${SKIP}
+    go install github.com/onsi/ginkgo/v2/ginkgo
+    ${GOBIN}/ginkgo build v1/ && ${GOBIN}/ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${WORKSPACE} --disable-log-dump ${SKIP}
     V1_RESULT=$?
     popd
     echo v1 test result: ${V1_RESULT}

@@ -207,7 +207,8 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("falls back to evicting pods when resize is Deferred and more than 5 minute has elapsed since last in-place update when update mode is InPlaceOrRecreate", func() {
+	// Consumes the entire node's CPU, causing other pods to be pending - requires WithSerial()
+	framework.It("falls back to evicting pods when resize is Deferred and more than 5 minute has elapsed since last in-place update when update mode is InPlaceOrRecreate", framework.WithSerial(), func() {
 		ginkgo.By("Setting up a hamster deployment")
 		replicas := int32(2)
 		SetupHamsterDeployment(f, "100m", "100Mi", replicas)
