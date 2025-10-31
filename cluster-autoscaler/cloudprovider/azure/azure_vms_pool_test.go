@@ -25,7 +25,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
@@ -33,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/utils/ptr"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
@@ -64,17 +64,17 @@ func newTestVMsPoolVMList(count int) []compute.VirtualMachine {
 
 	for i := 0; i < count; i++ {
 		vm := compute.VirtualMachine{
-			ID: to.StringPtr(fmt.Sprintf(fakeVMsPoolVMID, i)),
+			ID: ptr.To(fmt.Sprintf(fakeVMsPoolVMID, i)),
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
-				VMID: to.StringPtr(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
+				VMID: ptr.To(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
 				HardwareProfile: &compute.HardwareProfile{
 					VMSize: compute.VirtualMachineSizeTypes(vmSku),
 				},
-				ProvisioningState: to.StringPtr("Succeeded"),
+				ProvisioningState: ptr.To("Succeeded"),
 			},
 			Tags: map[string]*string{
-				agentpoolTypeTag: to.StringPtr("VirtualMachines"),
-				agentpoolNameTag: to.StringPtr(vmsAgentPoolName),
+				agentpoolTypeTag: ptr.To("VirtualMachines"),
+				agentpoolNameTag: ptr.To(vmsAgentPoolName),
 			},
 		}
 		vmList = append(vmList, vm)
@@ -100,7 +100,7 @@ func getTestVMsAgentPool(isSystemPool bool) armcontainerservice.AgentPool {
 	}
 	vmsPoolType := armcontainerservice.AgentPoolTypeVirtualMachines
 	return armcontainerservice.AgentPool{
-		Name: to.StringPtr(vmsAgentPoolName),
+		Name: ptr.To(vmsAgentPoolName),
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
 			Type: &vmsPoolType,
 			Mode: &mode,
@@ -108,16 +108,16 @@ func getTestVMsAgentPool(isSystemPool bool) armcontainerservice.AgentPool {
 				Scale: &armcontainerservice.ScaleProfile{
 					Manual: []*armcontainerservice.ManualScaleProfile{
 						{
-							Count: to.Int32Ptr(3),
-							Sizes: []*string{to.StringPtr(vmSku)},
+							Count: ptr.To[int32](3),
+							Sizes: []*string{ptr.To(vmSku)},
 						},
 					},
 				},
 			},
 			VirtualMachineNodesStatus: []*armcontainerservice.VirtualMachineNodes{
 				{
-					Count: to.Int32Ptr(3),
-					Size:  to.StringPtr(vmSku),
+					Count: ptr.To[int32](3),
+					Size:  ptr.To(vmSku),
 				},
 			},
 		},
@@ -287,7 +287,7 @@ func TestGetVMsFromCache(t *testing.T) {
 
 	// Test case 4 - should skip failed VMs
 	vmList := newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = to.StringPtr("Failed")
+	vmList[0].VirtualMachineProperties.ProvisioningState = ptr.To("Failed")
 	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
 	vms, err = agentPool.getVMsFromCache(skipOption{skipFailed: true})
 	assert.NoError(t, err)
@@ -295,7 +295,7 @@ func TestGetVMsFromCache(t *testing.T) {
 
 	// Test case 5 - should skip deleting VMs
 	vmList = newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = to.StringPtr("Deleting")
+	vmList[0].VirtualMachineProperties.ProvisioningState = ptr.To("Deleting")
 	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
 	vms, err = agentPool.getVMsFromCache(skipOption{skipDeleting: true})
 	assert.NoError(t, err)
@@ -303,7 +303,7 @@ func TestGetVMsFromCache(t *testing.T) {
 
 	// Test case 6 - should not skip deleting VMs
 	vmList = newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = to.StringPtr("Deleting")
+	vmList[0].VirtualMachineProperties.ProvisioningState = ptr.To("Deleting")
 	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
 	vms, err = agentPool.getVMsFromCache(skipOption{skipFailed: true})
 	assert.NoError(t, err)

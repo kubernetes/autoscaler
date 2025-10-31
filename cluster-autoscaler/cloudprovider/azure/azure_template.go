@@ -26,7 +26,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -128,11 +128,11 @@ func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels 
 	}
 
 	if vmss.Sku == nil || vmss.Sku.Name == nil {
-		return NodeTemplate{}, fmt.Errorf("VMSS %s has no SKU", to.String(vmss.Name))
+		return NodeTemplate{}, fmt.Errorf("VMSS %s has no SKU", ptr.Deref(vmss.Name, ""))
 	}
 
 	if vmss.Location == nil {
-		return NodeTemplate{}, fmt.Errorf("VMSS %s has no location", to.String(vmss.Name))
+		return NodeTemplate{}, fmt.Errorf("VMSS %s has no location", ptr.Deref(vmss.Name, ""))
 	}
 
 	zones := []string{}
@@ -157,7 +157,7 @@ func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels 
 
 func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location string, skuName string, labelsFromSpec map[string]string, taintsFromSpec string) (NodeTemplate, error) {
 	if vmsPool.Properties == nil {
-		return NodeTemplate{}, fmt.Errorf("vmsPool %s has nil properties", to.String(vmsPool.Name))
+		return NodeTemplate{}, fmt.Errorf("vmsPool %s has nil properties", ptr.Deref(vmsPool.Name, ""))
 	}
 	// labels from the agentpool
 	labels := vmsPool.Properties.NodeLabels
@@ -166,14 +166,14 @@ func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location
 		if labels == nil {
 			labels = make(map[string]*string)
 		}
-		labels[k] = to.StringPtr(v)
+		labels[k] = ptr.To(v)
 	}
 
 	// taints from the agentpool
 	taintsList := []string{}
 	for _, taint := range vmsPool.Properties.NodeTaints {
-		if to.String(taint) != "" {
-			taintsList = append(taintsList, to.String(taint))
+		if ptr.Deref(taint, "") != "" {
+			taintsList = append(taintsList, ptr.Deref(taint, ""))
 		}
 	}
 	// taints from spec
@@ -203,7 +203,7 @@ func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location
 		InstanceOS: instanceOS,
 		Location:   location,
 		VMPoolNodeTemplate: &VMPoolNodeTemplate{
-			AgentPoolName: to.String(vmsPool.Name),
+			AgentPoolName: ptr.Deref(vmsPool.Name, ""),
 			OSDiskType:    vmsPool.Properties.OSDiskType,
 			Taints:        taints,
 			Labels:        labels,
@@ -290,7 +290,7 @@ func processVMPoolTemplate(template NodeTemplate, nodeName string, node apiv1.No
 	labels[agentPoolNodeLabelKey] = template.VMPoolNodeTemplate.AgentPoolName
 	if template.VMPoolNodeTemplate.Labels != nil {
 		for k, v := range template.VMPoolNodeTemplate.Labels {
-			labels[k] = to.String(v)
+			labels[k] = ptr.Deref(v, "")
 		}
 	}
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
