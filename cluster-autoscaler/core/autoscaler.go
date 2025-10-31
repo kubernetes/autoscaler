@@ -92,7 +92,7 @@ func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFacto
 		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
-		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled)
+		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
 		if err != nil {
 			return err
 		}
