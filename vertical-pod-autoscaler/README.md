@@ -14,7 +14,7 @@
 Vertical Pod Autoscaler (VPA) frees users from the necessity of setting
 up-to-date resource requests for the containers in their pods. When
 configured, it will set the requests automatically based on usage and thus
-allow proper scheduling onto nodes so that appropriate resource amount is
+allow proper scheduling onto nodes so that appropriate resource overhead is
 available for each pod. It will also maintain ratios between requests and
 limits that were specified in initial containers configuration.
 
