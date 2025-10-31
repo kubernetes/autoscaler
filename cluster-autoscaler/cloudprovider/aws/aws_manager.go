@@ -324,7 +324,7 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 			klog.Errorf("Failed to get tags from EKS DescribeNodegroup API for nodegroup %s in cluster %s because %s.", nodegroupName, clusterName, err)
 		} else if mngTags != nil && len(mngTags) > 0 {
 			resourcesFromMngTags := extractAllocatableResourcesFromTags(mngTags)
-			klog.V(5).Infof("Extracted resources from EKS nodegroup tags %v", resourcesFromTags)
+			klog.V(5).Infof("Extracted resources from EKS nodegroup tags %v", resourcesFromMngTags)
 			// ManagedNodeGroup resource-indicating tags override conflicting tags on the ASG if they exist
 			for resourceName, val := range resourcesFromMngTags {
 				node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
