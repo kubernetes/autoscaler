@@ -57,7 +57,7 @@ fi
 
 NUMPROC=${NUMPROC:-4}
 if [ ${SUITE} == "actuation" ] ; then
-	NUMPROC=8
+	NUMPROC=10
 fi
 
 case ${SUITE} in
