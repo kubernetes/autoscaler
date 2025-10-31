@@ -55,7 +55,7 @@ if [ "${TEST_WITH_FEATURE_GATES_ENABLED:-}" == "true" ]; then
   SKIP=""
 fi
 
-NUMPROC=${NUMPROC:-4}
+NUMPROC=${NUMPROC:-6}
 
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
