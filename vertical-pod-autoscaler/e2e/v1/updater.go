@@ -134,8 +134,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
-
-	ginkgo.It("doesn't evict pods when Admission Controller status unavailable", func() {
+	// FIXME todo(adrianmoisey): This test seems to be flaky after running in parallel, unsure why, see if it's possible to fix
+	framework.It("doesn't evict pods when Admission Controller status unavailable", framework.WithSerial(), func() {
 		podList := setupPodsForUpscalingEviction(f)
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
