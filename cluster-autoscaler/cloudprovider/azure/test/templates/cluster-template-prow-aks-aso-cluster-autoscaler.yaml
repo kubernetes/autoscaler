@@ -49,6 +49,10 @@ spec:
           enabled: true
       servicePrincipalProfile:
         clientId: msi
+      sku:
+        name: Base
+        tier: ${AKS_TIER:=Standard}
+      supportPlan: ${AKS_SUPPORT_PLAN:=KubernetesOfficial}
       tags:
         buildProvenance: ${BUILD_PROVENANCE}
         creationTimestamp: ${TIMESTAMP}
