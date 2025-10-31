@@ -1,4 +1,4 @@
-name: VPA Tests
+name: Vertical Pod Autoscaler
 
 on:
   push:
@@ -16,7 +16,8 @@ permissions:
   checks: write
 
 jobs:
-  vertical-pod-autoscaler-test:
+  test:
+    name: Run unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
