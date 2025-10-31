@@ -52,11 +52,14 @@ if [ "${TEST_WITH_FEATURE_GATES_ENABLED:-}" == "true" ]; then
   SKIP=""
 fi
 
+NUMPROC=${NUMPROC:-4}
+
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
-    go test ./v1/*go -v --test.timeout=150m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=150m ${SKIP}
+    go install github.com/onsi/ginkgo/v2/ginkgo
+    ginkgo build v1/ && ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${WORKSPACE} --disable-log-dump ${SKIP}
     V1_RESULT=$?
     popd
     echo v1 test result: ${V1_RESULT}

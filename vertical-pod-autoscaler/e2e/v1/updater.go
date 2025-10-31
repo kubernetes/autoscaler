@@ -39,7 +39,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
-	ginkgo.It("evicts pods when Admission Controller status available", func() {
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("evicts pods when Admission Controller status available", framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
@@ -69,7 +70,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("evicts pods for downscaling", func() {
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("evicts pods for downscaling", framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
@@ -98,8 +100,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		err := WaitForPodsEvicted(f, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
-
-	ginkgo.It("does not evict pods for downscaling when EvictionRequirement prevents it", func() {
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("does not evict pods for downscaling when EvictionRequirement prevents it", framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
@@ -140,7 +142,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
 
-	ginkgo.It("In-place update pods when Admission Controller status available", func() {
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("In-place update pods when Admission Controller status available", framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
@@ -171,7 +174,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("Does not evict pods for downscaling in-place", func() {
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("Does not evict pods for downscaling in-place", framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
