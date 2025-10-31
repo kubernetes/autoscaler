@@ -23,12 +23,12 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
@@ -78,31 +78,31 @@ func newTestScaleSetWithFastDelete(manager *AzureManager, name string) *ScaleSet
 func newTestVMSSList(cap int64, name, loc string, orchmode compute.OrchestrationMode) []compute.VirtualMachineScaleSet {
 	return []compute.VirtualMachineScaleSet{
 		{
-			Name: to.StringPtr(name),
+			Name: ptr.To(name),
 			Sku: &compute.Sku{
-				Capacity: to.Int64Ptr(cap),
-				Name:     to.StringPtr("Standard_D4_v2"),
+				Capacity: ptr.To(cap),
+				Name:     ptr.To("Standard_D4_v2"),
 			},
 			VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 				OrchestrationMode: orchmode,
 			},
-			Location: to.StringPtr(loc),
-			ID:       to.StringPtr(name),
+			Location: ptr.To(loc),
+			ID:       ptr.To(name),
 		},
 	}
 }
 
 func newTestVMSSListForEdgeZones(capacity int64, name string) *compute.VirtualMachineScaleSet {
 	return &compute.VirtualMachineScaleSet{
-		Name: to.StringPtr(name),
+		Name: ptr.To(name),
 		Sku: &compute.Sku{
-			Capacity: to.Int64Ptr(capacity),
-			Name:     to.StringPtr("Standard_D4_v2"),
+			Capacity: ptr.To(capacity),
+			Name:     ptr.To("Standard_D4_v2"),
 		},
 		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
-		Location:                         to.StringPtr(testLocation),
+		Location:                         ptr.To(testLocation),
 		ExtendedLocation: &compute.ExtendedLocation{
-			Name: to.StringPtr("losangeles"),
+			Name: ptr.To("losangeles"),
 			Type: compute.ExtendedLocationTypes("EdgeZone"),
 		},
 	}
@@ -112,10 +112,10 @@ func newTestVMSSVMList(count int) []compute.VirtualMachineScaleSetVM {
 	var vmssVMList []compute.VirtualMachineScaleSetVM
 	for i := 0; i < count; i++ {
 		vmssVM := compute.VirtualMachineScaleSetVM{
-			ID:         to.StringPtr(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, i)),
-			InstanceID: to.StringPtr(fmt.Sprintf("%d", i)),
+			ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, i)),
+			InstanceID: ptr.To(fmt.Sprintf("%d", i)),
 			VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-				VMID: to.StringPtr(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
+				VMID: ptr.To(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
 			},
 		}
 		vmssVMList = append(vmssVMList, vmssVM)
@@ -127,9 +127,9 @@ func newTestVMList(count int) []compute.VirtualMachine {
 	var vmssVMList []compute.VirtualMachine
 	for i := 0; i < count; i++ {
 		vmssVM := compute.VirtualMachine{
-			ID: to.StringPtr(fmt.Sprintf(fakeVirtualMachineVMID, i)),
+			ID: ptr.To(fmt.Sprintf(fakeVirtualMachineVMID, i)),
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
-				VMID: to.StringPtr(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
+				VMID: ptr.To(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
 			},
 		}
 		vmssVMList = append(vmssVMList, vmssVM)
@@ -201,7 +201,7 @@ func TestScaleSetTargetSize(t *testing.T) {
 		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 
 		// return a different capacity from GET API
-		spotScaleSet.Sku.Capacity = to.Int64Ptr(1)
+		spotScaleSet.Sku.Capacity = ptr.To[int64](1)
 		mockVMSSClient.EXPECT().Get(gomock.Any(), provider.azureManager.config.ResourceGroup, "spot-vmss").Return(spotScaleSet, nil).Times(1)
 		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 		mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
@@ -376,16 +376,16 @@ func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 			expectErrorInfoPopulated: false,
 		},
 		"out of resources when VM is stopped": {
-			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateStopped)}},
+			statuses:                 []compute.InstanceViewStatus{{Code: ptr.To(vmPowerStateStopped)}},
 			expectErrorInfoPopulated: false,
 		},
 		"out of resources when VM reports invalid power state": {
-			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr("PowerState/invalid")}},
+			statuses:                 []compute.InstanceViewStatus{{Code: ptr.To("PowerState/invalid")}},
 			expectErrorInfoPopulated: false,
 		},
 		"instance running when power state is running": {
 			expectInstanceRunning:    true,
-			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateRunning)}},
+			statuses:                 []compute.InstanceViewStatus{{Code: ptr.To(vmPowerStateRunning)}},
 			expectErrorInfoPopulated: false,
 		},
 		"instance running if instance view cannot be retrieved": {
@@ -406,7 +406,7 @@ func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 			expectedVMSSVMs := newTestVMSSVMList(3)
 			// The failed state is important line of code here
 			expectedVMs := newTestVMList(3)
-			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(provisioningStateFailed)
+			expectedVMSSVMs[2].ProvisioningState = ptr.To(provisioningStateFailed)
 			if !testCase.isMissingInstanceView {
 				expectedVMSSVMs[2].InstanceView = &compute.VirtualMachineScaleSetVMInstanceView{Statuses: &testCase.statuses}
 			}
@@ -465,16 +465,16 @@ func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
 			expectErrorInfoPopulated: true,
 		},
 		"out of resources when VM is stopped": {
-			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateStopped)}},
+			statuses:                 []compute.InstanceViewStatus{{Code: ptr.To(vmPowerStateStopped)}},
 			expectErrorInfoPopulated: true,
 		},
 		"out of resources when VM reports invalid power state": {
-			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr("PowerState/invalid")}},
+			statuses:                 []compute.InstanceViewStatus{{Code: ptr.To("PowerState/invalid")}},
 			expectErrorInfoPopulated: true,
 		},
 		"instance running when power state is running": {
 			expectInstanceRunning:    true,
-			statuses:                 []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateRunning)}},
+			statuses:                 []compute.InstanceViewStatus{{Code: ptr.To(vmPowerStateRunning)}},
 			expectErrorInfoPopulated: false,
 		},
 		"instance running if instance view cannot be retrieved": {
@@ -495,7 +495,7 @@ func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
 			expectedVMSSVMs := newTestVMSSVMList(3)
 			// The failed state is important line of code here
 			expectedVMs := newTestVMList(3)
-			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(provisioningStateFailed)
+			expectedVMSSVMs[2].ProvisioningState = ptr.To(provisioningStateFailed)
 			if !testCase.isMissingInstanceView {
 				expectedVMSSVMs[2].InstanceView = &compute.VirtualMachineScaleSetVMInstanceView{Statuses: &testCase.statuses}
 			}
@@ -558,7 +558,7 @@ func TestScaleSetIncreaseSizeOnVMSSUpdating(t *testing.T) {
 				Capacity: &vmssCapacity,
 			},
 			VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-				ProvisioningState: to.StringPtr(string(compute.GalleryProvisioningStateUpdating)),
+				ProvisioningState: ptr.To(string(compute.GalleryProvisioningStateUpdating)),
 				OrchestrationMode: compute.Uniform,
 			},
 		},
@@ -749,12 +749,12 @@ func TestScaleSetDeleteNodes(t *testing.T) {
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 
 		if orchMode == compute.Uniform {
-			expectedVMSSVMs[0].ProvisioningState = to.StringPtr(provisioningStateDeleting)
-			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(provisioningStateDeleting)
+			expectedVMSSVMs[0].ProvisioningState = ptr.To(provisioningStateDeleting)
+			expectedVMSSVMs[2].ProvisioningState = ptr.To(provisioningStateDeleting)
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 		} else {
-			expectedVMs[0].ProvisioningState = to.StringPtr(provisioningStateDeleting)
-			expectedVMs[2].ProvisioningState = to.StringPtr(provisioningStateDeleting)
+			expectedVMs[0].ProvisioningState = ptr.To(provisioningStateDeleting)
+			expectedVMs[2].ProvisioningState = ptr.To(provisioningStateDeleting)
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 		}
 
@@ -982,8 +982,8 @@ func TestScaleSetDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 		},
 	}
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
-	expectedVMSSVMs[0].ProvisioningState = to.StringPtr(string(compute.GalleryProvisioningStateDeleting))
-	expectedVMSSVMs[2].ProvisioningState = to.StringPtr(string(compute.GalleryProvisioningStateDeleting))
+	expectedVMSSVMs[0].ProvisioningState = ptr.To(string(compute.GalleryProvisioningStateDeleting))
+	expectedVMSSVMs[2].ProvisioningState = ptr.To(string(compute.GalleryProvisioningStateDeleting))
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	err = manager.forceRefresh()
 	assert.NoError(t, err)
@@ -1021,11 +1021,11 @@ func TestScaleSetDeleteNoConflictRequest(t *testing.T) {
 
 	expectedVMSSVMs := []compute.VirtualMachineScaleSetVM{
 		{
-			ID:         to.StringPtr(fakeVirtualMachineScaleSetVMID),
-			InstanceID: to.StringPtr("0"),
+			ID:         ptr.To(fakeVirtualMachineScaleSetVMID),
+			InstanceID: ptr.To("0"),
 			VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-				VMID:              to.StringPtr("123E4567-E89B-12D3-A456-426655440000"),
-				ProvisioningState: to.StringPtr("Deleting"),
+				VMID:              ptr.To("123E4567-E89B-12D3-A456-426655440000"),
+				ProvisioningState: ptr.To("Deleting"),
 			},
 		},
 	}
@@ -1318,14 +1318,14 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 
 }
 func TestScaleSetCseErrors(t *testing.T) {
-	errorMessage := to.StringPtr("Error Message Test")
+	errorMessage := ptr.To("Error Message Test")
 	vmssVMs := compute.VirtualMachineScaleSetVM{
-		Name:       to.StringPtr("vmTest"),
-		ID:         to.StringPtr(fakeVirtualMachineScaleSetVMID),
-		InstanceID: to.StringPtr("0"),
+		Name:       ptr.To("vmTest"),
+		ID:         ptr.To(fakeVirtualMachineScaleSetVMID),
+		InstanceID: ptr.To("0"),
 		VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-			VMID:              to.StringPtr("123E4567-E89B-12D3-A456-426655440000"),
-			ProvisioningState: to.StringPtr("Succeeded"),
+			VMID:              ptr.To("123E4567-E89B-12D3-A456-426655440000"),
+			ProvisioningState: ptr.To("Succeeded"),
 			InstanceView: &compute.VirtualMachineScaleSetVMInstanceView{
 				Extensions: &[]compute.VirtualMachineExtensionInstanceView{
 					{
@@ -1353,13 +1353,13 @@ func TestScaleSetCseErrors(t *testing.T) {
 
 	t.Run("getCSEErrorMessages test with CSE error in VM extensions", func(t *testing.T) {
 		expectedCSEWErrorMessage := "Error Message Test"
-		(*vmssVMs.InstanceView.Extensions)[0].Name = to.StringPtr(vmssCSEExtensionName)
+		(*vmssVMs.InstanceView.Extensions)[0].Name = ptr.To(vmssCSEExtensionName)
 		actualCSEErrorMessage, actualCSEFailureBool := scaleSet.cseErrors(vmssVMs.InstanceView.Extensions)
 		assert.True(t, actualCSEFailureBool)
 		assert.Equal(t, []string{expectedCSEWErrorMessage}, actualCSEErrorMessage)
 	})
 	t.Run("getCSEErrorMessages test with no CSE error in VM extensions", func(t *testing.T) {
-		(*vmssVMs.InstanceView.Extensions)[0].Name = to.StringPtr("notCSEExtension")
+		(*vmssVMs.InstanceView.Extensions)[0].Name = ptr.To("notCSEExtension")
 		actualCSEErrorMessage, actualCSEFailureBool := scaleSet.cseErrors(vmssVMs.InstanceView.Extensions)
 		assert.False(t, actualCSEFailureBool)
 		assert.Equal(t, []string(nil), actualCSEErrorMessage)
@@ -1368,12 +1368,12 @@ func TestScaleSetCseErrors(t *testing.T) {
 
 func newVMObjectWithState(provisioningState string, powerState string) *compute.VirtualMachineScaleSetVM {
 	return &compute.VirtualMachineScaleSetVM{
-		ID: to.StringPtr("1"), // Beware; refactor if needed
+		ID: ptr.To("1"), // Beware; refactor if needed
 		VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-			ProvisioningState: to.StringPtr(provisioningState),
+			ProvisioningState: ptr.To(provisioningState),
 			InstanceView: &compute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: &[]compute.InstanceViewStatus{
-					{Code: to.StringPtr(powerState)},
+					{Code: ptr.To(powerState)},
 				},
 			},
 		},
@@ -1384,21 +1384,21 @@ func newVMObjectWithState(provisioningState string, powerState string) *compute.
 func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 	t.Run("fast delete enablement = false", func(t *testing.T) {
 		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStarting, false)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStarting, false)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
 		})
 
 		t.Run("provisioning state = failed, power state = running", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateRunning, false)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateRunning, false)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
 		})
 
 		t.Run("provisioning state = failed, power state = stopping", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopping, false)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopping, false)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
@@ -1406,21 +1406,21 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 
 		t.Run("provisioning state = failed, power state = stopped", func(t *testing.T) {
 
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopped, false)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopped, false)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
 		})
 
 		t.Run("provisioning state = failed, power state = deallocated", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateDeallocated, false)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateDeallocated, false)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
 		})
 
 		t.Run("provisioning state = failed, power state = unknown", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateUnknown, false)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateUnknown, false)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
@@ -1429,21 +1429,21 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 
 	t.Run("fast delete enablement = true", func(t *testing.T) {
 		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStarting, true)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStarting, true)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
 		})
 
 		t.Run("provisioning state = failed, power state = running", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateRunning, true)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateRunning, true)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceRunning, status.State)
 		})
 
 		t.Run("provisioning state = failed, power state = stopping", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopping, true)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopping, true)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
@@ -1451,7 +1451,7 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = stopped", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopped, true)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateStopped, true)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
@@ -1459,7 +1459,7 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = deallocated", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateDeallocated, true)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateDeallocated, true)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
@@ -1467,7 +1467,7 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = unknown", func(t *testing.T) {
-			status := instanceStatusFromProvisioningStateAndPowerState("1", to.StringPtr(string(compute.GalleryProvisioningStateFailed)), vmPowerStateUnknown, true)
+			status := instanceStatusFromProvisioningStateAndPowerState("1", ptr.To(string(compute.GalleryProvisioningStateFailed)), vmPowerStateUnknown, true)
 
 			assert.NotNil(t, status)
 			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
