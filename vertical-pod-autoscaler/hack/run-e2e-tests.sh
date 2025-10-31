@@ -43,6 +43,9 @@ fi
 SUITE=$1
 
 export GO111MODULE=on
+# todo(adrianmoisey): Make the setting of GOBIN nicer
+ABSOLUTE_PATH=$(realpath "${SCRIPT_ROOT}")
+export GOBIN="${ABSOLUTE_PATH}/e2e/_output/bin"
 
 export WORKSPACE=${WORKSPACE:-/workspace/_artifacts}
 
@@ -59,7 +62,7 @@ case ${SUITE} in
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
     go install github.com/onsi/ginkgo/v2/ginkgo
-    ginkgo build v1/ && ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${WORKSPACE} --disable-log-dump ${SKIP}
+    ${GOBIN}/ginkgo build v1/ && ${GOBIN}/ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${WORKSPACE} --disable-log-dump ${SKIP}
     V1_RESULT=$?
     popd
     echo v1 test result: ${V1_RESULT}
