@@ -62,6 +62,9 @@ spec:
           args:
           - --v=4
           - --stderrthreshold=info
+          - --client-ca-file=/etc/tls-certs/ca.crt
+          - --tls-cert-file=/etc/tls-certs/tls.crt
+          - --tls-private-key=/etc/tls-certs/tls.key
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}

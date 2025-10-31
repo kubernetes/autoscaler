@@ -24,6 +24,9 @@ rules:
   verbs:
   - list
   - get
+  - create
+  - delete
+  - patch
 - apiGroups:
   - autoscaling.k8s.io
   resources:
