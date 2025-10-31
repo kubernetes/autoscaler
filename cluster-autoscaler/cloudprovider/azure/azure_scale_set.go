@@ -29,11 +29,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 )
 
 var (
@@ -209,7 +209,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	// // If VMSS state is updating, return the currentSize which would've been proactively incremented or decremented by CA
 	// // unless it's -1. In that case, its better to initialize it.
 	// if scaleSet.curSize != -1 && set.VirtualMachineScaleSetProperties != nil &&
-	// 	strings.EqualFold(to.String(set.VirtualMachineScaleSetProperties.ProvisioningState), string(compute.GalleryProvisioningStateUpdating)) {
+	// 	strings.EqualFold(ptr.Deref(set.VirtualMachineScaleSetProperties.ProvisioningState, ""), string(compute.GalleryProvisioningStateUpdating)) {
 	// 	klog.V(3).Infof("VMSS %q is in updating state, returning cached size: %d", scaleSet.Name, scaleSet.curSize)
 	// 	return scaleSet.curSize, nil
 	// }
@@ -870,10 +870,10 @@ func (scaleSet *ScaleSet) cseErrors(extensions *[]compute.VirtualMachineExtensio
 	failed := false
 	if extensions != nil {
 		for _, extension := range *extensions {
-			if strings.EqualFold(to.String(extension.Name), vmssCSEExtensionName) && extension.Statuses != nil {
+			if strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
 				for _, status := range *extension.Statuses {
 					if status.Level == "Error" {
-						errs = append(errs, to.String(status.Message))
+						errs = append(errs, ptr.Deref(status.Message, ""))
 						failed = true
 					}
 				}
@@ -889,7 +889,7 @@ func (scaleSet *ScaleSet) getSKU() string {
 		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		return ""
 	}
-	return to.String(vmssInfo.Sku.Name)
+	return ptr.Deref(vmssInfo.Sku.Name, "")
 }
 
 func (scaleSet *ScaleSet) verifyNodeGroup(instance *azureRef, commonNgID string) error {
