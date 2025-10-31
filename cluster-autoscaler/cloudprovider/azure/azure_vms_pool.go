@@ -24,7 +24,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -32,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 )
 
 // VMPool represents a group of standalone virtual machines (VMs) with a single SKU.
@@ -211,9 +211,9 @@ func buildRequestBodyForScaleUp(agentpool armcontainerservice.AgentPool, count i
 	// set the count of the matching manual scale profile to the new target value
 	for _, manualProfile := range agentpool.Properties.VirtualMachinesProfile.Scale.Manual {
 		if manualProfile != nil && len(manualProfile.Sizes) == 1 &&
-			strings.EqualFold(to.String(manualProfile.Sizes[0]), vmSku) {
+			strings.EqualFold(ptr.Deref(manualProfile.Sizes[0], ""), vmSku) {
 			klog.V(5).Infof("Found matching manual profile for VM SKU: %s, updating count to: %d", vmSku, count)
-			manualProfile.Count = to.Int32Ptr(count)
+			manualProfile.Count = ptr.To(count)
 			requestBody.Properties.VirtualMachinesProfile = agentpool.Properties.VirtualMachinesProfile
 			break
 		}
@@ -404,8 +404,8 @@ func (vmPool *VMPool) getSpotPoolSize() (int32, error) {
 		// it only contains VMs in the running state.
 		for _, status := range ap.Properties.VirtualMachineNodesStatus {
 			if status != nil {
-				if strings.EqualFold(to.String(status.Size), vmPool.sku) {
-					return to.Int32(status.Count), nil
+				if strings.EqualFold(ptr.Deref(status.Size, ""), vmPool.sku) {
+					return ptr.Deref(status.Count, 0), nil
 				}
 			}
 		}
@@ -427,13 +427,13 @@ func (vmPool *VMPool) getVMsFromCache(op skipOption) ([]compute.VirtualMachine, 
 			continue
 		}
 
-		if op.skipDeleting && strings.Contains(to.String(vm.VirtualMachineProperties.ProvisioningState), "Deleting") {
-			klog.V(4).Infof("Skipping VM %s in deleting state", to.String(vm.ID))
+		if op.skipDeleting && strings.Contains(ptr.Deref(vm.VirtualMachineProperties.ProvisioningState, ""), "Deleting") {
+			klog.V(4).Infof("Skipping VM %s in deleting state", ptr.Deref(vm.ID, ""))
 			continue
 		}
 
-		if op.skipFailed && strings.Contains(to.String(vm.VirtualMachineProperties.ProvisioningState), "Failed") {
-			klog.V(4).Infof("Skipping VM %s in failed state", to.String(vm.ID))
+		if op.skipFailed && strings.Contains(ptr.Deref(vm.VirtualMachineProperties.ProvisioningState, ""), "Failed") {
+			klog.V(4).Infof("Skipping VM %s in failed state", ptr.Deref(vm.ID, ""))
 			continue
 		}
 
@@ -454,7 +454,7 @@ func (vmPool *VMPool) Nodes() ([]cloudprovider.Instance, error) {
 		if vm.ID == nil || len(*vm.ID) == 0 {
 			continue
 		}
-		resourceID, err := convertResourceGroupNameToLower("azure://" + to.String(vm.ID))
+		resourceID, err := convertResourceGroupNameToLower("azure://" + ptr.Deref(vm.ID, ""))
 		if err != nil {
 			return nil, err
 		}
