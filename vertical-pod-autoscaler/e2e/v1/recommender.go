@@ -241,7 +241,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	// Test is flakey, could it be needing to run in serial
+	// FIXME todo(adrianmoisey): This test seems to be flaky after running in parallel, unsure why, see if it's possible to fix
 	framework.It("doesn't drop lower/upper after recommender's restart", framework.WithSerial(), func() {
 
 		o := getVpaObserver(vpaClientSet, f.Namespace.Name)
