@@ -30,11 +30,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/date"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/utils/ptr"
 	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
@@ -1069,9 +1069,9 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 	testAS.manager.azClient.deploymentClient = &DeploymentClientMock{
 		FakeStore: map[string]resources.DeploymentExtended{
 			"cluster-autoscaler-0001": {
-				Name: to.StringPtr("cluster-autoscaler-0001"),
+				Name: ptr.To("cluster-autoscaler-0001"),
 				Properties: &resources.DeploymentPropertiesExtended{
-					ProvisioningState: to.StringPtr("Succeeded"),
+					ProvisioningState: ptr.To("Succeeded"),
 					Timestamp:         &date.Time{Time: timeBenchMark.Add(2 * time.Minute)},
 				},
 			},
