@@ -1112,7 +1112,7 @@ func waitForVpaWebhookRegistration(f *framework.Framework) {
 	}, 3*time.Minute, 5*time.Second).Should(gomega.BeTrue(), "Webhook was not registered in the cluster")
 }
 
-var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:PerVPAConfig"), func() {
+var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
@@ -1120,7 +1120,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", ginkgo.Label("FG:
 		waitForVpaWebhookRegistration(f)
 	})
 
-	ginkgo.It("accepts valid and rejects invalid VPA object", func() {
+	f.It("accepts valid and rejects invalid VPA object", framework.WithFeatureGate(features.PerVPAConfig), func() {
 		ginkgo.By("Setting up valid VPA object")
 		validVPA := []byte(`{
 			"kind": "VerticalPodAutoscaler",

@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -207,13 +208,13 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 	})
 })
 
-var _ = UpdaterE2eDescribe("Updater with PerVPAConfig", ginkgo.Label("FG:PerVPAConfig"), func() {
+var _ = UpdaterE2eDescribe("Updater with PerVPAConfig", func() {
 	const replicas = 3
 	const statusUpdateInterval = 10 * time.Second
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
-	ginkgo.It("does not evict pods with OOM when threshold is very small", func() {
+	f.It("does not evict pods with OOM when threshold is very small", framework.WithFeatureGate(features.PerVPAConfig), func() {
 		ginkgo.By("Setting up the Admission Controller status")
 		stopCh := make(chan struct{})
 		statusUpdater := status.NewUpdater(
