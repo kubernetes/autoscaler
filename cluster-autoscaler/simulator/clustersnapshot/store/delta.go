@@ -22,11 +22,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	intreeschedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DeltaSnapshotStore is an implementation of ClusterSnapshotStore optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
@@ -54,6 +55,7 @@ import (
 type DeltaSnapshotStore struct {
 	data        *internalDeltaSnapshotData
 	draSnapshot *drasnapshot.Snapshot
+	csiSnapshot *csisnapshot.Snapshot
 	parallelism int
 }
 
@@ -148,7 +150,7 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []fwk.NodeInfo {
 }
 
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) (fwk.NodeInfo, error) {
-	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo := intreeschedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 	err := data.addNodeInfo(nodeInfo)
 	if err != nil {
@@ -248,7 +250,7 @@ func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 		return clustersnapshot.ErrNodeNotFound
 	}
 
-	podInfo, _ := schedulerframework.NewPodInfo(pod)
+	podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
 	ni.AddPodInfo(podInfo)
 
 	// Maybe consider deleting from the list in the future. Maybe not.
@@ -394,27 +396,27 @@ func (snapshot *DeltaSnapshotStore) getNodeInfo(nodeName string) (fwk.NodeInfo, 
 }
 
 // NodeInfos returns node lister.
-func (snapshot *DeltaSnapshotStore) NodeInfos() schedulerframework.NodeInfoLister {
+func (snapshot *DeltaSnapshotStore) NodeInfos() fwk.NodeInfoLister {
 	return (*deltaSnapshotStoreNodeLister)(snapshot)
 }
 
 // StorageInfos returns storage lister
-func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerframework.StorageInfoLister {
+func (snapshot *DeltaSnapshotStore) StorageInfos() fwk.StorageInfoLister {
 	return (*deltaSnapshotStoreStorageLister)(snapshot)
 }
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
-func (snapshot *DeltaSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
+func (snapshot *DeltaSnapshotStore) ResourceClaims() fwk.ResourceClaimTracker {
 	return snapshot.DraSnapshot().ResourceClaims()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
-func (snapshot *DeltaSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
+func (snapshot *DeltaSnapshotStore) ResourceSlices() fwk.ResourceSliceLister {
 	return snapshot.DraSnapshot().ResourceSlices()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
-func (snapshot *DeltaSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
+func (snapshot *DeltaSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 	return snapshot.DraSnapshot().DeviceClasses()
 }
 
@@ -430,6 +432,15 @@ func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 // DraSnapshot returns the DRA snapshot.
 func (snapshot *DeltaSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
 	return snapshot.draSnapshot
+}
+
+// CsiSnapshot returns the CSI snapshot.
+func (snapshot *DeltaSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
+	return snapshot.csiSnapshot
+}
+
+func (snapshot *DeltaSnapshotStore) CSINodes() fwk.CSINodeLister {
+	return snapshot.csiSnapshot.CSINodes()
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
@@ -450,7 +461,7 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsSequential(nodeInfos []fw
 	for _, pod := range scheduledPods {
 		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerframework.NewPodInfo(pod)
+			podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
 			nodeInfos[nodeIdx].AddPodInfo(podInfo)
 		}
 	}
@@ -472,14 +483,14 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []
 		nodeInfo := nodeInfos[nodeIdx]
 		for _, pod := range podsForNode[nodeIdx] {
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerframework.NewPodInfo(pod)
+			podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
 			nodeInfo.AddPodInfo(podInfo)
 		}
 	})
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
+func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
 	snapshot.clear()
 
 	nodeNameToIdx := make(map[string]int, len(nodes))
@@ -510,6 +521,12 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 		snapshot.draSnapshot = draSnapshot
 	}
 
+	if csiSnapshot == nil {
+		snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.csiSnapshot = csiSnapshot
+	}
+
 	return nil
 }
 
@@ -538,6 +555,7 @@ func (snapshot *DeltaSnapshotStore) IsPVCUsedByPods(key string) bool {
 func (snapshot *DeltaSnapshotStore) Fork() {
 	snapshot.data = snapshot.data.fork()
 	snapshot.draSnapshot.Fork()
+	snapshot.csiSnapshot.Fork()
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -547,6 +565,7 @@ func (snapshot *DeltaSnapshotStore) Revert() {
 		snapshot.data = snapshot.data.baseData
 	}
 	snapshot.draSnapshot.Revert()
+	snapshot.csiSnapshot.Revert()
 }
 
 // Commit commits changes done after forking.
@@ -558,6 +577,7 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 	}
 	snapshot.data = newData
 	snapshot.draSnapshot.Commit()
+	snapshot.csiSnapshot.Commit()
 	return nil
 }
 
@@ -566,4 +586,5 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 func (snapshot *DeltaSnapshotStore) clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
 	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
 }

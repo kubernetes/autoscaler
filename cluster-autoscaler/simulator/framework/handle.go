@@ -41,7 +41,10 @@ type Handle struct {
 }
 
 // NewHandle builds a framework Handle based on the provided informers and scheduler config.
-func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool) (*Handle, error) {
+func NewHandle(informerFactory informers.SharedInformerFactory,
+	schedConfig *schedulerconfig.KubeSchedulerConfiguration,
+	draEnabled bool,
+	csiEnabled bool) (*Handle, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = schedulerconfiglatest.Default()
@@ -61,7 +64,9 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 	if draEnabled {
 		opts = append(opts, schedulerframeworkruntime.WithSharedDRAManager(sharedLister))
 	}
-
+	if csiEnabled {
+		opts = append(opts, schedulerframeworkruntime.WithSharedCSIManager(sharedLister))
+	}
 	initMetricsOnce.Do(func() {
 		schedulermetrics.InitMetrics()
 	})

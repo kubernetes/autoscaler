@@ -21,10 +21,11 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	intreeschedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.
@@ -32,6 +33,7 @@ import (
 type BasicSnapshotStore struct {
 	data        []*internalBasicSnapshotData
 	draSnapshot *drasnapshot.Snapshot
+	csiSnapshot *csisnapshot.Snapshot
 }
 
 type internalBasicSnapshotData struct {
@@ -92,7 +94,7 @@ func (data *internalBasicSnapshotData) addPvcUsedByPod(pod *apiv1.Pod) {
 		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		k := intreeschedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
 		_, found := data.pvcNamespacePodMap[k]
 		if !found {
 			data.pvcNamespacePodMap[k] = make(map[string]bool)
@@ -111,7 +113,7 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		k := intreeschedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
 		if _, found := data.pvcNamespacePodMap[k]; found {
 			delete(data.pvcNamespacePodMap[k], pod.GetName())
 			if len(data.pvcNamespacePodMap[k]) == 0 {
@@ -150,7 +152,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	if _, found := data.nodeInfoMap[node.Name]; found {
 		return fmt.Errorf("node %s already in snapshot", node.Name)
 	}
-	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo := intreeschedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 	data.nodeInfoMap[node.Name] = nodeInfo
 	return nil
@@ -171,7 +173,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
-	podInfo, _ := schedulerframework.NewPodInfo(pod)
+	podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
 	data.nodeInfoMap[nodeName].AddPodInfo(podInfo)
 	data.addPvcUsedByPod(pod)
 	return nil
@@ -213,6 +215,16 @@ func (snapshot *BasicSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
 	return snapshot.draSnapshot
 }
 
+// CsiSnapshot returns the CSI snapshot.
+func (snapshot *BasicSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
+	return snapshot.csiSnapshot
+}
+
+// CSINodes returns the CSI nodes snapshot.
+func (snapshot *BasicSnapshotStore) CSINodes() fwk.CSINodeLister {
+	return snapshot.csiSnapshot.CSINodes()
+}
+
 // AddSchedulerNodeInfo adds a NodeInfo.
 func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
 	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
@@ -227,7 +239,7 @@ func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) 
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
+func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
 	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
@@ -249,6 +261,12 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
 	} else {
 		snapshot.draSnapshot = draSnapshot
+	}
+
+	if csiSnapshot == nil {
+		snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.csiSnapshot = csiSnapshot
 	}
 
 	return nil
@@ -279,6 +297,7 @@ func (snapshot *BasicSnapshotStore) Fork() {
 	forkData := snapshot.getInternalData().clone()
 	snapshot.data = append(snapshot.data, forkData)
 	snapshot.draSnapshot.Fork()
+	snapshot.csiSnapshot.Fork()
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -288,6 +307,7 @@ func (snapshot *BasicSnapshotStore) Revert() {
 	}
 	snapshot.data = snapshot.data[:len(snapshot.data)-1]
 	snapshot.draSnapshot.Revert()
+	snapshot.csiSnapshot.Revert()
 }
 
 // Commit commits changes done after forking.
@@ -298,6 +318,7 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 	}
 	snapshot.data = append(snapshot.data[:len(snapshot.data)-2], snapshot.data[len(snapshot.data)-1])
 	snapshot.draSnapshot.Commit()
+	snapshot.csiSnapshot.Commit()
 	return nil
 }
 
@@ -306,6 +327,7 @@ func (snapshot *BasicSnapshotStore) clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
 	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
 }
 
 // implementation of SharedLister interface
@@ -314,27 +336,27 @@ type basicSnapshotStoreNodeLister BasicSnapshotStore
 type basicSnapshotStoreStorageLister BasicSnapshotStore
 
 // NodeInfos exposes snapshot as NodeInfoLister.
-func (snapshot *BasicSnapshotStore) NodeInfos() schedulerframework.NodeInfoLister {
+func (snapshot *BasicSnapshotStore) NodeInfos() fwk.NodeInfoLister {
 	return (*basicSnapshotStoreNodeLister)(snapshot)
 }
 
 // StorageInfos exposes snapshot as StorageInfoLister.
-func (snapshot *BasicSnapshotStore) StorageInfos() schedulerframework.StorageInfoLister {
+func (snapshot *BasicSnapshotStore) StorageInfos() fwk.StorageInfoLister {
 	return (*basicSnapshotStoreStorageLister)(snapshot)
 }
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
-func (snapshot *BasicSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
+func (snapshot *BasicSnapshotStore) ResourceClaims() fwk.ResourceClaimTracker {
 	return snapshot.DraSnapshot().ResourceClaims()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
-func (snapshot *BasicSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
+func (snapshot *BasicSnapshotStore) ResourceSlices() fwk.ResourceSliceLister {
 	return snapshot.DraSnapshot().ResourceSlices()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
-func (snapshot *BasicSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
+func (snapshot *BasicSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 	return snapshot.DraSnapshot().DeviceClasses()
 }
 
