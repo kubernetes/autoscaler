@@ -54,7 +54,7 @@ import (
 
 var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("still applies recommendations on restart when update mode is InPlaceOrRecreate", func() {
 		ginkgo.By("Setting up a hamster deployment")

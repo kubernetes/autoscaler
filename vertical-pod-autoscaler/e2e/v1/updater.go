@@ -37,7 +37,7 @@ import (
 
 var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	// Sets up a lease object updated periodically to signal - requires WithSerial()
 	framework.It("evicts pods when Admission Controller status available", framework.WithSerial(), func() {
