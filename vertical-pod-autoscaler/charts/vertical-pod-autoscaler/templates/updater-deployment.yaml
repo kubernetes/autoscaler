@@ -27,6 +27,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      serviceAccountName: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534

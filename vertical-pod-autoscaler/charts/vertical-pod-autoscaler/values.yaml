@@ -189,7 +189,7 @@ updater:
     tag:
     # Image pull policy for the Updater default container.
     pullPolicy: IfNotPresent
-  
+
   # Number of Updater replicas to create.
   replicas: 1
 
@@ -198,3 +198,10 @@ updater:
 
   # Annotations to add to the Updater pod.
   podAnnotations: {}
+  serviceAccount:
+    # If `true`, create a new `ServiceAccount` for the Updater.
+    create: true
+    # Labels to add to the Updater service account.
+    labels: {}
+    # Annotations to add to the Updater service account.
+    annotations: {}
