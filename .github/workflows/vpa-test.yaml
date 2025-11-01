@@ -2,11 +2,7 @@ name: Vertical Pod Autoscaler
 
 on:
   push:
-    paths:
-      - 'vertical-pod-autoscaler/**'
   pull_request:
-    paths:
-      - 'vertical-pod-autoscaler/**'
 
 env:
   GOPATH: ${{ github.workspace }}/go
@@ -17,7 +13,7 @@ permissions:
 
 jobs:
   test:
-    name: Run unit tests
+    name: unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2

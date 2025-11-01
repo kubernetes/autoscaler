@@ -2,11 +2,7 @@ name: Vertical Pod Autoscaler
 
 on:
   push:
-    paths:
-      - 'vertical-pod-autoscaler/**'
   pull_request:
-    paths:
-      - 'vertical-pod-autoscaler/**'
 
 env:
   GOPATH: ${{ github.workspace }}/go
@@ -16,7 +12,7 @@ permissions:
 
 jobs:
   lint:
-    name: Run golangci-lint
+    name: golangci-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
