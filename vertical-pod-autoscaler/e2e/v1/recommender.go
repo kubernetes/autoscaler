@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/util/wait"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -151,22 +152,23 @@ var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 		_, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).Create(context.TODO(), &checkpoint, metav1.CreateOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		klog.InfoS("Sleeping for up to 15 minutes...")
+		klog.InfoS("Polling for up to 15 minutes...")
 
-		maxRetries := 90
-		retryDelay := 10 * time.Second
-		for i := 0; i < maxRetries; i++ {
-			list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
-			if err == nil && len(list.Items) == 0 {
-				break
+		var list *vpa_types.VerticalPodAutoscalerCheckpointList
+		err = wait.PollUntilContextTimeout(context.TODO(), 10*time.Second, 15*time.Minute, false, func(ctx context.Context) (done bool, err error) {
+			list, err = vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(ctx, metav1.ListOptions{})
+			if err != nil {
+				klog.ErrorS(err, "Error listing VPA checkpoints")
+				return false, err
 			}
-			klog.InfoS("Still waiting...")
-			time.Sleep(retryDelay)
-		}
+			if len(list.Items) > 0 {
+				return false, nil
+			}
+			klog.InfoS("No VPA checkpoints found")
+			return true, nil
 
-		list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
+		})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(list.Items).To(gomega.BeEmpty())
 	})
 })
 
