@@ -28,8 +28,12 @@ that is suitable for your environment.
 api-url = <CloudStack API URL>
 api-key = <CloudStack API Key>
 secret-key = <CloudStack API Secret>
+project-id = <CloudStack Project ID>  # Optional: required for multi-project environments
 ```
 The access token needs to be able to execute the `listKubernetesClusters` and `scaleKubernetesCluster` APIs.
+
+**Note:** The `project-id` parameter is optional but required when working with clusters in CloudStack projects. 
+If not specified, the API will use the default project associated with the API credentials.
 
 To create the secret, use the following command:
 ```bash
