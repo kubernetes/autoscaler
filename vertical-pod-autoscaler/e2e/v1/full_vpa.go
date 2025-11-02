@@ -341,7 +341,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 
 	})
 
-	ginkgo.It("deployment not updated by non-recognized recommender", func() {
+	f.It("deployment not updated by non-recognized recommender", framework.WithSlow(), func() {
 		err := waitForResourceRequestInRangeInPods(
 			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))

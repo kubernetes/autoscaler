@@ -208,7 +208,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	})
 
 	// Consumes the entire node's CPU, causing other pods to be pending - requires WithSerial()
-	framework.It("falls back to evicting pods when resize is Deferred and more than 5 minute has elapsed since last in-place update when update mode is InPlaceOrRecreate", framework.WithSerial(), func() {
+	framework.It("falls back to evicting pods when resize is Deferred and more than 5 minute has elapsed since last in-place update when update mode is InPlaceOrRecreate", framework.WithSerial(), framework.WithSlow(), func() {
 		ginkgo.By("Setting up a hamster deployment")
 		replicas := int32(2)
 		SetupHamsterDeployment(f, "100m", "100Mi", replicas)
@@ -438,7 +438,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 				Name:       tc.name,
 			})
 		})
-		ginkgo.It("by default does not evict pods in a 1-Pod "+tc.kind, func() {
+		f.It("by default does not evict pods in a 1-Pod "+tc.kind, framework.WithSlow(), func() {
 			testDoesNotEvictSingletonPodByDefault(f, &autoscaling.CrossVersionObjectReference{
 				APIVersion: tc.apiVersion,
 				Kind:       tc.kind,
@@ -667,7 +667,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
 
-	ginkgo.It("does not act on injected sidecars", func() {
+	f.It("does not act on injected sidecars", framework.WithSlow(), func() {
 		const (
 			agnhostImage  = "registry.k8s.io/e2e-test-images/agnhost:2.40"
 			sidecarParam  = "--sidecar-image=registry.k8s.io/pause:3.1"
