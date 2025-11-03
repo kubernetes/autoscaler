@@ -20,9 +20,11 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -30,14 +32,15 @@ import (
 
 // SchedulerPluginRunner can be used to run various phases of scheduler plugins through the scheduler framework.
 type SchedulerPluginRunner struct {
-	fwHandle  *framework.Handle
-	snapshot  clustersnapshot.ClusterSnapshot
-	lastIndex int
+	fwHandle    *framework.Handle
+	snapshot    clustersnapshot.ClusterSnapshot
+	lastIndex   int
+	parallelism int
 }
 
 // NewSchedulerPluginRunner builds a SchedulerPluginRunner.
-func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot) *SchedulerPluginRunner {
-	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshot: snapshot}
+func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot, parallelism int) *SchedulerPluginRunner {
+	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshot: snapshot, parallelism: parallelism}
 }
 
 // RunFiltersUntilPassingNode runs the scheduler framework PreFilter phase once, and then keeps running the Filter phase for all nodes in the cluster that match the provided
@@ -64,38 +67,63 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 		return nil, nil, clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
 	}
 
-	for i := range nodeInfosList {
-		// Determine which NodeInfo to check next.
-		nodeInfo := nodeInfosList[(p.lastIndex+i)%len(nodeInfosList)]
+	var (
+		foundNode       *apiv1.Node
+		foundCycleState *schedulerframework.CycleState
+		foundIndex      int
+		mu              sync.Mutex
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	checkNode := func(i int) {
+		nodeIndex := (p.lastIndex + i) % len(nodeInfosList)
+		nodeInfo := nodeInfosList[nodeIndex]
 
 		// Plugins can filter some Nodes out during the PreFilter phase, if they're sure the Nodes won't work for the Pod at that stage.
 		// Filters are only run for Nodes that haven't been filtered out during the PreFilter phase. Match that behavior here - skip such Nodes.
 		if !preFilterResult.AllNodes() && !preFilterResult.NodeNames.Has(nodeInfo.Node().Name) {
-			continue
+			return
 		}
 
 		// Nodes with the Unschedulable bit set will be rejected by one of the plugins during the Filter phase below. We can check that quickly here
 		// and short-circuit to avoid running the expensive Filter phase at all in this case.
 		if nodeInfo.Node().Spec.Unschedulable {
-			continue
+			return
 		}
 
 		// Check if the NodeInfo matches the provided filtering condition. This should be less expensive than running the Filter phase below, so
 		// check this first.
 		if !nodeMatches(nodeInfo) {
-			continue
+			return
 		}
 
 		// Run the Filter phase of the framework. Plugins retrieve the state they saved during PreFilter from CycleState, and answer whether the
 		// given Pod can be scheduled on the given Node.
-		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
+		clonedState := state.Clone()
+		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), clonedState, pod, nodeInfo.ToScheduler())
 		if filterStatus.IsSuccess() {
 			// Filter passed for all plugins, so this pod can be scheduled on this Node.
-			p.lastIndex = (p.lastIndex + i + 1) % len(nodeInfosList)
-			return nodeInfo.Node(), state, nil
+			mu.Lock()
+			defer mu.Unlock()
+			if foundNode == nil {
+				foundNode = nodeInfo.Node()
+				foundCycleState = clonedState.(*schedulerframework.CycleState)
+				foundIndex = nodeIndex
+				cancel()
+			}
 		}
 		// Filter didn't pass for some plugin, so this Node won't work - move on to the next one.
 	}
+
+	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode)
+
+	if foundNode != nil {
+		p.lastIndex = (foundIndex + 1) % len(nodeInfosList)
+		return foundNode, foundCycleState, nil
+	}
+
 	return nil, nil, clustersnapshot.NewNoNodesPassingPredicatesFoundError(pod)
 }
 

@@ -49,14 +49,14 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true), nil
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1), nil
 	},
 	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
 		fwHandle, err := framework.NewTestFrameworkHandle()
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1), nil
 	},
 }
 
