@@ -6,11 +6,12 @@ package instancepools
 
 import (
 	"fmt"
-	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
@@ -310,8 +311,7 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails ocicommon.OciRef) (*InstancePoolNodeGroup, error) {
 	if m.cfg.Global.UseNonMemberAnnotation && instanceDetails.InstancePoolID == consts.OciInstancePoolIDNonPoolMember {
 		// Instance is not part of a configured pool. Return early and avoid additional API calls.
-		klog.V(4).Infof(instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
-			consts.OciInstancePoolIDNonPoolMember)
+		klog.V(4).Infof("%s is not a member of any of the specified instance pool(s) and already annotated as %s", instanceDetails.Name, consts.OciInstancePoolIDNonPoolMember)
 		return nil, errInstanceInstancePoolNotFound
 	}
 
