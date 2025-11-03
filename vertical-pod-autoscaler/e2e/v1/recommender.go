@@ -134,7 +134,7 @@ var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
-	ginkgo.It("with missing VPA objects are garbage collected", func() {
+	f.It("with missing VPA objects are garbage collected", framework.WithSlow(), func() {
 		ns := f.Namespace.Name
 		vpaClientSet := utils.GetVpaClientSet(f)
 
@@ -174,7 +174,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
-	ginkgo.It("serves recommendation for CronJob", func() {
+	f.It("serves recommendation for CronJob", framework.WithSlow(), func() {
 		ginkgo.By("Setting up hamster CronJob")
 		SetupHamsterCronJob(f, "*/5 * * * *", "100m", "100Mi", utils.DefaultHamsterReplicas)
 
@@ -242,7 +242,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	})
 
 	// FIXME todo(adrianmoisey): This test seems to be flaky after running in parallel, unsure why, see if it's possible to fix
-	framework.It("doesn't drop lower/upper after recommender's restart", framework.WithSerial(), func() {
+	f.It("doesn't drop lower/upper after recommender's restart", framework.WithSerial(), framework.WithSlow(), func() {
 
 		o := getVpaObserver(vpaClientSet, f.Namespace.Name)
 
