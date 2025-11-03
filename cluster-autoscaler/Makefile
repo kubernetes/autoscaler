@@ -1,10 +1,7 @@
 ALL_ARCH = amd64 arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
-# TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
-# Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
-# This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
-GO_TEST_DEFAULT_ANALYZERS?=atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests
+GO_TEST_DEFAULT_ANALYZERS?=atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests,printf
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
@@ -58,7 +55,8 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race ./... $$(go list ./... | grep -v vendor | grep -v sdk-go | grep -v go-sdk) -vet=off ${TAGS_FLAG}
+	go vet "${GO_VET_ANALYZER_NAME_FLAGS}" ./...
 
 test-controllers: setup-envtest clean build
 	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./test/integration/controllers/...
@@ -67,7 +65,7 @@ test-ci: setup-envtest
 	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
-	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
+	go test ./... -bench=. -run='^$$'
 
 dev-release: dev-release-arch-$(GOARCH)
 
