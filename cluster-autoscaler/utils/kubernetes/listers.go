@@ -58,6 +58,13 @@ type listerRegistryImpl struct {
 	statefulSetLister           v1appslister.StatefulSetLister
 }
 
+// PodsBySchedulability arranges pods by their schedulability
+type PodsBySchedulability struct {
+	Scheduled     []*apiv1.Pod
+	Unschedulable []*apiv1.Pod
+	Unprocessed   []*apiv1.Pod
+}
+
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
 func NewListerRegistry(allNode NodeLister, readyNode NodeLister, allPodLister PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
 	daemonSetLister v1appslister.DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
@@ -139,7 +146,7 @@ func (r listerRegistryImpl) StatefulSetLister() v1appslister.StatefulSetLister {
 }
 
 // PodLister lists all pods.
-// To filter out the scheduled or unschedulable pods the helper methods ScheduledPods and UnschedulablePods should be used.
+// To filter out scheduled, unschedulable, or unprocessed pods the helper method ArrangePodsBySchedulability should be used.
 type PodLister interface {
 	List() ([]*apiv1.Pod, error)
 }
@@ -156,19 +163,6 @@ func isDeleted(pod *apiv1.Pod) bool {
 	return pod.GetDeletionTimestamp() != nil
 }
 
-// isUnschedulable checks whether a pod is unschedulable or not
-// This method doesn't check for nil ptr, it's the responsibility of the caller
-func isUnschedulable(pod *apiv1.Pod) bool {
-	if isScheduled(pod) || isDeleted(pod) {
-		return false
-	}
-	_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
-	if condition == nil || condition.Status != apiv1.ConditionFalse || condition.Reason != apiv1.PodReasonUnschedulable {
-		return false
-	}
-	return true
-}
-
 // ScheduledPods is a helper method that returns all scheduled pods from given pod list.
 func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	var scheduledPods []*apiv1.Pod
@@ -181,27 +175,29 @@ func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	return scheduledPods
 }
 
-// SchedulerUnprocessedPods is a helper method that returns all pods which are not yet processed by the specified bypassed schedulers
-func SchedulerUnprocessedPods(allPods []*apiv1.Pod, bypassedSchedulers map[string]bool) []*apiv1.Pod {
-	var unprocessedPods []*apiv1.Pod
-
+// ArrangePodsBySchedulability is a helper method that arranges pods by schedulability:
+// scheduled, unschedulable, and unprocessed by any any bypassed schedulers.
+func ArrangePodsBySchedulability(allPods []*apiv1.Pod, bypassedSchedulers map[string]bool) (podsBySchedulability PodsBySchedulability) {
 	for _, pod := range allPods {
-		if canBypass := bypassedSchedulers[pod.Spec.SchedulerName]; !canBypass {
+		if isScheduled(pod) {
+			podsBySchedulability.Scheduled = append(podsBySchedulability.Scheduled, pod)
 			continue
-		}
-		// Make sure it's not scheduled or deleted
-		if isScheduled(pod) || isDeleted(pod) || isUnschedulable(pod) {
+		} else if isDeleted(pod) {
 			continue
-		}
-		// Make sure that if it's not scheduled it's either
-		// Not processed (condition is nil)
-		// Or Reason is empty (not schedulerError, terminated, ...etc)
-		_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
-		if condition == nil || (condition.Status == apiv1.ConditionFalse && condition.Reason == "") {
-			unprocessedPods = append(unprocessedPods, pod)
+		} else {
+			_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+			if !(condition == nil || condition.Status != apiv1.ConditionFalse || condition.Reason != apiv1.PodReasonUnschedulable) {
+				podsBySchedulability.Unschedulable = append(podsBySchedulability.Unschedulable, pod)
+			} else {
+				if canBypass := bypassedSchedulers[pod.Spec.SchedulerName]; canBypass {
+					if condition == nil || (condition.Status == apiv1.ConditionFalse && condition.Reason == "") {
+						podsBySchedulability.Unprocessed = append(podsBySchedulability.Unprocessed, pod)
+					}
+				}
+			}
 		}
 	}
-	return unprocessedPods
+	return
 }
 
 // SchedulingGatedPods is a helper method that returns all pods which has scheduling gate
@@ -226,18 +222,6 @@ func isSchedulingGated(pod *apiv1.Pod) bool {
 		return true
 	}
 	return false
-}
-
-// UnschedulablePods is a helper method that returns all unschedulable pods from given pod list.
-func UnschedulablePods(allPods []*apiv1.Pod) []*apiv1.Pod {
-	var unschedulablePods []*apiv1.Pod
-	for _, pod := range allPods {
-		if !isUnschedulable(pod) {
-			continue
-		}
-		unschedulablePods = append(unschedulablePods, pod)
-	}
-	return unschedulablePods
 }
 
 // AllPodLister lists all pods.
