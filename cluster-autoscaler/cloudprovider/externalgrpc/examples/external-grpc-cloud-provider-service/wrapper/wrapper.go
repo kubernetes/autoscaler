@@ -379,7 +379,6 @@ func (w *Wrapper) NodeGroupTemplateNodeInfo(_ context.Context, req *protos.NodeG
 		return nil, err
 	}
 	return &protos.NodeGroupTemplateNodeInfoResponse{
-		NodeInfo:  info.Node(),
 		NodeBytes: infoBytes,
 	}, nil
 }
@@ -401,25 +400,16 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 	var scaleDownUnneededTime time.Duration
 	if d := pbDefaults.GetScaleDownUnneededDuration(); d != nil {
 		scaleDownUnneededTime = d.AsDuration()
-	} else {
-		// fall back to deprecated field removed in 1.35
-		scaleDownUnneededTime = pbDefaults.GetScaleDownUnneededTime().Duration
 	}
 
 	var scaleDownUnreadyTime time.Duration
 	if d := pbDefaults.GetScaleDownUnreadyDuration(); d != nil {
 		scaleDownUnreadyTime = d.AsDuration()
-	} else {
-		// fall back to deprecated field removed in 1.35
-		scaleDownUnreadyTime = pbDefaults.GetScaleDownUnreadyTime().Duration
 	}
 
 	var maxNodeProvisionTime time.Duration
 	if d := pbDefaults.GetMaxNodeProvisionDuration(); d != nil {
 		maxNodeProvisionTime = d.AsDuration()
-	} else {
-		// fall back to deprecated field removed in 1.35
-		maxNodeProvisionTime = pbDefaults.GetMaxNodeProvisionTime().Duration
 	}
 
 	defaults := config.NodeGroupAutoscalingOptions{
@@ -445,20 +435,11 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 		NodeGroupAutoscalingOptions: &protos.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    opts.ScaleDownUtilizationThreshold,
 			ScaleDownGpuUtilizationThreshold: opts.ScaleDownGpuUtilizationThreshold,
-			ScaleDownUnneededTime: &metav1.Duration{
-				Duration: opts.ScaleDownUnneededTime,
-			},
-			ScaleDownUnreadyTime: &metav1.Duration{
-				Duration: opts.ScaleDownUnreadyTime,
-			},
-			MaxNodeProvisionTime: &metav1.Duration{
-				Duration: opts.MaxNodeProvisionTime,
-			},
-			ScaleDownUnneededDuration:   durationpb.New(opts.ScaleDownUnneededTime),
-			ScaleDownUnreadyDuration:    durationpb.New(opts.ScaleDownUnreadyTime),
-			MaxNodeProvisionDuration:    durationpb.New(opts.MaxNodeProvisionTime),
-			ZeroOrMaxNodeScaling:        opts.ZeroOrMaxNodeScaling,
-			IgnoreDaemonSetsUtilization: opts.IgnoreDaemonSetsUtilization,
+			ScaleDownUnneededDuration:        durationpb.New(opts.ScaleDownUnneededTime),
+			ScaleDownUnreadyDuration:         durationpb.New(opts.ScaleDownUnreadyTime),
+			MaxNodeProvisionDuration:         durationpb.New(opts.MaxNodeProvisionTime),
+			ZeroOrMaxNodeScaling:             opts.ZeroOrMaxNodeScaling,
+			IgnoreDaemonSetsUtilization:      opts.IgnoreDaemonSetsUtilization,
 		},
 	}, nil
 }
