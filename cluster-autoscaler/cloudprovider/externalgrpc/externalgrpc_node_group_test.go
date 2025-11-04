@@ -25,6 +25,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -124,9 +126,11 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 	// test correct call
 	apiv1Node1 := &apiv1.Node{}
 	apiv1Node1.Name = "node1"
+	apiv1Node1Bytes, _ := apiv1Node1.Marshal()
 
 	apiv1Node2 := &apiv1.Node{}
 	apiv1Node2.Name = "node2"
+	apiv1Node2Bytes, _ := apiv1Node2.Marshal()
 
 	m.On(
 		"NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
@@ -134,7 +138,8 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		}),
 	).Return(
 		&protos.NodeGroupTemplateNodeInfoResponse{
-			NodeInfo: apiv1Node1,
+			NodeInfo:  apiv1Node1,
+			NodeBytes: apiv1Node1Bytes,
 		}, nil,
 	).Once()
 
@@ -144,7 +149,8 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		}),
 	).Return(
 		&protos.NodeGroupTemplateNodeInfoResponse{
-			NodeInfo: apiv1Node2,
+			NodeInfo:  apiv1Node2,
+			NodeBytes: apiv1Node2Bytes,
 		}, nil,
 	).Once()
 
@@ -181,7 +187,8 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		}),
 	).Return(
 		&protos.NodeGroupTemplateNodeInfoResponse{
-			NodeInfo: nil,
+			NodeInfo:  nil,
+			NodeBytes: nil,
 		}, nil,
 	).Once()
 
@@ -202,7 +209,8 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		}),
 	).Return(
 		&protos.NodeGroupTemplateNodeInfoResponse{
-			NodeInfo: nil,
+			NodeInfo:  nil,
+			NodeBytes: nil,
 		},
 		fmt.Errorf("mock error"),
 	).Once()
@@ -223,7 +231,8 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		}),
 	).Return(
 		&protos.NodeGroupTemplateNodeInfoResponse{
-			NodeInfo: nil,
+			NodeInfo:  nil,
+			NodeBytes: nil,
 		},
 		status.Error(codes.Unimplemented, "mock error"),
 	).Once()
@@ -257,6 +266,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 				ScaleDownUnneededTime:            &v1.Duration{Duration: time.Minute},
 				ScaleDownUnreadyTime:             &v1.Duration{Duration: time.Hour},
 				MaxNodeProvisionTime:             &v1.Duration{Duration: time.Minute},
+				ScaleDownUnneededDuration:        durationpb.New(time.Minute),
+				ScaleDownUnreadyDuration:         durationpb.New(time.Hour),
+				MaxNodeProvisionDuration:         durationpb.New(time.Minute),
 				ZeroOrMaxNodeScaling:             true,
 				IgnoreDaemonSetsUtilization:      true,
 			},
@@ -365,6 +377,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 				ScaleDownUnneededTime:            &v1.Duration{Duration: time.Minute},
 				ScaleDownUnreadyTime:             &v1.Duration{Duration: time.Hour},
 				MaxNodeProvisionTime:             &v1.Duration{Duration: time.Minute},
+				ScaleDownUnneededDuration:        durationpb.New(time.Minute),
+				ScaleDownUnreadyDuration:         durationpb.New(time.Hour),
+				MaxNodeProvisionDuration:         durationpb.New(time.Minute),
 			},
 		},
 		nil,
