@@ -158,12 +158,8 @@ func (m *pricingModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime 
 	ctx, cancel := context.WithTimeout(context.Background(), m.grpcTimeout)
 	defer cancel()
 	klog.V(5).Infof("Performing gRPC call PricingNodePrice for node %v", node.Name)
-	start := metav1.NewTime(startTime)
-	end := metav1.NewTime(endTime)
 	res, err := m.client.PricingNodePrice(ctx, &protos.PricingNodePriceRequest{
-		Node:      externalGrpcNode(node),
-		StartTime: &start,
-		EndTime:   &end,
+		Node: externalGrpcNode(node),
 
 		StartTimestamp: timestamppb.New(startTime),
 		EndTimestamp:   timestamppb.New(endTime),
@@ -185,8 +181,6 @@ func (m *pricingModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime tim
 	ctx, cancel := context.WithTimeout(context.Background(), m.grpcTimeout)
 	defer cancel()
 	klog.V(5).Infof("Performing gRPC call PricingPodPrice for pod %v", pod.Name)
-	start := metav1.NewTime(startTime)
-	end := metav1.NewTime(endTime)
 
 	podBytes, err := pod.Marshal()
 	if err != nil {
@@ -194,10 +188,6 @@ func (m *pricingModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime tim
 	}
 
 	res, err := m.client.PricingPodPrice(ctx, &protos.PricingPodPriceRequest{
-		Pod:       pod,
-		StartTime: &start,
-		EndTime:   &end,
-
 		PodBytes:       podBytes,
 		StartTimestamp: timestamppb.New(startTime),
 		EndTimestamp:   timestamppb.New(endTime),

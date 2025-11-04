@@ -127,23 +127,8 @@ func (w *Wrapper) PricingNodePrice(_ context.Context, req *protos.PricingNodePri
 	}
 	reqNode := req.GetNode()
 
-	var reqStartTime *metav1.Time
-	if startTimestamp := req.GetStartTimestamp(); startTimestamp != nil {
-		// read standard protobuf timestamp if set
-		reqStartTime = &metav1.Time{Time: startTimestamp.AsTime()}
-	} else {
-		// otherwise fallback to reading metav1.Time
-		reqStartTime = req.GetStartTime()
-	}
-
-	var reqEndTime *metav1.Time
-	if endTimestamp := req.GetEndTimestamp(); endTimestamp != nil {
-		// read standard protobuf timestamp if set
-		reqEndTime = &metav1.Time{Time: endTimestamp.AsTime()}
-	} else {
-		// otherwise fallback to reading metav1.Time
-		reqEndTime = req.GetEndTime()
-	}
+	reqStartTime := &metav1.Time{Time: req.GetStartTimestamp().AsTime()}
+	reqEndTime := &metav1.Time{Time: req.GetEndTimestamp().AsTime()}
 
 	if reqNode == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
@@ -169,36 +154,15 @@ func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPrice
 		return nil, err
 	}
 
-	var reqPod *apiv1.Pod
-	if podBytes := req.GetPodBytes(); podBytes != nil {
-		// decode from opaque bytes into pod if set
-		pod := &apiv1.Pod{}
-		if err := pod.Unmarshal(podBytes); err != nil {
-			return nil, err
-		}
-		reqPod = pod
-	} else {
-		// otherwise fallback to reading inlined pod
-		reqPod = req.GetPod()
+	pod := &apiv1.Pod{}
+	if err := pod.Unmarshal(req.GetPodBytes()); err != nil {
+		return nil, err
 	}
+	reqPod := pod
 
-	var reqStartTime *metav1.Time
-	if startTimestamp := req.GetStartTimestamp(); startTimestamp != nil {
-		// read standard protobuf timestamp if set
-		reqStartTime = &metav1.Time{Time: startTimestamp.AsTime()}
-	} else {
-		// otherwise fallback to reading metav1.Time
-		reqStartTime = req.GetStartTime()
-	}
+	reqStartTime := &metav1.Time{Time: req.GetStartTimestamp().AsTime()}
 
-	var reqEndTime *metav1.Time
-	if endTimestamp := req.GetEndTimestamp(); endTimestamp != nil {
-		// read standard protobuf timestamp if set
-		reqEndTime = &metav1.Time{Time: endTimestamp.AsTime()}
-	} else {
-		// otherwise fallback to reading metav1.Time
-		reqEndTime = req.GetEndTime()
-	}
+	reqEndTime := &metav1.Time{Time: req.GetEndTimestamp().AsTime()}
 
 	if reqPod == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
