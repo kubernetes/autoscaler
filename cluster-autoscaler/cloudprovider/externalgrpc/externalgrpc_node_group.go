@@ -23,6 +23,8 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -227,7 +229,16 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		klog.V(1).Infof("Error on gRPC call NodeGroupTemplateNodeInfo: %v", err)
 		return nil, err
 	}
-	pbNodeInfo := res.GetNodeInfo()
+	var pbNodeInfo *apiv1.Node
+	if pbNodeBytes := res.GetNodeBytes(); pbNodeBytes != nil {
+		pbNodeInfo = &apiv1.Node{}
+		if err := pbNodeInfo.Unmarshal(pbNodeBytes); err != nil {
+			return nil, err
+		}
+	} else {
+		// Fall back to deprecated field removed in 1.35
+		pbNodeInfo = res.GetNodeInfo()
+	}
 	if pbNodeInfo == nil {
 		n.nodeInfo = new(*framework.NodeInfo)
 		return nil, nil
@@ -283,6 +294,9 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 			MaxNodeProvisionTime: &metav1.Duration{
 				Duration: defaults.MaxNodeProvisionTime,
 			},
+			ScaleDownUnneededDuration:   durationpb.New(defaults.ScaleDownUnneededTime),
+			ScaleDownUnreadyDuration:    durationpb.New(defaults.ScaleDownUnreadyTime),
+			MaxNodeProvisionDuration:    durationpb.New(defaults.MaxNodeProvisionTime),
 			ZeroOrMaxNodeScaling:        defaults.ZeroOrMaxNodeScaling,
 			IgnoreDaemonSetsUtilization: defaults.IgnoreDaemonSetsUtilization,
 		},
@@ -299,12 +313,37 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 	if pbOpts == nil {
 		return nil, nil
 	}
+
+	var scaleDownUnneededTime time.Duration
+	if d := pbOpts.GetScaleDownUnneededDuration(); d != nil {
+		scaleDownUnneededTime = d.AsDuration()
+	} else {
+		// fall back to deprecated field removed in 1.35
+		scaleDownUnneededTime = pbOpts.GetScaleDownUnneededTime().Duration
+	}
+
+	var scaleDownUnreadyTime time.Duration
+	if d := pbOpts.GetScaleDownUnreadyDuration(); d != nil {
+		scaleDownUnreadyTime = d.AsDuration()
+	} else {
+		// fall back to deprecated field removed in 1.35
+		scaleDownUnreadyTime = pbOpts.GetScaleDownUnreadyTime().Duration
+	}
+
+	var maxNodeProvisionTime time.Duration
+	if d := pbOpts.GetMaxNodeProvisionDuration(); d != nil {
+		maxNodeProvisionTime = d.AsDuration()
+	} else {
+		// fall back to deprecated field removed in 1.35
+		maxNodeProvisionTime = pbOpts.GetMaxNodeProvisionTime().Duration
+	}
+
 	opts := &config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    pbOpts.GetScaleDownUtilizationThreshold(),
 		ScaleDownGpuUtilizationThreshold: pbOpts.GetScaleDownGpuUtilizationThreshold(),
-		ScaleDownUnneededTime:            pbOpts.GetScaleDownUnneededTime().Duration,
-		ScaleDownUnreadyTime:             pbOpts.GetScaleDownUnreadyTime().Duration,
-		MaxNodeProvisionTime:             pbOpts.GetMaxNodeProvisionTime().Duration,
+		ScaleDownUnneededTime:            scaleDownUnneededTime,
+		ScaleDownUnreadyTime:             scaleDownUnreadyTime,
+		MaxNodeProvisionTime:             maxNodeProvisionTime,
 		ZeroOrMaxNodeScaling:             pbOpts.GetZeroOrMaxNodeScaling(),
 		IgnoreDaemonSetsUtilization:      pbOpts.GetIgnoreDaemonSetsUtilization(),
 	}
