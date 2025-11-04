@@ -17,7 +17,6 @@
 syntax = "proto3";
 
 package grpcplugin;
-import "k8s.io/api/core/v1/generated.proto";
 option go_package = "expander/grpcplugin/protos";
 
 
@@ -31,9 +30,6 @@ service Expander {
 
 message BestOptionsRequest {
   repeated Option options = 1;
-  // key is node id from options
-  // Deprecated: Writers cannot set this field in Kubernetes 1.35 and higher, and should set this field and nodeBytesMap. Readers should prefer nodeBytesMap if set.
-  map<string, k8s.io.api.core.v1.Node> nodeMap = 2 [deprecated = true];
 
   // key is node id from options.
   // values are proto-serialized v1.Node objects.
@@ -47,9 +43,6 @@ message Option {
   string nodeGroupId = 1;
   int32 nodeCount = 2;
   string debug = 3;
-
-  // Deprecated: Writers cannot set this field in Kubernetes 1.35 and higher, and should set this field and podBytes. Readers should prefer podBytes if set.
-  repeated k8s.io.api.core.v1.Pod pod = 4 [deprecated = true];
 
   // proto-serialized v1.Pod object
   repeated bytes podBytes = 5;
