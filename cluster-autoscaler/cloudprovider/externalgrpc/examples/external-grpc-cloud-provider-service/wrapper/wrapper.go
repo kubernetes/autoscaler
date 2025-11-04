@@ -127,8 +127,16 @@ func (w *Wrapper) PricingNodePrice(_ context.Context, req *protos.PricingNodePri
 	}
 	reqNode := req.GetNode()
 
-	reqStartTime := &metav1.Time{Time: req.GetStartTimestamp().AsTime()}
-	reqEndTime := &metav1.Time{Time: req.GetEndTimestamp().AsTime()}
+	var reqStartTime *metav1.Time
+	if startTimestamp := req.GetStartTimestamp(); startTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqStartTime = &metav1.Time{Time: startTimestamp.AsTime()}
+	}
+	var reqEndTime *metav1.Time
+	if endTimestamp := req.GetEndTimestamp(); endTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqEndTime = &metav1.Time{Time: endTimestamp.AsTime()}
+	}
 
 	if reqNode == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
@@ -154,15 +162,27 @@ func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPrice
 		return nil, err
 	}
 
-	pod := &apiv1.Pod{}
-	if err := pod.Unmarshal(req.GetPodBytes()); err != nil {
-		return nil, err
+	var reqPod *apiv1.Pod
+	if podBytes := req.GetPodBytes(); podBytes != nil {
+		// decode from opaque bytes into pod if set
+		pod := &apiv1.Pod{}
+		if err := pod.Unmarshal(podBytes); err != nil {
+			return nil, err
+		}
+		reqPod = pod
 	}
-	reqPod := pod
 
-	reqStartTime := &metav1.Time{Time: req.GetStartTimestamp().AsTime()}
+	var reqStartTime *metav1.Time
+	if startTimestamp := req.GetStartTimestamp(); startTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqStartTime = &metav1.Time{Time: startTimestamp.AsTime()}
+	}
 
-	reqEndTime := &metav1.Time{Time: req.GetEndTimestamp().AsTime()}
+	var reqEndTime *metav1.Time
+	if endTimestamp := req.GetEndTimestamp(); endTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqEndTime = &metav1.Time{Time: endTimestamp.AsTime()}
+	}
 
 	if reqPod == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
