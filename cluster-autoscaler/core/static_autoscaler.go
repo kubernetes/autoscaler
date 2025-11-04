@@ -173,7 +173,7 @@ func NewStaticAutoscaler(
 	// during the struct creation rather than here.
 	var ndlt *latencytracker.NodeLatencyTracker
 	if autoscalingCtx.AutoscalingOptions.NodeRemovalLatencyTrackingEnabled {
-		ndlt = latencytracker.NewNodeLatencyTracker()
+		ndlt = latencytracker.NewNodeLatencyTracker(processors.ScaleDownStatusProcessor)
 		processors.ScaleDownCandidatesNotifier.Register(ndlt)
 		processors.ScaleDownStatusProcessor = ndlt
 	}
