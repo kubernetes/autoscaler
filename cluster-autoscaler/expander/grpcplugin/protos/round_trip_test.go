@@ -66,13 +66,10 @@ func TestRoundTripBestOptionsRequest(t *testing.T) {
 
 	r := &BestOptionsRequest{
 		Options: []*Option{{
-			// This field is expected to stop being serializable in 1.35, and to need to be removed from the .proto file
-			Pod: []*corev1.Pod{pod},
 			// This field should remain serializable
 			PodBytes: [][]byte{podBytes},
 		}},
 		// This field is expected to stop being serializable in 1.35, and to need to be removed from the .proto file
-		NodeMap: map[string]*corev1.Node{"node": node},
 		// This field should remain serializable
 		NodeBytesMap: map[string][]byte{"node": nodeBytes},
 	}
@@ -93,10 +90,6 @@ func TestRoundTripBestOptionsRequest(t *testing.T) {
 	if !proto.Equal(r, r2) {
 		t.Fatalf("message did not round-trip: %s", cmp.Diff(r, r2))
 	}
-	// The Pod field is expected to be removed in 1.35
-	if !apiequality.Semantic.DeepEqual(pod, r2.Options[0].Pod[0]) {
-		t.Fatalf("pod did not round-trip: %s", cmp.Diff(r, r2))
-	}
 	// Pod bytes must remain round-trippable
 	if !apiequality.Semantic.DeepEqual(pod, pod2) {
 		t.Fatalf("pod bytes did not round-trip: %s", cmp.Diff(r, r2))
@@ -108,10 +101,6 @@ func TestRoundTripBestOptionsRequest(t *testing.T) {
 	}
 	if !proto.Equal(r, r2) {
 		t.Fatalf("message did not round-trip: %s", cmp.Diff(r, r2))
-	}
-	// The NodeMap field is expected to be removed in 1.35
-	if !apiequality.Semantic.DeepEqual(node, r2.NodeMap["node"]) {
-		t.Fatalf("pod did not round-trip: %s", cmp.Diff(r, r2))
 	}
 	// Node bytes must remain round-trippable
 	if !apiequality.Semantic.DeepEqual(node, node2) {
@@ -142,8 +131,6 @@ func TestRoundTripBestOptionsResponse(t *testing.T) {
 
 	r := &BestOptionsResponse{
 		Options: []*Option{{
-			// This field is expected to stop being serializable in 1.35, and to need to be removed from the .proto file
-			Pod: []*corev1.Pod{pod},
 			// This field should remain serializable
 			PodBytes: [][]byte{podBytes},
 		}},
