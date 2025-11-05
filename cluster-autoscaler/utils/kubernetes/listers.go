@@ -186,7 +186,7 @@ func ArrangePodsBySchedulability(allPods []*apiv1.Pod, bypassedSchedulers map[st
 			continue
 		} else {
 			_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
-			if !(condition == nil || condition.Status != apiv1.ConditionFalse || condition.Reason != apiv1.PodReasonUnschedulable) {
+			if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == apiv1.PodReasonUnschedulable {
 				podsBySchedulability.Unschedulable = append(podsBySchedulability.Unschedulable, pod)
 			} else {
 				if canBypass := bypassedSchedulers[pod.Spec.SchedulerName]; canBypass {
