@@ -18,11 +18,12 @@ package clusterapi
 
 import (
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"reflect"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,6 +34,11 @@ import (
 const (
 	uuid1 = "ec21c5fb-a3d5-a45f-887b-6b49aa8fc218"
 	uuid2 = "ec23ebb0-bc60-443f-d139-046ec5046283"
+
+	managedLabel1 = "node-restriction.kubernetes.io/some-thing"
+	managedLabel2 = "prefixed.node-restriction.kubernetes.io/some-other-thing"
+	managedLabel3 = "node.cluster.x-k8s.io/another-thing"
+	managedLabel4 = "prefixed.node.cluster.x-k8s.io/another-thing"
 )
 
 func TestUtilParseScalingBounds(t *testing.T) {
@@ -935,5 +941,29 @@ func TestGetSystemArchitectureFromEnvOrDefault(t *testing.T) {
 				t.Errorf("GetDefaultScaleFromZeroArchitecture() = %v, want %v", got, tc.want)
 			}
 		})
+	}
+}
+
+func TestGetManagedNodeLabelsFromLabels(t *testing.T) {
+	actualLabels := map[string]string{
+		// these labels should propagate
+		managedLabel1: "1",
+		managedLabel2: "2",
+		managedLabel3: "3",
+		managedLabel4: "4",
+		// the following should NOT propagate
+		"my.special.label/should-not-propagate":         "bar",
+		"prefixed.node-role.kubernetes.io/no-propagate": "special-role",
+	}
+
+	observedLabels := getManagedNodeLabelsFromLabels(actualLabels)
+	if len(observedLabels) != 4 {
+		t.Errorf("expected observedLabels length to be 4, actual: %d", len(observedLabels))
+	}
+	expectedLabels := []string{managedLabel1, managedLabel2, managedLabel3, managedLabel4}
+	for _, l := range expectedLabels {
+		if _, ok := observedLabels[l]; !ok {
+			t.Errorf("expected observedLabels to contain %q", l)
+		}
 	}
 }
