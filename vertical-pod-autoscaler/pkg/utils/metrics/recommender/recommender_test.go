@@ -33,6 +33,7 @@ func TestObjectCounter(t *testing.T) {
 	updateModeInitial := vpa_types.UpdateModeInitial
 	updateModeRecreate := vpa_types.UpdateModeRecreate
 	updateModeAuto := vpa_types.UpdateModeAuto
+	updateModeInPlaceOrRecreate := vpa_types.UpdateModeInPlaceOrRecreate
 	// We verify that other update modes are handled correctly as validation
 	// may not happen if there are issues with the admission controller.
 	updateModeUserDefined := vpa_types.UpdateMode("userDefined")
@@ -144,6 +145,18 @@ func TestObjectCounter(t *testing.T) {
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Off,": 1,
+			},
+		},
+		{
+			name: "report update mode InPlaceOrRecreate",
+			add: []*model.Vpa{
+				{
+					APIVersion: "v1",
+					UpdateMode: &updateModeInPlaceOrRecreate,
+				},
+			},
+			wantMetrics: map[string]float64{
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=InPlaceOrRecreate,": 1,
 			},
 		},
 		{
@@ -320,4 +333,62 @@ func labelsToKey(labels []*dto.LabelPair) string {
 		key.WriteRune(',')
 	}
 	return key.String()
+}
+
+func TestObjectCounterResetsAllUpdateModes(t *testing.T) {
+	updatesModes := []vpa_types.UpdateMode{
+		vpa_types.UpdateModeOff,
+		vpa_types.UpdateModeInitial,
+		vpa_types.UpdateModeAuto,
+		vpa_types.UpdateModeRecreate,
+		vpa_types.UpdateModeInPlaceOrRecreate,
+	}
+
+	for _, mode := range updatesModes {
+		t.Run(string(mode), func(t *testing.T) {
+			t.Cleanup(func() {
+				vpaObjectCount.Reset()
+			})
+
+			key := "api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=" + string(mode) + ","
+
+			// first loop add VPAs to increment the counter
+			counter1 := NewObjectCounter()
+			for range 3 {
+				vpa := model.Vpa{
+					APIVersion: "v1",
+					UpdateMode: &mode,
+				}
+				counter1.Add(&vpa)
+			}
+			counter1.Observe()
+			collectMetricsAndVerifyCount(t, key, 3)
+
+			// next loop no VPAs
+			counter2 := NewObjectCounter()
+			counter2.Observe()
+			collectMetricsAndVerifyCount(t, key, 0)
+		})
+	}
+}
+
+func collectMetricsAndVerifyCount(t *testing.T, key string, expectedCount float64) {
+	metrics := make(chan prometheus.Metric)
+	go func() {
+		vpaObjectCount.Collect(metrics)
+		close(metrics)
+	}()
+
+	liveMetrics := make(map[string]float64)
+	for metric := range metrics {
+		var metricProto dto.Metric
+		if err := metric.Write(&metricProto); err != nil {
+			t.Errorf("failed to write metric: %v", err)
+		}
+		liveMetrics[labelsToKey(metricProto.GetLabel())] = *metricProto.GetGauge().Value
+	}
+
+	if actualCount := liveMetrics[key]; actualCount != expectedCount {
+		t.Errorf("key=%s expectedCount=%v actualCount=%v", key, expectedCount, actualCount)
+	}
 }

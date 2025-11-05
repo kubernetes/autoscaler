@@ -34,14 +34,6 @@ import (
 )
 
 var (
-	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
-		vpa_types.UpdateModeOff:               struct{}{},
-		vpa_types.UpdateModeInitial:           struct{}{},
-		vpa_types.UpdateModeRecreate:          struct{}{},
-		vpa_types.UpdateModeAuto:              struct{}{},
-		vpa_types.UpdateModeInPlaceOrRecreate: struct{}{},
-	}
-
 	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{
 		vpa_types.ContainerScalingModeAuto: struct{}{},
 		vpa_types.ContainerScalingModeOff:  struct{}{},
@@ -120,7 +112,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		if mode == nil {
 			return fmt.Errorf("updateMode is required if UpdatePolicy is used")
 		}
-		if _, found := possibleUpdateModes[*mode]; !found {
+		if _, found := vpa_types.GetUpdateModes()[*mode]; !found {
 			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
 		}
 		if (*mode == vpa_types.UpdateModeInPlaceOrRecreate) && !features.Enabled(features.InPlaceOrRecreate) && isCreate {
