@@ -24,7 +24,6 @@ package protos
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	v1 "k8s.io/api/core/v1"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -40,11 +39,6 @@ const (
 type BestOptionsRequest struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Options []*Option              `protobuf:"bytes,1,rep,name=options,proto3" json:"options,omitempty"`
-	// key is node id from options
-	// Deprecated: Writers cannot set this field in Kubernetes 1.35 and higher, and should set this field and nodeBytesMap. Readers should prefer nodeBytesMap if set.
-	//
-	// Deprecated: Marked as deprecated in expander/grpcplugin/protos/expander.proto.
-	NodeMap map[string]*v1.Node `protobuf:"bytes,2,rep,name=nodeMap,proto3" json:"nodeMap,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// key is node id from options.
 	// values are proto-serialized v1.Node objects.
 	NodeBytesMap  map[string][]byte `protobuf:"bytes,3,rep,name=nodeBytesMap,proto3" json:"nodeBytesMap,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
@@ -85,14 +79,6 @@ func (*BestOptionsRequest) Descriptor() ([]byte, []int) {
 func (x *BestOptionsRequest) GetOptions() []*Option {
 	if x != nil {
 		return x.Options
-	}
-	return nil
-}
-
-// Deprecated: Marked as deprecated in expander/grpcplugin/protos/expander.proto.
-func (x *BestOptionsRequest) GetNodeMap() map[string]*v1.Node {
-	if x != nil {
-		return x.NodeMap
 	}
 	return nil
 }
@@ -154,10 +140,6 @@ type Option struct {
 	NodeGroupId string `protobuf:"bytes,1,opt,name=nodeGroupId,proto3" json:"nodeGroupId,omitempty"`
 	NodeCount   int32  `protobuf:"varint,2,opt,name=nodeCount,proto3" json:"nodeCount,omitempty"`
 	Debug       string `protobuf:"bytes,3,opt,name=debug,proto3" json:"debug,omitempty"`
-	// Deprecated: Writers cannot set this field in Kubernetes 1.35 and higher, and should set this field and podBytes. Readers should prefer podBytes if set.
-	//
-	// Deprecated: Marked as deprecated in expander/grpcplugin/protos/expander.proto.
-	Pod []*v1.Pod `protobuf:"bytes,4,rep,name=pod,proto3" json:"pod,omitempty"`
 	// proto-serialized v1.Pod object
 	PodBytes      [][]byte `protobuf:"bytes,5,rep,name=podBytes,proto3" json:"podBytes,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -215,14 +197,6 @@ func (x *Option) GetDebug() string {
 	return ""
 }
 
-// Deprecated: Marked as deprecated in expander/grpcplugin/protos/expander.proto.
-func (x *Option) GetPod() []*v1.Pod {
-	if x != nil {
-		return x.Pod
-	}
-	return nil
-}
-
 func (x *Option) GetPodBytes() [][]byte {
 	if x != nil {
 		return x.PodBytes
@@ -235,24 +209,19 @@ var File_expander_grpcplugin_protos_expander_proto protoreflect.FileDescriptor
 const file_expander_grpcplugin_protos_expander_proto_rawDesc = "" +
 	"\n" +
 	")expander/grpcplugin/protos/expander.proto\x12\n" +
-	"grpcplugin\x1a\"k8s.io/api/core/v1/generated.proto\"\xfa\x02\n" +
+	"grpcplugin\"\xd9\x01\n" +
 	"\x12BestOptionsRequest\x12,\n" +
-	"\aoptions\x18\x01 \x03(\v2\x12.grpcplugin.OptionR\aoptions\x12I\n" +
-	"\anodeMap\x18\x02 \x03(\v2+.grpcplugin.BestOptionsRequest.NodeMapEntryB\x02\x18\x01R\anodeMap\x12T\n" +
-	"\fnodeBytesMap\x18\x03 \x03(\v20.grpcplugin.BestOptionsRequest.NodeBytesMapEntryR\fnodeBytesMap\x1aT\n" +
-	"\fNodeMapEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12.\n" +
-	"\x05value\x18\x02 \x01(\v2\x18.k8s.io.api.core.v1.NodeR\x05value:\x028\x01\x1a?\n" +
+	"\aoptions\x18\x01 \x03(\v2\x12.grpcplugin.OptionR\aoptions\x12T\n" +
+	"\fnodeBytesMap\x18\x03 \x03(\v20.grpcplugin.BestOptionsRequest.NodeBytesMapEntryR\fnodeBytesMap\x1a?\n" +
 	"\x11NodeBytesMapEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\fR\x05value:\x028\x01\"C\n" +
 	"\x13BestOptionsResponse\x12,\n" +
-	"\aoptions\x18\x01 \x03(\v2\x12.grpcplugin.OptionR\aoptions\"\xa9\x01\n" +
+	"\aoptions\x18\x01 \x03(\v2\x12.grpcplugin.OptionR\aoptions\"z\n" +
 	"\x06Option\x12 \n" +
 	"\vnodeGroupId\x18\x01 \x01(\tR\vnodeGroupId\x12\x1c\n" +
 	"\tnodeCount\x18\x02 \x01(\x05R\tnodeCount\x12\x14\n" +
-	"\x05debug\x18\x03 \x01(\tR\x05debug\x12-\n" +
-	"\x03pod\x18\x04 \x03(\v2\x17.k8s.io.api.core.v1.PodB\x02\x18\x01R\x03pod\x12\x1a\n" +
+	"\x05debug\x18\x03 \x01(\tR\x05debug\x12\x1a\n" +
 	"\bpodBytes\x18\x05 \x03(\fR\bpodBytes2\\\n" +
 	"\bExpander\x12P\n" +
 	"\vBestOptions\x12\x1e.grpcplugin.BestOptionsRequest\x1a\x1f.grpcplugin.BestOptionsResponse\"\x00B\x1cZ\x1aexpander/grpcplugin/protosb\x06proto3"
@@ -269,30 +238,24 @@ func file_expander_grpcplugin_protos_expander_proto_rawDescGZIP() []byte {
 	return file_expander_grpcplugin_protos_expander_proto_rawDescData
 }
 
-var file_expander_grpcplugin_protos_expander_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_expander_grpcplugin_protos_expander_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_expander_grpcplugin_protos_expander_proto_goTypes = []any{
 	(*BestOptionsRequest)(nil),  // 0: grpcplugin.BestOptionsRequest
 	(*BestOptionsResponse)(nil), // 1: grpcplugin.BestOptionsResponse
 	(*Option)(nil),              // 2: grpcplugin.Option
-	nil,                         // 3: grpcplugin.BestOptionsRequest.NodeMapEntry
-	nil,                         // 4: grpcplugin.BestOptionsRequest.NodeBytesMapEntry
-	(*v1.Pod)(nil),              // 5: k8s.io.api.core.v1.Pod
-	(*v1.Node)(nil),             // 6: k8s.io.api.core.v1.Node
+	nil,                         // 3: grpcplugin.BestOptionsRequest.NodeBytesMapEntry
 }
 var file_expander_grpcplugin_protos_expander_proto_depIdxs = []int32{
 	2, // 0: grpcplugin.BestOptionsRequest.options:type_name -> grpcplugin.Option
-	3, // 1: grpcplugin.BestOptionsRequest.nodeMap:type_name -> grpcplugin.BestOptionsRequest.NodeMapEntry
-	4, // 2: grpcplugin.BestOptionsRequest.nodeBytesMap:type_name -> grpcplugin.BestOptionsRequest.NodeBytesMapEntry
-	2, // 3: grpcplugin.BestOptionsResponse.options:type_name -> grpcplugin.Option
-	5, // 4: grpcplugin.Option.pod:type_name -> k8s.io.api.core.v1.Pod
-	6, // 5: grpcplugin.BestOptionsRequest.NodeMapEntry.value:type_name -> k8s.io.api.core.v1.Node
-	0, // 6: grpcplugin.Expander.BestOptions:input_type -> grpcplugin.BestOptionsRequest
-	1, // 7: grpcplugin.Expander.BestOptions:output_type -> grpcplugin.BestOptionsResponse
-	7, // [7:8] is the sub-list for method output_type
-	6, // [6:7] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	3, // 1: grpcplugin.BestOptionsRequest.nodeBytesMap:type_name -> grpcplugin.BestOptionsRequest.NodeBytesMapEntry
+	2, // 2: grpcplugin.BestOptionsResponse.options:type_name -> grpcplugin.Option
+	0, // 3: grpcplugin.Expander.BestOptions:input_type -> grpcplugin.BestOptionsRequest
+	1, // 4: grpcplugin.Expander.BestOptions:output_type -> grpcplugin.BestOptionsResponse
+	4, // [4:5] is the sub-list for method output_type
+	3, // [3:4] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_expander_grpcplugin_protos_expander_proto_init() }
@@ -306,7 +269,7 @@ func file_expander_grpcplugin_protos_expander_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_expander_grpcplugin_protos_expander_proto_rawDesc), len(file_expander_grpcplugin_protos_expander_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
