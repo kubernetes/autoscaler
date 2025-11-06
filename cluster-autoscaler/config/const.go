@@ -19,8 +19,6 @@ package config
 import "time"
 
 const (
-	// SchedulerConfigFileFlag is the name of the flag
-	// for passing in custom scheduler config for in-tree scheduelr plugins
 	SchedulerConfigFileFlag = "scheduler-config-file"
 
 	// DefaultMaxClusterCores is the default maximum number of cores in the cluster.
