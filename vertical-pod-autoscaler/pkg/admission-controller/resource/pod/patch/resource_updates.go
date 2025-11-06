@@ -30,6 +30,8 @@ import (
 )
 
 const (
+	// ResourceUpdatesAnnotation is the name of annotation
+	// containing resource updates performed by VPA.
 	ResourceUpdatesAnnotation = "vpaUpdates"
 )
 
