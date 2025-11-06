@@ -286,7 +286,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:             "namespace, clusterName, and label selector matches MachineSet",
-		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil, nil, map[string]string{}),
+		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil, nil, map[string]string{"color": "green"}),
 		additionalLabels: map[string]string{"color": "green"},
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",

@@ -127,6 +127,7 @@ func TestSetSize(t *testing.T) {
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,
+			map[string]string{},
 		))
 	})
 
@@ -140,6 +141,7 @@ func TestSetSize(t *testing.T) {
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,
+			map[string]string{},
 		))
 	})
 }
@@ -244,11 +246,11 @@ func TestReplicas(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil, map[string]string{}))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil, map[string]string{}))
 	})
 }
 
@@ -304,6 +306,7 @@ func TestSetSizeAndReplicas(t *testing.T) {
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,
+			map[string]string{},
 		))
 	})
 
@@ -317,6 +320,7 @@ func TestSetSizeAndReplicas(t *testing.T) {
 				nodeGroupMaxSizeAnnotationKey: "10",
 			},
 			nil,
+			map[string]string{},
 		))
 	})
 }
@@ -423,12 +427,12 @@ func TestAnnotations(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil, map[string]string{})
 		test(t, testConfig, testConfig.machineSet)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil, map[string]string{})
 		test(t, testConfig, testConfig.machineDeployment)
 	})
 }
@@ -533,7 +537,7 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineSet %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
+			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity, map[string]string{})
 			controller, stop := mustCreateTestController(t, msTestConfig)
 			defer stop()
 
@@ -554,7 +558,7 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineDeployment %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
+			msTestConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity, map[string]string{})
 			controller, stop := mustCreateTestController(t, msTestConfig)
 			defer stop()
 
