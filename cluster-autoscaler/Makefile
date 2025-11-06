@@ -61,7 +61,7 @@ test-unit: clean build
 	go test --test.short -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
-	go test -bench=. -run=^$$ ./...
+	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
 
 dev-release: dev-release-arch-$(GOARCH)
 
