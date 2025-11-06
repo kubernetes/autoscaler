@@ -35,6 +35,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | admissionController.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
+| admissionController.priorityClassName | string | `nil` |  |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources.limits.cpu | string | `"200m"` |  |
 | admissionController.resources.limits.memory | string | `"500Mi"` |  |
@@ -87,6 +88,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | recommender.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podLabels | object | `{}` |  |
+| recommender.priorityClassName | string | `nil` |  |
 | recommender.replicas | int | `2` |  |
 | recommender.resources.limits.cpu | string | `"200m"` |  |
 | recommender.resources.limits.memory | string | `"1000Mi"` |  |
@@ -102,6 +104,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | updater.image.tag | string | `nil` |  |
 | updater.podAnnotations | object | `{}` |  |
 | updater.podLabels | object | `{}` |  |
+| updater.priorityClassName | string | `nil` |  |
 | updater.replicas | int | `1` |  |
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
