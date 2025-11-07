@@ -34,7 +34,7 @@ require (
 	golang.org/x/crypto v0.41.0
 	golang.org/x/net v0.43.0
 	golang.org/x/oauth2 v0.30.0
-	golang.org/x/sys v0.35.0
+	golang.org/x/sys v0.37.0
 	google.golang.org/api v0.151.0
 	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.8
@@ -55,7 +55,7 @@ require (
 	k8s.io/kube-scheduler v0.0.0
 	k8s.io/kubelet v0.34.1
 	k8s.io/kubernetes v1.34.1
-	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
+	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
 	sigs.k8s.io/cloud-provider-azure v1.29.4
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.13
 	sigs.k8s.io/yaml v1.6.0
@@ -85,6 +85,7 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
 	github.com/GoogleCloudPlatform/k8s-cloud-provider v1.25.0 // indirect
 	github.com/JeffAshton/win_pdh v0.0.0-20161109143554-76bb4ee9f0ab // indirect
+	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/Microsoft/hnslib v0.1.1 // indirect
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
@@ -130,7 +131,7 @@ require (
 	github.com/google/cadvisor v0.53.0 // indirect
 	github.com/google/cel-go v0.26.0 // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20241029153458-d1b30febd7db // indirect
+	github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
@@ -154,8 +155,8 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
-	github.com/onsi/ginkgo/v2 v2.21.0 // indirect
-	github.com/onsi/gomega v1.35.1 // indirect
+	github.com/onsi/ginkgo/v2 v2.27.2 // indirect
+	github.com/onsi/gomega v1.38.2 // indirect
 	github.com/opencontainers/cgroups v0.0.3 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
@@ -189,13 +190,13 @@ require (
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	go.yaml.in/yaml/v2 v2.4.2 // indirect
+	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/mod v0.27.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/term v0.34.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/mod v0.28.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
+	golang.org/x/term v0.36.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
@@ -229,29 +230,29 @@ replace github.com/digitalocean/godo => github.com/digitalocean/godo v1.27.0
 
 replace github.com/rancher/go-rancher => github.com/rancher/go-rancher v0.1.0
 
-replace k8s.io/api => github.com/kubernetes/api v0.0.0-20251030032104-67e96f7d5671
+replace k8s.io/api => github.com/kubernetes/api v0.0.0-20251107002836-f1737241c064
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.1
+replace k8s.io/apiextensions-apiserver => github.com/kubernetes/apiextensions-apiserver v0.0.0-20251105125549-c4e434ca2251
 
-replace k8s.io/apimachinery => github.com/kubernetes/apimachinery v0.35.0-alpha.2.0.20251029233601-5a85a549ac04
+replace k8s.io/apimachinery => github.com/kubernetes/apimachinery v0.35.0-alpha.3.0.20251106231852-6f8949260573
 
-replace k8s.io/apiserver => github.com/kubernetes/apiserver v0.0.0-20251028233835-ffa5761b14d7
+replace k8s.io/apiserver => github.com/kubernetes/apiserver v0.0.0-20251107005520-bce27587d0bd
 
 replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.34.1
 
-replace k8s.io/client-go => github.com/kubernetes/client-go v0.0.0-20251030152624-63b5f5942509
+replace k8s.io/client-go => github.com/kubernetes/client-go v0.0.0-20251107003311-5c322d3acdac
 
-replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.34.1
+replace k8s.io/cloud-provider => github.com/kubernetes/cloud-provider v0.0.0-20251106211155-080e91c4b910
 
-replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.34.1
+replace k8s.io/cluster-bootstrap => github.com/kubernetes/cluster-bootstrap v0.0.0-20251101161919-bf1255e49e2f
 
 replace k8s.io/code-generator => k8s.io/code-generator v0.34.1
 
-replace k8s.io/component-base => github.com/kubernetes/component-base v0.0.0-20251023233611-2dea70a75591
+replace k8s.io/component-base => github.com/kubernetes/component-base v0.0.0-20251105043606-09c454e1f74b
 
-replace k8s.io/component-helpers => k8s.io/component-helpers v0.34.1
+replace k8s.io/component-helpers => github.com/kubernetes/component-helpers v0.20.0-alpha.2.0.20251106124553-0e2bf40485ce
 
-replace k8s.io/controller-manager => k8s.io/controller-manager v0.34.1
+replace k8s.io/controller-manager => github.com/kubernetes/controller-manager v0.20.0-alpha.1.0.20251106210955-362c11ff4757
 
 replace k8s.io/cri-api => k8s.io/cri-api v0.34.1
 
@@ -259,11 +260,11 @@ replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.34.1
 
 replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.34.1
 
-replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.34.1
+replace k8s.io/kube-controller-manager => github.com/kubernetes/kube-controller-manager v0.0.0-20251105011811-223bddf58da7
 
 replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.34.1
 
-replace k8s.io/kube-scheduler => /home/hekumar/tmp/kubernetes/staging/src/k8s.io/kube-scheduler
+replace k8s.io/kube-scheduler => github.com/kubernetes/kube-scheduler v0.0.0-20251106172524-0962b2d7c894
 
 replace k8s.io/kubectl => k8s.io/kubectl v0.34.1
 
@@ -281,7 +282,7 @@ replace k8s.io/sample-controller => k8s.io/sample-controller v0.34.1
 
 replace k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.34.1
 
-replace k8s.io/dynamic-resource-allocation => github.com/kubernetes/dynamic-resource-allocation v0.26.0-beta.0.0.20251030162924-f4c15ed6bc5f
+replace k8s.io/dynamic-resource-allocation => github.com/kubernetes/dynamic-resource-allocation v0.26.0-beta.0.0.20251107013247-fafc9e288a2f
 
 replace k8s.io/kms => k8s.io/kms v0.34.1
 
@@ -293,4 +294,4 @@ replace k8s.io/cri-client => k8s.io/cri-client v0.34.1
 
 replace k8s.io/externaljwt => k8s.io/externaljwt v0.34.1
 
-replace k8s.io/kubernetes => /home/hekumar/tmp/kubernetes
+replace k8s.io/kubernetes => github.com/kubernetes/kubernetes v1.35.0-alpha.3.0.20251107154100-609e2e57dacd
