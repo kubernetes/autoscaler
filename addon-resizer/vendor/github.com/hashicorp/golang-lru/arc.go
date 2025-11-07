@@ -153,7 +153,7 @@ func (c *ARCCache) Add(key, value interface{}) {
 		// Remove from B2
 		c.b2.Remove(key)
 
-		// Add the key to the frequntly used list
+		// Add the key to the frequently used list
 		c.t2.Add(key, value)
 		return
 	}

@@ -85,7 +85,7 @@ func yamlToJSON(y []byte, jsonTarget *reflect.Value) ([]byte, error) {
 	// YAML objects are not completely compatible with JSON objects (e.g. you
 	// can have non-string keys in YAML). So, convert the YAML-compatible object
 	// to a JSON-compatible object, failing with an error if irrecoverable
-	// incompatibilties happen along the way.
+	// incompatibilities happen along the way.
 	jsonObj, err := convertToJSONableObject(yamlObj, jsonTarget)
 	if err != nil {
 		return nil, err

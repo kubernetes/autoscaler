@@ -22,7 +22,7 @@
 // See some discussion on the matter here:
 //   http://google-opensource.blogspot.com/2013/01/c-containers-that-save-memory-and-time.html
 // Note, though, that this project is in no way related to the C++ B-Tree
-// implmentation written about there.
+// implementation written about there.
 //
 // Within this tree, each node contains a slice of items and a (possibly nil)
 // slice of children.  For basic numeric values or raw structs, this can cause
