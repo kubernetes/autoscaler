@@ -23,29 +23,24 @@ cd "${KUBE_ROOT}"
 
 GOLINT=${GOLINT:-"golint"}
 excluded_packages=(
-  '/vendor/'
-  'vertical-pod-autoscaler/pkg/client'
   'cluster-autoscaler/cloudprovider/aws/aws-sdk-go'
   'cluster-autoscaler/cloudprovider/magnum/gophercloud'
   'cluster-autoscaler/cloudprovider/digitalocean/godo'
   'cluster-autoscaler/cloudprovider/bizflycloud/gobizfly'
   'cluster-autoscaler/cloudprovider/brightbox/gobrightbox'
   'cluster-autoscaler/cloudprovider/brightbox/k8ssdk'
-  'cluster-autoscaler/cloudprovider/brightbox/linkheader'
   'cluster-autoscaler/cloudprovider/brightbox/go-cache'
-  'cluster-autoscaler/cloudprovider/externalgrpc/protos'
   'cluster-autoscaler/cloudprovider/exoscale/internal'
   'cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3'
   'cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go'
   'cluster-autoscaler/cloudprovider/hetzner/hcloud-go'
   'cluster-autoscaler/cloudprovider/oci/vendor-internal'
-  'cluster-autoscaler/expander/grpcplugin/protos'
   'cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go'
   'cluster-autoscaler/cloudprovider/volcengine/volc-sdk-golang'
   'cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk'
 )
 
-FIND_PACKAGES='go list ./... '
+FIND_PACKAGES='go list ./... 2> /dev/null'
 for package in "${excluded_packages[@]}"; do
      FIND_PACKAGES+="| grep -v ${package} "
 done
