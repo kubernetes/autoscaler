@@ -101,25 +101,31 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	}
 
 	// we want to find the counter that is most utilized, since it is the "bottleneck" of the pool
-	var maxUtilization float64
-	if devicesWithoutCounters == 0 {
-		maxUtilization = 0
-	} else {
-		maxUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
+	var partitionableUtilization float64 = 0
+	var atomicDevicesUtilization float64 = 0
+	if devicesWithoutCounters != 0 {
+		atomicDevicesUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
+	}
+	if len(TotalConsumedCounters) == 0 {
+		return atomicDevicesUtilization
 	}
 	for counterSet, counters := range TotalConsumedCounters {
 		for counterName, totalValue := range counters {
+			if totalValue.IsZero() {
+				continue
+			}
 			if allocatedSet, exists := allocatedConsumedCounters[counterSet]; exists {
-				if allocatedValue, exists := allocatedSet[counterName]; exists && !totalValue.IsZero() {
+				if allocatedValue, exists := allocatedSet[counterName]; exists {
 					utilization := float64(allocatedValue.Value()) / float64(totalValue.Value())
-					if utilization > maxUtilization {
-						maxUtilization = utilization
+					if utilization > partitionableUtilization {
+						partitionableUtilization = utilization
 					}
 				}
 			}
 		}
 	}
-	return maxUtilization
+	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive
+	return partitionableUtilization + atomicDevicesUtilization
 }
 
 // calculateConsumedCounters calculates the total counters consumed by a list of devices

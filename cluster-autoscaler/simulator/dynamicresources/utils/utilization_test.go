@@ -143,10 +143,10 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 		{
-			testName: "",
+			testName: "partitionable devices, 2/4 partitions used",
 			nodeInfo: framework.NewNodeInfo(node,
 				mergeLists(
-					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "node", 2, 4),
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 2, 4),
 				),
 				mergeLists(
 					testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
@@ -158,6 +158,25 @@ func TestDynamicResourceUtilization(t *testing.T) {
 				},
 			},
 			wantHighestUtilization:     0.5,
+			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
+		},
+		{
+			testName: "multi-GPU partitionable devices, 2/8 partitions used",
+			nodeInfo: framework.NewNodeInfo(node,
+				mergeLists(
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 2, 4),
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-1", "node", 0, 4),
+				),
+				mergeLists(
+					testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
+				)...,
+			),
+			wantUtilization: map[string]map[string]float64{
+				fooDriver: {
+					"pool1": 0.25,
+				},
+			},
+			wantHighestUtilization:     0.25,
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 	} {
@@ -212,14 +231,14 @@ func testResourceSlices(driverName, poolName, nodeName string, poolGen, deviceCo
 	return result
 }
 
-func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName string, poolGen, partitionCount int) []*resourceapi.ResourceSlice {
+func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, nodeName string, poolGen, partitionCount int) []*resourceapi.ResourceSlice {
 	sliceName := fmt.Sprintf("%s-%s-slice", driverName, poolName)
 	var devices []resourceapi.Device
 	for i := 0; i < partitionCount; i++ {
 		devices = append(
 			devices,
 			resourceapi.Device{
-				Name: fmt.Sprintf("gpu-0-partition-%d", i),
+				Name: fmt.Sprintf("%s-partition-%d", deviceName, i),
 				Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
 					"memory": {
 						Value: resource.MustParse("10Gi"),
@@ -227,7 +246,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName str
 				},
 				ConsumesCounters: []resourceapi.DeviceCounterConsumption{
 					{
-						CounterSet: "gpu-0-counter-set",
+						CounterSet: fmt.Sprintf("%s-counter-set", deviceName),
 						Counters: map[string]resourceapi.Counter{
 							"memory": {
 								Value: resource.MustParse("10Gi"),
@@ -240,7 +259,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName str
 	}
 	devices = append(devices,
 		resourceapi.Device{
-			Name: "gpu-0",
+			Name: deviceName,
 			Capacity: map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{
 				"memory": {
 					Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
@@ -248,7 +267,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, nodeName str
 			},
 			ConsumesCounters: []resourceapi.DeviceCounterConsumption{
 				{
-					CounterSet: "gpu-0-counter-set",
+					CounterSet: fmt.Sprintf("%s-counter-set", deviceName),
 					Counters: map[string]resourceapi.Counter{
 						"memory": {
 							Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
