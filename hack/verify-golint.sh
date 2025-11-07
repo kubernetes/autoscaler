@@ -35,6 +35,7 @@ excluded_packages=(
   'cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go'
   'cluster-autoscaler/cloudprovider/hetzner/hcloud-go'
   'cluster-autoscaler/cloudprovider/oci/vendor-internal'
+  'cluster-autoscaler/expander/grpcplugin/protos'
   'cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go'
   'cluster-autoscaler/cloudprovider/volcengine/volc-sdk-golang'
   'cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk'
