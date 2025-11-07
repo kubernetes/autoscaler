@@ -26,6 +26,7 @@ import (
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerplugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
@@ -66,6 +67,9 @@ func NewHandle(informerFactory informers.SharedInformerFactory,
 	}
 	if csiEnabled {
 		opts = append(opts, schedulerframeworkruntime.WithSharedCSIManager(sharedLister))
+	} else {
+		sharedCSIManager := nodevolumelimits.NewCSIManager(informerFactory.Storage().V1().CSINodes().Lister())
+		opts = append(opts, schedulerframeworkruntime.WithSharedCSIManager(sharedCSIManager))
 	}
 	initMetricsOnce.Do(func() {
 		schedulermetrics.InitMetrics()
