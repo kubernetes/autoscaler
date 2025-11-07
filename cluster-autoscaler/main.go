@@ -107,7 +107,6 @@ func (flag *MultiStringFlag) Set(value string) error {
 	return nil
 }
 
-// multiStringFlag creates a new MultiStringFlag and registers it with the flag package.
 func multiStringFlag(name string, usage string) *MultiStringFlag {
 	value := new(MultiStringFlag)
 	flag.Var(value, name, usage)
