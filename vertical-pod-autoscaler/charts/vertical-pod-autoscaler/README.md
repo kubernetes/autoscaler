@@ -100,3 +100,6 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | updater.podAnnotations | object | `{}` |  |
 | updater.podLabels | object | `{}` |  |
 | updater.replicas | int | `1` |  |
+| updater.serviceAccount.annotations | object | `{}` |  |
+| updater.serviceAccount.create | bool | `true` |  |
+| updater.serviceAccount.labels | object | `{}` |  |
