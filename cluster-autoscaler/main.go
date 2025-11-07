@@ -103,7 +103,6 @@ func (flag *MultiStringFlag) Set(value string) error {
 	return nil
 }
 
-// multiStringFlag defines a MultiStringFlag flag with the specified name, default value, and usage string.
 func multiStringFlag(name string, usage string) *MultiStringFlag {
 	value := new(MultiStringFlag)
 	flag.Var(value, name, usage)
