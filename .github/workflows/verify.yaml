@@ -1,4 +1,4 @@
-name: Tests
+name: Verify Go
 
 on:
   - push
@@ -12,7 +12,7 @@ permissions:
   checks: write
 
 jobs:
-  test-and-verify:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
@@ -22,7 +22,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5.5.0
         with:
-          go-version: '1.24.0'
+          go-version: '1.24.2'
           cache-dependency-path: |
              ${{ env.GOPATH}}/src/k8s.io/autoscaler/cluster-autoscaler/go.sum
              ${{ env.GOPATH}}/src/k8s.io/autoscaler/vertical-pod-autoscaler/go.sum
@@ -40,17 +40,5 @@ jobs:
       - name: Verify
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
         run: hack/verify-all.sh -v
-        env:
-          GO111MODULE: auto
-
-      - name: golangci-lint - vertical-pod-autoscaler
-        uses: golangci/golangci-lint-action@v8
-        with:
-          args: --timeout=30m
-          working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/vertical-pod-autoscaler
-
-      - name: Test
-        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
-        run: hack/for-go-proj.sh test
         env:
           GO111MODULE: auto

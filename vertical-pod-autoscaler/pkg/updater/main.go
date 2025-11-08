@@ -160,6 +160,7 @@ const (
 	defaultRetryPeriod   = 2 * time.Second
 )
 
+// defaultLeaderElectionConfiguration provides default leader election
 func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
 	return componentbaseconfig.LeaderElectionConfiguration{
 		LeaderElect:       false,
