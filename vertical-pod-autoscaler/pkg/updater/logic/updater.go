@@ -24,8 +24,11 @@ import (
 
 	"golang.org/x/time/rate"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	corescheme "k8s.io/client-go/kubernetes/scheme"
@@ -102,6 +105,7 @@ func NewUpdater(
 	namespace string,
 	ignoredNamespaces []string,
 	patchCalculators []patch.Calculator,
+	podLabelSelector labels.Selector,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	// TODO: Create in-place rate limits for the in-place rate limiter
@@ -118,7 +122,7 @@ func NewUpdater(
 
 	return &updater{
 		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
-		podLister:                    newPodLister(kubeClient, namespace),
+		podLister:                    newPodLister(kubeClient, namespace, podLabelSelector),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
 		recommendationProcessor:      recommendationProcessor,
@@ -397,10 +401,30 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 	})
 }
 
-func newPodLister(kubeClient kube_client.Interface, namespace string) v1lister.PodLister {
-	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
+func newPodLister(kubeClient kube_client.Interface, namespace string, labelSelector labels.Selector) v1lister.PodLister {
+	fieldSelector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
 		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
+
+	listFunc := func(options metav1.ListOptions) (runtime.Object, error) {
+		options.FieldSelector = fieldSelector.String()
+		if labelSelector != nil && !labelSelector.Empty() {
+			options.LabelSelector = labelSelector.String()
+		}
+		return kubeClient.CoreV1().Pods(namespace).List(context.TODO(), options)
+	}
+	watchFunc := func(options metav1.ListOptions) (watch.Interface, error) {
+		options.FieldSelector = fieldSelector.String()
+		if labelSelector != nil && !labelSelector.Empty() {
+			options.LabelSelector = labelSelector.String()
+		}
+		return kubeClient.CoreV1().Pods(namespace).Watch(context.TODO(), options)
+	}
+
+	podListWatch := &cache.ListWatch{
+		ListFunc:  listFunc,
+		WatchFunc: watchFunc,
+	}
+
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)

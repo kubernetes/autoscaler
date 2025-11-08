@@ -46,6 +46,8 @@ const (
 	RecommenderDeploymentName = "vpa-recommender"
 	// RecommenderNamespace is namespace to deploy VPA recommender
 	RecommenderNamespace = "kube-system"
+	// UpdaterNamespace is namespace to deploy VPA updater
+	UpdaterNamespace = "kube-system"
 	// PollInterval is interval for polling
 	PollInterval = 10 * time.Second
 	// PollTimeout is timeout for polling
@@ -66,6 +68,9 @@ var HamsterTargetRef = &autoscaling.CrossVersionObjectReference{
 
 // RecommenderLabels are labels of VPA recommender
 var RecommenderLabels = map[string]string{"app": "vpa-recommender"}
+
+// CustomUpdaterLabels are labels of VPA updater
+var CustomUpdaterLabels = map[string]string{"app": "custom-vpa-updater"}
 
 // HamsterLabels are labels of hamster app
 var HamsterLabels = map[string]string{"app": "hamster"}
@@ -186,6 +191,73 @@ func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment
 	d.Spec.Template.Spec.Containers[0].Ports = []apiv1.ContainerPort{{
 		Name:          "prometheus",
 		ContainerPort: 8942,
+	}}
+
+	d.Spec.Template.Spec.Containers[0].LivenessProbe = &apiv1.Probe{
+		ProbeHandler: apiv1.ProbeHandler{
+			HTTPGet: &apiv1.HTTPGetAction{
+				Path:   "/health-check",
+				Port:   intstr.FromString("prometheus"),
+				Scheme: apiv1.URISchemeHTTP,
+			},
+		},
+		InitialDelaySeconds: 5,
+		PeriodSeconds:       10,
+		FailureThreshold:    3,
+	}
+	d.Spec.Template.Spec.Containers[0].ReadinessProbe = &apiv1.Probe{
+		ProbeHandler: apiv1.ProbeHandler{
+			HTTPGet: &apiv1.HTTPGetAction{
+				Path:   "/health-check",
+				Port:   intstr.FromString("prometheus"),
+				Scheme: apiv1.URISchemeHTTP,
+			},
+		},
+		PeriodSeconds:    10,
+		FailureThreshold: 3,
+	}
+
+	return d
+}
+
+// NewUpdaterDeployment creates a new updater deployment for e2e test purposes
+func NewUpdaterDeployment(f *framework.Framework, deploymentName string, flags []string) *appsv1.Deployment {
+	d := framework_deployment.NewDeployment(
+		deploymentName,               /*deploymentName*/
+		1,                            /*replicas*/
+		CustomUpdaterLabels,          /*podLabels*/
+		"updater",                    /*imageName*/
+		"localhost:5001/vpa-updater", /*image*/
+		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+	)
+	d.ObjectMeta.Namespace = f.Namespace.Name
+	d.Spec.Template.Spec.Containers[0].ImagePullPolicy = apiv1.PullNever // Image must be loaded first
+	d.Spec.Template.Spec.ServiceAccountName = "vpa-updater"
+	d.Spec.Template.Spec.Containers[0].Command = []string{"/updater"}
+	d.Spec.Template.Spec.Containers[0].Args = flags
+
+	runAsNonRoot := true
+	var runAsUser int64 = 65534 // nobody
+	d.Spec.Template.Spec.SecurityContext = &apiv1.PodSecurityContext{
+		RunAsNonRoot: &runAsNonRoot,
+		RunAsUser:    &runAsUser,
+	}
+
+	// Same as deploy/updater-deployment.yaml
+	d.Spec.Template.Spec.Containers[0].Resources = apiv1.ResourceRequirements{
+		Limits: apiv1.ResourceList{
+			apiv1.ResourceCPU:    resource.MustParse("200m"),
+			apiv1.ResourceMemory: resource.MustParse("1000Mi"),
+		},
+		Requests: apiv1.ResourceList{
+			apiv1.ResourceCPU:    resource.MustParse("50m"),
+			apiv1.ResourceMemory: resource.MustParse("500Mi"),
+		},
+	}
+
+	d.Spec.Template.Spec.Containers[0].Ports = []apiv1.ContainerPort{{
+		Name:          "prometheus",
+		ContainerPort: 8943,
 	}}
 
 	d.Spec.Template.Spec.Containers[0].LivenessProbe = &apiv1.Probe{

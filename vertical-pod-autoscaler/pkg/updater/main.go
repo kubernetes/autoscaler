@@ -26,6 +26,7 @@ import (
 
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -74,6 +75,9 @@ var (
 
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
+
+	podLabelSelectors = flag.String("pod-label-selectors", "",
+		"If present, the updater will only process pods matching the given label selectors.")
 
 	namespace = os.Getenv("NAMESPACE")
 )
@@ -204,6 +208,16 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
+	var podSelector labels.Selector
+	if *podLabelSelectors != "" {
+		var err error
+		podSelector, err = labels.Parse(*podLabelSelectors)
+		if err != nil {
+			klog.ErrorS(err, "Failed to parse pod label selector", "selector", *podLabelSelectors)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	}
+
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
 
 	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider), inplace.NewInPlaceUpdatedCalculator()}
@@ -226,6 +240,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		commonFlag.VpaObjectNamespace,
 		ignoredNamespaces,
 		calculators,
+		podSelector,
 	)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create updater")

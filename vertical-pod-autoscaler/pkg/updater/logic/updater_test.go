@@ -567,3 +567,108 @@ func TestLogDeprecationWarnings(t *testing.T) {
 		})
 	}
 }
+
+func TestNewPodListerWithLabelSelector(t *testing.T) {
+	tests := []struct {
+		name             string
+		labelSelectors   string
+		pods             []*apiv1.Pod
+		expectedPodCount int
+		expectedPodNames []string
+	}{
+		{
+			name:           "no selector returns all pods",
+			labelSelectors: "",
+			pods: []*apiv1.Pod{
+				test.Pod().WithName("pod1").WithLabels(map[string]string{"app": "test1"}).Get(),
+				test.Pod().WithName("pod2").WithLabels(map[string]string{"app": "test2"}).Get(),
+				test.Pod().WithName("pod3").WithLabels(map[string]string{"env": "prod"}).Get(),
+			},
+			expectedPodCount: 3,
+			expectedPodNames: []string{"pod1", "pod2", "pod3"},
+		},
+		{
+			name:             "no pods returns empty list",
+			labelSelectors:   "env=prod",
+			pods:             []*apiv1.Pod{},
+			expectedPodCount: 0,
+			expectedPodNames: []string{},
+		},
+		{
+			name:           "single label selector filters correctly",
+			labelSelectors: "app=test1",
+			pods: []*apiv1.Pod{
+				test.Pod().WithName("pod1").WithLabels(map[string]string{"app": "test1"}).Get(),
+				test.Pod().WithName("pod2").WithLabels(map[string]string{"app": "test2"}).Get(),
+				test.Pod().WithName("pod3").WithLabels(map[string]string{"env": "prod"}).Get(),
+			},
+			expectedPodCount: 1,
+			expectedPodNames: []string{"pod1"},
+		},
+		{
+			name:           "multiple label selector filters correctly",
+			labelSelectors: "app=test1,env=prod",
+			pods: []*apiv1.Pod{
+				test.Pod().WithName("pod1").WithLabels(map[string]string{"app": "test1", "env": "prod"}).Get(),
+				test.Pod().WithName("pod2").WithLabels(map[string]string{"app": "test1", "env": "dev"}).Get(),
+				test.Pod().WithName("pod3").WithLabels(map[string]string{"app": "test2", "env": "prod"}).Get(),
+				test.Pod().WithName("pod4").WithLabels(map[string]string{"app": "test1", "env": "prod"}).Get(),
+			},
+			expectedPodCount: 2,
+			expectedPodNames: []string{"pod1", "pod4"},
+		},
+		{
+			name:           "no matching pods returns empty",
+			labelSelectors: "vpa-enabled=true",
+			pods: []*apiv1.Pod{
+				test.Pod().WithName("pod1").WithLabels(map[string]string{"app": "test1"}).Get(),
+				test.Pod().WithName("pod2").WithLabels(map[string]string{"app": "test2"}).Get(),
+			},
+			expectedPodCount: 0,
+			expectedPodNames: []string{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// parse label selectors
+			var selector labels.Selector
+			if tc.labelSelectors != "" {
+				var err error
+				selector, err = labels.Parse(tc.labelSelectors)
+				assert.NoError(t, err)
+			}
+
+			kubeClient := fake.NewSimpleClientset()
+			podLister := newPodLister(kubeClient, "default", selector)
+
+			// add pods
+			for _, pod := range tc.pods {
+				pod.Namespace = "default"
+				pod.Status.Phase = apiv1.PodRunning
+				_, err := kubeClient.CoreV1().Pods("default").Create(context.TODO(), pod, metav1.CreateOptions{})
+				assert.NoError(t, err)
+			}
+
+			// wait for cache to pick up the pods
+			assert.Eventually(t, func() bool {
+				pods, err := podLister.Pods("default").List(labels.Everything())
+				return err == nil && len(pods) == tc.expectedPodCount
+			}, 5*time.Second, 100*time.Millisecond, "failed to sync pods to cache")
+
+			// list and verify pods
+			pods, err := podLister.Pods("default").List(labels.Everything())
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedPodCount, len(pods), "expected %d pods but got %d", tc.expectedPodCount, len(pods))
+
+			actualNames := make([]string, len(pods))
+			for i, pod := range pods {
+				actualNames[i] = pod.Name
+			}
+
+			for _, expectedName := range tc.expectedPodNames {
+				assert.Contains(t, actualNames, expectedName, "expected pod %s to be listed", expectedName)
+			}
+		})
+	}
+}

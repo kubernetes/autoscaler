@@ -164,6 +164,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `logtostderr` |  |  true | log to standard error instead of files  |
 | `min-replicas` | int |  2 | Minimum number of replicas to perform update  |
 | `one-output` | severity |  | If true, only write logs to their native level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
+| `pod-label-selectors` | string |  | If present, the updater will only process pods matching the given label selectors. |
 | `pod-update-threshold` | float |  0.1 | Ignore updates that have priority lower than the value of this flag  |
 | `profiling` | int |  | Is debug/pprof endpoenabled |
 | `skip-headers` |  |  | If true, avoid header prefixes in the log messages |
