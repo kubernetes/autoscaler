@@ -443,6 +443,10 @@ func (snapshot *DeltaSnapshotStore) CSINodes() fwk.CSINodeLister {
 	return snapshot.csiSnapshot.CSINodes()
 }
 
+func (snapshot *DeltaSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
+	return snapshot.DraSnapshot().DeviceClassResolver()
+}
+
 // AddSchedulerNodeInfo adds a NodeInfo.
 func (snapshot *DeltaSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
 	if _, err := snapshot.data.addNode(nodeInfo.Node()); err != nil {

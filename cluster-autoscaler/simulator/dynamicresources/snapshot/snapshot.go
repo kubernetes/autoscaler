@@ -91,6 +91,10 @@ func (s *Snapshot) ResourceClaims() schedulerframework.ResourceClaimTracker {
 	return snapshotClaimTracker{snapshot: s}
 }
 
+func (s *Snapshot) DeviceClassResolver() schedulerframework.DeviceClassResolver {
+	return newSnapshotDeviceClassResolver(s)
+}
+
 // ResourceSlices exposes the Snapshot as schedulerframework.ResourceSliceLister, in order to interact with
 // the scheduler framework.
 func (s *Snapshot) ResourceSlices() schedulerframework.ResourceSliceLister {

@@ -19,6 +19,7 @@ package framework
 import (
 	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -83,6 +84,10 @@ func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate SharedLis
 	lister.delegate = delegate
 }
 
+func (lister *DelegatingSchedulerSharedLister) DeviceClassResolver() fwk.DeviceClassResolver {
+	return lister.delegate.DeviceClassResolver()
+}
+
 // ResetDelegate resets delegate to
 func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 	lister.delegate = unsetSharedListerSingleton
@@ -95,6 +100,7 @@ type unsetResourceClaimTracker unsetSharedLister
 type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
 type unsetCSINodeLister unsetSharedLister
+type unsetDeviceClassResolver unsetSharedLister
 
 // List always returns an error
 func (lister *unsetNodeInfoLister) List() ([]fwk.NodeInfo, error) {
@@ -178,6 +184,10 @@ func (u *unsetDeviceClassLister) Get(className string) (*resourceapi.DeviceClass
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
+func (u *unsetDeviceClassResolver) GetDeviceClass(resourceName v1.ResourceName) *resourceapi.DeviceClass {
+	return nil
+}
+
 // NodeInfos returns a fake NodeInfoLister which always returns an error
 func (lister *unsetSharedLister) NodeInfos() fwk.NodeInfoLister {
 	return (*unsetNodeInfoLister)(lister)
@@ -202,6 +212,10 @@ func (lister *unsetSharedLister) DeviceClasses() fwk.DeviceClassLister {
 
 func (lister *unsetSharedLister) CSINodes() fwk.CSINodeLister {
 	return (*unsetCSINodeLister)(lister)
+}
+
+func (lister *unsetSharedLister) DeviceClassResolver() fwk.DeviceClassResolver {
+	return (*unsetDeviceClassResolver)(lister)
 }
 
 var unsetSharedListerSingleton *unsetSharedLister

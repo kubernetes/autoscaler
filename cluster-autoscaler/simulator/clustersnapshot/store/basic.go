@@ -360,6 +360,10 @@ func (snapshot *BasicSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 	return snapshot.DraSnapshot().DeviceClasses()
 }
 
+func (snapshot *BasicSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
+	return snapshot.DraSnapshot().DeviceClassResolver()
+}
+
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicSnapshotStoreNodeLister) List() ([]fwk.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos(), nil
