@@ -219,7 +219,7 @@ func waitWebhookConfigurationReady(f *framework.Framework) error {
 func CreateAuthReaderRoleBinding(f *framework.Framework, namespace string) {
 	ginkgo.By("Create role binding to let webhook read extension-apiserver-authentication")
 	client := f.ClientSet
-	_, err := client.RbacV1().RoleBindings("kube-system").Create(context.TODO(), &rbacv1.RoleBinding{
+	_, err := client.RbacV1().RoleBindings(RecommenderNamespace).Create(context.TODO(), &rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: roleBindingName,
 			Annotations: map[string]string{
@@ -382,5 +382,5 @@ func CleanWebhookTest(client clientset.Interface, namespaceName string) {
 	_ = client.CoreV1().Services(namespaceName).Delete(context.TODO(), WebhookServiceName, metav1.DeleteOptions{})
 	_ = client.AppsV1().Deployments(namespaceName).Delete(context.TODO(), deploymentName, metav1.DeleteOptions{})
 	_ = client.CoreV1().Secrets(namespaceName).Delete(context.TODO(), WebhookServiceName, metav1.DeleteOptions{})
-	_ = client.RbacV1().RoleBindings("kube-system").Delete(context.TODO(), roleBindingName, metav1.DeleteOptions{})
+	_ = client.RbacV1().RoleBindings(RecommenderNamespace).Delete(context.TODO(), roleBindingName, metav1.DeleteOptions{})
 }
