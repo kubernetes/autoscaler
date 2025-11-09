@@ -333,7 +333,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context)
 		}
 		err := feeder.cleanupCheckpointsForNamespace(ctx, namespace, allVPAKeys)
 		if err != nil {
-			klog.ErrorS(err, "error cleanining checkpoints")
+			klog.ErrorS(err, "error cleaning checkpoints")
 		}
 	}
 }
