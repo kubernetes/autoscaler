@@ -248,7 +248,6 @@ var _ = UpdaterE2eDescribe("Updater with PerVPAConfig", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(len(podList.Items)).To(gomega.BeNumerically(">", 0))
 
-		// verySmallThreshold := 1 * time.Nanosecond
 		disabledThreshold := 0 * time.Second // Disable quick OOM eviction
 		ginkgo.By("Setting up a VPA CRD with very short evictAfterOOMThreshold (1ns)")
 		targetRef := &autoscaling.CrossVersionObjectReference{
