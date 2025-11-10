@@ -191,7 +191,7 @@ updater:
     pullPolicy: IfNotPresent
 
   # Number of Updater replicas to create.
-  replicas: 1
+  replicas: 2
 
   # Labels to add to the Updater pod.
   podLabels: {}
@@ -205,3 +205,19 @@ updater:
     labels: {}
     # Annotations to add to the Updater service account.
     annotations: {}
+  
+  # Leader election configuration for the Updater.
+  # When running multiple replicas, leader election ensures only one instance is actively processing.
+  leaderElection:
+    # Enable leader election. If not set (null), automatically enabled when replicas > 1
+    enabled:
+    # Namespace for the lease resource. Defaults to Release.Namespace if not set.
+    resourceNamespace: ""
+    # Name of the lease resource.
+    resourceName: vpa-updater-lease
+    # Duration that non-leader candidates will wait after observing a leadership renewal.
+    leaseDuration: 15s
+    # Interval between attempts by the acting master to renew a leadership slot.
+    renewDeadline: 10s
+    # Duration the clients should wait between attempting acquisition and renewal of a leadership.
+    retryPeriod: 2s

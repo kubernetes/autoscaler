@@ -40,6 +40,17 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          args:
+          - --v=4
+          - --stderrthreshold=info
+          {{- if eq (include "vertical-pod-autoscaler.updater.leaderElectionEnabled" .) "true" }}
+          - --leader-elect=true
+          - --leader-elect-resource-namespace={{ .Values.updater.leaderElection.resourceNamespace | default .Release.Namespace }}
+          - --leader-elect-resource-name={{ .Values.updater.leaderElection.resourceName }}
+          - --leader-elect-lease-duration={{ .Values.updater.leaderElection.leaseDuration }}
+          - --leader-elect-renew-deadline={{ .Values.updater.leaderElection.renewDeadline }}
+          - --leader-elect-retry-period={{ .Values.updater.leaderElection.retryPeriod }}
+          {{- end }}
           ports:
             - name: prometheus
               containerPort: 8943
