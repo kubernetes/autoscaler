@@ -36,7 +36,6 @@ This feature is particularly useful in environments where services are billed pr
 
 * Allow users to specify a `memoryPerCPU` ratio in `VerticalPodAutoscaler` objects.  
 * Ensure VPA recommendations respect the ratio across Target, LowerBound, UpperBound, and UncappedTarget.  
-* Provide a feature gate to enable/disable the feature cluster-wide.
 
 ### Non-Goals
 
@@ -88,7 +87,6 @@ memory_bytes = cpu_cores * memoryPerCPU
 * Ratio enforcement is strict:
   * If the memory recommendation would exceed `cpu * memoryPerCPU`, then **CPU is increased** to satisfy the ratio.
   * If the CPU recommendation would exceed `memory / memoryPerCPU`, then **memory is increased** to satisfy the ratio.
-* If ratio cannot be applied (e.g., missing CPU), fallback to standard recommendations.  
 * With the `MemoryPerCPURatio` feature gate disabled, the `memoryPerCPU` field is ignored and recommendations fall back to standard VPA behavior.
 
 > [!IMPORTANT]
@@ -143,6 +141,7 @@ The `memoryPerCPU` feature requires VPA version 1.5.0 or higher. The feature is 
 
 * `memoryPerCPU` must be > 0.  
 * Value must be a valid `resource.Quantity` (e.g., `512Mi`, `4Gi`).
+* If `memoryPerCPU` is set, controlledResources must include both `cpu` and `memory`.
 * Admission ensures that memoryPerCPU is reachable within the VPA bounds.
   * Reject the object if `minAllowed.cpu` × `memoryPerCPU` > `maxAllowed.memory`.
   * Reject the object if `maxAllowed.cpu` × `memoryPerCPU` < `minAllowed.memory`.
