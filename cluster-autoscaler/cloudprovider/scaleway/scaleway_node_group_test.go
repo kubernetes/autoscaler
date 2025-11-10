@@ -504,7 +504,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 				"pods":              110,
 			},
 			Labels: map[string]string{
-				"kubernetes.io/hostname": "test-node",
+				"kubernetes.io/hostname":           "test-node",
 				"node.kubernetes.io/instance-type": "DEV1-M",
 			},
 			Taints: map[string]string{
