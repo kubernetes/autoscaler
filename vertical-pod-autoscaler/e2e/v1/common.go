@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -55,18 +54,6 @@ const (
 	// pod, if there are no mechanisms blocking it.
 	VpaInPlaceTimeout = 2 * time.Minute
 )
-
-var (
-	// VpaNamespace is the namespace that holds the all the VPA components.
-	// Can be overridden via VPA_NAMESPACE environment variable.
-	VpaNamespace = "kube-system"
-)
-
-func init() {
-	if ns := os.Getenv("VPA_NAMESPACE"); ns != "" {
-		VpaNamespace = ns
-	}
-}
 
 // UpdaterE2eDescribe describes a VPA updater e2e test.
 func UpdaterE2eDescribe(name string, args ...interface{}) bool {

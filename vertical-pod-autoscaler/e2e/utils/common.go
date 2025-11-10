@@ -57,14 +57,14 @@ const (
 )
 
 var (
-	// RecommenderNamespace is namespace to deploy VPA recommender.
+	// VpaNamespace is namespace to deploy VPA components.
 	// Can be overridden via VPA_NAMESPACE environment variable.
-	RecommenderNamespace = "kube-system"
+	VpaNamespace = "kube-system"
 )
 
 func init() {
 	if ns := os.Getenv("VPA_NAMESPACE"); ns != "" {
-		RecommenderNamespace = ns
+		VpaNamespace = ns
 	}
 }
 
