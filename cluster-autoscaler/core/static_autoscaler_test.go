@@ -295,7 +295,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 
 	// Create all necessary autoscaler dependencies, applying the mocks from config.
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-	listerRegistry := kube_util.NewListerRegistry(config.mocks.allNodeLister, config.mocks.readyNodeLister, config.mocks.allPodLister,
+	listerRegistry := kube_util.NewListerRegistry(config.mocks.allNodeLister, nil, config.mocks.readyNodeLister, config.mocks.allPodLister,
 		config.mocks.podDisruptionBudgetLister, config.mocks.daemonSetLister, nil, nil, nil, nil)
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(config.autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil)
 	if err != nil {
@@ -401,7 +401,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	autoscalingCtx.ListerRegistry = listerRegistry
 
@@ -660,7 +660,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 
 			setUpScaleDownActuator(&autoscalingCtx, options)
 
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 				nil, nil, nil, nil)
 			autoscalingCtx.ListerRegistry = listerRegistry
 
@@ -812,7 +812,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	processors.NodeGroupManager = nodeGroupManager
 	processors.NodeGroupListProcessor = nodeGroupListProcessor
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	autoscalingCtx.ListerRegistry = listerRegistry
@@ -955,7 +955,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 			setUpScaleDownActuator(&autoscalingCtx, options)
 
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock,
 				podDisruptionBudgetListerMock, daemonSetListerMock,
 				nil, nil, nil, nil)
 			autoscalingCtx.ListerRegistry = listerRegistry
@@ -1119,7 +1119,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	autoscalingCtx.ListerRegistry = listerRegistry
@@ -1250,7 +1250,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	autoscalingCtx.ListerRegistry = listerRegistry
@@ -1348,7 +1348,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
 
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
 	autoscalingCtx.ListerRegistry = listerRegistry
@@ -1698,7 +1698,7 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 
 			setUpScaleDownActuator(&autoscalingCtx, options)
 
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 				nil, nil, nil, nil)
 			autoscalingCtx.ListerRegistry = listerRegistry
 
@@ -2449,7 +2449,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(readyNodes)
 	daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
 	assert.NoError(t, err)
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister,
 		kubernetes.NewTestPodLister(nil),
 		kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister, nil, nil, nil, nil)
 
@@ -3245,7 +3245,7 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 
 	daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
 	assert.NoError(t, err)
-	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, nil, readyNodeLister,
 		kubernetes.NewTestPodLister(nil),
 		kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister, nil, nil, nil, nil)
 
