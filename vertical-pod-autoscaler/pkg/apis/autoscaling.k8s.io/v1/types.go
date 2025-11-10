@@ -184,17 +184,6 @@ const (
 	UpdateModeInPlaceOrRecreate UpdateMode = "InPlaceOrRecreate"
 )
 
-// GetUpdateModes returns all supported UpdateModes
-func GetUpdateModes() map[UpdateMode]any {
-	return map[UpdateMode]any{
-		UpdateModeOff:               nil,
-		UpdateModeInitial:           nil,
-		UpdateModeRecreate:          nil,
-		UpdateModeAuto:              nil,
-		UpdateModeInPlaceOrRecreate: nil,
-	}
-}
-
 // PodResourcePolicy controls how autoscaler computes the recommended resources
 // for containers belonging to the pod. There can be at most one entry for every
 // named container and optionally a single wildcard entry with `containerName` = '*',
