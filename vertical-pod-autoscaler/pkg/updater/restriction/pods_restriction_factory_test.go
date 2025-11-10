@@ -26,10 +26,8 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	appsinformer "k8s.io/client-go/informers/apps/v1"
-	coreinformer "k8s.io/client-go/informers/core/v1"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/tools/cache"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/utils/clock"
 	baseclocktest "k8s.io/utils/clock/testing"
@@ -707,45 +705,37 @@ func getRestrictionFactory(rc *apiv1.ReplicationController, rs *appsv1.ReplicaSe
 	ss *appsv1.StatefulSet, ds *appsv1.DaemonSet, minReplicas int,
 	evictionToleranceFraction float64, clock clock.Clock, lipuatm map[string]time.Time, patchCalculators []patch.Calculator) (PodsRestrictionFactory, error) {
 	kubeClient := &fake.Clientset{}
-	rcInformer := coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
-		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	rsInformer := appsinformer.NewReplicaSetInformer(kubeClient, apiv1.NamespaceAll,
-		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	ssInformer := appsinformer.NewStatefulSetInformer(kubeClient, apiv1.NamespaceAll,
-		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	dsInformer := appsinformer.NewDaemonSetInformer(kubeClient, apiv1.NamespaceAll,
-		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0*time.Second)
+
+	// Create informers and get their stores to populate directly
 	if rc != nil {
-		err := rcInformer.GetIndexer().Add(rc)
-		if err != nil {
-			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		rcInformer := informerFactory.Core().V1().ReplicationControllers().Informer()
+		if err := rcInformer.GetStore().Add(rc); err != nil {
+			return nil, fmt.Errorf("Error adding ReplicationController to store: %v", err)
 		}
 	}
 	if rs != nil {
-		err := rsInformer.GetIndexer().Add(rs)
-		if err != nil {
-			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		rsInformer := informerFactory.Apps().V1().ReplicaSets().Informer()
+		if err := rsInformer.GetStore().Add(rs); err != nil {
+			return nil, fmt.Errorf("Error adding ReplicaSet to store: %v", err)
 		}
 	}
 	if ss != nil {
-		err := ssInformer.GetIndexer().Add(ss)
-		if err != nil {
-			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		ssInformer := informerFactory.Apps().V1().StatefulSets().Informer()
+		if err := ssInformer.GetStore().Add(ss); err != nil {
+			return nil, fmt.Errorf("Error adding StatefulSet to store: %v", err)
 		}
 	}
 	if ds != nil {
-		err := dsInformer.GetIndexer().Add(ds)
-		if err != nil {
-			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		dsInformer := informerFactory.Apps().V1().DaemonSets().Informer()
+		if err := dsInformer.GetStore().Add(ds); err != nil {
+			return nil, fmt.Errorf("Error adding DaemonSet to store: %v", err)
 		}
 	}
 
 	return &PodsRestrictionFactoryImpl{
 		client:                    kubeClient,
-		rcInformer:                rcInformer,
-		ssInformer:                ssInformer,
-		rsInformer:                rsInformer,
-		dsInformer:                dsInformer,
+		informerFactory:           informerFactory,
 		minReplicas:               minReplicas,
 		evictionToleranceFraction: evictionToleranceFraction,
 		clock:                     clock,

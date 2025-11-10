@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_informers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -99,10 +100,12 @@ func main() {
 
 	config := common.CreateKubeConfigOrDie(commonFlags.KubeConfig, float32(commonFlags.KubeApiQps), int(commonFlags.KubeApiBurst))
 
-	vpaClient := vpa_clientset.NewForConfigOrDie(config)
-	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), commonFlags.VpaObjectNamespace)
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+
+	vpaClient := vpa_clientset.NewForConfigOrDie(config)
+	vpaFactory := vpa_informers.NewSharedInformerFactoryWithOptions(vpaClient, 1*time.Hour, vpa_informers.WithNamespace(commonFlags.VpaObjectNamespace))
+
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podPreprocessor := pod.NewDefaultPreProcessor()
@@ -114,15 +117,24 @@ func main() {
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+	vpaLister := vpa_api_util.NewVpasListerFromFactory(vpaFactory)
 	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
 
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 	factory.Start(stopCh)
+	vpaFactory.Start(stopCh)
 	informerMap := factory.WaitForCacheSync(stopCh)
 	for kind, synced := range informerMap {
 		if !synced {
 			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	}
+	vpaInformerMap := vpaFactory.WaitForCacheSync(stopCh)
+	for kind, synced := range vpaInformerMap {
+		if !synced {
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync VPA cache for the %s informer", kind.String()))
 			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 	}

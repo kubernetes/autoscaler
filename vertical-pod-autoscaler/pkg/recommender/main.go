@@ -41,6 +41,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_informers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
@@ -244,17 +245,33 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
-	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
+
+	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
+
+	vpaClient := vpa_clientset.NewForConfigOrDie(config)
+	vpaFactory := vpa_informers.NewSharedInformerFactoryWithOptions(vpaClient, 1*time.Hour, vpa_informers.WithNamespace(commonFlag.VpaObjectNamespace))
+
+	vpaLister := vpa_api_util.NewVpasListerFromFactory(vpaFactory)
+	vpacheckpointLister := vpa_api_util.NewVpaCheckpointListerFromFactory(vpaFactory)
+
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlag.VpaObjectNamespace, stopCh)
 
 	factory.Start(stopCh)
+	vpaFactory.Start(stopCh)
 	informerMap := factory.WaitForCacheSync(stopCh)
 	for kind, synced := range informerMap {
 		if !synced {
 			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	}
+	vpaInformerMap := vpaFactory.WaitForCacheSync(stopCh)
+	for kind, synced := range vpaInformerMap {
+		if !synced {
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync VPA cache for the %s informer", kind.String()))
 			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 	}
@@ -296,8 +313,8 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		KubeClient:          kubeClient,
 		MetricsClient:       input_metrics.NewMetricsClient(source, commonFlag.VpaObjectNamespace, "default-metrics-client"),
 		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
-		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), commonFlag.VpaObjectNamespace),
-		VpaCheckpointLister: vpa_api_util.NewVpaCheckpointLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), commonFlag.VpaObjectNamespace),
+		VpaLister:           vpaLister,
+		VpaCheckpointLister: vpacheckpointLister,
 		ClusterState:        clusterState,
 		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		MemorySaveMode:      *memorySaver,

@@ -18,7 +18,6 @@ package logic
 
 import (
 	"context"
-	"fmt"
 	"slices"
 	"time"
 
@@ -26,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	corescheme "k8s.io/client-go/kubernetes/scheme"
@@ -88,6 +88,8 @@ type updater struct {
 func NewUpdater(
 	kubeClient kube_client.Interface,
 	vpaClient *vpa_clientset.Clientset,
+	kubeInformerFactory informers.SharedInformerFactory,
+	vpaLister vpa_lister.VerticalPodAutoscalerLister,
 	minReplicasForEviction int,
 	evictionRateLimit float64,
 	evictionRateBurst int,
@@ -106,18 +108,16 @@ func NewUpdater(
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	// TODO: Create in-place rate limits for the in-place rate limiter
 	inPlaceRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
-	factory, err := restriction.NewPodsRestrictionFactory(
+	factory := restriction.NewPodsRestrictionFactory(
 		kubeClient,
+		kubeInformerFactory,
 		minReplicasForEviction,
 		evictionToleranceFraction,
 		patchCalculators,
 	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create restriction factory: %v", err)
-	}
 
 	return &updater{
-		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
+		vpaLister:                    vpaLister,
 		podLister:                    newPodLister(kubeClient, namespace),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
