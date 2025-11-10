@@ -638,6 +638,7 @@ func TestLogDeprecationWarnings(t *testing.T) {
 			logDeprecationWarnings(vpa)
 		})
 	}
+}
 func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 
