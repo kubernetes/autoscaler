@@ -284,11 +284,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 					err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
 					if err != nil {
 						klog.V(0).InfoS("Unboosting failed", "error", err, "pod", klog.KObj(pod))
-						metrics_updater.RecordFailedInPlaceUpdate(vpaSize, "UnboostError")
+						metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "UnboostError")
 					} else {
 						klog.V(2).InfoS("Successfully unboosted pod", "pod", klog.KObj(pod))
 						withInPlaceUpdated = true
-						metrics_updater.AddInPlaceUpdatedPod(vpaSize)
+						metrics_updater.AddInPlaceUpdatedPod(vpaSize, vpa.Name, vpa.Namespace)
 					}
 				}
 			}
