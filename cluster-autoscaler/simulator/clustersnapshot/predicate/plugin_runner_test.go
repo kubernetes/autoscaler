@@ -319,9 +319,13 @@ func TestDebugInfo(t *testing.T) {
 
 	_, _, predicateErr := defaultPluginRunner.RunFiltersOnNode(p1, "n1")
 	assert.NotNil(t, predicateErr)
-	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
-	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
+	// The TaintToleration plugin now returns a generic error message: "node(s) had untolerated taint(s)"
+	// See: https://github.com/kubernetes/kubernetes/blob/master/pkg/scheduler/framework/plugins/tainttoleration/taint_toleration.go
+	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint(s)")
+	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint(s)")
+	// Verify that detailed taint information is still available in debugInfo
 	assert.Contains(t, predicateErr.Error(), "RandomTaint")
+	assert.Contains(t, predicateErr.Error(), "SomeTaint")
 
 	// with custom predicate checker
 
