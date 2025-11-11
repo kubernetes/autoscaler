@@ -46,7 +46,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 	})
 
 	ginkgo.AfterEach(func() {
-		f.ClientSet.AppsV1().Deployments(utils.RecommenderNamespace).Delete(context.TODO(), utils.RecommenderDeploymentName, metav1.DeleteOptions{})
+		f.ClientSet.AppsV1().Deployments(utils.VpaNamespace).Delete(context.TODO(), utils.RecommenderDeploymentName, metav1.DeleteOptions{})
 	})
 
 	ginkgo.It("starts recommender with --vpa-object-namespace parameter", func() {
@@ -54,7 +54,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		ignoredNamespace, err := f.CreateNamespace(context.TODO(), "ignored-namespace", nil)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		f.Namespace.Name = utils.RecommenderNamespace
+		f.Namespace.Name = utils.VpaNamespace
 		vpaDeployment := utils.NewVPADeployment(f, []string{
 			"--recommender-interval=10s",
 			fmt.Sprintf("--vpa-object-namespace=%s", hamsterNamespace),
@@ -69,7 +69,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		ignoredNamespace, err := f.CreateNamespace(context.TODO(), "ignored-namespace", nil)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		f.Namespace.Name = utils.RecommenderNamespace
+		f.Namespace.Name = utils.VpaNamespace
 		vpaDeployment := utils.NewVPADeployment(f, []string{
 			"--recommender-interval=10s",
 			fmt.Sprintf("--ignored-vpa-object-namespaces=%s", ignoredNamespace.Name),

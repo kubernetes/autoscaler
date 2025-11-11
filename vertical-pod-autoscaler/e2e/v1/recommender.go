@@ -480,7 +480,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 })
 
 func deleteRecommender(c clientset.Interface) error {
-	namespace := "kube-system"
+	namespace := utils.VpaNamespace
 	listOptions := metav1.ListOptions{}
 	podList, err := c.CoreV1().Pods(namespace).List(context.TODO(), listOptions)
 	if err != nil {

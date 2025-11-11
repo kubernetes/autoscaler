@@ -53,9 +53,6 @@ const (
 	// VpaInPlaceTimeout is a timeout for the VPA to finish in-place resizing a
 	// pod, if there are no mechanisms blocking it.
 	VpaInPlaceTimeout = 2 * time.Minute
-
-	// VpaNamespace is the default namespace that holds the all the VPA components.
-	VpaNamespace = "kube-system"
 )
 
 // UpdaterE2eDescribe describes a VPA updater e2e test.
