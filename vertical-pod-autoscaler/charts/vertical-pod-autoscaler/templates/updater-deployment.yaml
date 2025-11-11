@@ -31,6 +31,18 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
+      {{- with .Values.updater.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.updater.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.updater.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: updater
           image: {{ include "vertical-pod-autoscaler.updater.image" . }}
@@ -58,4 +70,8 @@ spec:
               scheme: HTTP
             periodSeconds: 10
             failureThreshold: 3
+          {{- with .Values.updater.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
 {{- end -}}
