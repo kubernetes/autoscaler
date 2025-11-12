@@ -37,6 +37,7 @@ import (
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
@@ -118,6 +119,7 @@ type ScaleUpTestConfig struct {
 	NodeTemplateConfigs     map[string]*NodeTemplateConfig
 	EnableAutoprovisioning  bool
 	AllOrNothing            bool
+	ResourceQuotas          []resourcequotas.Quota
 }
 
 // ScaleUpTestResult represents a node groups scale up result

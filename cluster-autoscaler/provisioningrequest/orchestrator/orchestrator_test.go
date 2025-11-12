@@ -42,6 +42,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -518,12 +519,15 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		injector = provreq.NewFakePodsInjector(client, clocktesting.NewFakePassiveClock(now))
 	}
 
+	quotasTrackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+		QuotaProvider:            resourcequotas.NewFakeProvider(nil),
+		CustomResourcesProcessor: processors.CustomResourcesProcessor,
+	})
 	orchestrator := &provReqOrchestrator{
 		client:              client,
 		provisioningClasses: []ProvisioningClass{checkcapacity.New(client, injector), besteffortatomic.New(client)},
 	}
-
-	orchestrator.Initialize(&autoscalingCtx, processors, clusterState, estimatorBuilder, taints.TaintConfig{})
+	orchestrator.Initialize(&autoscalingCtx, processors, clusterState, estimatorBuilder, taints.TaintConfig{}, quotasTrackerFactory)
 	return orchestrator, nodeInfos
 }
 

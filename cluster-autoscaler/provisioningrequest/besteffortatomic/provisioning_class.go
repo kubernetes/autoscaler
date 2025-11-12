@@ -22,6 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 
@@ -65,10 +66,11 @@ func (o *bestEffortAtomicProvClass) Initialize(
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 	injector *scheduling.HintingSimulator,
+	quotasTrackerFactory *resourcequotas.TrackerFactory,
 ) {
 	o.autoscalingCtx = autoscalingCtx
 	o.injector = injector
-	o.scaleUpOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	o.scaleUpOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, quotasTrackerFactory)
 }
 
 // Provision returns success if there is, or has just been requested, sufficient capacity in the cluster for pods from ProvisioningRequest.

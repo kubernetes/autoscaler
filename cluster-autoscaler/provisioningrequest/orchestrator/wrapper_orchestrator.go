@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -50,16 +51,10 @@ func NewWrapperOrchestrator(provReqOrchestrator scaleup.Orchestrator) *WrapperOr
 }
 
 // Initialize initializes the orchestrator object with required fields.
-func (o *WrapperOrchestrator) Initialize(
-	autoscalingCtx *ca_context.AutoscalingContext,
-	processors *ca_processors.AutoscalingProcessors,
-	clusterStateRegistry *clusterstate.ClusterStateRegistry,
-	estimatorBuilder estimator.EstimatorBuilder,
-	taintConfig taints.TaintConfig,
-) {
+func (o *WrapperOrchestrator) Initialize(autoscalingCtx *ca_context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, estimatorBuilder estimator.EstimatorBuilder, taintConfig taints.TaintConfig, quotasTrackerFactory *resourcequotas.TrackerFactory) {
 	o.autoscalingCtx = autoscalingCtx
-	o.podsOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
-	o.provReqOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	o.podsOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, quotasTrackerFactory)
+	o.provReqOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, quotasTrackerFactory)
 }
 
 // ScaleUp run scaleUp function for regular pods of pods from ProvisioningRequest.

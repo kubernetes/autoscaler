@@ -31,6 +31,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -310,9 +311,10 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, config.clusterStateConfig, autoscalingCtx.LogRecorder, NewBackoff(), processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
 	clusterState.UpdateNodes(allNodes, nil, config.nodeStateUpdateTime)
 	processors.ScaleStateNotifier.Register(clusterState)
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
 
 	suOrchestrator := orchestrator.New()
-	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
 
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingCtx.AutoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
@@ -412,8 +414,9 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
 	suOrchestrator := orchestrator.New()
-	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &autoscalingCtx,
@@ -681,8 +684,9 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 			processors.ScaleStateNotifier.Register(clusterState)
 
 			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+			quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
 			suOrchestrator := orchestrator.New()
-			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
 
 			autoscaler := &StaticAutoscaler{
 				AutoscalingContext:    &autoscalingCtx,
@@ -826,8 +830,9 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
 	suOrchestrator := orchestrator.New()
-	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &autoscalingCtx,
@@ -980,8 +985,9 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 			clusterState.UpdateNodes(nodes, nil, later)
 
 			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+			quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
 			suOrchestrator := orchestrator.New()
-			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
 
 			autoscaler := &StaticAutoscaler{
 				AutoscalingContext:    &autoscalingCtx,
@@ -1136,8 +1142,9 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
 	suOrchestrator := orchestrator.New()
-	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &autoscalingCtx,
@@ -1717,8 +1724,9 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 			processors := processorstest.NewTestProcessors(&autoscalingCtx)
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 			sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+			quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
 			suOrchestrator := orchestrator.New()
-			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
 
 			autoscaler := &StaticAutoscaler{
 				AutoscalingContext:    &autoscalingCtx,
@@ -3167,6 +3175,15 @@ func newEstimatorBuilder() estimator.EstimatorBuilder {
 	)
 
 	return estimatorBuilder
+}
+
+func newQuotasTrackerFactory(autoscalingCtx *ca_context.AutoscalingContext, p *ca_processors.AutoscalingProcessors) *resourcequotas.TrackerFactory {
+	cloudQuotasProvider := resourcequotas.NewCloudQuotasProvider(autoscalingCtx.CloudProvider)
+	quotasProvider := resourcequotas.NewCombinedQuotasProvider([]resourcequotas.Provider{cloudQuotasProvider})
+	return resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+		CustomResourcesProcessor: p.CustomResourcesProcessor,
+		QuotaProvider:            quotasProvider,
+	})
 }
 
 func TestCleaningSoftTaintsInScaleDown(t *testing.T) {
