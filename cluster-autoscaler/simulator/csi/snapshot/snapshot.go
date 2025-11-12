@@ -10,10 +10,12 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+// Snapshot represents a snapshot of CSI node information for cluster simulation.
 type Snapshot struct {
 	csiNodes *common.PatchSet[string, *storagev1.CSINode]
 }
 
+// NewSnapshot creates a new Snapshot from a map of CSI nodes.
 func NewSnapshot(csiNodes map[string]*storagev1.CSINode) *Snapshot {
 	csiNdodePatch := common.NewPatchFromMap(csiNodes)
 	return &Snapshot{

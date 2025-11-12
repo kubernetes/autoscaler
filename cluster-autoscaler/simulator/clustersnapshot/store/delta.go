@@ -439,10 +439,12 @@ func (snapshot *DeltaSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 	return snapshot.csiSnapshot
 }
 
+// CSINodes returns the CSI node lister for this snapshot.
 func (snapshot *DeltaSnapshotStore) CSINodes() fwk.CSINodeLister {
 	return snapshot.csiSnapshot.CSINodes()
 }
 
+// DeviceClassResolver exposes the snapshot as DeviceClassResolver.
 func (snapshot *DeltaSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
 	return snapshot.DraSnapshot().DeviceClassResolver()
 }

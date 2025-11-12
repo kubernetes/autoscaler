@@ -8,14 +8,17 @@ import (
 	v1storagelister "k8s.io/client-go/listers/storage/v1"
 )
 
+// Provider provides access to CSI node information for the cluster.
 type Provider struct {
 	csINodesLister v1storagelister.CSINodeLister
 }
 
+// NewCSINodeProvider creates a new Provider with the given CSI node lister.
 func NewCSINodeProvider(csINodesLister v1storagelister.CSINodeLister) *Provider {
 	return &Provider{csINodesLister: csINodesLister}
 }
 
+// NewCSINodeProviderFromInformers creates a new Provider from an informer factory.
 func NewCSINodeProviderFromInformers(informerFactory informers.SharedInformerFactory) *Provider {
 	return NewCSINodeProvider(informerFactory.Storage().V1().CSINodes().Lister())
 }
