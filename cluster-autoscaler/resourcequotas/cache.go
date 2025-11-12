@@ -77,7 +77,9 @@ func totalNodeResources(autoscalingCtx *cacontext.AutoscalingContext, crp custom
 	}
 
 	for _, resourceTarget := range resourceTargets {
-		nodeResources[resourceTarget.ResourceType] = resourceTarget.ResourceCount
+		if resourceTarget.ResourceType != "" && resourceTarget.ResourceCount > 0 {
+			nodeResources[resourceTarget.ResourceType] = resourceTarget.ResourceCount
+		}
 	}
 
 	return nodeResources, nil

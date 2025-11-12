@@ -98,7 +98,7 @@ func TestGetOldestPod(t *testing.T) {
 	assert.Equal(t, p1.CreationTimestamp.Time, GetOldestCreateTime([]*apiv1.Pod{p3, p2, p1}))
 }
 
-func TestIsVirtualNode(t *testing.T) {
+func TestVirtualKubeletNodeFilter(t *testing.T) {
 	type args struct {
 		node *apiv1.Node
 	}
@@ -143,7 +143,8 @@ func TestIsVirtualNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, isVirtualKubeletNode(tt.args.node), "isVirtualNode(%v)", tt.args.node)
+			f := VirtualKubeletNodeFilter{}
+			assert.Equalf(t, tt.want, f.ExcludeFromTracking(tt.args.node), "VirtualKubeletNodeFilter.ExcludeFromTracking(%v)", tt.args.node)
 		})
 	}
 }

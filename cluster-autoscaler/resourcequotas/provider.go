@@ -33,7 +33,7 @@ type CloudQuotasProvider struct {
 
 // Quotas returns the cloud provider's ResourceLimiter, which implements Quota interface.
 //
-// This acts as a compatibility layer with the legacy resource limits system.
+// This acts as a compatibility layer with the legacy resource LimitsVal system.
 func (p *CloudQuotasProvider) Quotas() ([]Quota, error) {
 	rl, err := p.cloudProvider.GetResourceLimiter()
 	if err != nil {
@@ -47,4 +47,29 @@ func NewCloudQuotasProvider(cloudProvider cloudprovider.CloudProvider) *CloudQuo
 	return &CloudQuotasProvider{
 		cloudProvider: cloudProvider,
 	}
+}
+
+// CombinedQuotasProvider wraps other Providers and combines their quotas.
+type CombinedQuotasProvider struct {
+	providers []Provider
+}
+
+// NewCombinedQuotasProvider returns a new CombinedQuotasProvider.
+func NewCombinedQuotasProvider(providers []Provider) *CombinedQuotasProvider {
+	return &CombinedQuotasProvider{
+		providers: providers,
+	}
+}
+
+// Quotas returns a union of quotas from all wrapped providers.
+func (p *CombinedQuotasProvider) Quotas() ([]Quota, error) {
+	var allQuotas []Quota
+	for _, provider := range p.providers {
+		quotas, err := provider.Quotas()
+		if err != nil {
+			return nil, err
+		}
+		allQuotas = append(allQuotas, quotas...)
+	}
+	return allQuotas, nil
 }

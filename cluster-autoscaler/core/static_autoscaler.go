@@ -44,6 +44,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
@@ -142,7 +143,8 @@ func NewStaticAutoscaler(
 	scaleUpOrchestrator scaleup.Orchestrator,
 	deleteOptions options.NodeDeleteOptions,
 	drainabilityRules rules.Rules,
-	draProvider *draprovider.Provider) *StaticAutoscaler {
+	draProvider *draprovider.Provider,
+	quotasTrackerOptions resourcequotas.TrackerOptions) *StaticAutoscaler {
 
 	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
 
@@ -184,10 +186,11 @@ func NewStaticAutoscaler(
 	scaleDownActuator := actuation.NewActuator(autoscalingCtx, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingCtx.ScaleDownActuator = scaleDownActuator
 
+	quotasTrackerFactory := resourcequotas.NewTrackerFactory(quotasTrackerOptions)
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
 	}
-	scaleUpOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	scaleUpOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, quotasTrackerFactory)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
@@ -480,11 +483,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			}
 		}
 	}
-	l, err := a.ClusterSnapshot.ListNodeInfos()
+	allNodeInfos, err := a.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
 		klog.Errorf("Unable to fetch ClusterNode List for Debugging Snapshot, %v", err)
 	} else {
-		a.AutoscalingContext.DebuggingSnapshotter.SetClusterNodes(l)
+		a.AutoscalingContext.DebuggingSnapshotter.SetClusterNodes(allNodeInfos)
 	}
 
 	unschedulablePodsToHelp, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, podsBySchedulability.Unschedulable)
@@ -556,7 +559,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, false)
+		nodes := make([]*apiv1.Node, len(allNodeInfos))
+		for i, nodeInfo := range allNodeInfos {
+			nodes[i] = nodeInfo.Node()
+		}
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, nodeInfosForGroups, false)
 		postScaleUp(scaleUpStart)
 	}
 
@@ -661,7 +668,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if a.EnforceNodeGroupMinSize {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(readyNodes, nodeInfosForGroups)
+		nodes := make([]*apiv1.Node, len(allNodeInfos))
+		for i, nodeInfo := range allNodeInfos {
+			nodes[i] = nodeInfo.Node()
+		}
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfosForGroups)
 		postScaleUp(scaleUpStart)
 	}
 
