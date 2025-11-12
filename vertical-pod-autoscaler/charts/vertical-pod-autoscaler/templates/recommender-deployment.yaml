@@ -32,9 +32,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
+        {{ toYaml . | nindent 8 | trim }}
+      {{- end }}
       containers:
       - name: recommender
         image: {{ include "vertical-pod-autoscaler.recommender.image" . }}
@@ -88,6 +89,10 @@ spec:
         {{- with .Values.recommender.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.containerSecurityContext }}
+        securityContext:
+          {{ toYaml . | nindent 10 | trim }}
         {{- end }}
       {{- with .Values.recommender.nodeSelector }}
       nodeSelector:

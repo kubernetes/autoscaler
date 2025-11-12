@@ -61,9 +61,12 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | admissionController.volumes[0].secret.defaultMode | int | `420` |  |
 | admissionController.volumes[0].secret.secretName | string | `"vpa-tls-certs"` |  |
 | commonLabels | object | `{}` |  |
+| containerSecurityContext | object | `{}` |  |
 | fullnameOverride | string | `nil` |  |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |
+| podSecurityContext.runAsNonRoot | bool | `true` |  |
+| podSecurityContext.runAsUser | int | `65534` |  |
 | rbac.create | bool | `true` |  |
 | recommender.affinity | object | `{}` |  |
 | recommender.enabled | bool | `true` |  |

@@ -14,6 +14,12 @@ rbac:
   # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
   create: true
 
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+
+containerSecurityContext: {}
+
 admissionController:
   enabled: true
   image:
