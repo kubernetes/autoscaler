@@ -126,6 +126,7 @@ func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework
 	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nodeSlices, podExtraInfos), nil
 }
 
+// AddDRAInfo adds DRA information to the node info.
 func (s *Snapshot) AddDRAInfo(nodeInfo *framework.NodeInfo) (*framework.NodeInfo, error) {
 	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(nodeInfo.Pods()))
 	for _, pod := range nodeInfo.Pods() {

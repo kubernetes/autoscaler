@@ -20,6 +20,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
@@ -31,20 +32,23 @@ type DefaultCustomResourcesProcessor struct {
 }
 
 // NewDefaultCustomResourcesProcessor returns an instance of DefaultCustomResourcesProcessor.
-func NewDefaultCustomResourcesProcessor(draEnabled bool) CustomResourcesProcessor {
+func NewDefaultCustomResourcesProcessor(draEnabled bool, csiEnabled bool) CustomResourcesProcessor {
 	customProcessors := []CustomResourcesProcessor{&GpuCustomResourcesProcessor{}}
 	if draEnabled {
 		customProcessors = append(customProcessors, &DraCustomResourcesProcessor{})
+	}
+	if csiEnabled {
+		customProcessors = append(customProcessors, &CSICustomResourcesProcessor{})
 	}
 	return &DefaultCustomResourcesProcessor{customProcessors}
 }
 
 // FilterOutNodesWithUnreadyResources calls the corresponding method for internal custom resources processors in order.
-func (p *DefaultCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *DefaultCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := allNodes
 	newReadyNodes := readyNodes
 	for _, processor := range p.customResourcesProcessors {
-		newAllNodes, newReadyNodes = processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, newAllNodes, newReadyNodes, draSnapshot)
+		newAllNodes, newReadyNodes = processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, newAllNodes, newReadyNodes, draSnapshot, csiSnapshot)
 	}
 	return newAllNodes, newReadyNodes
 }

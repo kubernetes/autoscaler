@@ -444,6 +444,7 @@ func (snapshot *DeltaSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 	return snapshot.csiSnapshot
 }
 
+// CSINodes returns the CSI node lister for this snapshot.
 func (snapshot *DeltaSnapshotStore) CSINodes() fwk.CSINodeLister {
 	return snapshot.csiSnapshot.CSINodes()
 }
