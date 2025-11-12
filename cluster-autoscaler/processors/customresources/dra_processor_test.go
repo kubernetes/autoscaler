@@ -338,7 +338,7 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 
 			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
 			processor := DraCustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot, nil)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {

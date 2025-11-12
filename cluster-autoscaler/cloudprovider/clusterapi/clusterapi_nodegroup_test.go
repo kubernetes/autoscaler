@@ -27,6 +27,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -34,6 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	gpuapis "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -1500,6 +1502,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 		expectedCapacity      map[corev1.ResourceName]int64
 		expectedNodeLabels    map[string]string
 		expectedResourceSlice testResourceSlice
+		expectedCSINode       *storagev1.CSINode
 	}
 
 	testCases := []struct {
@@ -1650,6 +1653,49 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "When the NodeGroup can scale from zero and CSI driver annotations are present, it creates CSINode with driver information",
+			nodeGroupAnnotations: map[string]string{
+				memoryKey:    "2048Mi",
+				cpuKey:       "2",
+				csiDriverKey: "ebs.csi.aws.com=25,efs.csi.aws.com=16",
+			},
+			config: testCaseConfig{
+				expectedErr: nil,
+				nodeLabels: map[string]string{
+					"kubernetes.io/os":   "linux",
+					"kubernetes.io/arch": "amd64",
+				},
+				expectedCapacity: map[corev1.ResourceName]int64{
+					corev1.ResourceCPU:    2,
+					corev1.ResourceMemory: 2048 * 1024 * 1024,
+					corev1.ResourcePods:   110,
+				},
+				expectedNodeLabels: map[string]string{
+					"kubernetes.io/os":       "linux",
+					"kubernetes.io/arch":     "amd64",
+					"kubernetes.io/hostname": "random value",
+				},
+				expectedCSINode: &storagev1.CSINode{
+					Spec: storagev1.CSINodeSpec{
+						Drivers: []storagev1.CSINodeDriver{
+							{
+								Name: "ebs.csi.aws.com",
+								Allocatable: &storagev1.VolumeNodeResources{
+									Count: ptr.To(int32(25)),
+								},
+							},
+							{
+								Name: "efs.csi.aws.com",
+								Allocatable: &storagev1.VolumeNodeResources{
+									Count: ptr.To(int32(16)),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	test := func(t *testing.T, testConfig *TestConfig, config testCaseConfig) {
@@ -1724,6 +1770,55 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				if *device.Attributes["type"].StringValue != config.expectedResourceSlice.deviceType {
 					t.Errorf("Expected device type to have: %s, but got: %s", config.expectedResourceSlice.deviceType, *device.Attributes["type"].StringValue)
 				}
+			}
+		}
+
+		// Validate CSINode if expected
+		if config.expectedCSINode != nil {
+			if nodeInfo.CSINode == nil {
+				t.Errorf("Expected CSINode to be set, but got nil")
+			} else {
+				expectedDrivers := config.expectedCSINode.Spec.Drivers
+				gotDrivers := nodeInfo.CSINode.Spec.Drivers
+				if len(expectedDrivers) != len(gotDrivers) {
+					t.Errorf("Expected %d CSI drivers, but got %d", len(expectedDrivers), len(gotDrivers))
+				} else {
+					for i, expectedDriver := range expectedDrivers {
+						if i >= len(gotDrivers) {
+							t.Errorf("Expected driver at index %d but got only %d drivers", i, len(gotDrivers))
+							break
+						}
+						gotDriver := gotDrivers[i]
+						if expectedDriver.Name != gotDriver.Name {
+							t.Errorf("Expected CSI driver name at index %d to be %s, but got %s", i, expectedDriver.Name, gotDriver.Name)
+						}
+						if expectedDriver.Allocatable == nil {
+							if gotDriver.Allocatable != nil {
+								t.Errorf("Expected CSI driver Allocatable at index %d to be nil, but got non-nil", i)
+							}
+						} else {
+							if gotDriver.Allocatable == nil {
+								t.Errorf("Expected CSI driver Allocatable at index %d to be non-nil, but got nil", i)
+							} else {
+								if expectedDriver.Allocatable.Count == nil {
+									if gotDriver.Allocatable.Count != nil {
+										t.Errorf("Expected CSI driver Count at index %d to be nil, but got %d", i, *gotDriver.Allocatable.Count)
+									}
+								} else {
+									if gotDriver.Allocatable.Count == nil {
+										t.Errorf("Expected CSI driver Count at index %d to be %d, but got nil", i, *expectedDriver.Allocatable.Count)
+									} else if *expectedDriver.Allocatable.Count != *gotDriver.Allocatable.Count {
+										t.Errorf("Expected CSI driver Count at index %d to be %d, but got %d", i, *expectedDriver.Allocatable.Count, *gotDriver.Allocatable.Count)
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			if nodeInfo.CSINode != nil {
+				t.Errorf("Expected CSINode to be nil, but got non-nil with %d drivers", len(nodeInfo.CSINode.Spec.Drivers))
 			}
 		}
 	}

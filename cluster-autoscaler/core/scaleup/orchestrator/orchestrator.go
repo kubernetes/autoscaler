@@ -107,8 +107,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	if aErr != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
 	}
-	klog.V(4).Infof("hemant Upcoming %d nodes", len(upcomingNodes))
-
 	nodeGroups := o.autoscalingCtx.CloudProvider.NodeGroups()
 	if o.processors != nil && o.processors.NodeGroupListProcessor != nil {
 		var err error
@@ -135,7 +133,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	for nodegroupID := range skippedNodeGroups {
 		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingCtx, nodegroupID)
 	}
-	klog.V(4).Infof("hemant validNodeGroups %d", len(validNodeGroups))
 
 	// Calculate expansion options
 	schedulablePodGroups := map[string][]estimator.PodEquivalenceGroup{}
@@ -490,7 +487,6 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		o.autoscalingCtx.ClusterSnapshot,
 		estimator.NewEstimationContext(o.autoscalingCtx.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
 	)
-	klog.Infof("hemant about to run estimater for node group %s", nodeGroup.Id())
 	option.NodeCount, option.Pods = expansionEstimator.Estimate(podGroups, nodeInfo, nodeGroup)
 	metrics.UpdateDurationFromStart(metrics.Estimate, estimateStart)
 

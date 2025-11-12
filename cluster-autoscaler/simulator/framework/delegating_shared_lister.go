@@ -75,6 +75,7 @@ func (lister *DelegatingSchedulerSharedLister) DeviceClasses() fwk.DeviceClassLi
 	return lister.delegate.DeviceClasses()
 }
 
+// CSINodes returns a CSINodeLister.
 func (lister *DelegatingSchedulerSharedLister) CSINodes() fwk.CSINodeLister {
 	return lister.delegate.CSINodes()
 }
@@ -84,11 +85,12 @@ func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate SharedLis
 	lister.delegate = delegate
 }
 
+// DeviceClassResolver returns a device class resolver.
 func (lister *DelegatingSchedulerSharedLister) DeviceClassResolver() fwk.DeviceClassResolver {
 	return lister.delegate.DeviceClassResolver()
 }
 
-// ResetDelegate resets delegate to
+// ResetDelegate resets delegate to the unsetSharedListerSingleton.
 func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 	lister.delegate = unsetSharedListerSingleton
 }

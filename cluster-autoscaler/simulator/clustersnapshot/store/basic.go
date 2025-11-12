@@ -360,6 +360,7 @@ func (snapshot *BasicSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 	return snapshot.DraSnapshot().DeviceClasses()
 }
 
+// DeviceClassResolver exposes the snapshot as DeviceClassResolver.
 func (snapshot *BasicSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
 	return snapshot.DraSnapshot().DeviceClassResolver()
 }
