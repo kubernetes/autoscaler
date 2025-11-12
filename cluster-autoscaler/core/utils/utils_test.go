@@ -143,7 +143,7 @@ func TestIsVirtualNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, isVirtualKubeletNode(tt.args.node), "isVirtualNode(%v)", tt.args.node)
+			assert.Equalf(t, tt.want, IsVirtualKubeletNode(tt.args.node), "IsVirtualKubeletNode(%v)", tt.args.node)
 		})
 	}
 }
