@@ -19,33 +19,47 @@ package orchestrator
 import (
 	"reflect"
 	"testing"
+
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 )
 
 func TestMaxResourceLimitReached(t *testing.T) {
 	tests := []struct {
 		name        string
+		quotaID     string
 		resources   []string
 		wantReasons []string
 	}{
 		{
 			name:        "simple test",
+			quotaID:     "test",
 			resources:   []string{"gpu"},
-			wantReasons: []string{"max cluster gpu limit reached"},
+			wantReasons: []string{`exceeded quota: "test", resources: gpu`},
 		},
 		{
 			name:        "multiple resources",
+			quotaID:     "test",
 			resources:   []string{"gpu1", "gpu3", "tpu", "ram"},
-			wantReasons: []string{"max cluster gpu1, gpu3, tpu, ram limit reached"},
+			wantReasons: []string{`exceeded quota: "test", resources: gpu1, gpu3, tpu, ram`},
 		},
 		{
 			name:        "no resources",
-			wantReasons: []string{"max cluster  limit reached"},
+			quotaID:     "test",
+			resources:   []string{},
+			wantReasons: []string{`exceeded quota: "test", resources: `},
+		},
+		{
+			name:        "different quota ID",
+			quotaID:     "project-quota",
+			resources:   []string{"cpu"},
+			wantReasons: []string{`exceeded quota: "project-quota", resources: cpu`},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMaxResourceLimitReached(tt.resources); !reflect.DeepEqual(got.Reasons(), tt.wantReasons) {
-				t.Errorf("MaxResourceLimitReached(%v) = %v, want %v", tt.resources, got.Reasons(), tt.wantReasons)
+			exceededQuotas := []resourcequotas.ExceededQuota{{ID: tt.quotaID, ExceededResources: tt.resources}}
+			if got := NewMaxResourceLimitReached(exceededQuotas); !reflect.DeepEqual(got.Reasons(), tt.wantReasons) {
+				t.Errorf("MaxResourceLimitReached(quotaID=%v, resources=%v) = %v, want %v", tt.quotaID, tt.resources, got.Reasons(), tt.wantReasons)
 			}
 		})
 	}

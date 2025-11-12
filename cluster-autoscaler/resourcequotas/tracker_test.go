@@ -39,10 +39,10 @@ func TestCheckDelta(t *testing.T) {
 		wantExceeded bool
 	}{
 		{
-			name: "delta fits within limits",
+			name: "delta fits within LimitsVal",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
 				},
 			}),
@@ -56,7 +56,7 @@ func TestCheckDelta(t *testing.T) {
 			name: "delta exceeds one resource limit",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 1000, "nodes": 5},
 				},
 			}),
@@ -71,10 +71,10 @@ func TestCheckDelta(t *testing.T) {
 			wantExceeded: true,
 		},
 		{
-			name: "delta exceeds multiple resource limits",
+			name: "delta exceeds multiple resource LimitsVal",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 300, "nodes": 5},
 				},
 			}),
@@ -137,7 +137,7 @@ func TestCheckDelta(t *testing.T) {
 			name: "no matching quotas",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return false }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return false }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 100, "nodes": 1},
 				},
 			}),
@@ -148,10 +148,10 @@ func TestCheckDelta(t *testing.T) {
 			},
 		},
 		{
-			name: "resource in limits but not in the node",
+			name: "resource in LimitsVal but not in the node",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 4, "memory": 32 * units.GiB, "gpu": 2},
 				},
 			}),
@@ -162,7 +162,7 @@ func TestCheckDelta(t *testing.T) {
 			},
 		},
 		{
-			name: "resource in the node but not in the limits",
+			name: "resource in the node but not in the LimitsVal",
 			tracker: newTracker(&fakeCustomResourcesProcessor{NodeResourceTargets: func(node *apiv1.Node) []customresources.CustomResourceTarget {
 				return []customresources.CustomResourceTarget{
 					{
@@ -172,7 +172,7 @@ func TestCheckDelta(t *testing.T) {
 				}
 			}}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 4, "memory": 32 * units.GiB},
 				},
 			}),
@@ -216,7 +216,7 @@ func TestApplyDelta(t *testing.T) {
 			name: "delta applied successfully",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
 				},
 			}),
@@ -233,7 +233,7 @@ func TestApplyDelta(t *testing.T) {
 			name: "partial delta calculated, nothing applied",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 3, "memory": 1000, "nodes": 5},
 				},
 			}),
@@ -250,10 +250,10 @@ func TestApplyDelta(t *testing.T) {
 			},
 		},
 		{
-			name: "delta not applied because it exceeds limits",
+			name: "delta not applied because it exceeds LimitsVal",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 100, "nodes": 5},
 				},
 			}),
@@ -273,7 +273,7 @@ func TestApplyDelta(t *testing.T) {
 			name: "applied delta results in zero limit",
 			tracker: newTracker(&fakeCustomResourcesProcessor{}, []*quotaStatus{
 				{
-					quota:      &fakeQuota{id: "limiter1", appliesToFn: func(*apiv1.Node) bool { return true }},
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 2, "memory": 500, "nodes": 10},
 				},
 			}),
