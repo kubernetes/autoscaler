@@ -26,6 +26,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -206,6 +208,85 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
+
+var _ = UpdaterE2eDescribe("Updater", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	f.It("Unboost pods when they become Ready", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			status.AdmissionControllerStatusNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForCPUBoost(f, "100m", "100Mi")
+		initialPods := podList.DeepCopy()
+
+		ginkgo.By("Waiting for pods to be in-place updated")
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+})
+
+func setupPodsForCPUBoost(f *framework.Framework, hamsterCPU, hamsterMemory string) *apiv1.PodList {
+	controller := &autoscaling.CrossVersionObjectReference{
+		APIVersion: "apps/v1",
+		Kind:       "Deployment",
+		Name:       "hamster-deployment",
+	}
+	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
+	// Create pods with boosted CPU, which is 2x the target recommendation
+	boostedCPU := "200m"
+	setupHamsterController(f, controller.Kind, boostedCPU, hamsterMemory, utils.DefaultHamsterReplicas)
+	podList, err := GetHamsterPods(f)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	ginkgo.By("Setting up a VPA CRD")
+	containerName := utils.GetHamsterContainerNameByIndex(0)
+	factor := int32(2)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(controller).
+		WithUpdateMode(vpa_types.UpdateModeAuto).
+		WithContainer(containerName).
+		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "1s").
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(containerName).
+				WithTarget(hamsterCPU, hamsterMemory).
+				GetContainerResources(),
+		).
+		Get()
+
+	utils.InstallVPA(f, vpaCRD)
+
+	ginkgo.By("Annotating pods with boost annotation")
+	for _, pod := range podList.Items {
+		original, err := annotations.GetOriginalResourcesAnnotationValue(&pod.Spec.Containers[0])
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		AnnotatePod(f, pod.Name, annotations.StartupCPUBoostAnnotation, original)
+	}
+	return podList
+}
 
 func setupPodsForUpscalingEviction(f *framework.Framework) *apiv1.PodList {
 	return setupPodsForEviction(f, "100m", "100Mi", nil)
