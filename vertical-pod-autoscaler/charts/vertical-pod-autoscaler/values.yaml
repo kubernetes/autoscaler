@@ -197,7 +197,7 @@ updater:
     pullPolicy: IfNotPresent
 
   # Number of Updater replicas to create.
-  replicas: 1
+  replicas: 2
 
   # Labels to add to the Updater pod.
   podLabels: {}
@@ -211,3 +211,13 @@ updater:
     labels: {}
     # Annotations to add to the Updater service account.
     annotations: {}
+
+  # PodDisruptionBudget for the Updater.
+  podDisruptionBudget:
+    enabled: true
+    # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    minAvailable: 1
+    # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    maxUnavailable:
