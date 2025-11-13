@@ -21,8 +21,8 @@ import (
 	"slices"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/klog/v2"
@@ -38,13 +38,13 @@ const (
 )
 
 type unneededNodeState struct {
-	unneededSince time.Time
-	threshold     time.Duration
+	unneededSince    time.Time
+	removalThreshold time.Duration
 }
 
 // NodeLatencyTracker is a concrete implementation of LatencyTracker.
 // It keeps track of nodes that are marked as unneeded, when they became unneeded,
-// and thresholds to adjust node removal latency metrics.
+// and removalThresholds to adjust node removal latency metrics.
 type NodeLatencyTracker struct {
 	unneededNodes map[string]unneededNodeState
 	wrapped       processor.ScaleDownStatusProcessor
@@ -59,16 +59,23 @@ func NewNodeLatencyTracker(wrapped processor.ScaleDownStatusProcessor) *NodeLate
 }
 
 // UpdateScaleDownCandidates updates tracked unneeded nodes and reports those that became needed again.
-func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*apiv1.Node, timestamp time.Time) {
+func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*scaledown.UnneededNode, timestamp time.Time) {
 	currentSet := make(map[string]struct{}, len(list))
-	for _, node := range list {
-		currentSet[node.Name] = struct{}{}
-		if _, exists := t.unneededNodes[node.Name]; !exists {
-			t.unneededNodes[node.Name] = unneededNodeState{
-				unneededSince: timestamp,
-				threshold:     0,
+	for _, candidate := range list {
+		nodeName := candidate.Node.Name
+		currentSet[nodeName] = struct{}{}
+		if info, exists := t.unneededNodes[nodeName]; !exists {
+			t.unneededNodes[nodeName] = unneededNodeState{
+				unneededSince:    timestamp,
+				removalThreshold: candidate.RemovalThreshold,
 			}
-			klog.V(6).Infof("Started tracking unneeded node %s at %v.", node.Name, timestamp)
+			klog.V(6).Infof("Started tracking unneeded node %s at %v with removal threshold %v.", nodeName, timestamp, candidate.RemovalThreshold)
+		} else {
+			if info.removalThreshold != candidate.RemovalThreshold {
+				info.removalThreshold = candidate.RemovalThreshold
+				t.unneededNodes[nodeName] = info
+				klog.V(6).Infof("Updated removal threshold for tracked node %s to %v.", nodeName, candidate.RemovalThreshold)
+			}
 		}
 	}
 	for nodeName := range t.unneededNodes {
@@ -97,16 +104,17 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 		nodeName := scaledDownNode.Node.Name
 		if info, exists := t.unneededNodes[nodeName]; exists {
 			duration := time.Since(info.unneededSince)
-			metrics.UpdateScaleDownNodeRemovalLatency(true, duration-info.threshold)
-			if duration > scaleDownLatencyLogThreshold {
+			latency := duration - info.removalThreshold
+			metrics.UpdateScaleDownNodeRemovalLatency(true, latency)
+			if latency > scaleDownLatencyLogThreshold {
 				klog.V(2).Infof(
-					"Observing deletion for node %s, unneeded for %s (threshold was %s).",
-					nodeName, duration, info.threshold,
+					"Observing deletion for node %s, unneeded for %s (removal threshold was %s).",
+					nodeName, duration, info.removalThreshold,
 				)
 			} else {
 				klog.V(6).Infof(
-					"Observing deletion for node %s, unneeded for %s (threshold was %s).",
-					nodeName, duration, info.threshold,
+					"Observing deletion for node %s, unneeded for %s (removal threshold was %s).",
+					nodeName, duration, info.removalThreshold,
 				)
 			}
 			delete(t.unneededNodes, nodeName)
@@ -114,17 +122,6 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 	}
 	for nodeName := range t.unneededNodes {
 		klog.V(6).Infof("Node %q remains in unneeded list (not scaled down). Continuing to track latency.", nodeName)
-	}
-}
-
-// UpdateThreshold updates the scale-down threshold for a tracked node.
-func (t *NodeLatencyTracker) UpdateThreshold(nodeName string, threshold time.Duration) {
-	if info, exists := t.unneededNodes[nodeName]; exists {
-		info.threshold = threshold
-		t.unneededNodes[nodeName] = info
-		klog.V(6).Infof("Updated threshold for node %q to %s.", nodeName, threshold)
-	} else {
-		klog.Warningf("Attempted to update threshold for node %q, which is not tracked.", nodeName)
 	}
 }
 
@@ -138,5 +135,5 @@ func (t *NodeLatencyTracker) CleanUp() {
 	if t.wrapped != nil {
 		t.wrapped.CleanUp()
 	}
-	t.unneededNodes = make(map[string]unneededNodeState)
+	t.unneededNodes = nil
 }

@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
@@ -45,135 +46,170 @@ func TestNodeLatencyTracker_Decorator(t *testing.T) {
 	}
 }
 
-func TestNodeLatencyTracker(t *testing.T) {
-	baseTime := time.Now()
+func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
+	// A step represents one loop of the autoscaler:
+	// 1. Planner calculates unneeded nodes (UpdateScaleDownCandidates)
+	// 2. Actuator attempts deletion and reports status (Process)
+	type step struct {
+		timeOffset       time.Duration            // Time passed since start
+		unneededList     []string                 // Nodes found unneeded this loop
+		thresholds       map[string]time.Duration // Specific thresholds for this loop
+		scaledDownList   []string                 // Nodes successfully deleted this loop
+		unremovableList  []string                 // Nodes failed to delete this loop
+		wantTrackedNodes []string                 // Expected internal state after this loop
+		wantThresholds   map[string]time.Duration // Expected threshold values in internal state
+	}
 
 	tests := []struct {
-		name             string
-		setupNodes       []string
-		updateThresholds map[string]time.Duration
-		unneededList     []string
-		scaledDownList   []string
-		unremovableList  []string
-		wantTrackedNodes []string
-		wantThresholds   map[string]time.Duration
+		name  string
+		steps []step
 	}{
 		{
-			name:             "add new unneeded nodes",
-			setupNodes:       []string{"node1"},
-			unneededList:     []string{"node1", "node2", "node3"},
-			scaledDownList:   []string{},
-			unremovableList:  []string{},
-			wantTrackedNodes: []string{"node1", "node2", "node3"},
-		},
-		{
-			name:             "node is scaled down",
-			setupNodes:       []string{},
-			unneededList:     []string{"node1"},
-			scaledDownList:   []string{"node1"},
-			unremovableList:  []string{},
-			wantTrackedNodes: []string{},
-		},
-		{
-			name:             "node becomes needed",
-			setupNodes:       []string{},
-			unneededList:     []string{"node1"},
-			scaledDownList:   []string{},
-			unremovableList:  []string{"node1"},
-			wantTrackedNodes: []string{},
-		},
-		{
-			name:             "node is still unneeded",
-			setupNodes:       []string{"node1"},
-			unneededList:     []string{"node1"},
-			scaledDownList:   []string{},
-			unremovableList:  []string{},
-			wantTrackedNodes: []string{"node1"},
-		},
-		{
-			name: "mix of different nodes",
-			setupNodes: []string{
-				"node1",
-				"node2",
-				"node3",
-				"node4",
+			name: "Standard lifecycle: Unneeded -> Tracked -> Deleted",
+			steps: []step{
+				{
+					timeOffset:       0,
+					unneededList:     []string{"node1", "node2"},
+					wantTrackedNodes: []string{"node1", "node2"},
+				},
+				{
+					timeOffset:       1 * time.Minute,
+					unneededList:     []string{"node1", "node2"},
+					scaledDownList:   []string{"node1"},
+					wantTrackedNodes: []string{"node2"},
+				},
 			},
-			unneededList:     []string{"node1", "node4", "node5", "node6"},
-			scaledDownList:   []string{"node4"},
-			unremovableList:  []string{"node6"},
-			wantTrackedNodes: []string{"node1", "node5"},
 		},
 		{
-			name:             "process node that was never tracked",
-			setupNodes:       []string{},
-			unneededList:     []string{"node1"},
-			scaledDownList:   []string{"node2"},
-			unremovableList:  []string{"node3"},
-			wantTrackedNodes: []string{"node1"},
+			name: "Node becomes needed again (disappears from list)",
+			steps: []step{
+				{
+					timeOffset:       0,
+					unneededList:     []string{"node1", "node2"},
+					wantTrackedNodes: []string{"node1", "node2"},
+				},
+				{
+					timeOffset:       1 * time.Minute,
+					unneededList:     []string{"node2"},
+					wantTrackedNodes: []string{"node2"},
+				},
+			},
 		},
 		{
-			name:             "update threshold for known node",
-			setupNodes:       []string{},
-			updateThresholds: map[string]time.Duration{"node1": 4 * time.Second},
-			unneededList:     []string{"node1"},
-			scaledDownList:   []string{},
-			unremovableList:  []string{},
-			wantTrackedNodes: []string{"node1"},
-			wantThresholds:   map[string]time.Duration{"node1": 4 * time.Second},
+			name: "Node becomes needed again (reported unremovable)",
+			steps: []step{
+				{
+					timeOffset:       0,
+					unneededList:     []string{"node1"},
+					wantTrackedNodes: []string{"node1"},
+				},
+				{
+					timeOffset:       1 * time.Minute,
+					unneededList:     []string{"node1"},
+					unremovableList:  []string{"node1"},
+					wantTrackedNodes: []string{},
+				},
+			},
 		},
 		{
-			name:             "update threshold for unknown node",
-			updateThresholds: map[string]time.Duration{"node2": 5 * time.Second},
-			unneededList:     []string{"node1"},
-			scaledDownList:   []string{},
-			unremovableList:  []string{},
-			wantTrackedNodes: []string{"node1"},
-			wantThresholds:   map[string]time.Duration{"node1": 0 * time.Second},
+			name: "Threshold updates dynamically",
+			steps: []step{
+				{
+					timeOffset:       0,
+					unneededList:     []string{"node1"},
+					thresholds:       map[string]time.Duration{"node1": 5 * time.Minute},
+					wantTrackedNodes: []string{"node1"},
+					wantThresholds:   map[string]time.Duration{"node1": 5 * time.Minute},
+				},
+				{
+					timeOffset:       2 * time.Minute,
+					unneededList:     []string{"node1"},
+					thresholds:       map[string]time.Duration{"node1": 10 * time.Minute},
+					wantTrackedNodes: []string{"node1"},
+					wantThresholds:   map[string]time.Duration{"node1": 10 * time.Minute},
+				},
+			},
+		},
+		{
+			name: "Mix of additions, deletions, and updates",
+			steps: []step{
+				{
+					// Start tracking node1, node2
+					timeOffset:       0,
+					unneededList:     []string{"node1", "node2"},
+					wantTrackedNodes: []string{"node1", "node2"},
+				},
+				{
+					// node1 gets deleted, node3 appears, node2 stays
+					timeOffset:       1 * time.Minute,
+					unneededList:     []string{"node1", "node2", "node3"},
+					scaledDownList:   []string{"node1"},
+					wantTrackedNodes: []string{"node2", "node3"},
+				},
+				{
+					timeOffset:       2 * time.Minute,
+					unneededList:     []string{"node3"},
+					scaledDownList:   []string{"node2"},
+					wantTrackedNodes: []string{"node3"},
+				},
+			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	baseTime := time.Now()
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			tracker := NewNodeLatencyTracker(processor.NewDefaultScaleDownStatusProcessor())
 
-			if len(tt.setupNodes) > 0 {
-				tracker.UpdateScaleDownCandidates(nodesFromNames(tt.setupNodes), baseTime)
-			}
+			for i, step := range tc.steps {
+				stepTime := baseTime.Add(step.timeOffset)
 
-			tracker.UpdateScaleDownCandidates(nodesFromNames(tt.unneededList), baseTime.Add(5*time.Second))
+				candidates := candidatesFromNames(step.unneededList, step.thresholds)
+				tracker.UpdateScaleDownCandidates(candidates, stepTime)
 
-			for node, threshold := range tt.updateThresholds {
-				tracker.UpdateThreshold(node, threshold)
-			}
+				sd := newScaleDownStatus(step.scaledDownList, step.unremovableList)
+				tracker.Process(&ca_context.AutoscalingContext{}, sd)
 
-			sd := newScaleDownStatus(tt.scaledDownList, tt.unremovableList)
-			tracker.Process(&ca_context.AutoscalingContext{}, sd)
+				gotTracked := tracker.getTrackedNodes()
+				gotSet := sets.New(gotTracked...)
+				expectedSet := sets.New(step.wantTrackedNodes...)
 
-			gotTracked := tracker.getTrackedNodes()
-			gotSet := sets.New(gotTracked...)
-			expectedSet := sets.New(tt.wantTrackedNodes...)
+				if !gotSet.Equal(expectedSet) {
+					t.Errorf("Step %d: incorrect tracked nodes:\ngot:  %v\nwant: %v", i, sets.List(gotSet), sets.List(expectedSet))
+				}
 
-			if !gotSet.Equal(expectedSet) {
-				t.Errorf("[%s] incorrect tracked nodes:\ngot:  %v\nwant: %v", tt.name, sets.List(gotSet), sets.List(expectedSet))
-			}
+				for _, nodeName := range step.wantTrackedNodes {
+					wantThreshold := time.Duration(0)
+					if val, ok := step.wantThresholds[nodeName]; ok {
+						wantThreshold = val
+					}
 
-			for _, nodeName := range tt.wantTrackedNodes {
-				wantThreshold := tt.wantThresholds[nodeName]
-				actualThreshold := tracker.unneededNodes[nodeName].threshold
-
-				if actualThreshold != wantThreshold {
-					t.Errorf("[%s] node %q: incorrect threshold: got %v, want %v", tt.name, nodeName, actualThreshold, wantThreshold)
+					if actualInfo, ok := tracker.unneededNodes[nodeName]; ok {
+						if actualInfo.removalThreshold != wantThreshold {
+							t.Errorf("Step %d: node %q incorrect threshold: got %v, want %v", i, nodeName, actualInfo.removalThreshold, wantThreshold)
+						}
+					} else {
+						t.Errorf("Step %d: node %q expected to be tracked but was not", i, nodeName)
+					}
 				}
 			}
 		})
 	}
 }
 
-// nodesFromNames is a test helper to convert a slice of node names into a slice of *apiv1.Node
-func nodesFromNames(names []string) []*apiv1.Node {
-	list := make([]*apiv1.Node, len(names))
+// nodesFromNames is a test helper to convert a slice of node names and threshold  into a slice of *scaledown.UnneededNode
+func candidatesFromNames(names []string, thresholds map[string]time.Duration) []*scaledown.UnneededNode {
+	list := make([]*scaledown.UnneededNode, len(names))
 	for i, name := range names {
-		list[i] = &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: name}}
+		t := time.Duration(0)
+		if val, ok := thresholds[name]; ok {
+			t = val
+		}
+		list[i] = &scaledown.UnneededNode{
+			Node:             &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: name}},
+			RemovalThreshold: t,
+		}
 	}
 	return list
 }

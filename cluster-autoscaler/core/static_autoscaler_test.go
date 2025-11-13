@@ -322,7 +322,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	autoscalingCtx.ScaleDownActuator = actuation.NewActuator(&autoscalingCtx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
-	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, nil)
+	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules)
 
 	processorCallbacks.scaleDownPlanner = sdPlanner
 
@@ -2373,7 +2373,7 @@ func (f *candidateTrackingFakePlanner) NodesToDelete(currentTime time.Time) (emp
 	return nil, nil
 }
 
-func (f *candidateTrackingFakePlanner) UnneededNodes() []*apiv1.Node {
+func (f *candidateTrackingFakePlanner) UnneededNodes() []*scaledown.UnneededNode {
 	return nil
 }
 
@@ -3153,7 +3153,7 @@ func newScaleDownPlannerAndActuator(autoscalingCtx *ca_context.AutoscalingContex
 	if nodeDeletionTracker == nil {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	planner := planner.New(autoscalingCtx, p, deleteOptions, nil, nil)
+	planner := planner.New(autoscalingCtx, p, deleteOptions, nil)
 	actuator := actuation.NewActuator(autoscalingCtx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor)
 	return planner, actuator
 }
@@ -3276,7 +3276,7 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingCtx.AutoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
-	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, nil)
+	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:   &autoscalingCtx,
