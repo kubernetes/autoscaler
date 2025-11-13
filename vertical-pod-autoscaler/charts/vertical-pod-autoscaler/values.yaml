@@ -107,6 +107,10 @@ admissionController:
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
     maxUnavailable:
     # maxUnavailable: 1
+  
+  # name of priorityclass for scheduling
+  priorityClassName:
+  # priorityClassName : high-priority
 
 recommender:
   enabled: true
@@ -186,6 +190,10 @@ recommender:
     maxUnavailable:
     # maxUnavailable: 1
 
+  # name of priorityclass for scheduling
+  priorityClassName:
+  # priorityClassName : high-priority
+
 updater:
   enabled: true
   image:
@@ -211,3 +219,7 @@ updater:
     labels: {}
     # Annotations to add to the Updater service account.
     annotations: {}
+
+  # name of priorityclass for scheduling
+  priorityClassName:
+  # priorityClassName : high-priority
