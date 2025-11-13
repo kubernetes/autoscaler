@@ -5,8 +5,9 @@ Copyright 2021-2023 Oracle and/or its affiliates.
 package consts
 
 import (
-	v1 "k8s.io/api/core/v1"
 	"time"
+
+	v1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -46,10 +47,6 @@ const (
 	OciInstancePoolResourceIdent = "instancepool"
 	// OciInstancePoolLaunchOp is an instance pools operation type
 	OciInstancePoolLaunchOp = "LaunchInstancesInPool"
-	// InstanceStateUnfulfilled is a status indicating that the instance pool was unable to fulfill the operation
-	InstanceStateUnfulfilled = "Unfulfilled"
-	// InstanceIDUnfulfilled is the generic placeholder name for upcoming instances
-	InstanceIDUnfulfilled = "instance_placeholder"
 
 	// OciInstancePoolIDNonPoolMember indicates a kubernetes node doesn't belong to any OCI Instance Pool.
 	OciInstancePoolIDNonPoolMember = "non_pool_member"

@@ -477,11 +477,11 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 			status.State = cloudprovider.InstanceDeleting
 		case strings.ToLower(string(core.InstanceLifecycleStateStopping)):
 			status.State = cloudprovider.InstanceDeleting
-		case strings.ToLower(consts.InstanceStateUnfulfilled):
+		case strings.ToLower(ocicommon.InstanceStateUnfulfilled):
 			status.State = cloudprovider.InstanceCreating
 			status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-				ErrorCode:    consts.InstanceStateUnfulfilled,
+				ErrorCode:    ocicommon.InstanceStateUnfulfilled,
 				ErrorMessage: "OCI cannot provision additional instances for this instance pool. Review quota and/or capacity.",
 			}
 		default:
