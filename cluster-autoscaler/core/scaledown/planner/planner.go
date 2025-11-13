@@ -203,8 +203,8 @@ func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {
 }
 
 // UnneededNodes returns a list of nodes currently considered as unneeded.
-func (p *Planner) UnneededNodes() []*apiv1.Node {
-	return p.unneededNodes.AsList()
+func (p *Planner) UnneededNodes() []*scaledown.UnneededNode {
+	return p.unneededNodes.AsList(p.autoscalingCtx)
 }
 
 // UnremovableNodes returns a list of nodes currently considered as unremovable.
@@ -370,7 +370,7 @@ func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 func (p *Planner) unneededNodesLimit() int {
 	n := p.autoscalingCtx.AutoscalingOptions.MaxScaleDownParallelism
 	extraBuffer := n
-	limit := len(p.unneededNodes.AsList()) + n + extraBuffer
+	limit := len(p.unneededNodes.AsList(p.autoscalingCtx)) + n + extraBuffer
 	// TODO(x13n): Use moving average instead of min.
 	loopInterval := int64(p.minUpdateInterval)
 	u := int64(p.autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime)

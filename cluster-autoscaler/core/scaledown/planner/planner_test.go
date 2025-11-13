@@ -704,7 +704,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
 			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
-			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
+			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList(&autoscalingCtx)))
 		})
 	}
 }
@@ -835,7 +835,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 			deleteOptions := options.NodeDeleteOptions{}
 			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
 
-			p.unneededNodes.AsList()
+			p.unneededNodes.AsList(&autoscalingCtx)
 		})
 	}
 }

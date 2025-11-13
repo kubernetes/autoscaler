@@ -33,7 +33,6 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
-	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 )
 
@@ -41,13 +40,14 @@ import (
 type Nodes struct {
 	sdtg         scaleDownTimeGetter
 	limitsFinder *resource.LimitsFinder
-	cachedList   []*apiv1.Node
+	cachedList   []*scaledown.UnneededNode
 	byName       map[string]*node
 }
 
 type node struct {
-	ntbr  simulator.NodeToBeRemoved
-	since time.Time
+	ntbr             simulator.NodeToBeRemoved
+	since            time.Time
+	removalThreshold time.Duration
 }
 
 type scaleDownTimeGetter interface {
@@ -131,8 +131,9 @@ func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.T
 		name := nn.Node.Name
 		if val, found := n.byName[name]; found {
 			updated[name] = &node{
-				ntbr:  nn,
-				since: val.since,
+				ntbr:             nn,
+				since:            val.since,
+				removalThreshold: val.removalThreshold,
 			}
 		} else if existingts := timestampGetter(nn); existingts != nil {
 			updated[name] = &node{
@@ -167,11 +168,18 @@ func (n *Nodes) Contains(nodeName string) bool {
 }
 
 // AsList returns a slice of unneeded Node objects.
-func (n *Nodes) AsList() []*apiv1.Node {
+func (n *Nodes) AsList(autoscalingCtx *ca_context.AutoscalingContext) []*scaledown.UnneededNode {
 	if n.cachedList == nil {
-		n.cachedList = make([]*apiv1.Node, 0, len(n.byName))
+		n.cachedList = make([]*scaledown.UnneededNode, 0, len(n.byName))
 		for _, v := range n.byName {
-			n.cachedList = append(n.cachedList, v.ntbr.Node)
+			if v.removalThreshold == 0 {
+				n.refreshRemovalThreshold(v, autoscalingCtx.CloudProvider)
+			}
+
+			n.cachedList = append(n.cachedList, &scaledown.UnneededNode{
+				Node:             v.ntbr.Node,
+				RemovalThreshold: v.removalThreshold,
+			})
 		}
 	}
 	return n.cachedList
@@ -209,6 +217,35 @@ func (n *Nodes) RemovableAt(autoscalingCtx *ca_context.AutoscalingContext, scale
 	return
 }
 
+// refreshRemovalThreshold calculates the unneeded/unready time for a node and updates the node struct.
+func (n *Nodes) refreshRemovalThreshold(v *node, cp cloudprovider.CloudProvider) {
+	nodeGroup, err := cp.NodeGroupForNode(v.ntbr.Node)
+	if err != nil {
+		klog.Warningf("Error determining node group for %s: %v", v.ntbr.Node.Name, err)
+		return
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		klog.V(4).Infof("Node %s has no node group config", v.ntbr.Node.Name)
+		return
+	}
+
+	readiness, _ := kube_util.GetNodeReadiness(v.ntbr.Node)
+	var removalThreshold time.Duration
+
+	if readiness.Ready {
+		removalThreshold, err = n.sdtg.GetScaleDownUnneededTime(nodeGroup)
+	} else {
+		removalThreshold, err = n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
+	}
+
+	if err != nil {
+		klog.Warningf("Failed to get scale down removalThreshold for %s: %v", v.ntbr.Node.Name, err)
+		return
+	}
+
+	v.removalThreshold = removalThreshold
+}
+
 func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
 	node := v.ntbr.Node
 	// Check if node is marked with no scale down annotation.
@@ -216,38 +253,24 @@ func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext,
 		klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
 		return simulator.ScaleDownDisabledAnnotation
 	}
-	ready, _, _ := kube_util.GetReadinessState(node)
 
-	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
-	if err != nil {
-		klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
-		return simulator.UnexpectedError
-	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		klog.V(4).Infof("Skipping %s - no node group config", node.Name)
-		return simulator.NotAutoscaled
+	if v.removalThreshold == 0 {
+		n.refreshRemovalThreshold(v, autoscalingCtx.CloudProvider)
 	}
 
-	if ready {
-		// Check how long a ready node was underutilized.
-		unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
-		if err != nil {
-			klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
-			return simulator.UnexpectedError
-		}
-		if !v.since.Add(unneededTime).Before(ts) {
+	readiness, _ := kube_util.GetNodeReadiness(v.ntbr.Node)
+
+	if v.removalThreshold > 0 && !v.since.Add(v.removalThreshold).Before(ts) {
+		if readiness.Ready {
 			return simulator.NotUnneededLongEnough
 		}
-	} else {
-		// Unready nodes may be deleted after a different time than underutilized nodes.
-		unreadyTime, err := n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
-		if err != nil {
-			klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
-			return simulator.UnexpectedError
-		}
-		if !v.since.Add(unreadyTime).Before(ts) {
-			return simulator.NotUnreadyLongEnough
-		}
+		return simulator.NotUnreadyLongEnough
+	}
+
+	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+	if err != nil || nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		klog.V(4).Infof("Skipping %s - no node group config", node.Name)
+		return simulator.NotAutoscaled
 	}
 
 	if reason := verifyMinSize(node.Name, nodeGroup, nodeGroupSize, scaleDownContext.ActuationStatus); reason != simulator.NoReason {

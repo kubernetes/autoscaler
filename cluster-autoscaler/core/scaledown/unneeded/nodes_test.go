@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
@@ -98,20 +99,24 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
 			nodes := NewNodes(nil, nil)
+
 			nodes.Update(tc.initialNodes, initialTimestamp)
 			nodes.Update(tc.finalNodes, finalTimestamp)
+
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
+
 			wantNodes := len(tc.wantTimestamps)
-			assert.Equal(t, wantNodes, len(nodes.AsList()))
+			assert.Equal(t, wantNodes, len(nodes.AsList(ctx)))
 			assert.Equal(t, wantNodes, len(nodes.byName))
-			for _, n := range nodes.AsList() {
-				nn, found := nodes.byName[n.Name]
+			for _, n := range nodes.AsList(ctx) {
+				nn, found := nodes.byName[n.Node.Name]
 				assert.True(t, found)
-				assert.Equal(t, tc.wantTimestamps[n.Name], nn.since)
-				assert.Equal(t, tc.wantVersions[n.Name], version(nn.ntbr))
+				assert.Equal(t, tc.wantTimestamps[n.Node.Name], nn.since)
+				assert.Equal(t, tc.wantVersions[n.Node.Name], version(nn.ntbr))
 			}
 		})
 	}
@@ -202,9 +207,15 @@ func TestRemovableAt(t *testing.T) {
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
+			expectedThreshold := 5 * time.Minute
+			fakeTimeGetter := &fakeScaleDownTimeGetter{
+				unneededTime: 0,
+				unreadyTime:  expectedThreshold,
+			}
+			n := NewNodes(fakeTimeGetter, &resource.LimitsFinder{})
 
-			n := NewNodes(&fakeScaleDownTimeGetter{}, &resource.LimitsFinder{})
-			n.Update(removableNodes, time.Now())
+			n.Update(removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
+
 			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
 				ResourcesLeft:       resource.Limits{},
@@ -212,6 +223,22 @@ func TestRemovableAt(t *testing.T) {
 			}, time.Now())
 			if len(gotDrainToRemove) != tc.numDrainToRemove || len(gotEmptyToRemove) != tc.numEmptyToRemove {
 				t.Errorf("%s: getNodesToRemove() return %d, %d, want %d, %d", tc.name, len(gotEmptyToRemove), len(gotDrainToRemove), tc.numEmptyToRemove, tc.numDrainToRemove)
+			}
+
+			candidates := n.AsList(&autoscalingCtx)
+			candidateMap := make(map[string]time.Duration)
+			for _, c := range candidates {
+				candidateMap[c.Node.Name] = c.RemovalThreshold
+			}
+
+			for _, node := range gotEmptyToRemove {
+				nodeName := node.Node.Name
+				got, ok := candidateMap[nodeName]
+				if !ok {
+					t.Errorf("Node %s not found in AsList", nodeName)
+				} else if got != expectedThreshold {
+					t.Errorf("Node %s has threshold %v, want %v", nodeName, got, expectedThreshold)
+				}
 			}
 		})
 	}
@@ -273,6 +300,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+			currentTime = time.Now()
 
 			nodes := NewNodes(nil, nil)
 
@@ -287,7 +315,10 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 
 			nodes.LoadFromExistingTaints(listerRegistry, currentTime, tc.nodeDeletionCandidateTTL)
 
-			unneededNodes := nodes.AsList()
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
+
+			unneededNodes := nodes.AsList(ctx)
 
 			assert.Equal(t, len(tc.expectedUnneededNodes), len(unneededNodes),
 				"Expected %d unneeded nodes but got %d", len(tc.expectedUnneededNodes), len(unneededNodes))
@@ -296,9 +327,9 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			for _, node := range tc.expectedUnneededNodes {
 				expectedNodeNames[node.Name] = true
 			}
-			for _, node := range unneededNodes {
-				_, found := expectedNodeNames[node.Name]
-				assert.True(t, found, "Node %s was not expected to be unneeded", node.Name)
+			for _, candidate := range unneededNodes {
+				_, found := expectedNodeNames[candidate.Node.Name]
+				assert.True(t, found, "Node %s was not expected to be unneeded", candidate.Node.Name)
 			}
 			for _, expectedNode := range tc.expectedUnneededNodes {
 				assert.True(t, nodes.Contains(expectedNode.Name),
@@ -330,12 +361,15 @@ func (f *fakeActuationStatus) DeletionsCount(nodeGroup string) int {
 	return f.deletionCount[nodeGroup]
 }
 
-type fakeScaleDownTimeGetter struct{}
+type fakeScaleDownTimeGetter struct {
+	unneededTime time.Duration
+	unreadyTime  time.Duration
+}
 
 func (f *fakeScaleDownTimeGetter) GetScaleDownUnneededTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return 0 * time.Second, nil
+	return f.unneededTime, nil
 }
 
 func (f *fakeScaleDownTimeGetter) GetScaleDownUnreadyTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return 0 * time.Second, nil
+	return f.unreadyTime, nil
 }
