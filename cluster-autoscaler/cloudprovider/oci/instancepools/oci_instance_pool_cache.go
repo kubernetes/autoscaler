@@ -132,7 +132,7 @@ func (c *instancePoolCache) rebuild(staticInstancePools map[string]*InstancePool
 					if unrecoverableErrorMsg != "" {
 						klog.V(4).Infof("Creating placeholder instances for %s.", *getInstancePoolResp.InstancePool.DisplayName)
 						for i := len(*c.instanceSummaryCache[id]); i < *c.poolCache[id].Size; i++ {
-							c.addUnfulfilledInstanceToCache(id, fmt.Sprintf("%s%s-%d", consts.InstanceIDUnfulfilled,
+							c.addUnfulfilledInstanceToCache(id, fmt.Sprintf("%s%s-%d", ocicommon.InstanceIDUnfulfilled,
 								*getInstancePoolResp.InstancePool.Id, i), *getInstancePoolResp.InstancePool.CompartmentId,
 								fmt.Sprintf("%s-%d", *getInstancePoolResp.InstancePool.DisplayName, i))
 						}
@@ -152,7 +152,7 @@ func (c *instancePoolCache) addUnfulfilledInstanceToCache(instancePoolID, instan
 	*c.instanceSummaryCache[instancePoolID] = append(*c.instanceSummaryCache[instancePoolID], core.InstanceSummary{
 		Id:            common.String(instanceID),
 		CompartmentId: common.String(compartmentID),
-		State:         common.String(consts.InstanceStateUnfulfilled),
+		State:         common.String(ocicommon.InstanceStateUnfulfilled),
 		DisplayName:   common.String(name),
 	})
 }
@@ -168,7 +168,7 @@ func (c *instancePoolCache) removeInstance(instancePool InstancePoolNodeGroup, i
 	}
 
 	var err error
-	if strings.Contains(instanceID, consts.InstanceIDUnfulfilled) {
+	if strings.Contains(instanceID, ocicommon.InstanceIDUnfulfilled) {
 		// For an unfulfilled instance, reduce the target size of the instance pool and remove the placeholder instance from cache.
 		err = c.setSize(instancePool.Id(), *c.poolCache[instancePool.Id()].Size-1)
 	} else {
@@ -201,9 +201,9 @@ func (c *instancePoolCache) removeInstance(instancePool InstancePoolNodeGroup, i
 func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) (*ocicommon.OciRef, error) {
 
 	// Unfilled instance placeholder
-	if strings.Contains(ociInstance.Name, consts.InstanceIDUnfulfilled) {
+	if strings.Contains(ociInstance.Name, ocicommon.InstanceIDUnfulfilled) {
 		instIndex := strings.LastIndex(ociInstance.Name, "-")
-		ociInstance.InstancePoolID = strings.Replace(ociInstance.Name[:instIndex], consts.InstanceIDUnfulfilled, "", 1)
+		ociInstance.InstancePoolID = strings.Replace(ociInstance.Name[:instIndex], ocicommon.InstanceIDUnfulfilled, "", 1)
 		return &ociInstance, nil
 	}
 	// Minimum amount of information we need to make a positive match

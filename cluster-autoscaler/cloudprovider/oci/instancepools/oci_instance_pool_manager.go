@@ -6,11 +6,12 @@ package instancepools
 
 import (
 	"fmt"
-	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
@@ -284,11 +285,11 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 			status.State = cloudprovider.InstanceDeleting
 		case string(core.InstanceLifecycleStateStopping):
 			status.State = cloudprovider.InstanceDeleting
-		case consts.InstanceStateUnfulfilled:
+		case ocicommon.InstanceStateUnfulfilled:
 			status.State = cloudprovider.InstanceCreating
 			status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-				ErrorCode:    consts.InstanceStateUnfulfilled,
+				ErrorCode:    ocicommon.InstanceStateUnfulfilled,
 				ErrorMessage: "OCI cannot provision additional instances for this instance pool. Review quota and/or capacity.",
 			}
 		}
