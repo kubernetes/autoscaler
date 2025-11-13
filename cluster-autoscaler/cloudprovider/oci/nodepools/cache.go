@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sync"
 
+	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/klog/v2"
 
 	"github.com/pkg/errors"
@@ -70,16 +71,23 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 
 // removeInstance tries to remove the instance from the node pool.
 func (c *nodePoolCache) removeInstance(nodePoolID, instanceID string, nodeName string) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	if instanceID == "" {
 		klog.Errorf("Node %s doesn't have an instance id so it can't be deleted.", nodeName)
 		klog.Errorf("This could be due to a Compute Instance issue in OCI such as Out Of Host Capacity error. Check the instance status on OCI Console.")
 		return errors.Errorf("Node %s doesn't have an instance id so it can't be deleted.", nodeName)
+	} else if ocicommon.InstanceIDUnfulfilled == instanceID {
+		// Remove an unprovisioned instance caused by capacity or quota issues so that it does not prevent or delay the
+		// autoscaler from attempting to scale a different pool that meets the scheduling requirements.
+		size, err := c.getSize(nodePoolID)
+		if err != nil {
+			return err
+		}
+		return c.setSize(nodePoolID, size-1)
 	}
 
 	klog.Infof("Deleting instance %q from node pool %q", instanceID, nodePoolID)
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	// always try to remove the instance. This call is idempotent
 	scaleDown := true
@@ -142,7 +150,10 @@ func (c *nodePoolCache) getByInstance(instanceID string) (*oke.NodePool, error) 
 
 	for _, nodePool := range c.cache {
 		for _, node := range nodePool.Nodes {
+			// Either the IDs match or we're looking for an unfulfilled instance, and we've found an unfulfilled node.
 			if *node.Id == instanceID {
+				return nodePool, nil
+			} else if ocicommon.InstanceIDUnfulfilled == instanceID && *node.Id == "" {
 				return nodePool, nil
 			}
 		}
