@@ -1,4 +1,5 @@
-{{- if and (.Values.updater.enabled) .Values.updater.serviceAccount.create -}}
+{{- if and .Values.updater.enabled .Values.rbac.create -}}
+{{- if eq (include "vertical-pod-autoscaler.updater.leaderElectionEnabled" .) "true" }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -6,13 +7,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
-  {{- with .Values.updater.serviceAccount.labels }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-  {{- with .Values.updater.serviceAccount.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
 rules:
   - apiGroups:
       - "coordination.k8s.io"
@@ -23,11 +17,12 @@ rules:
   - apiGroups:
       - "coordination.k8s.io"
     resourceNames:
-      - vpa-updater
+      - {{ .Values.updater.leaderElection.resourceName }}
     resources:
       - leases
     verbs:
       - get
       - watch
       - update
+{{- end -}}
 {{- end -}}
