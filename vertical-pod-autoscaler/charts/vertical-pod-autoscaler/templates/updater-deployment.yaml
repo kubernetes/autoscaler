@@ -28,9 +28,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
+        {{ toYaml . | nindent 8 | trim }}
+      {{- end }}
       containers:
         - name: updater
           image: {{ include "vertical-pod-autoscaler.updater.image" . }}
@@ -58,4 +59,8 @@ spec:
               scheme: HTTP
             periodSeconds: 10
             failureThreshold: 3
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{ toYaml . | nindent 12 | trim }}
+          {{- end }}
 {{- end -}}

@@ -32,9 +32,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName:  {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
+        {{ toYaml . | nindent 8 | trim }}
+      {{- end }}
       {{- with .Values.admissionController.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -91,6 +92,10 @@ spec:
           {{- with .Values.admissionController.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{ toYaml . | nindent 12 | trim }}
           {{- end }}
       volumes:
         {{- toYaml .Values.admissionController.volumes | nindent 12 }}
