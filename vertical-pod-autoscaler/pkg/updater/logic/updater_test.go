@@ -383,6 +383,7 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 			Get()
 
 		pods[i].Labels = labels
+		pods[i].UID = types.UID(fmt.Sprintf("pod-uid-%d", i))
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
