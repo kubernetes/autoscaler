@@ -156,7 +156,7 @@ func (m *PodListerMock) Pods(namespace string) v1.PodNamespaceLister {
 
 // List is a mock implementation of PodLister.List
 func (m *PodListerMock) List(selector labels.Selector) (ret []*apiv1.Pod, err error) {
-	args := m.Called()
+	args := m.Called(selector)
 	var returnArg []*apiv1.Pod
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).([]*apiv1.Pod)
