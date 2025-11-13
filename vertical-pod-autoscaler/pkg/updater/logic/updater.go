@@ -166,6 +166,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
 
+	var podsList []*apiv1.Pod
+	seenPods := make(map[string]struct{})
+
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
@@ -185,6 +188,20 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
 			continue
 		}
+		podsWithSelector, err := u.podLister.List(selector)
+		if err != nil {
+			klog.ErrorS(err, "Failed to get pods", "selector", selector)
+			continue
+		}
+
+		// handle the case of overlapping VPA selectors
+		for _, pod := range podsWithSelector {
+			uid := string(pod.UID)
+			if _, seen := seenPods[uid]; !seen {
+				seenPods[uid] = struct{}{}
+				podsList = append(podsList, pod)
+			}
+		}
 
 		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
 			Vpa:      vpa,
@@ -200,11 +217,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 		return
 	}
 
-	podsList, err := u.podLister.List(labels.Everything())
-	if err != nil {
-		klog.ErrorS(err, "Failed to get pods list")
-		return
-	}
 	timer.ObserveStep("ListPods")
 	allLivePods := filterDeletedPods(podsList)
 
