@@ -401,11 +401,11 @@ func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) (
 		}
 
 		curSize := int64(-1)
-		if scaleSet.Sku != nil && scaleSet.Sku.Capacity != nil {
-			curSize = *scaleSet.Sku.Capacity
+		if scaleSet.SKU != nil && scaleSet.SKU.Capacity != nil {
+			curSize = *scaleSet.SKU.Capacity
 		}
 
-		dedicatedHost := scaleSet.VirtualMachineScaleSetProperties != nil && scaleSet.VirtualMachineScaleSetProperties.HostGroup != nil
+		dedicatedHost := scaleSet.Properties != nil && scaleSet.Properties.HostGroup != nil
 
 		vmss, err := NewScaleSet(spec, m, curSize, dedicatedHost)
 		if err != nil {
