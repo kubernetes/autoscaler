@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
@@ -232,6 +233,7 @@ func testRunOnceBase(
 			Get()
 
 		pods[i].Labels = labels
+		pods[i].UID = types.UID(fmt.Sprintf("pod-uid-%d", i))
 
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(canInPlaceUpdate)
 		if shouldInPlaceFail {
@@ -251,7 +253,7 @@ func testRunOnceBase(
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 
 	podLister := &test.PodListerMock{}
-	podLister.On("List").Return(pods, nil)
+	podLister.On("List", selector).Return(pods, nil)
 	targetRef := &v1.CrossVersionObjectReference{
 		Kind:       rc.Kind,
 		Name:       rc.Name,
@@ -392,7 +394,7 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 
 	podLister := &test.PodListerMock{}
-	podLister.On("List").Return(pods, nil)
+	podLister.On("List", selector).Return(pods, nil)
 	targetRef := &v1.CrossVersionObjectReference{
 		Kind:       rc.Kind,
 		Name:       rc.Name,
