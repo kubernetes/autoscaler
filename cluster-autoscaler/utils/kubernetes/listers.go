@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
@@ -29,6 +30,7 @@ import (
 	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	v1policylister "k8s.io/client-go/listers/policy/v1"
+	v1storagelister "k8s.io/client-go/listers/storage/v1"
 	"k8s.io/client-go/tools/cache"
 	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
 )
@@ -36,6 +38,7 @@ import (
 // ListerRegistry is a registry providing various listers to list pods or nodes matching conditions
 type ListerRegistry interface {
 	AllNodeLister() NodeLister
+	AllCSINodeLister() CSINodeLister
 	ReadyNodeLister() NodeLister
 	AllPodLister() PodLister
 	PodDisruptionBudgetLister() PodDisruptionBudgetLister
@@ -48,6 +51,7 @@ type ListerRegistry interface {
 
 type listerRegistryImpl struct {
 	allNodeLister               NodeLister
+	allCSINodeLister            CSINodeLister
 	readyNodeLister             NodeLister
 	allPodLister                PodLister
 	podDisruptionBudgetLister   PodDisruptionBudgetLister
@@ -59,12 +63,13 @@ type listerRegistryImpl struct {
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
-func NewListerRegistry(allNode NodeLister, readyNode NodeLister, allPodLister PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
+func NewListerRegistry(allNode NodeLister, allCSINode CSINodeLister, readyNode NodeLister, allPodLister PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
 	daemonSetLister v1appslister.DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
 	jobLister v1batchlister.JobLister, replicaSetLister v1appslister.ReplicaSetLister,
 	statefulSetLister v1appslister.StatefulSetLister) ListerRegistry {
 	return listerRegistryImpl{
 		allNodeLister:               allNode,
+		allCSINodeLister:            allCSINode,
 		readyNodeLister:             readyNode,
 		allPodLister:                allPodLister,
 		podDisruptionBudgetLister:   podDisruptionBudgetLister,
@@ -79,6 +84,7 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, allPodLister Po
 // NewListerRegistryWithDefaultListers returns a registry filled with listers of the default implementations
 func NewListerRegistryWithDefaultListers(informerFactory informers.SharedInformerFactory) ListerRegistry {
 	allPodLister := NewAllPodLister(informerFactory.Core().V1().Pods().Lister())
+	allCSINodeLister := NewAllCSINodeLister(informerFactory.Storage().V1().CSINodes().Lister())
 	readyNodeLister := NewReadyNodeLister(informerFactory.Core().V1().Nodes().Lister())
 	allNodeLister := NewAllNodeLister(informerFactory.Core().V1().Nodes().Lister())
 
@@ -88,7 +94,7 @@ func NewListerRegistryWithDefaultListers(informerFactory informers.SharedInforme
 	jobLister := informerFactory.Batch().V1().Jobs().Lister()
 	replicaSetLister := informerFactory.Apps().V1().ReplicaSets().Lister()
 	statefulSetLister := informerFactory.Apps().V1().StatefulSets().Lister()
-	return NewListerRegistry(allNodeLister, readyNodeLister, allPodLister,
+	return NewListerRegistry(allNodeLister, allCSINodeLister, readyNodeLister, allPodLister,
 		podDisruptionBudgetLister, daemonSetLister, replicationControllerLister,
 		jobLister, replicaSetLister, statefulSetLister)
 }
@@ -101,6 +107,11 @@ func (r listerRegistryImpl) AllPodLister() PodLister {
 // AllNodeLister returns the AllNodeLister registered to this registry
 func (r listerRegistryImpl) AllNodeLister() NodeLister {
 	return r.allNodeLister
+}
+
+// AllCSINodeLister returns the AllCSINodeLister registered to this registry
+func (r listerRegistryImpl) AllCSINodeLister() CSINodeLister {
+	return r.allCSINodeLister
 }
 
 // ReadyNodeLister returns the ReadyNodeLister registered to this registry
@@ -329,6 +340,60 @@ func filterNodes(nodes []*apiv1.Node, predicate func(*apiv1.Node) bool) []*apiv1
 	for i := range nodes {
 		if predicate(nodes[i]) {
 			filtered = append(filtered, nodes[i])
+		}
+	}
+	return filtered
+}
+
+type CSINodeLister interface {
+	List() ([]*storagev1.CSINode, error)
+	Get(name string) (*storagev1.CSINode, error)
+}
+
+type csiNodeListerImpl struct {
+	csiNodeLister v1storagelister.CSINodeLister
+	filter        func(*storagev1.CSINode) bool
+}
+
+// NewAllCSINodeLister builds a csi node lister that returns all csi nodes.
+func NewAllCSINodeLister(nl v1storagelister.CSINodeLister) CSINodeLister {
+	return NewCSINodeLister(nl, nil)
+}
+
+// NewCSINodeLister builds a csi node lister.
+func NewCSINodeLister(nl v1storagelister.CSINodeLister, filter func(*storagev1.CSINode) bool) CSINodeLister {
+	return &csiNodeListerImpl{
+		csiNodeLister: nl,
+		filter:        filter,
+	}
+}
+
+func (l *csiNodeListerImpl) Get(name string) (*storagev1.CSINode, error) {
+	return l.csiNodeLister.Get(name)
+}
+
+// List returns list of csi nodes.
+func (l *csiNodeListerImpl) List() ([]*storagev1.CSINode, error) {
+	var csiNodes []*storagev1.CSINode
+	var err error
+
+	csiNodes, err = l.csiNodeLister.List(labels.Everything())
+	if err != nil {
+		return []*storagev1.CSINode{}, err
+	}
+
+	if l.filter != nil {
+		csiNodes = filterCSINodes(csiNodes, l.filter)
+	}
+
+	return csiNodes, nil
+}
+
+func filterCSINodes(csinodes []*storagev1.CSINode, predicate func(*storagev1.CSINode) bool) []*storagev1.CSINode {
+	var filtered []*storagev1.CSINode
+	for i := range csinodes {
+		if predicate(csinodes[i]) {
+			filtered = append(filtered, csinodes[i])
 		}
 	}
 	return filtered

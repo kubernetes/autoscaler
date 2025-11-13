@@ -81,11 +81,11 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	provider2.AddNodeGroup("ng7", 1, 10, 1) // Nodegroup without nodes.
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1, ready7, readyToBeDeleted6}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, nil)
+	err := snapshot.SetClusterState(nodes, nil, nil, nil)
 	assert.NoError(t, err)
 
 	autoscalingCtx := ca_context.AutoscalingContext{
@@ -168,11 +168,11 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	provider1.AddNode("ng4", ready6)
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	nodes := []*apiv1.Node{unready4, unready3, ready2, ready1}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, nil)
+	err := snapshot.SetClusterState(nodes, nil, nil, nil)
 	assert.NoError(t, err)
 
 	// Fill cache
@@ -259,11 +259,11 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	// Cloud provider with TemplateNodeInfo not implemented.
 	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	nodes := []*apiv1.Node{ready1}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, nil)
+	err := snapshot.SetClusterState(nodes, nil, nil, nil)
 	assert.NoError(t, err)
 
 	autoscalingCtx := ca_context.AutoscalingContext{

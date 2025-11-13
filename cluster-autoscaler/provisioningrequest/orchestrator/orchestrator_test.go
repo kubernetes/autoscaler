@@ -480,7 +480,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 	}
 
 	podLister := kube_util.NewTestPodLister(nil)
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	options := config.AutoscalingOptions{}
 	if batchProcessing {

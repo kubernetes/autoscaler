@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -65,6 +66,8 @@ type AutoscalingContext struct {
 	ProvisioningRequestScaleUpMode bool
 	// DraProvider is the provider for dynamic resources allocation.
 	DraProvider *draprovider.Provider
+	// CsiProvider is the provider for CSI node aware scheduling.
+	CsiProvider *csinodeprovider.Provider
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -112,6 +115,7 @@ func NewAutoscalingContext(
 	remainingPdbTracker pdb.RemainingPdbTracker,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	draProvider *draprovider.Provider,
+	csiProvider *csinodeprovider.Provider,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:     options,
@@ -125,6 +129,7 @@ func NewAutoscalingContext(
 		RemainingPdbTracker:    remainingPdbTracker,
 		ClusterStateRegistry:   clusterStateRegistry,
 		DraProvider:            draProvider,
+		CsiProvider:            csiProvider,
 	}
 }
 

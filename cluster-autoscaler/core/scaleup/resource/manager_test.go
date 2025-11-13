@@ -71,7 +71,7 @@ func TestDeltaForNode(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
@@ -114,7 +114,7 @@ func TestResourcesLeft(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
@@ -167,7 +167,7 @@ func TestApplyLimits(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+		err := autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
@@ -234,7 +234,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodes := []*corev1.Node{n1}
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 	assert.NoError(t, err)
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
@@ -271,7 +271,7 @@ func newCloudProvider(t *testing.T, cpu, mem int64) *testprovider.TestCloudProvi
 
 func newAutoscalingContext(t *testing.T, provider cloudprovider.CloudProvider) ca_context.AutoscalingContext {
 	podLister := kube_util.NewTestPodLister([]*corev1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 	autoscalingCtx, err := test.NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
 	return autoscalingCtx
