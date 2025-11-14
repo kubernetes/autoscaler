@@ -40,7 +40,7 @@ const (
 	// In each feature gate description, you must specify "components".
 	// The feature must be enabled by the --feature-gates argument on each listed component.
 
-	// alpha: v1.5.0
+	// alpha: v1.6.0
 	// components: admission-controller, updater
 
 	// CPUStartupBoost enables the CPU startup boost feature.
