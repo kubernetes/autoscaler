@@ -158,7 +158,7 @@ VPA provides metrics to track in-place update operations:
 ## CPU Startup Boost
 
 > [!WARNING]
-> FEATURE STATE: VPA v1.5.0 [alpha]
+> FEATURE STATE: VPA v1.6.0 [alpha]
 
 The CPU Startup Boost feature allows VPA to temporarily increase CPU requests and limits for containers during pod startup. This can help workloads that have high CPU demands during their initialization phase, such as Java applications, to start faster. Once the pod is considered `Ready` and an optional duration has passed, VPA scales the CPU resources back down to their normal levels using an in-place resize.
 
@@ -184,7 +184,8 @@ spec:
     updateMode: "Recreate"
   startupBoost:
     cpu:
-      value: "3"
+      type: "Factor"
+      factor: 3
       duration: 10s
 ```
 
@@ -197,7 +198,7 @@ spec:
 ### Requirements
 
 *   Kubernetes 1.33+ with the `InPlacePodVerticalScaling` feature gate enabled.
-*   VPA version 1.5.0+ with the `CPUStartupBoost` feature gate enabled.
+*   VPA version 1.6.0+ with the `CPUStartupBoost` feature gate enabled.
 
 ### Configuration
 
@@ -207,7 +208,8 @@ Enable the feature by setting the `CPUStartupBoost` feature gate in the VPA admi
 --feature-gates=CPUStartupBoost=true
 ```
 
-The `startupBoost` field has the following sub-fields:
-*   `cpu.type`: The type of boost. Can be `Factor` (default) to multiply the CPU, or `Quantity` to set a specific CPU value.
-*   `cpu.value`: The magnitude of the boost. A multiplier (e.g., "2") for `Factor` type, or a resource quantity (e.g., "500m") for `Quantity` type.
-*   `cpu.duration`: (Optional) How long to keep the boost active *after* the pod becomes `Ready`. Defaults to `0s`.
+The `startupBoost` field contains a `cpu` field with the following sub-fields:
+*   `type`: (Required) The type of boost. Can be `Factor` to multiply the CPU, or `Quantity` to add a specific CPU value.
+*   `factor`: (Optional) The multiplier to apply if `type` is `Factor` (e.g., 2 for 2x CPU). Required if `type` is `Factor`.
+*   `quantity`: (Optional) The amount of CPU to add if `type` is `Quantity` (e.g., "500m"). Required if `type` is `Quantity`.
+*   `duration`: (Optional) How long to keep the boost active *after* the pod becomes `Ready`. Defaults to `0s`.
