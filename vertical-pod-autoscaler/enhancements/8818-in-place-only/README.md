@@ -88,12 +88,12 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
         }
         if present {
             if isInPlaceUpdating(pod) {
+                // For InPlace mode, never suggest eviction
+                if updateMode == vpa_types.UpdateModeInPlace {
+                    return utils.InPlaceDeferred
+                }
                 canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
                 if canEvict {
-                    // For InPlace mode, never suggest eviction
-                    if updateMode == vpa_types.UpdateModeInPlace {
-                        return utils.InPlaceDeferred
-                    }
                     return utils.InPlaceEvict
                 }
                 return utils.InPlaceDeferred
