@@ -66,40 +66,86 @@ Add `UpdateModeInPlace` to the VPA types:
 const (
     // ... existing modes ...
     // UpdateModeInPlace means that VPA will only attempt to update pods in-place
-    // and will never evict them. If in-place update fails, VPA will retry later.
+    // and will never evict them. If in-place update fails, VPA will rely on
+    // Kubelet's automatic retry mechanism.
     UpdateModeInPlace UpdateMode = "InPlace"
 )
 ```
 
-The updater loop will handle the `InPlace` mode by never adding pods to `podsForEviction`, regardless of the decision from `CanInPlaceUpdate`:
+Modify the `CanInPlaceUpdate` to accomdate the new update mode:
 
 ```golang
-for vpa, livePods := range controlledPods {
-    updateMode := vpa.Spec.UpdatePolicy.UpdateMode
-
-    if updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnable {
-        podsForInPlace = u.getPodsUpdateOrder(
-            filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
-    }
-    // ... rest of existing code
-
-    for _, pod := range podsForInPlace {
-        decision := inPlaceLimiter.CanInPlaceUpdate(pod)
-
-        if decision == utils.InPlaceDeferred {
-            // Kubelet will automatically retry
-            continue
-        } else if decision == utils.InPlaceEvict {
-            // Only evict for InPlaceOrRecreate mode
-            if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
-                podsForEviction = append(podsForEviction, pod)
-            }
-            // For InPlace mode, do nothing - Kubelet handles retry
-            continue
+func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
+    switch updateMode {
+    case vpa_types.UpdateModeInPlaceOrRecreate:
+        if !features.Enabled(features.InPlaceOrRecreate) {
+            return utils.InPlaceEvict
         }
+    case vpa_types.UpdateModeInPlace:
+        if !features.Enabled(features.InPlace) {
+            return utils.InPlaceEvict
+        }
+    default:
+        return utils.InPlaceEvict
+    }
 
-        // InPlaceApproved - proceed with update
-        // ...
+    cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
+    if present {
+        singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
+        if pod.Status.Phase == apiv1.PodPending {
+            return utils.InPlaceDeferred
+        }
+        if present {
+            if isInPlaceUpdating(pod) {
+                // For InPlace mode we wait indefinitely for Kubelet
+                if updateMode == vpa_types.UpdateModeInPlace {
+                    klog.V(4).InfoS("Pod is updating, waiting for completion (InPlace mode)",
+                        "pod", klog.KObj(pod))
+                    return utils.InPlaceDeferred
+                }
+
+                // For InPlaceOrRecreate mode, check timeout
+                canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
+                if canEvict {
+                    klog.V(2).InfoS("Pod update timed out, suggesting eviction",
+                        "pod", klog.KObj(pod))
+                    return utils.InPlaceEvict
+                }
+                return utils.InPlaceDeferred
+            }
+            if singleGroupStats.isPodDisruptable() {
+                return utils.InPlaceApproved
+            }
+        }
+    }
+    klog.V(4).InfoS("Can't in-place update pod, waiting for next loop", "pod", klog.KObj(pod))
+    return utils.InPlaceDeferred
+}
+```
+
+The updater loop will handle the `InPlace` mode by never adding pods to `podsForEviction` as follows:
+
+```golang
+for _, pod := range podsForInPlace {
+    decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
+
+    switch decision {
+    case utils.InPlaceDeferred:
+        klog.V(2).InfoS("In-place update deferred", "pod", klog.KObj(pod))
+        continue
+
+    case utils.InPlaceEvict:
+        // This should only happen for InPlaceOrRecreate mode
+        podsForEviction = append(podsForEviction, pod)
+        klog.V(2).InfoS("In-place update failed, falling back to eviction",
+            "pod", klog.KObj(pod))
+        continue
+
+    case utils.InPlaceApproved:
+        // Proceed with in-place update
+        if err := u.evictionRateLimiter.TryUpdate(pod, vpa); err != nil {
+            klog.V(2).InfoS("Failed to update pod", "pod", klog.KObj(pod), "error", err)
+        }
     }
 }
 ```
