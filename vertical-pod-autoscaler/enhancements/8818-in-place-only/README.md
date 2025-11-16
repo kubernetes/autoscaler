@@ -71,83 +71,44 @@ const (
 )
 ```
 
-We will enhance `inplace_restriction.go` to support the new mode:
-
-```golang
-// Update CanInPlaceUpdate to accept update mode
-func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
-    if !features.Enabled(features.InPlaceOrRecreate) {
-        return utils.InPlaceEvict
-    }
-
-    cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
-    if present {
-        singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
-        if pod.Status.Phase == apiv1.PodPending {
-            return utils.InPlaceDeferred
-        }
-        if present {
-            if isInPlaceUpdating(pod) {
-                // For InPlace mode, never suggest eviction
-                if updateMode == vpa_types.UpdateModeInPlace {
-                    return utils.InPlaceDeferred
-                }
-                canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
-                if canEvict {
-                    return utils.InPlaceEvict
-                }
-                return utils.InPlaceDeferred
-            }
-            if singleGroupStats.isPodDisruptable() {
-                return utils.InPlaceApproved
-            }
-        }
-    }
-    klog.V(4).InfoS("Can't in-place update pod, waiting for next loop", "pod", klog.KObj(pod))
-    return utils.InPlaceDeferred
-}
-```
-
-The retry logic is implicitly handled by the existing `CanInPlaceUpdate` decision system. Specifically:
-- Deferred State: When `CanInPlaceUpdate` returns `utils.InPlaceDeferred`, the pod is skipped in the current loop and will be reconsidered in the next iteration
-- Loop Frequency: The updater's main loop runs periodically (default every 1 minute), providing natural retry behavior
-- Condition-Based Decisions: The `CanEvictInPlacingPod` function already tracks state via `lastInPlaceAttemptTimeMap`
+The updater loop will handle the `InPlace` mode by never adding pods to `podsForEviction`, regardless of the decision from `CanInPlaceUpdate`:
 
 ```golang
 for vpa, livePods := range controlledPods {
-    // ... existing setup code ...
-
-    podsForInPlace := make([]*apiv1.Pod, 0)
-    podsForEviction := make([]*apiv1.Pod, 0)
+    updateMode := vpa.Spec.UpdatePolicy.UpdateMode
 
     if updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnable {
-        // New mode: only in-place, never evict
-        podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
-        inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
-    } // rest of the code
-
-    // ... existing counters ...
-
-for _, pod := range podsForInPlace {
-    withInPlaceUpdatable = true
-    decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
-
-    if decision == utils.InPlaceDeferred {
-        klog.V(2).InfoS("In-place update deferred, will retry in next loop", "pod", klog.KObj(pod))
-        continue
-    } else if decision == utils.InPlaceEvict {
-        // Only add to eviction list if NOT in InPlace mode
-        if updateMode != vpa_types.UpdateModeInPlace {
-            podsForEviction = append(podsForEviction, pod)
-        } else {
-            klog.V(2).InfoS("In-place update would require eviction, but InPlace mode prevents it. Will retry later.", "pod", klog.KObj(pod))
-            metrics_updater.RecordDeferredInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "EvictionPrevented")
-        }
-        continue
+        podsForInPlace = u.getPodsUpdateOrder(
+            filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
     }
-    // rest of the code
+    // ... rest of existing code
+
+    for _, pod := range podsForInPlace {
+        decision := inPlaceLimiter.CanInPlaceUpdate(pod)
+
+        if decision == utils.InPlaceDeferred {
+            // Kubelet will automatically retry
+            continue
+        } else if decision == utils.InPlaceEvict {
+            // Only evict for InPlaceOrRecreate mode
+            if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
+                podsForEviction = append(podsForEviction, pod)
+            }
+            // For InPlace mode, do nothing - Kubelet handles retry
+            continue
+        }
+
+        // InPlaceApproved - proceed with update
+        // ...
+    }
 }
 ```
+
+
+Retry is handled entirely by the Kubelet based on pod conditions:
+- `PodResizePending` (reason: `Deferred`) - Kubelet will retry automatically
+- `PodResizePending` (reason: `Infeasible`) - Kubelet will never retry
+- `PodResizeInProgress` - Resize is being applied
 
 ## Test Plan
 
