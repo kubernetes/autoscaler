@@ -96,6 +96,16 @@ app.kubernetes.io/component: updater
 {{- printf "%s:%s" .Values.updater.image.repository (default .Chart.AppVersion .Values.updater.image.tag) }}
 {{- end }}
 
+{{- define "vertical-pod-autoscaler.updater.leaderElectionEnabled" -}}
+{{- if and (eq .Values.updater.leaderElection.enabled nil) (gt (int .Values.updater.replicas) 1) -}}
+true
+{{- else if .Values.updater.leaderElection.enabled -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
 
 {{/*
 Create the name of the namespace to use

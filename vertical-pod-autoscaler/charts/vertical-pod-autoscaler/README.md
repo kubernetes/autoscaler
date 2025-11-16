@@ -100,9 +100,15 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | updater.image.pullPolicy | string | `"IfNotPresent"` |  |
 | updater.image.repository | string | `"registry.k8s.io/autoscaling/vpa-updater"` |  |
 | updater.image.tag | string | `nil` |  |
+| updater.leaderElection.enabled | string | `nil` |  |
+| updater.leaderElection.leaseDuration | string | `"15s"` |  |
+| updater.leaderElection.renewDeadline | string | `"10s"` |  |
+| updater.leaderElection.resourceName | string | `"vpa-updater-lease"` |  |
+| updater.leaderElection.resourceNamespace | string | `""` |  |
+| updater.leaderElection.retryPeriod | string | `"2s"` |  |
 | updater.podAnnotations | object | `{}` |  |
 | updater.podLabels | object | `{}` |  |
-| updater.replicas | int | `1` |  |
+| updater.replicas | int | `2` |  |
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |
