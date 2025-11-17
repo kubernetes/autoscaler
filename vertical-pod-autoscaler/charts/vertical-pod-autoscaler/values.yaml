@@ -227,3 +227,13 @@ updater:
     renewDeadline: 10s
     # Duration the clients should wait between attempting acquisition and renewal of a leadership.
     retryPeriod: 2s
+
+  # PodDisruptionBudget for the Updater.
+  podDisruptionBudget:
+    enabled: true
+    # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    minAvailable: 1
+    # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    maxUnavailable:

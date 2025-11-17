@@ -1,0 +1,22 @@
+{{- if and .Values.updater.enabled .Values.updater.podDisruptionBudget.enabled -}}
+{{- if and .Values.updater.podDisruptionBudget.minAvailable .Values.updater.podDisruptionBudget.maxUnavailable }}
+    {{- fail "Only one of updater.podDisruptionBudget.minAvailable or updater.podDisruptionBudget.maxUnavailable should be set." }}
+{{- end }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "vertical-pod-autoscaler.updater.selectorLabels" . | nindent 6 }}
+  {{- if .Values.updater.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.updater.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.updater.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.updater.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+{{- end -}}
