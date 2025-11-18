@@ -150,10 +150,12 @@ func (c *nodePoolCache) getByInstance(instanceID string) (*oke.NodePool, error) 
 
 	for _, nodePool := range c.cache {
 		for _, node := range nodePool.Nodes {
-			// Either the IDs match or we're looking for an unfulfilled instance, and we've found an unfulfilled node.
+			// Either the IDs match or we're looking for an unfulfilled instance, and we've found a node pool with a
+			// node that cannot be created because of an error.
 			if *node.Id == instanceID {
 				return nodePool, nil
-			} else if ocicommon.InstanceIDUnfulfilled == instanceID && *node.Id == "" {
+			} else if ocicommon.InstanceIDUnfulfilled == instanceID &&
+				*node.Id == "" && oke.NodeLifecycleStateCreating == node.LifecycleState && node.NodeError != nil {
 				return nodePool, nil
 			}
 		}
