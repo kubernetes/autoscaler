@@ -95,6 +95,7 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 	_, buffers = p.podTemplateGenFilter.Filter(buffers)
 
 	totalFakePods := []*apiv1.Pod{}
+	p.clearCapacityBufferRegistry()
 	for _, buffer := range buffers {
 		fakePods := p.provision(buffer)
 		p.updateCapacityBufferRegistry(fakePods, buffer)
@@ -113,10 +114,16 @@ func (p *CapacityBufferPodListProcessor) updateCapacityBufferRegistry(fakePods [
 	if p.buffersRegistry == nil {
 		return
 	}
-	p.buffersRegistry.fakePodsUIDToBuffer = make(map[string]*v1alpha1.CapacityBuffer, len(fakePods))
 	for _, fakePod := range fakePods {
 		p.buffersRegistry.fakePodsUIDToBuffer[string(fakePod.UID)] = buffer
 	}
+}
+
+func (p *CapacityBufferPodListProcessor) clearCapacityBufferRegistry() {
+	if p.buffersRegistry == nil {
+		return
+	}
+	p.buffersRegistry.fakePodsUIDToBuffer = make(map[string]*v1alpha1.CapacityBuffer, 0)
 }
 
 func (p *CapacityBufferPodListProcessor) provision(buffer *v1alpha1.CapacityBuffer) []*apiv1.Pod {
