@@ -21,7 +21,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 )
 
 // NodeFilter customizes what nodes should be included in usage calculations.
@@ -31,14 +30,14 @@ type NodeFilter interface {
 }
 
 type usageCalculator struct {
-	crp        customresources.CustomResourcesProcessor
 	nodeFilter NodeFilter
+	nodeCache  *nodeResourcesCache
 }
 
-func newUsageCalculator(crp customresources.CustomResourcesProcessor, nodeFilter NodeFilter) *usageCalculator {
+func newUsageCalculator(nodeFilter NodeFilter, nodeCache *nodeResourcesCache) *usageCalculator {
 	return &usageCalculator{
-		crp:        crp,
 		nodeFilter: nodeFilter,
+		nodeCache:  nodeCache,
 	}
 }
 
@@ -59,7 +58,7 @@ func (u *usageCalculator) calculateUsages(autoscalingCtx *context.AutoscalingCon
 		if err != nil {
 			return nil, fmt.Errorf("failed to get node group for node %q: %w", node.Name, err)
 		}
-		delta, err := nodeResources(autoscalingCtx, u.crp, node, ng)
+		delta, err := u.nodeCache.totalNodeResources(autoscalingCtx, node, ng)
 		if err != nil {
 			return nil, err
 		}
