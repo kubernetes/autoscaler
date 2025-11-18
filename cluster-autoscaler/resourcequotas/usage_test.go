@@ -198,7 +198,7 @@ func TestCalculateUsages(t *testing.T) {
 			if tc.nodeFilter != nil {
 				nf = &fakeNodeFilter{NodeFilterFn: tc.nodeFilter}
 			}
-			calculator := newUsageCalculator(crp, nf)
+			calculator := newUsageCalculator(nf, newNodeResourcesCache(crp))
 			usages, err := calculator.calculateUsages(ctx, tc.nodes, tc.quotas)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
