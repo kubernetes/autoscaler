@@ -314,28 +314,33 @@ type basicSnapshotStoreNodeLister BasicSnapshotStore
 type basicSnapshotStoreStorageLister BasicSnapshotStore
 
 // NodeInfos exposes snapshot as NodeInfoLister.
-func (snapshot *BasicSnapshotStore) NodeInfos() schedulerframework.NodeInfoLister {
+func (snapshot *BasicSnapshotStore) NodeInfos() fwk.NodeInfoLister {
 	return (*basicSnapshotStoreNodeLister)(snapshot)
 }
 
 // StorageInfos exposes snapshot as StorageInfoLister.
-func (snapshot *BasicSnapshotStore) StorageInfos() schedulerframework.StorageInfoLister {
+func (snapshot *BasicSnapshotStore) StorageInfos() fwk.StorageInfoLister {
 	return (*basicSnapshotStoreStorageLister)(snapshot)
 }
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
-func (snapshot *BasicSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
+func (snapshot *BasicSnapshotStore) ResourceClaims() fwk.ResourceClaimTracker {
 	return snapshot.DraSnapshot().ResourceClaims()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
-func (snapshot *BasicSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
+func (snapshot *BasicSnapshotStore) ResourceSlices() fwk.ResourceSliceLister {
 	return snapshot.DraSnapshot().ResourceSlices()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
-func (snapshot *BasicSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
+func (snapshot *BasicSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 	return snapshot.DraSnapshot().DeviceClasses()
+}
+
+// DeviceClassResolver exposes the snapshot as DeviceClassResolver.
+func (snapshot *BasicSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
+	return snapshot.DraSnapshot().DeviceClassResolver()
 }
 
 // List returns the list of nodes in the snapshot.

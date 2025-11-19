@@ -19,22 +19,22 @@ package framework
 import (
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/dynamic-resource-allocation/structured"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // SharedLister groups all interfaces that Cluster Autoscaler needs to implement for integrating with kube-scheduler.
 type SharedLister interface {
-	schedulerframework.SharedLister
-	schedulerframework.SharedDRAManager
+	fwk.SharedLister
+	fwk.SharedDRAManager
 }
 
-// DelegatingSchedulerSharedLister implements schedulerframework interfaces by passing the logic to a delegate. Delegate can be updated.
+// DelegatingSchedulerSharedLister implements fwk interfaces by passing the logic to a delegate. Delegate can be updated.
 type DelegatingSchedulerSharedLister struct {
 	delegate SharedLister
 }
@@ -47,27 +47,27 @@ func NewDelegatingSchedulerSharedLister() *DelegatingSchedulerSharedLister {
 }
 
 // NodeInfos returns a NodeInfoLister.
-func (lister *DelegatingSchedulerSharedLister) NodeInfos() schedulerframework.NodeInfoLister {
+func (lister *DelegatingSchedulerSharedLister) NodeInfos() fwk.NodeInfoLister {
 	return lister.delegate.NodeInfos()
 }
 
 // StorageInfos returns a StorageInfoLister
-func (lister *DelegatingSchedulerSharedLister) StorageInfos() schedulerframework.StorageInfoLister {
+func (lister *DelegatingSchedulerSharedLister) StorageInfos() fwk.StorageInfoLister {
 	return lister.delegate.StorageInfos()
 }
 
 // ResourceClaims returns a ResourceClaimTracker.
-func (lister *DelegatingSchedulerSharedLister) ResourceClaims() schedulerframework.ResourceClaimTracker {
+func (lister *DelegatingSchedulerSharedLister) ResourceClaims() fwk.ResourceClaimTracker {
 	return lister.delegate.ResourceClaims()
 }
 
 // ResourceSlices returns a ResourceSliceLister.
-func (lister *DelegatingSchedulerSharedLister) ResourceSlices() schedulerframework.ResourceSliceLister {
+func (lister *DelegatingSchedulerSharedLister) ResourceSlices() fwk.ResourceSliceLister {
 	return lister.delegate.ResourceSlices()
 }
 
 // DeviceClasses returns a DeviceClassLister.
-func (lister *DelegatingSchedulerSharedLister) DeviceClasses() schedulerframework.DeviceClassLister {
+func (lister *DelegatingSchedulerSharedLister) DeviceClasses() fwk.DeviceClassLister {
 	return lister.delegate.DeviceClasses()
 }
 
@@ -81,12 +81,18 @@ func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 	lister.delegate = unsetSharedListerSingleton
 }
 
+// DeviceClassResolver returns a DeviceClassResolver.
+func (lister *DelegatingSchedulerSharedLister) DeviceClassResolver() fwk.DeviceClassResolver {
+	return lister.delegate.DeviceClassResolver()
+}
+
 type unsetSharedLister struct{}
 type unsetNodeInfoLister unsetSharedLister
 type unsetStorageInfoLister unsetSharedLister
 type unsetResourceClaimTracker unsetSharedLister
 type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
+type unsetDeviceClassResolver unsetSharedLister
 
 // List always returns an error
 func (lister *unsetNodeInfoLister) List() ([]fwk.NodeInfo, error) {
@@ -162,26 +168,35 @@ func (u unsetDeviceClassLister) Get(className string) (*resourceapi.DeviceClass,
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
+func (u unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceName) string {
+	klog.Errorf("lister not set in delegate")
+	return ""
+}
+
 // NodeInfos returns a fake NodeInfoLister which always returns an error
-func (lister *unsetSharedLister) NodeInfos() schedulerframework.NodeInfoLister {
+func (lister *unsetSharedLister) NodeInfos() fwk.NodeInfoLister {
 	return (*unsetNodeInfoLister)(lister)
 }
 
 // StorageInfos returns a fake StorageInfoLister which always returns an error
-func (lister *unsetSharedLister) StorageInfos() schedulerframework.StorageInfoLister {
+func (lister *unsetSharedLister) StorageInfos() fwk.StorageInfoLister {
 	return (*unsetStorageInfoLister)(lister)
 }
 
-func (lister *unsetSharedLister) ResourceClaims() schedulerframework.ResourceClaimTracker {
+func (lister *unsetSharedLister) ResourceClaims() fwk.ResourceClaimTracker {
 	return (*unsetResourceClaimTracker)(lister)
 }
 
-func (lister *unsetSharedLister) ResourceSlices() schedulerframework.ResourceSliceLister {
+func (lister *unsetSharedLister) ResourceSlices() fwk.ResourceSliceLister {
 	return (*unsetResourceSliceLister)(lister)
 }
 
-func (lister *unsetSharedLister) DeviceClasses() schedulerframework.DeviceClassLister {
+func (lister *unsetSharedLister) DeviceClasses() fwk.DeviceClassLister {
 	return (*unsetDeviceClassLister)(lister)
+}
+
+func (lister *unsetSharedLister) DeviceClassResolver() fwk.DeviceClassResolver {
+	return (*unsetDeviceClassResolver)(lister)
 }
 
 var unsetSharedListerSingleton *unsetSharedLister

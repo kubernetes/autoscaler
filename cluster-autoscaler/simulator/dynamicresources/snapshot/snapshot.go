@@ -29,7 +29,6 @@ import (
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // ResourceClaimId is a unique identifier for a ResourceClaim.
@@ -85,22 +84,28 @@ func NewEmptySnapshot() *Snapshot {
 	}
 }
 
-// ResourceClaims exposes the Snapshot as schedulerframework.ResourceClaimTracker, in order to interact with
+// ResourceClaims exposes the Snapshot as fwk.ResourceClaimTracker, in order to interact with
 // the scheduler framework.
-func (s *Snapshot) ResourceClaims() schedulerframework.ResourceClaimTracker {
+func (s *Snapshot) ResourceClaims() fwk.ResourceClaimTracker {
 	return snapshotClaimTracker{snapshot: s}
 }
 
-// ResourceSlices exposes the Snapshot as schedulerframework.ResourceSliceLister, in order to interact with
+// ResourceSlices exposes the Snapshot as fwk.ResourceSliceLister, in order to interact with
 // the scheduler framework.
-func (s *Snapshot) ResourceSlices() schedulerframework.ResourceSliceLister {
+func (s *Snapshot) ResourceSlices() fwk.ResourceSliceLister {
 	return snapshotSliceLister{snapshot: s}
 }
 
-// DeviceClasses exposes the Snapshot as schedulerframework.DeviceClassLister, in order to interact with
+// DeviceClasses exposes the Snapshot as fwk.DeviceClassLister, in order to interact with
 // the scheduler framework.
-func (s *Snapshot) DeviceClasses() schedulerframework.DeviceClassLister {
+func (s *Snapshot) DeviceClasses() fwk.DeviceClassLister {
 	return snapshotClassLister{snapshot: s}
+}
+
+// DeviceClassResolver exposes the Snapshot as fwk.DeviceClassResolver, in order to interact with
+// the scheduler framework.
+func (s *Snapshot) DeviceClassResolver() fwk.DeviceClassResolver {
+	return newSnapshotDeviceClassResolver(s)
 }
 
 // WrapSchedulerNodeInfo wraps the provided fwk.NodeInfo into an internal *framework.NodeInfo, adding
