@@ -26,7 +26,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	fwk "k8s.io/kube-scheduler/framework"
 )
 
 func TestSnapshotSliceListerList(t *testing.T) {
@@ -78,7 +78,7 @@ func TestSnapshotSliceListerList(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			snapshot := NewSnapshot(nil, tc.localSlices, tc.globalSlices, nil)
-			var resourceSliceLister schedulerframework.ResourceSliceLister = snapshot.ResourceSlices()
+			var resourceSliceLister fwk.ResourceSliceLister = snapshot.ResourceSlices()
 			slices, err := resourceSliceLister.ListWithDeviceTaintRules()
 			if err != nil {
 				t.Fatalf("snapshotSliceLister.List(): got unexpected error: %v", err)
