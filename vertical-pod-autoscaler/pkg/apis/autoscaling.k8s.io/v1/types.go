@@ -133,14 +133,14 @@ type GenericStartupBoost struct {
 	// +required
 	Type StartupBoostType `json:"type" protobuf:"bytes,1,opt,name=type"`
 	// factor specifies the factor to apply to the resource request.
-	// This field is to be used only when Type is "Factor".
+	// This field is required when Type is "Factor".
 	// +unionMember=Factor
 	// +optional
 	Factor *int32 `json:"factor,omitempty" protobuf:"bytes,2,opt,name=factor"`
 
 	// quantity specifies the absolute resource quantity to be used as the
 	// resource request and limit during the boost phase.
-	// This field is to be used only when Type is "Quantity".
+	// This field is required when Type is "Quantity".
 	// +unionMember=Quantity
 	// +optional
 	Quantity *resource.Quantity `json:"quantity,omitempty" protobuf:"bytes,3,opt,name=quantity"`

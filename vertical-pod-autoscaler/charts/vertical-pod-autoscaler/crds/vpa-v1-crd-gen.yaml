@@ -416,7 +416,7 @@ spec:
                                 factor:
                                   description: |-
                                     factor specifies the factor to apply to the resource request.
-                                    This field is to be used only when Type is "Factor".
+                                    This field is required when Type is "Factor".
                                   format: int32
                                   type: integer
                                 quantity:
@@ -426,7 +426,7 @@ spec:
                                   description: |-
                                     quantity specifies the absolute resource quantity to be used as the
                                     resource request and limit during the boost phase.
-                                    This field is to be used only when Type is "Quantity".
+                                    This field is required when Type is "Quantity".
                                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                   x-kubernetes-int-or-string: true
                                 type:
@@ -461,7 +461,7 @@ spec:
                       factor:
                         description: |-
                           factor specifies the factor to apply to the resource request.
-                          This field is to be used only when Type is "Factor".
+                          This field is required when Type is "Factor".
                         format: int32
                         type: integer
                       quantity:
@@ -471,7 +471,7 @@ spec:
                         description: |-
                           quantity specifies the absolute resource quantity to be used as the
                           resource request and limit during the boost phase.
-                          This field is to be used only when Type is "Quantity".
+                          This field is required when Type is "Quantity".
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
                       type:

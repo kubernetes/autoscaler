@@ -606,6 +606,37 @@ func TestValidateVPA(t *testing.T) {
 			isCreate: true,
 		},
 		{
+			name: "top-level and container startupBoost",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Type:   validCPUBoostTypeFactor,
+							Factor: &validCPUBoostFactor,
+						},
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Type:     validCPUBoostTypeQuantity,
+										Quantity: &validCPUBoostQuantity,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isCreate: true,
+		},
+		{
 			name: "per-vpa config active and used",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{

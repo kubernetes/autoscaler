@@ -52,6 +52,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
 	WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder
 	WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder
+	WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -72,6 +73,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 		maxAllowed:              map[string]core.ResourceList{},
 		controlledValues:        map[string]*vpa_types.ContainerControlledValues{},
 		scalingMode:             map[string]*vpa_types.ContainerScalingMode{},
+		containerStartupBoost:   map[string]*vpa_types.StartupBoost{},
 	}
 }
 
@@ -86,6 +88,7 @@ type verticalPodAutoscalerBuilder struct {
 	maxAllowed              map[string]core.ResourceList
 	controlledValues        map[string]*vpa_types.ContainerControlledValues
 	scalingMode             map[string]*vpa_types.ContainerScalingMode
+	containerStartupBoost   map[string]*vpa_types.StartupBoost
 	startupBoost            *vpa_types.StartupBoost
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
@@ -270,10 +273,30 @@ func (b *verticalPodAutoscalerBuilder) WithCPUStartupBoost(boostType vpa_types.S
 	}
 	if factor != nil {
 		cpuStartupBoost.Factor = factor
-	} else {
+	}
+	if quantity != nil {
 		cpuStartupBoost.Quantity = quantity
 	}
 	c.startupBoost = &vpa_types.StartupBoost{
+		CPU: cpuStartupBoost,
+	}
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder {
+	c := *b
+	parsedDuration, _ := time.ParseDuration(duration)
+	cpuStartupBoost := &vpa_types.GenericStartupBoost{
+		Type:     boostType,
+		Duration: &meta.Duration{Duration: parsedDuration},
+	}
+	if factor != nil {
+		cpuStartupBoost.Factor = factor
+	}
+	if quantity != nil {
+		cpuStartupBoost.Quantity = quantity
+	}
+	c.containerStartupBoost[containerName] = &vpa_types.StartupBoost{
 		CPU: cpuStartupBoost,
 	}
 	return &c
@@ -299,6 +322,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			Mode:             &scalingModeAuto,
 			OOMBumpUpRatio:   b.oomBumpUpRatio,
 			OOMMinBumpUp:     b.oomMinBumpUp,
+			StartupBoost:     b.containerStartupBoost[containerName],
 		}
 		if scalingMode, ok := b.scalingMode[containerName]; ok {
 			containerResourcePolicy.Mode = scalingMode
