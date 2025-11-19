@@ -163,7 +163,7 @@ func (p *CapacityBufferPodListProcessor) updateBufferStatus(buffer *v1alpha1.Cap
 // makeFakePods creates podCount number of copies of the sample pod
 func makeFakePods(buffer *v1alpha1.CapacityBuffer, samplePodTemplate *apiv1.PodTemplateSpec, podCount int) ([]*apiv1.Pod, error) {
 	var fakePods []*apiv1.Pod
-	samplePod := getPodFromTemplate(samplePodTemplate)
+	samplePod := getPodFromTemplate(samplePodTemplate, buffer.Namespace)
 	for i := 1; i <= podCount; i++ {
 		fakePod := samplePod.DeepCopy()
 		fakePod = withCapacityBufferFakePodAnnotation(fakePod)
@@ -190,7 +190,7 @@ func isFakeCapacityBuffersPod(pod *apiv1.Pod) bool {
 	return pod.Annotations[CapacityBufferFakePodAnnotationKey] == CapacityBufferFakePodAnnotationValue
 }
 
-func getPodFromTemplate(template *apiv1.PodTemplateSpec) *apiv1.Pod {
+func getPodFromTemplate(template *apiv1.PodTemplateSpec, namespace string) *apiv1.Pod {
 	desiredLabels := getPodsLabelSet(template)
 	desiredFinalizers := getPodsFinalizers(template)
 	desiredAnnotations := getPodsAnnotationSet(template)
@@ -198,7 +198,7 @@ func getPodFromTemplate(template *apiv1.PodTemplateSpec) *apiv1.Pod {
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:       desiredLabels,
-			Namespace:    template.Namespace,
+			Namespace:    namespace,
 			Annotations:  desiredAnnotations,
 			GenerateName: uuid.NewString(),
 			Finalizers:   desiredFinalizers,
