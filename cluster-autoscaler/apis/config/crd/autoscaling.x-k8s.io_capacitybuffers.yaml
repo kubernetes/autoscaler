@@ -14,7 +14,7 @@ spec:
     shortNames:
     - cb
     singular: capacitybuffer
-  scope: Cluster
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - description: The strategy used for provisioning buffer capacity.
