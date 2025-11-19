@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/digitalocean/godo"
@@ -442,6 +443,18 @@ func testNodeGroup(client nodeGroupClient, np *godo.KubernetesNodePool) *NodeGro
 	}
 }
 
+func TestGenerateWorkerName(t *testing.T) {
+	t.Run("generate worker node name", func(t *testing.T) {
+		prefix := "testpool"
+		expectedLength := generatedWorkerNameSuffixLength
+		g := generateWorkerName(prefix)
+		parts := strings.Split(g, "-")
+		assert.Equal(t, 2, len(parts), "incorrect number of components for generated worker name")
+		assert.Equal(t, prefix, parts[0], "unexpected prefix in generated worker name")
+		assert.Equal(t, expectedLength, len(parts[1]), "incorrect suffix length for generated worker name")
+	})
+}
+
 type doClientMock struct {
 	mock.Mock
 }
@@ -459,4 +472,9 @@ func (m *doClientMock) UpdateNodePool(ctx context.Context, clusterID, poolID str
 func (m *doClientMock) DeleteNode(ctx context.Context, clusterID, poolID, nodeID string, req *godo.KubernetesNodeDeleteRequest) (*godo.Response, error) {
 	args := m.Called(ctx, clusterID, poolID, nodeID, nil)
 	return args.Get(0).(*godo.Response), args.Error(1)
+}
+
+func (m *doClientMock) GetNodePoolTemplate(ctx context.Context, clusterID string, nodePoolName string) (*godo.KubernetesNodePoolTemplate, *godo.Response, error) {
+	args := m.Called(ctx, clusterID, nodePoolName)
+	return args.Get(0).(*godo.KubernetesNodePoolTemplate), args.Get(1).(*godo.Response), args.Error(2)
 }
