@@ -1,11 +1,9 @@
 approvers:
 - apricote
-#- LKaemmerling
-#- 4ND3R50N
+- lukasmetzner
 reviewers:
 - apricote
-#- LKaemmerling
-#- 4ND3R50N
+- lukasmetzner
 
 labels:
 - area/provider/hetzner
