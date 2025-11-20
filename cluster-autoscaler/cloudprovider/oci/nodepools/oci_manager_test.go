@@ -99,110 +99,6 @@ func TestGetNodePoolForInstance(t *testing.T) {
 	}
 }
 
-func TestGetNodePoolNodes(t *testing.T) {
-	nodePoolCache := newNodePoolCache(nil)
-	nodePoolCache.cache["id"] = &oke.NodePool{
-		Nodes: []oke.Node{
-			{Id: common.String("node1"), LifecycleState: oke.NodeLifecycleStateDeleted},
-			{Id: common.String("node2"), LifecycleState: oke.NodeLifecycleStateDeleting},
-			{Id: common.String("node3"), LifecycleState: oke.NodeLifecycleStateActive},
-			{Id: common.String("node4"), LifecycleState: oke.NodeLifecycleStateCreating},
-			{Id: common.String("node5"), LifecycleState: oke.NodeLifecycleStateUpdating},
-			{
-				Id: common.String("node6"),
-				NodeError: &oke.NodeError{
-					Code:    common.String("unknown"),
-					Message: common.String("message"),
-				},
-			},
-			{
-				Id: common.String("node7"),
-				NodeError: &oke.NodeError{
-					Code:    common.String("LimitExceeded"),
-					Message: common.String("message"),
-				},
-			},
-			{
-				Id: common.String("node8"),
-				NodeError: &oke.NodeError{
-					Code:    common.String("InternalError"),
-					Message: common.String("blah blah Out of host capacity blah blah"),
-				},
-			},
-		},
-	}
-
-	expected := []cloudprovider.Instance{
-		{
-			Id: "node2",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceDeleting,
-			},
-		},
-		{
-			Id: "node3",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceRunning,
-			},
-		},
-		{
-			Id: "node4",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-			},
-		},
-		{
-			Id: "node5",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-			},
-		},
-		{
-			Id: "node6",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass:   cloudprovider.OtherErrorClass,
-					ErrorCode:    "unknown",
-					ErrorMessage: "message",
-				},
-			},
-		},
-		{
-			Id: "node7",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:    "LimitExceeded",
-					ErrorMessage: "message",
-				},
-			},
-		},
-		{
-			Id: "node8",
-			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
-				ErrorInfo: &cloudprovider.InstanceErrorInfo{
-					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:    "InternalError",
-					ErrorMessage: "blah blah Out of host capacity blah blah",
-				},
-			},
-		},
-	}
-
-	manager := &ociManagerImpl{nodePoolCache: nodePoolCache}
-	instances, err := manager.GetNodePoolNodes(&nodePool{id: "id"})
-	if err != nil {
-		t.Fatalf("received unexpected error; %+v", err)
-	}
-
-	if !reflect.DeepEqual(instances, expected) {
-		t.Errorf("got %+v\nwanted %+v", instances, expected)
-	}
-}
-
 func TestGetNodePoolAvailabilityDomain(t *testing.T) {
 	testCases := map[string]struct {
 		np          *oke.NodePool
@@ -559,6 +455,197 @@ func TestValidateNodePoolTags(t *testing.T) {
 			result := validateNodepoolTags(tc.nodeGroupTags, tc.freeFormTags, tc.definedTags)
 			if result != tc.expectedResult {
 				t.Errorf("Testcase '%s' failed: got %t ; expected %t", name, result, tc.expectedResult)
+			}
+		})
+	}
+}
+
+func TestGetNodePoolNodes_Combined(t *testing.T) {
+	tests := []struct {
+		name               string
+		nodeID             string
+		npID               string
+		nodeError          *oke.NodeError
+		lifecycleState     oke.NodeLifecycleStateEnum
+		maxProvisionTime   time.Duration
+		creationTimeOffset time.Duration
+		wantState          cloudprovider.InstanceState
+		wantErrorInfo      *cloudprovider.InstanceErrorInfo
+		appendInstance     bool
+	}{
+		// Updating timed-out with NodeError
+		{
+			name:               "UpdatingTimedOutWithNodeError",
+			nodeID:             "upd-err",
+			npID:               "np1",
+			lifecycleState:     oke.NodeLifecycleStateUpdating,
+			nodeError:          &oke.NodeError{Code: common.String("SomeCode"), Message: common.String("SomeMessage")},
+			maxProvisionTime:   10 * time.Minute,
+			creationTimeOffset: -1 * time.Hour,
+			wantState:          cloudprovider.InstanceCreating,
+			wantErrorInfo: &cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OtherErrorClass,
+				ErrorCode:    "SomeCode",
+				ErrorMessage: "SomeMessage",
+			},
+			appendInstance: true,
+		},
+		// Updating timed-out without NodeError
+		{
+			name:               "UpdatingTimedOutWithoutNodeError",
+			nodeID:             "upd-noerr",
+			npID:               "np2",
+			lifecycleState:     oke.NodeLifecycleStateUpdating,
+			maxProvisionTime:   15 * time.Minute,
+			creationTimeOffset: -2 * time.Hour,
+			wantState:          cloudprovider.InstanceCreating,
+			wantErrorInfo: &cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OtherErrorClass,
+				ErrorCode:    "MaxNodeProvisionTimeExceeded",
+				ErrorMessage: "MaxNodeProvisionTimeExceeded",
+			},
+			appendInstance: true,
+		},
+		// Updating not timed-out → no ErrorInfo
+		{
+			name:               "UpdatingNotTimedOut_NoErrorInfo",
+			nodeID:             "upd-notimeout",
+			npID:               "np3",
+			lifecycleState:     oke.NodeLifecycleStateUpdating,
+			nodeError:          &oke.NodeError{Code: common.String("IgnoredCode"), Message: common.String("IgnoredMessage")},
+			maxProvisionTime:   1 * time.Hour,
+			creationTimeOffset: -1 * time.Minute,
+			wantState:          cloudprovider.InstanceCreating,
+			wantErrorInfo:      nil,
+			appendInstance:     true,
+		},
+		// Node Deleting
+		{
+			name:           "DeletingNode",
+			nodeID:         "node2",
+			npID:           "np5",
+			lifecycleState: oke.NodeLifecycleStateDeleting,
+			wantState:      cloudprovider.InstanceDeleting,
+			wantErrorInfo:  nil,
+			appendInstance: true,
+		},
+		// Node Active
+		{
+			name:           "ActiveNode",
+			nodeID:         "node3",
+			npID:           "np5",
+			lifecycleState: oke.NodeLifecycleStateActive,
+			wantState:      cloudprovider.InstanceRunning,
+			wantErrorInfo:  nil,
+			appendInstance: true,
+		},
+		// Node Deleted → should not append
+		{
+			name:           "DeletedNode",
+			nodeID:         "node4",
+			npID:           "np6",
+			lifecycleState: oke.NodeLifecycleStateDeleted,
+			appendInstance: false,
+		},
+		// NodeError variations
+		{
+			name:               "NodeError_Unknown",
+			nodeID:             "node6",
+			npID:               "np5",
+			nodeError:          &oke.NodeError{Code: common.String("unknown"), Message: common.String("message")},
+			lifecycleState:     oke.NodeLifecycleStateUpdating,
+			maxProvisionTime:   1 * time.Minute,
+			creationTimeOffset: -10 * time.Hour,
+			wantState:          cloudprovider.InstanceCreating,
+			wantErrorInfo: &cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OtherErrorClass,
+				ErrorCode:    "unknown",
+				ErrorMessage: "message",
+			},
+			appendInstance: true,
+		},
+		// Edge case: Out-of-Capacity node with nil ID → skipped
+		{
+			name:           "OutOfCapacityNode_NilID_Skipped",
+			nodeID:         "",
+			npID:           "np7",
+			lifecycleState: oke.NodeLifecycleStateCreating,
+			nodeError:      &oke.NodeError{Code: common.String("OutOfCapacity"), Message: common.String("Out of host capacity")},
+			appendInstance: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nodePoolCache := newNodePoolCache(nil)
+			nodePoolCache.cache = make(map[string]*oke.NodePool)
+
+			nodes := []oke.Node{}
+			if tt.nodeID != "" {
+				nodes = append(nodes, oke.Node{
+					Id:             common.String(tt.nodeID),
+					LifecycleState: tt.lifecycleState,
+					NodeError:      tt.nodeError,
+					Name:           common.String(tt.nodeID),
+				})
+			} else if tt.nodeError != nil {
+				// Include node with nil ID but NodeError
+				nodes = append(nodes, oke.Node{
+					LifecycleState: tt.lifecycleState,
+					NodeError:      tt.nodeError,
+					Name:           common.String("noId"),
+				})
+			}
+
+			nodePoolCache.cache[tt.npID] = &oke.NodePool{
+				Id:    common.String(tt.npID),
+				Nodes: nodes,
+			}
+
+			manager := &ociManagerImpl{
+				nodePoolCache:             nodePoolCache,
+				instanceCreationTimeCache: make(map[string]time.Time),
+				maxNodeProvisionTime:      tt.maxProvisionTime,
+			}
+
+			if tt.nodeID != "" && tt.creationTimeOffset != 0 {
+				manager.SetInstanceCreationTimeInCache(tt.nodeID, time.Now().Add(tt.creationTimeOffset))
+			}
+
+			instances, err := manager.GetNodePoolNodes(&nodePool{id: tt.npID})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if tt.appendInstance {
+				if len(instances) != 1 {
+					t.Fatalf("expected 1 instance, got %d", len(instances))
+				}
+				inst := instances[0]
+				if inst.Id != tt.nodeID {
+					t.Errorf("unexpected instance id %q", inst.Id)
+				}
+				if inst.Status == nil || inst.Status.State != tt.wantState {
+					t.Fatalf("expected state %v, got %+v", tt.wantState, inst.Status)
+				}
+				if tt.wantErrorInfo == nil && inst.Status.ErrorInfo != nil {
+					t.Fatalf("expected ErrorInfo to be nil, got %+v", inst.Status.ErrorInfo)
+				}
+				if tt.wantErrorInfo != nil {
+					if inst.Status.ErrorInfo.ErrorClass != tt.wantErrorInfo.ErrorClass {
+						t.Errorf("unexpected ErrorClass %v, want %v", inst.Status.ErrorInfo.ErrorClass, tt.wantErrorInfo.ErrorClass)
+					}
+					if inst.Status.ErrorInfo.ErrorCode != tt.wantErrorInfo.ErrorCode {
+						t.Errorf("unexpected ErrorCode %q, want %q", inst.Status.ErrorInfo.ErrorCode, tt.wantErrorInfo.ErrorCode)
+					}
+					if inst.Status.ErrorInfo.ErrorMessage != tt.wantErrorInfo.ErrorMessage {
+						t.Errorf("unexpected ErrorMessage %q, want %q", inst.Status.ErrorInfo.ErrorMessage, tt.wantErrorInfo.ErrorMessage)
+					}
+				}
+			} else {
+				if len(instances) != 0 {
+					t.Fatalf("expected 0 instances, got %d", len(instances))
+				}
 			}
 		})
 	}
