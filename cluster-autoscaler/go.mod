@@ -2,6 +2,8 @@ module k8s.io/autoscaler/cluster-autoscaler
 
 go 1.25.0
 
+godebug default=go1.25
+
 require (
 	cloud.google.com/go/compute/metadata v0.7.0
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
@@ -40,21 +42,21 @@ require (
 	google.golang.org/protobuf v1.36.8
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.35.0-alpha.3
-	k8s.io/apimachinery v0.35.0-alpha.3
-	k8s.io/apiserver v0.35.0-alpha.3
+	k8s.io/api v0.35.0-beta.0
+	k8s.io/apimachinery v0.35.0-beta.0
+	k8s.io/apiserver v0.35.0-beta.0
 	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
-	k8s.io/client-go v0.35.0-alpha.3
+	k8s.io/client-go v0.35.0-beta.0
 	k8s.io/cloud-provider v0.30.1
 	k8s.io/cloud-provider-aws v1.27.0
 	k8s.io/cloud-provider-gcp/providers v0.28.2
-	k8s.io/component-base v0.35.0-alpha.3
-	k8s.io/component-helpers v0.35.0-alpha.3
-	k8s.io/dynamic-resource-allocation v0.35.0-alpha.3
+	k8s.io/component-base v0.35.0-beta.0
+	k8s.io/component-helpers v0.35.0-beta.0
+	k8s.io/dynamic-resource-allocation v0.35.0-beta.0
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-scheduler v0.0.0
-	k8s.io/kubelet v0.35.0-alpha.3
-	k8s.io/kubernetes v1.35.0-alpha.3
+	k8s.io/kubelet v0.35.0-beta.0
+	k8s.io/kubernetes v1.35.0-beta.0
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
 	sigs.k8s.io/cloud-provider-azure v1.29.4
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.13
@@ -63,6 +65,7 @@ require (
 
 require (
 	cel.dev/expr v0.24.0 // indirect
+	cyphar.com/go-pathrs v0.2.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.10.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/keyvault/azsecrets v0.12.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/keyvault/internal v0.7.1 // indirect
@@ -103,7 +106,7 @@ require (
 	github.com/containerd/typeurl/v2 v2.2.3 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
-	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
+	github.com/cyphar/filepath-securejoin v0.6.0 // indirect
 	github.com/dave/jennifer v1.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
@@ -163,7 +166,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runtime-spec v1.2.1 // indirect
-	github.com/opencontainers/selinux v1.11.1 // indirect
+	github.com/opencontainers/selinux v1.13.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
@@ -209,13 +212,13 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.0.0 // indirect
-	k8s.io/code-generator v0.35.0-alpha.3 // indirect
-	k8s.io/controller-manager v0.35.0-alpha.3 // indirect
-	k8s.io/cri-api v0.35.0-alpha.3 // indirect
+	k8s.io/code-generator v0.35.0-beta.0 // indirect
+	k8s.io/controller-manager v0.35.0-beta.0 // indirect
+	k8s.io/cri-api v0.35.0-beta.0 // indirect
 	k8s.io/cri-client v0.0.0 // indirect
 	k8s.io/csi-translation-lib v0.27.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
-	k8s.io/kms v0.35.0-alpha.3 // indirect
+	k8s.io/kms v0.35.0-beta.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/kubectl v0.28.0 // indirect
 	k8s.io/mount-utils v0.26.0-alpha.0 // indirect
@@ -230,66 +233,66 @@ replace github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/servi
 
 replace github.com/rancher/go-rancher => github.com/rancher/go-rancher v0.1.0
 
-replace k8s.io/api => k8s.io/api v0.35.0-alpha.3
+replace k8s.io/api => k8s.io/api v0.35.0-beta.0
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.0-alpha.3
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.0-beta.0
 
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.35.0-alpha.3
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.35.0-beta.0
 
-replace k8s.io/apiserver => k8s.io/apiserver v0.35.0-alpha.3
+replace k8s.io/apiserver => k8s.io/apiserver v0.35.0-beta.0
 
-replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.35.0-alpha.3
+replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.35.0-beta.0
 
-replace k8s.io/client-go => k8s.io/client-go v0.35.0-alpha.3
+replace k8s.io/client-go => k8s.io/client-go v0.35.0-beta.0
 
-replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.35.0-alpha.3
+replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.35.0-beta.0
 
-replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.35.0-alpha.3
+replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.35.0-beta.0
 
-replace k8s.io/code-generator => k8s.io/code-generator v0.35.0-alpha.3
+replace k8s.io/code-generator => k8s.io/code-generator v0.35.0-beta.0
 
-replace k8s.io/component-base => k8s.io/component-base v0.35.0-alpha.3
+replace k8s.io/component-base => k8s.io/component-base v0.35.0-beta.0
 
-replace k8s.io/component-helpers => k8s.io/component-helpers v0.35.0-alpha.3
+replace k8s.io/component-helpers => k8s.io/component-helpers v0.35.0-beta.0
 
-replace k8s.io/controller-manager => k8s.io/controller-manager v0.35.0-alpha.3
+replace k8s.io/controller-manager => k8s.io/controller-manager v0.35.0-beta.0
 
-replace k8s.io/cri-api => k8s.io/cri-api v0.35.0-alpha.3
+replace k8s.io/cri-api => k8s.io/cri-api v0.35.0-beta.0
 
-replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.35.0-alpha.3
+replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.35.0-beta.0
 
-replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.35.0-alpha.3
+replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.35.0-beta.0
 
-replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.35.0-alpha.3
+replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.35.0-beta.0
 
-replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.35.0-alpha.3
+replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.35.0-beta.0
 
-replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.35.0-alpha.3
+replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.35.0-beta.0
 
-replace k8s.io/kubectl => k8s.io/kubectl v0.35.0-alpha.3
+replace k8s.io/kubectl => k8s.io/kubectl v0.35.0-beta.0
 
-replace k8s.io/kubelet => k8s.io/kubelet v0.35.0-alpha.3
+replace k8s.io/kubelet => k8s.io/kubelet v0.35.0-beta.0
 
-replace k8s.io/metrics => k8s.io/metrics v0.35.0-alpha.3
+replace k8s.io/metrics => k8s.io/metrics v0.35.0-beta.0
 
-replace k8s.io/mount-utils => k8s.io/mount-utils v0.35.0-alpha.3
+replace k8s.io/mount-utils => k8s.io/mount-utils v0.35.0-beta.0
 
-replace k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.35.0-alpha.3
+replace k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.35.0-beta.0
 
-replace k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.35.0-alpha.3
+replace k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.35.0-beta.0
 
-replace k8s.io/sample-controller => k8s.io/sample-controller v0.35.0-alpha.3
+replace k8s.io/sample-controller => k8s.io/sample-controller v0.35.0-beta.0
 
-replace k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.35.0-alpha.3
+replace k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.35.0-beta.0
 
-replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.35.0-alpha.3
+replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.35.0-beta.0
 
-replace k8s.io/kms => k8s.io/kms v0.35.0-alpha.3
+replace k8s.io/kms => k8s.io/kms v0.35.0-beta.0
 
-replace k8s.io/endpointslice => k8s.io/endpointslice v0.35.0-alpha.3
+replace k8s.io/endpointslice => k8s.io/endpointslice v0.35.0-beta.0
 
 replace k8s.io/autoscaler/cluster-autoscaler/apis => ./apis
 
-replace k8s.io/cri-client => k8s.io/cri-client v0.35.0-alpha.3
+replace k8s.io/cri-client => k8s.io/cri-client v0.35.0-beta.0
 
-replace k8s.io/externaljwt => k8s.io/externaljwt v0.35.0-alpha.3
+replace k8s.io/externaljwt => k8s.io/externaljwt v0.35.0-beta.0

@@ -45,10 +45,10 @@ func newSnapshotDeviceClassResolver(snapshot *Snapshot) fwk.DeviceClassResolver 
 }
 
 // GetDeviceClass returns the device class name for the given extended resource name
-func (s snapshotDeviceClassResolver) GetDeviceClass(resourceName v1.ResourceName) string {
+func (s snapshotDeviceClassResolver) GetDeviceClass(resourceName v1.ResourceName) *resourceapi.DeviceClass {
 	class, ok := s.deviceClassMap[resourceName]
 	if !ok {
-		return ""
+		return nil
 	}
-	return class.Name
+	return class
 }
