@@ -90,7 +90,7 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 
 	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
 	if autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
-		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL)
+		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx)
 	}
 
 	var maxNodeSkipEvalTime *nodeevaltracker.MaxNodeSkipEvalTime
@@ -204,7 +204,7 @@ func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {
 
 // UnneededNodes returns a list of nodes currently considered as unneeded.
 func (p *Planner) UnneededNodes() []*scaledown.UnneededNode {
-	return p.unneededNodes.AsList(p.autoscalingCtx)
+	return p.unneededNodes.AsList()
 }
 
 // UnremovableNodes returns a list of nodes currently considered as unremovable.
@@ -318,7 +318,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 		}
 	}
 	p.handleUnprocessedNodes(skippedNodes)
-	p.unneededNodes.Update(removableList, p.latestUpdate)
+	p.unneededNodes.Update(removableList, p.latestUpdate, p.autoscalingCtx)
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
 	}
@@ -370,7 +370,7 @@ func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 func (p *Planner) unneededNodesLimit() int {
 	n := p.autoscalingCtx.AutoscalingOptions.MaxScaleDownParallelism
 	extraBuffer := n
-	limit := len(p.unneededNodes.AsList(p.autoscalingCtx)) + n + extraBuffer
+	limit := len(p.unneededNodes.AsList()) + n + extraBuffer
 	// TODO(x13n): Use moving average instead of min.
 	loopInterval := int64(p.minUpdateInterval)
 	u := int64(p.autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime)

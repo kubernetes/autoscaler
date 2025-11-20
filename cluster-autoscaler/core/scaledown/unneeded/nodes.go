@@ -66,12 +66,13 @@ func NewNodes(sdtg scaleDownTimeGetter, limitsFinder *resource.LimitsFinder) *No
 }
 
 // LoadFromExistingTaints loads any existing DeletionCandidateTaint taints from the kubernetes cluster. given a TTL for the taint
-func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, ts time.Time, DeletionCandidateStalenessTTL time.Duration) error {
+func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, ts time.Time, autoscalingCtx *ca_context.AutoscalingContext) error {
 	allNodes, err := listerRegistry.AllNodeLister().List()
 	if err != nil {
 		return fmt.Errorf("failed to list nodes when initializing unneeded nodes: %v", err)
 	}
 
+	var deletionCandidateStalenessTTL = autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL
 	var nodesWithTaints []simulator.NodeToBeRemoved
 	for _, node := range allNodes {
 		if since, err := taints.GetDeletionCandidateTime(node); err == nil && since != nil {
@@ -79,8 +80,8 @@ func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, 
 				klog.Errorf("Failed to get pods to move for node %s: %v", node.Name, err)
 				continue
 			}
-			if since.Add(DeletionCandidateStalenessTTL).Before(ts) {
-				klog.V(4).Infof("Skipping node %s with deletion candidate taint from %s, since it is older than TTL %s", node.Name, since.String(), DeletionCandidateStalenessTTL.String())
+			if since.Add(deletionCandidateStalenessTTL).Before(ts) {
+				klog.V(4).Infof("Skipping node %s with deletion candidate taint from %s, since it is older than TTL %s", node.Name, since.String(), deletionCandidateStalenessTTL.String())
 				continue
 			}
 			nodeToBeRemoved := simulator.NodeToBeRemoved{
@@ -93,7 +94,7 @@ func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, 
 
 	if len(nodesWithTaints) > 0 {
 		klog.V(1).Infof("Initializing unneeded nodes with %d nodes that have deletion candidate taints", len(nodesWithTaints))
-		n.initialize(nodesWithTaints, ts)
+		n.initialize(nodesWithTaints, ts, autoscalingCtx)
 	}
 
 	return nil
@@ -102,7 +103,7 @@ func (n *Nodes) LoadFromExistingTaints(listerRegistry kube_util.ListerRegistry, 
 // initialize initializes the Nodes object with the given node list.
 // It sets the initial state of unneeded nodes reflect the taint status of nodes in the cluster.
 // This is in order the avoid state loss between deployment restarts.
-func (n *Nodes) initialize(nodes []simulator.NodeToBeRemoved, ts time.Time) {
+func (n *Nodes) initialize(nodes []simulator.NodeToBeRemoved, ts time.Time, autoscalingCtx *ca_context.AutoscalingContext) {
 	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
 		name := nn.Node.Name
 		if since, err := taints.GetDeletionCandidateTime(nn.Node); err == nil {
@@ -114,22 +115,24 @@ func (n *Nodes) initialize(nodes []simulator.NodeToBeRemoved, ts time.Time) {
 		}
 		klog.V(4).Infof("Found node %s with deletion candidate taint from now", name)
 		return nil
-	})
+	}, autoscalingCtx)
 }
 
 // Update stores nodes along with a time at which they were found to be
 // unneeded. Previously existing timestamps are preserved.
-func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time) {
+func (n *Nodes) Update(nodes []simulator.NodeToBeRemoved, ts time.Time, autoscalingCtx *ca_context.AutoscalingContext) {
 	n.updateInternalState(nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
 		return nil
-	})
+	}, autoscalingCtx)
 }
 
-func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.Time, timestampGetter func(simulator.NodeToBeRemoved) *time.Time) {
+func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.Time, timestampGetter func(simulator.NodeToBeRemoved) *time.Time, autoscalingCtx *ca_context.AutoscalingContext) {
 	updated := make(map[string]*node, len(nodes))
 	for _, nn := range nodes {
 		name := nn.Node.Name
-		if val, found := n.byName[name]; found {
+
+		val, found := n.byName[name]
+		if found {
 			updated[name] = &node{
 				ntbr:             nn,
 				since:            val.since,
@@ -146,6 +149,9 @@ func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.T
 				since: ts,
 			}
 		}
+		if !found {
+			n.refreshRemovalThreshold(updated[name], autoscalingCtx.CloudProvider)
+		}
 	}
 	n.byName = updated
 	n.cachedList = nil
@@ -158,7 +164,7 @@ func (n *Nodes) updateInternalState(nodes []simulator.NodeToBeRemoved, ts time.T
 
 // Clear resets the internal state, dropping information about all tracked nodes.
 func (n *Nodes) Clear() {
-	n.Update(nil, time.Time{})
+	n.Update(nil, time.Time{}, nil)
 }
 
 // Contains returns true iff a given node is unneeded.
@@ -168,14 +174,10 @@ func (n *Nodes) Contains(nodeName string) bool {
 }
 
 // AsList returns a slice of unneeded Node objects.
-func (n *Nodes) AsList(autoscalingCtx *ca_context.AutoscalingContext) []*scaledown.UnneededNode {
+func (n *Nodes) AsList() []*scaledown.UnneededNode {
 	if n.cachedList == nil {
 		n.cachedList = make([]*scaledown.UnneededNode, 0, len(n.byName))
 		for _, v := range n.byName {
-			if v.removalThreshold == 0 {
-				n.refreshRemovalThreshold(v, autoscalingCtx.CloudProvider)
-			}
-
 			n.cachedList = append(n.cachedList, &scaledown.UnneededNode{
 				Node:             v.ntbr.Node,
 				RemovalThreshold: v.removalThreshold,
@@ -252,10 +254,6 @@ func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext,
 	if eligibility.HasNoScaleDownAnnotation(node) {
 		klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
 		return simulator.ScaleDownDisabledAnnotation
-	}
-
-	if v.removalThreshold == 0 {
-		n.refreshRemovalThreshold(v, autoscalingCtx.CloudProvider)
 	}
 
 	readiness, _ := kube_util.GetNodeReadiness(v.ntbr.Node)

@@ -29,6 +29,8 @@ import (
 	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
 
+const testStepDuration = 1 * time.Minute
+
 func TestNodeLatencyTracker_Decorator(t *testing.T) {
 	mock := &mockStatusProcessor{}
 	tracker := NewNodeLatencyTracker(mock)
@@ -51,7 +53,6 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 	// 1. Planner calculates unneeded nodes (UpdateScaleDownCandidates)
 	// 2. Actuator attempts deletion and reports status (Process)
 	type step struct {
-		timeOffset       time.Duration            // Time passed since start
 		unneededList     []string                 // Nodes found unneeded this loop
 		thresholds       map[string]time.Duration // Specific thresholds for this loop
 		scaledDownList   []string                 // Nodes successfully deleted this loop
@@ -68,12 +69,10 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			name: "Standard lifecycle: Unneeded -> Tracked -> Deleted",
 			steps: []step{
 				{
-					timeOffset:       0,
 					unneededList:     []string{"node1", "node2"},
 					wantTrackedNodes: []string{"node1", "node2"},
 				},
 				{
-					timeOffset:       1 * time.Minute,
 					unneededList:     []string{"node1", "node2"},
 					scaledDownList:   []string{"node1"},
 					wantTrackedNodes: []string{"node2"},
@@ -84,12 +83,10 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			name: "Node becomes needed again (disappears from list)",
 			steps: []step{
 				{
-					timeOffset:       0,
 					unneededList:     []string{"node1", "node2"},
 					wantTrackedNodes: []string{"node1", "node2"},
 				},
 				{
-					timeOffset:       1 * time.Minute,
 					unneededList:     []string{"node2"},
 					wantTrackedNodes: []string{"node2"},
 				},
@@ -99,12 +96,10 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			name: "Node becomes needed again (reported unremovable)",
 			steps: []step{
 				{
-					timeOffset:       0,
 					unneededList:     []string{"node1"},
 					wantTrackedNodes: []string{"node1"},
 				},
 				{
-					timeOffset:       1 * time.Minute,
 					unneededList:     []string{"node1"},
 					unremovableList:  []string{"node1"},
 					wantTrackedNodes: []string{},
@@ -115,14 +110,12 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			name: "Threshold updates dynamically",
 			steps: []step{
 				{
-					timeOffset:       0,
 					unneededList:     []string{"node1"},
 					thresholds:       map[string]time.Duration{"node1": 5 * time.Minute},
 					wantTrackedNodes: []string{"node1"},
 					wantThresholds:   map[string]time.Duration{"node1": 5 * time.Minute},
 				},
 				{
-					timeOffset:       2 * time.Minute,
 					unneededList:     []string{"node1"},
 					thresholds:       map[string]time.Duration{"node1": 10 * time.Minute},
 					wantTrackedNodes: []string{"node1"},
@@ -135,19 +128,16 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			steps: []step{
 				{
 					// Start tracking node1, node2
-					timeOffset:       0,
 					unneededList:     []string{"node1", "node2"},
 					wantTrackedNodes: []string{"node1", "node2"},
 				},
 				{
 					// node1 gets deleted, node3 appears, node2 stays
-					timeOffset:       1 * time.Minute,
 					unneededList:     []string{"node1", "node2", "node3"},
 					scaledDownList:   []string{"node1"},
 					wantTrackedNodes: []string{"node2", "node3"},
 				},
 				{
-					timeOffset:       2 * time.Minute,
 					unneededList:     []string{"node3"},
 					scaledDownList:   []string{"node2"},
 					wantTrackedNodes: []string{"node3"},
@@ -163,7 +153,7 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			tracker := NewNodeLatencyTracker(processor.NewDefaultScaleDownStatusProcessor())
 
 			for i, step := range tc.steps {
-				stepTime := baseTime.Add(step.timeOffset)
+				stepTime := baseTime.Add(testStepDuration)
 
 				candidates := candidatesFromNames(step.unneededList, step.thresholds)
 				tracker.UpdateScaleDownCandidates(candidates, stepTime)

@@ -702,9 +702,9 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
-			p.unneededNodes.Update(previouslyUnneeded, time.Now())
+			p.unneededNodes.Update(previouslyUnneeded, time.Now(), &autoscalingCtx)
 			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
-			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList(&autoscalingCtx)))
+			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
 		})
 	}
 }
@@ -835,7 +835,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 			deleteOptions := options.NodeDeleteOptions{}
 			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
 
-			p.unneededNodes.AsList(&autoscalingCtx)
+			p.unneededNodes.AsList()
 		})
 	}
 }
@@ -1026,7 +1026,7 @@ func TestNodesToDelete(t *testing.T) {
 			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
 			p.latestUpdate = time.Now()
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))
+			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour), &autoscalingCtx)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
 			empty, drain := p.NodesToDelete(time.Now())
 			assert.ElementsMatch(t, tc.wantEmpty, empty)

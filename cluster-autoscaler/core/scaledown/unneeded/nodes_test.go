@@ -103,16 +103,16 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 			nodes := NewNodes(nil, nil)
 
-			nodes.Update(tc.initialNodes, initialTimestamp)
-			nodes.Update(tc.finalNodes, finalTimestamp)
-
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
 
+			nodes.Update(tc.initialNodes, initialTimestamp, ctx)
+			nodes.Update(tc.finalNodes, finalTimestamp, ctx)
+
 			wantNodes := len(tc.wantTimestamps)
-			assert.Equal(t, wantNodes, len(nodes.AsList(ctx)))
+			assert.Equal(t, wantNodes, len(nodes.AsList()))
 			assert.Equal(t, wantNodes, len(nodes.byName))
-			for _, n := range nodes.AsList(ctx) {
+			for _, n := range nodes.AsList() {
 				nn, found := nodes.byName[n.Node.Name]
 				assert.True(t, found)
 				assert.Equal(t, tc.wantTimestamps[n.Node.Name], nn.since)
@@ -214,7 +214,7 @@ func TestRemovableAt(t *testing.T) {
 			}
 			n := NewNodes(fakeTimeGetter, &resource.LimitsFinder{})
 
-			n.Update(removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
+			n.Update(removableNodes, time.Now().Add(-10*time.Minute), &autoscalingCtx) //add -10 min to work correctly with unneeded time threshold
 
 			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
@@ -225,7 +225,7 @@ func TestRemovableAt(t *testing.T) {
 				t.Errorf("%s: getNodesToRemove() return %d, %d, want %d, %d", tc.name, len(gotEmptyToRemove), len(gotDrainToRemove), tc.numEmptyToRemove, tc.numDrainToRemove)
 			}
 
-			candidates := n.AsList(&autoscalingCtx)
+			candidates := n.AsList()
 			candidateMap := make(map[string]time.Duration)
 			for _, c := range candidates {
 				candidateMap[c.Node.Name] = c.RemovalThreshold
@@ -312,13 +312,12 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 
 			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
 				nil, nil, nil, nil, nil, nil, nil)
-
-			nodes.LoadFromExistingTaints(listerRegistry, currentTime, tc.nodeDeletionCandidateTTL)
-
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
-			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
+			ctx := &ca_context.AutoscalingContext{CloudProvider: provider, AutoscalingOptions: config.AutoscalingOptions{NodeDeletionCandidateTTL: tc.nodeDeletionCandidateTTL}}
 
-			unneededNodes := nodes.AsList(ctx)
+			nodes.LoadFromExistingTaints(listerRegistry, currentTime, ctx)
+
+			unneededNodes := nodes.AsList()
 
 			assert.Equal(t, len(tc.expectedUnneededNodes), len(unneededNodes),
 				"Expected %d unneeded nodes but got %d", len(tc.expectedUnneededNodes), len(unneededNodes))

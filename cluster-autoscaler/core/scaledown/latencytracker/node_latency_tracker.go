@@ -42,9 +42,8 @@ type unneededNodeState struct {
 	removalThreshold time.Duration
 }
 
-// NodeLatencyTracker is a concrete implementation of LatencyTracker.
-// It keeps track of nodes that are marked as unneeded, when they became unneeded,
-// and removalThresholds to adjust node removal latency metrics.
+// NodeLatencyTracker keeps track of nodes that are marked as unneeded, when they became unneeded,
+// and removalThresholds to emit node removal latency metrics.
 type NodeLatencyTracker struct {
 	unneededNodes map[string]unneededNodeState
 	wrapped       processor.ScaleDownStatusProcessor
@@ -120,8 +119,10 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 			delete(t.unneededNodes, nodeName)
 		}
 	}
-	for nodeName := range t.unneededNodes {
-		klog.V(6).Infof("Node %q remains in unneeded list (not scaled down). Continuing to track latency.", nodeName)
+	if klog.V(6).Enabled() {
+		for nodeName := range t.unneededNodes {
+			klog.Infof("Node %q remains in unneeded list (not scaled down). Continuing to track latency.", nodeName)
+		}
 	}
 }
 
@@ -135,5 +136,4 @@ func (t *NodeLatencyTracker) CleanUp() {
 	if t.wrapped != nil {
 		t.wrapped.CleanUp()
 	}
-	t.unneededNodes = nil
 }
