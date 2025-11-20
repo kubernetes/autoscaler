@@ -440,7 +440,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "node_removal_latency_seconds",
 			Help:      "Latency from when an unneeded node is eligible for scale down until it is removed (deleted=true) or it became needed again (deleted=false).",
-			Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~16min
+			Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~24min
 		}, []string{"deleted"},
 	)
 )
