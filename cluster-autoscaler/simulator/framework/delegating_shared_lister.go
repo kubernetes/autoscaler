@@ -168,9 +168,9 @@ func (u unsetDeviceClassLister) Get(className string) (*resourceapi.DeviceClass,
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceName) string {
+func (u unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceName) *resourceapi.DeviceClass {
 	klog.Errorf("lister not set in delegate")
-	return ""
+	return nil
 }
 
 // NodeInfos returns a fake NodeInfoLister which always returns an error
