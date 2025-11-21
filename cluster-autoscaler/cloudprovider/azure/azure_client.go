@@ -31,30 +31,83 @@ import (
 	azurecore_policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v7"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	klog "k8s.io/klog/v2"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 )
 
-//go:generate sh -c "mockgen -source=azure_client.go -destination azure_mock_agentpool_client.go -package azure -exclude_interfaces DeploymentsClient"
+//go:generate sh -c "mockgen -source=azure_client.go -destination azure_mock_clients.go -package azure"
 
 const (
 	vmsContextTimeout      = 5 * time.Minute
 	vmsAsyncContextTimeout = 30 * time.Minute
 )
+
+// VirtualMachineScaleSetsClient interface for armcompute.VirtualMachineScaleSetsClient
+type VirtualMachineScaleSetsClient interface {
+	Get(ctx context.Context, resourceGroupName string, vmScaleSetName string, options *armcompute.VirtualMachineScaleSetsClientGetOptions) (armcompute.VirtualMachineScaleSetsClientGetResponse, error)
+	NewListPager(resourceGroupName string, options *armcompute.VirtualMachineScaleSetsClientListOptions) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse]
+	BeginCreateOrUpdate(ctx context.Context, resourceGroupName string, vmScaleSetName string, parameters armcompute.VirtualMachineScaleSet, options *armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error)
+	BeginDelete(ctx context.Context, resourceGroupName string, vmScaleSetName string, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteResponse], error)
+	BeginDeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error)
+}
+
+// VirtualMachineScaleSetVMsClient interface for armcompute.VirtualMachineScaleSetVMsClient
+type VirtualMachineScaleSetVMsClient interface {
+	Get(ctx context.Context, resourceGroupName string, vmScaleSetName string, instanceID string, options *armcompute.VirtualMachineScaleSetVMsClientGetOptions) (armcompute.VirtualMachineScaleSetVMsClientGetResponse, error)
+	NewListPager(resourceGroupName string, virtualMachineScaleSetName string, options *armcompute.VirtualMachineScaleSetVMsClientListOptions) *runtime.Pager[armcompute.VirtualMachineScaleSetVMsClientListResponse]
+	BeginUpdate(ctx context.Context, resourceGroupName string, vmScaleSetName string, instanceID string, parameters armcompute.VirtualMachineScaleSetVM, options *armcompute.VirtualMachineScaleSetVMsClientBeginUpdateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetVMsClientUpdateResponse], error)
+	BeginDelete(ctx context.Context, resourceGroupName string, vmScaleSetName string, instanceID string, options *armcompute.VirtualMachineScaleSetVMsClientBeginDeleteOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetVMsClientDeleteResponse], error)
+}
+
+// VirtualMachinesClient interface for armcompute.VirtualMachinesClient
+type VirtualMachinesClient interface {
+	Get(ctx context.Context, resourceGroupName string, vmName string, options *armcompute.VirtualMachinesClientGetOptions) (armcompute.VirtualMachinesClientGetResponse, error)
+	NewListPager(resourceGroupName string, options *armcompute.VirtualMachinesClientListOptions) *runtime.Pager[armcompute.VirtualMachinesClientListResponse]
+	BeginCreateOrUpdate(ctx context.Context, resourceGroupName string, vmName string, parameters armcompute.VirtualMachine, options *armcompute.VirtualMachinesClientBeginCreateOrUpdateOptions) (*runtime.Poller[armcompute.VirtualMachinesClientCreateOrUpdateResponse], error)
+	BeginDelete(ctx context.Context, resourceGroupName string, vmName string, options *armcompute.VirtualMachinesClientBeginDeleteOptions) (*runtime.Poller[armcompute.VirtualMachinesClientDeleteResponse], error)
+}
+
+// DeploymentsClient interface for armresources.DeploymentsClient
+type DeploymentsClient interface {
+	Get(ctx context.Context, resourceGroupName string, deploymentName string, options *armresources.DeploymentsClientGetOptions) (armresources.DeploymentsClientGetResponse, error)
+	ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string, options *armresources.DeploymentsClientExportTemplateOptions) (armresources.DeploymentsClientExportTemplateResponse, error)
+	BeginCreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters armresources.Deployment, options *armresources.DeploymentsClientBeginCreateOrUpdateOptions) (*runtime.Poller[armresources.DeploymentsClientCreateOrUpdateResponse], error)
+	BeginDelete(ctx context.Context, resourceGroupName string, deploymentName string, options *armresources.DeploymentsClientBeginDeleteOptions) (*runtime.Poller[armresources.DeploymentsClientDeleteResponse], error)
+	NewListByResourceGroupPager(resourceGroupName string, options *armresources.DeploymentsClientListByResourceGroupOptions) *runtime.Pager[armresources.DeploymentsClientListByResourceGroupResponse]
+}
+
+// InterfacesClient interface for armnetwork.InterfacesClient
+type InterfacesClient interface {
+	Get(ctx context.Context, resourceGroupName string, networkInterfaceName string, options *armnetwork.InterfacesClientGetOptions) (armnetwork.InterfacesClientGetResponse, error)
+	BeginDelete(ctx context.Context, resourceGroupName string, networkInterfaceName string, options *armnetwork.InterfacesClientBeginDeleteOptions) (*runtime.Poller[armnetwork.InterfacesClientDeleteResponse], error)
+}
+
+// DisksClient interface for armcompute.DisksClient
+type DisksClient interface {
+	Get(ctx context.Context, resourceGroupName string, diskName string, options *armcompute.DisksClientGetOptions) (armcompute.DisksClientGetResponse, error)
+	BeginDelete(ctx context.Context, resourceGroupName string, diskName string, options *armcompute.DisksClientBeginDeleteOptions) (*runtime.Poller[armcompute.DisksClientDeleteResponse], error)
+}
+
+// StorageAccountsClient interface for armstorage.AccountsClient
+type StorageAccountsClient interface {
+	GetProperties(ctx context.Context, resourceGroupName string, accountName string, options *armstorage.AccountsClientGetPropertiesOptions) (armstorage.AccountsClientGetPropertiesResponse, error)
+	ListKeys(ctx context.Context, resourceGroupName string, accountName string, options *armstorage.AccountsClientListKeysOptions) (armstorage.AccountsClientListKeysResponse, error)
+}
+
+// ResourceSKUsClient interface for armcompute.ResourceSKUsClient
+type ResourceSKUsClient interface {
+	NewListPager(options *armcompute.ResourceSKUsClientListOptions) *runtime.Pager[armcompute.ResourceSKUsClientListResponse]
+}
 
 // AgentPoolsClient interface defines the methods needed for scaling vms pool.
 // it is implemented by track2 sdk armcontainerservice.AgentPoolsClient
@@ -185,14 +238,14 @@ func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCreden
 }
 
 type azClient struct {
-	virtualMachineScaleSetsClient   vmssclient.Interface
-	virtualMachineScaleSetVMsClient vmssvmclient.Interface
-	virtualMachinesClient           vmclient.Interface
-	deploymentClient                deploymentclient.Interface
-	interfacesClient                interfaceclient.Interface
-	disksClient                     diskclient.Interface
-	storageAccountsClient           storageaccountclient.Interface
-	skuClient                       compute.ResourceSkusClient
+	virtualMachineScaleSetsClient   VirtualMachineScaleSetsClient
+	virtualMachineScaleSetVMsClient VirtualMachineScaleSetVMsClient
+	virtualMachinesClient           VirtualMachinesClient
+	deploymentClient                DeploymentsClient
+	interfacesClient                InterfacesClient
+	disksClient                     DisksClient
+	storageAccountsClient           StorageAccountsClient
+	skuClient                       ResourceSKUsClient
 	agentPoolClient                 AgentPoolsClient
 }
 
@@ -212,47 +265,74 @@ func newAuthorizer(config *Config, env *azure.Environment) (autorest.Authorizer,
 }
 
 func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
-	authorizer, err := newAuthorizer(cfg, env)
+	// Get v2 credentials for all Azure SDK v2 clients
+	cred, err := getAgentpoolClientCredentials(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get Azure credentials: %v", err)
 	}
 
-	azClientConfig := cfg.getAzureClientConfig(authorizer, env)
-	azClientConfig.UserAgent = getUserAgentExtension()
+	// Create common client options for all v2 clients
+	clientOptions := &policy.ClientOptions{
+		ClientOptions: azurecore_policy.ClientOptions{
+			Cloud: cloud.Configuration{
+				Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+					cloud.ResourceManager: {
+						Endpoint: env.ResourceManagerEndpoint,
+						Audience: env.TokenAudience,
+					},
+				},
+			},
+			Telemetry: azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
+			Transport: azextensions.DefaultHTTPClient(),
+		},
+	}
 
-	vmssClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
-	scaleSetsClient := vmssclient.New(vmssClientConfig)
+	scaleSetsClient, err := armcompute.NewVirtualMachineScaleSetsClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create VMSS client: %v", err)
+	}
 	klog.V(5).Infof("Created scale set client with authorizer: %v", scaleSetsClient)
 
-	vmssVMClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
-	scaleSetVMsClient := vmssvmclient.New(vmssVMClientConfig)
+	scaleSetVMsClient, err := armcompute.NewVirtualMachineScaleSetVMsClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create VMSS VMs client: %v", err)
+	}
 	klog.V(5).Infof("Created scale set vm client with authorizer: %v", scaleSetVMsClient)
 
-	vmClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineRateLimit)
-	virtualMachinesClient := vmclient.New(vmClientConfig)
+	virtualMachinesClient, err := armcompute.NewVirtualMachinesClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create VMs client: %v", err)
+	}
 	klog.V(5).Infof("Created vm client with authorizer: %v", virtualMachinesClient)
 
-	deploymentConfig := azClientConfig.WithRateLimiter(cfg.DeploymentRateLimit)
-	deploymentClient := deploymentclient.New(deploymentConfig)
+	deploymentClient, err := armresources.NewDeploymentsClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create deployments client: %v", err)
+	}
 	klog.V(5).Infof("Created deployments client with authorizer: %v", deploymentClient)
 
-	interfaceClientConfig := azClientConfig.WithRateLimiter(cfg.InterfaceRateLimit)
-	interfacesClient := interfaceclient.New(interfaceClientConfig)
+	interfacesClient, err := armnetwork.NewInterfacesClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create interfaces client: %v", err)
+	}
 	klog.V(5).Infof("Created interfaces client with authorizer: %v", interfacesClient)
 
-	accountClientConfig := azClientConfig.WithRateLimiter(cfg.StorageAccountRateLimit)
-	storageAccountsClient := storageaccountclient.New(accountClientConfig)
+	storageAccountsClient, err := armstorage.NewAccountsClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create storage accounts client: %v", err)
+	}
 	klog.V(5).Infof("Created storage accounts client with authorizer: %v", storageAccountsClient)
 
-	diskClientConfig := azClientConfig.WithRateLimiter(cfg.DiskRateLimit)
-	disksClient := diskclient.New(diskClientConfig)
+	disksClient, err := armcompute.NewDisksClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create disks client: %v", err)
+	}
 	klog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
 
-	// Reference on why selecting ResourceManagerEndpoint as baseURI -
-	// https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go
-	skuClient := compute.NewResourceSkusClientWithBaseURI(azClientConfig.ResourceManagerEndpoint, cfg.SubscriptionID)
-	skuClient.Authorizer = azClientConfig.Authorizer
-	skuClient.UserAgent = azClientConfig.UserAgent
+	skuClient, err := armcompute.NewResourceSKUsClient(cfg.SubscriptionID, cred, clientOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SKU client: %v", err)
+	}
 	klog.V(5).Infof("Created sku client with authorizer: %v", skuClient)
 
 	agentPoolClient, err := newAgentpoolClient(cfg)
