@@ -138,19 +138,8 @@ func (n *Nodes) updateInternalState(autoscalingCtx *ca_context.AutoscalingContex
 				since:            val.since,
 				removalThreshold: val.removalThreshold,
 			}
-		} else if existingts := timestampGetter(nn); existingts != nil {
-			updated[name] = &node{
-				ntbr:  nn,
-				since: *existingts,
-			}
 		} else {
-			updated[name] = &node{
-				ntbr:  nn,
-				since: ts,
-			}
-		}
-		if !found {
-			n.refreshRemovalThreshold(updated[name], autoscalingCtx.CloudProvider)
+			updated[name] = n.newNode(nn, timestampGetter, ts, autoscalingCtx.CloudProvider)
 		}
 	}
 	n.byName = updated
@@ -160,6 +149,24 @@ func (n *Nodes) updateInternalState(autoscalingCtx *ca_context.AutoscalingContex
 			klog.Infof("%s is unneeded since %s duration %s", k, v.since, ts.Sub(v.since))
 		}
 	}
+}
+
+func (n *Nodes) newNode(nn simulator.NodeToBeRemoved, timestampGetter func(simulator.NodeToBeRemoved) *time.Time, ts time.Time, cp cloudprovider.CloudProvider) *node {
+	var since time.Time
+	if existingts := timestampGetter(nn); existingts != nil {
+		since = *existingts
+	} else {
+		since = ts
+	}
+
+	newNode := &node{
+		ntbr:  nn,
+		since: since,
+	}
+
+	n.refreshRemovalThreshold(newNode, cp)
+
+	return newNode
 }
 
 // Clear resets the internal state, dropping information about all tracked nodes.
