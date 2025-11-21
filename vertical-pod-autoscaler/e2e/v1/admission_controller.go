@@ -1098,6 +1098,122 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	})
 })
 
+var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		waitForVpaWebhookRegistration(f)
+	})
+
+	f.It("boosts CPU by factor on pod creation", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		expectedCPU := ParseQuantityOrDie("200m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with a startup boost policy (factor)")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		factor := int32(2)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "15s").
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("100m", "100Mi").
+					GetContainerResources(),
+			).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+		gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+	})
+
+	f.It("boosts CPU by quantity on pod creation", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		boostCPUQuantity := ParseQuantityOrDie("500m")
+		expectedCPU := ParseQuantityOrDie("600m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with a startup boost policy (quantity)")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &boostCPUQuantity, "15s").
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("100m", "100Mi").
+					GetContainerResources(),
+			).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+		gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+	})
+
+	f.It("boosts CPU on pod creation when VPA update mode is Off", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		expectedCPU := ParseQuantityOrDie("200m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with updateMode Off and a startup boost policy")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		factor := int32(2)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeOff). // VPA is off, but boost should still work
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "15s").
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+	})
+
+	f.It("doesn't boost CPU on pod creation when scaling mode is Off", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with a startup boost policy and scaling mode Off")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		factor := int32(2)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "15s").
+			WithScalingMode(containerName, vpa_types.ContainerScalingModeOff).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is NOT boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(initialCPU)).To(gomega.Equal(0))
+	})
+})
+
 func waitForVpaWebhookRegistration(f *framework.Framework) {
 	ginkgo.By("Waiting for VPA webhook registration")
 	gomega.Eventually(func() bool {
