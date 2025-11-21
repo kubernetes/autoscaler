@@ -124,8 +124,12 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 			}
 		}
 	}
+	var uniquePartitionableDevicesCount float64 = float64(getUniquePartitionableDevicesCount(allocated))
+	var totalUniqueDevices float64 = uniquePartitionableDevicesCount + float64(devicesWithoutCounters)
+	var partitionableDevicesUtilizationWeight float64 = uniquePartitionableDevicesCount / totalUniqueDevices
+	var nonPartitionableDevicesUtilizationWeight float64 = 1 - partitionableDevicesUtilizationWeight
 	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive
-	return partitionableUtilization + atomicDevicesUtilization
+	return partitionableUtilization * partitionableDevicesUtilizationWeight + atomicDevicesUtilization * nonPartitionableDevicesUtilizationWeight
 }
 
 // calculateConsumedCounters calculates the total counters consumed by a list of devices
@@ -150,6 +154,32 @@ func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[stri
 		}
 	}
 	return countersConsumed
+}
+
+// getUniquePartitionableDevicesCount returns the count of unique partitionable devices in the provided list.
+// a partitionable device can be represented by multiple devices with different names and properties, and for utilization purposes we'd like to count the hardware and not the software.
+func getUniquePartitionableDevicesCount(devices []resourceapi.Device) int {
+	var deviceCount int = 0
+	var counted bool
+	consumedCounters := map[string]bool{}
+	for _, device := range devices {
+		// the assumption here is that a partitionable device will consume the actual resources from the hardware, which will be represented by consumedCounters.
+		// if a device consumes multiple counters of the same device, we count them both at the same time in order to not "overcount" devices with multiple counters, the assumption here is that a device will always consume some of every resource in a device. (f.e. a GPU DRA request cannot use VRAM without using GPU cycles and vice versa)
+		if device.ConsumesCounters != nil {
+			counted = false
+			for _, consumedCounter := range device.ConsumesCounters {
+				if _, exists := consumedCounters[consumedCounter.CounterSet]; !exists {
+					consumedCounters[consumedCounter.CounterSet] = true
+				} else {
+					counted = true
+				}
+			}
+			if !counted {
+				deviceCount++
+			}
+		}
+	}
+	return deviceCount
 }
 
 func splitDevicesByAllocation(devices []resourceapi.Device, allocatedNames []string) (unallocated, allocated []resourceapi.Device) {

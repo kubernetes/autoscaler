@@ -371,3 +371,223 @@ func mergeLists[T any](sliceLists ...[]T) []T {
 	}
 	return result
 }
+
+func TestGetUniquePartitionableDevicesCount(t *testing.T) {
+	for _, tc := range []struct {
+		testName  string
+		devices   []resourceapi.Device
+		wantCount int
+	}{
+		{
+			testName:  "no devices",
+			devices:   []resourceapi.Device{},
+			wantCount: 0,
+		},
+		{
+			testName: "single atomic device (no counters)",
+			devices: []resourceapi.Device{
+				{Name: "gpu-0"},
+			},
+			wantCount: 0,
+		},
+		{
+			testName: "multiple atomic devices (no counters)",
+			devices: []resourceapi.Device{
+				{Name: "gpu-0"},
+				{Name: "gpu-1"},
+				{Name: "cpu-0"},
+			},
+			wantCount: 0,
+		},
+		{
+			testName: "single partitionable device",
+			devices: []resourceapi.Device{
+				{
+					Name: "gpu-0-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+			},
+			wantCount: 1,
+		},
+		{
+			testName: "single GPU partitioned into 4 devices",
+			devices: []resourceapi.Device{
+				{
+					Name: "gpu-0-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-0-half-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-0-half-2",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-0-quarter-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+			},
+			wantCount: 1,
+		},
+		{
+			testName: "two GPUs each partitioned into 2 devices",
+			devices: []resourceapi.Device{
+				{
+					Name: "gpu-0-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-0-half",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-1-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-1-counters"},
+					},
+				},
+				{
+					Name: "gpu-1-half",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-1-counters"},
+					},
+				},
+			},
+			wantCount: 2,
+		},
+		{
+			testName: "mixed atomic and partitionable devices",
+			devices: []resourceapi.Device{
+				{Name: "cpu-0"}, // Atomic
+				{
+					Name: "gpu-0-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-0-half",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+			},
+			wantCount: 1,
+		},
+		{
+			testName: "device with multiple counter sets",
+			devices: []resourceapi.Device{
+				{
+					Name: "gpu-0-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-memory"},
+						{CounterSet: "gpu-0-compute"},
+					},
+				},
+				{
+					Name: "gpu-0-half",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-memory"},
+						{CounterSet: "gpu-0-compute"},
+					},
+				},
+			},
+			wantCount: 1,
+		},
+		{
+			testName: "device with overlapping counter sets",
+			devices: []resourceapi.Device{
+				{
+					Name: "gpu-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-memory"},
+					},
+				},
+				{
+					Name: "gpu-0-partition-2",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-memory"},
+						{CounterSet: "gpu-0-compute"},
+					},
+				},
+			},
+			wantCount: 1,
+		},
+		{
+			testName: "complex multi-GPU scenario",
+			devices: []resourceapi.Device{
+				{
+					Name: "gpu-0-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-0-half-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-0-quarter-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-0-counters"},
+					},
+				},
+				{
+					Name: "gpu-1-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-1-counters"},
+					},
+				},
+				{
+					Name: "gpu-1-half-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-1-counters"},
+					},
+				},
+				{
+					Name: "gpu-2-whole",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "gpu-2-counters"},
+					},
+				},
+			},
+			wantCount: 3,
+		},
+		{
+			testName: "device with no counter consumption entries",
+			devices: []resourceapi.Device{
+				{
+					Name:             "device-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{},
+				},
+			},
+			wantCount: 1,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			count := getUniquePartitionableDevicesCount(tc.devices)
+
+			if count != tc.wantCount {
+				t.Errorf("getUniquePartitionableDevicesCount() = %v, want %v", count, tc.wantCount)
+			}
+		})
+	}
+}
