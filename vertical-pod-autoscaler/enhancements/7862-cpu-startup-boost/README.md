@@ -159,7 +159,7 @@ type CPUStartupBoost struct {
 
 > [!IMPORTANT]
 > The boosted CPU value will be capped by
-> [`--container-recommendation-max-allowed-cpu`](https://github.com/kubernetes/autoscaler/blob/4d294562e505431d518a81e8833accc0ec99c9b8/vertical-pod-autoscaler/pkg/recommender/main.go#L122)
+> [`--max-allowed-cpu-boost`](https://github.com/kubernetes/autoscaler/blob/4b40a55bebd2ce184b289cd028969182d15f412c/vertical-pod-autoscaler/pkg/admission-controller/main.go#L86C1-L86C2)
 > flag value, if set.
 
 > [!NOTE]
