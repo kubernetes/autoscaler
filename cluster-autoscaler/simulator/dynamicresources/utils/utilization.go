@@ -129,7 +129,7 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	var partitionableDevicesUtilizationWeight float64 = uniquePartitionableDevicesCount / totalUniqueDevices
 	var nonPartitionableDevicesUtilizationWeight float64 = 1 - partitionableDevicesUtilizationWeight
 	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive
-	return partitionableUtilization * partitionableDevicesUtilizationWeight + atomicDevicesUtilization * nonPartitionableDevicesUtilizationWeight
+	return partitionableUtilization*partitionableDevicesUtilizationWeight + atomicDevicesUtilization*nonPartitionableDevicesUtilizationWeight
 }
 
 // calculateConsumedCounters calculates the total counters consumed by a list of devices
