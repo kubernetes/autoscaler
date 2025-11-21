@@ -241,7 +241,7 @@ func (n *Nodes) refreshRemovalThreshold(v *node, cp cloudprovider.CloudProvider)
 	}
 
 	if err != nil {
-		klog.Warningf("Failed to get scale down removalThreshold for %s: %v", v.ntbr.Node.Name, err)
+		klog.Warningf("Failed to get scale down unneeded/unready time for %s: %v", v.ntbr.Node.Name, err)
 		return
 	}
 
