@@ -106,8 +106,8 @@ func TestUpdate(t *testing.T) {
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
 
-			nodes.Update(tc.initialNodes, initialTimestamp, ctx)
-			nodes.Update(tc.finalNodes, finalTimestamp, ctx)
+			nodes.Update(ctx, tc.initialNodes, initialTimestamp)
+			nodes.Update(ctx, tc.finalNodes, finalTimestamp)
 
 			wantNodes := len(tc.wantTimestamps)
 			assert.Equal(t, wantNodes, len(nodes.AsList()))
@@ -214,7 +214,7 @@ func TestRemovableAt(t *testing.T) {
 			}
 			n := NewNodes(fakeTimeGetter, &resource.LimitsFinder{})
 
-			n.Update(removableNodes, time.Now().Add(-10*time.Minute), &autoscalingCtx) //add -10 min to work correctly with unneeded time threshold
+			n.Update(&autoscalingCtx, removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
 
 			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
@@ -300,7 +300,6 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			currentTime = time.Now()
 
 			nodes := NewNodes(nil, nil)
 
@@ -315,7 +314,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider, AutoscalingOptions: config.AutoscalingOptions{NodeDeletionCandidateTTL: tc.nodeDeletionCandidateTTL}}
 
-			nodes.LoadFromExistingTaints(listerRegistry, currentTime, ctx)
+			nodes.LoadFromExistingTaints(ctx, listerRegistry, currentTime)
 
 			unneededNodes := nodes.AsList()
 
