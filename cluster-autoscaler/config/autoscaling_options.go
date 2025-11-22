@@ -34,6 +34,18 @@ type GpuLimits struct {
 	Max int64
 }
 
+// DraLimits define lower and upper bound on DRA instances of given type in cluster
+type DraLimits struct {
+	// DeviceAttributes is a map of DRA attributes (e.g. {"vendor":"nvidia", "model":"H100"}) that the limit applies to. All devices that match all these attributes are counted.
+	DeviceAttributes map[string]string
+	// IdentifierAttribute is the attribute from DeviceAttributes map that is used to identify different physical devices of the same resource pool (so that partionable devices won't be overcounted).
+	IdentifierAttribute string
+	// Lower bound on number of DRAs of given type in cluster
+	Min int64
+	// Upper bound on number of DRAs of given type in cluster
+	Max int64
+}
+
 // NodeGroupAutoscalingOptions contain various options to customize how autoscaling of
 // a given NodeGroup works. Different options can be used for each NodeGroup.
 type NodeGroupAutoscalingOptions struct {
@@ -120,6 +132,8 @@ type AutoscalingOptions struct {
 	MinMemoryTotal int64
 	// GpuTotal is a list of strings with configuration of min/max limits for different GPUs.
 	GpuTotal []GpuLimits
+	// DraTotal is a list of strings with configuration of min/max limits for different DRAs.
+	DraTotal []DraLimits
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery []string
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.

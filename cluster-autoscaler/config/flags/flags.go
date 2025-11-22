@@ -113,6 +113,7 @@ var (
 	coresTotal                  = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	memoryTotal                 = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	gpuTotal                    = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
+	draTotal                    = multiStringFlag("dra-total", "Minimum and maximum number of DRA devices with specific attributes in cluster, in the format <attribute1>=<value1>,<attribute2>=<value2>:<device_identifier_attribute>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Device attributes are used to filter between different devices and device_identifier_attribute is used to identify unique devices in a resource slice (an example of a device_identifier_attribute would be `device_id` for Nvidia GPUs). This flag can be passed multiple times.")
 	cloudProviderFlag           = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
@@ -263,7 +264,12 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	minMemoryTotal = minMemoryTotal * units.GiB
 	maxMemoryTotal = maxMemoryTotal * units.GiB
 
-	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
+	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal, parseSingleGpuLimit)
+	if err != nil {
+		klog.Fatalf("Failed to parse flags: %v", err)
+	}
+
+	parsedDraTotal, err := parseMultipleGpuLimits(*draTotal, parseSingleDraLimit)
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
@@ -325,6 +331,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxMemoryTotal:                   maxMemoryTotal,
 		MinMemoryTotal:                   minMemoryTotal,
 		GpuTotal:                         parsedGpuTotal,
+		DraTotal:                         parsedDraTotal,
 		NodeGroups:                       *nodeGroupsFlag,
 		EnforceNodeGroupMinSize:          *enforceNodeGroupMinSize,
 		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
@@ -467,10 +474,10 @@ func parseMinMaxFlag(flag string) (int64, int64, error) {
 	return min, max, nil
 }
 
-func parseMultipleGpuLimits(flags MultiStringFlag) ([]config.GpuLimits, error) {
-	parsedFlags := make([]config.GpuLimits, 0, len(flags))
+func parseMultipleGpuLimits[T any](flags MultiStringFlag, parser func(string) (T, error)) ([]T, error) {
+	parsedFlags := make([]T, 0, len(flags))
 	for _, flag := range flags {
-		parsedFlag, err := parseSingleGpuLimit(flag)
+		parsedFlag, err := parser(flag)
 		if err != nil {
 			return nil, err
 		}
@@ -508,6 +515,84 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 		Max:     maxVal,
 	}
 	return parsedGpuLimits, nil
+}
+
+func parseSingleDraLimit(limits string) (config.DraLimits, error) {
+	parts := strings.Split(limits, ":")
+	if len(parts) != 4 {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit specification: %v", limits)
+	}
+	attributes, err := parseAttributes(parts[0])
+	if err != nil {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - attributes are malformed: %v", limits)
+	}
+	identifierAttribute := parts[1]
+	minVal, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - min is not integer: %v", limits)
+	}
+	maxVal, err := strconv.ParseInt(parts[3], 10, 64)
+	if err != nil {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - max is not integer: %v", limits)
+	}
+	if minVal < 0 {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - min is less than 0; %v", limits)
+	}
+	if maxVal < 0 {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - max is less than 0; %v", limits)
+	}
+	if minVal > maxVal {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - min is greater than max; %v", limits)
+	}
+	if _, exists := attributes[identifierAttribute]; exists {
+		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - device identifier attribute '%s' found in attributes; %v", identifierAttribute, limits)
+	}
+	parsedDraLimits := config.DraLimits{
+		DeviceAttributes:    attributes,
+		IdentifierAttribute: identifierAttribute,
+		Min:                 minVal,
+		Max:                 maxVal,
+	}
+	return parsedDraLimits, nil
+}
+
+// parseAttributes parses a string in the format "attribute1=value1,attribute2=value2" into a map[string]string.
+// Returns an empty map if the input string is empty.
+// Returns an error if any attribute is malformed (missing '=' or empty key/value).
+func parseAttributes(attributesStr string) (map[string]string, error) {
+	attributes := make(map[string]string)
+
+	if attributesStr == "" {
+		return attributes, nil
+	}
+
+	pairs := strings.Split(attributesStr, ",")
+	for _, pair := range pairs {
+		pair = strings.TrimSpace(pair)
+		if pair == "" {
+			continue
+		}
+
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("malformed attribute pair '%s': expected format 'key=value'", pair)
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		if key == "" {
+			return nil, fmt.Errorf("empty attribute key in pair '%s'", pair)
+		}
+
+		if _, exists := attributes[key]; exists {
+			return nil, fmt.Errorf("duplicate attribute key '%s' in pair '%s'", key, pair)
+		}
+
+		attributes[key] = value
+	}
+
+	return attributes, nil
 }
 
 // parseShutdownGracePeriodsAndPriorities parse priorityGracePeriodStr and returns an array of ShutdownGracePeriodByPodPriority if succeeded.
