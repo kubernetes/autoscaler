@@ -42,11 +42,10 @@ const (
 // CapacityBufferPodListProcessor processes the pod lists before scale up
 // and adds buffres api virtual pods.
 type CapacityBufferPodListProcessor struct {
-	client               *client.CapacityBufferClient
-	statusFilter         buffersfilter.Filter
-	podTemplateGenFilter buffersfilter.Filter
-	provStrategies       map[string]bool
-	buffersRegistry      *capacityBuffersFakePodsRegistry
+	client          *client.CapacityBufferClient
+	statusFilter    buffersfilter.Filter
+	provStrategies  map[string]bool
+	buffersRegistry *capacityBuffersFakePodsRegistry
 }
 
 // capacityBuffersFakePodsRegistry a struct that keeps the status of capacity buffer
@@ -73,13 +72,11 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 	}
 	return &CapacityBufferPodListProcessor{
 		client: client,
-		statusFilter: buffersfilter.NewStatusFilter(map[string]string{
+		statusFilter: buffersfilter.NewStatusIncludeFilter(map[string]string{
 			common.ReadyForProvisioningCondition: common.ConditionTrue,
-			common.ProvisioningCondition:         common.ConditionTrue,
 		}),
-		podTemplateGenFilter: buffersfilter.NewPodTemplateGenerationChangedFilter(client),
-		provStrategies:       provStrategiesMap,
-		buffersRegistry:      buffersRegistry,
+		provStrategies:  provStrategiesMap,
+		buffersRegistry: buffersRegistry,
 	}
 }
 
@@ -91,8 +88,7 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 		return unschedulablePods, nil
 	}
 	buffers = p.filterBuffersProvStrategy(buffers)
-	_, buffers = p.statusFilter.Filter(buffers)
-	_, buffers = p.podTemplateGenFilter.Filter(buffers)
+	buffers, _ = p.statusFilter.Filter(buffers)
 
 	totalFakePods := []*apiv1.Pod{}
 	p.clearCapacityBufferRegistry()
