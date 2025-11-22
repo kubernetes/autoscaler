@@ -51,7 +51,7 @@ The feature is gated by a new feature gate, `RequestToLimitRatio`, which is disa
 
 ## Proposal
 
-* Extend [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.4.2/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L197) to allow updating the request-to-limit ratio for individual containers in a Pod targeted by a VPA object. Furthermore, to enable updating the ratio globally, a single wildcard entry with `containerName = '*'` can be used. This applies to all containers in the targeted Pod that do not have individual policies.
+* Extend [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.4.2/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L197) to allow updating the request-to-limit ratio for individual containers in a Pod targeted by a VPA object. Furthermore, to enable updating the ratio for all containers, a single wildcard entry with `containerName = '*'` can be used. This applies to all containers in the targeted Pod that do not have individual policies.
 
 
 Some examples of the VPA CRD using the new `RequestToLimitRatio` field are provided in a later [section](#examples).
