@@ -141,11 +141,10 @@ The behavior after implementing this feature is as follows:
 
 * The admission controller will **accept** new VPA objects that include a configured `RequestToLimitRatio`.  
 * For containers targeted by a VPA object using `RequestToLimitRatio`, the admission controller and/or the updater will enforce the configured ratio. Here are some examples of how this may happen:
-  * **From default to a specific ratio**: This occurs when we have running Pods targeted by a VPA object that does not define `RequestToLimitRatio`. In this case, the Pods use the default ratio derived from the workload API (e.g. Deployment). Once we specify a custom ratio using the `RequestToLimitRatio` field, the new ratio is not applied immediately, as the updater still relies on its current behavior to decide when to evict Pods or perform in-place updates. With the `InPlaceOrRecreate` mode, two possibilities exist:  
-    1. If the new ratio does **not** change the QoS class, the updater will attempt to apply the new ratio using an in-place update. If the in-place update cannot be completed in time, it will evict the Pod to force the change.  
-    2. If the new ratio **does** change the QoS class, the updater will evict the Pod, since the QoS class field is immutable and in-place updates are not possible.  
-  * **From one ratio to another**:  
-  In this case, the default ratio defined in the workload API is ignored, and the ratio specified in the `RequestToLimitRatio` field is enforced. The same logic from the first example applies (see points 1 and 2 above).
+  * **From default to a specific ratio**: This occurs when we have a running Pod targeted by a VPA object that does not define `RequestToLimitRatio`. In this case, VPA uses the default ratio derived from the Pod's `resources` stanza (assuming the Pod has a single container). Once we specify a custom ratio using the `RequestToLimitRatio` field, the new ratio is not applied immediately, as the updater still relies on its current behavior to decide when to evict the Pod or perform in-place update. With the `InPlaceOrRecreate` mode, the updater sends patches to the `resize` subresource [as shown here](https://github.com/kubernetes/autoscaler/blob/7b95cb06cb0843c1cd9432a3db893c001e1bc33c/vertical-pod-autoscaler/pkg/updater/restriction/pods_inplace_restriction.go#L137). This can result in two outcomes:
+    1. If the in-place update fails for any reason - for example, because the change would alter the Pod's QoS class - the updater evicts the Pod.
+    2. If the in-place update succeeds, the updater is finished for that Pod.
+  * **From one ratio to another**: In this case, the default ratio defined in the Pod's `resources` stanza is ignored, and the ratio specified in the `RequestToLimitRatio` field is enforced.
 
 
 #### When Disabled
