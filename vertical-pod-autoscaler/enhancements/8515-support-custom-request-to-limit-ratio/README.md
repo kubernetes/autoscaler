@@ -88,7 +88,7 @@ For example, suppose VPA calculates a new recommended CPU request of `200m`, the
 #### Current behavior of VPA 1.4.2
 
 1. The user sets the initial resource requests and limits at the workload API level, such as in a Kubernetes Deployment.  
-2. When VPA applies new recommended resource request values, it maintains the initially set request-to-limit ratio.
+2. When VPA applies new recommended resource request values, it preserves the request-to-limit ratio from the Pods' `resources` stanzas.
 
 For example, if the original resource request is `1` and the original limit is `2`, then after VPA calculates a new resource request of `10`, the new limit will be updated to `20`. In this version of VPA, the 1:2 ratio is preserved at all times.  
 
@@ -96,7 +96,9 @@ If the user wants to modify the request-to-limit ratio, they must update the Dep
 
 #### Proposed feature behavior
 
-The values specified under `RequestToLimitRatio` in the VPA object will take precedence over the request-to-limit ratio initially set at the workload API level. For example, if the CPU ratio is initially set to `1:2` at the workload API level, but the VPA object sets the CPU request-to-limit ratio to `1:10` using the new `RequestToLimitRatio` field, VPA will use the ratio from the `RequestToLimitRatio` field (`1:10`) when applying new recommended values.
+The values specified under `RequestToLimitRatio` in the VPA object will take precedence over the request-to-limit ratio used at the Pod level. For example, if the CPU ratio is initially set to `1:2` at the Pod level, but the VPA object sets the CPU request-to-limit ratio to `1:10` using the new `RequestToLimitRatio` field, VPA will use the ratio from the `RequestToLimitRatio` field (`1:10`) when applying new recommended values.
+
+Furthermore, this AEP proposes scaling limits when `RequestToLimitRatio` is used, even in cases where the user omits limits from the workload API, and they are therefore not present in the Pods' `resources` stanza.
 
 The behavior after implementing this feature is as follows:
 
