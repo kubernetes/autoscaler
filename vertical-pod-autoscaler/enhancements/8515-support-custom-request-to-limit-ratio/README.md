@@ -31,7 +31,7 @@ Currently, when VPA is configured to set both requests and limits automatically 
 
 If the request-to-limit ratio needs to be updated (for example, because the application's resource usage has changed), users must modify the `resources.requests` or `resources.limits` fields in the workload's API object. However, applying these changes triggers the termination and recreation of existing Pods.
 
-This proposal introduces a new mechanism that allows VPA users to adjust the request-to-limit ratio directly at the VPA CRD level. This mechanism can also be used to update existing workload + VPA configurations, for example to non-disruptively scale workloads beyond what the their requests/limits would predict.
+This proposal introduces a new mechanism that allows VPA users to adjust the request-to-limit ratio directly at the VPA CRD level, both for already running workloads and for newly created workloads.
 
 The feature is gated by a new feature gate, `RequestToLimitRatio`, which is disabled by default in alpha.
 
