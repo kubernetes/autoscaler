@@ -134,17 +134,17 @@ func (p *CapacityBufferPodListProcessor) provision(buffer *v1alpha1.CapacityBuff
 	replicas := buffer.Status.Replicas
 	podTemplate, err := p.client.GetPodTemplate(buffer.Namespace, podTemplateName)
 	if err != nil {
-		common.UpdateBufferStatusToFailedProvisioing(buffer, "FailedToGetPodTemplate", fmt.Sprintf("failed to get pod template with error: %v", err.Error()))
+		common.UpdateBufferStatusToFailedProvisioning(buffer, "FailedToGetPodTemplate", fmt.Sprintf("failed to get pod template with error: %v", err.Error()))
 		p.updateBufferStatus(buffer)
 		return []*apiv1.Pod{}
 	}
 	fakePods, err := makeFakePods(buffer, &podTemplate.Template, int(*replicas))
 	if err != nil {
-		common.UpdateBufferStatusToFailedProvisioing(buffer, "FailedToMakeFakePods", fmt.Sprintf("failed to create fake pods with error: %v", err.Error()))
+		common.UpdateBufferStatusToFailedProvisioning(buffer, "FailedToMakeFakePods", fmt.Sprintf("failed to create fake pods with error: %v", err.Error()))
 		p.updateBufferStatus(buffer)
 		return []*apiv1.Pod{}
 	}
-	common.UpdateBufferStatusToSuccessfullyProvisioing(buffer, "FakePodsInjected")
+	common.UpdateBufferStatusToSuccessfullyProvisioning(buffer, "FakePodsInjected")
 	p.updateBufferStatus(buffer)
 	return fakePods
 }
