@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
@@ -76,6 +77,7 @@ func NewAutoscaler(opts coreoptions.AutoscalerOptions, informerFactory informers
 		opts.DeleteOptions,
 		opts.DrainabilityRules,
 		opts.DraProvider,
+		opts.QuotasProvider,
 	), nil
 }
 
@@ -141,6 +143,10 @@ func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFacto
 			return err
 		}
 		opts.ExpanderStrategy = expanderStrategy
+	}
+	if opts.QuotasProvider == nil {
+		cloudQuotasProvider := resourcequotas.NewCloudQuotasProvider(opts.CloudProvider)
+		opts.QuotasProvider = resourcequotas.NewCombinedQuotasProvider([]resourcequotas.Provider{cloudQuotasProvider})
 	}
 
 	return nil
