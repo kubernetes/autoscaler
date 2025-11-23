@@ -36,6 +36,8 @@ type GpuLimits struct {
 
 // DraLimits define lower and upper bound on DRA instances of given type in cluster
 type DraLimits struct {
+	// Driver is the driver name for the DRA (e.g. nvidia)
+	Driver string
 	// DeviceAttributes is a map of DRA attributes (e.g. {"vendor":"nvidia", "model":"H100"}) that the limit applies to. All devices that match all these attributes are counted.
 	DeviceAttributes map[string]string
 	// IdentifierAttribute is the attribute from DeviceAttributes map that is used to identify different physical devices of the same resource pool (so that partionable devices won't be overcounted).
