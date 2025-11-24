@@ -220,12 +220,22 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 
 		isBelowMinReplicas := false
 		if actual < required {
-			if !skipReplicaCheck {
+			// If checking for unboost, we want to process even if we have fewer replicas than required.
+			hasBoostedPod := false
+			for _, pod := range replicas {
+				if vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
+					hasBoostedPod = true
+					break
+				}
+			}
+			if !hasBoostedPod && !skipReplicaCheck {
 				klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
 				continue
 			}
-			klog.V(2).InfoS("in-place-skip-disruption-budget enabled, skipping minReplicas check for in-place update", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
-			isBelowMinReplicas = true
+			if skipReplicaCheck {
+				klog.V(2).InfoS("in-place-skip-disruption-budget enabled, skipping minReplicas check for in-place update", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+				isBelowMinReplicas = true
+			}
 		}
 
 		var configured int
