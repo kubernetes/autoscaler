@@ -48,9 +48,7 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 
 		_, hasGpuLabel := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
-		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
-		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[gpu.ResourceDirectX]
-		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) {
+		if hasGpuLabel && !gpu.HasAllocatableGPUResources(node) {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
 			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)

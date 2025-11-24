@@ -123,6 +123,11 @@ func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
 		return true
 	}
 	// Check for extended resources as well
+	return HasAllocatableGPUResources(node)
+}
+
+// HasAllocatableGPUResources returns true if a given node has any allocatable vendor specific GPU resources.
+func HasAllocatableGPUResources(node *apiv1.Node) bool {
 	for _, gpuVendorResourceName := range GPUVendorResourceNames {
 		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpuVendorResourceName]
 		if hasGpuAllocatable && !gpuAllocatable.IsZero() {
