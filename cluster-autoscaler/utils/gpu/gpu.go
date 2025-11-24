@@ -26,6 +26,8 @@ import (
 )
 
 const (
+	// ResourceIntelGaudi is the name of the Intel Gaudi resource.
+	ResourceIntelGaudi = "habana.ai/gaudi"
 	// ResourceAMDGPU is the name of the AMD GPU resource.
 	ResourceAMDGPU = "amd.com/gpu"
 	// ResourceNvidiaGPU is the name of the Nvidia GPU resource.
@@ -41,6 +43,7 @@ const (
 // Extend this slice if new vendor resource names are added.
 var GPUVendorResourceNames = []apiv1.ResourceName{
 	ResourceNvidiaGPU,
+	ResourceIntelGaudi,
 	ResourceAMDGPU,
 	ResourceDirectX,
 }
