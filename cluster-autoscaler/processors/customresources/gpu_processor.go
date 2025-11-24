@@ -48,9 +48,15 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 
 		_, hasGpuLabel := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
-		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
-		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[gpu.ResourceDirectX]
-		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) {
+		hasAnyGpuAllocatable := false
+		for _, gpuVendorResourceName := range gpu.GPUVendorResourceNames {
+			gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpuVendorResourceName]
+			if hasGpuAllocatable && !gpuAllocatable.IsZero() {
+				hasAnyGpuAllocatable = true
+				break
+			}
+		}
+		if hasGpuLabel && !hasAnyGpuAllocatable {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
 			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
@@ -88,9 +94,10 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingCtx *ca_contex
 		return CustomResourceTarget{}, nil
 	}
 
-	gpuAllocatable, found := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
-	if found && gpuAllocatable.Value() > 0 {
-		return CustomResourceTarget{gpuLabel, gpuAllocatable.Value()}, nil
+	for _, gpuVendorResourceName := range gpu.GPUVendorResourceNames {
+		if gpuAllocatable, found := node.Status.Allocatable[gpuVendorResourceName]; found && gpuAllocatable.Value() > 0 {
+			return CustomResourceTarget{gpuLabel, gpuAllocatable.Value()}, nil
+		}
 	}
 
 	// A node is supposed to have GPUs (based on label), but they're not available yet
@@ -115,8 +122,10 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingCtx *ca_contex
 		klog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
 		return CustomResourceTarget{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
-	if gpuCapacity, found := template.Node().Status.Capacity[gpu.ResourceNvidiaGPU]; found {
-		return CustomResourceTarget{gpuLabel, gpuCapacity.Value()}, nil
+	for _, gpuVendorResourceName := range gpu.GPUVendorResourceNames {
+		if gpuCapacity, found := template.Node().Status.Capacity[gpuVendorResourceName]; found {
+			return CustomResourceTarget{gpuLabel, gpuCapacity.Value()}, nil
+		}
 	}
 
 	// if template does not define gpus we assume node will not have any even if ith has gpu label
