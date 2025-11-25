@@ -19,12 +19,14 @@ package capacitybufferpodlister
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,6 +49,7 @@ func TestPodListProcessor(t *testing.T) {
 		objectsInKubernetesClient    []runtime.Object
 		objectsInBuffersClient       []runtime.Object
 		unschedulablePods            []*corev1.Pod
+		forceSafeToEvict             bool
 		expectedUnschedPodsCount     int
 		expectedUnschedFakePodsCount int
 		expectedBuffersProvCondition map[string]metav1.Condition
@@ -94,6 +97,7 @@ func TestPodListProcessor(t *testing.T) {
 			objectsInKubernetesClient:    []runtime.Object{getTestingPodTemplate("ref", 1)},
 			objectsInBuffersClient:       []runtime.Object{getTestingBuffer("buffer", "ref", 1, 1, true, 1, testProvStrategyAllowed)},
 			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod")},
+			forceSafeToEvict:             true,
 			expectedUnschedPodsCount:     2,
 			expectedUnschedFakePodsCount: 1,
 			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {Type: common.ProvisioningCondition, Status: common.ConditionTrue}},
@@ -117,6 +121,7 @@ func TestPodListProcessor(t *testing.T) {
 				getTestingBuffer("buffer2", "ref2", 5, 1, true, 1, testProvStrategyAllowed),
 			},
 			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod1"), getTestingPod("Pod2"), getTestingPod("Pod3")},
+			forceSafeToEvict:             false,
 			expectedUnschedPodsCount:     11,
 			expectedUnschedFakePodsCount: 8,
 			expectedBuffersProvCondition: map[string]metav1.Condition{
@@ -145,16 +150,18 @@ func TestPodListProcessor(t *testing.T) {
 			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
 
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, NewDefaultCapacityBuffersFakePodsRegistry())
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, NewDefaultCapacityBuffersFakePodsRegistry(), test.forceSafeToEvict)
 			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
 			assert.Equal(t, err != nil, test.expectError)
 
 			numberOfFakePods := 0
 			fakePodsNames := map[string]bool{}
 			for _, pod := range resUnschedulablePods {
-				if isFakeCapacityBuffersPod(pod) {
+				if IsFakeCapacityBuffersPod(pod) {
 					numberOfFakePods += 1
 					assert.False(t, fakePodsNames[pod.Name])
+					safeToEvict, err := strconv.ParseBool(pod.Annotations[drain.PodSafeToEvictKey])
+					assert.Equal(t, err == nil && safeToEvict, test.forceSafeToEvict)
 					fakePodsNames[pod.Name] = true
 				}
 			}
@@ -210,12 +217,12 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
 
 			registry := NewDefaultCapacityBuffersFakePodsRegistry()
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry)
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry, false)
 			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
 			assert.Equal(t, nil, err)
 			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
 			for _, pod := range resUnschedulablePods {
-				if isFakeCapacityBuffersPod(pod) {
+				if IsFakeCapacityBuffersPod(pod) {
 					podBufferObj, found := registry.fakePodsUIDToBuffer[string(pod.UID)]
 					assert.True(t, found)
 					expectedPodsNum, found := test.expectedBuffersPodsNum[podBufferObj.Name]

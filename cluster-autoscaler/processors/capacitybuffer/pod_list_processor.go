@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	buffersfilter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 )
 
 // Pods annotation keys and values for fake pods created by capacity buffer pod list processor
@@ -42,11 +43,12 @@ const (
 // CapacityBufferPodListProcessor processes the pod lists before scale up
 // and adds buffres api virtual pods.
 type CapacityBufferPodListProcessor struct {
-	client               *client.CapacityBufferClient
-	statusFilter         buffersfilter.Filter
-	podTemplateGenFilter buffersfilter.Filter
-	provStrategies       map[string]bool
-	buffersRegistry      *capacityBuffersFakePodsRegistry
+	client                   *client.CapacityBufferClient
+	statusFilter             buffersfilter.Filter
+	podTemplateGenFilter     buffersfilter.Filter
+	provStrategies           map[string]bool
+	buffersRegistry          *capacityBuffersFakePodsRegistry
+	forceSafeToEvictFakePods bool
 }
 
 // capacityBuffersFakePodsRegistry a struct that keeps the status of capacity buffer
@@ -66,7 +68,7 @@ func NewDefaultCapacityBuffersFakePodsRegistry() *capacityBuffersFakePodsRegistr
 }
 
 // NewCapacityBufferPodListProcessor creates a new CapacityRequestPodListProcessor.
-func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, buffersRegistry *capacityBuffersFakePodsRegistry) *CapacityBufferPodListProcessor {
+func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, buffersRegistry *capacityBuffersFakePodsRegistry, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
 	provStrategiesMap := map[string]bool{}
 	for _, ps := range provStrategies {
 		provStrategiesMap[ps] = true
@@ -77,9 +79,10 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 			common.ReadyForProvisioningCondition: common.ConditionTrue,
 			common.ProvisioningCondition:         common.ConditionTrue,
 		}),
-		podTemplateGenFilter: buffersfilter.NewPodTemplateGenerationChangedFilter(client),
-		provStrategies:       provStrategiesMap,
-		buffersRegistry:      buffersRegistry,
+		podTemplateGenFilter:     buffersfilter.NewPodTemplateGenerationChangedFilter(client),
+		provStrategies:           provStrategiesMap,
+		buffersRegistry:          buffersRegistry,
+		forceSafeToEvictFakePods: forceSafeToEvictFakePods,
 	}
 }
 
@@ -138,7 +141,7 @@ func (p *CapacityBufferPodListProcessor) provision(buffer *v1alpha1.CapacityBuff
 		p.updateBufferStatus(buffer)
 		return []*apiv1.Pod{}
 	}
-	fakePods, err := makeFakePods(buffer, &podTemplate.Template, int(*replicas))
+	fakePods, err := makeFakePods(buffer, &podTemplate.Template, int(*replicas), p.forceSafeToEvictFakePods)
 	if err != nil {
 		common.UpdateBufferStatusToFailedProvisioing(buffer, "FailedToMakeFakePods", fmt.Sprintf("failed to create fake pods with error: %v", err.Error()))
 		p.updateBufferStatus(buffer)
@@ -152,7 +155,6 @@ func (p *CapacityBufferPodListProcessor) provision(buffer *v1alpha1.CapacityBuff
 func (p *CapacityBufferPodListProcessor) filterBuffersProvStrategy(buffers []*v1alpha1.CapacityBuffer) []*v1alpha1.CapacityBuffer {
 	var filteredBuffers []*v1alpha1.CapacityBuffer
 	for _, buffer := range buffers {
-
 		if buffer.Status.ProvisioningStrategy != nil && p.provStrategies[*buffer.Status.ProvisioningStrategy] {
 			filteredBuffers = append(filteredBuffers, buffer)
 		}
@@ -168,15 +170,18 @@ func (p *CapacityBufferPodListProcessor) updateBufferStatus(buffer *v1alpha1.Cap
 }
 
 // makeFakePods creates podCount number of copies of the sample pod
-func makeFakePods(buffer *v1alpha1.CapacityBuffer, samplePodTemplate *apiv1.PodTemplateSpec, podCount int) ([]*apiv1.Pod, error) {
+func makeFakePods(buffer *v1alpha1.CapacityBuffer, samplePodTemplate *apiv1.PodTemplateSpec, podCount int, forceSafeToEvictFakePods bool) ([]*apiv1.Pod, error) {
 	var fakePods []*apiv1.Pod
 	samplePod := getPodFromTemplate(samplePodTemplate, buffer.Namespace)
+	samplePod.Spec.NodeName = ""
+	samplePod = withCapacityBufferFakePodAnnotation(samplePod)
+	if forceSafeToEvictFakePods {
+		samplePod = withSafeToEvictAnnotation(samplePod)
+	}
 	for i := 1; i <= podCount; i++ {
 		fakePod := samplePod.DeepCopy()
-		fakePod = withCapacityBufferFakePodAnnotation(fakePod)
 		fakePod.Name = fmt.Sprintf("capacity-buffer-%s-%d", buffer.Name, i)
 		fakePod.UID = types.UID(fmt.Sprintf("%s-%d", string(buffer.UID), i))
-		fakePod.Spec.NodeName = ""
 		fakePods = append(fakePods, fakePod)
 	}
 	return fakePods, nil
@@ -190,7 +195,16 @@ func withCapacityBufferFakePodAnnotation(pod *apiv1.Pod) *apiv1.Pod {
 	return pod
 }
 
-func isFakeCapacityBuffersPod(pod *apiv1.Pod) bool {
+func withSafeToEvictAnnotation(pod *apiv1.Pod) *apiv1.Pod {
+	if pod.Annotations == nil {
+		pod.Annotations = make(map[string]string, 1)
+	}
+	pod.Annotations[drain.PodSafeToEvictKey] = "true"
+	return pod
+}
+
+// IsFakeCapacityBuffersPod checks if the pod is a capacity buffer fake pod using pod annotation.
+func IsFakeCapacityBuffersPod(pod *apiv1.Pod) bool {
 	if pod.Annotations == nil {
 		return false
 	}
