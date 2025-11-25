@@ -126,13 +126,20 @@ func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
 		return true
 	}
 	// Check for extended resources as well
+	_, hasGpuAllocatable := NodeHasGpuAllocatable(node)
+	return hasGpuAllocatable
+}
+
+// NodeHasGpuAllocatable returns the GPU allocatable value and whether the node has GPU allocatable resources.
+// It checks all known GPU vendor resource names and returns the first non-zero allocatable GPU value found.
+func NodeHasGpuAllocatable(node *apiv1.Node) (gpuAllocatableValue int64, hasGpuAllocatable bool) {
 	for _, gpuVendorResourceName := range GPUVendorResourceNames {
-		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpuVendorResourceName]
-		if hasGpuAllocatable && !gpuAllocatable.IsZero() {
-			return true
+		gpuAllocatable, found := node.Status.Allocatable[gpuVendorResourceName]
+		if found && !gpuAllocatable.IsZero() {
+			return gpuAllocatable.Value(), true
 		}
 	}
-	return false
+	return 0, false
 }
 
 // PodRequestsGpu returns true if a given pod has GPU request.
