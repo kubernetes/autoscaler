@@ -40,6 +40,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -282,6 +283,21 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+			},
+		},
+		{
+			name:              "Can update even a single Pod if CPU boost is in progress.",
+			replicas:          1,
+			evictionTolerance: 0.5,
+			vpa:               getBasicVpa(),
+			pods: []podWithExpectations{
+				{
+					pod: generatePod().WithAnnotations(map[string]string{
+						annotations.StartupCPUBoostAnnotation: "",
+					}).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
