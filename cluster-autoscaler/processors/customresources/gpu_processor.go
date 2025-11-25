@@ -48,14 +48,7 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 
 		_, hasGpuLabel := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
-		hasAnyGpuAllocatable := false
-		for _, gpuVendorResourceName := range gpu.GPUVendorResourceNames {
-			gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpuVendorResourceName]
-			if hasGpuAllocatable && !gpuAllocatable.IsZero() {
-				hasAnyGpuAllocatable = true
-				break
-			}
-		}
+		_, hasAnyGpuAllocatable := gpu.NodeHasGpuAllocatable(node)
 		if hasGpuLabel && !hasAnyGpuAllocatable {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
@@ -94,10 +87,8 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingCtx *ca_contex
 		return CustomResourceTarget{}, nil
 	}
 
-	for _, gpuVendorResourceName := range gpu.GPUVendorResourceNames {
-		if gpuAllocatable, found := node.Status.Allocatable[gpuVendorResourceName]; found && gpuAllocatable.Value() > 0 {
-			return CustomResourceTarget{gpuLabel, gpuAllocatable.Value()}, nil
-		}
+	if gpuAllocatableValue, hasGpuAllocatable := gpu.NodeHasGpuAllocatable(node); hasGpuAllocatable {
+		return CustomResourceTarget{gpuLabel, gpuAllocatableValue}, nil
 	}
 
 	// A node is supposed to have GPUs (based on label), but they're not available yet
