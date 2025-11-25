@@ -246,16 +246,15 @@ func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container 
 		if containerResources.Limits == nil {
 			containerResources.Limits = core.ResourceList{}
 		}
-		originalLimit := container.Resources.Limits[core.ResourceCPU]
-		if originalLimit.IsZero() {
-			originalLimit = container.Resources.Requests[core.ResourceCPU]
+		newLimits, _ := vpa_api_util.GetProportionalLimit(
+			container.Resources.Limits,                           // originalLimits
+			container.Resources.Requests,                         // originalRequests
+			core.ResourceList{core.ResourceCPU: *boostedRequest}, // newRequests
+			core.ResourceList{},                                  // defaultLimit
+		)
+		if newLimit, ok := newLimits[core.ResourceCPU]; ok {
+			containerResources.Limits[core.ResourceCPU] = newLimit
 		}
-		recommendedLimit := containerResources.Limits[core.ResourceCPU]
-		boostedLimit, err := c.calculateBoostedCPU(recommendedLimit, originalLimit, startupBoostPolicy)
-		if err != nil {
-			return err
-		}
-		containerResources.Limits[core.ResourceCPU] = *boostedLimit
 	}
 	return nil
 }

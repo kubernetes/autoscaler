@@ -731,6 +731,74 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			},
 		},
 		{
+			name: "startup boost with ControlledValues=RequestsandLimits and limits set",
+			pod: &core.Pod{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{
+							Name: "container1",
+							Resources: core.ResourceRequirements{
+								Requests: core.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+								Limits: core.ResourceList{
+									cpu: resource.MustParse("300m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: core.ResourceList{
+						cpu: resource.MustParse("150m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
+				addResourceRequestPatch(0, cpu, "300m"),
+				addResourceLimitPatch(0, cpu, "900m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "startup boost with ControlledValues=RequestsandLimits and limits not set",
+			pod: &core.Pod{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{
+							Name: "container1",
+							Resources: core.ResourceRequirements{
+								Requests: core.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: core.ResourceList{
+						cpu: resource.MustParse("150m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{}}"),
+				addResourceRequestPatch(0, cpu, "300m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
+			},
+		},
+		{
 			name: "startup boost invalid type",
 			pod: &core.Pod{
 				Spec: core.PodSpec{

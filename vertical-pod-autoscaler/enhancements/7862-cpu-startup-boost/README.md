@@ -82,10 +82,20 @@ VPA object) without having to ALSO use the traditional VPA functionality.
 1. When a pod targeted by that VPA is created, the kube-apiserver invokes the
 VPA Admission Controller
 
-1. The VPA Admission Controller modifies the pod's containers CPU request and
-limits to align with its `StartupBoost` policy, if specified, during the pod
-creation. The boosted value is based on the VPA recommendation available at the
-time of admission. During the boost period, no resizing will take place.
+
+1.  The VPA Admission Controller modifies the pod's containers CPU request and
+    limits to align with its `StartupBoost` policy, if specified, during the pod
+    creation. The base value for the boost calculation is the VPA recommended CPU
+    request. If the VPA recommendation is not available or is zero, the container's
+    original CPU request from the Pod spec is used as the base.
+
+    The behavior for CPU limits depends on the `ControlledValues` setting in the
+    `ContainerResourcePolicy`:
+
+    *   If `ControlledValues` is `RequestsOnly` , the boosted CPU request
+        will be capped at the container's original CPU limit, if one is set.
+    *   If `ControlledValues` is `RequestsAndLimits` (the default), the CPU limit is also boosted.
+        The new limit is calculated to maintain the container's original limit-to-request ratio, applied to the new boosted CPU request. In cases where this ratio cannot be established (e.g., if the original CPU limit was unspecified), the limit will not be changed by the boost.
 
 1. The VPA Updater monitors pods targeted by the VPA object and when the pod
 condition is `Ready` and `StartupBoost.CPU.Duration` has elapsed, it scales
