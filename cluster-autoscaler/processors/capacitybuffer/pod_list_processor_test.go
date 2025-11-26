@@ -145,14 +145,14 @@ func TestPodListProcessor(t *testing.T) {
 			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
 
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, NewDefaultCapacityBuffersFakePodsRegistry())
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, NewDefaultCapacityBuffersFakePodsRegistry(), false)
 			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
 			assert.Equal(t, err != nil, test.expectError)
 
 			numberOfFakePods := 0
 			fakePodsNames := map[string]bool{}
 			for _, pod := range resUnschedulablePods {
-				if isFakeCapacityBuffersPod(pod) {
+				if IsFakeCapacityBuffersPod(pod) {
 					numberOfFakePods += 1
 					assert.False(t, fakePodsNames[pod.Name])
 					fakePodsNames[pod.Name] = true
@@ -210,12 +210,12 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
 
 			registry := NewDefaultCapacityBuffersFakePodsRegistry()
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry)
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry, false)
 			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
 			assert.Equal(t, nil, err)
 			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
 			for _, pod := range resUnschedulablePods {
-				if isFakeCapacityBuffersPod(pod) {
+				if IsFakeCapacityBuffersPod(pod) {
 					podBufferObj, found := registry.fakePodsUIDToBuffer[string(pod.UID)]
 					assert.True(t, found)
 					expectedPodsNum, found := test.expectedBuffersPodsNum[podBufferObj.Name]
