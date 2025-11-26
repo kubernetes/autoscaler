@@ -32,6 +32,18 @@ spec:
       securityContext:
         {{ toYaml . | nindent 8 | trim }}
       {{- end }}
+      {{- with .Values.updater.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.updater.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.updater.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: updater
           image: {{ include "vertical-pod-autoscaler.updater.image" . }}
@@ -73,5 +85,9 @@ spec:
           {{- with .Values.containerSecurityContext }}
           securityContext:
             {{ toYaml . | nindent 12 | trim }}
+          {{- end }}
+          {{- with .Values.updater.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
           {{- end }}
 {{- end -}}
