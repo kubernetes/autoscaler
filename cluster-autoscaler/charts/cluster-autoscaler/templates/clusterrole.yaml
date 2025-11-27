@@ -56,7 +56,7 @@ rules:
 {{- if (eq .Values.cloudProvider "kwok") }}
     - create
 {{- end }}
-{{- if or (eq .Values.cloudProvider "kwok") (eq .Values.cloudProvider "huaweicloud") }}
+{{- if or (eq .Values.cloudProvider "kwok") (eq .Values.cloudProvider "huaweicloud") (eq .Values.cloudProvider "slicer") }}
     - delete
 {{- end }}
     - get

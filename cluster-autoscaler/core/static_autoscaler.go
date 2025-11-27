@@ -297,6 +297,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
 
+	targetSize, err := a.AutoscalingContext.CloudProvider.NodeGroups()[0].TargetSize()
+	if err != nil {
+		klog.Errorf("Failed to get target size: %v", err)
+	}
+
+	fmt.Printf("Target size: %d\n", targetSize)
+
 	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
 	metrics.UpdateClusterCPUCurrentCores(coresTotal)
 	metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
