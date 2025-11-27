@@ -163,9 +163,19 @@ func TestPodListProcessor(t *testing.T) {
 			for buffer, condition := range test.expectedBuffersProvCondition {
 				buffer, err := fakeBuffersClient.AutoscalingV1alpha1().CapacityBuffers(corev1.NamespaceDefault).Get(context.TODO(), buffer, metav1.GetOptions{})
 				assert.Equal(t, err, nil)
-				assert.Equal(t, len(buffer.Status.Conditions), 1)
-				assert.Equal(t, string(buffer.Status.Conditions[0].Type), string(condition.Type))
-				assert.Equal(t, string(buffer.Status.Conditions[0].Status), string(condition.Status))
+				// After the fix, conditions are properly updated using meta.SetStatusCondition
+				// which means both ReadyForProvisioning and Provisioning conditions can coexist
+				assert.GreaterOrEqual(t, len(buffer.Status.Conditions), 1)
+				// Find the expected condition type in the buffer status
+				foundCondition := false
+				for _, c := range buffer.Status.Conditions {
+					if c.Type == condition.Type {
+						assert.Equal(t, string(condition.Status), string(c.Status))
+						foundCondition = true
+						break
+					}
+				}
+				assert.True(t, foundCondition, fmt.Sprintf("Expected condition %s not found in buffer %s", condition.Type, buffer.Name))
 			}
 		})
 	}

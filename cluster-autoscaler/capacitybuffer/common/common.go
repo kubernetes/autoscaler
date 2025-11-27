@@ -21,6 +21,7 @@ import (
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,7 +49,7 @@ func SetBufferAsReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *
 		Reason:             "atrtibutesSetSuccessfully",
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 	}
-	buffer.Status.Conditions = []metav1.Condition{readyCondition}
+	meta.SetStatusCondition(&buffer.Status.Conditions, readyCondition)
 }
 
 // SetBufferAsNotReadyForProvisioning updates the passed buffer object with the rest of the attributes and sets its condition to not ready with the passed error
@@ -69,7 +70,7 @@ func SetBufferAsNotReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRe
 		Reason:             "error",
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 	}
-	buffer.Status.Conditions = []metav1.Condition{notReadyCondition}
+	meta.SetStatusCondition(&buffer.Status.Conditions, notReadyCondition)
 }
 
 func mapEmptyProvStrategyToDefault(ps *string) *string {
@@ -82,21 +83,23 @@ func mapEmptyProvStrategyToDefault(ps *string) *string {
 
 // UpdateBufferStatusToFailedProvisioing updates the status of the passed buffer and set Provisioning to false with the passes reason and message
 func UpdateBufferStatusToFailedProvisioing(buffer *v1.CapacityBuffer, reason, errorMessage string) {
-	buffer.Status.Conditions = []metav1.Condition{{
+	failedCondition := metav1.Condition{
 		Type:               ProvisioningCondition,
 		Status:             ConditionFalse,
 		Message:            errorMessage,
 		Reason:             reason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
-	}}
+	}
+	meta.SetStatusCondition(&buffer.Status.Conditions, failedCondition)
 }
 
 // UpdateBufferStatusToSuccessfullyProvisioing updates the status of the passed buffer and set Provisioning to true with the passes reason
 func UpdateBufferStatusToSuccessfullyProvisioing(buffer *v1.CapacityBuffer, reason string) {
-	buffer.Status.Conditions = []metav1.Condition{{
+	successCondition := metav1.Condition{
 		Type:               ProvisioningCondition,
 		Status:             ConditionTrue,
 		Reason:             reason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
-	}}
+	}
+	meta.SetStatusCondition(&buffer.Status.Conditions, successCondition)
 }
