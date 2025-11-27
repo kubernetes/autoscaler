@@ -548,7 +548,12 @@ func (m *asgCache) isNodeGroupAvailable(group *autoscaling.Group) (bool, error) 
 			if activity.StartTime.Before(lut) {
 				break
 			} else if *activity.StatusCode == "Failed" {
-				klog.Warningf("ASG %s scaling failed with %s", asgRef.Name, *activity)
+				klog.Warningf("ASG %s scaling failed: StatusCode=%s, StatusMessage=%s, Description=%s, Cause=%s", 
+					asgRef.Name, 
+					aws.StringValue(activity.StatusCode),
+					aws.StringValue(activity.StatusMessage),
+					aws.StringValue(activity.Description),
+					aws.StringValue(activity.Cause))
 				return false, nil
 			}
 		} else {
