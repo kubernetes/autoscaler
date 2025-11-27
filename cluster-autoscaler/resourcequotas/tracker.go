@@ -17,13 +17,9 @@ limitations under the License.
 package resourcequotas
 
 import (
-	"fmt"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 )
 
 const (
@@ -45,8 +41,8 @@ type resourceList map[string]int64
 
 // Tracker tracks resource quotas.
 type Tracker struct {
-	crp           customresources.CustomResourcesProcessor
 	quotaStatuses []*quotaStatus
+	nodeCache     *nodeResourcesCache
 }
 
 type quotaStatus struct {
@@ -55,10 +51,10 @@ type quotaStatus struct {
 }
 
 // newTracker creates a new Tracker.
-func newTracker(crp customresources.CustomResourcesProcessor, quotaStatuses []*quotaStatus) *Tracker {
+func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache) *Tracker {
 	return &Tracker{
-		crp:           crp,
 		quotaStatuses: quotaStatuses,
+		nodeCache:     nodeCache,
 	}
 }
 
@@ -67,7 +63,7 @@ func newTracker(crp customresources.CustomResourcesProcessor, quotaStatuses []*q
 func (t *Tracker) ApplyDelta(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
-	delta, err := nodeResources(autoscalingCtx, t.crp, node, nodeGroup)
+	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +96,7 @@ func (t *Tracker) ApplyDelta(
 func (t *Tracker) CheckDelta(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
-	// TODO: cache deltas
-	delta, err := nodeResources(autoscalingCtx, t.crp, node, nodeGroup)
+	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -173,26 +168,4 @@ func (r *CheckDeltaResult) Exceeded() bool {
 type ExceededQuota struct {
 	ID                string
 	ExceededResources []string
-}
-
-// nodeResources calculates the amount of resources that will be used from the cluster when creating a node.
-func nodeResources(autoscalingCtx *context.AutoscalingContext, crp customresources.CustomResourcesProcessor, node *corev1.Node, nodeGroup cloudprovider.NodeGroup) (resourceList, error) {
-	// TODO: storage?
-	nodeCPU, nodeMemory := utils.GetNodeCoresAndMemory(node)
-	nodeResources := resourceList{
-		string(corev1.ResourceCPU):    nodeCPU,
-		string(corev1.ResourceMemory): nodeMemory,
-		ResourceNodes:                 1,
-	}
-
-	resourceTargets, err := crp.GetNodeResourceTargets(autoscalingCtx, node, nodeGroup)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get custom resources: %w", err)
-	}
-
-	for _, resourceTarget := range resourceTargets {
-		nodeResources[resourceTarget.ResourceType] = resourceTarget.ResourceCount
-	}
-
-	return nodeResources, nil
 }
