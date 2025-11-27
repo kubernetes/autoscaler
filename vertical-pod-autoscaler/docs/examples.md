@@ -4,8 +4,6 @@
 
 - [Examples](#examples)
   - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
-  - [Capping to Limit Range](#capping-to-limit-range)
-  - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
   - [Starting multiple recommenders](#starting-multiple-recommenders)
   - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
   - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
@@ -18,23 +16,6 @@
 The container template specifies resource request for 500 milli CPU and 1 GB of RAM. The template also
 specifies resource limit of 2 GB RAM. VPA recommendation is 1000 milli CPU and 2 GB of RAM. When VPA
 applies the recommendation, it will also set the memory limit to 4 GB.
-
-## Capping to Limit Range
-
-The container template specifies resource request for 500 milli CPU and 1 GB of RAM. The template also
-specifies resource limit of 2 GB RAM. A limit range sets a maximum limit to 3 GB RAM per container.
-VPA recommendation is 1000 milli CPU and 2 GB of RAM. When VPA applies the recommendation, it will
-set the memory limit to 3 GB (to keep it within the allowed limit range) and the memory request to 1.5 GB (
-to maintain a 2:1 limit/request ratio from the template).
-
-## Resource Policy Overriding Limit Range
-
-The container template specifies resource request for 500 milli CPU and 1 GB of RAM. The template also
-specifies a resource limit of 2 GB RAM. A limit range sets a maximum limit to 3 GB RAM per container.
-VPAs Container Resource Policy requires VPA to set containers request to at least 750 milli CPU and
-2 GB RAM. VPA recommendation is 1000 milli CPU and 2 GB of RAM. When applying the recommendation,
-VPA will set RAM request to 2 GB (following the resource policy) and RAM limit to 4 GB (to maintain
-the 2:1 limit/request ratio from the template).
 
 ## Starting multiple recommenders
 
