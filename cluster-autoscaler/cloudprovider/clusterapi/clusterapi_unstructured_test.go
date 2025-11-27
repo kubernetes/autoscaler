@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -703,6 +704,197 @@ func TestInstanceSystemInfo(t *testing.T) {
 
 			if sysInfo.OperatingSystem != tc.expectedOS {
 				t.Errorf("expected operating system %s, got %s", tc.nodeInfo[operatingSystemStatusKey], sysInfo.OperatingSystem)
+			}
+		})
+	}
+}
+
+func TestParseCSIDriverAnnotation(t *testing.T) {
+	for _, tc := range []struct {
+		description   string
+		annotationVal string
+		expected      []storagev1.CSINodeDriver
+	}{
+		{
+			description:   "empty string",
+			annotationVal: "",
+			expected:      []storagev1.CSINodeDriver{},
+		},
+		{
+			description:   "single valid driver",
+			annotationVal: "ebs.csi.aws.com=25",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name: "ebs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(25)),
+					},
+				},
+			},
+		},
+		{
+			description:   "multiple valid drivers",
+			annotationVal: "ebs.csi.aws.com=25,efs.csi.aws.com=16,disk.csi.azure.com=16",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name: "ebs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(25)),
+					},
+				},
+				{
+					Name: "efs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(16)),
+					},
+				},
+				{
+					Name: "disk.csi.azure.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(16)),
+					},
+				},
+			},
+		},
+		{
+			description:   "drivers with whitespace",
+			annotationVal: " ebs.csi.aws.com = 25 , efs.csi.aws.com = 16 ",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name: "ebs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(25)),
+					},
+				},
+				{
+					Name: "efs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(16)),
+					},
+				},
+			},
+		},
+		{
+			description:   "single driver with large volume limit",
+			annotationVal: "ebs.csi.aws.com=1000",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name: "ebs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(1000)),
+					},
+				},
+			},
+		},
+		{
+			description:   "invalid format - missing equals sign",
+			annotationVal: "ebs.csi.aws.com25",
+			expected:      []storagev1.CSINodeDriver{},
+		},
+		{
+			description:   "invalid format - empty driver name",
+			annotationVal: "=25",
+			expected:      []storagev1.CSINodeDriver{},
+		},
+		{
+			description:   "invalid format - non-integer volume limit",
+			annotationVal: "ebs.csi.aws.com=abc",
+			expected:      []storagev1.CSINodeDriver{},
+		},
+		{
+			description:   "invalid format - negative volume limit",
+			annotationVal: "ebs.csi.aws.com=-5",
+			expected:      []storagev1.CSINodeDriver{},
+		},
+		{
+			description:   "zero volume limit is valid",
+			annotationVal: "ebs.csi.aws.com=0",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name:        "ebs.csi.aws.com",
+					Allocatable: nil,
+				},
+			},
+		},
+		{
+			description:   "invalid format - fractional volume limit",
+			annotationVal: "ebs.csi.aws.com=25.5",
+			expected:      []storagev1.CSINodeDriver{},
+		},
+		{
+			description:   "mixed valid and invalid drivers - should skip invalid ones",
+			annotationVal: "ebs.csi.aws.com=25,invalid-format,efs.csi.aws.com=16,=10,disk.csi.azure.com=0",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name: "ebs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(25)),
+					},
+				},
+				{
+					Name: "efs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(16)),
+					},
+				},
+				{
+					Name:        "disk.csi.azure.com",
+					Allocatable: nil,
+				},
+			},
+		},
+		{
+			description:   "comma-separated with empty entries",
+			annotationVal: "ebs.csi.aws.com=25,,efs.csi.aws.com=16,",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name: "ebs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(25)),
+					},
+				},
+				{
+					Name: "efs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(16)),
+					},
+				},
+			},
+		},
+		{
+			description:   "volume limit at int32 max",
+			annotationVal: "ebs.csi.aws.com=2147483647",
+			expected: []storagev1.CSINodeDriver{
+				{
+					Name: "ebs.csi.aws.com",
+					Allocatable: &storagev1.VolumeNodeResources{
+						Count: ptr.To(int32(2147483647)),
+					},
+				},
+			},
+		},
+	} {
+		t.Run(tc.description, func(t *testing.T) {
+			got := parseCSIDriverAnnotation(tc.annotationVal)
+			assert.Equal(t, len(tc.expected), len(got), "expected %d drivers, got %d", len(tc.expected), len(got))
+
+			for i, expectedDriver := range tc.expected {
+				if i >= len(got) {
+					t.Fatalf("expected driver at index %d but got only %d drivers", i, len(got))
+				}
+				gotDriver := got[i]
+				assert.Equal(t, expectedDriver.Name, gotDriver.Name, "driver name mismatch at index %d", i)
+				if expectedDriver.Allocatable == nil {
+					assert.Nil(t, gotDriver.Allocatable, "expected nil Allocatable at index %d", i)
+				} else {
+					assert.NotNil(t, gotDriver.Allocatable, "expected non-nil Allocatable at index %d", i)
+					if gotDriver.Allocatable != nil {
+						assert.NotNil(t, gotDriver.Allocatable.Count, "expected non-nil Count at index %d", i)
+						if gotDriver.Allocatable.Count != nil {
+							assert.Equal(t, *expectedDriver.Allocatable.Count, *gotDriver.Allocatable.Count, "volume limit mismatch at index %d", i)
+						}
+					}
+				}
 			}
 		})
 	}

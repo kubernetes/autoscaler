@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
@@ -112,7 +113,7 @@ func TestDefaultProcessorFilterOut(t *testing.T) {
 					readyNodes = append(readyNodes, node)
 				}
 			}
-			resultedAllNodes, resultedReadyNodes := processor.FilterOutNodesWithUnreadyResources(nil, tc.allNodes, readyNodes, nil)
+			resultedAllNodes, resultedReadyNodes := processor.FilterOutNodesWithUnreadyResources(nil, tc.allNodes, readyNodes, nil, nil)
 			assert.ElementsMatch(t, tc.allNodes, resultedAllNodes)
 			assert.True(t, len(resultedReadyNodes) == len(tc.expectedReadyNodes))
 			for _, node := range resultedReadyNodes {
@@ -174,7 +175,7 @@ type mockCustomResourcesProcessor struct {
 	customResourceTargetsQuantity int64
 }
 
-func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	filteredReadyNodes := []*apiv1.Node{}
 	for _, node := range readyNodes {
 		if !strings.Contains(node.Name, m.nodeMark) {

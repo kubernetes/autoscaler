@@ -29,7 +29,7 @@ import (
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerframework "k8s.io/kube-scheduler/framework"
 )
 
 // ResourceClaimId is a unique identifier for a ResourceClaim.
@@ -91,6 +91,11 @@ func (s *Snapshot) ResourceClaims() schedulerframework.ResourceClaimTracker {
 	return snapshotClaimTracker{snapshot: s}
 }
 
+// DeviceClassResolver returns a device class resolver for the snapshot.
+func (s *Snapshot) DeviceClassResolver() schedulerframework.DeviceClassResolver {
+	return newSnapshotDeviceClassResolver(s)
+}
+
 // ResourceSlices exposes the Snapshot as schedulerframework.ResourceSliceLister, in order to interact with
 // the scheduler framework.
 func (s *Snapshot) ResourceSlices() schedulerframework.ResourceSliceLister {
@@ -119,6 +124,22 @@ func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework
 	}
 	nodeSlices, _ := s.NodeResourceSlices(schedNodeInfo.Node().Name)
 	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nodeSlices, podExtraInfos), nil
+}
+
+// AddDRAInfo adds DRA information to the node info.
+func (s *Snapshot) AddDRAInfo(nodeInfo *framework.NodeInfo) (*framework.NodeInfo, error) {
+	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(nodeInfo.Pods()))
+	for _, pod := range nodeInfo.Pods() {
+		podClaims, err := s.PodClaims(pod.Pod)
+		if err != nil {
+			return nil, err
+		}
+		if len(podClaims) > 0 {
+			podExtraInfos[pod.Pod.UID] = framework.PodExtraInfo{NeededResourceClaims: podClaims}
+		}
+	}
+	nodeSlices, _ := s.NodeResourceSlices(nodeInfo.Node().Name)
+	return nodeInfo.AddNodeResourceSlices(nodeSlices).AddPodExtraInfo(podExtraInfos), nil
 }
 
 // AddClaims adds additional ResourceClaims to the Snapshot. It can be used e.g. if we need to duplicate a Pod that
