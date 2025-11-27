@@ -17,18 +17,17 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"gopkg.in/gcfg.v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/ec2metadata"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/endpoints"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	provider_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
 	"k8s.io/klog/v2"
@@ -42,59 +41,60 @@ import (
 //
 // t.Setenv("AWS_REGION", "fanghorn")
 func createAWSSDKProvider(configReader io.Reader) (*awsSDKProvider, error) {
-	cfg, err := readAWSCloudConfig(configReader)
+	cloudCfg, err := readAWSCloudConfig(configReader)
 	if err != nil {
 		klog.Errorf("Couldn't read config: %v", err)
 		return nil, err
 	}
 
-	if err = validateOverrides(cfg); err != nil {
+	if err = validateOverrides(cloudCfg); err != nil {
 		klog.Errorf("Unable to validate custom endpoint overrides: %v", err)
 		return nil, err
 	}
 
-	config := aws.NewConfig().
-		WithRegion(getRegion()).
-		WithEndpointResolver(getResolver(cfg))
-
-	config, err = setMaxRetriesFromEnv(config)
-	if err != nil {
-		return nil, err
+	ctx := context.Background()
+	
+	// Load the AWS SDK v2 config
+	var opts []func(*config.LoadOptions) error
+	
+	// Get region
+	region := getRegion(ctx)
+	if region != "" {
+		opts = append(opts, config.WithRegion(region))
 	}
-
-	sess, err := session.NewSession(config)
-	if err != nil {
-		return nil, err
-	}
-
-	// add cluster-autoscaler to the user-agent to make it easier to identify
-	agent := fmt.Sprintf("cluster-autoscaler/v%s", version.ClusterAutoscalerVersion)
-	sess.Handlers.Build.PushBack(request.MakeAddToUserAgentFreeFormHandler(agent))
-
-	provider := &awsSDKProvider{
-		session: sess,
-	}
-
-	return provider, nil
-}
-
-// setMaxRetriesFromEnv sets aws config MaxRetries by reading AWS_MAX_ATTEMPTS
-// aws sdk does not auto-set these so instead of having more config options we can reuse what the aws cli
-// does and read AWS_MAX_ATTEMPTS from the env https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
-func setMaxRetriesFromEnv(config *aws.Config) (*aws.Config, error) {
+	
+	// Set max retries from environment
 	maxRetries := os.Getenv("AWS_MAX_ATTEMPTS")
 	if maxRetries != "" {
 		num, err := strconv.Atoi(maxRetries)
 		if err != nil {
 			return nil, err
 		}
-		config = config.WithMaxRetries(num)
+		opts = append(opts, config.WithRetryMaxAttempts(num))
 	}
-	return config, nil
+	
+	// Add custom endpoint resolver if configured
+	if len(cloudCfg.ServiceOverride) > 0 {
+		opts = append(opts, config.WithEndpointResolverWithOptions(getResolverV2(cloudCfg)))
+	}
+	
+	// TODO: Add user agent middleware for cluster-autoscaler version tracking
+	// User agent handling in SDK v2 requires custom middleware implementation
+	
+	cfg, err := config.LoadDefaultConfig(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	provider := &awsSDKProvider{
+		cfg: cfg,
+	}
+
+	return provider, nil
 }
 
 type awsSDKProvider struct {
-	session *session.Session
+	cfg aws.Config
 }
 
 // readAWSCloudConfig reads an instance of AWSCloudConfig from config reader.
@@ -150,21 +150,11 @@ func validateOverrides(cfg *provider_aws.CloudConfig) error {
 	return nil
 }
 
-func getResolver(cfg *provider_aws.CloudConfig) endpoints.ResolverFunc {
-	defaultResolver := endpoints.DefaultResolver()
-	defaultResolverFn := func(service, region string,
-		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
-		return defaultResolver.EndpointFor(service, region, optFns...)
-	}
-	if len(cfg.ServiceOverride) == 0 {
-		return defaultResolverFn
-	}
-
-	return func(service, region string,
-		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
+func getResolverV2(cfg *provider_aws.CloudConfig) aws.EndpointResolverWithOptionsFunc {
+	return func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		for _, override := range cfg.ServiceOverride {
 			if override.Service == service && override.Region == region {
-				return endpoints.ResolvedEndpoint{
+				return aws.Endpoint{
 					URL:           override.URL,
 					SigningRegion: override.SigningRegion,
 					SigningMethod: override.SigningMethod,
@@ -172,22 +162,26 @@ func getResolver(cfg *provider_aws.CloudConfig) endpoints.ResolverFunc {
 				}, nil
 			}
 		}
-		return defaultResolver.EndpointFor(service, region, optFns...)
+		// Return unresolved to use default resolver
+		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
 	}
 }
 
 // getRegion deduces the current AWS Region.
-func getRegion(cfg ...*aws.Config) string {
+func getRegion(ctx context.Context) string {
 	region, present := os.LookupEnv("AWS_REGION")
 	if !present {
-		sess, err := session.NewSession()
+		// Try to get region from EC2 instance metadata
+		cfg, err := config.LoadDefaultConfig(ctx)
 		if err != nil {
-			klog.Errorf("Error getting AWS session while retrieving region: %v", err)
-		} else {
-			svc := ec2metadata.New(sess, cfg...)
-			if r, err := svc.Region(); err == nil {
-				region = r
-			}
+			klog.Errorf("Error loading AWS config while retrieving region: %v", err)
+			return ""
+		}
+		
+		client := imds.NewFromConfig(cfg)
+		result, err := client.GetRegion(ctx, &imds.GetRegionInput{})
+		if err == nil && result.Region != "" {
+			region = result.Region
 		}
 	}
 	return region
