@@ -19,7 +19,7 @@ package azure
 import (
 	"strings"
 
-	"github.com/Azure/skewer"
+	"github.com/Azure/skewer/v2"
 	"github.com/pkg/errors"
 )
 

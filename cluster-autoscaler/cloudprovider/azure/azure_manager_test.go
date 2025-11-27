@@ -24,12 +24,10 @@ import (
 	"testing"
 	"time"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources/v2"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -37,8 +35,6 @@ import (
 	"k8s.io/utils/ptr"
 	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
@@ -221,10 +217,14 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager([]armcompute.VirtualMachineScaleSet{})
+	}).Times(2)
+	mockVMClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -312,10 +312,14 @@ func TestCreateAzureManagerLegacyConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager([]armcompute.VirtualMachineScaleSet{})
+	}).Times(2)
+	mockVMClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -400,10 +404,14 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
+	mockVMClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).Times(2)
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager([]armcompute.VirtualMachineScaleSet{})
+	}).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -523,10 +531,14 @@ func TestCreateAzureManagerValidConfigForVMsPool(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager([]armcompute.VirtualMachineScaleSet{})
+	}).Times(2)
+	mockVMClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -615,10 +627,14 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
-	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager("resourceGroup", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager([]armcompute.VirtualMachineScaleSet{})
+	}).AnyTimes()
+	mockVMClient.EXPECT().NewListPager("resourceGroup", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).AnyTimes()
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	vmspool := getTestVMsAgentPool(false)
 	fakeAPListPager := getFakeAgentpoolListPager(&vmspool)
@@ -874,10 +890,14 @@ func TestCreateAzureManagerWithEnvOverridingConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
-	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager("resourceGroup", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager([]armcompute.VirtualMachineScaleSet{})
+	}).AnyTimes()
+	mockVMClient.EXPECT().NewListPager("resourceGroup", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).AnyTimes()
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -1028,28 +1048,35 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 		},
 	}
 
-	orchestrationModes := [2]compute.OrchestrationMode{compute.Uniform, compute.Flexible}
+	orchestrationModes := [2]armcompute.OrchestrationMode{armcompute.OrchestrationModeUniform, armcompute.OrchestrationModeFlexible}
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	expectedVMs := newTestVMList(3)
 
 	for _, orchMode := range orchestrationModes {
 		manager := newTestAzureManager(t)
-		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
+		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", armcompute.OrchestrationModeUniform)
 
-		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+		mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+		mockVMSSClient.EXPECT().NewListPager(manager.config.ResourceGroup, gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+			return getFakeVMSSListPager(expectedScaleSets)
+		}).AnyTimes()
 		manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-		if orchMode == compute.Uniform {
+		if orchMode == armcompute.OrchestrationModeUniform {
 
-			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+			mockVMSSVMClient := NewMockVirtualMachineScaleSetVMsClient(ctrl)
+			mockVMSSVMClient.EXPECT().NewListPager(manager.config.ResourceGroup, "test-asg", gomock.Any()).DoAndReturn(func(string, string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetVMsClientListResponse] {
+				return getFakeVMSSVMListPager(expectedVMSSVMs)
+			}).AnyTimes()
 			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
 
-			mockVMClient := mockvmclient.NewMockInterface(ctrl)
+			mockVMClient := NewMockVirtualMachinesClient(ctrl)
 			manager.config.EnableVmssFlexNodes = true
-			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+			// TODO: ListVmssFlexVMsWithoutInstanceView needs to be added to interface or use NewListPager
+			mockVMClient.EXPECT().NewListPager("", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+				return getFakeVMListPager(expectedVMs)
+			}).AnyTimes()
 			manager.azClient.virtualMachinesClient = mockVMClient
 		}
 
@@ -1067,19 +1094,19 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 	timeLayout := "2006-01-02 15:04:05"
 	timeBenchMark, _ := time.Parse(timeLayout, "2000-01-01 00:00:00")
 	testAS.manager.azClient.deploymentClient = &DeploymentClientMock{
-		FakeStore: map[string]resources.DeploymentExtended{
+		FakeStore: map[string]armresources.DeploymentExtended{
 			"cluster-autoscaler-0001": {
 				Name: ptr.To("cluster-autoscaler-0001"),
-				Properties: &resources.DeploymentPropertiesExtended{
-					ProvisioningState: ptr.To("Succeeded"),
-					Timestamp:         &date.Time{Time: timeBenchMark.Add(2 * time.Minute)},
+				Properties: &armresources.DeploymentPropertiesExtended{
+					ProvisioningState: ptr.To(armresources.ProvisioningStateSucceeded),
+					Timestamp:         ptr.To(timeBenchMark.Add(2 * time.Minute)),
 				},
 			},
 		},
 	}
 	testAS.manager.config.VMType = providerazureconsts.VMTypeStandard
 	err := testAS.manager.fetchExplicitNodeGroups([]string{"1:5:testAS"})
-	expectedErr := fmt.Errorf("failed to parse node group spec: %v", retry.NewError(false, fmt.Errorf("deployment not found")).Error())
+	expectedErr := fmt.Errorf("failed to parse node group spec: %v", fmt.Errorf("deployment not found"))
 	assert.Equal(t, expectedErr, err, "testAS.manager.fetchExplicitNodeGroups return error does not match, expected: %v, actual: %v", expectedErr, err)
 	err = testAS.manager.fetchExplicitNodeGroups(nil)
 	assert.NoError(t, err)
@@ -1114,9 +1141,11 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &min, "max": &max})}
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	expectedScaleSets := []armcompute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &min, "max": &max})}
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager(manager.config.ResourceGroup, gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager(expectedScaleSets)
+	}).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	err := manager.forceRefresh()
 	assert.NoError(t, err)
@@ -1167,9 +1196,11 @@ func TestGetFilteredAutoscalingGroupsVmssWithConfiguredSizes(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, vmssTag2: &vmssTagValue2})}
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	expectedScaleSets := []armcompute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, vmssTag2: &vmssTagValue2})}
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager(manager.config.ResourceGroup, gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager(expectedScaleSets)
+	}).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	err := manager.forceRefresh()
 	assert.NoError(t, err)
@@ -1209,9 +1240,11 @@ func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedScaleSets := []compute.VirtualMachineScaleSet{}
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	expectedScaleSets := []armcompute.VirtualMachineScaleSet{}
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager(manager.config.ResourceGroup, gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager(expectedScaleSets)
+	}).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
 	manager.config.VMType = "invalidVMType"
@@ -1245,19 +1278,25 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
 	}
 
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString})}
+	expectedScaleSets := []armcompute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString})}
 	expectedVMSSVMs := newTestVMSSVMList(1)
 
 	manager := newTestAzureManager(t)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMSSClient.EXPECT().NewListPager(manager.config.ResourceGroup, gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager(expectedScaleSets)
+	}).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
-	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	mockVMSSVMClient := NewMockVirtualMachineScaleSetVMsClient(ctrl)
+	mockVMSSVMClient.EXPECT().NewListPager(manager.config.ResourceGroup, vmssName, gomock.Any()).DoAndReturn(func(string, string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetVMsClientListResponse] {
+		return getFakeVMSSVMListPager(expectedVMSSVMs)
+	}).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
 	manager.azClient.virtualMachinesClient = mockVMClient
-	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockVMClient.EXPECT().NewListPager(manager.config.ResourceGroup, gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).AnyTimes()
 	err := manager.forceRefresh()
 	assert.NoError(t, err)
 
@@ -1360,18 +1399,24 @@ func TestVMSSNotFound(t *testing.T) {
 	// client setup
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSClient := NewMockVirtualMachineScaleSetsClient(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
+	mockVMSSVMClient := NewMockVirtualMachineScaleSetVMsClient(ctrl)
 	client := azClient{}
 	client.virtualMachineScaleSetsClient = mockVMSSClient
 	client.virtualMachinesClient = mockVMClient
 	client.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 
 	// Expect that no vmss are present in the vmss client
-	mockVMSSVMClient.EXPECT().List(gomock.Any(), "fakeId", testASG, gomock.Any()).Return([]compute.VirtualMachineScaleSetVM{}, nil).AnyTimes()
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).AnyTimes()
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
+	mockVMSSVMClient.EXPECT().NewListPager("fakeId", testASG, gomock.Any()).DoAndReturn(func(string, string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetVMsClientListResponse] {
+		return getFakeVMSSVMListPager([]armcompute.VirtualMachineScaleSetVM{})
+	}).AnyTimes()
+	mockVMClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachinesClientListResponse] {
+		return getFakeVMListPager([]armcompute.VirtualMachine{})
+	}).AnyTimes()
+	mockVMSSClient.EXPECT().NewListPager("fakeId", gomock.Any()).DoAndReturn(func(string, interface{}) *runtime.Pager[armcompute.VirtualMachineScaleSetsClientListResponse] {
+		return getFakeVMSSListPager([]armcompute.VirtualMachineScaleSet{})
+	}).AnyTimes()
 
 	// Add explicit node group to look for during init
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{

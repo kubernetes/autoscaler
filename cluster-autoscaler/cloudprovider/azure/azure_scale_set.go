@@ -32,8 +32,9 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 )
 
 var (
@@ -67,14 +68,14 @@ type ScaleSet struct {
 	// Current Size (Number of VMs)
 
 	// curSize tracks (and caches) the number of VMs in this ScaleSet.
-	// It is periodically updated from vmss.Sku.Capacity, with VMSS itself coming
+	// It is periodically updated from vmss.SKU.Capacity, with VMSS itself coming
 	// either from azure.Cache (which periodically does VMSS.List)
 	// or from direct VMSS.Get (always used for Spot).
 	curSize int64
-	// sizeRefreshPeriod is how often curSize is refreshed from vmss.Sku.Capacity.
+	// sizeRefreshPeriod is how often curSize is refreshed from vmss.SKU.Capacity.
 	// (Set from azureCache.refreshInterval = VmssCacheTTL or [defaultMetadataCache]refreshInterval = 1min)
 	sizeRefreshPeriod time.Duration
-	// lastSizeRefresh is the time curSize was last refreshed from vmss.Sku.Capacity.
+	// lastSizeRefresh is the time curSize was last refreshed from vmss.SKU.Capacity.
 	// Together with sizeRefreshPeriod, it is used to determine if it is time to refresh curSize.
 	lastSizeRefresh time.Time
 	// getVmssSizeRefreshPeriod is how often curSize should be refreshed in case VMSS.Get call is used.
@@ -185,11 +186,11 @@ func (scaleSet *ScaleSet) MaxSize() int {
 	return scaleSet.maxSize
 }
 
-func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, error) {
+func (scaleSet *ScaleSet) getVMSSFromCache() (armcompute.VirtualMachineScaleSet, error) {
 	allVMSS := scaleSet.manager.azureCache.getScaleSets()
 
 	if _, exists := allVMSS[scaleSet.Name]; !exists {
-		return compute.VirtualMachineScaleSet{}, fmt.Errorf("could not find vmss: %s", scaleSet.Name)
+		return armcompute.VirtualMachineScaleSet{}, fmt.Errorf("could not find vmss: %s", scaleSet.Name)
 	}
 
 	return allVMSS[scaleSet.Name], nil
@@ -209,14 +210,14 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	// // If VMSS state is updating, return the currentSize which would've been proactively incremented or decremented by CA
 	// // unless it's -1. In that case, its better to initialize it.
 	// if scaleSet.curSize != -1 && set.VirtualMachineScaleSetProperties != nil &&
-	// 	strings.EqualFold(ptr.Deref(set.VirtualMachineScaleSetProperties.ProvisioningState, ""), string(compute.GalleryProvisioningStateUpdating)) {
+	// 	strings.EqualFold(ptr.Deref(set.VirtualMachineScaleSetProperties.ProvisioningState, ""), string(armcompute.GalleryProvisioningStateUpdating)) {
 	// 	klog.V(3).Infof("VMSS %q is in updating state, returning cached size: %d", scaleSet.Name, scaleSet.curSize)
 	// 	return scaleSet.curSize, nil
 	// }
 
 	effectiveSizeRefreshPeriod := scaleSet.sizeRefreshPeriod
 
-	// If the scale set is Spot, we want to have a more fresh view of the Sku.Capacity field.
+	// If the scale set is Spot, we want to have a more fresh view of the SKU.Capacity field.
 	// This is because evictions can happen
 	// at any given point in time, even before VMs are materialized as
 	// nodes. We should be able to react to those and have the autoscaler
@@ -235,16 +236,16 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
 
-		var rerr *retry.Error
-		set, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name)
-		if rerr != nil {
-			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, rerr)
-			return -1, newGetVMSSFailedError(rerr.Error(), rerr.IsNotFound())
+		resp, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, nil)
+		if err != nil {
+			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
+			return -1, newGetVMSSFailedError(err, false)
 		}
+		set = resp.VirtualMachineScaleSet
 	}
 
 	vmssSizeMutex.Lock()
-	curSize := *set.Sku.Capacity
+	curSize := *set.SKU.Capacity
 	vmssSizeMutex.Unlock()
 
 	if scaleSet.curSize != curSize {
@@ -270,8 +271,8 @@ func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	return size, nil
 }
 
-// waitForCreateOrUpdate waits for the outcome of VMSS capacity update initiated via CreateOrUpdateAsync.
-func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(future *azure.Future) {
+// waitForCreateOrUpdate waits for the outcome of VMSS capacity update initiated via BeginCreateOrUpdate.
+func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse]) {
 	var err error
 
 	defer func() {
@@ -288,11 +289,10 @@ func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(future *azure.Future) {
 	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 	defer cancel()
 
-	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(%s)", scaleSet.Name)
-	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(ctx, future, scaleSet.manager.config.ResourceGroup)
+	klog.V(3).Infof("Calling poller.PollUntilDone for VMSS %s", scaleSet.Name)
+	_, err = poller.PollUntilDone(ctx, nil)
 
-	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
-	if isSuccess {
+	if err == nil {
 		klog.V(3).Infof("waitForCreateOrUpdateInstances(%s) success", scaleSet.Name)
 		return
 	}
@@ -359,25 +359,38 @@ func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.
-func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, *retry.Error) {
+func (scaleSet *ScaleSet) GetScaleSetVms() ([]armcompute.VirtualMachineScaleSetVM, *retry.Error) {
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
-	vmList, rerr := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, scaleSet.manager.config.ResourceGroup,
-		scaleSet.Name, string(compute.InstanceViewTypesInstanceView))
+	pager := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.NewListPager(
+		scaleSet.manager.config.ResourceGroup,
+		scaleSet.Name,
+		&armcompute.VirtualMachineScaleSetVMsClientListOptions{
+			Expand: to.Ptr(string(armcompute.InstanceViewTypesInstanceView)),
+		})
 
-	klog.V(4).Infof("GetScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
-
-	if rerr != nil {
-		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, rerr)
-		return nil, rerr
+	var vmList []armcompute.VirtualMachineScaleSetVM
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
+			return nil, &retry.Error{RawError: err}
+		}
+		for _, vm := range page.Value {
+			if vm != nil {
+				vmList = append(vmList, *vm)
+			}
+		}
 	}
+
+	klog.V(4).Infof("GetScaleSetVms: scaleSet.Name: %s, vmList count: %d", scaleSet.Name, len(vmList))
 
 	return vmList, nil
 }
 
 // GetFlexibleScaleSetVms returns list of nodes for flexible scale set.
-func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *retry.Error) {
+func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]armcompute.VirtualMachine, *retry.Error) {
 	klog.V(4).Infof("GetScaleSetVms: starts")
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
@@ -392,12 +405,28 @@ func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *r
 		}
 		return nil, rerr
 	}
-	vmList, rerr := scaleSet.manager.azClient.virtualMachinesClient.ListVmssFlexVMsWithoutInstanceView(ctx, *vmssInfo.ID)
-	if rerr != nil {
-		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, rerr)
-		return nil, rerr
+
+	// Use NewListPager with filter to get VMs belonging to this VMSS
+	filter := fmt.Sprintf("virtualMachineScaleSet/id eq '%s'", *vmssInfo.ID)
+	pager := scaleSet.manager.azClient.virtualMachinesClient.NewListPager(scaleSet.manager.config.ResourceGroup, &armcompute.VirtualMachinesClientListOptions{
+		Filter: &filter,
+	})
+
+	var vmList []armcompute.VirtualMachine
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			klog.Errorf("VirtualMachinesClient.List failed for %s: %v", scaleSet.Name, err)
+			return nil, &retry.Error{RawError: err}
+		}
+		for _, vm := range page.Value {
+			if vm != nil {
+				vmList = append(vmList, *vm)
+			}
+		}
 	}
-	klog.V(4).Infof("GetFlexibleScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
+
+	klog.V(4).Infof("GetFlexibleScaleSetVms: scaleSet.Name: %s, vmList count: %d", scaleSet.Name, len(vmList))
 	return vmList, nil
 }
 
@@ -438,7 +467,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
-func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachineScaleSet, newSize int64) error {
+func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) error {
 	if vmssInfo == nil {
 		return fmt.Errorf("vmssInfo cannot be nil while increating scaleSet capacity")
 	}
@@ -448,18 +477,18 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachi
 
 	// Update the new capacity to cache.
 	vmssSizeMutex.Lock()
-	vmssInfo.Sku.Capacity = &newSize
+	vmssInfo.SKU.Capacity = &newSize
 	vmssSizeMutex.Unlock()
 
 	// Compose a new VMSS for updating.
-	op := compute.VirtualMachineScaleSet{
+	op := armcompute.VirtualMachineScaleSet{
 		Name:     vmssInfo.Name,
-		Sku:      vmssInfo.Sku,
+		SKU:      vmssInfo.SKU,
 		Location: vmssInfo.Location,
 	}
 
 	if vmssInfo.ExtendedLocation != nil {
-		op.ExtendedLocation = &compute.ExtendedLocation{
+		op.ExtendedLocation = &armcompute.ExtendedLocation{
 			Name: vmssInfo.ExtendedLocation.Name,
 			Type: vmssInfo.ExtendedLocation.Type,
 		}
@@ -469,18 +498,18 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachi
 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
-	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
-	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateAsync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
-	if rerr != nil {
-		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, rerr)
-		return rerr.Error()
+	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.BeginCreateOrUpdate(%s)", scaleSet.Name)
+	poller, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.BeginCreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, nil)
+	if err != nil {
+		klog.Errorf("virtualMachineScaleSetsClient.BeginCreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, err)
+		return err
 	}
 
 	// Proactively set the VMSS size so autoscaler makes better decisions.
 	scaleSet.curSize = newSize
 	scaleSet.lastSizeRefresh = time.Now()
 
-	go scaleSet.waitForCreateOrUpdateInstances(future)
+	go scaleSet.waitForCreateOrUpdateInstances(poller)
 	return nil
 }
 
@@ -518,18 +547,18 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 		return nil
 	}
 
-	instanceIDs := []string{}
+	var instanceIDs []*string
 	for _, instance := range instancesToDelete {
 		instanceID, err := getLastSegment(instance.Name)
 		if err != nil {
 			klog.Errorf("getLastSegment failed with error: %v", err)
 			return err
 		}
-		instanceIDs = append(instanceIDs, instanceID)
+		instanceIDs = append(instanceIDs, to.Ptr(instanceID))
 	}
 
-	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
-		InstanceIds: &instanceIDs,
+	requiredIds := &armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+		InstanceIDs: instanceIDs,
 	}
 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
@@ -537,7 +566,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 
 	future, rerr := scaleSet.deleteInstances(ctx, requiredIds, commonAsg.Id())
 	if rerr != nil {
-		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v for %s failed: %+v", requiredIds.InstanceIds, scaleSet.Name, rerr)
+		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v for %s failed: %+v", requiredIds.InstanceIDs, scaleSet.Name, rerr)
 		return rerr.Error()
 	}
 
@@ -563,15 +592,14 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 	return nil
 }
 
-func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
+func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
 	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 
 	defer cancel()
-	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForDeleteInstancesResult(%v) for %s", requiredIds.InstanceIds, scaleSet.Name)
-	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForDeleteInstancesResult(ctx, future, scaleSet.manager.config.ResourceGroup)
-	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
-	if isSuccess {
-		klog.V(3).Infof(".WaitForDeleteInstancesResult(%v) for %s success", requiredIds.InstanceIds, scaleSet.Name)
+	klog.V(3).Infof("Calling poller.PollUntilDone for deleting instances %v for %s", requiredIds.InstanceIDs, scaleSet.Name)
+	_, err := poller.PollUntilDone(ctx, nil)
+	if err == nil {
+		klog.V(3).Infof("Delete instances (%v) for %s success", requiredIds.InstanceIDs, scaleSet.Name)
 		if scaleSet.manager.config.StrictCacheUpdates {
 			if err := scaleSet.manager.forceRefresh(); err != nil {
 				klog.Errorf("forceRefresh failed with error: %v", err)
@@ -584,7 +612,7 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 		// On failure, invalidate the instanceCache - cannot have instances in deletingState
 		scaleSet.invalidateInstanceCache()
 	}
-	klog.Errorf("WaitForDeleteInstancesResult(%v) for %s failed with error: %v", requiredIds.InstanceIds, scaleSet.Name, err)
+	klog.Errorf("Delete instances (%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
 }
 
 // DeleteNodes deletes the nodes from the group.
@@ -690,7 +718,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	return scaleSet.instanceCache, nil
 }
 
-// buildScaleSetCacheForFlex is used by orchestrationMode == compute.Flexible
+// buildScaleSetCacheForFlex is used by orchestrationMode == armcompute.Flexible
 func (scaleSet *ScaleSet) buildScaleSetCacheForFlex() error {
 	klog.V(3).Infof("buildScaleSetCacheForFlex: resetting instance Cache for scaleSet %s",
 		scaleSet.Name)
@@ -765,21 +793,31 @@ func (scaleSet *ScaleSet) buildScaleSetCacheForUniform() error {
 
 // Note that the GetScaleSetVms() results is not used directly because for the List endpoint,
 // their resource ID format is not consistent with Get endpoint
-// buildInstanceCacheForFlex used by orchestrationMode == compute.Flexible
-func buildInstanceCacheForFlex(vms []compute.VirtualMachine, enableFastDeleteOnFailedProvisioning bool) []cloudprovider.Instance {
+// buildInstanceCacheForFlex used by orchestrationMode == armcompute.Flexible
+func buildInstanceCacheForFlex(vms []armcompute.VirtualMachine, enableFastDeleteOnFailedProvisioning bool) []cloudprovider.Instance {
 	var instances []cloudprovider.Instance
 	for _, vm := range vms {
 		powerState := vmPowerStateRunning
-		if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
-			powerState = vmPowerStateFromStatuses(*vm.InstanceView.Statuses)
+		if vm.Properties != nil && vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Statuses != nil {
+			statuses := make([]armcompute.InstanceViewStatus, 0)
+			for _, status := range vm.Properties.InstanceView.Statuses {
+				if status != nil {
+					statuses = append(statuses, *status)
+				}
+			}
+			powerState = vmPowerStateFromStatuses(statuses)
 		}
-		addVMToCache(&instances, vm.ID, vm.ProvisioningState, powerState, enableFastDeleteOnFailedProvisioning)
+		var provisioningState *string
+		if vm.Properties != nil {
+			provisioningState = vm.Properties.ProvisioningState
+		}
+		addVMToCache(&instances, vm.ID, provisioningState, powerState, enableFastDeleteOnFailedProvisioning)
 	}
 
 	return instances
 }
 
-// addVMToCache used by orchestrationMode == compute.Flexible
+// addVMToCache used by orchestrationMode == armcompute.Flexible
 func addVMToCache(instances *[]cloudprovider.Instance, id, provisioningState *string, powerState string, enableFastDeleteOnFailedProvisioning bool) {
 	// The resource ID is empty string, which indicates the instance may be in deleting state.
 	if len(*id) == 0 {
@@ -800,7 +838,7 @@ func addVMToCache(instances *[]cloudprovider.Instance, id, provisioningState *st
 }
 
 // instanceStatusFromProvisioningStateAndPowerState converts the VM provisioning state to cloudprovider.InstanceStatus
-// instanceStatusFromProvisioningStateAndPowerState used by orchestrationMode == compute.Flexible
+// instanceStatusFromProvisioningStateAndPowerState used by orchestrationMode == armcompute.Flexible
 // Suggestion: reunify this with scaleSet.instanceStatusFromVM()
 func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisioningState *string, powerState string, enableFastDeleteOnFailedProvisioning bool) *cloudprovider.InstanceStatus {
 	if provisioningState == nil {
@@ -843,10 +881,11 @@ func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisi
 	return status
 }
 
-func isSpot(vmss *compute.VirtualMachineScaleSet) bool {
-	return vmss != nil && vmss.VirtualMachineScaleSetProperties != nil &&
-		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile != nil &&
-		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile.Priority == compute.Spot
+func isSpot(vmss *armcompute.VirtualMachineScaleSet) bool {
+	return vmss != nil && vmss.Properties != nil &&
+		vmss.Properties.VirtualMachineProfile != nil &&
+		vmss.Properties.VirtualMachineProfile.Priority != nil &&
+		*vmss.Properties.VirtualMachineProfile.Priority == armcompute.VirtualMachinePriorityTypesSpot
 }
 
 func (scaleSet *ScaleSet) invalidateLastSizeRefreshWithLock() {
@@ -855,23 +894,26 @@ func (scaleSet *ScaleSet) invalidateLastSizeRefreshWithLock() {
 	scaleSet.sizeMutex.Unlock()
 }
 
-func (scaleSet *ScaleSet) getOrchestrationMode() (compute.OrchestrationMode, error) {
+func (scaleSet *ScaleSet) getOrchestrationMode() (armcompute.OrchestrationMode, error) {
 	vmss, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return "", err
 	}
-	return vmss.OrchestrationMode, nil
+	if vmss.Properties != nil && vmss.Properties.OrchestrationMode != nil {
+		return *vmss.Properties.OrchestrationMode, nil
+	}
+	return "", fmt.Errorf("orchestration mode not found for VMSS: %s", scaleSet.Name)
 }
 
-func (scaleSet *ScaleSet) cseErrors(extensions *[]compute.VirtualMachineExtensionInstanceView) ([]string, bool) {
+func (scaleSet *ScaleSet) cseErrors(extensions []*armcompute.VirtualMachineExtensionInstanceView) ([]string, bool) {
 	var errs []string
 	failed := false
 	if extensions != nil {
-		for _, extension := range *extensions {
-			if strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
-				for _, status := range *extension.Statuses {
-					if status.Level == "Error" {
+		for _, extension := range extensions {
+			if extension != nil && strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
+				for _, status := range extension.Statuses {
+					if status != nil && status.Level != nil && *status.Level == armcompute.StatusLevelTypesError {
 						errs = append(errs, ptr.Deref(status.Message, ""))
 						failed = true
 					}
@@ -888,7 +930,7 @@ func (scaleSet *ScaleSet) getSKU() string {
 		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		return ""
 	}
-	return ptr.Deref(vmssInfo.Sku.Name, "")
+	return ptr.Deref(vmssInfo.SKU.Name, "")
 }
 
 func (scaleSet *ScaleSet) verifyNodeGroup(instance *azureRef, commonNgID string) error {
