@@ -90,7 +90,7 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 
 	unneededNodes := unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder)
 	if autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL != 0 {
-		unneededNodes.LoadFromExistingTaints(autoscalingCtx.ListerRegistry, time.Now(), autoscalingCtx.AutoscalingOptions.NodeDeletionCandidateTTL)
+		unneededNodes.LoadFromExistingTaints(autoscalingCtx, time.Now())
 	}
 
 	var maxNodeSkipEvalTime *nodeevaltracker.MaxNodeSkipEvalTime
@@ -203,7 +203,7 @@ func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {
 }
 
 // UnneededNodes returns a list of nodes currently considered as unneeded.
-func (p *Planner) UnneededNodes() []*apiv1.Node {
+func (p *Planner) UnneededNodes() []*scaledown.UnneededNode {
 	return p.unneededNodes.AsList()
 }
 
@@ -318,7 +318,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 		}
 	}
 	p.handleUnprocessedNodes(skippedNodes)
-	p.unneededNodes.Update(removableList, p.latestUpdate)
+	p.unneededNodes.Update(p.autoscalingCtx, removableList, p.latestUpdate)
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
 	}

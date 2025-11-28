@@ -39,7 +39,7 @@ type Planner interface {
 	// UnneededNodes returns a list of nodes that either can be deleted
 	// right now or in a near future, assuming nothing will change in the
 	// cluster.
-	UnneededNodes() []*apiv1.Node
+	UnneededNodes() []*UnneededNode
 	// UnremovableNodes returns a list of nodes that cannot be removed.
 	// TODO(x13n): Add a guarantee that each node is either unneeded or
 	// unremovable. This is not guaranteed by the current implementation.
@@ -83,4 +83,17 @@ type ActuationStatus interface {
 	// the Actuator and hence are likely to get recreated elsewhere in the
 	// cluster.
 	RecentEvictions() (pods []*apiv1.Pod)
+}
+
+// UnneededNode represents a node that has been identified as a candidate for scale-down,
+// paired with the specific duration it must remain in this state before deletion is triggered.
+type UnneededNode struct {
+	// Node is the Kubernetes Node object that is considered for removal.
+	Node *apiv1.Node
+
+	// RemovalThreshold is the configured duration the Node must remain unneeded
+	// (or unready) before the CA initiates deletion.
+	// This value is derived from either --scale-down-unneeded-time or
+	// --scale-down-unready-time, depending on the node's readiness state.
+	RemovalThreshold time.Duration
 }
