@@ -33,8 +33,8 @@ const (
 	VirtualKubeletNodeLabelValue = "virtual-kubelet"
 )
 
-// isVirtualKubeletNode determines if the node is created by virtual kubelet
-func isVirtualKubeletNode(node *apiv1.Node) bool {
+// IsVirtualKubeletNode determines if the node is created by virtual kubelet
+func IsVirtualKubeletNode(node *apiv1.Node) bool {
 	if node == nil {
 		return false
 	}
@@ -48,7 +48,7 @@ func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cl
 
 	for _, node := range nodes {
 		// Exclude the virtual node here since it may have lots of resource and exceed the total resource limit
-		if isVirtualKubeletNode(node) {
+		if IsVirtualKubeletNode(node) {
 			continue
 		}
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)

@@ -36,7 +36,7 @@ type Quota interface {
 	ID() string
 	// AppliesTo returns true if the quota applies to the given node.
 	AppliesTo(node *corev1.Node) bool
-	// Limits returns the resource limits defined by the quota.
+	// Limits returns the resource LimitsVal defined by the quota.
 	Limits() map[string]int64
 }
 
@@ -191,7 +191,9 @@ func nodeResources(autoscalingCtx *context.AutoscalingContext, crp customresourc
 	}
 
 	for _, resourceTarget := range resourceTargets {
-		nodeResources[resourceTarget.ResourceType] = resourceTarget.ResourceCount
+		if resourceTarget.ResourceType != "" && resourceTarget.ResourceCount > 0 {
+			nodeResources[resourceTarget.ResourceType] = resourceTarget.ResourceCount
+		}
 	}
 
 	return nodeResources, nil
