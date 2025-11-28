@@ -200,6 +200,17 @@ func ArrangePodsBySchedulability(allPods []*apiv1.Pod, bypassedSchedulers map[st
 	return
 }
 
+// FilterOutPodsByScheduler is a helper method that filters out pods not in the given set of allowed schedulers.
+func FilterOutPodsByScheduler(allPods []*apiv1.Pod, allowedSchedulers map[string]bool) []*apiv1.Pod {
+	var remainingPods []*apiv1.Pod
+	for _, pod := range allPods {
+		if keep := allowedSchedulers[pod.Spec.SchedulerName]; keep {
+			remainingPods = append(remainingPods, pod)
+		}
+	}
+	return remainingPods
+}
+
 // SchedulingGatedPods is a helper method that returns all pods which has scheduling gate
 // SchedulingGated pods are not scheduled nor deleted by the implementation and are not unschedulable nor unprocessed by definition
 func SchedulingGatedPods(allPods []*apiv1.Pod) []*apiv1.Pod {
