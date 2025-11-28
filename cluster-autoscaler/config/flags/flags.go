@@ -517,84 +517,38 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 	return parsedGpuLimits, nil
 }
 
+// parseSingleDraLimit parses a string in the format "driver:deviceAttribute:min:max" into a DraLimits struct.
 func parseSingleDraLimit(limits string) (config.DraLimits, error) {
 	parts := strings.Split(limits, ":")
-	if len(parts) != 5 {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit specification: %v", limits)
+	if len(parts) != 4 {
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit specification: %v", limits)
 	}
 	driver := parts[0]
-	attributes, err := parseAttributes(parts[1])
+	deviceAttribute := parts[1]
+	minVal, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - attributes are malformed: %v", limits)
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - min is not integer: %v", limits)
 	}
-	identifierAttribute := parts[2]
-	minVal, err := strconv.ParseInt(parts[3], 10, 64)
+	maxVal, err := strconv.ParseInt(parts[3], 10, 64)
 	if err != nil {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - min is not integer: %v", limits)
-	}
-	maxVal, err := strconv.ParseInt(parts[4], 10, 64)
-	if err != nil {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - max is not integer: %v", limits)
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - max is not integer: %v", limits)
 	}
 	if minVal < 0 {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - min is less than 0; %v", limits)
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - min is less than 0; %v", limits)
 	}
 	if maxVal < 0 {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - max is less than 0; %v", limits)
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - max is less than 0; %v", limits)
 	}
 	if minVal > maxVal {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - min is greater than max; %v", limits)
-	}
-	if _, exists := attributes[identifierAttribute]; exists {
-		return config.DraLimits{}, fmt.Errorf("incorrect dra limit - device identifier attribute '%s' found in attributes; %v", identifierAttribute, limits)
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - min is greater than max; %v", limits)
 	}
 	parsedDraLimits := config.DraLimits{
-		Driver:              driver,
-		DeviceAttributes:    attributes,
-		IdentifierAttribute: identifierAttribute,
-		Min:                 minVal,
-		Max:                 maxVal,
+		Driver:          driver,
+		DeviceAttribute: deviceAttribute,
+		Min:             minVal,
+		Max:             maxVal,
 	}
 	return parsedDraLimits, nil
-}
-
-// parseAttributes parses a string in the format "attribute1=value1,attribute2=value2" into a map[string]string.
-// Returns an empty map if the input string is empty.
-// Returns an error if any attribute is malformed (missing '=' or empty key/value).
-func parseAttributes(attributesStr string) (map[string]string, error) {
-	attributes := make(map[string]string)
-
-	if attributesStr == "" {
-		return attributes, nil
-	}
-
-	pairs := strings.Split(attributesStr, ",")
-	for _, pair := range pairs {
-		pair = strings.TrimSpace(pair)
-		if pair == "" {
-			continue
-		}
-
-		parts := strings.SplitN(pair, "=", 2)
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("malformed attribute pair '%s': expected format 'key=value'", pair)
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		if key == "" {
-			return nil, fmt.Errorf("empty attribute key in pair '%s'", pair)
-		}
-
-		if _, exists := attributes[key]; exists {
-			return nil, fmt.Errorf("duplicate attribute key '%s' in pair '%s'", key, pair)
-		}
-
-		attributes[key] = value
-	}
-
-	return attributes, nil
 }
 
 // parseShutdownGracePeriodsAndPriorities parse priorityGracePeriodStr and returns an array of ShutdownGracePeriodByPodPriority if succeeded.

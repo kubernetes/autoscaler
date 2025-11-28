@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/dra"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -96,6 +97,13 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 		minResources[gpuLimits.GpuType] = gpuLimits.Min
 		maxResources[gpuLimits.GpuType] = gpuLimits.Max
 	}
+
+	for _, draLimits := range options.DraTotal {
+		resourceName := dra.GetDraResourceName(draLimits.Driver, draLimits.DeviceAttribute)
+		minResources[resourceName] = draLimits.Min
+		maxResources[resourceName] = draLimits.Max
+	}
+
 	return cloudprovider.NewResourceLimiter(minResources, maxResources)
 }
 

@@ -25,19 +25,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type DRALimiter struct {
-	min int
-	max int
-
-	deviceIdentifier func(device *apiv1.ResourceClaim) string
-	deviceFilter     func(device *apiv1.ResourceClaim) bool
-}
-
 // ResourceLimiter contains limits (max, min) for resources (cores, memory etc.).
 type ResourceLimiter struct {
-	minLimits   map[string]int64
-	maxLimits   map[string]int64
-	draLimiters []DRALimiter
+	minLimits map[string]int64
+	maxLimits map[string]int64
 }
 
 // ID returns the identifier of the limiter.
@@ -46,7 +37,7 @@ func (r *ResourceLimiter) ID() string {
 }
 
 // NewResourceLimiter creates new ResourceLimiter for map. Maps are deep copied.
-func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64, draLimiters ...DRALimiter) *ResourceLimiter {
+func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64) *ResourceLimiter {
 	minLimitsCopy := make(map[string]int64)
 	maxLimitsCopy := make(map[string]int64)
 	for key, value := range minLimits {
@@ -57,7 +48,7 @@ func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64, 
 	for key, value := range maxLimits {
 		maxLimitsCopy[key] = value
 	}
-	return &ResourceLimiter{minLimitsCopy, maxLimitsCopy, draLimiters}
+	return &ResourceLimiter{minLimitsCopy, maxLimitsCopy}
 }
 
 // GetMin returns minimal number of resources for a given resource type.
@@ -95,11 +86,6 @@ func (r *ResourceLimiter) HasMinLimitSet(resourceName string) bool {
 func (r *ResourceLimiter) HasMaxLimitSet(resourceName string) bool {
 	_, found := r.maxLimits[resourceName]
 	return found
-}
-
-// GetDRALimiters returns the DRA limiters configured in the ResourceLimiter.
-func (r *ResourceLimiter) GetDRALimiters() []DRALimiter {
-	return r.draLimiters
 }
 
 func (r *ResourceLimiter) String() string {

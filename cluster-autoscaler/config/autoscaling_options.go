@@ -38,10 +38,8 @@ type GpuLimits struct {
 type DraLimits struct {
 	// Driver is the driver name for the DRA (e.g. nvidia)
 	Driver string
-	// DeviceAttributes is a map of DRA attributes (e.g. {"vendor":"nvidia", "model":"H100"}) that the limit applies to. All devices that match all these attributes are counted.
-	DeviceAttributes map[string]string
-	// IdentifierAttribute is the attribute from DeviceAttributes map that is used to identify different physical devices of the same resource pool (so that partionable devices won't be overcounted).
-	IdentifierAttribute string
+	// DeviceAttribute is the device's attribute by which autoscaler will filter resources (e.g. productName=tesla-k80)
+	DeviceAttribute string
 	// Lower bound on number of DRAs of given type in cluster
 	Min int64
 	// Upper bound on number of DRAs of given type in cluster

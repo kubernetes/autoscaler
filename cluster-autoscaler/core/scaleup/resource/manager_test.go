@@ -25,6 +25,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	resource "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -32,10 +33,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	utils_test "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/utils/ptr"
 )
 
 type nodeGroupConfig struct {
@@ -254,6 +257,131 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	assert.Zero(t, len(result.ExceededResources))
 
 	newNodeCount, err := rm.ApplyLimits(&autoscalingCtx, 10, left, nodeInfos["ng1"], ng1)
+	assert.Equal(t, 3, newNodeCount) // gpu left / grpu per node: 12 / 4 = 3
+}
+
+func TestResourceManagerWithDraResource(t *testing.T) {
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 0, cloudprovider.ResourceNameMemory: 0, "gpu.nvidia.com:nvidia l4": 0},
+		map[string]int64{cloudprovider.ResourceNameCores: 320, cloudprovider.ResourceNameMemory: 640, "gpu.nvidia.com:nvidia l4": 16},
+	)
+	provider.SetResourceLimiter(resourceLimiter)
+
+	autoscalingCtx := newAutoscalingContext(t, provider)
+	processors := processorstest.NewTestProcessors(&autoscalingCtx)
+
+	n1 := newNode(t, "n1", 8, 16)
+	provider.AddNodeGroup("ng1", 3, 10, 1)
+	provider.AddNode("ng1", n1)
+	ngi := framework.NewTestNodeInfo(n1)
+	ngi.LocalResourceSlices = []*resource.ResourceSlice{
+		{
+			Spec: resource.ResourceSliceSpec{
+				Driver:   "gpu.nvidia.com",
+				NodeName: ptr.To("n1"),
+				Pool: resource.ResourcePool{
+					Name:               "n1",
+					Generation:         1,
+					ResourceSliceCount: 1,
+				},
+				Devices: []resource.Device{
+					{
+						Name: "gpu-0",
+						Attributes: map[resource.QualifiedName]resource.DeviceAttribute{
+							"uuid": {
+								StringValue: ptr.To("GPU-be40a35e-4b7b-16cf-09c4-2fd3e9166701"),
+							},
+							"productName": {
+								StringValue: ptr.To("NVIDIA L4"),
+							},
+						},
+					},
+					{
+						Name: "gpu-0-partition-0",
+						Attributes: map[resource.QualifiedName]resource.DeviceAttribute{
+							"uuid": {
+								StringValue: ptr.To("GPU-be40a35e-4b7b-16cf-09c4-2fd3e9166701"),
+							},
+							"productName": {
+								StringValue: ptr.To("NVIDIA L4"),
+							},
+						},
+					},
+					{
+						Name: "gpu-0-partition-1",
+						Attributes: map[resource.QualifiedName]resource.DeviceAttribute{
+							"uuid": {
+								StringValue: ptr.To("GPU-be40a35e-4b7b-16cf-09c4-2fd3e9166701"),
+							},
+							"productName": {
+								StringValue: ptr.To("NVIDIA L4"),
+							},
+						},
+					},
+					{
+						Name: "gpu-1",
+						Attributes: map[resource.QualifiedName]resource.DeviceAttribute{
+							"uuid": {
+								StringValue: ptr.To("GPU-39807e58-5aca-9931-8819-3920ede08201"),
+							},
+							"productName": {
+								StringValue: ptr.To("NVIDIA L4"),
+							},
+						},
+					},
+					{
+						Name: "gpu-2",
+						Attributes: map[resource.QualifiedName]resource.DeviceAttribute{
+							"uuid": {
+								StringValue: ptr.To("GPU-8ed40f31-c63d-c26b-46ea-5c024ec56802"),
+							},
+							"productName": {
+								StringValue: ptr.To("NVIDIA L4"),
+							},
+						},
+					},
+					{
+						Name: "gpu-3",
+						Attributes: map[resource.QualifiedName]resource.DeviceAttribute{
+							"uuid": {
+								StringValue: ptr.To("GPU-f095b087-5812-4317-b9d1-193b8af1cd03"),
+							},
+							"productName": {
+								StringValue: ptr.To("NVIDIA L4"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{
+		"ng1": ngi,
+	})
+
+	ng1, err := provider.NodeGroupForNode(n1)
+	assert.NoError(t, err)
+
+	nodes := []*corev1.Node{n1}
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+	assert.NoError(t, err)
+
+	rm := NewManager(processors.CustomResourcesProcessor)
+
+	delta, err := rm.DeltaForNode(&autoscalingCtx, ngi, ng1)
+	assert.Equal(t, int64(8), delta[cloudprovider.ResourceNameCores])
+	assert.Equal(t, int64(16), delta[cloudprovider.ResourceNameMemory])
+	assert.Equal(t, int64(4), delta["gpu.nvidia.com:nvidia l4"])
+
+	left, err := rm.ResourcesLeft(&autoscalingCtx, map[string]*framework.NodeInfo{"ng1": ngi}, nodes)
+	assert.NoError(t, err)
+	assert.Equal(t, Limits{"cpu": 312, "memory": 624, "gpu.nvidia.com:nvidia l4": 12}, left) // cpu: 320-8*1=312; memory: 640-16*1=624; gpu: 16-4*1=12
+	result := CheckDeltaWithinLimits(left, delta)
+	assert.False(t, result.Exceeded)
+	assert.Zero(t, len(result.ExceededResources))
+
+	newNodeCount, err := rm.ApplyLimits(&autoscalingCtx, 10, left, ngi, ng1)
 	assert.Equal(t, 3, newNodeCount) // gpu left / grpu per node: 12 / 4 = 3
 }
 
