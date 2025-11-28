@@ -126,15 +126,15 @@ func ConfigFromPath(path string) (*scheduler_config.KubeSchedulerConfiguration, 
 	return cfgObj, nil
 }
 
-// GetBypassedSchedulersMap returns a map of scheduler names that should be bypassed as keys, and values are set to true
-// Also sets "" (empty string) to true if default scheduler is bypassed
-func GetBypassedSchedulersMap(bypassedSchedulers []string) map[string]bool {
-	bypassedSchedulersMap := make(map[string]bool, len(bypassedSchedulers))
-	for _, scheduler := range bypassedSchedulers {
-		bypassedSchedulersMap[scheduler] = true
+// SchedulersMap returns a map of scheduler names as keys, and values are set to true
+// Also sets "" (empty string) to true if default scheduler is in the list
+func SchedulersMap(schedulers []string) map[string]bool {
+	schedulersMap := make(map[string]bool, len(schedulers))
+	for _, scheduler := range schedulers {
+		schedulersMap[scheduler] = true
 	}
-	if canBypass := bypassedSchedulersMap[apiv1.DefaultSchedulerName]; canBypass {
-		bypassedSchedulersMap[""] = true
+	if found := schedulersMap[apiv1.DefaultSchedulerName]; found {
+		schedulersMap[""] = true
 	}
-	return bypassedSchedulersMap
+	return schedulersMap
 }
