@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	// DriverNvidiaGPU is the standard driver name for Nvidia GPUs.
+	// DriverNvidiaGPUName is the standard driver name for Nvidia GPUs.
 	DriverNvidiaGPUName = "gpu.nvidia.com"
 	// DriverNvidiaGPUUid is the standard device UID attribute for Nvidia GPUs, in order to differentiate between different GPUs.
 	DriverNvidiaGPUUid = "uuid"
