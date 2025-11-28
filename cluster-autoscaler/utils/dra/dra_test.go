@@ -17,9 +17,9 @@ limitations under the License.
 package dra
 
 import (
-"testing"
+	"testing"
 
-"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetDraResourceName(t *testing.T) {
@@ -93,8 +93,8 @@ func TestGetDraResourceName(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-result := GetDraResourceName(tc.driver, tc.productName)
-assert.Equal(t, tc.expectedOutput, result)
-})
+			result := GetDraResourceName(tc.driver, tc.productName)
+			assert.Equal(t, tc.expectedOutput, result)
+		})
 	}
 }
