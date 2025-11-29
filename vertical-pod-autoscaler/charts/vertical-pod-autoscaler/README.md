@@ -23,18 +23,35 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | admissionController.affinity | object | `{}` |  |
+| admissionController.certGen.affinity | object | `{}` |  |
+| admissionController.certGen.env | object | `{}` | Additional environment variables to be added to the certgen container. Format is KEY: Value format |
+| admissionController.certGen.image.pullPolicy | string | `"IfNotPresent"` | The pull policy for the certgen image. Recommend not changing this |
+| admissionController.certGen.image.repository | string | `"registry.k8s.io/ingress-nginx/kube-webhook-certgen"` | An image that contains certgen for creating certificates. Only used if admissionController.generateCertificate is true |
+| admissionController.certGen.image.tag | string | `"v20231011-8b53cabe0"` | An image tag for the admissionController.certGen.image.repository image. Only used if admissionController.generateCertificate is true |
+| admissionController.certGen.nodeSelector | object | `{}` |  |
+| admissionController.certGen.podSecurityContext | object | `{"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | The securityContext block for the certgen pod(s) |
+| admissionController.certGen.resources | object | `{}` | The resources block for the certgen pod |
+| admissionController.certGen.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | The securityContext block for the certgen container(s) |
+| admissionController.certGen.tolerations | list | `[]` |  |
 | admissionController.enabled | bool | `true` |  |
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
+| admissionController.generateCertificate | bool | `true` |  |
 | admissionController.image.pullPolicy | string | `"IfNotPresent"` |  |
 | admissionController.image.repository | string | `"registry.k8s.io/autoscaling/vpa-admission-controller"` |  |
 | admissionController.image.tag | string | `nil` |  |
+| admissionController.mutatingWebhookConfiguration.annotations | object | `{}` | Additional annotations for the MutatingWebhookConfiguration |
+| admissionController.mutatingWebhookConfiguration.failurePolicy | string | `"Ignore"` | The failurePolicy for the mutating webhook. Allowed values are: Ignore, Fail |
+| admissionController.mutatingWebhookConfiguration.namespaceSelector | object | `{}` | The namespaceSelector controls which namespaces are affected by the webhook |
+| admissionController.mutatingWebhookConfiguration.objectSelector | object | `{}` | The objectSelector can filter objects on e.g. labels |
+| admissionController.mutatingWebhookConfiguration.timeoutSeconds | int | `5` | Sets the amount of time the API server will wait on a response from the webhook service |
 | admissionController.nodeSelector | object | `{}` |  |
 | admissionController.podAnnotations | object | `{}` |  |
 | admissionController.podDisruptionBudget.enabled | bool | `true` |  |
 | admissionController.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
+| admissionController.registerWebhook | bool | `false` |  |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources.limits.cpu | string | `"200m"` |  |
 | admissionController.resources.limits.memory | string | `"500Mi"` |  |
@@ -50,7 +67,6 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | admissionController.serviceAccount.labels | object | `{}` |  |
 | admissionController.tls.caCert | string | `""` |  |
 | admissionController.tls.cert | string | `""` |  |
-| admissionController.tls.existingSecret | string | `""` |  |
 | admissionController.tls.key | string | `""` |  |
 | admissionController.tls.secretName | string | `"vpa-tls-certs"` |  |
 | admissionController.tolerations | list | `[]` |  |
@@ -59,6 +75,12 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | admissionController.volumeMounts[0].readOnly | bool | `true` |  |
 | admissionController.volumes[0].name | string | `"tls-certs"` |  |
 | admissionController.volumes[0].secret.defaultMode | int | `420` |  |
+| admissionController.volumes[0].secret.items[0].key | string | `"ca"` |  |
+| admissionController.volumes[0].secret.items[0].path | string | `"caCert.pem"` |  |
+| admissionController.volumes[0].secret.items[1].key | string | `"cert"` |  |
+| admissionController.volumes[0].secret.items[1].path | string | `"serverCert.pem"` |  |
+| admissionController.volumes[0].secret.items[2].key | string | `"key"` |  |
+| admissionController.volumes[0].secret.items[2].path | string | `"serverKey.pem"` |  |
 | admissionController.volumes[0].secret.secretName | string | `"vpa-tls-certs"` |  |
 | commonLabels | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |
