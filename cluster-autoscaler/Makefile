@@ -11,7 +11,7 @@ LDFLAGS?=-s
 ENVVAR=CGO_ENABLED=0
 GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
-REGISTRY?=staging-k8s.gcr.io
+REGISTRY?=gcr.io/k8s-staging-autoscaling
 DOCKER_NETWORK?=default
 SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/builder/ | grep -e '^builder_.*\.go' | sed 's/builder_\(.*\)\.go/\1/')
 ifdef BUILD_TAGS
