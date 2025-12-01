@@ -358,6 +358,8 @@ type AutoscalingOptions struct {
 	CapacitybufferPodInjectionEnabled bool
 	// MaxNodeSkipEvalTimeTrackerEnabled is used to enabled/disable the tracking of maximum evaluation time of a node being skipped during ScaleDown.
 	MaxNodeSkipEvalTimeTrackerEnabled bool
+	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
+	NodeRemovalLatencyTrackingEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
