@@ -20,11 +20,10 @@ set -o pipefail
 
 echo "verify-kubelint"
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-cd "${KUBE_ROOT}"
-ROOT_DIR="$PWD"
+HACK_DIR="$PWD"
+VPA_ROOT="${HACK_DIR}/.."
 
-TOOLS_DIR="${ROOT_DIR}/hack/tools"
+TOOLS_DIR="${HACK_DIR}/tools/kube-api-linter"
 TOOLS_BIN_DIR="${TOOLS_DIR}/bin"
 
 GOLANGCI_LINT_BIN=${GOLANGCI_LINT_BIN:-"golangci-lint"}
@@ -33,15 +32,6 @@ GOLANGCI_LINT_CONFIG_PATH=${GOLANGCI_LINT_CONFIG_PATH:-"${TOOLS_DIR}/.golangci-k
 
 echo "creating custom golangci linter"
 cd "${TOOLS_DIR}"; "${GOLANGCI_LINT_BIN}" custom
+cd "${VPA_ROOT}"
 
-cd "${ROOT_DIR}"
-
-PACKAGES=(
-    "${ROOT_DIR}/cluster-autoscaler"
-    "${ROOT_DIR}/vertical-pod-autoscaler"
-)
-
-for package in "${PACKAGES[@]}"; do
-  cd "${package}"
-  "${GOLANGCI_LINT_KAL_BIN}" run -v --config "${GOLANGCI_LINT_CONFIG_PATH}"
-done
+"${GOLANGCI_LINT_KAL_BIN}" run -v --config "${GOLANGCI_LINT_CONFIG_PATH}"
