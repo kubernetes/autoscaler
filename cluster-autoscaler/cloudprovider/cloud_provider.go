@@ -94,6 +94,8 @@ const (
 	RancherProviderName = "rancher"
 	// UthoProviderName gets the provider name of utho
 	UthoProviderName = "utho"
+	// SlicerProviderName gets the provider name of slicer
+	SlicerProviderName = "slicer"
 )
 
 // GpuConfig contains the label, type and the resource name for a GPU.
