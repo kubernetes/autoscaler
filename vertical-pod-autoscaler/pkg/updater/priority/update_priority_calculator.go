@@ -111,7 +111,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		terminationState := &cs.LastTerminationState
 		if terminationState.Terminated != nil &&
 			terminationState.Terminated.Reason == "OOMKilled" &&
-			terminationState.Terminated.FinishedAt.Time.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
+			terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
 			quickOOM = true
 			klog.V(2).InfoS("Quick OOM detected in pod", "pod", klog.KObj(pod), "containerName", cs.Name)
 		}

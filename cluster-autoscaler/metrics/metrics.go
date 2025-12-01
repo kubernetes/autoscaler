@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -100,8 +101,6 @@ const (
 const (
 	ScaleDown                  FunctionLabel = "scaleDown"
 	ScaleDownNodeDeletion      FunctionLabel = "scaleDown:nodeDeletion"
-	ScaleDownFindNodesToRemove FunctionLabel = "scaleDown:findNodesToRemove"
-	ScaleDownMiscOperations    FunctionLabel = "scaleDown:miscOperations"
 	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
 	ScaleUp                    FunctionLabel = "scaleUp"
 	BuildPodEquivalenceGroups  FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
@@ -427,6 +426,23 @@ var (
 			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 6), // 1, 2, 4, ..., 32
 		}, []string{"instance_type", "cpu_count", "namespace_count"},
 	)
+
+	maxNodeSkipEvalDurationSeconds = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "max_node_skip_eval_duration_seconds",
+			Help:      "Maximum evaluation time of a node being skipped during ScaleDown.",
+		},
+	)
+
+	scaleDownNodeRemovalLatency = k8smetrics.NewHistogramVec(
+		&k8smetrics.HistogramOpts{
+			Namespace: caNamespace,
+			Name:      "node_removal_latency_seconds",
+			Help:      "Latency from when an unneeded node is eligible for scale down until it is removed (deleted=true) or it became needed again (deleted=false).",
+			Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~24min
+		}, []string{"deleted"},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -463,6 +479,8 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeTaintsCount)
 	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
 	legacyregistry.MustRegister(binpackingHeterogeneity)
+	legacyregistry.MustRegister(maxNodeSkipEvalDurationSeconds)
+	legacyregistry.MustRegister(scaleDownNodeRemovalLatency)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -749,4 +767,16 @@ func UpdateInconsistentInstancesMigsCount(migCount int) {
 // considered in a single binpacking estimation.
 func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount string, pegCount int) {
 	binpackingHeterogeneity.WithLabelValues(instanceType, cpuCount, namespaceCount).Observe(float64(pegCount))
+}
+
+// UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
+// again after being marked unneded
+func UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration) {
+	scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted)).Observe(duration.Seconds())
+}
+
+// ObserveMaxNodeSkipEvalDurationSeconds records the longest time during which node was skipped during ScaleDown.
+// If a node is skipped multiple times consecutively, we store only the earliest timestamp.
+func ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
+	maxNodeSkipEvalDurationSeconds.Set(duration.Seconds())
 }

@@ -361,12 +361,17 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		},
 	}
 
+	nsi := ng.scalableResource.InstanceSystemInfo()
+	if nsi != nil {
+		node.Status.NodeInfo = *nsi
+	}
+
 	node.Status.Capacity = capacity
 	node.Status.Allocatable = capacity
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	node.Spec.Taints = ng.scalableResource.Taints()
 
-	node.Labels, err = ng.buildTemplateLabels(nodeName)
+	node.Labels, err = ng.buildTemplateLabels(nodeName, nsi)
 	if err != nil {
 		return nil, err
 	}
@@ -380,8 +385,19 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
-func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, error) {
-	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), ng.scalableResource.Labels())
+func (ng *nodegroup) buildTemplateLabels(nodeName string, nsi *corev1.NodeSystemInfo) (map[string]string, error) {
+	nsiLabels := make(map[string]string)
+	if nsi != nil {
+		nsiLabels[corev1.LabelArchStable] = nsi.Architecture
+		nsiLabels[corev1.LabelOSStable] = nsi.OperatingSystem
+	}
+
+	// The order of priority is:
+	// - Labels set in existing nodes for not-autoscale-from-zero cases
+	// - Labels set in the labels capacity annotation of machine template, machine set, and machine deployment.
+	// - Values in the status.nodeSystemInfo of MachineTemplates
+	// - Generic/default labels set in the environment of the cluster autoscaler
+	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), nsiLabels, ng.scalableResource.Labels())
 
 	nodes, err := ng.Nodes()
 	if err != nil {
@@ -454,8 +470,73 @@ func (ng *nodegroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeProvisionTimeKey); ok {
 		defaults.MaxNodeProvisionTime = opt
 	}
+	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeStartupTimeKey); ok {
+		defaults.MaxNodeStartupTime = opt
+	}
 
 	return &defaults, nil
+}
+
+func (ng *nodegroup) IsMachineDeploymentAndRollingOut() (bool, error) {
+	if ng.scalableResource.Kind() != machineDeploymentKind {
+		// Not a MachineDeployment.
+		return false, nil
+	}
+
+	machineSets, err := ng.machineController.listMachineSetsForMachineDeployment(ng.scalableResource.unstructured)
+	if err != nil {
+		return false, err
+	}
+
+	if len(machineSets) == 0 {
+		// No MachineSets => MD is not rolling out.
+		return false, nil
+	}
+
+	// Find the latest revision, the MachineSet with the latest revision is the MachineSet that
+	// matches the MachineDeployment spec.
+	var latestMSRevisionInt int64
+	for _, ms := range machineSets {
+		msRevision, ok := ms.GetAnnotations()[machineDeploymentRevisionAnnotation]
+		if !ok {
+			continue
+		}
+
+		msRevisionInt, err := strconv.ParseInt(msRevision, 10, 64)
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to parse current revision on MachineSet %s", klog.KObj(ms))
+		}
+		latestMSRevisionInt = max(latestMSRevisionInt, msRevisionInt)
+	}
+	maxMSRevision := strconv.FormatInt(latestMSRevisionInt, 10)
+
+	for _, ms := range machineSets {
+		if ms.GetAnnotations()[machineDeploymentRevisionAnnotation] == maxMSRevision {
+			// Ignore the MachineSet with the latest revision
+			continue
+		}
+
+		// Check if any of the old MachineSets still have replicas
+		replicas, found, err := unstructured.NestedInt64(ms.UnstructuredContent(), "spec", "replicas")
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to find spec replicas on MachineSet %s", klog.KObj(ms))
+		}
+		if found && replicas > 0 {
+			// Found old MachineSets that still has replicas => MD is still rolling out.
+			return true, nil
+		}
+		replicas, found, err = unstructured.NestedInt64(ms.UnstructuredContent(), "status", "replicas")
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to find status replicas on MachineSet %s", klog.KObj(ms))
+		}
+		if found && replicas > 0 {
+			// Found old MachineSets that still has replicas => MD is still rolling out.
+			return true, nil
+		}
+	}
+
+	// Didn't find any old MachineSets that still have replicas => MD is not rolling out.
+	return false, nil
 }
 
 func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {

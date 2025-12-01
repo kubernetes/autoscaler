@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
@@ -31,7 +31,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -336,9 +336,9 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 
-			ctx := &context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
+			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
 			processor := DraCustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(ctx, initialAllNodes, initialReadyNodes, draSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {
@@ -373,7 +373,7 @@ func buildNodeResourceSlices(nodeName, driverName string, numberOfDevicesInSlice
 			driverName = fmt.Sprintf("driver_%d", sliceIndex)
 		}
 		spec := resourceapi.ResourceSliceSpec{
-			NodeName: nodeName,
+			NodeName: &nodeName,
 			Driver:   driverName,
 			Pool:     resourceapi.ResourcePool{Name: fmt.Sprintf("%s_pool_%d", nodeName, sliceIndex)},
 			Devices:  devices,

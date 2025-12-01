@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -33,17 +34,6 @@ import (
 
 const (
 	metricsNamespace = metrics.TopMetricsNamespace + "recommender"
-)
-
-var (
-	// TODO: unify this list with the types defined in the VPA handler to avoid
-	// drift if one file is changed and the other one is missed.
-	modes = []string{
-		string(vpa_types.UpdateModeOff),
-		string(vpa_types.UpdateModeInitial),
-		string(vpa_types.UpdateModeRecreate),
-		string(vpa_types.UpdateModeAuto),
-	}
 )
 
 type apiVersion string
@@ -119,7 +109,8 @@ type objectCounterKey struct {
 
 // ObjectCounter helps split all VPA objects into buckets
 type ObjectCounter struct {
-	cnt map[objectCounterKey]int
+	cnt   map[objectCounterKey]int
+	mutex sync.RWMutex
 }
 
 // Register initializes all metrics for VPA Recommender
@@ -154,13 +145,13 @@ func NewObjectCounter() *ObjectCounter {
 	}
 
 	// initialize with empty data so we can clean stale gauge values in Observe
-	for _, m := range modes {
+	for m := range vpa_types.GetUpdateModes() {
 		for _, h := range []bool{false, true} {
 			for _, api := range []apiVersion{v1beta1, v1beta2, v1} {
 				for _, mp := range []bool{false, true} {
 					for _, uc := range []bool{false, true} {
 						obj.cnt[objectCounterKey{
-							mode:              m,
+							mode:              string(m),
 							has:               h,
 							apiVersion:        api,
 							matchesPods:       mp,
@@ -189,11 +180,15 @@ func (oc *ObjectCounter) Add(vpa *model.Vpa) {
 		matchesPods:       vpa.HasMatchedPods(),
 		unsupportedConfig: vpa.Conditions.ConditionActive(vpa_types.ConfigUnsupported),
 	}
+	oc.mutex.Lock()
 	oc.cnt[key]++
+	oc.mutex.Unlock()
 }
 
 // Observe passes all the computed bucket values to metrics
 func (oc *ObjectCounter) Observe() {
+	oc.mutex.RLock()
+	defer oc.mutex.RUnlock()
 	for k, v := range oc.cnt {
 		vpaObjectCount.WithLabelValues(
 			k.mode,

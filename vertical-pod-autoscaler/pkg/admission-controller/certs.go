@@ -24,10 +24,9 @@ import (
 	"os"
 	"sync"
 
+	"github.com/fsnotify/fsnotify"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-
-	"github.com/fsnotify/fsnotify"
 	admissionregistrationv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	"k8s.io/klog/v2"
 )
@@ -76,7 +75,7 @@ func (cr *certReloader) start(stop <-chan struct{}) error {
 	}
 
 	go func() {
-		defer watcher.Close()
+		defer watcher.Close() // nolint:errcheck
 		for {
 			select {
 			case event := <-watcher.Events:

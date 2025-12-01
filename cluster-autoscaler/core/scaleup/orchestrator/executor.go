@@ -22,11 +22,11 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
@@ -37,19 +37,19 @@ import (
 
 // ScaleUpExecutor scales up node groups.
 type scaleUpExecutor struct {
-	autoscalingContext         *context.AutoscalingContext
+	autoscalingCtx             *ca_context.AutoscalingContext
 	scaleStateNotifier         nodegroupchange.NodeGroupChangeObserver
 	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker
 }
 
 // New returns new instance of scale up executor.
 func newScaleUpExecutor(
-	autoscalingContext *context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	scaleStateNotifier nodegroupchange.NodeGroupChangeObserver,
 	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker,
 ) *scaleUpExecutor {
 	return &scaleUpExecutor{
-		autoscalingContext:         autoscalingContext,
+		autoscalingCtx:             autoscalingCtx,
 		scaleStateNotifier:         scaleStateNotifier,
 		asyncNodeGroupStateChecker: asyncNodeGroupStateChecker,
 	}
@@ -65,7 +65,7 @@ func (e *scaleUpExecutor) ExecuteScaleUps(
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
-	options := e.autoscalingContext.AutoscalingOptions
+	options := e.autoscalingCtx.AutoscalingOptions
 	if options.ParallelScaleUp {
 		return e.executeScaleUpsParallel(scaleUpInfos, nodeInfos, now, atomic)
 	}
@@ -78,7 +78,7 @@ func (e *scaleUpExecutor) executeScaleUpsSync(
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
-	availableGPUTypes := e.autoscalingContext.CloudProvider.GetAvailableGPUTypes()
+	availableGPUTypes := e.autoscalingCtx.CloudProvider.GetAvailableGPUTypes()
 	for _, scaleUpInfo := range scaleUpInfos {
 		nodeInfo, ok := nodeInfos[scaleUpInfo.Group.Id()]
 		if !ok {
@@ -109,7 +109,7 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 	errResults := make(chan errResult, scaleUpsLen)
 	var wg sync.WaitGroup
 	wg.Add(scaleUpsLen)
-	availableGPUTypes := e.autoscalingContext.CloudProvider.GetAvailableGPUTypes()
+	availableGPUTypes := e.autoscalingCtx.CloudProvider.GetAvailableGPUTypes()
 	for _, scaleUpInfo := range scaleUpInfos {
 		go func(info nodegroupset.ScaleUpInfo) {
 			defer wg.Done()
@@ -159,14 +159,14 @@ func (e *scaleUpExecutor) executeScaleUp(
 	now time.Time,
 	atomic bool,
 ) errors.AutoscalerError {
-	gpuConfig := e.autoscalingContext.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
+	gpuConfig := e.autoscalingCtx.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
 	gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
 	klog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
-	e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
+	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	increase := info.NewSize - info.CurrentSize
 	if err := e.increaseSize(info.Group, increase, atomic); err != nil {
-		e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
+		e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
 		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: ")
 		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, now)
 		return aerr
@@ -181,7 +181,7 @@ func (e *scaleUpExecutor) executeScaleUp(
 	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
 	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType)
-	e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
+	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	return nil
 }

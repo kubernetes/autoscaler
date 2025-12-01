@@ -17,6 +17,8 @@ limitations under the License.
 package gpu
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -24,6 +26,10 @@ import (
 )
 
 const (
+	// ResourceIntelGaudi is the name of the Intel Gaudi resource.
+	ResourceIntelGaudi = "habana.ai/gaudi"
+	// ResourceAMDGPU is the name of the AMD GPU resource.
+	ResourceAMDGPU = "amd.com/gpu"
 	// ResourceNvidiaGPU is the name of the Nvidia GPU resource.
 	ResourceNvidiaGPU = "nvidia.com/gpu"
 	// ResourceDirectX is the name of the DirectX resource on windows.
@@ -32,6 +38,15 @@ const (
 	// don't specify what type of GPU his pod wants.
 	DefaultGPUType = "nvidia-tesla-k80"
 )
+
+// GPUVendorResourceNames centralized list of all known GPU vendor extended resource names.
+// Extend this slice if new vendor resource names are added.
+var GPUVendorResourceNames = []apiv1.ResourceName{
+	ResourceNvidiaGPU,
+	ResourceIntelGaudi,
+	ResourceAMDGPU,
+	ResourceDirectX,
+}
 
 const (
 	// MetricsGenericGPU - for when there is no information about GPU type
@@ -56,11 +71,18 @@ func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes 
 	if gpuConfig == nil {
 		return "", MetricsNoGPU
 	}
-	resourceName := gpuConfig.ResourceName
+
+	resourceName := gpuConfig.ExtendedResourceName
 	capacity, capacityFound := node.Status.Capacity[resourceName]
 	// There is no label value, fallback to generic solution
 	if gpuConfig.Type == "" && capacityFound && !capacity.IsZero() {
 		return resourceName.String(), MetricsGenericGPU
+	}
+
+	// GPU is exposed using DRA, capacity won't be present
+	if gpuConfig.ExposedViaDra() {
+		draResourceName := fmt.Sprintf("dra_%s", gpuConfig.DraDriverName)
+		return draResourceName, validateGpuType(availableGPUTypes, gpuConfig.Type)
 	}
 
 	// GKE-specific label & capacity are present - consistent state
@@ -100,15 +122,48 @@ func validateGpuType(availableGPUTypes map[string]struct{}, gpu string) string {
 // if the drivers are installed and GPU is ready to use.
 func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
 	_, hasGpuLabel := node.Labels[GPULabel]
-	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[ResourceNvidiaGPU]
-	return hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero())
+	if hasGpuLabel {
+		return true
+	}
+	// Check for extended resources as well
+	_, hasGpuAllocatable := NodeHasGpuAllocatable(node)
+	return hasGpuAllocatable
+}
+
+// NodeHasGpuAllocatable returns the GPU allocatable value and whether the node has GPU allocatable resources.
+// It checks all known GPU vendor resource names and returns the first non-zero allocatable GPU value found.
+func NodeHasGpuAllocatable(node *apiv1.Node) (gpuAllocatableValue int64, hasGpuAllocatable bool) {
+	for _, gpuVendorResourceName := range GPUVendorResourceNames {
+		gpuAllocatable, found := node.Status.Allocatable[gpuVendorResourceName]
+		if found && !gpuAllocatable.IsZero() {
+			return gpuAllocatable.Value(), true
+		}
+	}
+	return 0, false
 }
 
 // PodRequestsGpu returns true if a given pod has GPU request.
 func PodRequestsGpu(pod *apiv1.Pod) bool {
 	podRequests := podutils.PodRequests(pod)
-	_, gpuFound := podRequests[ResourceNvidiaGPU]
-	return gpuFound
+	for _, gpuVendorResourceName := range GPUVendorResourceNames {
+		if _, found := podRequests[gpuVendorResourceName]; found {
+			return true
+		}
+	}
+	return false
+}
+
+// DetectNodeGPUResourceName inspects the node's allocatable resources and returns the first
+// known GPU extended resource name that has non-zero allocatable. Falls back to Nvidia for
+// backward compatibility if none are found but a GPU label is present.
+func DetectNodeGPUResourceName(node *apiv1.Node) apiv1.ResourceName {
+	for _, rn := range GPUVendorResourceNames {
+		if qty, ok := node.Status.Allocatable[rn]; ok && !qty.IsZero() {
+			return rn
+		}
+	}
+	// Fallback: preserve previous behavior (defaulting to Nvidia) if label existed
+	return ResourceNvidiaGPU
 }
 
 // GetNodeGPUFromCloudProvider returns the GPU the node has. Returned GPU has the GPU label of the
@@ -116,7 +171,11 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 func GetNodeGPUFromCloudProvider(provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
 	gpuLabel := provider.GPULabel()
 	if NodeHasGpu(gpuLabel, node) {
-		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ResourceName: ResourceNvidiaGPU}
+		return &cloudprovider.GpuConfig{
+			Label:                gpuLabel,
+			Type:                 node.Labels[gpuLabel],
+			ExtendedResourceName: DetectNodeGPUResourceName(node),
+		}
 	}
 	return nil
 }

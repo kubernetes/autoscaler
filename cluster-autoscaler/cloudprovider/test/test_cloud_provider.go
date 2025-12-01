@@ -45,6 +45,9 @@ type OnNodeGroupDeleteFunc func(string) error
 // HasInstance is a function called to determine if a node has been removed from the cloud provider.
 type HasInstance func(string) (bool, error)
 
+// NodeGpuConfig is a function that returns the GPU config for a given node.
+type NodeGpuConfig func(node *apiv1.Node) *cloudprovider.GpuConfig
+
 // TestCloudProvider is a dummy cloud provider to be used in tests.
 type TestCloudProvider struct {
 	sync.Mutex
@@ -59,6 +62,7 @@ type TestCloudProvider struct {
 	machineTemplates  map[string]*framework.NodeInfo
 	priceModel        cloudprovider.PricingModel
 	resourceLimiter   *cloudprovider.ResourceLimiter
+	nodeGpuConfig     func(node *apiv1.Node) *cloudprovider.GpuConfig
 }
 
 // TestCloudProviderBuilder is used to create CloudProvider
@@ -127,6 +131,14 @@ func (b *TestCloudProviderBuilder) WithHasInstance(hasInstance HasInstance) *Tes
 	return b
 }
 
+// WithNodeGpuConfig adds has custom node gpu config handler to provider
+func (b *TestCloudProviderBuilder) WithNodeGpuConfig(nodeGpuConfig NodeGpuConfig) *TestCloudProviderBuilder {
+	b.builders = append(b.builders, func(p *TestCloudProvider) {
+		p.nodeGpuConfig = nodeGpuConfig
+	})
+	return b
+}
+
 // Build returns a built test cloud provider
 func (b *TestCloudProviderBuilder) Build() *TestCloudProvider {
 	p := &TestCloudProvider{
@@ -163,6 +175,9 @@ func (tcp *TestCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
 func (tcp *TestCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	if tcp.nodeGpuConfig != nil {
+		return tcp.nodeGpuConfig(node)
+	}
 	return gpu.GetNodeGPUFromCloudProvider(tcp, node)
 }
 
@@ -485,7 +500,9 @@ func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	id := tng.id
 	tng.targetSize -= len(nodes)
 	tng.Unlock()
-	if tng.opts != nil && tng.opts.ZeroOrMaxNodeScaling && tng.targetSize != 0 {
+	allNodes, _ := tng.Nodes()
+	currentSize := len(allNodes)
+	if tng.opts != nil && tng.opts.ZeroOrMaxNodeScaling && tng.targetSize != 0 && currentSize != len(nodes) {
 		return fmt.Errorf("TestNodeGroup: attempted to partially scale down a node group that should be scaled down atomically")
 	}
 	for _, node := range nodes {

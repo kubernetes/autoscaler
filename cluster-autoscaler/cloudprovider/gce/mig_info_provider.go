@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -62,6 +63,11 @@ type timeProvider interface {
 	Now() time.Time
 }
 
+var (
+	// Compile a regular expression to find the text between "projects/" and the next "/".
+	migProjectSelfLinkRe = regexp.MustCompile(`projects/([^/]+)`)
+)
+
 type cachingMigInfoProvider struct {
 	migInfoMutex                      sync.Mutex
 	cache                             *GceCache
@@ -73,6 +79,7 @@ type cachingMigInfoProvider struct {
 	migInstancesMinRefreshWaitTime    time.Duration
 	timeProvider                      timeProvider
 	bulkGceMigInstancesListingEnabled bool
+	multiProjectCachingEnabled        bool
 }
 
 type realTime struct{}
@@ -82,7 +89,7 @@ func (r *realTime) Now() time.Time {
 }
 
 // NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
-func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int, migInstancesMinRefreshWaitTime time.Duration, bulkGceMigInstancesListingEnabled bool) MigInfoProvider {
+func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int, migInstancesMinRefreshWaitTime time.Duration, bulkGceMigInstancesListingEnabled bool, multiProjectCachingEnabled bool) MigInfoProvider {
 	return &cachingMigInfoProvider{
 		cache:                             cache,
 		migLister:                         migLister,
@@ -92,6 +99,7 @@ func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient A
 		migInstancesMinRefreshWaitTime:    migInstancesMinRefreshWaitTime,
 		timeProvider:                      &realTime{},
 		bulkGceMigInstancesListingEnabled: bulkGceMigInstancesListingEnabled,
+		multiProjectCachingEnabled:        multiProjectCachingEnabled,
 	}
 }
 
@@ -479,8 +487,19 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 
 	for idx, zone := range zones {
 		for _, zoneMig := range migs[idx] {
+			projectId := c.projectId
+			if c.multiProjectCachingEnabled {
+				var err error
+				projectId, err = extractProjectWithRegex(zoneMig.SelfLink)
+				if err != nil {
+					// At this point we assume its the default project but this could eventually lead to a cache miss
+					// if the project information is incorrect.
+					projectId = c.projectId
+					klog.Errorf("Unable to extract projectID from MIG self link: %s, err: %v", zoneMig.SelfLink, err)
+				}
+			}
 			zoneMigRef := GceRef{
-				c.projectId,
+				projectId,
 				zone,
 				zoneMig.Name,
 			}
@@ -506,6 +525,19 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 	}
 
 	return nil
+}
+
+// extractProjectWithRegex uses a regular expression to find and return the project name
+// from the selfLink of a MIG.
+func extractProjectWithRegex(selflink string) (string, error) {
+	// FindStringSubmatch returns an array with the full match and all captured groups.
+	// matches[0] will be the full matched string (e.g., "/projects/some-project").
+	// matches[1] will be the content of the first capturing group (e.g., "some-project").
+	matches := migProjectSelfLinkRe.FindStringSubmatch(selflink)
+	if len(matches) < 2 {
+		return "", fmt.Errorf("could not find project name in self link: %s", selflink)
+	}
+	return matches[1], nil
 }
 
 func (c *cachingMigInfoProvider) getRegisteredMigRefs() map[GceRef]bool {

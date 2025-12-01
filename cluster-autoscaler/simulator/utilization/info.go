@@ -48,15 +48,15 @@ type Info struct {
 // utilization is the sum of requests for it divided by allocatable. It also
 // returns the individual cpu, memory and gpu utilization.
 func Calculate(nodeInfo *framework.NodeInfo, skipDaemonSetPods, skipMirrorPods, draEnabled bool, gpuConfig *cloudprovider.GpuConfig, currentTime time.Time) (utilInfo Info, err error) {
-	if gpuConfig != nil {
-		gpuUtil, err := CalculateUtilizationOfResource(nodeInfo, gpuConfig.ResourceName, skipDaemonSetPods, skipMirrorPods, currentTime)
+	if gpuConfig != nil && !gpuConfig.ExposedViaDra() {
+		gpuUtil, err := CalculateUtilizationOfResource(nodeInfo, gpuConfig.ExtendedResourceName, skipDaemonSetPods, skipMirrorPods, currentTime)
 		if err != nil {
-			klog.V(3).Infof("node %s has unready GPU resource: %s", nodeInfo.Node().Name, gpuConfig.ResourceName)
+			klog.V(3).Infof("node %s has unready GPU resource: %s", nodeInfo.Node().Name, gpuConfig.ExtendedResourceName)
 			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
-			return Info{GpuUtil: 0, ResourceName: gpuConfig.ResourceName, Utilization: 0}, nil
+			return Info{GpuUtil: 0, ResourceName: gpuConfig.ExtendedResourceName, Utilization: 0}, nil
 		}
 		// Skips cpu and memory utilization calculation for node with GPU.
-		return Info{GpuUtil: gpuUtil, ResourceName: gpuConfig.ResourceName, Utilization: gpuUtil}, err
+		return Info{GpuUtil: gpuUtil, ResourceName: gpuConfig.ExtendedResourceName, Utilization: gpuUtil}, err
 	}
 
 	if draEnabled && len(nodeInfo.LocalResourceSlices) > 0 {

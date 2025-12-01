@@ -22,17 +22,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
-)
-
-const (
-	// FakePodAnnotationKey the key for pod type
-	FakePodAnnotationKey = "podtype"
-	// FakePodAnnotationValue the value for a fake pod
-	FakePodAnnotationValue = "fakepod"
 )
 
 // PodInjectionPodListProcessor is a PodListProcessor used to inject fake pods to consider replica count in the respective controllers for the scale-up.
@@ -55,21 +50,26 @@ func NewPodInjectionPodListProcessor(fakePodRegistry *podinjectionbackoff.Contro
 }
 
 // Process updates unschedulablePods by injecting fake pods to match target replica count
-func (p *PodInjectionPodListProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *PodInjectionPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
-	controllers := listControllers(ctx)
+	controllers := listControllers(autoscalingCtx)
 	controllers = p.skipBackedoffControllers(controllers)
 
-	nodeInfos, err := ctx.ClusterSnapshot.ListNodeInfos()
+	nodeInfos, err := autoscalingCtx.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
-		klog.Errorf("Failed to list nodeInfos from cluster snapshot: %v", err)
 		return unschedulablePods, fmt.Errorf("failed to list nodeInfos from cluster snapshot: %v", err)
 	}
 	scheduledPods := podsFromNodeInfos(nodeInfos)
 
-	groupedPods := groupPods(append(scheduledPods, unschedulablePods...), controllers)
-	var podsToInject []*apiv1.Pod
+	allPods, err := autoscalingCtx.AllPodLister().List()
+	if err != nil {
+		return unschedulablePods, fmt.Errorf("failed to list all pods from all pod lister: %v", err)
+	}
+	schedulingGatedPods := kube_util.SchedulingGatedPods(allPods)
 
+	groupedPods := groupPods(append(append(scheduledPods, unschedulablePods...), schedulingGatedPods...), controllers)
+
+	var podsToInject []*apiv1.Pod
 	for _, groupedPod := range groupedPods {
 		var fakePodCount = groupedPod.fakePodCount()
 		fakePods := makeFakePods(groupedPod.ownerUid, groupedPod.sample, fakePodCount)
@@ -90,23 +90,13 @@ func (p *PodInjectionPodListProcessor) CleanUp() {
 func makeFakePods(ownerUid types.UID, samplePod *apiv1.Pod, podCount int) []*apiv1.Pod {
 	var fakePods []*apiv1.Pod
 	for i := 1; i <= podCount; i++ {
-		newPod := withFakePodAnnotation(samplePod.DeepCopy())
+		newPod := fake.WithFakePodAnnotation(samplePod.DeepCopy())
 		newPod.Name = fmt.Sprintf("%s-copy-%d", samplePod.Name, i)
 		newPod.UID = types.UID(fmt.Sprintf("%s-%d", string(ownerUid), i))
 		newPod.Spec.NodeName = ""
 		fakePods = append(fakePods, newPod)
 	}
 	return fakePods
-}
-
-// withFakePodAnnotation adds annotation of key `FakePodAnnotationKey` with value `FakePodAnnotationValue` to passed pod.
-// withFakePodAnnotation also creates a new annotations map if original pod.Annotations is nil
-func withFakePodAnnotation(pod *apiv1.Pod) *apiv1.Pod {
-	if pod.Annotations == nil {
-		pod.Annotations = make(map[string]string, 1)
-	}
-	pod.Annotations[FakePodAnnotationKey] = FakePodAnnotationValue
-	return pod
 }
 
 // fakePodCount calculate the fake pod count that should be injected from this podGroup
@@ -134,20 +124,12 @@ func podsFromNodeInfos(nodeInfos []*framework.NodeInfo) []*apiv1.Pod {
 }
 
 // listControllers returns the list of controllers that can be used to inject fake pods
-func listControllers(ctx *context.AutoscalingContext) []controller {
+func listControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	controllers = append(controllers, createReplicaSetControllers(ctx)...)
-	controllers = append(controllers, createJobControllers(ctx)...)
-	controllers = append(controllers, createStatefulSetControllers(ctx)...)
+	controllers = append(controllers, createReplicaSetControllers(autoscalingCtx)...)
+	controllers = append(controllers, createJobControllers(autoscalingCtx)...)
+	controllers = append(controllers, createStatefulSetControllers(autoscalingCtx)...)
 	return controllers
-}
-
-// IsFake returns true if the a pod is marked as fake and false otherwise
-func IsFake(pod *apiv1.Pod) bool {
-	if pod.Annotations == nil {
-		return false
-	}
-	return pod.Annotations[FakePodAnnotationKey] == FakePodAnnotationValue
 }
 
 func (p *PodInjectionPodListProcessor) skipBackedoffControllers(controllers []controller) []controller {

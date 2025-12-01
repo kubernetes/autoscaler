@@ -26,7 +26,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -128,11 +128,11 @@ func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels 
 	}
 
 	if vmss.Sku == nil || vmss.Sku.Name == nil {
-		return NodeTemplate{}, fmt.Errorf("VMSS %s has no SKU", to.String(vmss.Name))
+		return NodeTemplate{}, fmt.Errorf("VMSS %s has no SKU", ptr.Deref(vmss.Name, ""))
 	}
 
 	if vmss.Location == nil {
-		return NodeTemplate{}, fmt.Errorf("VMSS %s has no location", to.String(vmss.Name))
+		return NodeTemplate{}, fmt.Errorf("VMSS %s has no location", ptr.Deref(vmss.Name, ""))
 	}
 
 	zones := []string{}
@@ -157,7 +157,7 @@ func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels 
 
 func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location string, skuName string, labelsFromSpec map[string]string, taintsFromSpec string) (NodeTemplate, error) {
 	if vmsPool.Properties == nil {
-		return NodeTemplate{}, fmt.Errorf("vmsPool %s has nil properties", to.String(vmsPool.Name))
+		return NodeTemplate{}, fmt.Errorf("vmsPool %s has nil properties", ptr.Deref(vmsPool.Name, ""))
 	}
 	// labels from the agentpool
 	labels := vmsPool.Properties.NodeLabels
@@ -166,14 +166,14 @@ func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location
 		if labels == nil {
 			labels = make(map[string]*string)
 		}
-		labels[k] = to.StringPtr(v)
+		labels[k] = ptr.To(v)
 	}
 
 	// taints from the agentpool
 	taintsList := []string{}
 	for _, taint := range vmsPool.Properties.NodeTaints {
-		if to.String(taint) != "" {
-			taintsList = append(taintsList, to.String(taint))
+		if ptr.Deref(taint, "") != "" {
+			taintsList = append(taintsList, ptr.Deref(taint, ""))
 		}
 	}
 	// taints from spec
@@ -203,7 +203,7 @@ func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location
 		InstanceOS: instanceOS,
 		Location:   location,
 		VMPoolNodeTemplate: &VMPoolNodeTemplate{
-			AgentPoolName: to.String(vmsPool.Name),
+			AgentPoolName: ptr.Deref(vmsPool.Name, ""),
 			OSDiskType:    vmsPool.Properties.OSDiskType,
 			Taints:        taints,
 			Labels:        labels,
@@ -211,7 +211,7 @@ func buildNodeTemplateFromVMPool(vmsPool armcontainerservice.AgentPool, location
 	}, nil
 }
 
-func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
+func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager *AzureManager, enableDynamicInstanceList bool, enableLabelPrediction bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
@@ -272,7 +272,7 @@ func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager 
 	node.Status.Allocatable = node.Status.Capacity
 
 	if template.VMSSNodeTemplate != nil {
-		node = processVMSSTemplate(template, nodeName, node)
+		node = processVMSSTemplate(template, nodeName, node, enableLabelPrediction)
 	} else if template.VMPoolNodeTemplate != nil {
 		node = processVMPoolTemplate(template, nodeName, node)
 	} else {
@@ -290,7 +290,7 @@ func processVMPoolTemplate(template NodeTemplate, nodeName string, node apiv1.No
 	labels[agentPoolNodeLabelKey] = template.VMPoolNodeTemplate.AgentPoolName
 	if template.VMPoolNodeTemplate.Labels != nil {
 		for k, v := range template.VMPoolNodeTemplate.Labels {
-			labels[k] = to.String(v)
+			labels[k] = ptr.Deref(v, "")
 		}
 	}
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
@@ -298,7 +298,7 @@ func processVMPoolTemplate(template NodeTemplate, nodeName string, node apiv1.No
 	return node
 }
 
-func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node) apiv1.Node {
+func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node, enableLabelPrediction bool) apiv1.Node {
 	// NodeLabels
 	if template.VMSSNodeTemplate.Tags != nil {
 		for k, v := range template.VMSSNodeTemplate.Tags {
@@ -324,45 +324,50 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 		labels = extractLabelsFromTags(template.VMSSNodeTemplate.Tags)
 	}
 
-	// Add the agentpool label, its value should come from the VMSS poolName tag
-	// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
-	// We will have to live with both labels for a while
-	if node.Labels[legacyPoolNameTag] != "" {
-		labels[legacyAgentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
-		labels[agentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
-	}
-	if node.Labels[poolNameTag] != "" {
-		labels[legacyAgentPoolNodeLabelKey] = node.Labels[poolNameTag]
-		labels[agentPoolNodeLabelKey] = node.Labels[poolNameTag]
+	// This is the best-effort to match AKS system labels,
+	// this prediction needs to be constantly worked on and maintained to keep up with the changes in AKS
+	if enableLabelPrediction {
+		// Add the agentpool label, its value should come from the VMSS poolName tag
+		// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
+		// We will have to live with both labels for a while
+		if node.Labels[legacyPoolNameTag] != "" {
+			labels[legacyAgentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
+			labels[agentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
+		}
+		if node.Labels[poolNameTag] != "" {
+			labels[legacyAgentPoolNodeLabelKey] = node.Labels[poolNameTag]
+			labels[agentPoolNodeLabelKey] = node.Labels[poolNameTag]
+		}
+
+		// Add the storage profile and storage tier labels for vmss node
+		if template.VMSSNodeTemplate.OSDisk != nil {
+			// ephemeral
+			if template.VMSSNodeTemplate.OSDisk.DiffDiskSettings != nil && template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option == compute.Local {
+				labels[legacyStorageProfileNodeLabelKey] = "ephemeral"
+				labels[storageProfileNodeLabelKey] = "ephemeral"
+			} else {
+				labels[legacyStorageProfileNodeLabelKey] = "managed"
+				labels[storageProfileNodeLabelKey] = "managed"
+			}
+			if template.VMSSNodeTemplate.OSDisk.ManagedDisk != nil {
+				labels[legacyStorageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
+				labels[storageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
+			}
+		}
+
+		// If we are on GPU-enabled SKUs, append the accelerator
+		// label so that CA makes better decision when scaling from zero for GPU pools
+		if isNvidiaEnabledSKU(template.SkuName) {
+			labels[GPULabel] = "nvidia"
+			labels[legacyGPULabel] = "nvidia"
+		}
 	}
 
-	// Add the storage profile and storage tier labels for vmss node
-	if template.VMSSNodeTemplate.OSDisk != nil {
-		// ephemeral
-		if template.VMSSNodeTemplate.OSDisk.DiffDiskSettings != nil && template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option == compute.Local {
-			labels[legacyStorageProfileNodeLabelKey] = "ephemeral"
-			labels[storageProfileNodeLabelKey] = "ephemeral"
-		} else {
-			labels[legacyStorageProfileNodeLabelKey] = "managed"
-			labels[storageProfileNodeLabelKey] = "managed"
-		}
-		if template.VMSSNodeTemplate.OSDisk.ManagedDisk != nil {
-			labels[legacyStorageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
-			labels[storageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
-		}
-		// Add ephemeral-storage value
-		if template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
-			node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
-			klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
-			klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
-		}
-	}
-
-	// If we are on GPU-enabled SKUs, append the accelerator
-	// label so that CA makes better decision when scaling from zero for GPU pools
-	if isNvidiaEnabledSKU(template.SkuName) {
-		labels[GPULabel] = "nvidia"
-		labels[legacyGPULabel] = "nvidia"
+	// Add ephemeral-storage value
+	if template.VMSSNodeTemplate.OSDisk != nil && template.VMSSNodeTemplate.OSDisk.DiskSizeGB != nil {
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VMSSNodeTemplate.OSDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
+		klog.V(4).Infof("OS Disk Size from template is: %d", *template.VMSSNodeTemplate.OSDisk.DiskSizeGB)
+		klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
 	}
 
 	// Extract allocatables from tags

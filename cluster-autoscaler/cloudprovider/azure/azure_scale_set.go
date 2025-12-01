@@ -29,11 +29,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 )
 
 var (
@@ -89,6 +89,8 @@ type ScaleSet struct {
 	dedicatedHost bool
 
 	enableFastDeleteOnFailedProvisioning bool
+
+	enableLabelPredictionsOnTemplate bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -108,10 +110,11 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 			instancesRefreshJitter: az.config.VmssVmsCacheJitter,
 		},
 
-		enableForceDelete:         az.config.EnableForceDelete,
-		enableDynamicInstanceList: az.config.EnableDynamicInstanceList,
-		enableDetailedCSEMessage:  az.config.EnableDetailedCSEMessage,
-		dedicatedHost:             dedicatedHost,
+		enableForceDelete:                az.config.EnableForceDelete,
+		enableDynamicInstanceList:        az.config.EnableDynamicInstanceList,
+		enableDetailedCSEMessage:         az.config.EnableDetailedCSEMessage,
+		enableLabelPredictionsOnTemplate: az.config.EnableLabelPredictionsOnTemplate,
+		dedicatedHost:                    dedicatedHost,
 	}
 
 	if az.config.VmssVirtualMachinesCacheTTLInSeconds != 0 {
@@ -206,7 +209,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	// // If VMSS state is updating, return the currentSize which would've been proactively incremented or decremented by CA
 	// // unless it's -1. In that case, its better to initialize it.
 	// if scaleSet.curSize != -1 && set.VirtualMachineScaleSetProperties != nil &&
-	// 	strings.EqualFold(to.String(set.VirtualMachineScaleSetProperties.ProvisioningState), string(compute.GalleryProvisioningStateUpdating)) {
+	// 	strings.EqualFold(ptr.Deref(set.VirtualMachineScaleSetProperties.ProvisioningState, ""), string(compute.GalleryProvisioningStateUpdating)) {
 	// 	klog.V(3).Infof("VMSS %q is in updating state, returning cached size: %d", scaleSet.Name, scaleSet.curSize)
 	// 	return scaleSet.curSize, nil
 	// }
@@ -586,7 +589,7 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 
 // DeleteNodes deletes the nodes from the group.
 func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(8).Infof("Delete nodes requested: %q\n", nodes)
+	klog.V(3).Infof("Delete nodes requested: %q\n", nodes)
 	size, err := scaleSet.getScaleSetSize()
 	if err != nil {
 		return err
@@ -595,12 +598,14 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	if int(size) <= scaleSet.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
+	return scaleSet.ForceDeleteNodes(nodes)
+}
 
-	// Distinguish between unregistered node deletion and normal node deletion
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (scaleSet *ScaleSet) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	klog.V(3).Infof("Delete nodes requested: %q\n", nodes)
 	refs := make([]*azureRef, 0, len(nodes))
 	hasUnregisteredNodes := false
-	unregisteredRefs := make([]*azureRef, 0, len(nodes))
-
 	for _, node := range nodes {
 		belongs, err := scaleSet.Belongs(node)
 		if err != nil {
@@ -617,26 +622,10 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 		ref := &azureRef{
 			Name: node.Spec.ProviderID,
 		}
-
-		if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
-			klog.V(5).Infof("Node: %s type is unregistered..Appending to the unregistered list", node.Name)
-			unregisteredRefs = append(unregisteredRefs, ref)
-		} else {
-			refs = append(refs, ref)
-		}
-	}
-
-	if len(unregisteredRefs) > 0 {
-		klog.V(3).Infof("Removing unregisteredNodes: %v", unregisteredRefs)
-		return scaleSet.DeleteInstances(unregisteredRefs, true)
+		refs = append(refs, ref)
 	}
 
 	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
-}
-
-// ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (scaleSet *ScaleSet) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return cloudprovider.ErrNotImplemented
 }
 
 // Id returns ScaleSet id.
@@ -662,7 +651,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
+	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList, scaleSet.enableLabelPredictionsOnTemplate)
 	if err != nil {
 		return nil, err
 	}
@@ -880,10 +869,10 @@ func (scaleSet *ScaleSet) cseErrors(extensions *[]compute.VirtualMachineExtensio
 	failed := false
 	if extensions != nil {
 		for _, extension := range *extensions {
-			if strings.EqualFold(to.String(extension.Name), vmssCSEExtensionName) && extension.Statuses != nil {
+			if strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
 				for _, status := range *extension.Statuses {
 					if status.Level == "Error" {
-						errs = append(errs, to.String(status.Message))
+						errs = append(errs, ptr.Deref(status.Message, ""))
 						failed = true
 					}
 				}
@@ -899,7 +888,7 @@ func (scaleSet *ScaleSet) getSKU() string {
 		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		return ""
 	}
-	return to.String(vmssInfo.Sku.Name)
+	return ptr.Deref(vmssInfo.Sku.Name, "")
 }
 
 func (scaleSet *ScaleSet) verifyNodeGroup(instance *azureRef, commonNgID string) error {

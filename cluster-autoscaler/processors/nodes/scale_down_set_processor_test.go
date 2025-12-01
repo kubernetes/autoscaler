@@ -21,10 +21,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	v1 "k8s.io/api/core/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -41,9 +43,14 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 			candidate simulator.NodeToBeRemoved
 			nodeGroup string
 		}
-		scaleDownContext    *ScaleDownContext
-		expectedToBeRemoved []simulator.NodeToBeRemoved
-		expectedUnremovable []simulator.UnremovableNode
+		allowNonAtomicScaleUpToMax bool
+		scaleDownContext           *ScaleDownContext
+		expectedToBeRemoved        []simulator.NodeToBeRemoved
+		expectedUnremovable        []simulator.UnremovableNode
+		cloudProviderNodes         []struct {
+			node      *v1.Node
+			nodeGroup string
+		}
 	}{
 		{
 			name: "Atomic removal",
@@ -98,6 +105,15 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 				buildUnremovableNode("ng2-node-1", simulator.AtomicScaleDownFailed),
 				buildUnremovableNode("ng2-node-2", simulator.AtomicScaleDownFailed),
 			},
+			cloudProviderNodes: []struct {
+				node      *v1.Node
+				nodeGroup string
+			}{
+				{
+					node:      BuildTestNode("ng2-node-3", 1000, 10),
+					nodeGroup: "ng2",
+				},
+			},
 		},
 		{
 			name: "Mixed Groups",
@@ -108,7 +124,7 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 			}{
 				{
 					nodeGroupName:        "ng1",
-					nodeGroupTargetSize:  3,
+					nodeGroupTargetSize:  4,
 					zeroOrMaxNodeScaling: false,
 				},
 				{
@@ -151,6 +167,15 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 			expectedUnremovable: []simulator.UnremovableNode{
 				buildUnremovableNode("ng2-node-1", simulator.AtomicScaleDownFailed),
 				buildUnremovableNode("ng2-node-2", simulator.AtomicScaleDownFailed),
+			},
+			cloudProviderNodes: []struct {
+				node      *v1.Node
+				nodeGroup string
+			}{
+				{
+					node:      BuildTestNode("ng2-node-3", 1000, 10),
+					nodeGroup: "ng2",
+				},
 			},
 		},
 		{
@@ -204,29 +229,124 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 				buildRemovableNode("ng2-node-1"),
 				buildRemovableNode("ng2-node-2"),
 			},
-			expectedUnremovable: []simulator.UnremovableNode{},
+		},
+		{
+			name: "Atomic removal with failed instances - all registered nodes are removable",
+			nodeGroups: []struct {
+				nodeGroupName        string
+				nodeGroupTargetSize  int
+				zeroOrMaxNodeScaling bool
+			}{{
+				nodeGroupName:        "ng1",
+				nodeGroupTargetSize:  10,
+				zeroOrMaxNodeScaling: true,
+			}},
+			allowNonAtomicScaleUpToMax: true,
+			removableCandidates: []struct {
+				candidate simulator.NodeToBeRemoved
+				nodeGroup string
+			}{
+				{
+					candidate: buildRemovableNode("ng1-node-1"),
+					nodeGroup: "ng1",
+				},
+				{
+					candidate: buildRemovableNode("ng1-node-2"),
+					nodeGroup: "ng1",
+				},
+				{
+					candidate: buildRemovableNode("ng1-node-3"),
+					nodeGroup: "ng1",
+				},
+			},
+			scaleDownContext: NewDefaultScaleDownContext(),
+			expectedToBeRemoved: []simulator.NodeToBeRemoved{
+				buildRemovableNode("ng1-node-1"),
+				buildRemovableNode("ng1-node-2"),
+				buildRemovableNode("ng1-node-3"),
+			},
+			cloudProviderNodes: []struct {
+				node      *v1.Node
+				nodeGroup string
+			}{
+				{
+					node:      BuildTestNode("ng2-node-1", 1000, 10),
+					nodeGroup: "ng2",
+				},
+			},
+		},
+		{
+			name: "Atomic removal with failed instances - not all registered nodes are unremovable",
+			nodeGroups: []struct {
+				nodeGroupName        string
+				nodeGroupTargetSize  int
+				zeroOrMaxNodeScaling bool
+			}{{
+				nodeGroupName:        "ng1",
+				nodeGroupTargetSize:  10,
+				zeroOrMaxNodeScaling: true,
+			}},
+			allowNonAtomicScaleUpToMax: true,
+			removableCandidates: []struct {
+				candidate simulator.NodeToBeRemoved
+				nodeGroup string
+			}{
+				{
+					candidate: buildRemovableNode("ng1-node-1"),
+					nodeGroup: "ng1",
+				},
+				{
+					candidate: buildRemovableNode("ng1-node-2"),
+					nodeGroup: "ng1",
+				},
+				{
+					candidate: buildRemovableNode("ng1-node-3"),
+					nodeGroup: "ng1",
+				},
+			},
+			scaleDownContext: NewDefaultScaleDownContext(),
+			expectedUnremovable: []simulator.UnremovableNode{
+				buildUnremovableNode("ng1-node-1", simulator.AtomicScaleDownFailed),
+				buildUnremovableNode("ng1-node-2", simulator.AtomicScaleDownFailed),
+				buildUnremovableNode("ng1-node-3", simulator.AtomicScaleDownFailed),
+			},
+			cloudProviderNodes: []struct {
+				node      *v1.Node
+				nodeGroup string
+			}{
+				{
+					node:      BuildTestNode("ng1-node-4", 1000, 10),
+					nodeGroup: "ng1",
+				},
+			},
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-
+			var nodes []*v1.Node
 			processor := NewAtomicResizeFilteringProcessor()
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			for _, ng := range tc.nodeGroups {
 				provider.AddNodeGroupWithCustomOptions(ng.nodeGroupName, 0, 100, ng.nodeGroupTargetSize, &config.NodeGroupAutoscalingOptions{
-					ZeroOrMaxNodeScaling: ng.zeroOrMaxNodeScaling,
+					ZeroOrMaxNodeScaling: ng.zeroOrMaxNodeScaling, AllowNonAtomicScaleUpToMax: tc.allowNonAtomicScaleUpToMax,
 				})
 			}
 			candidates := []simulator.NodeToBeRemoved{}
 			for _, node := range tc.removableCandidates {
 				provider.AddNode(node.nodeGroup, node.candidate.Node)
 				candidates = append(candidates, node.candidate)
+				nodes = append(nodes, node.candidate.Node)
+			}
+			for _, node := range tc.cloudProviderNodes {
+				provider.AddNode(node.nodeGroup, node.node)
+				nodes = append(nodes, node.node)
 			}
 			context, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{},
 			}, &fake.Clientset{}, nil, provider, nil, nil)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
 
 			toBeRemoved, unRemovable := processor.FilterUnremovableNodes(&context, tc.scaleDownContext, candidates)
 

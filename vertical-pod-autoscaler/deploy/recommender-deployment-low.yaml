@@ -26,7 +26,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: recommender
-        image: registry.k8s.io/autoscaling/vpa-recommender:1.4.1
+        image: registry.k8s.io/autoscaling/vpa-recommender:1.5.1
         imagePullPolicy: Always
         args:
           - --recommender-name=frugal
@@ -41,3 +41,18 @@ spec:
         ports:
         - name: prometheus
           containerPort: 8942
+        livenessProbe:
+          httpGet:
+            path: /health-check
+            port: prometheus
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health-check
+            port: prometheus
+            scheme: HTTP
+          periodSeconds: 10
+          failureThreshold: 3

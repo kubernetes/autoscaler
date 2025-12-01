@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cp_test "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -120,12 +120,12 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 
 	for _, tc := range testCases {
 		fakeRecorder := kube_record.NewFakeRecorder(5)
-		context := &context.AutoscalingContext{
-			AutoscalingKubeClients: context.AutoscalingKubeClients{
+		autoscalingCtx := &ca_context.AutoscalingContext{
+			AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 				Recorder: fakeRecorder,
 			},
 		}
-		p.Process(context, tc.state)
+		p.Process(autoscalingCtx, tc.state)
 		triggered := 0
 		noTriggered := 0
 		for eventsLeft := true; eventsLeft; {

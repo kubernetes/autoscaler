@@ -48,6 +48,8 @@ _Appears in:_
 | `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  |  |
 | `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
 | `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br /> |
+| `oomBumpUpRatio` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#quantity-resource-api)_ | oomBumpUpRatio is the ratio to increase memory when OOM is detected. |  |  |
+| `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  |  |
 
 
 #### ContainerScalingMode
@@ -218,7 +220,7 @@ _Appears in:_
 | `Off` | UpdateModeOff means that autoscaler never changes Pod resources.<br />The recommender still sets the recommended resources in the<br />VerticalPodAutoscaler object. This can be used for a "dry run".<br /> |
 | `Initial` | UpdateModeInitial means that autoscaler only assigns resources on pod<br />creation and does not change them during the lifetime of the pod.<br /> |
 | `Recreate` | UpdateModeRecreate means that autoscaler assigns resources on pod<br />creation and additionally can update them during the lifetime of the<br />pod by deleting and recreating the pod.<br /> |
-| `Auto` | UpdateModeAuto means that autoscaler assigns resources on pod creation<br />and additionally can update them during the lifetime of the pod,<br />using any available update method. Currently this is equivalent to<br />Recreate.<br /> |
+| `Auto` | UpdateModeAuto means that autoscaler assigns resources on pod creation<br />and additionally can update them during the lifetime of the pod,<br />using any available update method. Currently this is equivalent to<br />Recreate.<br />Deprecated: This value is deprecated and will be removed in a future API version.<br />Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.<br />See https://github.com/kubernetes/autoscaler/issues/8424 for more details.<br /> |
 | `InPlaceOrRecreate` | UpdateModeInPlaceOrRecreate means that autoscaler tries to assign resources in-place.<br />If this is not possible (e.g., resizing takes too long or is infeasible), it falls back to the<br />"Recreate" update mode.<br />Requires VPA level feature gate "InPlaceOrRecreate" to be enabled<br />on the admission and updater pods.<br />Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.<br /> |
 
 
@@ -301,7 +303,7 @@ _Appears in:_
 | `version` _string_ | Version of the format of the stored data. |  |  |
 | `cpuHistogram` _[HistogramCheckpoint](#histogramcheckpoint)_ | Checkpoint of histogram for consumption of CPU. |  |  |
 | `memoryHistogram` _[HistogramCheckpoint](#histogramcheckpoint)_ | Checkpoint of histogram for consumption of memory. |  |  |
-| `firstSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#time-v1-meta)_ | Timestamp of the fist sample from the histograms. |  |  |
+| `firstSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#time-v1-meta)_ | Timestamp of the first sample from the histograms. |  |  |
 | `lastSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#time-v1-meta)_ | Timestamp of the last sample from the histograms. |  |  |
 | `totalSamplesCount` _integer_ | Total number of samples in the histograms. |  |  |
 

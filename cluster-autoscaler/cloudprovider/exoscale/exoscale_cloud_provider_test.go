@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	apiv1 "k8s.io/api/core/v1"
@@ -146,10 +146,7 @@ func (ts *cloudProviderTestSuite) TearDownTest() {
 }
 
 func (ts *cloudProviderTestSuite) randomID() string {
-	id, err := uuid.NewV4()
-	if err != nil {
-		ts.T().Fatalf("unable to generate a new UUID: %s", err)
-	}
+	id := uuid.New()
 	return id.String()
 }
 

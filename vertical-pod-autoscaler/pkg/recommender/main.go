@@ -66,25 +66,28 @@ var (
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	memorySaver            = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
-	updateWorkerCount      = flag.Int("update-worker-count", 10, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits (`kube-api-qps` and `kube-api-burst`) are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
+	updateWorkerCount      = flag.Int("update-worker-count", 10, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
 )
 
 // Prometheus history provider flags
 var (
-	prometheusAddress   = flag.String("prometheus-address", "http://prometheus.monitoring.svc", `Where to reach for Prometheus metrics`)
-	prometheusJobName   = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
-	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
-	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
-	queryTimeout        = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
-	podLabelPrefix      = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
-	podLabelsMetricName = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
-	podNamespaceLabel   = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for pod namespaces`)
-	podNameLabel        = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for pod names`)
-	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container namespaces`)
-	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
-	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
-	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
-	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
+	prometheusAddress         = flag.String("prometheus-address", "http://prometheus.monitoring.svc", `Where to reach for Prometheus metrics`)
+	prometheusInsecure        = flag.Bool("prometheus-insecure", false, `Skip tls verify if https is used in the prometheus-address`)
+	prometheusJobName         = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
+	historyLength             = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
+	historyResolution         = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
+	queryTimeout              = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
+	podLabelPrefix            = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
+	podLabelsMetricName       = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
+	podNamespaceLabel         = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for pod namespaces`)
+	podNameLabel              = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for pod names`)
+	ctrNamespaceLabel         = flag.String("container-namespace-label", "namespace", `Label name to look for container namespaces`)
+	ctrPodNameLabel           = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
+	ctrNameLabel              = flag.String("container-name-label", "name", `Label name to look for container names`)
+	username                  = flag.String("username", "", "The username used in the prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable")
+	password                  = flag.String("password", "", "The password used in the prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable")
+	prometheusBearerToken     = flag.String("prometheus-bearer-token", "", "The bearer token used in the Prometheus server bearer token auth")
+	prometheusBearerTokenFile = flag.String("prometheus-bearer-token-file", "", "Path to the bearer token file used for authentication by the Prometheus server")
 )
 
 // External metrics provider flags
@@ -100,8 +103,8 @@ var (
 	memoryAggregationIntervalCount = flag.Int64("memory-aggregation-interval-count", model.DefaultMemoryAggregationIntervalCount, `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count.`)
 	memoryHistogramDecayHalfLife   = flag.Duration("memory-histogram-decay-half-life", model.DefaultMemoryHistogramDecayHalfLife, `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.`)
 	cpuHistogramDecayHalfLife      = flag.Duration("cpu-histogram-decay-half-life", model.DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
-	oomBumpUpRatio                 = flag.Float64("oom-bump-up-ratio", model.DefaultOOMBumpUpRatio, `The memory bump up ratio when OOM occurred, default is 1.2.`)
-	oomMinBumpUp                   = flag.Float64("oom-min-bump-up-bytes", model.DefaultOOMMinBumpUp, `The minimal increase of memory when OOM occurred in bytes, default is 100 * 1024 * 1024`)
+	oomBumpUpRatio                 = flag.Float64("oom-bump-up-ratio", model.DefaultOOMBumpUpRatio, `Default memory bump up ratio when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 1.2.`)
+	oomMinBumpUp                   = flag.Float64("oom-min-bump-up-bytes", model.DefaultOOMMinBumpUp, `Default minimal increase of memory (in bytes) when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 100 * 1024 * 1024 (100Mi).`)
 )
 
 // Post processors flags
@@ -147,6 +150,20 @@ func main() {
 
 	if *routines.MinCheckpointsPerRun != 10 { // Default value is 10
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
+	}
+
+	if *prometheusBearerToken != "" && *prometheusBearerTokenFile != "" && *username != "" {
+		klog.ErrorS(nil, "--bearer-token, --bearer-token-file and --username are mutually exclusive and can't be set together.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if *prometheusBearerTokenFile != "" {
+		fileContent, err := os.ReadFile(*prometheusBearerTokenFile)
+		if err != nil {
+			klog.ErrorS(err, "Unable to read bearer token file", "filename", *prometheusBearerTokenFile)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+		*prometheusBearerToken = strings.TrimSpace(string(fileContent))
 	}
 
 	ctx := context.Background()
@@ -280,6 +297,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 		MetricsClient:       input_metrics.NewMetricsClient(source, commonFlag.VpaObjectNamespace, "default-metrics-client"),
 		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), commonFlag.VpaObjectNamespace),
+		VpaCheckpointLister: vpa_api_util.NewVpaCheckpointLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), commonFlag.VpaObjectNamespace),
 		ClusterState:        clusterState,
 		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		MemorySaveMode:      *memorySaver,
@@ -314,6 +332,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	} else {
 		config := history.PrometheusHistoryProviderConfig{
 			Address:                *prometheusAddress,
+			Insecure:               *prometheusInsecure,
 			QueryTimeout:           promQueryTimeout,
 			HistoryLength:          *historyLength,
 			HistoryResolution:      *historyResolution,
@@ -326,9 +345,10 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
 			Namespace:              commonFlag.VpaObjectNamespace,
-			PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
-				Username: *username,
-				Password: *password,
+			Authentication: history.PrometheusCredentials{
+				BearerToken: *prometheusBearerToken,
+				Username:    *username,
+				Password:    *password,
 			},
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
@@ -351,10 +371,10 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 
 func initGlobalMaxAllowed() apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
-	if !maxAllowedCPU.Quantity.IsZero() {
+	if !maxAllowedCPU.IsZero() {
 		result[apiv1.ResourceCPU] = maxAllowedCPU.Quantity
 	}
-	if !maxAllowedMemory.Quantity.IsZero() {
+	if !maxAllowedMemory.IsZero() {
 		result[apiv1.ResourceMemory] = maxAllowedMemory.Quantity
 	}
 

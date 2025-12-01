@@ -27,7 +27,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
-	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/utils/ptr"
 
 	apiv1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -429,14 +429,14 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 		}
 	}
 
-	klog.V(6).Infof("DeleteInstances: invalidating cache")
+	klog.V(3).Infof("DeleteInstances: invalidating cache")
 	as.manager.invalidateCache()
 	return nil
 }
 
 // DeleteNodes deletes the nodes from the group.
 func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(6).Infof("Delete nodes requested: %v\n", nodes)
+	klog.V(3).Infof("Delete nodes requested: %v\n", nodes)
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
 		return err
@@ -446,6 +446,11 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
+	return as.ForceDeleteNodes(nodes)
+}
+
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
 	refs := make([]*azureRef, 0, len(nodes))
 	for _, node := range nodes {
 		belongs, err := as.Belongs(node)
@@ -463,17 +468,12 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 		refs = append(refs, ref)
 	}
 
-	err = as.deleteOutdatedDeployments()
+	err := as.deleteOutdatedDeployments()
 	if err != nil {
-		klog.Warningf("DeleteNodes: failed to cleanup outdated deployments with err: %v.", err)
+		klog.Warningf("ForceDeleteNodes: failed to cleanup outdated deployments with err: %v.", err)
 	}
 
 	return as.DeleteInstances(refs)
-}
-
-// ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return cloudprovider.ErrNotImplemented
 }
 
 // Debug returns a debug string for the agent pool.
@@ -521,7 +521,7 @@ func (as *AgentPool) deleteBlob(accountName, vhdContainer, vhdBlob string) error
 	}
 
 	keys := *storageKeysResult.Keys
-	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), as.manager.env)
+	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, ptr.Deref(keys[0].Value, ""), as.manager.env)
 	if err != nil {
 		return err
 	}

@@ -32,15 +32,17 @@ import (
 )
 
 const (
-	cpuKey          = "capacity.cluster-autoscaler.kubernetes.io/cpu"
-	memoryKey       = "capacity.cluster-autoscaler.kubernetes.io/memory"
-	diskCapacityKey = "capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk"
-	gpuTypeKey      = "capacity.cluster-autoscaler.kubernetes.io/gpu-type"
-	gpuCountKey     = "capacity.cluster-autoscaler.kubernetes.io/gpu-count"
-	maxPodsKey      = "capacity.cluster-autoscaler.kubernetes.io/maxPods"
-	taintsKey       = "capacity.cluster-autoscaler.kubernetes.io/taints"
-	labelsKey       = "capacity.cluster-autoscaler.kubernetes.io/labels"
-	draDriverKey    = "capacity.cluster-autoscaler.kubernetes.io/dra-driver"
+	cpuKey                              = "capacity.cluster-autoscaler.kubernetes.io/cpu"
+	memoryKey                           = "capacity.cluster-autoscaler.kubernetes.io/memory"
+	diskCapacityKey                     = "capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk"
+	gpuTypeKey                          = "capacity.cluster-autoscaler.kubernetes.io/gpu-type"
+	gpuCountKey                         = "capacity.cluster-autoscaler.kubernetes.io/gpu-count"
+	maxPodsKey                          = "capacity.cluster-autoscaler.kubernetes.io/maxPods"
+	taintsKey                           = "capacity.cluster-autoscaler.kubernetes.io/taints"
+	labelsKey                           = "capacity.cluster-autoscaler.kubernetes.io/labels"
+	draDriverKey                        = "capacity.cluster-autoscaler.kubernetes.io/dra-driver"
+	machineDeploymentRevisionAnnotation = "machinedeployment.clusters.x-k8s.io/revision"
+	machineDeploymentNameLabel          = "cluster.x-k8s.io/deployment-name"
 	// UnknownArch is used if the Architecture is Unknown
 	UnknownArch SystemArchitecture = ""
 	// Amd64 is used if the Architecture is x86_64
@@ -57,6 +59,14 @@ const (
 	scaleUpFromZeroDefaultArchEnvVar = "CAPI_SCALE_ZERO_DEFAULT_ARCH"
 	// GpuDeviceType is used if DRA device is GPU
 	GpuDeviceType = "gpu"
+
+	// Cluster API constants, copied from cluster-api/api/core/v1beta1/machine_types.go
+	// nodeRoleLabelPrefix is one of the CAPI managed Node label prefixes.
+	nodeRoleLabelPrefix = "node-role.kubernetes.io"
+	// nodeRestrictionLabelDomain is one of the CAPI managed Node label domains.
+	nodeRestrictionLabelDomain = "node-restriction.kubernetes.io"
+	// managedNodeLabelDomain is one of the CAPI managed Node label domains.
+	managedNodeLabelDomain = "node.cluster.x-k8s.io"
 )
 
 var (
@@ -404,4 +414,34 @@ func GetDefaultScaleFromZeroArchitecture() SystemArchitecture {
 		systemArchitecture = &arch
 	})
 	return *systemArchitecture
+}
+
+// getManagedNodeLabelsFromLabels returns a map of labels that will be propagated
+// to nodes based on the Cluster API metadata propagation rules.
+func getManagedNodeLabelsFromLabels(labels map[string]string) map[string]string {
+	// TODO elmiko, add a user configuration to inject a string with their `--additional-sync-machine-labels` string.
+	// ref: https://cluster-api.sigs.k8s.io/reference/api/metadata-propagation#machine
+	managedLabels := map[string]string{}
+	for key, value := range labels {
+		if isManagedLabel(key) {
+			managedLabels[key] = value
+		}
+
+	}
+
+	return managedLabels
+}
+
+func isManagedLabel(key string) bool {
+	dnsSubdomainOrName := strings.Split(key, "/")[0]
+	if dnsSubdomainOrName == nodeRoleLabelPrefix {
+		return true
+	}
+	if dnsSubdomainOrName == nodeRestrictionLabelDomain || strings.HasSuffix(dnsSubdomainOrName, "."+nodeRestrictionLabelDomain) {
+		return true
+	}
+	if dnsSubdomainOrName == managedNodeLabelDomain || strings.HasSuffix(dnsSubdomainOrName, "."+managedNodeLabelDomain) {
+		return true
+	}
+	return false
 }

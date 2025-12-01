@@ -82,6 +82,7 @@ type machineController struct {
 	nodeInformer                cache.SharedIndexInformer
 	managementClient            dynamic.Interface
 	managementScaleClient       scale.ScalesGetter
+	managementDiscoveryClient   discovery.DiscoveryInterface
 	machineSetResource          schema.GroupVersionResource
 	machineResource             schema.GroupVersionResource
 	machinePoolResource         schema.GroupVersionResource
@@ -457,7 +458,7 @@ func newMachineController(
 	managementInformerFactory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(managementClient, 0, namespaceToWatch(autoDiscoverySpecs), nil)
 
 	CAPIGroup := getCAPIGroup()
-	CAPIVersion, err := getAPIGroupPreferredVersion(managementDiscoveryClient, CAPIGroup)
+	CAPIVersion, err := getCAPIGroupPreferredVersion(managementDiscoveryClient, CAPIGroup)
 	if err != nil {
 		return nil, fmt.Errorf("could not find preferred version for CAPI group %q: %v", CAPIGroup, err)
 	}
@@ -561,6 +562,7 @@ func newMachineController(
 		nodeInformer:                nodeInformer,
 		managementClient:            managementClient,
 		managementScaleClient:       managementScaleClient,
+		managementDiscoveryClient:   managementDiscoveryClient,
 		machineSetResource:          gvrMachineSet,
 		machinePoolResource:         gvrMachinePool,
 		machinePoolsAvailable:       machinePoolsAvailable,
@@ -586,11 +588,15 @@ func groupVersionHasResource(client discovery.DiscoveryInterface, groupVersion, 
 	return false, nil
 }
 
-func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup string) (string, error) {
+func getCAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup string) (string, error) {
 	if version := os.Getenv(CAPIVersionEnvVar); version != "" {
 		return version, nil
 	}
 
+	return getAPIGroupPreferredVersion(client, APIGroup)
+}
+
+func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup string) (string, error) {
 	groupList, err := client.ServerGroups()
 	if err != nil {
 		return "", fmt.Errorf("failed to get ServerGroups: %v", err)
@@ -841,6 +847,27 @@ func (c *machineController) listMachinesForScalableResource(r *unstructured.Unst
 	default:
 		return nil, fmt.Errorf("unknown scalable resource kind %s", r.GetKind())
 	}
+}
+
+func (c *machineController) listMachineSetsForMachineDeployment(r *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	selector := labels.SelectorFromSet(map[string]string{
+		machineDeploymentNameLabel: r.GetName(),
+	})
+	objs, err := c.machineSetInformer.Lister().ByNamespace(r.GetNamespace()).List(selector)
+	if err != nil {
+		return nil, fmt.Errorf("unable to list MachineSets for MachineDeployment %s: %w", r.GetName(), err)
+	}
+
+	results := make([]*unstructured.Unstructured, 0, len(objs))
+	for _, x := range objs {
+		u, ok := x.(*unstructured.Unstructured)
+		if !ok {
+			return nil, fmt.Errorf("expected unstructured resource from lister, not %T", x)
+		}
+		results = append(results, u.DeepCopy())
+	}
+
+	return results, nil
 }
 
 func (c *machineController) listScalableResources() ([]*unstructured.Unstructured, error) {

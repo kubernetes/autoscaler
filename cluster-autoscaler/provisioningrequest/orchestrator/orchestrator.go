@@ -22,7 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
@@ -38,14 +38,14 @@ import (
 type ProvisioningClass interface {
 	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*framework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
-	Initialize(*context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
+	Initialize(*ca_context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
 		estimator.EstimatorBuilder, taints.TaintConfig, *scheduling.HintingSimulator)
 }
 
 // provReqOrchestrator is an orchestrator that contains orchestrators for all supported Provisioning Classes.
 type provReqOrchestrator struct {
 	initialized         bool
-	context             *context.AutoscalingContext
+	autoscalingCtx      *ca_context.AutoscalingContext
 	client              *provreqclient.ProvisioningRequestClient
 	injector            *scheduling.HintingSimulator
 	provisioningClasses []ProvisioningClass
@@ -61,17 +61,17 @@ func New(client *provreqclient.ProvisioningRequestClient, classes []Provisioning
 
 // Initialize initialize orchestrator.
 func (o *provReqOrchestrator) Initialize(
-	autoscalingContext *context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 ) {
 	o.initialized = true
-	o.context = autoscalingContext
+	o.autoscalingCtx = autoscalingCtx
 	o.injector = scheduling.NewHintingSimulator()
 	for _, mode := range o.provisioningClasses {
-		mode.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector)
+		mode.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector)
 	}
 }
 
@@ -89,8 +89,8 @@ func (o *provReqOrchestrator) ScaleUp(
 		return &status.ScaleUpStatus{}, ca_errors.ToAutoscalerError(ca_errors.InternalError, fmt.Errorf("provisioningrequest.Orchestrator is not initialized"))
 	}
 
-	o.context.ClusterSnapshot.Fork()
-	defer o.context.ClusterSnapshot.Revert()
+	o.autoscalingCtx.ClusterSnapshot.Fork()
+	defer o.autoscalingCtx.ClusterSnapshot.Revert()
 
 	// unschedulablePods pods should belong to one ProvisioningClass, so only one provClass should try to ScaleUp.
 	for _, provClass := range o.provisioningClasses {

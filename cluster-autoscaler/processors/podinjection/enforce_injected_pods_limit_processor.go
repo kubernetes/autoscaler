@@ -18,8 +18,9 @@ package podinjection
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 )
 
 const (
@@ -42,7 +43,7 @@ func NewEnforceInjectedPodsLimitProcessor(podLimit int) *EnforceInjectedPodsLimi
 }
 
 // Process filters unschedulablePods and enforces the limit of the number of injected pods
-func (p *EnforceInjectedPodsLimitProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *EnforceInjectedPodsLimitProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
 	numberOfFakePodsToRemove := len(unschedulablePods) - p.podLimit
 	removedFakePodsCount := 0
@@ -50,7 +51,7 @@ func (p *EnforceInjectedPodsLimitProcessor) Process(ctx *context.AutoscalingCont
 	var unschedulablePodsAfterProcessing []*apiv1.Pod
 
 	for _, pod := range unschedulablePods {
-		if IsFake(pod) {
+		if fake.IsFake(pod) {
 			if removedFakePodsCount < numberOfFakePodsToRemove {
 				removedFakePodsCount += 1
 				continue

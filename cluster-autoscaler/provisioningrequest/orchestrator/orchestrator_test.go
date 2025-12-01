@@ -482,23 +482,25 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 	podLister := kube_util.NewTestPodLister(nil)
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	options := config.AutoscalingOptions{}
+	options := config.AutoscalingOptions{
+		MaxNodeGroupBinpackingDuration: 1 * time.Second,
+	}
 	if batchProcessing {
 		options.CheckCapacityBatchProcessing = true
 		options.CheckCapacityProvisioningRequestMaxBatchSize = maxBatchSize
 		options.CheckCapacityProvisioningRequestBatchTimebox = batchTimebox
 	}
 
-	autoscalingContext, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingContext.ClusterSnapshot, nodes, nil)
-	processors := processorstest.NewTestProcessors(&autoscalingContext)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
+	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	if autoprovisioning {
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 	}
-	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(
@@ -508,7 +510,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		nil,
 	)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingContext.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingContext.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 	clusterState.UpdateNodes(nodes, nodeInfos, now)
 
 	var injector *provreq.ProvisioningRequestPodsInjector
@@ -521,7 +523,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		provisioningClasses: []ProvisioningClass{checkcapacity.New(client, injector), besteffortatomic.New(client)},
 	}
 
-	orchestrator.Initialize(&autoscalingContext, processors, clusterState, estimatorBuilder, taints.TaintConfig{})
+	orchestrator.Initialize(&autoscalingCtx, processors, clusterState, estimatorBuilder, taints.TaintConfig{})
 	return orchestrator, nodeInfos
 }
 

@@ -1,14 +1,26 @@
+version: "2"
 linters:
   enable:
     - forbidigo
+  settings:
+    forbidigo:
+      forbid:
+        # Forbid use of archived package "github.com/pkg/errors". Context: https://github.com/kubernetes/autoscaler/pull/7845
+        - pkg: github.com/pkg/errors
+      analyze-types: true
+formatters:
+  enable:
     - goimports
-
-linters-settings:
-  forbidigo:
-    forbid:
-      # Forbid use of archived package "github.com/pkg/errors". Context: https://github.com/kubernetes/autoscaler/pull/7845
-      - pkg: github.com/pkg/errors
-    analyze-types: true
-
-  goimports:
-    local-prefixes: "k8s.io/autoscaler/vertical-pod-autoscaler"
+    - gci
+  settings:
+    goimports:
+      local-prefixes:
+        - k8s.io/autoscaler/vertical-pod-autoscaler
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(k8s.io/autoscaler/vertical-pod-autoscaler)
+        - dot
+        - blank
+      custom-order: true

@@ -51,7 +51,7 @@ rules:
     resources: ["statefulsets", "replicasets", "daemonsets"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities"]
+    resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities", "volumeattachments"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["batch"]
     resources: ["jobs", "cronjobs"]
@@ -125,7 +125,7 @@ data:
   ClientID: <base64-encoded-client-id>
   ClientSecret: <base64-encoded-client-secret>
   ResourceGroup: <base64-encoded-resource-group>
-  SubscriptionID: <base64-encode-subscription-id>
+  SubscriptionID: <base64-encoded-subscription-id>
   TenantID: <base64-encoded-tenant-id>
   VMType: dm1zcw==
 kind: Secret
@@ -152,17 +152,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ ca_version }}
-          imagePullPolicy: Always
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
+        - command:
             - ./cluster-autoscaler
             - --v=3
             - --logtostderr=true
@@ -201,6 +191,16 @@ spec:
                 secretKeyRef:
                   key: VMType
                   name: cluster-autoscaler-azure
+          image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ ca_version }}
+          imagePullPolicy: Always
+          name: cluster-autoscaler
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
           volumeMounts:
             - mountPath: /etc/ssl/certs/ca-certificates.crt
               name: ssl-certs

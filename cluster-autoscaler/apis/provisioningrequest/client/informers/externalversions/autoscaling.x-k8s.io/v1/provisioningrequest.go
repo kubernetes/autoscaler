@@ -19,16 +19,16 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	autoscalingxk8siov1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	provisioningrequestautoscalingxk8siov1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	versioned "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions/internalinterfaces"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
+	autoscalingxk8siov1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -36,7 +36,7 @@ import (
 // ProvisioningRequests.
 type ProvisioningRequestInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1.ProvisioningRequestLister
+	Lister() autoscalingxk8siov1.ProvisioningRequestLister
 }
 
 type provisioningRequestInformer struct {
@@ -62,16 +62,28 @@ func NewFilteredProvisioningRequestInformer(client versioned.Interface, namespac
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AutoscalingV1().ProvisioningRequests(namespace).List(context.TODO(), options)
+				return client.AutoscalingV1().ProvisioningRequests(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AutoscalingV1().ProvisioningRequests(namespace).Watch(context.TODO(), options)
+				return client.AutoscalingV1().ProvisioningRequests(namespace).Watch(context.Background(), options)
+			},
+			ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.AutoscalingV1().ProvisioningRequests(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.AutoscalingV1().ProvisioningRequests(namespace).Watch(ctx, options)
 			},
 		},
-		&autoscalingxk8siov1.ProvisioningRequest{},
+		&provisioningrequestautoscalingxk8siov1.ProvisioningRequest{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,9 +94,9 @@ func (f *provisioningRequestInformer) defaultInformer(client versioned.Interface
 }
 
 func (f *provisioningRequestInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&autoscalingxk8siov1.ProvisioningRequest{}, f.defaultInformer)
+	return f.factory.InformerFor(&provisioningrequestautoscalingxk8siov1.ProvisioningRequest{}, f.defaultInformer)
 }
 
-func (f *provisioningRequestInformer) Lister() v1.ProvisioningRequestLister {
-	return v1.NewProvisioningRequestLister(f.Informer().GetIndexer())
+func (f *provisioningRequestInformer) Lister() autoscalingxk8siov1.ProvisioningRequestLister {
+	return autoscalingxk8siov1.NewProvisioningRequestLister(f.Informer().GetIndexer())
 }

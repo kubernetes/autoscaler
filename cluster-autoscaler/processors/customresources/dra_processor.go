@@ -18,10 +18,11 @@ package customresources
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -35,7 +36,7 @@ type DraCustomResourcesProcessor struct {
 
 // FilterOutNodesWithUnreadyResources removes nodes that should have DRA resource, but don't have
 // it in allocatable from ready nodes list and updates their status to unready on all nodes list.
-func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyDraResources := make(map[string]*apiv1.Node)
@@ -45,7 +46,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 	}
 
 	for _, node := range readyNodes {
-		ng, err := context.CloudProvider.NodeGroupForNode(node)
+		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			klog.Warningf("Failed to get node group for node %s, Skipping DRA readiness check and keeping node in ready list. Error: %v", node.Name, err)
@@ -87,7 +88,7 @@ type resourceSliceSpecs struct {
 	pool   string
 }
 
-func isEqualResourceSlices(nodeResourcesSlices []*v1beta1.ResourceSlice, templateResourcesSlices []*v1beta1.ResourceSlice) bool {
+func isEqualResourceSlices(nodeResourcesSlices []*resourceapi.ResourceSlice, templateResourcesSlices []*resourceapi.ResourceSlice) bool {
 	tempSlicesByPools := getDevicesBySpecs(templateResourcesSlices)
 	nodeSlicesByPools := getDevicesBySpecs(nodeResourcesSlices)
 
@@ -108,7 +109,7 @@ func isEqualResourceSlices(nodeResourcesSlices []*v1beta1.ResourceSlice, templat
 	return true
 }
 
-func getDevicesBySpecs(resourcesSlices []*v1beta1.ResourceSlice) map[resourceSliceSpecs]sets.Set[string] {
+func getDevicesBySpecs(resourcesSlices []*resourceapi.ResourceSlice) map[resourceSliceSpecs]sets.Set[string] {
 	slicesGroupedByPoolAndDriver := make(map[resourceSliceSpecs]sets.Set[string])
 	for _, rs := range resourcesSlices {
 		rsSpecs := resourceSliceSpecs{
@@ -120,7 +121,7 @@ func getDevicesBySpecs(resourcesSlices []*v1beta1.ResourceSlice) map[resourceSli
 	return slicesGroupedByPoolAndDriver
 }
 
-func getResourceSliceDevicesSet(resourcesSlice *v1beta1.ResourceSlice) sets.Set[string] {
+func getResourceSliceDevicesSet(resourcesSlice *resourceapi.ResourceSlice) sets.Set[string] {
 	devices := sets.New[string]()
 	for _, device := range resourcesSlice.Spec.Devices {
 		devices.Insert(device.Name)
@@ -129,7 +130,7 @@ func getResourceSliceDevicesSet(resourcesSlice *v1beta1.ResourceSlice) sets.Set[
 }
 
 // GetNodeResourceTargets returns the resource targets for DRA resource slices, not implemented.
-func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(_ *context.AutoscalingContext, _ *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.AutoscalingContext, _ *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	// TODO(DRA): Figure out resource limits for DRA here.
 	return []CustomResourceTarget{}, nil
 }

@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient/mockstorageaccountclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -32,9 +33,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 	"github.com/Azure/go-autorest/autorest/date"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -63,14 +62,14 @@ func newTestAgentPool(manager *AzureManager, name string) *AgentPool {
 func getExpectedVMs() []compute.VirtualMachine {
 	expectedVMs := []compute.VirtualMachine{
 		{
-			Name: to.StringPtr("000-0-00000000-0"),
-			ID:   to.StringPtr("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
+			Name: ptr.To("000-0-00000000-0"),
+			ID:   ptr.To("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
 				StorageProfile: &compute.StorageProfile{
 					OsDisk: &compute.OSDisk{
 						OsType: compute.OperatingSystemTypesLinux,
-						Vhd:    &compute.VirtualHardDisk{URI: to.StringPtr("https://foo.blob/vhds/bar.vhd")},
+						Vhd:    &compute.VirtualHardDisk{URI: ptr.To("https://foo.blob/vhds/bar.vhd")},
 					},
 				},
 				NetworkProfile: &compute.NetworkProfile{
@@ -81,9 +80,9 @@ func getExpectedVMs() []compute.VirtualMachine {
 			},
 		},
 		{
-			Name: to.StringPtr("00000000001"),
-			ID:   to.StringPtr("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
+			Name: ptr.To("00000000001"),
+			ID:   ptr.To("/subscriptions/sub/resourceGroups/rg/providers/provider/0"),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
 				StorageProfile: &compute.StorageProfile{
 					OsDisk: &compute.OSDisk{OsType: compute.OperatingSystemTypesWindows},
@@ -116,30 +115,30 @@ func TestDeleteOutdatedDeployments(t *testing.T) {
 		{
 			deployments: map[string]resources.DeploymentExtended{
 				"non-cluster-autoscaler-0000": {
-					Name: to.StringPtr("non-cluster-autoscaler-0000"),
+					Name: ptr.To("non-cluster-autoscaler-0000"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark.Add(2 * time.Minute)},
 					},
 				},
 				"cluster-autoscaler-0000": {
-					Name: to.StringPtr("cluster-autoscaler-0000"),
+					Name: ptr.To("cluster-autoscaler-0000"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark},
 					},
 				},
 				"cluster-autoscaler-0001": {
-					Name: to.StringPtr("cluster-autoscaler-0001"),
+					Name: ptr.To("cluster-autoscaler-0001"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark.Add(time.Minute)},
 					},
 				},
 				"cluster-autoscaler-0002": {
-					Name: to.StringPtr("cluster-autoscaler-0002"),
+					Name: ptr.To("cluster-autoscaler-0002"),
 					Properties: &resources.DeploymentPropertiesExtended{
-						ProvisioningState: to.StringPtr("Succeeded"),
+						ProvisioningState: ptr.To("Succeeded"),
 						Timestamp:         &date.Time{Time: timeBenchMark.Add(2 * time.Minute)},
 					},
 				},
@@ -178,7 +177,7 @@ func TestAgentPoolGetVMsFromCache(t *testing.T) {
 	testAS := newTestAgentPool(newTestAzureManager(t), "testAS")
 	expectedVMs := []compute.VirtualMachine{
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("testAS")},
+			Tags: map[string]*string{"poolName": ptr.To("testAS")},
 		},
 	}
 
@@ -214,7 +213,7 @@ func TestGetVMIndexes(t *testing.T) {
 	assert.Equal(t, 2, len(sortedIndexes))
 	assert.Equal(t, 2, len(indexToVM))
 
-	expectedVMs[0].ID = to.StringPtr("foo")
+	expectedVMs[0].ID = ptr.To("foo")
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
 	err = as.manager.forceRefresh()
 	assert.NoError(t, err)
@@ -224,7 +223,7 @@ func TestGetVMIndexes(t *testing.T) {
 	assert.Nil(t, sortedIndexes)
 	assert.Nil(t, indexToVM)
 
-	expectedVMs[0].Name = to.StringPtr("foo")
+	expectedVMs[0].Name = ptr.To("foo")
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
 	err = as.manager.forceRefresh()
 	sortedIndexes, indexToVM, err = as.GetVMIndexes()
@@ -409,19 +408,46 @@ func TestDeleteInstances(t *testing.T) {
 	err = as.DeleteInstances(instances)
 	expectedErr = fmt.Errorf("cannot delete instance (%s) which don't belong to the same node pool (\"as\")", testValidProviderID1)
 	assert.Equal(t, expectedErr, err)
+}
 
-	instances = []*azureRef{
-		{Name: testValidProviderID0},
-	}
-	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
-	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
+func TestForceDeleteNodes(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	as := newTestAgentPool(newTestAzureManager(t), "as")
+	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID1}] = as1
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testInvalidProviderID}] = as
+
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	as.manager.azClient.virtualMachinesClient = mockVMClient
+
+	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
+	as.manager.azClient.storageAccountsClient = mockSAClient
+
+	err := as.ForceDeleteNodes([]*apiv1.Node{})
+	assert.NoError(t, err)
+
+	nodes := []*apiv1.Node{
+		{
+			Spec:       apiv1.NodeSpec{ProviderID: testInvalidProviderID},
+			ObjectMeta: v1.ObjectMeta{Name: "node"},
 		},
-	}, nil)
-	err = as.DeleteInstances(instances)
-	assert.Error(t, err)
+	}
+	err = as.ForceDeleteNodes(nodes)
+	expectedErr := fmt.Errorf("resource name was missing from identifier")
+	assert.Equal(t, expectedErr, err)
+
+	nodes = []*apiv1.Node{
+		{
+			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID1},
+			ObjectMeta: v1.ObjectMeta{Name: "node1"},
+		},
+	}
+	err = as.ForceDeleteNodes(nodes)
+	expectedErr = fmt.Errorf("node1 belongs to a different asg than as")
+	assert.Equal(t, expectedErr, err)
 }
 
 func TestAgentPoolDeleteNodes(t *testing.T) {
@@ -462,22 +488,6 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	expectedErr = fmt.Errorf("node belongs to a different asg than as")
 	assert.Equal(t, expectedErr, err)
 
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
-	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
-	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
-		},
-	}, nil)
-	err = as.DeleteNodes([]*apiv1.Node{
-		{
-			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID0},
-			ObjectMeta: v1.ObjectMeta{Name: "node"},
-		},
-	})
-	assert.Error(t, err)
-
 	as.minSize = 3
 	err = as.DeleteNodes([]*apiv1.Node{})
 	expectedErr = fmt.Errorf("min size reached, nodes will not be deleted")
@@ -491,11 +501,11 @@ func TestAgentPoolNodes(t *testing.T) {
 	as := newTestAgentPool(newTestAzureManager(t), "as")
 	expectedVMs := []compute.VirtualMachine{
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
-			ID:   to.StringPtr(""),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
+			ID:   ptr.To(""),
 		},
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
+			Tags: map[string]*string{"poolName": ptr.To("as")},
 			ID:   &testValidProviderID0,
 		},
 	}
@@ -514,8 +524,8 @@ func TestAgentPoolNodes(t *testing.T) {
 
 	expectedVMs = []compute.VirtualMachine{
 		{
-			Tags: map[string]*string{"poolName": to.StringPtr("as")},
-			ID:   to.StringPtr("foo"),
+			Tags: map[string]*string{"poolName": ptr.To("as")},
+			ID:   ptr.To("foo"),
 		},
 	}
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)

@@ -18,18 +18,15 @@ package logic
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
 
-	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
-
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
 	v1 "k8s.io/api/autoscaling/v1"
-
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,6 +40,8 @@ import (
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
+	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -57,6 +56,7 @@ func TestRunOnce_Mode(t *testing.T) {
 	tests := []struct {
 		name                  string
 		updateMode            vpa_types.UpdateMode
+		shouldInPlaceFail     bool
 		expectFetchCalls      bool
 		expectedEvictionCount int
 		expectedInPlacedCount int
@@ -66,6 +66,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with Auto mode",
 			updateMode:            vpa_types.UpdateModeAuto,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
 			expectedInPlacedCount: 0,
@@ -75,6 +76,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with Initial mode",
 			updateMode:            vpa_types.UpdateModeInitial,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
@@ -84,6 +86,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with Off mode",
 			updateMode:            vpa_types.UpdateModeOff,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
@@ -93,6 +96,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with InPlaceOrRecreate mode expecting in-place updates",
 			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 5,
@@ -102,6 +106,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with InPlaceOrRecreate mode expecting fallback to evictions",
 			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
 			expectedInPlacedCount: 0,
@@ -111,11 +116,22 @@ func TestRunOnce_Mode(t *testing.T) {
 		{
 			name:                  "with InPlaceOrRecreate mode expecting no evictions or in-place",
 			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
 			canEvict:              false,
 			canInPlaceUpdate:      utils.InPlaceDeferred,
+		},
+		{
+			name:                  "with InPlaceOrRecreate mode and failed in-place update",
+			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			shouldInPlaceFail:     true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 5, // All pods should be evicted after in-place update fails
+			expectedInPlacedCount: 5, // All pods attempt in-place update first
+			canEvict:              true,
+			canInPlaceUpdate:      utils.InPlaceApproved,
 		},
 	}
 	for _, tc := range tests {
@@ -123,6 +139,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			testRunOnceBase(
 				t,
 				tc.updateMode,
+				tc.shouldInPlaceFail,
 				newFakeValidator(true),
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
@@ -161,6 +178,7 @@ func TestRunOnce_Status(t *testing.T) {
 			testRunOnceBase(
 				t,
 				vpa_types.UpdateModeAuto,
+				false,
 				tc.statusValidator,
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
@@ -174,6 +192,7 @@ func TestRunOnce_Status(t *testing.T) {
 func testRunOnceBase(
 	t *testing.T,
 	updateMode vpa_types.UpdateMode,
+	shouldInPlaceFail bool,
 	statusValidator status.Validator,
 	expectFetchCalls bool,
 	expectedEvictionCount int,
@@ -215,7 +234,11 @@ func testRunOnceBase(
 		pods[i].Labels = labels
 
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(canInPlaceUpdate)
-		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
+		if shouldInPlaceFail {
+			inplace.On("InPlaceUpdate", pods[i], nil).Return(fmt.Errorf("in-place update failed"))
+		} else {
+			inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
+		}
 
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
@@ -478,6 +501,69 @@ func TestNewEventRecorder(t *testing.T) {
 			assert.Equal(t, tc.message, event.Message)
 			assert.Equal(t, apiv1.EventTypeNormal, event.Type)
 			assert.Equal(t, "vpa-updater", event.Source.Component)
+		})
+	}
+}
+
+func TestLogDeprecationWarnings(t *testing.T) {
+	tests := []struct {
+		name             string
+		updateMode       *vpa_types.UpdateMode
+		updatePolicy     *vpa_types.PodUpdatePolicy
+		shouldLogWarning bool
+	}{
+		{
+			name:             "Auto mode should trigger deprecation warning logic",
+			updateMode:       &[]vpa_types.UpdateMode{vpa_types.UpdateModeAuto}[0],
+			shouldLogWarning: true,
+		},
+		{
+			name:             "Recreate mode should not trigger warning logic",
+			updateMode:       &[]vpa_types.UpdateMode{vpa_types.UpdateModeRecreate}[0],
+			shouldLogWarning: false,
+		},
+		{
+			name:             "Initial mode should not trigger warning logic",
+			updateMode:       &[]vpa_types.UpdateMode{vpa_types.UpdateModeInitial}[0],
+			shouldLogWarning: false,
+		},
+		{
+			name:             "nil update policy should not trigger warning logic",
+			updatePolicy:     nil,
+			shouldLogWarning: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var updatePolicy *vpa_types.PodUpdatePolicy
+			if tc.updatePolicy != nil {
+				updatePolicy = tc.updatePolicy
+			} else if tc.updateMode != nil {
+				updatePolicy = &vpa_types.PodUpdatePolicy{
+					UpdateMode: tc.updateMode,
+				}
+			}
+
+			vpa := &vpa_types.VerticalPodAutoscaler{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-vpa",
+					Namespace: "default",
+				},
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: updatePolicy,
+				},
+			}
+
+			shouldLogWarning := vpa.Spec.UpdatePolicy != nil &&
+				vpa.Spec.UpdatePolicy.UpdateMode != nil &&
+				*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto
+
+			assert.Equal(t, tc.shouldLogWarning, shouldLogWarning,
+				"Expected shouldLogWarning=%v for test case %s", tc.shouldLogWarning, tc.name)
+
+			// Call the function to ensure it doesn't panic
+			logDeprecationWarnings(vpa)
 		})
 	}
 }

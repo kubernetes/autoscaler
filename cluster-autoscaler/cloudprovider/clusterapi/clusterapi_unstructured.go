@@ -23,19 +23,20 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	klog "k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 )
@@ -43,6 +44,8 @@ import (
 type unstructuredScalableResource struct {
 	controller         *machineController
 	unstructured       *unstructured.Unstructured
+	infraObj           *unstructured.Unstructured
+	infraMutex         sync.RWMutex
 	maxSize            int
 	minSize            int
 	autoscalingOptions map[string]string
@@ -124,9 +127,9 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 		return err
 	}
 
-	spec := autoscalingv1.Scale{
-		Spec: autoscalingv1.ScaleSpec{
-			Replicas: int32(nreplicas),
+	spec := autoscalingv1Scale{
+		Spec: autoscalingv1ScaleSpec{
+			Replicas: ptr.To(int32(nreplicas)),
 		},
 	}
 
@@ -142,6 +145,24 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 	}
 
 	return updateErr
+}
+
+// scale is a version of the autoscalingv1.Scale struct that marshals correctly.
+// Specifically the Spec.Replicas field is *int32 instead of int32.
+// Accordingly Spec.Replicas = 0 is not omitted, which is important for autoscale to 0 to work.
+type autoscalingv1Scale struct {
+	// spec defines the behavior of the scale. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
+	// +optional
+	Spec autoscalingv1ScaleSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+}
+
+type autoscalingv1ScaleSpec struct {
+	// replicas is the desired number of instances for the scaled object.
+	// +optional
+	// +k8s:optional
+	// +default=0
+	// +k8s:minimum=0
+	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,1,opt,name=replicas"`
 }
 
 func (r unstructuredScalableResource) UnmarkMachineForDeletion(machine *unstructured.Unstructured) error {
@@ -180,20 +201,29 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 }
 
 func (r unstructuredScalableResource) Labels() map[string]string {
+	allLabels := map[string]string{}
+
+	// get the managed labels from the scalable resource, if they exist.
+	if labels, found, err := unstructured.NestedStringMap(r.unstructured.UnstructuredContent(), "spec", "template", "spec", "metadata", "labels"); found && err == nil {
+		managedLabels := getManagedNodeLabelsFromLabels(labels)
+		allLabels = cloudprovider.JoinStringMaps(allLabels, managedLabels)
+	}
+
+	// annotation labels are supplied as an override to other values, we process them last.
 	annotations := r.unstructured.GetAnnotations()
 	// annotation value of the form "key1=value1,key2=value2"
 	if val, found := annotations[labelsKey]; found {
 		labels := strings.Split(val, ",")
-		kv := make(map[string]string, len(labels))
+		annotationLabels := make(map[string]string, len(labels))
 		for _, label := range labels {
 			split := strings.SplitN(label, "=", 2)
 			if len(split) == 2 {
-				kv[split[0]] = split[1]
+				annotationLabels[split[0]] = split[1]
 			}
 		}
-		return kv
+		allLabels = cloudprovider.JoinStringMaps(allLabels, annotationLabels)
 	}
-	return nil
+	return allLabels
 }
 
 func (r unstructuredScalableResource) Taints() []apiv1.Taint {
@@ -304,6 +334,17 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	return capacity, nil
 }
 
+// InstanceSystemInfo sets the nodeSystemInfo from the infrastructure reference resource.
+// If the infrastructure reference resource is not found, returns nil.
+func (r unstructuredScalableResource) InstanceSystemInfo() *apiv1.NodeSystemInfo {
+	infraObj, err := r.readInfrastructureReferenceResource()
+	if err != nil || infraObj == nil {
+		return nil
+	}
+	nsiObj := systemInfoFromInfrastructureObject(infraObj)
+	return &nsiObj
+}
+
 func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([]*resourceapi.ResourceSlice, error) {
 	var result []*resourceapi.ResourceSlice
 	driver := r.InstanceDRADriver()
@@ -321,7 +362,7 @@ func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([
 			},
 			Spec: resourceapi.ResourceSliceSpec{
 				Driver:   driver,
-				NodeName: nodeName,
+				NodeName: &nodeName,
 				Pool: resourceapi.ResourcePool{
 					Name: nodeName,
 				},
@@ -330,11 +371,9 @@ func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([
 		for i := 0; i < int(gpuCount.Value()); i++ {
 			device := resourceapi.Device{
 				Name: "gpu-" + strconv.Itoa(i),
-				Basic: &resourceapi.BasicDevice{
-					Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
-						"type": {
-							StringValue: ptr.To(GpuDeviceType),
-						},
+				Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
+					"type": {
+						StringValue: ptr.To(GpuDeviceType),
 					},
 				},
 			}
@@ -375,22 +414,55 @@ func (r unstructuredScalableResource) InstanceDRADriver() string {
 }
 
 func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
+	// Cache w/ lazy loading of the infrastructure reference resource.
+	r.infraMutex.RLock()
+	if r.infraObj != nil {
+		defer r.infraMutex.RUnlock()
+		return r.infraObj, nil
+	}
+	r.infraMutex.RUnlock()
+
+	r.infraMutex.Lock()
+	defer r.infraMutex.Unlock()
+
+	obKind := r.unstructured.GetKind()
+	obName := r.unstructured.GetName()
+
 	infraref, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "infrastructureRef")
 	if !found || err != nil {
 		return nil, nil
 	}
 
-	apiversion, ok := infraref["apiVersion"]
-	if !ok {
-		return nil, nil
+	var apiversion string
+
+	apiGroup, ok := infraref["apiGroup"]
+	if ok {
+		if apiversion, err = getAPIGroupPreferredVersion(r.controller.managementDiscoveryClient, apiGroup); err != nil {
+			klog.V(4).Infof("Unable to read preferred version from api group %s, error: %v", apiGroup, err)
+			return nil, err
+		}
+		apiversion = fmt.Sprintf("%s/%s", apiGroup, apiversion)
+	} else {
+		// Fall back to ObjectReference in capi v1beta1
+		apiversion, ok = infraref["apiVersion"]
+		if !ok {
+			info := fmt.Sprintf("Missing apiVersion from %s %s's InfrastructureReference", obKind, obName)
+			klog.V(4).Info(info)
+			return nil, errors.New(info)
+		}
 	}
+
 	kind, ok := infraref["kind"]
 	if !ok {
-		return nil, nil
+		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
 	}
 	name, ok := infraref["name"]
 	if !ok {
-		return nil, nil
+		info := fmt.Sprintf("Missing name from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
 	}
 	// kind needs to be lower case and plural
 	kind = fmt.Sprintf("%ss", strings.ToLower(kind))
@@ -402,6 +474,8 @@ func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*un
 		klog.V(4).Infof("Unable to read infrastructure reference, error: %v", err)
 		return nil, err
 	}
+
+	r.infraObj = infra
 
 	return infra, nil
 }
@@ -438,6 +512,25 @@ func resourceCapacityFromInfrastructureObject(infraobj *unstructured.Unstructure
 	}
 
 	return capacity
+}
+
+func systemInfoFromInfrastructureObject(infraobj *unstructured.Unstructured) apiv1.NodeSystemInfo {
+	nsi := apiv1.NodeSystemInfo{}
+	infransi, found, err := unstructured.NestedStringMap(infraobj.Object, "status", "nodeInfo")
+	if !found || err != nil {
+		return nsi
+	}
+
+	for k, v := range infransi {
+		switch k {
+		case "architecture":
+			nsi.Architecture = v
+		case "operatingSystem":
+			nsi.OperatingSystem = v
+		}
+	}
+
+	return nsi
 }
 
 // adapted from https://github.com/kubernetes/kubernetes/blob/release-1.25/pkg/util/taints/taints.go#L39

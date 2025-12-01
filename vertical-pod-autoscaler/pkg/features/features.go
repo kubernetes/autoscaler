@@ -41,11 +41,22 @@ const (
 	// The feature must be enabled by the --feature-gates argument on each listed component.
 
 	// alpha: v1.4.0
+	// beta: v1.5.0
+
 	// components: admission-controller, updater
 
 	// InPlaceOrRecreate enables the InPlaceOrRecreate update mode to be used.
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlaceOrRecreate featuregate.Feature = "InPlaceOrRecreate"
+
+	// alpha: v1.5.0
+	// components: admission-controller, recommender, updater
+
+	// PerVPAConfig enables the ability to specify component-specific configuration
+	// parameters at the individual VPA object level. This allows for different
+	// optimization strategies to be applied to different workloads within the
+	// same cluster.
+	PerVPAConfig featuregate.Feature = "PerVPAConfig"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

@@ -1,6 +1,10 @@
 ALL_ARCH = amd64 arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
+# TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
+# Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
+# This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
+GO_TEST_DEFAULT_ANALYZERS?=atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
@@ -54,7 +58,10 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test --test.short -race ./... ${TAGS_FLAG}
+	go test --test.short -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+
+benchmark:
+	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
 
 dev-release: dev-release-arch-$(GOARCH)
 
@@ -107,7 +114,20 @@ build-in-docker-arch-%: clean-arch-% docker-builder
 	docker run ${RM_FLAG} -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/:Z autoscaling-builder:latest \
 		bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && BUILD_TAGS=${BUILD_TAGS} LDFLAGS="${LDFLAGS}" make build-arch-$*'
 
-release: $(addprefix build-in-docker-arch-,$(ALL_ARCH)) execute-release
+release-extract-version = $(shell cat version/version.go | grep "Version =" | cut -d '"' -f 2)
+
+release-validate:
+	@if [ -z $(shell git tag --points-at HEAD | grep -e ^cluster-autoscaler-1.[1-9][0-9]*.[0-9][0-9]*$) ]; then \
+		echo "Can't release from this commit, there is no compatible git tag"; \
+		exit 1; \
+	fi
+	@if [ -z $(shell git tag --points-at HEAD | grep -e $(call release-extract-version)) ]; then \
+		echo "Can't release from this commit, git tag does not match version/version.go"; \
+		exit 1; \
+	fi
+
+release: TAG=v$(call release-extract-version)
+release: release-validate $(addprefix build-in-docker-arch-,$(ALL_ARCH)) execute-release
 	@echo "Full in-docker release ${TAG}${FOR_PROVIDER} completed"
 
 container: container-arch-$(GOARCH)
@@ -116,7 +136,7 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
 test-in-docker: clean docker-builder
-	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... ${TAGS_FLAG}'
+	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
 
 .PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
 

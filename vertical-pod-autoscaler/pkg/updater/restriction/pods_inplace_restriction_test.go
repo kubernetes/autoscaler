@@ -22,9 +22,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/record"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	baseclocktest "k8s.io/utils/clock/testing"
 
@@ -378,5 +378,50 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	for _, pod := range pods[1:] {
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
+	}
+}
+
+func TestInPlaceUpdate_EventEmission(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	basicVpa := getBasicVpa()
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	eventRecorder := record.NewFakeRecorder(10)
+
+	err = inplace.InPlaceUpdate(pods[0], basicVpa, eventRecorder)
+	assert.NoError(t, err)
+
+	select {
+	case event := <-eventRecorder.Events:
+		assert.Contains(t, event, "InPlaceResizedByVPA")
+	case <-time.After(1 * time.Second):
+		assert.Fail(t, "timeout waiting for event")
 	}
 }
