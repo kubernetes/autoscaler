@@ -40,11 +40,9 @@ jobs:
 
       - name: Push charts to GHCR
         run: |
+          set -e
           shopt -s nullglob
           for pkg in .cr-release-packages/*; do
-            if [ -z "${pkg:-}" ]; then
-              break
-            fi
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
           done
   vpa-release:
@@ -85,11 +83,9 @@ jobs:
 
       - name: Push charts to GHCR
         run: |
+          set -e
           shopt -s nullglob
           for pkg in .cr-release-packages/*; do
-            if [ -z "${pkg:-}" ]; then
-              break
-            fi
             helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
           done
 name: Release Charts
