@@ -326,6 +326,8 @@ metadata:
     cluster.x-k8s.io/autoscaling-options-scaledownunreadytime: "20m0s"
     # overrides --max-node-provision-time global value for that specific MachineDeployment
     cluster.x-k8s.io/autoscaling-options-maxnodeprovisiontime: "20m0s"
+    # overrides --max-node-startup-time global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-maxnodestartuptime: "20m0s"
 ```
 
 #### CPU Architecture awareness for single-arch clusters 

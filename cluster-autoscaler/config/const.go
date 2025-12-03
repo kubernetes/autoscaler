@@ -38,9 +38,10 @@ const (
 	DefaultScaleDownUnreadyTimeKey = "scaledownunreadytime"
 	// DefaultMaxNodeProvisionTimeKey identifies MaxNodeProvisionTime autoscaling option
 	DefaultMaxNodeProvisionTimeKey = "maxnodeprovisiontime"
+	// DefaultMaxNodeStartupTimeKey identifies MaxNodeProvisionTime autoscaling option
+	DefaultMaxNodeStartupTimeKey = "maxnodestartuptime"
 	// DefaultIgnoreDaemonSetsUtilizationKey identifies IgnoreDaemonSetsUtilization autoscaling option
 	DefaultIgnoreDaemonSetsUtilizationKey = "ignoredaemonsetsutilization"
-
 	// DefaultScaleDownUnneededTime is the default time duration for which CA waits before deleting an unneeded node
 	DefaultScaleDownUnneededTime = 10 * time.Minute
 	// DefaultScaleDownUnreadyTime identifies ScaleDownUnreadyTime autoscaling option
