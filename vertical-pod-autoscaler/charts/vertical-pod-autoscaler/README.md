@@ -20,7 +20,7 @@ $ helm repo add autoscaler https://kubernetes.github.io/autoscaler
 $ helm install my-release autoscaler/vertical-pod-autoscaler
 ```
 
-#### Using OCI Registry
+### Using OCI Registry
 
 ```console
 $ helm install my-release oci://ghcr.io/kubernetes/charts/vertical-pod-autoscaler
