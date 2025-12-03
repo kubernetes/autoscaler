@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
@@ -624,14 +625,21 @@ type Readiness struct {
 func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	perNodeGroup := make(map[string]Readiness)
 	total := Readiness{Time: currentTime}
-
+	maxNodeStartupTime := MaxNodeStartupTime
 	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness) Readiness {
+		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
+		if errNg == nil && nodeGroup != nil {
+			if startupTime, err := csr.nodeGroupConfigProcessor.GetMaxNodeStartupTime(nodeGroup); err == nil {
+				maxNodeStartupTime = startupTime
+			}
+		}
+		klog.V(1).Infof("Node %s: using maxNodeStartupTime = %v", node.Name, maxNodeStartupTime)
 		current.Registered = append(current.Registered, node.Name)
 		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
 			current.Deleted = append(current.Deleted, node.Name)
 		} else if nr.Ready {
 			current.Ready = append(current.Ready, node.Name)
-		} else if node.CreationTimestamp.Time.Add(MaxNodeStartupTime).After(currentTime) {
+		} else if node.CreationTimestamp.Time.Add(maxNodeStartupTime).After(currentTime) {
 			current.NotStarted = append(current.NotStarted, node.Name)
 		} else {
 			current.Unready = append(current.Unready, node.Name)
@@ -768,18 +776,18 @@ func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []
 }
 
 // UpdateScaleDownCandidates updates scale down candidates
-func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node, now time.Time) {
+func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*scaledown.UnneededNode, now time.Time) {
 	result := make(map[string][]string)
 	for _, node := range nodes {
-		group, err := csr.cloudProvider.NodeGroupForNode(node)
+		group, err := csr.cloudProvider.NodeGroupForNode(node.Node)
 		if err != nil {
-			klog.Warningf("Failed to get node group for %s: %v", node.Name, err)
+			klog.Warningf("Failed to get node group for %s: %v", node.Node.Name, err)
 			continue
 		}
 		if group == nil || reflect.ValueOf(group).IsNil() {
 			continue
 		}
-		result[group.Id()] = append(result[group.Id()], node.Name)
+		result[group.Id()] = append(result[group.Id()], node.Node.Name)
 	}
 	csr.candidatesForScaleDown = result
 	csr.lastScaleDownUpdateTime = now

@@ -3,10 +3,21 @@
 # Disable inheritance as this is an api owners file
 options:
   no_parent_owners: true
-approvers:
-  - api-approvers
-reviewers:
-  - api-reviewers
-
-labels:
-  - kind/api-change
+filters:
+  # to use filters all entries must be under filters https://go.k8s.io/owners/#filters
+  # use .* for approvers that should have all files
+  ".*":
+    approvers:
+      - sig-autoscaling-vpa-approvers
+    reviewers:
+      - sig-autoscaling-vpa-reviewers
+    labels:
+      - area/vertical-pod-autoscaler
+  "(register|types|doc|zz_generated.deepcopy)\\.go$":
+    approvers:
+      - api-approvers
+    reviewers:
+      - api-reviewers
+    labels:
+      - area/vertical-pod-autoscaler
+      - kind/api-change

@@ -50,6 +50,8 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 	// Maximum time CA waits for node to be provisioned
 	MaxNodeProvisionTime time.Duration
+	// Maximum time CA waits for node to be ready from registered
+	MaxNodeStartupTime time.Duration
 	// ZeroOrMaxNodeScaling means that a node group should be scaled up to maximum size or down to zero nodes all at once instead of one-by-one.
 	ZeroOrMaxNodeScaling bool
 	// AllowNonAtomicScaleUpToMax indicates that partially failing scale-ups of ZeroOrMaxNodeScaling node groups should not be cancelled
@@ -356,6 +358,8 @@ type AutoscalingOptions struct {
 	CapacitybufferPodInjectionEnabled bool
 	// MaxNodeSkipEvalTimeTrackerEnabled is used to enabled/disable the tracking of maximum evaluation time of a node being skipped during ScaleDown.
 	MaxNodeSkipEvalTimeTrackerEnabled bool
+	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
+	NodeRemovalLatencyTrackingEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

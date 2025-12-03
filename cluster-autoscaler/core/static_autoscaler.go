@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
@@ -170,6 +171,12 @@ func NewStaticAutoscaler(
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
+	var ndlt *latencytracker.NodeLatencyTracker
+	if autoscalingCtx.AutoscalingOptions.NodeRemovalLatencyTrackingEnabled {
+		ndlt = latencytracker.NewNodeLatencyTracker(processors.ScaleDownStatusProcessor)
+		processors.ScaleDownCandidatesNotifier.Register(ndlt)
+		processors.ScaleDownStatusProcessor = ndlt
+	}
 	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
@@ -663,7 +670,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
 	if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
-		taintableNodes := a.scaleDownPlanner.UnneededNodes()
+		taintableNodes := retrieveNodes(a.scaleDownPlanner.UnneededNodes())
 
 		// Make sure we are only cleaning taints from selected node groups.
 		selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
@@ -1154,6 +1161,14 @@ func nodeNames(ns []*apiv1.Node) []string {
 		names[i] = node.Name
 	}
 	return names
+}
+
+func retrieveNodes(candidates []*scaledown.UnneededNode) []*apiv1.Node {
+	nodes := make([]*apiv1.Node, 0, len(candidates))
+	for _, c := range candidates {
+		nodes = append(nodes, c.Node)
+	}
+	return nodes
 }
 
 func listPods(podLister kube_util.PodLister, bypassedSchedulers map[string]bool) (podsBySchedulability kube_util.PodsBySchedulability, err error) {
