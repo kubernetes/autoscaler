@@ -20,7 +20,7 @@ $ helm install my-release autoscaler/cluster-autoscaler \
     --set "autoscalingGroups[0].minSize=1"
 ```
 
-#### Using OCI Registry
+### Using OCI Registry
 
 ```console
 # Method 1 - Using Autodiscovery
