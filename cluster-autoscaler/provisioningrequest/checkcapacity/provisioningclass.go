@@ -18,7 +18,9 @@ package checkcapacity
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -50,7 +52,16 @@ const (
 	// Supported values are "true" and "false" - by default ProvisioningRequests are always retried.
 	// Currently supported only for checkcapacity class.
 	NoRetryParameterKey = "noRetry"
+
+	// PartialCapacityCheckKey is a key for ProvReq's Parameters that
+	// will surface how many pods of a ProvReq could be scaled per the simulation.
+	// Supported values are "true" and "false" - by default, this is false, and
+	// checkCapacity will only surface whether there was capacity for all of the ProvReq Pods.
+	PartialCapacityCheckKey = "partialCapacityCheck"
 )
+
+// Regex to match pod names created by PodsForProvisioningRequest.
+var podSetIndexPattern = regexp.MustCompile(`-(\d+)-(\d+)$`)
 
 type checkCapacityProvClass struct {
 	autoscalingCtx                               *ca_context.AutoscalingContext
@@ -174,19 +185,40 @@ func (o *checkCapacityProvClass) checkCapacityBatch(reqs []provreq.ProvisioningR
 func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) error {
 	o.autoscalingCtx.ClusterSnapshot.Fork()
 
-	// Case 1: Capacity fits.
-	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
-	if err == nil && len(scheduled) == len(unschedulablePods) {
+	sortedUnschedulablePods := sortPodsFromProvReq(unschedulablePods)
+
+	// Sets the simulation's breakOnFailure. If true, the simulation loop breaks upon a failed scheduling attempt.
+	simBreakOnFailure := true
+	partialCapacityCheck, ok := provReq.Spec.Parameters[PartialCapacityCheckKey]
+	if ok && partialCapacityCheck == "true" {
+		simBreakOnFailure = false
+	}
+
+	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, sortedUnschedulablePods, scheduling.ScheduleAnywhere, simBreakOnFailure)
+	if err == nil {
 		commitError := o.autoscalingCtx.ClusterSnapshot.Commit()
 		if commitError != nil {
 			o.autoscalingCtx.ClusterSnapshot.Revert()
 			return commitError
 		}
-		combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpSuccessful})
-		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
-		return nil
+
+		// Case 1: Capacity Fits
+		if len(scheduled) == len(sortedUnschedulablePods) {
+			combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpSuccessful})
+			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
+			return nil
+		}
+
+		// Case 2: Capacity Partially Fits
+		if partialCapacityCheck == "true" && len(scheduled) < len(sortedUnschedulablePods) {
+			combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpPartialCapacityAvailable})
+			msg := fmt.Sprintf("%s Can schedule %d out of %d pods.", conditions.PartialCapacityIsFoundMsg, len(scheduled), len(sortedUnschedulablePods))
+			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.PartialCapacityIsFoundReason, msg, metav1.Now())
+			return nil
+		}
 	}
-	// Case 2: Capacity doesn't fit.
+
+	// Case 3: Capacity doesn't fit.
 	o.autoscalingCtx.ClusterSnapshot.Revert()
 	combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable})
 	if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry == "true" {
@@ -199,7 +231,52 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 		}
 		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
 	}
+
 	return err
+}
+
+// Sort based on the pod names since they are created in the following format:
+// {GenerateName}{i}-{j}, where i is the index of the PodSet in the ProvReq and
+// j is the index of the pod within the PodSet.
+// This assumes GenerateName will have a trailing dash.
+func sortPodsFromProvReq(unschedulablePods []*apiv1.Pod) (sortedPods []*apiv1.Pod) {
+	sortedPods = make([]*apiv1.Pod, len(unschedulablePods))
+	copy(sortedPods, unschedulablePods)
+
+	sort.Slice(sortedPods, func(i, j int) bool {
+		podA := podSetIndexPattern.FindStringSubmatch(sortedPods[i].Name)
+		podB := podSetIndexPattern.FindStringSubmatch(sortedPods[j].Name)
+
+		// If both match the expected pattern, compare by indices
+		if len(podA) == 3 && len(podB) == 3 {
+			podSetIndexI, _ := strconv.Atoi(podA[1])
+			podIndexI, _ := strconv.Atoi(podA[2])
+			podSetIndexJ, _ := strconv.Atoi(podB[1])
+			podIndexJ, _ := strconv.Atoi(podB[2])
+
+			// Compare by PodSet index
+			if podSetIndexI != podSetIndexJ {
+				return podSetIndexI < podSetIndexJ
+			}
+			// Then by pod index within the PodSet
+			if podIndexI != podIndexJ {
+				return podIndexI < podIndexJ
+			}
+			// Use namespace then name as tiebreakers
+			if sortedPods[i].Namespace != sortedPods[j].Namespace {
+				return sortedPods[i].Namespace < sortedPods[j].Namespace
+			}
+			return sortedPods[i].Name < sortedPods[j].Name
+		}
+
+		// Fallback to alphabetical ordering by namespace then name if pattern doesn't match
+		if sortedPods[i].Namespace != sortedPods[j].Namespace {
+			return sortedPods[i].Namespace < sortedPods[j].Namespace
+		}
+		return sortedPods[i].Name < sortedPods[j].Name
+	})
+
+	return sortedPods
 }
 
 // updateRequests calls the client to update ProvisioningRequests, in parallel.
@@ -234,13 +311,15 @@ type combinedStatusSet struct {
 func (c *combinedStatusSet) Add(newStatus *status.ScaleUpStatus) {
 	// This represents the priority of the ScaleUpResult. The final result is the one with the highest priority in the set.
 	resultPriority := map[status.ScaleUpResult]int{
-		status.ScaleUpNotTried:           0,
-		status.ScaleUpNoOptionsAvailable: 1,
-		status.ScaleUpError:              2,
-		status.ScaleUpSuccessful:         3,
+		status.ScaleUpNotTried:                 0,
+		status.ScaleUpNoOptionsAvailable:       1,
+		status.ScaleUpError:                    2,
+		status.ScaleUpPartialCapacityAvailable: 3,
+		status.ScaleUpSuccessful:               4,
 	}
 
 	// If even one scaleUpSuccessful is present, the final result is ScaleUpSuccessful.
+	// If no ScaleUpSucessful is present, but there is a ScaleUpPartialCapacityAvailable, the final result is ScaleUpPartialCapacityAvailable.
 	// If no ScaleUpSuccessful is present, and even one ScaleUpError is present, the final result is ScaleUpError.
 	// If no ScaleUpSuccessful or ScaleUpError is present, and even one ScaleUpNoOptionsAvailable is present, the final result is ScaleUpNoOptionsAvailable.
 	// If no ScaleUpSuccessful, ScaleUpError or ScaleUpNoOptionsAvailable is present, the final result is ScaleUpNotTried.
