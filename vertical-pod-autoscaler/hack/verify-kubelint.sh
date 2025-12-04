@@ -20,6 +20,9 @@ set -o pipefail
 
 echo "verify-kubelint"
 
+echo "installing dependencies"
+go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+
 cd $(dirname "${BASH_SOURCE}")/..
 SCRIPT_ROOT="$PWD"
 
