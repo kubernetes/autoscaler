@@ -23,8 +23,8 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
@@ -35,7 +35,6 @@ import (
 	"k8s.io/utils/ptr"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 )
 
 const (
@@ -59,16 +58,16 @@ func newTestVMsPool(manager *AzureManager) *VMPool {
 	}
 }
 
-func newTestVMsPoolVMList(count int) []compute.VirtualMachine {
-	var vmList []compute.VirtualMachine
+func newTestVMsPoolVMList(count int) []armcompute.VirtualMachine {
+	var vmList []armcompute.VirtualMachine
 
 	for i := 0; i < count; i++ {
-		vm := compute.VirtualMachine{
+		vm := armcompute.VirtualMachine{
 			ID: ptr.To(fmt.Sprintf(fakeVMsPoolVMID, i)),
-			VirtualMachineProperties: &compute.VirtualMachineProperties{
+			Properties: &armcompute.VirtualMachineProperties{
 				VMID: ptr.To(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
-				HardwareProfile: &compute.HardwareProfile{
-					VMSize: compute.VirtualMachineSizeTypes(vmSku),
+				HardwareProfile: &armcompute.HardwareProfile{
+					VMSize: ptr.To(armcompute.VirtualMachineSizeTypes(vmSku)),
 				},
 				ProvisioningState: ptr.To("Succeeded"),
 			},
@@ -258,7 +257,7 @@ func TestAtomicIncreaseSize(t *testing.T) {
 func TestGetVMsFromCache(t *testing.T) {
 	manager := &AzureManager{
 		azureCache: &azureCache{
-			virtualMachines: make(map[string][]compute.VirtualMachine),
+			virtualMachines: make(map[string][]armcompute.VirtualMachine),
 			vmsPoolMap:      make(map[string]armcontainerservice.AgentPool),
 		},
 	}
@@ -274,7 +273,7 @@ func TestGetVMsFromCache(t *testing.T) {
 	assert.Len(t, vms, 0)
 
 	// Test case 2 - when the vms pool is found in the cache but has no VMs
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = []compute.VirtualMachine{}
+	manager.azureCache.virtualMachines[vmsAgentPoolName] = []armcompute.VirtualMachine{}
 	vms, err = agentPool.getVMsFromCache(skipOption{})
 	assert.NoError(t, err)
 	assert.Len(t, vms, 0)
@@ -287,7 +286,7 @@ func TestGetVMsFromCache(t *testing.T) {
 
 	// Test case 4 - should skip failed VMs
 	vmList := newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = ptr.To("Failed")
+	vmList[0].Properties.ProvisioningState = ptr.To("Failed")
 	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
 	vms, err = agentPool.getVMsFromCache(skipOption{skipFailed: true})
 	assert.NoError(t, err)
@@ -295,7 +294,7 @@ func TestGetVMsFromCache(t *testing.T) {
 
 	// Test case 5 - should skip deleting VMs
 	vmList = newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = ptr.To("Deleting")
+	vmList[0].Properties.ProvisioningState = ptr.To("Deleting")
 	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
 	vms, err = agentPool.getVMsFromCache(skipOption{skipDeleting: true})
 	assert.NoError(t, err)
@@ -303,7 +302,7 @@ func TestGetVMsFromCache(t *testing.T) {
 
 	// Test case 6 - should not skip deleting VMs
 	vmList = newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = ptr.To("Deleting")
+	vmList[0].Properties.ProvisioningState = ptr.To("Deleting")
 	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
 	vms, err = agentPool.getVMsFromCache(skipOption{skipFailed: true})
 	assert.NoError(t, err)
@@ -324,12 +323,12 @@ func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 
 	expectedVMs := newTestVMsPoolVMList(2)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
-	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+	mockVMClient.EXPECT().NewListPager(ap.manager.config.ResourceGroup, gomock.Any()).Return(getFakeVMListPager(expectedVMs))
 
 	agentpool := getTestVMsAgentPool(false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
@@ -353,9 +352,9 @@ func TestNodes(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 	expectedVMs := newTestVMsPoolVMList(2)
 
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
-	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+	mockVMClient.EXPECT().NewListPager(ap.manager.config.ResourceGroup, gomock.Any()).Return(getFakeVMListPager(expectedVMs))
 
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -381,9 +380,9 @@ func TestGetCurSizeForVMsPool(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 	expectedVMs := newTestVMsPoolVMList(3)
 
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
-	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+	mockVMClient.EXPECT().NewListPager(ap.manager.config.ResourceGroup, gomock.Any()).Return(getFakeVMListPager(expectedVMs))
 
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -410,9 +409,9 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 	ap := newTestVMsPool(manager)
 	expectedVMs := newTestVMsPoolVMList(3)
 
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
-	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+	mockVMClient.EXPECT().NewListPager(ap.manager.config.ResourceGroup, gomock.Any()).Return(getFakeVMListPager(expectedVMs))
 
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -467,7 +466,7 @@ func TestDeleteVMsPoolNodes_Failed(t *testing.T) {
 	node := newVMsNode(0)
 
 	expectedVMs := newTestVMsPoolVMList(3)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -475,7 +474,7 @@ func TestDeleteVMsPoolNodes_Failed(t *testing.T) {
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
 	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).Return(fakeAPListPager)
-	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+	mockVMClient.EXPECT().NewListPager(ap.manager.config.ResourceGroup, gomock.Any()).Return(getFakeVMListPager(expectedVMs))
 
 	ap.manager.azureCache.enableVMsAgentPool = true
 	registered := ap.manager.RegisterNodeGroup(ap)
@@ -496,7 +495,7 @@ func TestDeleteVMsPoolNodes_Success(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 
 	expectedVMs := newTestVMsPoolVMList(5)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockVirtualMachinesClient(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -504,7 +503,7 @@ func TestDeleteVMsPoolNodes_Success(t *testing.T) {
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
 	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).Return(fakeAPListPager)
-	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+	mockVMClient.EXPECT().NewListPager(ap.manager.config.ResourceGroup, gomock.Any()).Return(getFakeVMListPager(expectedVMs))
 
 	ap.manager.azureCache.enableVMsAgentPool = true
 	registered := ap.manager.RegisterNodeGroup(ap)

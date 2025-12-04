@@ -20,8 +20,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
@@ -62,19 +62,32 @@ var isolatedVMSizes = map[string]bool{
 	strings.ToLower("Standard_M128ms"):      true,
 }
 
-func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) (*azure.Future, *retry.Error) {
+func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], *retry.Error) {
 	scaleSet.instanceMutex.Lock()
 	defer scaleSet.instanceMutex.Unlock()
 
 	skuName := scaleSet.getSKU()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	forceDelete := shouldForceDelete(skuName, scaleSet)
-	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, forceDelete)
-	if forceDelete && isOperationNotAllowed(rerr) {
-		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIds, scaleSet.Name)
-		return scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, false)
+	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+		ForceDeletion: &forceDelete,
+	})
+	if err != nil {
+		rerr := &retry.Error{RawError: err}
+		if forceDelete && isOperationNotAllowed(rerr) {
+			klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIDs, scaleSet.Name)
+			normalForceDelete := false
+			future2, err2 := scaleSet.manager.azClient.virtualMachineScaleSetsClient.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+				ForceDeletion: &normalForceDelete,
+			})
+			if err2 != nil {
+				return future2, &retry.Error{RawError: err2}
+			}
+			return future2, nil
+		}
+		return future, rerr
 	}
-	return future, rerr
+	return future, nil
 }
 
 func shouldForceDelete(skuName string, scaleSet *ScaleSet) bool {
