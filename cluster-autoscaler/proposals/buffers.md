@@ -2,6 +2,26 @@
 
 #### Author: Justyna Betkier (jbtk)
 
+# Timeline
+
+## Alpha (launched to 1.34)
+
+- [x] Implement the API definition
+- [x] Implement the buffer controller and fake pod processing logic in the cluster autoscaler
+
+## Beta graduation criteria (planned for 1.35)
+
+- [ ] Implement integration with k8s resource quotas
+- [ ] Implement e2e test for buffers
+
+## V1 graduation criteria (planned for TBD)
+
+- [ ] E2e test healthy
+- [ ] In beta for at least 1 full version
+- [ ] Available in at least 1 cloud provider for 3 months
+- [ ] Graduation plan announced 1 month in advance on sig-autoscaling meeting to allow time for feedback
+- [ ] Reviewed and summarized all open issues about buffers in the https://github.com/kubernetes/autoscaler/ repository
+
 # Summary
 
 If the user uses autoscaling the cluster size will be adjusted to the number of
