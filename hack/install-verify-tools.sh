@@ -26,6 +26,4 @@ go install github.com/tools/godep@latest
 
 go install github.com/client9/misspell/cmd/misspell@latest
 
-go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-
 # ex: ts=2 sw=2 et filetype=sh
