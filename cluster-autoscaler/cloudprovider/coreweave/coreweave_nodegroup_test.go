@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -109,18 +111,92 @@ func TestIncreaseSize(t *testing.T) {
 }
 
 func TestDeleteNodes(t *testing.T) {
-	ng := makeTestNodeGroup("ng-1", "uid-1", 0, 5, 3)
-	validNode := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   "node1",
-			Labels: map[string]string{coreWeaveNodePoolUID: "uid-1"},
+	initialTargetSize := int64(3)
+
+	testCases := map[string]struct {
+		nodesToDelete      []*apiv1.Node
+		expectedTargetSize int
+		expectedError      error
+	}{
+		"reduce-target-size-by-one-node": {
+			nodesToDelete: []*apiv1.Node{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "node1",
+						Labels: map[string]string{coreWeaveNodePoolUID: "uid-1"},
+					},
+				},
+			},
+			expectedTargetSize: 2,
+		},
+		"reduce-target-size-by-three-node": {
+			nodesToDelete: []*apiv1.Node{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "node1",
+						Labels: map[string]string{coreWeaveNodePoolUID: "uid-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "node2",
+						Labels: map[string]string{coreWeaveNodePoolUID: "uid-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "node3",
+						Labels: map[string]string{coreWeaveNodePoolUID: "uid-1"},
+					},
+				},
+			},
+			expectedTargetSize: 0,
 		},
 	}
-	nodes := []*apiv1.Node{
-		validNode,
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			ng := makeTestNodeGroup("ng-1", "uid-1", 0, 5, initialTargetSize)
+
+			err := ng.DeleteNodes(tc.nodesToDelete)
+			if tc.expectedError != nil {
+				require.Equal(t, tc.expectedError, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, ng.nodepool.GetTargetSize(), tc.expectedTargetSize)
+		})
 	}
-	err := ng.DeleteNodes(nodes)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
-		t.Errorf("expected ErrNotImplemented or nil, got %v", err)
+}
+
+func TestDecreaseTargetSize(t *testing.T) {
+	testCases := map[string]struct {
+		delta              int
+		expectedTargetSize int
+		expectedError      error
+	}{
+		"positive-delta": {
+			delta:              2,
+			expectedTargetSize: 1,
+		},
+		"negative-delta": {
+			delta:              -2,
+			expectedTargetSize: 1,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			ng := makeTestNodeGroup("ng-1", "uid-1", 1, 5, 3)
+
+			err := ng.DecreaseTargetSize(tc.delta)
+			if tc.expectedError != nil {
+				require.Error(t, err)
+				require.Equal(t, tc.expectedError, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedTargetSize, ng.nodepool.GetTargetSize())
+		})
 	}
 }
