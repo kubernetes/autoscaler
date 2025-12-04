@@ -2,6 +2,30 @@
 
 #### Author: Justyna Betkier (jbtk)
 
+# Timeline
+
+## Alpha (launched to 1.34)
+
+- [x] Implement the API definition
+- [x] Implement the buffer controller and fake pod processing logic in the cluster autoscaler
+
+## Beta graduation criteria (planned for 1.35)
+
+- [ ] Implement integration with k8s resource quotas
+
+## V1 graduation criteria (planned for TBD)
+
+- [ ] E2e test implemented and healthy
+- [ ] In beta for at least 1 full version
+- [ ] Waiting up to k8s 1.37 (inclusive) in beta for second OSS implementation 
+    (karpenter). In case of no implementation in order to avoid permanent beta 
+    (following the spirit of [guidance for k8s REST APIs](https://kubernetes.io/blog/2020/08/21/moving-forward-from-beta/#avoiding-permanent-beta))
+    we will reevaluate the graduation criteria with sig-autoscaling leads based on:
+    - existing adoption and feedback
+    - reasons for no implementation and immediate future plans
+- [ ] Graduation plan announced 1 month in advance on sig-autoscaling meeting to allow time for feedback
+- [ ] Reviewed and summarized all open issues about buffers in the https://github.com/kubernetes/autoscaler/ repository
+
 # Summary
 
 If the user uses autoscaling the cluster size will be adjusted to the number of
