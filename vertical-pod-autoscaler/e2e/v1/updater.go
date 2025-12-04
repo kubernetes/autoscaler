@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -205,6 +206,38 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
+
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("In-place updates pods with InPlace mode when update succeeds", framework.WithSerial(), framework.WithFeatureGate(features.InPlace), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForInPlaceMode(f, "100m", "100Mi", true)
+		initialPods := podList.DeepCopy()
+
+		ginkgo.By("Waiting for pods to be in-place updated with InPlace mode")
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
 })
 
 func setupPodsForUpscalingEviction(f *framework.Framework) *apiv1.PodList {
@@ -276,6 +309,42 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 		WithTargetRef(controller).
 		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 		WithEvictionRequirements(er).
+		WithContainer(containerName)
+
+	if withRecommendation {
+		vpaBuilder = vpaBuilder.AppendRecommendation(
+			test.Recommendation().
+				WithContainer(containerName).
+				WithTarget(containerName, "200m").
+				WithLowerBound(containerName, "200m").
+				WithUpperBound(containerName, "200m").
+				GetContainerResources())
+	}
+
+	vpaCRD := vpaBuilder.Get()
+	utils.InstallVPA(f, vpaCRD)
+
+	return podList
+}
+
+func setupPodsForInPlaceMode(f *framework.Framework, hamsterCPU, hamsterMemory string, withRecommendation bool) *apiv1.PodList {
+	controller := &autoscaling.CrossVersionObjectReference{
+		APIVersion: "apps/v1",
+		Kind:       "Deployment",
+		Name:       "hamster-deployment",
+	}
+	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
+	setupHamsterController(f, controller.Kind, hamsterCPU, hamsterMemory, utils.DefaultHamsterReplicas)
+	podList, err := GetHamsterPods(f)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	ginkgo.By("Setting up a VPA CRD with InPlace mode")
+	containerName := utils.GetHamsterContainerNameByIndex(0)
+	vpaBuilder := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(controller).
+		WithUpdateMode(vpa_types.UpdateModeInPlace).
 		WithContainer(containerName)
 
 	if withRecommendation {
