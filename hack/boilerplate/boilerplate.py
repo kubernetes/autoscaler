@@ -129,7 +129,6 @@ def file_passes(filename, refs, regexs):
 def file_extension(filename):
     return os.path.splitext(filename)[1].split(".")[-1].lower()
 
-
 skipped_names = [
     "third_party",
     "_output",
@@ -146,6 +145,8 @@ skipped_names = [
     "cluster-autoscaler/hack/list-owners.py",
     "cluster-autoscaler/expander/grpcplugin/protos",
     "cluster-autoscaler/cloudprovider/aws/aws-sdk-go",
+    "cluster-autoscaler/cloudprovider/aws/aws-sdk-go-v2",
+    "cluster-autoscaler/cloudprovider/aws/smithy-go",
     "cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3",
     "cluster-autoscaler/cloudprovider/bizflycloud/gobizfly",
     "cluster-autoscaler/cloudprovider/brightbox/gobrightbox",
@@ -163,7 +164,6 @@ skipped_names = [
     "cluster-autoscaler/cloudprovider/azure/azure_instance_types/gen.go",
     "vertical-pod-autoscaler/hack/emit-metrics.py",
 ]
-
 
 def normalize_files(files):
     newfiles = []

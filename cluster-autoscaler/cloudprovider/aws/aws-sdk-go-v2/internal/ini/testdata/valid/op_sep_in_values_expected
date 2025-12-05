@@ -1,0 +1,34 @@
+{
+  "case1": {
+    "sepinvalue": "=:[foo]]bar[",
+    "key": "= value1"
+  },
+  "case2": {
+    "sepinvalue": "=:[foo]]bar[",
+    "key": "value2"
+  },
+  "case3": {
+    "sepinvalue": "[]",
+    "key": "= value3"
+  },
+  "case4": {
+    "sepinvalue": "[value] x=a",
+    "key": "=value4"
+  },
+  "case5": {
+    "key": "value5"
+  },
+  "case6": {
+    "s3": ""
+  },
+  "nested6": {
+    "key": "=value6"
+  },
+  "case7": {
+    "s3": "",
+    "key": "value7"
+  },
+  "sub7": {
+    "key": "=values7"
+  }
+}
