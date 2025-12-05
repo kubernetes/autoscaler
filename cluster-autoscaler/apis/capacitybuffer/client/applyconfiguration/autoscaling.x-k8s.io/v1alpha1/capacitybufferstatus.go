@@ -24,12 +24,25 @@ import (
 
 // CapacityBufferStatusApplyConfiguration represents a declarative configuration of the CapacityBufferStatus type for use
 // with apply.
+//
+// CapacityBufferStatus defines the observed state of CapacityBuffer.
 type CapacityBufferStatusApplyConfiguration struct {
-	PodTemplateRef        *LocalObjectRefApplyConfiguration `json:"podTemplateRef,omitempty"`
-	Replicas              *int32                            `json:"replicas,omitempty"`
-	PodTemplateGeneration *int64                            `json:"podTemplateGeneration,omitempty"`
-	Conditions            []v1.ConditionApplyConfiguration  `json:"conditions,omitempty"`
-	ProvisioningStrategy  *string                           `json:"provisioningStrategy,omitempty"`
+	// PodTemplateRef is the observed reference to the PodTemplate that was used
+	// to provision the buffer. If this field is not set, and the `conditions`
+	// indicate an error, it provides details about the error state.
+	PodTemplateRef *LocalObjectRefApplyConfiguration `json:"podTemplateRef,omitempty"`
+	// Replicas is the actual number of buffer chunks currently provisioned.
+	Replicas *int32 `json:"replicas,omitempty"`
+	// PodTemplateGeneration is the observed generation of the PodTemplate, used
+	// to determine if the status is up-to-date with the desired `spec.podTemplateRef`.
+	PodTemplateGeneration *int64 `json:"podTemplateGeneration,omitempty"`
+	// Conditions provide a standard mechanism for reporting the buffer's state.
+	// The "Ready" condition indicates if the buffer is successfully provisioned
+	// and active. Other conditions may report on various aspects of the buffer's
+	// health and provisioning process.
+	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
+	// ProvisioningStrategy defines how the buffer should be utilized.
+	ProvisioningStrategy *string `json:"provisioningStrategy,omitempty"`
 }
 
 // CapacityBufferStatusApplyConfiguration constructs a declarative configuration of the CapacityBufferStatus type for use with

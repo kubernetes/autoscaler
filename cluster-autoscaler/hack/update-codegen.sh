@@ -36,6 +36,10 @@ kube::codegen::gen_helpers \
     --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
     "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest"
 
+kube::codegen::gen_helpers \
+    --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
+    "${REPO_ROOT}/cluster-autoscaler/apis/capacitybuffer"
+
 echo "Ran gen helpers, moving on to generating client code..."
 
 kube::codegen::gen_client \
@@ -45,6 +49,14 @@ kube::codegen::gen_client \
     --with-watch \
     --with-applyconfig \
     "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest"
+
+kube::codegen::gen_client \
+    --output-pkg k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client \
+    --output-dir "${REPO_ROOT}/cluster-autoscaler/apis/capacitybuffer/client" \
+    --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
+    --with-watch \
+    --with-applyconfig \
+    "${REPO_ROOT}/cluster-autoscaler/apis/capacitybuffer"
 
 echo "Generated client code, running `go mod tidy`..."
 
