@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_informers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -178,21 +179,35 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
-	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+
+	kubeFactory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	vpaFactory := vpa_informers.NewSharedInformerFactoryWithOptions(vpaClient, 1*time.Hour, vpa_informers.WithNamespace(commonFlag.VpaObjectNamespace))
+	vpaLister := vpa_api_util.NewVpasListerFromFactory(vpaFactory)
+
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, kubeFactory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, kubeFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
-	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
+	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(kubeFactory)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 
-	factory.Start(stopCh)
-	informerMap := factory.WaitForCacheSync(stopCh)
-	for kind, synced := range informerMap {
+	kubeFactory.Start(stopCh)
+	vpaFactory.Start(stopCh)
+
+	kubeInformerMap := kubeFactory.WaitForCacheSync(stopCh)
+	for kind, synced := range kubeInformerMap {
 		if !synced {
-			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync Kubernetes cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	}
+
+	vpaInformerMap := vpaFactory.WaitForCacheSync(stopCh)
+	for kind, synced := range vpaInformerMap {
+		if !synced {
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync VPA cache for the %s informer", kind.String()))
 			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 	}
@@ -208,10 +223,11 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider), inplace.NewInPlaceUpdatedCalculator()}
 
-	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
 		vpaClient,
+		kubeFactory,
+		vpaLister,
 		*minReplicas,
 		*evictionRateLimit,
 		*evictionRateBurst,
