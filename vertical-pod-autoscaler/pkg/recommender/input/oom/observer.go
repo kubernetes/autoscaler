@@ -147,14 +147,19 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 		klog.ErrorS(nil, "OOM observer received invalid newObj", "newObj", newObj)
 	}
 
-	for _, containerStatus := range newPod.Status.ContainerStatuses {
+	o.processStatuses(newPod, oldPod, newPod.Status.ContainerStatuses, oldPod.Status.ContainerStatuses, oldPod.Spec.Containers)
+	o.processStatuses(newPod, oldPod, newPod.Status.InitContainerStatuses, oldPod.Status.InitContainerStatuses, oldPod.Spec.InitContainers)
+}
+
+func (o *observer) processStatuses(newPod *apiv1.Pod, oldPod *apiv1.Pod, statuses []apiv1.ContainerStatus, oldStatuses []apiv1.ContainerStatus, oldSpecs []apiv1.Container) {
+	for _, containerStatus := range statuses {
 		if containerStatus.RestartCount > 0 &&
 			containerStatus.LastTerminationState.Terminated != nil &&
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
 
-			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
+			oldStatus := findStatus(containerStatus.Name, oldStatuses)
 			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
-				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
+				oldSpec := findSpec(containerStatus.Name, oldSpecs)
 				if oldSpec != nil {
 					requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
 					var memory resource.Quantity
