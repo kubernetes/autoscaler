@@ -95,6 +95,7 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 	_, buffers = p.podTemplateGenFilter.Filter(buffers)
 
 	totalFakePods := []*apiv1.Pod{}
+	p.clearCapacityBufferRegistry()
 	for _, buffer := range buffers {
 		fakePods := p.provision(buffer)
 		p.updateCapacityBufferRegistry(fakePods, buffer)
@@ -113,10 +114,16 @@ func (p *CapacityBufferPodListProcessor) updateCapacityBufferRegistry(fakePods [
 	if p.buffersRegistry == nil {
 		return
 	}
-	p.buffersRegistry.fakePodsUIDToBuffer = make(map[string]*v1alpha1.CapacityBuffer, len(fakePods))
 	for _, fakePod := range fakePods {
 		p.buffersRegistry.fakePodsUIDToBuffer[string(fakePod.UID)] = buffer
 	}
+}
+
+func (p *CapacityBufferPodListProcessor) clearCapacityBufferRegistry() {
+	if p.buffersRegistry == nil {
+		return
+	}
+	p.buffersRegistry.fakePodsUIDToBuffer = make(map[string]*v1alpha1.CapacityBuffer, 0)
 }
 
 func (p *CapacityBufferPodListProcessor) provision(buffer *v1alpha1.CapacityBuffer) []*apiv1.Pod {
@@ -163,7 +170,7 @@ func (p *CapacityBufferPodListProcessor) updateBufferStatus(buffer *v1alpha1.Cap
 // makeFakePods creates podCount number of copies of the sample pod
 func makeFakePods(buffer *v1alpha1.CapacityBuffer, samplePodTemplate *apiv1.PodTemplateSpec, podCount int) ([]*apiv1.Pod, error) {
 	var fakePods []*apiv1.Pod
-	samplePod := getPodFromTemplate(samplePodTemplate)
+	samplePod := getPodFromTemplate(samplePodTemplate, buffer.Namespace)
 	for i := 1; i <= podCount; i++ {
 		fakePod := samplePod.DeepCopy()
 		fakePod = withCapacityBufferFakePodAnnotation(fakePod)
@@ -190,7 +197,7 @@ func isFakeCapacityBuffersPod(pod *apiv1.Pod) bool {
 	return pod.Annotations[CapacityBufferFakePodAnnotationKey] == CapacityBufferFakePodAnnotationValue
 }
 
-func getPodFromTemplate(template *apiv1.PodTemplateSpec) *apiv1.Pod {
+func getPodFromTemplate(template *apiv1.PodTemplateSpec, namespace string) *apiv1.Pod {
 	desiredLabels := getPodsLabelSet(template)
 	desiredFinalizers := getPodsFinalizers(template)
 	desiredAnnotations := getPodsAnnotationSet(template)
@@ -198,7 +205,7 @@ func getPodFromTemplate(template *apiv1.PodTemplateSpec) *apiv1.Pod {
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:       desiredLabels,
-			Namespace:    template.Namespace,
+			Namespace:    namespace,
 			Annotations:  desiredAnnotations,
 			GenerateName: uuid.NewString(),
 			Finalizers:   desiredFinalizers,

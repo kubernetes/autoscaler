@@ -32,7 +32,6 @@ import (
 
 func TestRoundTripPricingPodPriceRequest(t *testing.T) {
 	t1 := time.Unix(1000, 100)
-	t1meta := metav1.NewTime(t1)
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "test"},
 		Spec: corev1.PodSpec{
@@ -54,12 +53,6 @@ func TestRoundTripPricingPodPriceRequest(t *testing.T) {
 	}
 
 	r := &PricingPodPriceRequest{
-		// These three fields are expected to stop being serializable in 1.35,
-		// and to need to be removed from the .proto file
-		StartTime: &t1meta,
-		EndTime:   &t1meta,
-		Pod:       pod,
-
 		// These fields should remain serializable
 		StartTimestamp: timestamppb.New(t1),
 		EndTimestamp:   timestamppb.New(t1),
@@ -82,10 +75,6 @@ func TestRoundTripPricingPodPriceRequest(t *testing.T) {
 	if !proto.Equal(r, r2) {
 		t.Fatalf("message did not round-trip: %s", cmp.Diff(r, r2))
 	}
-	// The Pod field is expected to be removed in 1.35
-	if !apiequality.Semantic.DeepEqual(pod, r2.Pod) {
-		t.Fatalf("pod did not round-trip: %s", cmp.Diff(r, r2))
-	}
 	// Pod bytes must remain round-trippable
 	if !apiequality.Semantic.DeepEqual(pod, pod2) {
 		t.Fatalf("pod bytes did not round-trip: %s", cmp.Diff(r, r2))
@@ -94,14 +83,8 @@ func TestRoundTripPricingPodPriceRequest(t *testing.T) {
 
 func TestRoundTripPricingNodePriceRequest(t *testing.T) {
 	t1 := time.Unix(1000, 100)
-	t1meta := metav1.NewTime(t1)
 
 	r := &PricingNodePriceRequest{
-		// These three fields are expected to stop being serializable in 1.35,
-		// and to need to be removed from the .proto file
-		StartTime: &t1meta,
-		EndTime:   &t1meta,
-
 		// These fields should remain serializable
 		StartTimestamp: timestamppb.New(t1),
 		EndTimestamp:   timestamppb.New(t1),

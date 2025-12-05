@@ -103,9 +103,9 @@ case ${SUITE} in
 
     echo " ** Running suite ${SUITE}"
     if [ ${SUITE} == recommender-externalmetrics ]; then
-       WORKSPACE=./workspace/_artifacts ${SCRIPT_ROOT}/hack/run-e2e-tests.sh recommender
+       ARTIFACTS=./workspace/_artifacts ${SCRIPT_ROOT}/hack/run-e2e-tests.sh recommender
     else
-      WORKSPACE=./workspace/_artifacts ${SCRIPT_ROOT}/hack/run-e2e-tests.sh ${SUITE}
+      ARTIFACTS=./workspace/_artifacts ${SCRIPT_ROOT}/hack/run-e2e-tests.sh ${SUITE}
     fi
     ;;
   *)

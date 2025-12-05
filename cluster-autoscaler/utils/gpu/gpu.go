@@ -26,6 +26,8 @@ import (
 )
 
 const (
+	// ResourceIntelGaudi is the name of the Intel Gaudi resource.
+	ResourceIntelGaudi = "habana.ai/gaudi"
 	// ResourceAMDGPU is the name of the AMD GPU resource.
 	ResourceAMDGPU = "amd.com/gpu"
 	// ResourceNvidiaGPU is the name of the Nvidia GPU resource.
@@ -41,6 +43,7 @@ const (
 // Extend this slice if new vendor resource names are added.
 var GPUVendorResourceNames = []apiv1.ResourceName{
 	ResourceNvidiaGPU,
+	ResourceIntelGaudi,
 	ResourceAMDGPU,
 	ResourceDirectX,
 }
@@ -123,13 +126,20 @@ func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
 		return true
 	}
 	// Check for extended resources as well
+	_, hasGpuAllocatable := NodeHasGpuAllocatable(node)
+	return hasGpuAllocatable
+}
+
+// NodeHasGpuAllocatable returns the GPU allocatable value and whether the node has GPU allocatable resources.
+// It checks all known GPU vendor resource names and returns the first non-zero allocatable GPU value found.
+func NodeHasGpuAllocatable(node *apiv1.Node) (gpuAllocatableValue int64, hasGpuAllocatable bool) {
 	for _, gpuVendorResourceName := range GPUVendorResourceNames {
-		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpuVendorResourceName]
-		if hasGpuAllocatable && !gpuAllocatable.IsZero() {
-			return true
+		gpuAllocatable, found := node.Status.Allocatable[gpuVendorResourceName]
+		if found && !gpuAllocatable.IsZero() {
+			return gpuAllocatable.Value(), true
 		}
 	}
-	return false
+	return 0, false
 }
 
 // PodRequestsGpu returns true if a given pod has GPU request.

@@ -60,11 +60,12 @@ import (
 )
 
 var defaultOptions = config.AutoscalingOptions{
-	EstimatorName:  estimator.BinpackingEstimatorName,
-	MaxCoresTotal:  config.DefaultMaxClusterCores,
-	MaxMemoryTotal: config.DefaultMaxClusterMemory * units.GiB,
-	MinCoresTotal:  0,
-	MinMemoryTotal: 0,
+	EstimatorName:                  estimator.BinpackingEstimatorName,
+	MaxCoresTotal:                  config.DefaultMaxClusterCores,
+	MaxMemoryTotal:                 config.DefaultMaxClusterMemory * units.GiB,
+	MinCoresTotal:                  0,
+	MinMemoryTotal:                 0,
+	MaxNodeGroupBinpackingDuration: 1 * time.Second,
 }
 
 // Scale up scenarios.
@@ -1147,9 +1148,10 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	provider.AddNode("ng2", n2)
 
 	options := config.AutoscalingOptions{
-		EstimatorName:  estimator.BinpackingEstimatorName,
-		MaxCoresTotal:  config.DefaultMaxClusterCores,
-		MaxMemoryTotal: config.DefaultMaxClusterMemory,
+		EstimatorName:                  estimator.BinpackingEstimatorName,
+		MaxCoresTotal:                  config.DefaultMaxClusterCores,
+		MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
+		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
@@ -1250,9 +1252,10 @@ func TestScaleUpNoHelp(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
-		EstimatorName:  estimator.BinpackingEstimatorName,
-		MaxCoresTotal:  config.DefaultMaxClusterCores,
-		MaxMemoryTotal: config.DefaultMaxClusterMemory,
+		EstimatorName:                  estimator.BinpackingEstimatorName,
+		MaxCoresTotal:                  config.DefaultMaxClusterCores,
+		MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
+		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
@@ -1409,7 +1412,7 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 			}
 
 			listers := kube_util.NewListerRegistry(nil, nil, kube_util.NewTestPodLister(nil), nil, nil, nil, nil, nil, nil)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled}, &fake.Clientset{}, listers, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled, MaxNodeGroupBinpackingDuration: 1 * time.Second}, &fake.Clientset{}, listers, provider, nil, nil)
 			assert.NoError(t, err)
 			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
 			assert.NoError(t, err)
@@ -1488,10 +1491,11 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 			options := config.AutoscalingOptions{
-				EstimatorName:            estimator.BinpackingEstimatorName,
-				BalanceSimilarNodeGroups: true,
-				MaxCoresTotal:            config.DefaultMaxClusterCores,
-				MaxMemoryTotal:           config.DefaultMaxClusterMemory,
+				EstimatorName:                  estimator.BinpackingEstimatorName,
+				BalanceSimilarNodeGroups:       true,
+				MaxCoresTotal:                  config.DefaultMaxClusterCores,
+				MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
+				MaxNodeGroupBinpackingDuration: 1 * time.Second,
 			}
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 			assert.NoError(t, err)
@@ -1552,9 +1556,10 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	}).WithMachineTypes([]string{"T1"}).WithMachineTemplates(map[string]*framework.NodeInfo{"T1": ti1}).Build()
 
 	options := config.AutoscalingOptions{
-		EstimatorName:  estimator.BinpackingEstimatorName,
-		MaxCoresTotal:  5000 * 64,
-		MaxMemoryTotal: 5000 * 64 * 20,
+		EstimatorName:                  estimator.BinpackingEstimatorName,
+		MaxCoresTotal:                  5000 * 64,
+		MaxMemoryTotal:                 5000 * 64 * 20,
+		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
@@ -1602,10 +1607,11 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	}).WithMachineTypes([]string{"T1"}).WithMachineTemplates(map[string]*framework.NodeInfo{"T1": ti1}).Build()
 
 	options := config.AutoscalingOptions{
-		BalanceSimilarNodeGroups: true,
-		EstimatorName:            estimator.BinpackingEstimatorName,
-		MaxCoresTotal:            5000 * 64,
-		MaxMemoryTotal:           5000 * 64 * 20,
+		BalanceSimilarNodeGroups:       true,
+		EstimatorName:                  estimator.BinpackingEstimatorName,
+		MaxCoresTotal:                  5000 * 64,
+		MaxMemoryTotal:                 5000 * 64 * 20,
+		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
@@ -1663,9 +1669,10 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	provider.AddNode("ng2", n2)
 
 	options := config.AutoscalingOptions{
-		EstimatorName:  estimator.BinpackingEstimatorName,
-		MaxCoresTotal:  config.DefaultMaxClusterCores,
-		MaxMemoryTotal: config.DefaultMaxClusterMemory,
+		EstimatorName:                  estimator.BinpackingEstimatorName,
+		MaxCoresTotal:                  config.DefaultMaxClusterCores,
+		MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
+		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
@@ -1753,7 +1760,8 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 		}
 
 		options := config.AutoscalingOptions{
-			AsyncNodeGroupsEnabled: true,
+			AsyncNodeGroupsEnabled:         true,
+			MaxNodeGroupBinpackingDuration: 1 * time.Second,
 		}
 		podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 		listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)

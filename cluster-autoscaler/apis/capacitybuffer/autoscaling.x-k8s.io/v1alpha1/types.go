@@ -37,7 +37,7 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=capacitybuffers,scope=Cluster,shortName=cb
+// +kubebuilder:resource:path=capacitybuffers,scope=Namespaced,shortName=cb
 // +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy used for provisioning buffer capacity."
 // +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".spec.replicas",description="The desired number of buffer chunks, if specified."
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].reason",description="The readiness status of the CapacityBuffer."
@@ -100,7 +100,6 @@ type ResourceList map[ResourceName]resource.Quantity
 type CapacityBufferSpec struct {
 	// ProvisioningStrategy defines how the buffer is utilized.
 	// "buffer.x-k8s.io/active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
-	// +kubebuilder:validation:Enum=buffer.x-k8s.io/active-capacity
 	// +kubebuilder:default="buffer.x-k8s.io/active-capacity"
 	// +optional
 	ProvisioningStrategy *string `json:"provisioningStrategy,omitempty" protobuf:"bytes,1,opt,name=provisioningStrategy"`

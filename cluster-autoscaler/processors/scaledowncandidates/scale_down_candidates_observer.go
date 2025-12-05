@@ -19,13 +19,13 @@ package scaledowncandidates
 import (
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 )
 
 // Observer is an observer of scale down candidates
 type Observer interface {
 	// UpdateScaleDownCandidates updates scale down candidates.
-	UpdateScaleDownCandidates([]*apiv1.Node, time.Time)
+	UpdateScaleDownCandidates([]*scaledown.UnneededNode, time.Time)
 }
 
 // ObserversList is a slice of observers of scale down candidates
@@ -39,7 +39,7 @@ func (l *ObserversList) Register(o Observer) {
 }
 
 // Update updates scale down candidates for each observer.
-func (l *ObserversList) Update(nodes []*apiv1.Node, now time.Time) {
+func (l *ObserversList) Update(nodes []*scaledown.UnneededNode, now time.Time) {
 	for _, observer := range l.observers {
 		observer.UpdateScaleDownCandidates(nodes, now)
 	}

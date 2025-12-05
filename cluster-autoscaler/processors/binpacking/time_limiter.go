@@ -29,18 +29,27 @@ import (
 type TimeLimiter struct {
 	startTime             time.Time
 	maxBinpackingDuration time.Duration
+	now                   func() time.Time
 }
 
 // NewTimeLimiter returns an instance of a new TimeLimiter.
 func NewTimeLimiter(maxBinpackingDuration time.Duration) *TimeLimiter {
 	return &TimeLimiter{
 		maxBinpackingDuration: maxBinpackingDuration,
+		now:                   time.Now,
+	}
+}
+
+func newTimeLimiterWithClock(maxBinpackingDuration time.Duration, now func() time.Time) *TimeLimiter {
+	return &TimeLimiter{
+		maxBinpackingDuration: maxBinpackingDuration,
+		now:                   now,
 	}
 }
 
 // InitBinpacking initialises the TimeLimiter.
 func (b *TimeLimiter) InitBinpacking(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
-	b.startTime = time.Now()
+	b.startTime = b.now()
 }
 
 // MarkProcessed marks the nodegroup as processed.
@@ -49,9 +58,10 @@ func (b *TimeLimiter) MarkProcessed(autoscalingCtx *ca_context.AutoscalingContex
 
 // StopBinpacking returns true if the binpacking time exceeds maxBinpackingDuration.
 func (b *TimeLimiter) StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
-	now := time.Now()
+	now := b.now()
 	if now.After(b.startTime.Add(b.maxBinpackingDuration)) {
 		klog.Infof("Binpacking is cut short after %v seconds due to exceeding maxBinpackingDuration", now.Sub(b.startTime).Seconds())
+		return true
 	}
 	return false
 }

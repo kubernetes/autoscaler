@@ -1494,6 +1494,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 
 	type testCaseConfig struct {
 		nodeLabels            map[string]string
+		managedLabels         map[string]string
 		includeNodes          bool
 		expectedErr           error
 		expectedCapacity      map[corev1.ResourceName]int64
@@ -1618,6 +1619,37 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "When the NodeGroup can scale from zero, and the scalable resource contains managed labels",
+			nodeGroupAnnotations: map[string]string{
+				memoryKey:   "2048Mi",
+				cpuKey:      "2",
+				gpuTypeKey:  gpuapis.ResourceNvidiaGPU,
+				gpuCountKey: "1",
+			},
+			config: testCaseConfig{
+				expectedErr: nil,
+				nodeLabels: map[string]string{
+					"kubernetes.io/os":   "linux",
+					"kubernetes.io/arch": "amd64",
+				},
+				managedLabels: map[string]string{
+					"node-role.kubernetes.io/test": "test",
+				},
+				expectedCapacity: map[corev1.ResourceName]int64{
+					corev1.ResourceCPU:        2,
+					corev1.ResourceMemory:     2048 * 1024 * 1024,
+					corev1.ResourcePods:       110,
+					gpuapis.ResourceNvidiaGPU: 1,
+				},
+				expectedNodeLabels: map[string]string{
+					"kubernetes.io/os":             "linux",
+					"kubernetes.io/arch":           "amd64",
+					"kubernetes.io/hostname":       "random value",
+					"node-role.kubernetes.io/test": "test",
+				},
+			},
+		},
 	}
 
 	test := func(t *testing.T, testConfig *TestConfig, config testCaseConfig) {
@@ -1704,6 +1736,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					WithNamespace(testNamespace).
 					WithNodeCount(10).
 					WithAnnotations(cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations)).
+					WithManagedLabels(tc.config.managedLabels).
 					Build()
 				test(t, testConfig, tc.config)
 			})
@@ -1714,6 +1747,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					WithNamespace(testNamespace).
 					WithNodeCount(10).
 					WithAnnotations(cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations)).
+					WithManagedLabels(tc.config.managedLabels).
 					Build()
 				test(t, testConfig, tc.config)
 			})
@@ -1734,6 +1768,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 		ScaleDownUnneededTime:            time.Second,
 		ScaleDownUnreadyTime:             time.Minute,
 		MaxNodeProvisionTime:             15 * time.Minute,
+		MaxNodeStartupTime:               35 * time.Minute,
 	}
 
 	cases := []struct {
@@ -1754,6 +1789,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 				config.DefaultScaleDownUnneededTimeKey:            "1h",
 				config.DefaultScaleDownUnreadyTimeKey:             "30m",
 				config.DefaultMaxNodeProvisionTimeKey:             "60m",
+				config.DefaultMaxNodeStartupTimeKey:               "35m",
 			},
 			expected: &config.NodeGroupAutoscalingOptions{
 				ScaleDownGpuUtilizationThreshold: 0.6,
@@ -1761,6 +1797,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 				ScaleDownUnneededTime:            time.Hour,
 				ScaleDownUnreadyTime:             30 * time.Minute,
 				MaxNodeProvisionTime:             60 * time.Minute,
+				MaxNodeStartupTime:               35 * time.Minute,
 			},
 		},
 		{
@@ -1775,6 +1812,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 				ScaleDownUnneededTime:            time.Minute,
 				ScaleDownUnreadyTime:             defaultOptions.ScaleDownUnreadyTime,
 				MaxNodeProvisionTime:             15 * time.Minute,
+				MaxNodeStartupTime:               35 * time.Minute,
 			},
 		},
 		{

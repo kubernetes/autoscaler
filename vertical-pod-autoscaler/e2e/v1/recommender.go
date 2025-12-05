@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/util/wait"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -132,9 +133,9 @@ func getVpaObserver(vpaClientSet vpa_clientset.Interface, namespace string) *obs
 
 var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
-	ginkgo.It("with missing VPA objects are garbage collected", func() {
+	f.It("with missing VPA objects are garbage collected", framework.WithSlow(), func() {
 		ns := f.Namespace.Name
 		vpaClientSet := utils.GetVpaClientSet(f)
 
@@ -151,30 +152,31 @@ var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 		_, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).Create(context.TODO(), &checkpoint, metav1.CreateOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		klog.InfoS("Sleeping for up to 15 minutes...")
+		klog.InfoS("Polling for up to 15 minutes...")
 
-		maxRetries := 90
-		retryDelay := 10 * time.Second
-		for i := 0; i < maxRetries; i++ {
-			list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
-			if err == nil && len(list.Items) == 0 {
-				break
+		var list *vpa_types.VerticalPodAutoscalerCheckpointList
+		err = wait.PollUntilContextTimeout(context.TODO(), 10*time.Second, 15*time.Minute, false, func(ctx context.Context) (done bool, err error) {
+			list, err = vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(ctx, metav1.ListOptions{})
+			if err != nil {
+				klog.ErrorS(err, "Error listing VPA checkpoints")
+				return false, err
 			}
-			klog.InfoS("Still waiting...")
-			time.Sleep(retryDelay)
-		}
+			if len(list.Items) > 0 {
+				return false, nil
+			}
+			klog.InfoS("No VPA checkpoints found")
+			return true, nil
 
-		list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(context.TODO(), metav1.ListOptions{})
+		})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(list.Items).To(gomega.BeEmpty())
 	})
 })
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
-	ginkgo.It("serves recommendation for CronJob", func() {
+	f.It("serves recommendation for CronJob", framework.WithSlow(), func() {
 		ginkgo.By("Setting up hamster CronJob")
 		SetupHamsterCronJob(f, "*/5 * * * *", "100m", "100Mi", utils.DefaultHamsterReplicas)
 
@@ -205,7 +207,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	var (
 		vpaCRD       *vpa_types.VerticalPodAutoscaler
@@ -241,7 +243,8 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("doesn't drop lower/upper after recommender's restart", func() {
+	// FIXME todo(adrianmoisey): This test seems to be flaky after running in parallel, unsure why, see if it's possible to fix
+	f.It("doesn't drop lower/upper after recommender's restart", framework.WithSerial(), framework.WithSlow(), func() {
 
 		o := getVpaObserver(vpaClientSet, f.Namespace.Name)
 
@@ -283,7 +286,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	var (
 		vpaClientSet vpa_clientset.Interface
@@ -360,7 +363,7 @@ func getMilliCpu(resources apiv1.ResourceList) int64 {
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	var vpaClientSet vpa_clientset.Interface
 
@@ -477,7 +480,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 })
 
 func deleteRecommender(c clientset.Interface) error {
-	namespace := "kube-system"
+	namespace := utils.VpaNamespace
 	listOptions := metav1.ListOptions{}
 	podList, err := c.CoreV1().Pods(namespace).List(context.TODO(), listOptions)
 	if err != nil {

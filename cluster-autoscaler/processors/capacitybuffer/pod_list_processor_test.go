@@ -18,6 +18,7 @@ package capacitybufferpodlister
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,6 +29,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	testutil "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
@@ -169,6 +171,65 @@ func TestPodListProcessor(t *testing.T) {
 	}
 }
 
+func TestCapacityBufferFakePodsRegistry(t *testing.T) {
+	tests := []struct {
+		name                      string
+		objectsInKubernetesClient []runtime.Object
+		objectsInBuffersClient    []runtime.Object
+		unschedulablePods         []*corev1.Pod
+		expectedUnschedPodsCount  int
+		expectedBuffersPodsNum    map[string]int
+	}{
+		{
+			name:                      "1 ready buffer and 1 not ready buffer",
+			objectsInKubernetesClient: []runtime.Object{getTestingPodTemplate("ref1", 1), getTestingPodTemplate("ref2", 1)},
+			objectsInBuffersClient: []runtime.Object{
+				getTestingBuffer("buffer1", "ref1", 2, 1, false, 1, testProvStrategyAllowed),
+				getTestingBuffer("buffer2", "ref2", 3, 1, true, 1, testProvStrategyAllowed),
+			},
+			unschedulablePods:        []*corev1.Pod{getTestingPod("Pod1"), getTestingPod("Pod2"), getTestingPod("Pod3")},
+			expectedUnschedPodsCount: 6,
+			expectedBuffersPodsNum:   map[string]int{"buffer2": 3},
+		},
+		{
+			name:                      "2 ready buffers",
+			objectsInKubernetesClient: []runtime.Object{getTestingPodTemplate("ref1", 1), getTestingPodTemplate("ref2", 1)},
+			objectsInBuffersClient: []runtime.Object{
+				getTestingBuffer("buffer1", "ref1", 2, 1, true, 1, testProvStrategyAllowed),
+				getTestingBuffer("buffer2", "ref2", 3, 1, true, 1, testProvStrategyAllowed),
+			},
+			unschedulablePods:        []*corev1.Pod{getTestingPod("Pod1"), getTestingPod("Pod2"), getTestingPod("Pod3")},
+			expectedUnschedPodsCount: 8,
+			expectedBuffersPodsNum:   map[string]int{"buffer1": 2, "buffer2": 3},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			fakeKubernetesClient := fakeclient.NewSimpleClientset(test.objectsInKubernetesClient...)
+			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
+			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
+
+			registry := NewDefaultCapacityBuffersFakePodsRegistry()
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry)
+			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
+			assert.Equal(t, nil, err)
+			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
+			for _, pod := range resUnschedulablePods {
+				if isFakeCapacityBuffersPod(pod) {
+					podBufferObj, found := registry.fakePodsUIDToBuffer[string(pod.UID)]
+					assert.True(t, found)
+					expectedPodsNum, found := test.expectedBuffersPodsNum[podBufferObj.Name]
+					assert.True(t, found)
+					test.expectedBuffersPodsNum[podBufferObj.Name] = expectedPodsNum - 1
+				}
+			}
+			for bufferName := range test.expectedBuffersPodsNum {
+				assert.Equal(t, 0, test.expectedBuffersPodsNum[bufferName])
+			}
+		})
+	}
+}
+
 func getTestingPod(name string) *corev1.Pod {
 	return &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: name}}
 }
@@ -178,7 +239,7 @@ func getTestingPodTemplate(name string, generation int64) *corev1.PodTemplate {
 }
 
 func getTestingBuffer(bufferName, refName string, replicas int32, generation int64, ready bool, bufferGeneration int64, provStrategy string) *apiv1.CapacityBuffer {
-	buffer := &apiv1.CapacityBuffer{ObjectMeta: metav1.ObjectMeta{Name: bufferName, Namespace: "default", Generation: bufferGeneration}}
+	buffer := &apiv1.CapacityBuffer{ObjectMeta: metav1.ObjectMeta{Name: bufferName, Namespace: "default", Generation: bufferGeneration, UID: types.UID(fmt.Sprintf("%s-uid", bufferName))}}
 	buffer.Status = *testutil.GetBufferStatus(&apiv1.LocalObjectRef{Name: refName}, &replicas, &generation, &provStrategy, nil)
 	if ready {
 		buffer.Status.Conditions = testutil.GetConditionReady()

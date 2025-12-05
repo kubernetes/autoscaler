@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
@@ -170,6 +171,12 @@ func NewStaticAutoscaler(
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
+	var ndlt *latencytracker.NodeLatencyTracker
+	if autoscalingCtx.AutoscalingOptions.NodeRemovalLatencyTrackingEnabled {
+		ndlt = latencytracker.NewNodeLatencyTracker(processors.ScaleDownStatusProcessor)
+		processors.ScaleDownCandidatesNotifier.Register(ndlt)
+		processors.ScaleDownStatusProcessor = ndlt
+	}
 	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
@@ -292,7 +299,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return err
 	}
 
-	originalScheduledPods, unschedulablePods, schedulerUnprocessed, err := listPods(podLister, a.BypassedSchedulers)
+	podsBySchedulability, err := listPods(podLister, a.BypassedSchedulers)
 	if err != nil {
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
@@ -338,7 +345,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else {
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
-	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
+	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(podsBySchedulability.Scheduled, a.ExpendablePodsPriorityCutoff)
 
 	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
@@ -439,9 +446,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	// SchedulerUnprocessed might be zero here if it was disabled
-	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods), len(schedulerUnprocessed))
+	metrics.UpdateUnschedulablePodsCount(len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed))
 	// Treat unknown pods as unschedulable, pod list processor will remove schedulable pods
-	unschedulablePods = append(unschedulablePods, schedulerUnprocessed...)
+	podsBySchedulability.Unschedulable = append(podsBySchedulability.Unschedulable, podsBySchedulability.Unprocessed...)
 	// Upcoming nodes are recently created nodes that haven't registered in the cluster yet, or haven't become ready yet.
 	upcomingCounts, registeredUpcoming := a.clusterStateRegistry.GetUpcomingNodes()
 	// For each upcoming node we inject a placeholder node faked to appear ready into the cluster snapshot, so that we can pack unschedulable pods on
@@ -480,7 +487,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		a.AutoscalingContext.DebuggingSnapshotter.SetClusterNodes(l)
 	}
 
-	unschedulablePodsToHelp, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods)
+	unschedulablePodsToHelp, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, podsBySchedulability.Unschedulable)
 
 	if err != nil {
 		klog.Warningf("Failed to process unschedulable pods: %v", err)
@@ -663,7 +670,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
 	if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
-		taintableNodes := a.scaleDownPlanner.UnneededNodes()
+		taintableNodes := retrieveNodes(a.scaleDownPlanner.UnneededNodes())
 
 		// Make sure we are only cleaning taints from selected node groups.
 		selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
@@ -1156,22 +1163,26 @@ func nodeNames(ns []*apiv1.Node) []string {
 	return names
 }
 
-func listPods(podLister kube_util.PodLister, bypassedSchedulers map[string]bool) (scheduled, unschedulable, unprocessed []*apiv1.Pod, err error) {
+func retrieveNodes(candidates []*scaledown.UnneededNode) []*apiv1.Node {
+	nodes := make([]*apiv1.Node, 0, len(candidates))
+	for _, c := range candidates {
+		nodes = append(nodes, c.Node)
+	}
+	return nodes
+}
+
+func listPods(podLister kube_util.PodLister, bypassedSchedulers map[string]bool) (podsBySchedulability kube_util.PodsBySchedulability, err error) {
 	pods, err := podLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list pods: %v", err)
-		return nil, nil, nil, err
+		return podsBySchedulability, err
 	}
-	scheduled = kube_util.ScheduledPods(pods)
-	unschedulable = kube_util.UnschedulablePods(pods)
-	if len(bypassedSchedulers) > 0 {
-		unprocessed = kube_util.SchedulerUnprocessedPods(pods, bypassedSchedulers)
-	}
+	podsBySchedulability = kube_util.ArrangePodsBySchedulability(pods, bypassedSchedulers)
 	// Skip logging in case of the boring scenario, when all pods are scheduled.
-	if len(pods) != len(scheduled) {
-		ignored := len(pods) - len(scheduled) - len(unschedulable) - len(unprocessed)
+	if len(pods) != len(podsBySchedulability.Scheduled) {
+		ignored := len(pods) - len(podsBySchedulability.Scheduled) - len(podsBySchedulability.Unschedulable) - len(podsBySchedulability.Unprocessed)
 		klog.Infof("Found %d pods in the cluster: %d scheduled, %d unschedulable, %d unprocessed by scheduler, %d ignored (most likely using custom scheduler)",
-			len(pods), len(scheduled), len(unschedulable), len(unprocessed), ignored)
+			len(pods), len(podsBySchedulability.Scheduled), len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed), ignored)
 	}
 	return
 }
