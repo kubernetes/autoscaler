@@ -63,6 +63,12 @@ spec:
           args:
           - --v=4
           - --stderrthreshold=info
+          {{- if .Values.admissionController.registerWebhook }}
+          - --register-webhook=true
+            {{- else }}
+          - --register-webhook=false
+          {{- end }}
+          - --webhook-service={{ include "vertical-pod-autoscaler.admissionController.webhook.name" . }}
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
