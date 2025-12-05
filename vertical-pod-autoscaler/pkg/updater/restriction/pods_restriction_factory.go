@@ -32,6 +32,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 const (
@@ -209,8 +210,18 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 	for creator, replicas := range livePods {
 		actual := len(replicas)
 		if actual < required {
-			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
-			continue
+			// If checking for unboost, we want to process even if we have fewer replicas than required.
+			hasBoostedPod := false
+			for _, pod := range replicas {
+				if vpa_api_util.PodHasCPUBoostInProgress(pod) {
+					hasBoostedPod = true
+					break
+				}
+			}
+			if !hasBoostedPod {
+				klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+				continue
+			}
 		}
 
 		var configured int

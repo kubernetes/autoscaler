@@ -43,6 +43,14 @@ func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admi
 	}
 }
 
+// GetRemoveAnnotationPatch returns a patch to remove an annotation.
+func GetRemoveAnnotationPatch(annotationName string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:   "remove",
+		Path: fmt.Sprintf("/metadata/annotations/%s", annotationName),
+	}
+}
+
 // GetAddResourceRequirementValuePatch returns a patch record to add resource requirements to a container.
 func GetAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
