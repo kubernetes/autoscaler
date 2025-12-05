@@ -62,6 +62,16 @@ rules:
     - get
     - update
   - apiGroups:
+    - resource.k8s.io
+    resources:
+      - resourceslices
+      - deviceclasses
+      - resourceclaims
+    verbs:
+      - watch
+      - list
+      - get
+  - apiGroups:
     - ""
     resources:
       - namespaces
