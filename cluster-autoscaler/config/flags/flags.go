@@ -33,6 +33,8 @@ import (
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
@@ -60,6 +62,17 @@ func multiStringFlag(name string, usage string) *MultiStringFlag {
 }
 
 var (
+	// Braze custom flags
+	workerThreads            = flag.Int("workers", 5, "Number of workers to use for concurrent processing")
+	podLabelSelector         = flag.String("pod-label-selector", "", "Label name to use as selector for pods")
+	excludePodLabelSelector  = flag.String("exclude-pod-label-selector", "", "Label name to use for pod exclusion selector")
+	podLabelFilters          = multiStringFlag("pod-filter", "Filters to use with pod-label-selector label. Applied with 'in' or 'notin' operator depending on selector flag used.")
+	nodeLabelSelector        = flag.String("node-label-selector", "", "Label name to use as selector for nodes")
+	excludeNodeLabelSelector = flag.String("exclude-node-label-selector", "", "Label name to use for node exclusion selector")
+	nodeLabelFilters         = multiStringFlag("node-filter", "Filters to use with node-label-selector label. Applied with 'in' or 'notin' operator depending on selector flag used.")
+	enableDatadogTracing     = flag.Bool("enable-datadog-tracing", false, "Whether Datadog APM tracing should be enabled.")
+	enableDatadogProfiling   = flag.Bool("enable-datadog-profiling", false, "Whether Datadog profiling should be enabled.")
+
 	clusterName             = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -234,6 +247,48 @@ var (
 
 var autoscalingOptions *config.AutoscalingOptions
 
+// createSelector creates a label selector based on the provided label selector and filters.
+// It supports both inclusion (In) and exclusion (NotIn) selectors.
+func createSelector(labelSelector, excludeLabelSelector string, filters []string) (labels.Selector, error) {
+	selector := labels.Everything()
+
+	if labelSelector != "" && excludeLabelSelector != "" {
+		return nil, fmt.Errorf("label-selector and exclude-label-selector options are mutually exclusive for the same type")
+	}
+
+	if labelSelector != "" {
+		if len(filters) == 0 {
+			return nil, fmt.Errorf("you must specify at least one filter when using label-selector")
+		}
+		requirement, err := labels.NewRequirement(labelSelector, selection.In, filters)
+		if err != nil {
+			return nil, fmt.Errorf("label selector requirement validation failed: %s", err.Error())
+		}
+		selector = selector.Add(*requirement)
+	} else if excludeLabelSelector != "" {
+		if len(filters) == 0 {
+			return nil, fmt.Errorf("you must specify at least one filter when using exclude-label-selector")
+		}
+		requirement, err := labels.NewRequirement(excludeLabelSelector, selection.NotIn, filters)
+		if err != nil {
+			return nil, fmt.Errorf("label selector requirement validation failed: %s", err.Error())
+		}
+		selector = selector.Add(*requirement)
+	}
+
+	return selector, nil
+}
+
+// EnableDatadogTracing returns whether Datadog tracing is enabled.
+func EnableDatadogTracing() bool {
+	return *enableDatadogTracing
+}
+
+// EnableDatadogProfiling returns whether Datadog profiling is enabled.
+func EnableDatadogProfiling() bool {
+	return *enableDatadogProfiling
+}
+
 // AutoscalingOptions returns the singleton instance of AutoscalingOptions, initializing it if necessary.
 func AutoscalingOptions() config.AutoscalingOptions {
 	if autoscalingOptions == nil {
@@ -281,6 +336,18 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			klog.Fatalf("Invalid configuration, parsing --drain-priority-config")
 		}
 	}
+
+	// Braze: Create pod and node selectors
+	podSelector, err := createSelector(*podLabelSelector, *excludePodLabelSelector, *podLabelFilters)
+	if err != nil {
+		klog.Fatalf("Failed to create pod selector: %s", err.Error())
+	}
+	nodeSelector, err := createSelector(*nodeLabelSelector, *excludeNodeLabelSelector, *nodeLabelFilters)
+	if err != nil {
+		klog.Fatalf("Failed to create node selector: %s", err.Error())
+	}
+	klog.Infof("Braze: Setting pod selector to %v", podSelector.String())
+	klog.Infof("Braze: Setting node selector to %v", nodeSelector.String())
 
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -408,6 +475,10 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeInfoCacheExpireTime:                      *nodeInfoCacheExpireTime,
 		ProactiveScaleupEnabled:                      *proactiveScaleupEnabled,
 		PodInjectionLimit:                            *podInjectionLimit,
+		// Braze custom options
+		WorkerThreads:    *workerThreads,
+		PodLabelSelector: podSelector,
+		NodeLabelSelector: nodeSelector,
 	}
 }
 

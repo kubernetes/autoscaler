@@ -3,6 +3,9 @@ module k8s.io/autoscaler/cluster-autoscaler
 go 1.24.0
 
 require (
+	// Braze: Datadog APM tracing and profiling
+	gopkg.in/DataDog/dd-trace-go.v1 v1.64.0
+
 	cloud.google.com/go/compute/metadata v0.5.0
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/azure-sdk-for-go-extensions v0.1.6

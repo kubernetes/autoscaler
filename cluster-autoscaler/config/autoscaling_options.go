@@ -19,6 +19,7 @@ package config
 import (
 	"time"
 
+	"k8s.io/apimachinery/pkg/labels"
 	gce_localssdsize "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
@@ -340,6 +341,14 @@ type AutoscalingOptions struct {
 	ProactiveScaleupEnabled bool
 	// PodInjectionLimit limits total number of pods while injecting fake pods.
 	PodInjectionLimit int
+
+	// Braze custom options
+	// WorkerThreads is the number of workers to use for concurrent processing
+	WorkerThreads int
+	// PodLabelSelector is a label selector to filter which pods CA considers
+	PodLabelSelector labels.Selector
+	// NodeLabelSelector is a label selector to filter which nodes CA considers
+	NodeLabelSelector labels.Selector
 }
 
 // KubeClientOptions specify options for kube client

@@ -78,6 +78,10 @@ import (
 	_ "k8s.io/component-base/logs/json/register"
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
+
+	// Braze: Datadog APM tracing and profiling
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 )
 
 func registerSignalHandlers(autoscaler core.Autoscaler) {
@@ -319,6 +323,22 @@ func main() {
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
+
+	// Braze: Initialize Datadog tracer
+	if flags.EnableDatadogTracing() {
+		klog.Info("Braze: Starting Datadog APM tracer")
+		tracer.Start()
+		defer tracer.Stop()
+	}
+
+	// Braze: Initialize Datadog profiler
+	if flags.EnableDatadogProfiling() {
+		klog.Info("Braze: Starting Datadog profiler")
+		if err := profiler.Start(); err != nil {
+			klog.Fatalf("Braze: Failed to start Datadog profiler: %v", err)
+		}
+		defer profiler.Stop()
+	}
 
 	autoscalingOpts := flags.AutoscalingOptions()
 
