@@ -27,7 +27,7 @@ GO_CMD=${1:-go}
 CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 CODEGEN_PKG=$($GO_CMD list -m -mod=readonly -f "{{.Dir}}" k8s.io/code-generator)
-cd "${CURRENT_DIR}/../apis"
+cd "${CURRENT_DIR}/.."
 
 # shellcheck source=/dev/null
 source "${CODEGEN_PKG}/kube_codegen.sh"
@@ -44,6 +44,14 @@ do
     --with-applyconfig \
     "${REPO_ROOT}/cluster-autoscaler/apis/$crd"
 done
+
+kube::codegen::gen_client \
+    --output-pkg k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client \
+    --output-dir "${REPO_ROOT}/cluster-autoscaler/apis/capacitybuffer/client" \
+    --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
+    --with-watch \
+    --with-applyconfig \
+    "${REPO_ROOT}/cluster-autoscaler/apis/capacitybuffer"
 
 echo "Generated client code, running `go mod tidy`..."
 

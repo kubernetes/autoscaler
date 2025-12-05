@@ -27,11 +27,25 @@ import (
 
 // CapacityQuotaApplyConfiguration represents a declarative configuration of the CapacityQuota type for use
 // with apply.
+//
+// CapacityQuota limits the amount of resources that can be provisioned in the cluster
+// by the node autoscaler. Resources used are calculated by summing up resources
+// reported in the status.capacity field of each node passing the configured
+// label selector. When making a provisioning decision, node autoscaler will
+// take all CapacityQuota objects that match the labels of the upcoming node.
+// If provisioning that node would exceed any of the matching quotas, node
+// autoscaler will not provision it. Quotas are best-effort, and it is possible
+// that in rare circumstances node autoscaler will exceed them, for example
+// due to stale caches.
+// More info: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/granular-resource-limits.md
 type CapacityQuotaApplyConfiguration struct {
-	v1.TypeMetaApplyConfiguration    `json:",inline"`
+	v1.TypeMetaApplyConfiguration `json:",inline"`
+	// metadata is a standard object metadata
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *CapacityQuotaSpecApplyConfiguration           `json:"spec,omitempty"`
-	Status                           *autoscalingxk8siov1alpha1.CapacityQuotaStatus `json:"status,omitempty"`
+	// spec defines the desired state of CapacityQuota
+	Spec *CapacityQuotaSpecApplyConfiguration `json:"spec,omitempty"`
+	// status defines the observed state of CapacityQuota
+	Status *autoscalingxk8siov1alpha1.CapacityQuotaStatus `json:"status,omitempty"`
 }
 
 // CapacityQuota constructs a declarative configuration of the CapacityQuota type for use with
@@ -44,6 +58,7 @@ func CapacityQuota(name, namespace string) *CapacityQuotaApplyConfiguration {
 	b.WithAPIVersion("autoscaling.x-k8s.io/v1alpha1")
 	return b
 }
+
 func (b CapacityQuotaApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

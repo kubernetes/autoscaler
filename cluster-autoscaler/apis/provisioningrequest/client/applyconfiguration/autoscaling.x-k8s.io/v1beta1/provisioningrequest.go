@@ -54,7 +54,6 @@ func ProvisioningRequest(name, namespace string) *ProvisioningRequestApplyConfig
 	b.WithAPIVersion("autoscaling.x-k8s.io/v1beta1")
 	return b
 }
-func (b ProvisioningRequestApplyConfiguration) IsApplyConfiguration() {}
 
 func (b ProvisioningRequestApplyConfiguration) IsApplyConfiguration() {}
 
