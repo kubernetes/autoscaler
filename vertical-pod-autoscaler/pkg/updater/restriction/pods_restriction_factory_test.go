@@ -64,6 +64,14 @@ func getIPORVpa() *vpa_types.VerticalPodAutoscaler {
 	return vpa
 }
 
+func getIPVpa() *vpa_types.VerticalPodAutoscaler {
+	vpa := getBasicVpa()
+	vpa.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{
+		UpdateMode: ptr.To(vpa_types.UpdateModeInPlace),
+	}
+	return vpa
+}
+
 func TestDisruptReplicatedByController(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 
@@ -510,7 +518,7 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			updateMode := vpa_api_util.GetUpdateMode(testCase.vpa)
 			for i, p := range testCase.pods {
 				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
-					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod), "unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
+					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod, updateMode), "unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
 				} else {
 					assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "unexpected CanEvict result for pod-%v %#v", i, p.pod)
 				}

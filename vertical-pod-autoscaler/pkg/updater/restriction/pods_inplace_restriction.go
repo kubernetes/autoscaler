@@ -35,6 +35,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // TODO: Make these configurable by flags
@@ -49,14 +50,23 @@ const (
 )
 
 // PodsInPlaceRestriction controls pods in-place updates. It ensures that we will not update too
-// many pods from one replica set. For replica set will allow to update one pod or more if
+// many pods from one replica set. For a replica set, it will allow updating one pod or more if
 // inPlaceToleranceFraction is configured.
 type PodsInPlaceRestriction interface {
-	// InPlaceUpdate attempts to actuate the in-place resize.
-	// Returns error if client returned error.
+	// InPlaceUpdate attempts to actuate the in-place resize for the given pod.
+	// Returns error if the client operation fails.
 	InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
-	// CanInPlaceUpdate checks if pod can be safely updated in-place. If not, it will return a decision to potentially evict the pod.
-	CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision
+
+	// CanInPlaceUpdate checks if a pod can be safely updated in-place.
+	// Returns:
+	//   - InPlaceApproved: The pod can be updated in-place immediately.
+	//   - InPlaceDeferred: The update should be deferred (e.g., pod is pending, already updating, or group is not disruptable).
+	//   - InPlaceEvict: The pod should be evicted instead of updated in-place.
+	//
+	// The updateMode parameter affects the decision:
+	//   - UpdateModeInPlace: Waits indefinitely for in-progress updates.
+	//   - UpdateModeInPlaceOrRecreate: May return InPlaceEvict if the pod update exceeds the timeout threshold.
+	CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision
 }
 
 // PodsInPlaceRestrictionImpl is the implementation of the PodsInPlaceRestriction interface.
@@ -70,8 +80,17 @@ type PodsInPlaceRestrictionImpl struct {
 }
 
 // CanInPlaceUpdate checks if pod can be safely updated
-func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision {
-	if !features.Enabled(features.InPlaceOrRecreate) {
+func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
+	switch updateMode {
+	case vpa_types.UpdateModeInPlaceOrRecreate:
+		if !features.Enabled(features.InPlaceOrRecreate) {
+			return utils.InPlaceEvict
+		}
+	case vpa_types.UpdateModeInPlace:
+		if !features.Enabled(features.InPlace) {
+			return utils.InPlaceEvict
+		}
+	default:
 		return utils.InPlaceEvict
 	}
 
@@ -83,6 +102,12 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InP
 		}
 		if present {
 			if isInPlaceUpdating(pod) {
+				// For InPlace mode we wait indefinitely for Kubelet
+				if updateMode == vpa_types.UpdateModeInPlace {
+					klog.V(4).InfoS("Pod is updating, waiting for completion (InPlace mode)", "pod", klog.KObj(pod))
+					return utils.InPlaceDeferred
+				}
+				// For InPlaceOrRecreate mode, check timeout
 				canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
 				if canEvict {
 					return utils.InPlaceEvict
@@ -106,7 +131,7 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 		return fmt.Errorf("pod not suitable for in-place update %v: not in replicated pods map", podToUpdate.Name)
 	}
 
-	if ip.CanInPlaceUpdate(podToUpdate) != utils.InPlaceApproved {
+	if ip.CanInPlaceUpdate(podToUpdate, vpa_api_util.GetUpdateMode(vpa)) != utils.InPlaceApproved {
 		return fmt.Errorf("cannot in-place update pod %s", klog.KObj(podToUpdate))
 	}
 
