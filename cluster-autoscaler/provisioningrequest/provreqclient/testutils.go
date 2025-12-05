@@ -24,7 +24,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/client-go/informers"
@@ -37,28 +38,29 @@ import (
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
 func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *ProvisioningRequestClient {
 	t.Helper()
-	provReqClient := fake.NewSimpleClientset()
-	podTemplClient := fake_kubernetes.NewSimpleClientset()
+	// Pre-populate objects for the fake clientset
+	provReqObjects := make([]runtime.Object, 0, len(prs))
+	podTemplObjects := make([]runtime.Object, 0)
 	for _, pr := range prs {
 		if pr == nil {
 			continue
 		}
-		if _, err := provReqClient.AutoscalingV1().ProvisioningRequests(pr.Namespace).Create(ctx, pr.ProvisioningRequest, metav1.CreateOptions{}); err != nil {
-			t.Errorf("While adding a ProvisioningRequest: %s/%s to fake client, got error: %v", pr.Namespace, pr.Name, err)
-		}
+		provReqObjects = append(provReqObjects, pr.ProvisioningRequest)
 		for _, pd := range pr.PodTemplates {
-			if _, err := podTemplClient.CoreV1().PodTemplates(pr.Namespace).Create(ctx, pd, metav1.CreateOptions{}); err != nil {
-				t.Errorf("While adding a PodTemplate: %s/%s to fake client, got error: %v", pr.Namespace, pd.Name, err)
-			}
+			podTemplObjects = append(podTemplObjects, pd)
 		}
 	}
+
+	provReqClient := fake.NewSimpleClientset(provReqObjects...)
+	podTemplClient := fake_kubernetes.NewSimpleClientset(podTemplObjects...)
+
 	provReqLister, err := newPRsLister(provReqClient, make(chan struct{}))
 	if err != nil {
 		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
 	}
 	podTemplLister, err := newFakePodTemplatesLister(t, podTemplClient, make(chan struct{}))
 	if err != nil {
-		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
+		t.Fatalf("Failed to create Pod Template lister. Error was: %v", err)
 	}
 	return &ProvisioningRequestClient{
 		client:         provReqClient,

@@ -185,7 +185,15 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 		if tc.wantUpdatedConditionName == "" {
 			continue
 		}
-		pr, _ := client.ProvisioningRequestNoCache("ns", tc.wantUpdatedConditionName)
+		pr, err := client.ProvisioningRequestNoCache("ns", tc.wantUpdatedConditionName)
+		if err != nil {
+			t.Errorf("%s: failed to get ProvisioningRequest %s: %v", tc.name, tc.wantUpdatedConditionName, err)
+			continue
+		}
+		if pr == nil {
+			t.Errorf("%s: ProvisioningRequest %s is nil", tc.name, tc.wantUpdatedConditionName)
+			continue
+		}
 		accepted := apimeta.FindStatusCondition(pr.Status.Conditions, v1.Accepted)
 		if tc.checkCapacityBatchProcessing {
 			if accepted != nil {

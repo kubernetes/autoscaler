@@ -57,7 +57,7 @@ func NewProvisioningRequestInformer(client versioned.Interface, namespace string
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredProvisioningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		&cache.ListWatch{
+		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
@@ -82,7 +82,7 @@ func NewFilteredProvisioningRequestInformer(client versioned.Interface, namespac
 				}
 				return client.AutoscalingV1beta1().ProvisioningRequests(namespace).Watch(ctx, options)
 			},
-		},
+		}, client),
 		&provisioningrequestautoscalingxk8siov1beta1.ProvisioningRequest{},
 		resyncPeriod,
 		indexers,

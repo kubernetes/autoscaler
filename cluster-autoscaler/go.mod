@@ -47,14 +47,14 @@ require (
 	k8s.io/apiserver v0.35.0-beta.0
 	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
 	k8s.io/client-go v0.35.0-beta.0
-	k8s.io/cloud-provider v0.30.1
+	k8s.io/cloud-provider v0.35.0-beta.0
 	k8s.io/cloud-provider-aws v1.27.0
 	k8s.io/cloud-provider-gcp/providers v0.28.2
 	k8s.io/component-base v0.35.0-beta.0
 	k8s.io/component-helpers v0.35.0-beta.0
 	k8s.io/dynamic-resource-allocation v0.35.0-beta.0
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kube-scheduler v0.0.0
+	k8s.io/kube-scheduler v0.35.0-beta.0
 	k8s.io/kubelet v0.35.0-beta.0
 	k8s.io/kubernetes v1.35.0-beta.0
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
@@ -211,17 +211,17 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.0.0 // indirect
+	k8s.io/apiextensions-apiserver v0.35.0-beta.0 // indirect
 	k8s.io/code-generator v0.35.0-beta.0 // indirect
 	k8s.io/controller-manager v0.35.0-beta.0 // indirect
 	k8s.io/cri-api v0.35.0-beta.0 // indirect
-	k8s.io/cri-client v0.0.0 // indirect
-	k8s.io/csi-translation-lib v0.27.0 // indirect
+	k8s.io/cri-client v0.35.0-beta.0 // indirect
+	k8s.io/csi-translation-lib v0.35.0-beta.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
 	k8s.io/kms v0.35.0-beta.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
-	k8s.io/kubectl v0.28.0 // indirect
-	k8s.io/mount-utils v0.26.0-alpha.0 // indirect
+	k8s.io/kubectl v0.35.0-beta.0 // indirect
+	k8s.io/mount-utils v0.35.0-beta.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.31.2 // indirect
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.0.4 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
