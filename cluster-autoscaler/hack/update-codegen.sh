@@ -27,7 +27,7 @@ GO_CMD=${1:-go}
 CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 CODEGEN_PKG=$($GO_CMD list -m -mod=readonly -f "{{.Dir}}" k8s.io/code-generator)
-cd "${CURRENT_DIR}/.."
+cd "${CURRENT_DIR}/../apis"
 
 # shellcheck source=/dev/null
 source "${CODEGEN_PKG}/kube_codegen.sh"

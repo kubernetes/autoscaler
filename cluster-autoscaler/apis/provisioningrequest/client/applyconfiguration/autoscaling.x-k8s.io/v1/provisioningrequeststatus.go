@@ -25,8 +25,16 @@ import (
 
 // ProvisioningRequestStatusApplyConfiguration represents a declarative configuration of the ProvisioningRequestStatus type for use
 // with apply.
+//
+// ProvisioningRequestStatus represents the status of the resource reservation.
 type ProvisioningRequestStatusApplyConfiguration struct {
-	Conditions               []metav1.ConditionApplyConfiguration  `json:"conditions,omitempty"`
+	// Conditions represent the observations of a Provisioning Request's
+	// current state. Those will contain information whether the capacity
+	// was found/created or if there were any issues. The condition types
+	// may differ between different provisioning classes.
+	Conditions []metav1.ConditionApplyConfiguration `json:"conditions,omitempty"`
+	// ProvisioningClassDetails contains all other values custom provisioning classes may
+	// want to pass to end users.
 	ProvisioningClassDetails map[string]autoscalingxk8siov1.Detail `json:"provisioningClassDetails,omitempty"`
 }
 
