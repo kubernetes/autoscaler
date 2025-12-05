@@ -20,7 +20,10 @@ package v1alpha1
 
 // LocalObjectRefApplyConfiguration represents a declarative configuration of the LocalObjectRef type for use
 // with apply.
+//
+// LocalObjectRef contains the name of the object being referred to.
 type LocalObjectRefApplyConfiguration struct {
+	// Name of the object.
 	Name *string `json:"name,omitempty"`
 }
 
