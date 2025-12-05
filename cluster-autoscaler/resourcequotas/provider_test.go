@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -42,5 +43,61 @@ func TestCloudLimitersProvider(t *testing.T) {
 	quota := quotas[0]
 	if diff := cmp.Diff(maxLimits, quota.Limits()); diff != "" {
 		t.Errorf("Limits() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestCombinedQuotasProvider(t *testing.T) {
+	q1 := &FakeQuota{Name: "quota1"}
+	q2 := &FakeQuota{Name: "quota2"}
+	q3 := &FakeQuota{Name: "quota3"}
+	providerErr := errors.New("test error")
+
+	p1 := NewFakeProvider([]Quota{q1})
+	p2 := NewFakeProvider([]Quota{q2, q3})
+	pErr := NewFailingProvider(providerErr)
+
+	testCases := []struct {
+		name       string
+		providers  []Provider
+		wantQuotas []Quota
+		wantErr    error
+	}{
+		{
+			name:       "no providers",
+			providers:  []Provider{},
+			wantQuotas: nil,
+		},
+		{
+			name:       "one provider",
+			providers:  []Provider{p1},
+			wantQuotas: []Quota{q1},
+		},
+		{
+			name:       "multiple providers",
+			providers:  []Provider{p1, p2},
+			wantQuotas: []Quota{q1, q2, q3},
+		},
+		{
+			name:       "provider with error",
+			providers:  []Provider{p1, pErr},
+			wantQuotas: nil,
+			wantErr:    providerErr,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			provider := NewCombinedQuotasProvider(tc.providers)
+			quotas, err := provider.Quotas()
+
+			if !errors.Is(err, tc.wantErr) {
+				t.Errorf("Quotas() err mismatch: got %v, want %v", err, tc.wantErr)
+			}
+			if diff := cmp.Diff(tc.wantQuotas, quotas, cmp.Comparer(func(q1, q2 Quota) bool {
+				return q1.ID() == q2.ID()
+			})); diff != "" {
+				t.Errorf("Quotas() mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
 }

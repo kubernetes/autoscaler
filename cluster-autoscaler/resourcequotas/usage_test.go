@@ -44,9 +44,9 @@ func TestCalculateUsages(t *testing.T) {
 				test.BuildTestNode("n3", 3000, 8000),
 			},
 			quotas: []Quota{
-				&fakeQuota{
-					id:          "cluster-wide",
-					appliesToFn: includeAll,
+				&FakeQuota{
+					Name:        "cluster-wide",
+					AppliesToFn: includeAll,
 				},
 			},
 			wantUsages: map[string]resourceList{
@@ -65,13 +65,13 @@ func TestCalculateUsages(t *testing.T) {
 				addLabel(test.BuildTestNode("n3", 3000, 8000), "pool", "a"),
 			},
 			quotas: []Quota{
-				&fakeQuota{
-					id:          "pool-a",
-					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "a" },
+				&FakeQuota{
+					Name:        "pool-a",
+					AppliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "a" },
 				},
-				&fakeQuota{
-					id:          "pool-b",
-					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "b" },
+				&FakeQuota{
+					Name:        "pool-b",
+					AppliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "b" },
 				},
 			},
 			wantUsages: map[string]resourceList{
@@ -95,9 +95,9 @@ func TestCalculateUsages(t *testing.T) {
 				test.BuildTestNode("n3", 3000, 8000),
 			},
 			quotas: []Quota{
-				&fakeQuota{
-					id:          "cluster-wide",
-					appliesToFn: includeAll,
+				&FakeQuota{
+					Name:        "cluster-wide",
+					AppliesToFn: includeAll,
 				},
 			},
 			nodeFilter: func(node *apiv1.Node) bool { return node.Name == "n2" },
@@ -115,9 +115,9 @@ func TestCalculateUsages(t *testing.T) {
 				test.BuildTestNode("n1", 1000, 2000),
 			},
 			quotas: []Quota{
-				&fakeQuota{
-					id:          "no-match",
-					appliesToFn: func(node *apiv1.Node) bool { return false },
+				&FakeQuota{
+					Name:        "no-match",
+					AppliesToFn: func(node *apiv1.Node) bool { return false },
 				},
 			},
 			wantUsages: map[string]resourceList{
@@ -131,9 +131,9 @@ func TestCalculateUsages(t *testing.T) {
 				test.BuildTestNode("n2", 2000, 4000),
 			},
 			quotas: []Quota{
-				&fakeQuota{
-					id:          "cluster-wide",
-					appliesToFn: includeAll,
+				&FakeQuota{
+					Name:        "cluster-wide",
+					AppliesToFn: includeAll,
 				},
 			},
 			customTargets: map[string][]customresources.CustomResourceTarget{
@@ -158,13 +158,13 @@ func TestCalculateUsages(t *testing.T) {
 				addLabel(test.BuildTestNode("n3", 3000, 8000), "pool", "a"),
 			},
 			quotas: []Quota{
-				&fakeQuota{
-					id:          "pool-a",
-					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "a" },
+				&FakeQuota{
+					Name:        "pool-a",
+					AppliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "a" },
 				},
-				&fakeQuota{
-					id:          "pool-b",
-					appliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "b" },
+				&FakeQuota{
+					Name:        "pool-b",
+					AppliesToFn: func(node *apiv1.Node) bool { return node.Labels["pool"] == "b" },
 				},
 			},
 			nodeFilter: func(node *apiv1.Node) bool { return node.Name == "n3" },
