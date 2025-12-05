@@ -89,6 +89,12 @@ func (l *podListerMock) List() ([]*apiv1.Pod, error) {
 	return args.Get(0).([]*apiv1.Pod), args.Error(1)
 }
 
+// Braze: ListWithSelector for mock
+func (l *podListerMock) ListWithSelector(selector labels.Selector) ([]*apiv1.Pod, error) {
+	args := l.Called()
+	return args.Get(0).([]*apiv1.Pod), args.Error(1)
+}
+
 type podDisruptionBudgetListerMock struct {
 	mock.Mock
 }

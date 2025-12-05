@@ -23,6 +23,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -37,6 +38,17 @@ type TestPodLister struct {
 // List returns all pods in test lister.
 func (lister TestPodLister) List() ([]*apiv1.Pod, error) {
 	return lister.pods, nil
+}
+
+// Braze: ListWithSelector returns pods matching the selector (in test, returns all pods).
+func (lister TestPodLister) ListWithSelector(podSelector labels.Selector) ([]*apiv1.Pod, error) {
+	var result []*apiv1.Pod
+	for _, pod := range lister.pods {
+		if podSelector.Matches(labels.Set(pod.Labels)) {
+			result = append(result, pod)
+		}
+	}
+	return result, nil
 }
 
 // NewTestPodLister returns a lister that returns provided pods
@@ -67,6 +79,17 @@ type TestNodeLister struct {
 // List returns all nodes in test lister.
 func (l *TestNodeLister) List() ([]*apiv1.Node, error) {
 	return l.nodes, nil
+}
+
+// Braze: ListWithSelector returns nodes matching the selector (in test, filters by labels).
+func (l *TestNodeLister) ListWithSelector(nodeSelector labels.Selector) ([]*apiv1.Node, error) {
+	var result []*apiv1.Node
+	for _, node := range l.nodes {
+		if nodeSelector.Matches(labels.Set(node.Labels)) {
+			result = append(result, node)
+		}
+	}
+	return result, nil
 }
 
 // Get returns node from test lister.

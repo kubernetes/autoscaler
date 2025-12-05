@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
@@ -175,6 +176,12 @@ type mockNodeLister struct {
 func (mnl *mockNodeLister) List() ([]*apiv1.Node, error) {
 	return mnl.nodes, nil
 }
+
+// Braze: ListWithSelector for mock
+func (mnl *mockNodeLister) ListWithSelector(selector labels.Selector) ([]*apiv1.Node, error) {
+	return mnl.nodes, nil
+}
+
 func (mnl *mockNodeLister) Get(name string) (*apiv1.Node, error) {
 	return nil, fmt.Errorf("Unsupported operation")
 }

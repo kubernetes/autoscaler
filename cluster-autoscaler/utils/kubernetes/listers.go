@@ -17,6 +17,7 @@ limitations under the License.
 package kubernetes
 
 import (
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -142,6 +143,8 @@ func (r listerRegistryImpl) StatefulSetLister() v1appslister.StatefulSetLister {
 // To filter out the scheduled or unschedulable pods the helper methods ScheduledPods and UnschedulablePods should be used.
 type PodLister interface {
 	List() ([]*apiv1.Pod, error)
+	// Braze: ListWithSelector lists pods matching the given selector
+	ListWithSelector(podSelector labels.Selector) ([]*apiv1.Pod, error)
 }
 
 // isScheduled checks whether a pod is scheduled on a node or not
@@ -240,6 +243,52 @@ func UnschedulablePods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	return unschedulablePods
 }
 
+// Braze: UnschedulablePodsWithWorkers is a concurrent version of UnschedulablePods.
+func UnschedulablePodsWithWorkers(allPods []*apiv1.Pod, workers int) []*apiv1.Pod {
+	if workers <= 1 {
+		return UnschedulablePods(allPods)
+	}
+
+	podsChan := make(chan *apiv1.Pod, len(allPods))
+	resultsChan := make(chan *apiv1.Pod, len(allPods))
+
+	var wg sync.WaitGroup
+	wg.Add(workers)
+
+	// Start worker goroutines
+	for i := 0; i < workers; i++ {
+		go func() {
+			defer wg.Done()
+			for pod := range podsChan {
+				if isUnschedulable(pod) {
+					resultsChan <- pod
+				}
+			}
+		}()
+	}
+
+	// Feed pods to workers
+	go func() {
+		for _, pod := range allPods {
+			podsChan <- pod
+		}
+		close(podsChan)
+	}()
+
+	// Wait for workers and close results
+	go func() {
+		wg.Wait()
+		close(resultsChan)
+	}()
+
+	// Collect results
+	var unschedulablePods []*apiv1.Pod
+	for pod := range resultsChan {
+		unschedulablePods = append(unschedulablePods, pod)
+	}
+	return unschedulablePods
+}
+
 // AllPodLister lists all pods.
 type AllPodLister struct {
 	podLister v1lister.PodLister
@@ -247,9 +296,14 @@ type AllPodLister struct {
 
 // List returns all scheduled pods.
 func (lister *AllPodLister) List() ([]*apiv1.Pod, error) {
+	return lister.ListWithSelector(labels.Everything())
+}
+
+// Braze: ListWithSelector returns all pods matching the given selector.
+func (lister *AllPodLister) ListWithSelector(podSelector labels.Selector) ([]*apiv1.Pod, error) {
 	var pods []*apiv1.Pod
 
-	allPods, err := lister.podLister.List(labels.Everything())
+	allPods, err := lister.podLister.List(podSelector)
 	if err != nil {
 		return pods, err
 	}
@@ -271,6 +325,8 @@ func NewAllPodLister(pl v1lister.PodLister) PodLister {
 // NodeLister lists nodes.
 type NodeLister interface {
 	List() ([]*apiv1.Node, error)
+	// Braze: ListWithSelector lists nodes matching the given selector
+	ListWithSelector(nodeSelector labels.Selector) ([]*apiv1.Node, error)
 	Get(name string) (*apiv1.Node, error)
 }
 
@@ -300,10 +356,15 @@ func NewNodeLister(nl v1lister.NodeLister, filter func(*apiv1.Node) bool) NodeLi
 
 // List returns list of nodes.
 func (l *nodeListerImpl) List() ([]*apiv1.Node, error) {
+	return l.ListWithSelector(labels.Everything())
+}
+
+// Braze: ListWithSelector returns list of nodes matching the given selector.
+func (l *nodeListerImpl) ListWithSelector(nodeSelector labels.Selector) ([]*apiv1.Node, error) {
 	var nodes []*apiv1.Node
 	var err error
 
-	nodes, err = l.nodeLister.List(labels.Everything())
+	nodes, err = l.nodeLister.List(nodeSelector)
 	if err != nil {
 		return []*apiv1.Node{}, err
 	}

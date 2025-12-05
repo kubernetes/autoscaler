@@ -24,6 +24,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -83,6 +84,11 @@ func (l *TestCustomNodeLister) List() ([]*apiv1.Node, error) {
 		nodes = append(nodes, node)
 	}
 	return nodes, nil
+}
+
+// Braze: ListWithSelector for mock
+func (l *TestCustomNodeLister) ListWithSelector(selector labels.Selector) ([]*apiv1.Node, error) {
+	return l.List()
 }
 
 // Get returns node from test lister. Add ToBeDeletedTaint to the node

@@ -17,10 +17,14 @@ limitations under the License.
 package core
 
 import (
+	goctx "context"
 	"errors"
 	"fmt"
 	"reflect"
 	"time"
+
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -80,6 +84,8 @@ const (
 type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*context.AutoscalingContext
+	// Braze: TracingContext for Datadog tracing
+	TracingContext goctx.Context
 	// ClusterState for maintaining the state of cluster nodes.
 	clusterStateRegistry    *clusterstate.ClusterStateRegistry
 	lastScaleUpTime         time.Time
@@ -269,6 +275,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	a.DebuggingSnapshotter.StartDataCollection()
 	defer a.DebuggingSnapshotter.Flush()
 
+	// Braze: Init trace context and start root span
+	tctx, cancel := goctx.WithTimeout(goctx.Background(), time.Second)
+	defer cancel()
+	var rootSpan ddtrace.Span
+	rootSpan, a.TracingContext = tracer.StartSpanFromContext(tctx, string(metrics.Main))
+	defer rootSpan.Finish()
+
 	podLister := a.AllPodLister()
 	autoscalingContext := a.AutoscalingContext
 
@@ -316,7 +329,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	scaleDownActuationStatus := a.scaleDownActuator.CheckStatus()
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
 	refreshStart := time.Now()
+	// Braze: Start span for CloudProviderRefresh
+	spanCloudProviderRefresh, _ := tracer.StartSpanFromContext(a.TracingContext, string(metrics.CloudProviderRefresh))
 	err = a.AutoscalingContext.CloudProvider.Refresh()
+	spanCloudProviderRefresh.Finish()
 	if a.AutoscalingOptions.AsyncNodeGroupsEnabled {
 		// Some node groups might have been created asynchronously, without registering in CSR.
 		a.clusterStateRegistry.Recalculate()
@@ -556,7 +572,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
 		scaleUpStart := preScaleUp()
+		// Braze: Start span for ScaleUp
+		spanScaleUp, _ := tracer.StartSpanFromContext(a.TracingContext, string(metrics.ScaleUp))
 		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, false)
+		if typedErr != nil {
+			spanScaleUp.Finish(tracer.WithError(typedErr))
+		} else {
+			spanScaleUp.Finish()
+		}
 		if exit, err := postScaleUp(scaleUpStart); exit {
 			return err
 		}
@@ -564,6 +587,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if a.ScaleDownEnabled {
 		unneededStart := time.Now()
+		// Braze: Start span for FindUnneeded
+		spanFindUnneeded, _ := tracer.StartSpanFromContext(a.TracingContext, string(metrics.FindUnneeded))
 
 		klog.V(4).Infof("Calculating unneeded nodes")
 
@@ -606,6 +631,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		}
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
+		spanFindUnneeded.Finish()
 
 		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime)
 		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
@@ -639,8 +665,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
+			// Braze: Start span for ScaleDown
+			spanScaleDown, _ := tracer.StartSpanFromContext(a.TracingContext, string(metrics.ScaleDown))
 			empty, needDrain := a.scaleDownPlanner.NodesToDelete(currentTime)
 			scaleDownResult, scaledDownNodes, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain)
+			spanScaleDown.Finish()
 			scaleDownStatus.Result = scaleDownResult
 			scaleDownStatus.ScaledDownNodes = scaledDownNodes
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
