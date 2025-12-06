@@ -474,3 +474,194 @@ func TestInPlaceUpdate_EventEmission(t *testing.T) {
 		assert.Fail(t, "timeout waiting for event")
 	}
 }
+
+func TestInPlaceModeDisabledFeatureGate(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, false)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 1.0
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	for _, pod := range pods {
+		assert.Equal(t, utils.InPlaceEvict, inplace.CanInPlaceUpdate(pod, updateMode),
+			"InPlace mode should return InPlaceEvict when feature gate is disabled")
+	}
+}
+
+func TestInPlaceModeWaitsIndefinitely(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// Create a pod that's been updating for a very long time
+	pods := []*apiv1.Pod{
+		test.Pod().WithName("test-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			WithPodConditions([]apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizeInProgress,
+					Status: apiv1.ConditionTrue,
+				},
+			}).Get(),
+		test.Pod().WithName("test-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+		test.Pod().WithName("test-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+
+	// Set last attempt to a very old time (would timeout in InPlaceOrRecreate mode)
+	clock := baseclocktest.NewFakeClock(time.UnixMilli(7200000))         // 2 hours from epoch
+	lipatm := map[string]time.Time{getPodID(pods[0]): time.UnixMilli(0)} // epoch (very old)
+
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// InPlace mode should return Deferred even after a very long time
+	result := inplace.CanInPlaceUpdate(pods[0], updateMode)
+	assert.Equal(t, utils.InPlaceDeferred, result,
+		"InPlace mode should wait indefinitely for in-progress updates, not timeout")
+}
+
+func TestInPlaceModeInfeasible(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// Create a pod with infeasible resize condition
+	pods := []*apiv1.Pod{
+		test.Pod().WithName("test-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			WithPodConditions([]apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizePending,
+					Status: apiv1.ConditionTrue,
+					Reason: apiv1.PodReasonInfeasible,
+				},
+			}).Get(),
+		test.Pod().WithName("test-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+		test.Pod().WithName("test-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// Infeasible updates should still return InPlaceDeferred in InPlace mode
+	result := inplace.CanInPlaceUpdate(pods[0], updateMode)
+	assert.Equal(t, utils.InPlaceDeferred, result,
+		"InPlace mode should return InPlaceDeferred for infeasible updates")
+}
+
+func TestInPlaceModeAtLeastOne(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1 // Very small tolerance, but at least one should be allowed
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	for _, pod := range pods {
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, updateMode))
+	}
+
+	// At least one pod should be updatable even with very small tolerance
+	for _, pod := range pods[:1] {
+		err := inplace.InPlaceUpdate(pod, inPlaceVpa, test.FakeEventRecorder())
+		assert.NoError(t, err, "Should in-place update at least one pod even with small tolerance")
+	}
+
+	// Rest should fail
+	for _, pod := range pods[1:] {
+		err := inplace.InPlaceUpdate(pod, inPlaceVpa, test.FakeEventRecorder())
+		assert.Error(t, err, "Should fail to update additional pods with small tolerance")
+	}
+}

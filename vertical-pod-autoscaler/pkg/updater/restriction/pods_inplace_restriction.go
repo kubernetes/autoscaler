@@ -90,7 +90,14 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		if !features.Enabled(features.InPlace) {
 			return utils.InPlaceEvict
 		}
+	case vpa_types.UpdateModeAuto:
+		// Auto mode is deprecated but still supports in-place updates
+		// when the feature gate is enabled
+		if !features.Enabled(features.InPlaceOrRecreate) {
+			return utils.InPlaceEvict
+		}
 	default:
+		// UpdateModeOff, UpdateModeInitial, UpdateModeRecreate, etc.
 		return utils.InPlaceEvict
 	}
 
