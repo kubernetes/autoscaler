@@ -26,6 +26,7 @@ import (
 func NewDefaultPodListProcessor(nodeFilter func(*framework.NodeInfo) bool) *pods.CombinedPodListProcessor {
 	return pods.NewCombinedPodListProcessor([]pods.PodListProcessor{
 		NewClearTPURequestsPodListProcessor(),
+		NewFilterByLabelSelectorPodListProcessor(), // Braze: Filter pods by label selector first
 		NewFilterOutExpendablePodListProcessor(),
 		NewCurrentlyDrainedNodesPodListProcessor(),
 		NewFilterOutSchedulablePodListProcessor(nodeFilter),
