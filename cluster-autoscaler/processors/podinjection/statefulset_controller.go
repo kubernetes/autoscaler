@@ -19,13 +19,13 @@ package podinjection
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/klog/v2"
 )
 
-func createStatefulSetControllers(ctx *context.AutoscalingContext) []controller {
+func createStatefulSetControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	statefulSets, err := ctx.ListerRegistry.StatefulSetLister().List(labels.Everything())
+	statefulSets, err := autoscalingCtx.ListerRegistry.StatefulSetLister().List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Failed to list statefulsets: %v", err)
 		return controllers

@@ -73,7 +73,7 @@ func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
 
 // QuantityFromMemoryAmount converts memory ResourceAmount to a resource.Quantity.
 func QuantityFromMemoryAmount(memoryAmount ResourceAmount) resource.Quantity {
-	return *resource.NewScaledQuantity(int64(memoryAmount), 0)
+	return *resource.NewQuantity(int64(memoryAmount), resource.BinarySI)
 }
 
 // ScaleResource returns the resource amount multiplied by a given factor.
@@ -82,7 +82,7 @@ func ScaleResource(amount ResourceAmount, factor float64) ResourceAmount {
 }
 
 // ResourcesAsResourceList converts internal Resources representation to ResourcesList.
-func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUMillicores int) apiv1.ResourceList {
+func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUMillicores, roundMemoryBytes int) apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
 	for key, resourceAmount := range resources {
 		var newKey apiv1.ResourceName
@@ -103,10 +103,19 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUM
 		case ResourceMemory:
 			newKey = apiv1.ResourceMemory
 			quantity = QuantityFromMemoryAmount(resourceAmount)
+			if roundMemoryBytes != 1 && !quantity.IsZero() {
+				roundedValues, err := RoundUpToScale(resourceAmount, roundMemoryBytes)
+				if err != nil {
+					klog.V(4).InfoS("Error rounding memory value; leaving unchanged", "rawValue", resourceAmount, "scale", roundMemoryBytes, "error", err)
+				} else {
+					klog.V(4).InfoS("Successfully rounded memory value", "rawValue", resourceAmount, "roundedValue", roundedValues)
+				}
+				quantity = QuantityFromMemoryAmount(roundedValues)
+			}
 			if humanizeMemory && !quantity.IsZero() {
 				rawValues := quantity.Value()
 				humanizedValue := HumanizeMemoryQuantity(rawValues)
-				klog.V(4).InfoS("Converting raw value to humanized value", "rawValue", rawValues, "humanizedValue", humanizedValue)
+				klog.V(4).InfoS("DEPRECATED: Converting raw value to humanized value. Use --round-memory-bytes instead.", "rawValue", rawValues, "humanizedValue", humanizedValue)
 				quantity = resource.MustParse(humanizedValue)
 			}
 		default:

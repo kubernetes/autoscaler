@@ -19,21 +19,19 @@ package snapshot
 import (
 	"fmt"
 
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 )
 
-type snapshotClassLister Snapshot
+type snapshotClassLister struct {
+	snapshot *Snapshot
+}
 
 func (s snapshotClassLister) List() ([]*resourceapi.DeviceClass, error) {
-	var result []*resourceapi.DeviceClass
-	for _, class := range s.deviceClasses {
-		result = append(result, class)
-	}
-	return result, nil
+	return s.snapshot.listDeviceClasses(), nil
 }
 
 func (s snapshotClassLister) Get(className string) (*resourceapi.DeviceClass, error) {
-	class, found := s.deviceClasses[className]
+	class, found := s.snapshot.getDeviceClass(className)
 	if !found {
 		return nil, fmt.Errorf("DeviceClass %q not found", className)
 	}

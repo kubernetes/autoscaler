@@ -253,7 +253,7 @@ const listInstanceGroupManagerResponsePartTemplate = `
      }
     }
    ],
-   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/lukaszos-gke-dev2/zones/%v/instanceGroups/%v",
+   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/%v/instanceGroups/%v",
    "baseInstanceName": "%s",
    "fingerprint": "ASJwTpesjDI=",
    "currentActions": {
@@ -271,7 +271,7 @@ const listInstanceGroupManagerResponsePartTemplate = `
     "isStable": true
    },
    "targetSize": %v,
-   "selfLink": "https://www.googleapis.com/compute/v1/projects/lukaszos-gke-dev2/zones/us-west1-b/instanceGroupManagers/gke-blah-default-pool-67b773a0-grp",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instanceGroupManagers/gke-blah-default-pool-67b773a0-grp",
    "updatePolicy": {
     "type": "OPPORTUNISTIC",
     "minimalAction": "REPLACE",
@@ -354,7 +354,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	manager := &gceManagerImpl{
 		cache:                  cache,
 		migLister:              migLister,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second, false),
+		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second, false, false),
 		GceService:             gceService,
 		projectId:              projectId,
 		regional:               regional,

@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -44,6 +45,8 @@ func TestRunFiltersOnNode(t *testing.T) {
 	p600 := BuildTestPod("p600", 600, 500000)
 	p8000 := BuildTestPod("p8000", 8000, 0)
 	p500 := BuildTestPod("p500", 500, 500000)
+	podWithAffinity := BuildTestPod("pod_with_affinity", 500, 500, WithNodeNamesAffinity("n1000"))
+	podWithInvalidAffinity := BuildTestPod("pod_with_affinity", 500, 500, WithNodeNamesAffinity("non-existing-node"))
 
 	n1000 := BuildTestNode("n1000", 1000, 2000000)
 	SetNodeReadyState(n1000, true, time.Time{})
@@ -67,20 +70,26 @@ func TestRunFiltersOnNode(t *testing.T) {
 	assert.NoError(t, err)
 
 	tests := []struct {
-		name          string
-		customConfig  *config.KubeSchedulerConfiguration
-		node          *apiv1.Node
-		scheduledPods []*apiv1.Pod
-		testPod       *apiv1.Pod
-		expectError   bool
+		name                        string
+		customConfig                *config.KubeSchedulerConfiguration
+		node                        *apiv1.Node
+		scheduledPods               []*apiv1.Pod
+		testPod                     *apiv1.Pod
+		expectError                 bool
+		wantFailingPredicateName    string
+		wantFailingPredicateReasons []string
+		wantErrorSubstrings         []string
 	}{
 		// default predicate checker test cases
 		{
-			name:          "default - other pod - insuficient cpu",
-			node:          n1000,
-			scheduledPods: []*apiv1.Pod{p450},
-			testPod:       p600,
-			expectError:   true,
+			name:                        "default - other pod - insuficient cpu",
+			node:                        n1000,
+			scheduledPods:               []*apiv1.Pod{p450},
+			testPod:                     p600,
+			expectError:                 true,
+			wantFailingPredicateName:    "NodeResourcesFit",
+			wantFailingPredicateReasons: []string{"Insufficient cpu"},
+			wantErrorSubstrings:         []string{"NodeResourcesFit", "Insufficient cpu"},
 		},
 		{
 			name:          "default - other pod - ok",
@@ -90,18 +99,40 @@ func TestRunFiltersOnNode(t *testing.T) {
 			expectError:   false,
 		},
 		{
-			name:          "default - empty - insuficient cpu",
-			node:          n1000,
-			scheduledPods: []*apiv1.Pod{},
-			testPod:       p8000,
-			expectError:   true,
+			name:                        "default - empty - insuficient cpu",
+			node:                        n1000,
+			scheduledPods:               []*apiv1.Pod{},
+			testPod:                     p8000,
+			expectError:                 true,
+			wantFailingPredicateName:    "NodeResourcesFit",
+			wantFailingPredicateReasons: []string{"Insufficient cpu"},
+			wantErrorSubstrings:         []string{"NodeResourcesFit", "Insufficient cpu"},
 		},
 		{
-			name:          "default - empty - ok",
+			name:                        "default - empty - ok",
+			node:                        n1000,
+			scheduledPods:               []*apiv1.Pod{},
+			testPod:                     p600,
+			expectError:                 false,
+			wantFailingPredicateName:    "NodeResourcesFit",
+			wantFailingPredicateReasons: []string{"Insufficient cpu"},
+		},
+		{
+			name:          "default - affinity on existing node - ok",
 			node:          n1000,
 			scheduledPods: []*apiv1.Pod{},
-			testPod:       p600,
+			testPod:       podWithAffinity,
 			expectError:   false,
+		},
+		{
+			name:                     "default - affinity on non-existing node - error",
+			node:                     n1000,
+			scheduledPods:            []*apiv1.Pod{},
+			testPod:                  podWithInvalidAffinity,
+			expectError:              true,
+			customConfig:             customConfig,
+			wantFailingPredicateName: "NodeAffinity",
+			wantErrorSubstrings:      []string{"PreFilter filtered the Node out"},
 		},
 		// custom predicate checker test cases
 		{
@@ -150,10 +181,11 @@ func TestRunFiltersOnNode(t *testing.T) {
 				assert.Nil(t, state)
 				assert.NotNil(t, predicateError)
 				assert.Equal(t, clustersnapshot.FailingPredicateError, predicateError.Type())
-				assert.Equal(t, "NodeResourcesFit", predicateError.FailingPredicateName())
-				assert.Equal(t, []string{"Insufficient cpu"}, predicateError.FailingPredicateReasons())
-				assert.Contains(t, predicateError.Error(), "NodeResourcesFit")
-				assert.Contains(t, predicateError.Error(), "Insufficient cpu")
+				assert.Equal(t, tt.wantFailingPredicateName, predicateError.FailingPredicateName())
+				assert.Equal(t, tt.wantFailingPredicateReasons, predicateError.FailingPredicateReasons())
+				for _, wantErrorSubstring := range tt.wantErrorSubstrings {
+					assert.Contains(t, predicateError.Error(), wantErrorSubstring)
+				}
 			} else {
 				assert.Nil(t, predicateError)
 				assert.NotNil(t, state)
@@ -332,6 +364,58 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 	if err != nil {
 		return nil, nil, err
 	}
-	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true)
-	return NewSchedulerPluginRunner(fwHandle, snapshot), snapshot, nil
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1)
+	return NewSchedulerPluginRunner(fwHandle, snapshot, 1), snapshot, nil
+}
+
+func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
+	pod := BuildTestPod("p", 100, 1000)
+	nodes := make([]*apiv1.Node, 0, 5001)
+	podsOnNodes := make(map[string][]*apiv1.Pod)
+
+	for i := 0; i < 5000; i++ {
+		nodeName := fmt.Sprintf("n-%d", i)
+		node := BuildTestNode(nodeName, 10, 1000)
+		nodes = append(nodes, node)
+		// Add 10 small pods to each node
+		pods := make([]*apiv1.Pod, 0, 10)
+		for j := 0; j < 10; j++ {
+			pods = append(pods, BuildTestPod(fmt.Sprintf("p-%d-%d", i, j), 1, 1))
+		}
+		podsOnNodes[nodeName] = pods
+	}
+	// Last node is the only one that can fit the pod.
+	lastNodeName := fmt.Sprintf("n-%d", len(nodes))
+	lastNode := BuildTestNode(lastNodeName, 1000, 1000)
+	nodes = append(nodes, lastNode)
+
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	assert.NoError(b, err)
+
+	for _, node := range nodes {
+		err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, podsOnNodes[node.Name]...))
+		assert.NoError(b, err)
+	}
+
+	testCases := []struct {
+		parallelism int
+	}{
+		{parallelism: 1},
+		{parallelism: 2},
+		{parallelism: 4},
+		{parallelism: 8},
+		{parallelism: 16},
+	}
+
+	for _, tc := range testCases {
+		b.Run(fmt.Sprintf("parallelism-%d", tc.parallelism), func(b *testing.B) {
+			pluginRunner.parallelism = tc.parallelism
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				pluginRunner.lastIndex = 0 // Reset state for each run
+				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, func(info *framework.NodeInfo) bool { return true })
+				assert.NoError(b, err)
+			}
+		})
+	}
 }

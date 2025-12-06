@@ -16,12 +16,12 @@ There are a wide variety of use cases here. Some examples are as follows:
 ## Configuration options
 As using this expander requires communication with another service, users must specify a few options as CLI arguments.
 
-```yaml
---grpcExpanderUrl
+```bash
+--grpc-expander-url
 ```
 URL of the gRPC Expander server, for CA to communicate with.
-```yaml
---grpcExpanderCert
+```bash
+--grpc-expander-cert
 ```
 Location of the volume mounted certificate of the gRPC server if it is configured to communicate over TLS
 
@@ -32,10 +32,12 @@ service. Note that the `protos/expander.pb.go` generated protobuf code will also
 Communication between Cluster Autoscaler and the gRPC Server will occur over native kube-proxy. To use this, note the Service and Namespace the gRPC server is deployed in.
 
 Deploy the gRPC Expander Server as a separate app, listening on a specifc port number.
-Start Cluster Autoscaler with the `--grpcExapnderURl=SERVICE_NAME.NAMESPACE_NAME.svc.cluster.local:PORT_NUMBER` flag, as well as `--grpcExpanderCert` pointed at the location of the volume mounted certificate of the gRPC server.
+Start Cluster Autoscaler with the `--grpc-expander-url=SERVICE_NAME.NAMESPACE_NAME.svc.cluster.local:PORT_NUMBER` flag, as well as `--grpc-expander-cert` pointed at the location of the volume mounted certificate of the gRPC server.
 
 ## Details
 
 The gRPC client currently transforms nodeInfo objects passed into the expander to v1.Node objects to save rpc call throughput. As such, the gRPC server will not have access to daemonsets and static pods running on each node.
 
+### Code Generation
 
+To regenerate the gRPC code, run the `cluster-autoscaler/hack/update-proto.sh` script

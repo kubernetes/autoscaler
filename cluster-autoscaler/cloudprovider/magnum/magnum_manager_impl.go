@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -485,7 +485,7 @@ func (mgr *magnumManagerImpl) nodeGroupForNode(node *apiv1.Node) (string, error)
 
 					// Check that the ID is a proper server UUID.
 					// (It could be an index or "kube-minion" in the refs_map instead).
-					_, err := uuid.FromString(ID)
+					_, err := uuid.Parse(ID)
 					if err != nil {
 						continue
 					}

@@ -18,14 +18,14 @@ package binpacking
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 )
 
 // BinpackingLimiter processes expansion options to stop binpacking early.
 type BinpackingLimiter interface {
-	InitBinpacking(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup)
-	MarkProcessed(context *context.AutoscalingContext, nodegroupId string)
-	StopBinpacking(context *context.AutoscalingContext, evaluatedOptions []expander.Option) bool
-	FinalizeBinpacking(context *context.AutoscalingContext, finalOptions []expander.Option)
+	InitBinpacking(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup)
+	MarkProcessed(autoscalingCtx *ca_context.AutoscalingContext, nodegroupId string)
+	StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool
+	FinalizeBinpacking(autoscalingCtx *ca_context.AutoscalingContext, finalOptions []expander.Option)
 }

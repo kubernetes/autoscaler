@@ -168,9 +168,16 @@ be prevented anyway.
 
 VPA updater will consider that the update failed if:
 * The pod has condition `PodResizePending` with reason `Infeasible` or
-* The pod has condition `PodResizePending` with reason `Deferred` and more than 5 minutes elapsed
-  since the update or
-* The pod has condition `PodResizing` and more than 1 hour elapsed since the update or
+* The pod has condition `PodResizePending` with reason `Deferred` and:
+  * **In the initial alpha implementation:** more than 5 minutes elapsed since
+    the update or
+  * **Eventually in the alpha stage:** more than
+    `--in-place-deferred-resize-timeout` elapsed since the update or
+* The pod has condition `PodResizeInProgress` and:
+  * **In the initial alpha implementation:** more than 1 hour elapsed since the
+    update or
+  * **Eventually in the alpha stage:** more than `--in-place-resize-timeout`
+    elapsed since the update or
 * Patch attempt returns an error.
 
 Note that in the initial version of In-Place updates, memory limit downscaling will always fail
@@ -228,7 +235,7 @@ Today, VPA updater considers the following conditions when deciding if it should
    * Outside recommended range,
    * Long-lived pod with significant change.
    * `EvictionRequirements` are all true.
- 
+
 `InPlaceOrRecreate` will attempt to apply an update in place if it meets at least one
 of the following conditions:
 * Quick OOM,
@@ -251,7 +258,7 @@ of the following conditions:
 The following test scenarios will be added to e2e tests. The `InPlaceOrRecreate` mode will be
 tested in the following scenarios:
 
-* Admission controller applies recommendation to pod controlled by VPA. 
+* Admission controller applies recommendation to pod controlled by VPA.
 * In-place update applied to all containers of a pod.
 * In-place update will fail. Pod should be evicted and the recommendation applied.
 * In-place update will fail but `CanEvict` is false, pod should not be evicted.
@@ -313,3 +320,4 @@ Needs more research on how to scale down on memory safely.
 - 2025-02-19: Updates to align with latest changes to [KEP-1287](https://github.com/kubernetes/enhancements/issues/1287).
 - 2025-03-06: Scope changes to "partial updates" feature
 - 2025-03-08: Add "Upgrade / Downgrade Strategy" and "Kubernetes version compatibility" sections
+- 2025-03-27: Add flags to control the in-place resize timeouts

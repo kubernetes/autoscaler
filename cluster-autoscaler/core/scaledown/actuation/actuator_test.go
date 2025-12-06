@@ -1185,13 +1185,13 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 
 	// Hook node deletion at the level of cloud provider, to gather which nodes were deleted, and to fail the deletion for
 	// certain nodes to simulate errors.
-	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 		if tc.failedNodeDeletion[node] {
 			return fmt.Errorf("SIMULATED ERROR: won't remove node")
 		}
 		deletedNodes <- node
 		return nil
-	})
+	}).Build()
 	for _, bucket := range emptyNodeGroupViews {
 		bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
 		provider.InsertNodeGroup(bucket.Group)
@@ -1229,14 +1229,14 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	}
 
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, dsLister, nil, nil, nil, nil)
-	ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
 	}
-	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 	for _, bucket := range emptyNodeGroupViews {
 		for _, node := range bucket.Nodes {
-			err := ctx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods[node.Name]...))
+			err := autoscalingCtx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods[node.Name]...))
 			if err != nil {
 				t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
 			}
@@ -1248,7 +1248,7 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 			if !found {
 				t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
 			}
-			err := ctx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pods...))
+			err := autoscalingCtx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pods...))
 			if err != nil {
 				t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
 			}
@@ -1271,14 +1271,14 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 
 	// Create Actuator, run StartDeletion, and verify the error.
 	ndt := deletiontracker.NewNodeDeletionTracker(0)
-	ndb := NewNodeDeletionBatcher(&ctx, scaleStateNotifier, ndt, 0*time.Second)
-	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	ndb := NewNodeDeletionBatcher(&autoscalingCtx, scaleStateNotifier, ndt, 0*time.Second)
+	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
 	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, shutdownGracePeriodByPodPriority: legacyFlagDrainConfig, fullDsEviction: force}
 	actuator := Actuator{
-		ctx: &ctx, nodeDeletionTracker: ndt,
-		nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
-		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
-		configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(ctx.NodeGroupDefaults),
+		autoscalingCtx: &autoscalingCtx, nodeDeletionTracker: ndt,
+		nodeDeletionScheduler: NewGroupDeletionScheduler(&autoscalingCtx, ndt, ndb, evictor),
+		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&autoscalingCtx),
+		configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults),
 	}
 
 	var gotResult status.ScaleDownResult
@@ -1497,13 +1497,13 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			}
 			deletedResult := make(chan string)
 			fakeClient := &fake.Clientset{}
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroupId string, node string) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroupId string, node string) error {
 				if gotFailedRequest(nodeGroupId) {
 					return fmt.Errorf("SIMULATED ERROR: won't remove node")
 				}
 				deletedResult <- nodeGroupId
 				return nil
-			})
+			}).Build()
 			// 2d array represent the waves of pushing nodes to delete.
 			deleteNodes := [][]*apiv1.Node{}
 
@@ -1542,21 +1542,21 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 			pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
 			registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, nil, nil, nil, nil, nil)
-			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 			scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
 			scaleStateNotifier.Register(csr)
 			ndt := deletiontracker.NewNodeDeletionTracker(0)
-			ndb := NewNodeDeletionBatcher(&ctx, scaleStateNotifier, ndt, deleteInterval)
-			legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+			ndb := NewNodeDeletionBatcher(&autoscalingCtx, scaleStateNotifier, ndt, deleteInterval)
+			legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
 			evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, shutdownGracePeriodByPodPriority: legacyFlagDrainConfig}
 			actuator := Actuator{
-				ctx: &ctx, nodeDeletionTracker: ndt,
-				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
-				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
+				autoscalingCtx: &autoscalingCtx, nodeDeletionTracker: ndt,
+				nodeDeletionScheduler: NewGroupDeletionScheduler(&autoscalingCtx, ndt, ndb, evictor),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&autoscalingCtx),
 			}
 
 			for _, nodes := range deleteNodes {

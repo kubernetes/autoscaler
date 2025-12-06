@@ -19,13 +19,12 @@ package priority
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestLoopInit(t *testing.T) {
@@ -155,6 +154,33 @@ func TestAdmitForSingleContainer(t *testing.T) {
 		recommendation := test.Recommendation().WithContainer("test-container-without-requests").WithTarget("600m", "10Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(podWithoutRequests, recommendation))
+	})
+
+	t.Run("it should admit a Pod for eviction if recommendation is higher than ContainerStatus requests", func(t *testing.T) {
+		podWithContainerStatus := pod.DeepCopy()
+		podWithContainerStatus.Status.ContainerStatuses = []corev1.ContainerStatus{
+			test.ContainerStatus().WithName(containerName).
+				WithCPURequest(resource.MustParse("100m")).
+				WithCPULimit(resource.MustParse("100m")).
+				WithMemRequest(resource.MustParse("1Gi")).
+				WithMemLimit(resource.MustParse("1Gi")).Get()}
+
+		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+			podWithContainerStatus: {
+				{Resources: []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
+					ChangeRequirement: v1.TargetHigherThanRequests,
+				},
+			},
+		}
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		// Recommendation is higher than ContainerStatus requests, but lower than
+		// PodSpec requests. This should be admitted (eviction requirement is
+		// TargetHigherThanRequests), given that ContainerStatus has priority over
+		// PodSpec.
+		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("400m", "4Gi").Get()
+
+		assert.Equal(t, true, sdpea.Admit(podWithContainerStatus, recommendation))
 	})
 
 	t.Run("it should admit a Pod for eviction if no config is given", func(t *testing.T) {

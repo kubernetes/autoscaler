@@ -149,7 +149,7 @@ func ensureHelmValues(values map[string]interface{}) {
 		GinkgoLogr.Info(fmt.Sprintf(format, v...))
 	})).To(Succeed())
 
-	chart, err := loader.Load("../../../../../charts/cluster-autoscaler")
+	chart, err := loader.Load("../../../../charts/cluster-autoscaler")
 	Expect(err).NotTo(HaveOccurred())
 
 	get := action.NewGet(helmCfg)

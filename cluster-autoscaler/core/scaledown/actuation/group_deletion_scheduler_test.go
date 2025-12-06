@@ -132,9 +132,9 @@ func TestScheduleDeletion(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 				return nil
-			})
+			}).Build()
 
 			batcher := &countingBatcher{}
 			tracker := deletiontracker.NewNodeDeletionTracker(0)
@@ -147,11 +147,11 @@ func TestScheduleDeletion(t *testing.T) {
 				t.Fatalf("Couldn't create daemonset lister")
 			}
 			registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, dsLister, nil, nil, nil, nil)
-			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			scheduler := NewGroupDeletionScheduler(&ctx, tracker, batcher, Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom})
+			scheduler := NewGroupDeletionScheduler(&autoscalingCtx, tracker, batcher, Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom})
 
 			for i, ti := range tc.iterations {
 				allBuckets := append(append(ti.toSchedule, ti.toAbort...), ti.toScheduleAfterAbort...)

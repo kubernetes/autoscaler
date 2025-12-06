@@ -22,7 +22,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -170,7 +170,7 @@ func TestSnapshotClaimTrackerListAllAllocatedDevices(t *testing.T) {
 				GetClaimId(allocatedClaim2): allocatedClaim2,
 				GetClaimId(claim3):          claim3,
 			},
-			wantDevices: sets.New[structured.DeviceID](
+			wantDevices: sets.New(
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-1"),
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-2"),
 				structured.MakeDeviceID("driver.example.com", "pool-1", "device-3"),

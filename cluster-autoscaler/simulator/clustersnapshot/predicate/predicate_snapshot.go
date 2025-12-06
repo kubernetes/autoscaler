@@ -20,10 +20,11 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -36,7 +37,7 @@ type PredicateSnapshot struct {
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
-func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool) *PredicateSnapshot {
+func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool, parallelism int) *PredicateSnapshot {
 	snapshot := &PredicateSnapshot{
 		ClusterSnapshotStore: snapshotStore,
 		draEnabled:           draEnabled,
@@ -45,7 +46,7 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
 	// dependency between PluginRunner and PredicateSnapshot.
 	// TODO: Refactor PluginRunner so that it doesn't depend on PredicateSnapshot (e.g. move retrieving NodeInfos out of PluginRunner, to PredicateSnapshot).
-	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot)
+	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot, parallelism)
 	return snapshot
 }
 
@@ -55,6 +56,7 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 	if err != nil {
 		return nil, err
 	}
+
 	if s.draEnabled {
 		return s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
 	}
@@ -245,7 +247,7 @@ func (s *PredicateSnapshot) modifyResourceClaimsForNewPod(podInfo *framework.Pod
 	// so we don't add them. The claims should already be allocated in the provided PodInfo.
 	var podOwnedClaims []*resourceapi.ResourceClaim
 	for _, claim := range podInfo.NeededResourceClaims {
-		if ownerName, _ := drautils.ClaimOwningPod(claim); ownerName != "" {
+		if err := resourceclaim.IsForPod(podInfo.Pod, claim); err == nil {
 			podOwnedClaims = append(podOwnedClaims, claim)
 		}
 	}

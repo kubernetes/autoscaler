@@ -227,6 +227,8 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
+    deprecated: true
+    deprecationWarning: autoscaling.k8s.io/v1beta1 API is deprecated
     name: v1beta1
     schema:
       openAPIV3Schema:

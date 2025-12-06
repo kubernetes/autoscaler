@@ -27,7 +27,7 @@ import (
 )
 
 func nodeGroup(id string) cloudprovider.NodeGroup {
-	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	provider.AddNodeGroup(id, 1, 10, 1)
 	return provider.GetNodeGroup(id)
 }

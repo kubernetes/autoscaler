@@ -24,8 +24,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/pflag"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 
@@ -36,6 +38,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
@@ -81,12 +84,13 @@ func main() {
 	commonFlags := common.InitCommonFlags()
 	klog.InitFlags(nil)
 	common.InitLoggingFlags()
+	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
 	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion())
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	healthCheck := metrics.NewHealthCheck(time.Minute)
@@ -112,17 +116,27 @@ func main() {
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
 	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
 
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+	factory.Start(stopCh)
+	informerMap := factory.WaitForCacheSync(stopCh)
+	for kind, synced := range informerMap {
+		if !synced {
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		klog.ErrorS(err, "Unable to get hostname")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	statusNamespace := status.AdmissionControllerStatusNamespace
 	if namespace != "" {
 		statusNamespace = namespace
 	}
-	stopCh := make(chan struct{})
 	statusUpdater := status.NewUpdater(
 		kubeClient,
 		status.AdmissionControllerStatusName,
@@ -130,7 +144,6 @@ func main() {
 		statusUpdateInterval,
 		hostname,
 	)
-	defer close(stopCh)
 
 	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider), patch.NewObservedContainersCalculator()}
 	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
@@ -138,9 +151,13 @@ func main() {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
 	})
+	var mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface
+	if *registerWebhook {
+		mutatingWebhookClient = kubeClient.AdmissionregistrationV1().MutatingWebhookConfigurations()
+	}
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(*certsConfiguration, *minTlsVersion, *ciphers, stopCh, kubeClient.AdmissionregistrationV1().MutatingWebhookConfigurations()),
+		TLSConfig: configTLS(*certsConfiguration, *minTlsVersion, *ciphers, stopCh, mutatingWebhookClient),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
@@ -154,6 +171,6 @@ func main() {
 
 	if err = server.ListenAndServeTLS("", ""); err != nil {
 		klog.ErrorS(err, "Failed to start HTTPS server")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 }

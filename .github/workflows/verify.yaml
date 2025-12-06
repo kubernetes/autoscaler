@@ -1,0 +1,45 @@
+name: Verify Go
+
+on:
+  - push
+  - pull_request
+
+env:
+  GOPATH: ${{ github.workspace }}/go
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          path: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+
+      - name: Set up Go
+        uses: actions/setup-go@v5.5.0
+        with:
+          go-version: '1.24.0'
+          cache-dependency-path: |
+             ${{ env.GOPATH}}/src/k8s.io/autoscaler/cluster-autoscaler/go.sum
+             ${{ env.GOPATH}}/src/k8s.io/autoscaler/vertical-pod-autoscaler/go.sum
+             ${{ env.GOPATH}}/src/k8s.io/autoscaler/vertical-pod-autoscaler/e2e/go.sum
+
+      - name: Apt-get
+        run: sudo apt-get install libseccomp-dev -qq
+
+      - name: Prepare
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+        run: hack/install-verify-tools.sh
+        env:
+          GO111MODULE: auto
+
+      - name: Verify
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+        run: hack/verify-all.sh -v
+        env:
+          GO111MODULE: auto

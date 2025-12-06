@@ -75,6 +75,19 @@ func TestDesiredReplicasFromJob(t *testing.T) {
 			wantReplicas: 5,
 		},
 		{
+			name: "Parallelism is large while completion is 1",
+			job: &batchv1.Job{
+				Spec: batchv1.JobSpec{
+					Completions: &one,
+					Parallelism: &ten,
+				},
+				Status: batchv1.JobStatus{
+					Succeeded: 0,
+				},
+			},
+			wantReplicas: 1,
+		},
+		{
 			name: "Work queue with succeeded pods",
 			job: &batchv1.Job{
 				Spec: batchv1.JobSpec{

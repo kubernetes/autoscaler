@@ -20,10 +20,9 @@ import (
 	"math"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func mustParseToPointer(str string) *resource.Quantity {
@@ -60,6 +59,7 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 			originalRequest:    mustParseToPointer("1"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "no original request",
@@ -73,6 +73,7 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 			recommendedRequest: mustParseToPointer("0"),
 			defaultLimit:       mustParseToPointer("2"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "limit equal to request",
@@ -141,6 +142,7 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 			originalRequest:    mustParseToPointer("1"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "no original request",
@@ -154,6 +156,7 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 			recommendedRequest: mustParseToPointer("0"),
 			defaultLimit:       mustParseToPointer("2"),
 			expectLimit:        nil,
+			expectAnnotation:   true,
 		},
 		{
 			name:               "limit equal to request",

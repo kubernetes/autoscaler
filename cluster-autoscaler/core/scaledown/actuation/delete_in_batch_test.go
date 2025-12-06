@@ -34,8 +34,8 @@ import (
 )
 
 func TestAddNodeToBucket(t *testing.T) {
-	provider := testprovider.NewTestCloudProvider(nil, nil)
-	ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, provider, nil, nil)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, provider, nil, nil)
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
 	}
@@ -81,7 +81,7 @@ func TestAddNodeToBucket(t *testing.T) {
 	}
 	for _, test := range testcases {
 		d := NodeDeletionBatcher{
-			ctx:                   &ctx,
+			autoscalingCtx:        &autoscalingCtx,
 			scaleStateNotifier:    nil,
 			nodeDeletionTracker:   nil,
 			deletionsPerNodeGroup: make(map[string][]*apiv1.Node),
@@ -142,14 +142,14 @@ func TestRemove(t *testing.T) {
 			notDeletedNodes := make(chan string, 10)
 			// Hook node deletion at the level of cloud provider, to gather which nodes were deleted, and to fail the deletion for
 			// certain nodes to simulate errors.
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleDown(func(nodeGroup string, node string) error {
 				if failedNodeDeletion[node] {
 					notDeletedNodes <- node
 					return fmt.Errorf("SIMULATED ERROR: won't remove node")
 				}
 				deletedNodes <- node
 				return nil
-			})
+			}).Build()
 
 			fakeClient.Fake.AddReactor("update", "nodes",
 				func(action core.Action) (bool, runtime.Object, error) {
@@ -158,7 +158,7 @@ func TestRemove(t *testing.T) {
 					return true, obj, nil
 				})
 
-			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
@@ -170,7 +170,7 @@ func TestRemove(t *testing.T) {
 			nodeGroup := provider.GetNodeGroup(ng)
 
 			d := NodeDeletionBatcher{
-				ctx:                   &ctx,
+				autoscalingCtx:        &autoscalingCtx,
 				nodeDeletionTracker:   deletiontracker.NewNodeDeletionTracker(1 * time.Minute),
 				deletionsPerNodeGroup: make(map[string][]*apiv1.Node),
 				scaleStateNotifier:    scaleStateNotifier,

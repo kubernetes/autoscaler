@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
@@ -35,20 +35,20 @@ type PreFilteringScaleDownNodeProcessor struct {
 
 // GetPodDestinationCandidates returns nodes that potentially could act as destinations for pods
 // that would become unscheduled after a scale down.
-func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(ctx *context.AutoscalingContext,
+func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	return nodes, nil
 }
 
 // GetScaleDownCandidates returns nodes that potentially could be scaled down and
-func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context.AutoscalingContext,
+func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0, len(nodes))
 
-	nodeGroupSize := utils.GetNodeGroupSizeMap(ctx.CloudProvider)
+	nodeGroupSize := utils.GetNodeGroupSizeMap(autoscalingCtx.CloudProvider)
 
 	for _, node := range nodes {
-		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue

@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
@@ -267,14 +267,14 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := context.AutoscalingContext{
+			autoscalingCtx := ca_context.AutoscalingContext{
 				ScaleDownActuator: &mockActuator{&mockActuationStatus{tc.drainedNodes}},
 				ClusterSnapshot:   testsnapshot.NewTestSnapshotOrDie(t),
 			}
-			clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, tc.nodes, tc.pods)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 
 			processor := NewCurrentlyDrainedNodesPodListProcessor()
-			pods, err := processor.Process(&ctx, tc.unschedulablePods)
+			pods, err := processor.Process(&autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})

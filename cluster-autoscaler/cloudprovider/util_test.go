@@ -44,9 +44,12 @@ func TestBuildKubeProxy(t *testing.T) {
 }
 
 func TestJoinStringMaps(t *testing.T) {
+	emptyMapBeginning := make(map[string]string)
 	map1 := map[string]string{"1": "a", "2": "b"}
 	map2 := map[string]string{"3": "c", "2": "d"}
 	map3 := map[string]string{"5": "e"}
 	result := JoinStringMaps(map1, map2, map3)
+	emptyMapEnd := make(map[string]string)
+	result = JoinStringMaps(emptyMapBeginning, map1, map2, map3, emptyMapEnd)
 	assert.Equal(t, map[string]string{"1": "a", "2": "d", "3": "c", "5": "e"}, result)
 }

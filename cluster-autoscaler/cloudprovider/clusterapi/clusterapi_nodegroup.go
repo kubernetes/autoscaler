@@ -212,9 +212,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 	// provider.
 	actualNodes := 0
 	for _, node := range nodes {
-		if !isPendingMachineProviderID(normalizedProviderID(node.Id)) &&
-			!isFailedMachineProviderID(normalizedProviderID(node.Id)) &&
-			!isDeletingMachineProviderID(normalizedProviderID(node.Id)) {
+		if isProviderIDNormalized(normalizedProviderID(node.Id)) {
 			actualNodes += 1
 		}
 	}
@@ -255,9 +253,82 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 	// must match the ID on the Node object itself.
 	// https://github.com/kubernetes/autoscaler/blob/a973259f1852303ba38a3a61eeee8489cf4e1b13/cluster-autoscaler/clusterstate/clusterstate.go#L967-L985
 	instances := make([]cloudprovider.Instance, len(providerIDs))
-	for i := range providerIDs {
+	for i, providerID := range providerIDs {
+		providerIDNormalized := normalizedProviderID(providerID)
+
+		// Add instance Status to report instance state to cluster-autoscaler.
+		// This helps cluster-autoscaler make better scaling decisions.
+		//
+		// Machine can be Failed for a variety of reasons, here we are looking for a specific errors:
+		// - Failed to provision
+		// - Failed to delete.
+		// Other reasons for a machine to be in a Failed state are not forwarding Status to the autoscaler.
+		var status *cloudprovider.InstanceStatus
+		switch {
+		case isFailedMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine failed in node group %s (%s)", ng.Id(), providerID)
+
+			machine, err := ng.machineController.findMachineByProviderID(providerIDNormalized)
+			if err != nil {
+				return nil, err
+			}
+
+			if machine != nil {
+				if !machine.GetDeletionTimestamp().IsZero() {
+					klog.V(4).Infof("Machine failed in node group %s (%s) is being deleted", ng.Id(), providerID)
+					status = &cloudprovider.InstanceStatus{
+						State: cloudprovider.InstanceDeleting,
+						ErrorInfo: &cloudprovider.InstanceErrorInfo{
+							ErrorClass:   cloudprovider.OtherErrorClass,
+							ErrorCode:    "DeletingFailed",
+							ErrorMessage: "Machine deletion failed",
+						},
+					}
+				} else {
+					_, nodeFound, err := unstructured.NestedFieldCopy(machine.UnstructuredContent(), "status", "nodeRef")
+					if err != nil {
+						return nil, err
+					}
+
+					// Machine failed without a nodeRef, this indicates that the machine failed to provision.
+					// This is a special case where the machine is in a Failed state and the node is not created.
+					// Machine controller will not reconcile this machine, so we need to report this to the autoscaler.
+					if !nodeFound {
+						klog.V(4).Infof("Machine failed in node group %s (%s) was being created", ng.Id(), providerID)
+						status = &cloudprovider.InstanceStatus{
+							State: cloudprovider.InstanceCreating,
+							ErrorInfo: &cloudprovider.InstanceErrorInfo{
+								ErrorClass:   cloudprovider.OtherErrorClass,
+								ErrorCode:    "ProvisioningFailed",
+								ErrorMessage: "Machine provisioning failed",
+							},
+						}
+					}
+				}
+			}
+
+		case isPendingMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine pending in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+			}
+
+		case isDeletingMachineProviderID(providerIDNormalized):
+			klog.V(4).Infof("Machine deleting in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceDeleting,
+			}
+
+		default:
+			klog.V(4).Infof("Machine running in node group %s (%s)", ng.Id(), providerID)
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceRunning,
+			}
+		}
+
 		instances[i] = cloudprovider.Instance{
-			Id: providerIDs[i],
+			Id:     providerID,
+			Status: status,
 		}
 	}
 
@@ -290,22 +361,43 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		},
 	}
 
+	nsi := ng.scalableResource.InstanceSystemInfo()
+	if nsi != nil {
+		node.Status.NodeInfo = *nsi
+	}
+
 	node.Status.Capacity = capacity
 	node.Status.Allocatable = capacity
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	node.Spec.Taints = ng.scalableResource.Taints()
 
-	node.Labels, err = ng.buildTemplateLabels(nodeName)
+	node.Labels, err = ng.buildTemplateLabels(nodeName, nsi)
 	if err != nil {
 		return nil, err
 	}
 
-	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
+	resourceSlices, err := ng.scalableResource.InstanceResourceSlices(nodeName)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
 	return nodeInfo, nil
 }
 
-func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, error) {
-	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), ng.scalableResource.Labels())
+func (ng *nodegroup) buildTemplateLabels(nodeName string, nsi *corev1.NodeSystemInfo) (map[string]string, error) {
+	nsiLabels := make(map[string]string)
+	if nsi != nil {
+		nsiLabels[corev1.LabelArchStable] = nsi.Architecture
+		nsiLabels[corev1.LabelOSStable] = nsi.OperatingSystem
+	}
+
+	// The order of priority is:
+	// - Labels set in existing nodes for not-autoscale-from-zero cases
+	// - Labels set in the labels capacity annotation of machine template, machine set, and machine deployment.
+	// - Values in the status.nodeSystemInfo of MachineTemplates
+	// - Generic/default labels set in the environment of the cluster autoscaler
+	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), nsiLabels, ng.scalableResource.Labels())
 
 	nodes, err := ng.Nodes()
 	if err != nil {
@@ -378,8 +470,73 @@ func (ng *nodegroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeProvisionTimeKey); ok {
 		defaults.MaxNodeProvisionTime = opt
 	}
+	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeStartupTimeKey); ok {
+		defaults.MaxNodeStartupTime = opt
+	}
 
 	return &defaults, nil
+}
+
+func (ng *nodegroup) IsMachineDeploymentAndRollingOut() (bool, error) {
+	if ng.scalableResource.Kind() != machineDeploymentKind {
+		// Not a MachineDeployment.
+		return false, nil
+	}
+
+	machineSets, err := ng.machineController.listMachineSetsForMachineDeployment(ng.scalableResource.unstructured)
+	if err != nil {
+		return false, err
+	}
+
+	if len(machineSets) == 0 {
+		// No MachineSets => MD is not rolling out.
+		return false, nil
+	}
+
+	// Find the latest revision, the MachineSet with the latest revision is the MachineSet that
+	// matches the MachineDeployment spec.
+	var latestMSRevisionInt int64
+	for _, ms := range machineSets {
+		msRevision, ok := ms.GetAnnotations()[machineDeploymentRevisionAnnotation]
+		if !ok {
+			continue
+		}
+
+		msRevisionInt, err := strconv.ParseInt(msRevision, 10, 64)
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to parse current revision on MachineSet %s", klog.KObj(ms))
+		}
+		latestMSRevisionInt = max(latestMSRevisionInt, msRevisionInt)
+	}
+	maxMSRevision := strconv.FormatInt(latestMSRevisionInt, 10)
+
+	for _, ms := range machineSets {
+		if ms.GetAnnotations()[machineDeploymentRevisionAnnotation] == maxMSRevision {
+			// Ignore the MachineSet with the latest revision
+			continue
+		}
+
+		// Check if any of the old MachineSets still have replicas
+		replicas, found, err := unstructured.NestedInt64(ms.UnstructuredContent(), "spec", "replicas")
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to find spec replicas on MachineSet %s", klog.KObj(ms))
+		}
+		if found && replicas > 0 {
+			// Found old MachineSets that still has replicas => MD is still rolling out.
+			return true, nil
+		}
+		replicas, found, err = unstructured.NestedInt64(ms.UnstructuredContent(), "status", "replicas")
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to find status replicas on MachineSet %s", klog.KObj(ms))
+		}
+		if found && replicas > 0 {
+			// Found old MachineSets that still has replicas => MD is still rolling out.
+			return true, nil
+		}
+	}
+
+	// Didn't find any old MachineSets that still have replicas => MD is not rolling out.
+	return false, nil
 }
 
 func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {

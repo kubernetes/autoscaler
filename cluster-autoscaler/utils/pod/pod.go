@@ -17,10 +17,13 @@ limitations under the License.
 package pod
 
 import (
+	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	resourcehelper "k8s.io/component-helpers/resource"
 )
 
 const (
@@ -78,4 +81,15 @@ func ClearPodNodeNames(pods []*apiv1.Pod) []*apiv1.Pod {
 		newPods = append(newPods, &newPod)
 	}
 	return newPods
+}
+
+// PodRequests calculates Pod requests using a common resource helper shared with the scheduler
+func PodRequests(pod *apiv1.Pod) apiv1.ResourceList {
+	inPlacePodVerticalScalingEnabled := utilfeature.DefaultFeatureGate.Enabled(features.InPlacePodVerticalScaling)
+	podLevelResourcesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.PodLevelResources)
+
+	return resourcehelper.PodRequests(pod, resourcehelper.PodResourcesOptions{
+		UseStatusResources:    inPlacePodVerticalScalingEnabled,
+		SkipPodLevelResources: !podLevelResourcesEnabled,
+	})
 }

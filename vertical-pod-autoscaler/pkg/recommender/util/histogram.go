@@ -257,10 +257,10 @@ func (h *histogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint
 	for bucket, weight := range checkpoint.BucketWeights {
 		sum += int64(weight)
 		if bucket >= h.options.NumBuckets() {
-			return fmt.Errorf("Checkpoint has bucket %v that is exceeding histogram buckets %v", bucket, h.options.NumBuckets())
+			return fmt.Errorf("checkpoint has bucket %v that is exceeding histogram buckets %v", bucket, h.options.NumBuckets())
 		}
 		if bucket < 0 {
-			return fmt.Errorf("Checkpoint has a negative bucket %v", bucket)
+			return fmt.Errorf("checkpoint has a negative bucket %v", bucket)
 		}
 	}
 	if sum == 0 {
@@ -277,6 +277,15 @@ func (h *histogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint
 		h.bucketWeight[bucket] += float64(weight) * ratio
 	}
 	h.totalWeight += checkpoint.TotalWeight
+
+	// In some cases where the weight of the max bucket is close (equal or less) to `MaxCheckpointWeight` times epsilon
+	// and there are buckets with weights slightly higher or equal to epsilon, saving the histogram to a checkpoint and
+	// then loading it will cause the weights that are close to epsilon to become smaller than epsilon due to rounding errors
+	// and differences between the load and save algorithm. If one of those weights is the min weight, this will cause the
+	// histogram to incorrectly become "empty" and the `Percentile(...)` function to always return 0.
+	// To cover for such cases, the min and max buckets are updated here, so that those less than epsilon are dropped.
+	// For more information check https://github.com/kubernetes/autoscaler/issues/7726
+	h.updateMinAndMaxBucket()
 
 	return nil
 }

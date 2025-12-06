@@ -19,7 +19,6 @@ package model
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -93,7 +92,7 @@ func TestClusterAddSample(t *testing.T) {
 	assert.NoError(t, cluster.AddSample(makeTestUsageSample()))
 
 	// Verify that the sample was aggregated into the container stats.
-	containerStats := cluster.Pods[testPodID].Containers["container-1"]
+	containerStats := cluster.pods[testPodID].Containers["container-1"]
 	assert.Equal(t, testTimestamp, containerStats.LastCPUSampleStart)
 }
 
@@ -180,7 +179,7 @@ func TestClusterGCAggregateContainerStateDeletesEmptyInactiveWithoutController(t
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
-	cluster.Pods[pod.ID].Phase = apiv1.PodSucceeded
+	cluster.pods[pod.ID].Phase = apiv1.PodSucceeded
 	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, controller)
 
 	// AggregateContainerState should be empty as the pod is no longer active, controller is not alive
@@ -211,7 +210,7 @@ func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *te
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
-	cluster.Pods[pod.ID].Phase = apiv1.PodSucceeded
+	cluster.pods[pod.ID].Phase = apiv1.PodSucceeded
 	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, controller)
 
 	// AggregateContainerState should not be deleted as the controller is still alive.
@@ -342,33 +341,33 @@ func TestMissingKeys(t *testing.T) {
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 }
 
-func addVpa(cluster *ClusterState, id VpaID, annotations vpaAnnotationsMap, selector string, targetRef *autoscaling.CrossVersionObjectReference) *Vpa {
+func addVpa(cluster ClusterState, id VpaID, annotations vpaAnnotationsMap, selector string, targetRef *autoscaling.CrossVersionObjectReference) *Vpa {
 	apiObject := test.VerticalPodAutoscaler().WithNamespace(id.Namespace).
 		WithName(id.VpaName).WithContainer(testContainerID.ContainerName).WithAnnotations(annotations).WithTargetRef(targetRef).Get()
 	return addVpaObject(cluster, id, apiObject, selector)
 }
 
-func addVpaObject(cluster *ClusterState, id VpaID, vpa *vpa_types.VerticalPodAutoscaler, selector string) *Vpa {
+func addVpaObject(cluster ClusterState, id VpaID, vpa *vpa_types.VerticalPodAutoscaler, selector string) *Vpa {
 	labelSelector, _ := metav1.ParseToLabelSelector(selector)
 	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	err := cluster.AddOrUpdateVpa(vpa, parsedSelector)
 	if err != nil {
 		klog.ErrorS(err, "AddOrUpdateVpa() failed")
-		os.Exit(255)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
-	return cluster.Vpas[id]
+	return cluster.VPAs()[id]
 }
 
-func addTestVpa(cluster *ClusterState) *Vpa {
+func addTestVpa(cluster ClusterState) *Vpa {
 	return addVpa(cluster, testVpaID, testAnnotations, testSelectorStr, testTargetRef)
 }
 
-func addTestPod(cluster *ClusterState) *PodState {
+func addTestPod(cluster ClusterState) *PodState {
 	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
-	return cluster.Pods[testPodID]
+	return cluster.Pods()[testPodID]
 }
 
-func addTestContainer(t *testing.T, cluster *ClusterState) *ContainerState {
+func addTestContainer(t *testing.T, cluster ClusterState) *ContainerState {
 	err := cluster.AddOrUpdateContainer(testContainerID, testRequest)
 	assert.NoError(t, err)
 	return cluster.GetContainer(testContainerID)
@@ -612,7 +611,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			addTestContainer(t, cluster)
 			if tc.oldVpa != nil {
 				oldVpa := addVpaObject(cluster, testVpaID, tc.oldVpa, testSelectorStr)
-				if !assert.Contains(t, cluster.Vpas, testVpaID) {
+				if !assert.Contains(t, cluster.vpas, testVpaID) {
 					t.FailNow()
 				}
 				assert.Len(t, oldVpa.aggregateContainerStates, 1, "Expected one container aggregation in VPA %v", testVpaID)
@@ -622,7 +621,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			}
 			tc.newVpa.Spec.ResourcePolicy = tc.resourcePolicy
 			addVpaObject(cluster, testVpaID, tc.newVpa, testSelectorStr)
-			vpa, found := cluster.Vpas[testVpaID]
+			vpa, found := cluster.vpas[testVpaID]
 			if !assert.True(t, found, "VPA %+v not found in cluster state.", testVpaID) {
 				t.FailNow()
 			}
@@ -762,9 +761,9 @@ func TestRecordRecommendation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cluster := NewClusterState(testGcPeriod)
 			vpa := addVpa(cluster, testVpaID, testAnnotations, testSelectorStr, testTargetRef)
-			cluster.Vpas[testVpaID].Recommendation = tc.recommendation
+			cluster.vpas[testVpaID].Recommendation = tc.recommendation
 			if !tc.lastLogged.IsZero() {
-				cluster.EmptyVPAs[testVpaID] = tc.lastLogged
+				cluster.emptyVPAs[testVpaID] = tc.lastLogged
 			}
 
 			err := cluster.RecordRecommendation(vpa, tc.now)
@@ -773,10 +772,10 @@ func TestRecordRecommendation(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				if tc.expectedEmpty {
-					assert.Contains(t, cluster.EmptyVPAs, testVpaID)
-					assert.Equal(t, cluster.EmptyVPAs[testVpaID], tc.expectedLastLogged)
+					assert.Contains(t, cluster.emptyVPAs, testVpaID)
+					assert.Equal(t, cluster.emptyVPAs[testVpaID], tc.expectedLastLogged)
 				} else {
-					assert.NotContains(t, cluster.EmptyVPAs, testVpaID)
+					assert.NotContains(t, cluster.emptyVPAs, testVpaID)
 				}
 			}
 		})
@@ -924,7 +923,7 @@ func TestVPAWithMatchingPods(t *testing.T) {
 				containerID := ContainerID{testPodID, "foo"}
 				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
 			}
-			assert.Equal(t, tc.expectedMatch, cluster.Vpas[vpa.ID].PodCount)
+			assert.Equal(t, tc.expectedMatch, cluster.vpas[vpa.ID].PodCount)
 		})
 	}
 	// Run with adding Pods first
@@ -937,7 +936,7 @@ func TestVPAWithMatchingPods(t *testing.T) {
 				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
 			}
 			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector, testTargetRef)
-			assert.Equal(t, tc.expectedMatch, cluster.Vpas[vpa.ID].PodCount)
+			assert.Equal(t, tc.expectedMatch, cluster.vpas[vpa.ID].PodCount)
 		})
 	}
 }

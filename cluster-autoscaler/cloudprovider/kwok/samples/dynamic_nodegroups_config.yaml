@@ -9,9 +9,9 @@ nodegroups:
   # nodegroup1: [node1,node3]
   # nodegroup2: [node2]
   fromNodeLabelKey: "node.kubernetes.io/instance-type"
-  # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+  # you can either specify fromNodeLabelKey OR fromNodeAnnotationKey
   # (both are not allowed)
-  # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+  # fromNodeAnnotationKey: "eks.amazonaws.com/nodegroup"
 
 nodes:
   # kwok provider adds a taint on the template nodes

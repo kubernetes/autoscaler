@@ -26,6 +26,7 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/klog/v2"
 )
 
@@ -63,7 +64,7 @@ func filterFakePods[T any](podsWrappers []T, getPod func(T) *apiv1.Pod, resource
 
 	for _, podsWrapper := range podsWrappers {
 		currentPod := getPod(podsWrapper)
-		if !IsFake(currentPod) {
+		if !fake.IsFake(currentPod) {
 			filteredPodsSouces = append(filteredPodsSouces, podsWrapper)
 			continue
 		}
@@ -75,7 +76,7 @@ func filterFakePods[T any](podsWrappers []T, getPod func(T) *apiv1.Pod, resource
 		}
 
 		removedPods = append(removedPods, currentPod)
-		klog.V(5).Infof("Filtering out pod %s from PodsRemainUnschedulable with controller reference %s", currentPod.Name, controllerRef.Name)
+		klog.V(5).Infof("Filtering out pod %s from %v with controller reference %s", currentPod.Name, resourceName, controllerRef.Name)
 	}
 
 	logRemovedPods(removedPods, resourceName)
@@ -86,7 +87,7 @@ func filterFakePods[T any](podsWrappers []T, getPod func(T) *apiv1.Pod, resource
 func extractFakePodsControllersUIDs(NoScaleUpInfos []status.NoScaleUpInfo) map[types.UID]bool {
 	uids := make(map[types.UID]bool)
 	for _, NoScaleUpInfo := range NoScaleUpInfos {
-		if IsFake(NoScaleUpInfo.Pod) {
+		if fake.IsFake(NoScaleUpInfo.Pod) {
 			uids[NoScaleUpInfo.Pod.UID] = true
 		}
 	}

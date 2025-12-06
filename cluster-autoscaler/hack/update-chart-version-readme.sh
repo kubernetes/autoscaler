@@ -53,7 +53,7 @@ VERSIONS=$(
 
         (
             set -eo pipefail
-            cat $BASE/../../charts/cluster-autoscaler/Chart.yaml \
+            cat $BASE/charts/cluster-autoscaler/Chart.yaml \
                 | grep -e version -e appVersion
         ) \
             | sed -E -e 's/^([^:]+): (.*)/"\1": "\2"/g' \

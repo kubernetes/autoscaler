@@ -20,7 +20,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,7 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	autoscalerErrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
@@ -183,7 +185,7 @@ func (d *HetznerCloudProvider) Refresh() error {
 }
 
 // BuildHetzner builds the Hetzner cloud provider.
-func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	manager, err := newManager()
 	if err != nil {
 		klog.Fatalf("Failed to create Hetzner manager: %v", err)
@@ -196,6 +198,17 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 
 	if manager.clusterConfig.IsUsingNewFormat && len(manager.clusterConfig.NodeConfigs) == 0 {
 		klog.Fatalf("No cluster config present provider: %v", err)
+	}
+
+	var defaultSubnetIPRange *net.IPNet
+	if manager.clusterConfig.IsUsingNewFormat && manager.network != nil && manager.clusterConfig.DefaultSubnetIPRange != "" {
+		_, defaultSubnetIPRange, err = net.ParseCIDR(manager.clusterConfig.DefaultSubnetIPRange)
+		if err != nil {
+			klog.Fatalf("failed to parse default subnet ip range %s: %s", manager.clusterConfig.DefaultSubnetIPRange, err)
+		}
+		if !isIpRangeInNetwork(defaultSubnetIPRange, manager.network) {
+			klog.Fatalf("default subnet ip range %s is not part of network %s", manager.clusterConfig.DefaultSubnetIPRange, manager.network.Name)
+		}
 	}
 
 	validNodePoolName := regexp.MustCompile(`^[a-z0-9A-Z]+[a-z0-9A-Z\-\.\_]*[a-z0-9A-Z]+$|^[a-z0-9A-Z]{1}$`)
@@ -214,6 +227,7 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 		}
 
 		var placementGroup *hcloud.PlacementGroup
+		var subnetIPRange *net.IPNet
 		if manager.clusterConfig.IsUsingNewFormat {
 			_, ok := manager.clusterConfig.NodeConfigs[spec.name]
 			if !ok {
@@ -232,6 +246,20 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 				}
 				placementGroupTotals[placementGroup.Name] += spec.maxSize
 			}
+			if manager.network != nil {
+				if manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange != "" {
+					_, subnetIPRange, err = net.ParseCIDR(manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange)
+					if err != nil {
+						klog.Fatalf("failed to parse subnet ip range %s for node group %s: %s", manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange, spec.name, err)
+					}
+					if !isIpRangeInNetwork(subnetIPRange, manager.network) {
+						klog.Fatalf("subnet ip range %s for node group %s is not part of network %s", manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange, spec.name, manager.network.Name)
+					}
+				} else {
+					subnetIPRange = defaultSubnetIPRange
+				}
+			}
+
 		}
 
 		manager.nodeGroups[spec.name] = &hetznerNodeGroup{
@@ -244,6 +272,7 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 			targetSize:         len(servers),
 			clusterUpdateMutex: &clusterUpdateLock,
 			placementGroup:     placementGroup,
+			subnetIPRange:      subnetIPRange,
 		}
 	}
 
@@ -260,6 +289,15 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 	}
 
 	return provider
+}
+
+func isIpRangeInNetwork(ipRange *net.IPNet, network *hcloud.Network) bool {
+	return slices.ContainsFunc(network.Subnets, func(subnet hcloud.NetworkSubnet) bool {
+		if ipRange == nil || subnet.IPRange == nil {
+			return false
+		}
+		return subnet.IPRange.IP.Equal(ipRange.IP) && len(subnet.IPRange.Mask) == len(ipRange.Mask)
+	})
 }
 
 func getPlacementGroup(manager *hetznerManager, placementGroupRef string) (*hcloud.PlacementGroup, error) {

@@ -7,6 +7,8 @@ updates:
   open-pull-requests-limit: 0 # setting this to 0 means only allowing security updates, see https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/recommender"
   schedule:
@@ -17,6 +19,8 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/updater"
   schedule:
@@ -27,6 +31,8 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: docker
   directory: "/vertical-pod-autoscaler/pkg/admission-controller"
   schedule:
@@ -37,9 +43,95 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
+    - "release-note-none"
+    - "ok-to-test"
 - package-ecosystem: gomod
   directory: "/addon-resizer"
   schedule:
     interval: daily
   target-branch: "addon-resizer-release-1.8"
   open-pull-requests-limit: 3
+  labels:
+    - "release-note-none"
+    - "area/addon-resizer"
+    - "ok-to-test"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "weekly"
+  open-pull-requests-limit: 3
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
+# Go - Cluster Autoscaler
+- directory: "/cluster-autoscaler"
+  package-ecosystem: "gomod"
+  open-pull-requests-limit: 5
+  schedule:
+    interval: "daily"
+    time: "15:00"
+    # Use America/New_York Standard Time (UTC -05:00)
+    timezone: "America/New_York"
+  commit-message:
+    prefix: "dependabot"
+    include: scope
+  ignore:
+    # Update providers manually.
+    - dependency-name: "k8s.io/cloud-provider-aws/*"
+    - dependency-name: "github.com/aws/*"
+    - dependency-name: "k8s.io/cloud-provider-gcp/*"
+    - dependency-name: "cloud.google.com/go/compute/*"
+    - dependency-name: "sigs.k8s.io/cloud-provider-azure/*"
+    - dependency-name: "github.com/Azure/*"
+    - dependency-name: "github.com/Azure/go-autorest/autorest/*"
+    - dependency-name: "github.com/digitalocean/*"
+    # Update dependencies exclusively used by providers manually
+    - dependency-name: "github.com/gofrs/uuid"
+    - dependency-name: "github.com/google/go-querystring"
+    - dependency-name: "github.com/jmattheis/goverter"
+    - dependency-name: "github.com/jmespath/go-jmespath"
+    - dependency-name: "github.com/vburenin/ifacemaker"
+    - dependency-name: "golang.org/x/oauth2"
+    - dependency-name: "golang.org/x/sys"
+    - dependency-name: "google.golang.org/api"
+    - dependency-name: "gopkg.in/gcfg.v1"
+    - dependency-name: "sigs.k8s.io/yaml"
+    # Maintain k8s version skew compatibility manually.
+    - dependency-name: "k8s.io/kubernetes"
+    # Maintain k8s.io staging dependencies manually.
+    - dependency-name: "k8s.io/api"
+    - dependency-name: "k8s.io/apiextensions-apiserver"
+    - dependency-name: "k8s.io/apimachinery"
+    - dependency-name: "k8s.io/apiserver"
+    - dependency-name: "k8s.io/cli-runtime"
+    - dependency-name: "k8s.io/client-go"
+    - dependency-name: "k8s.io/cloud-provider"
+    - dependency-name: "k8s.io/cluster-bootstrap"
+    - dependency-name: "k8s.io/code-generator"
+    - dependency-name: "k8s.io/component-base"
+    - dependency-name: "k8s.io/component-helpers"
+    - dependency-name: "k8s.io/controller-manager"
+    - dependency-name: "k8s.io/cri-api"
+    - dependency-name: "k8s.io/cri-client"
+    - dependency-name: "k8s.io/csi-translation-lib"
+    - dependency-name: "k8s.io/dynamic-resource-allocation"
+    - dependency-name: "k8s.io/endpointslice"
+    - dependency-name: "k8s.io/externaljwt"
+    - dependency-name: "k8s.io/kms"
+    - dependency-name: "k8s.io/kube-aggregator"
+    - dependency-name: "k8s.io/kube-controller-manager"
+    - dependency-name: "k8s.io/kube-proxy"
+    - dependency-name: "k8s.io/kube-scheduler"
+    - dependency-name: "k8s.io/kubectl"
+    - dependency-name: "k8s.io/kubelet"
+    - dependency-name: "k8s.io/metrics"
+    - dependency-name: "k8s.io/mount-utils"
+    - dependency-name: "k8s.io/pod-security-admission"
+    - dependency-name: "k8s.io/sample-apiserver"
+    - dependency-name: "k8s.io/sample-cli-plugin"
+    - dependency-name: "k8s.io/sample-controller"
+  labels:
+    - "ok-to-test"
+    - "area/cluster-autoscaler"
+    - "area/dependency"

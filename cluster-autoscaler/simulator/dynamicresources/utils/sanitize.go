@@ -20,9 +20,10 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/utils/set"
 )
 
@@ -33,14 +34,14 @@ import (
 func SanitizedNodeResourceSlices(nodeLocalSlices []*resourceapi.ResourceSlice, newNodeName, nameSuffix string) (newSlices []*resourceapi.ResourceSlice, oldPoolNames set.Set[string], err error) {
 	oldPoolNames = set.New[string]()
 	for _, slice := range nodeLocalSlices {
-		if slice.Spec.NodeName == "" {
+		if slice.Spec.NodeName == nil || *slice.Spec.NodeName == "" {
 			return nil, nil, fmt.Errorf("can't sanitize slice %s because it isn't node-local", slice.Name)
 		}
 		sliceCopy := slice.DeepCopy()
 		sliceCopy.UID = uuid.NewUUID()
 		sliceCopy.Name = fmt.Sprintf("%s-%s", slice.Name, nameSuffix)
 		sliceCopy.Spec.Pool.Name = fmt.Sprintf("%s-%s", slice.Spec.Pool.Name, nameSuffix)
-		sliceCopy.Spec.NodeName = newNodeName
+		sliceCopy.Spec.NodeName = &newNodeName
 
 		oldPoolNames.Insert(slice.Spec.Pool.Name)
 		newSlices = append(newSlices, sliceCopy)
@@ -61,7 +62,7 @@ func SanitizedNodeResourceSlices(nodeLocalSlices []*resourceapi.ResourceSlice, n
 func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceapi.ResourceClaim, nameSuffix, newNodeName, oldNodeName string, oldNodePoolNames set.Set[string]) ([]*resourceapi.ResourceClaim, error) {
 	var result []*resourceapi.ResourceClaim
 	for _, claim := range claims {
-		if ownerName, ownerUid := ClaimOwningPod(claim); ownerName != oldOwner.Name || ownerUid != oldOwner.UID {
+		if err := resourceclaim.IsForPod(oldOwner, claim); err != nil {
 			// Only claims owned by the pod are bound to its lifecycle. The lifecycle of other claims is independent, and they're most likely shared
 			// by multiple pods. They shouldn't be sanitized or duplicated - just add unchanged to the result.
 			result = append(result, claim)

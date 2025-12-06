@@ -28,6 +28,7 @@ We use the issue to communicate what is state of the release.
    To see what code was actually tested, look for `===== last commit =====`
    entries in the full `build-log.txt` of a given test run.
 3. [ ] Make sure the end to end VPA tests are green.
+4. [ ] Make sure the [continuous image builds](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-images) are green.
 
 ### New minor release
 
@@ -46,6 +47,43 @@ We use the issue to communicate what is state of the release.
 
 ## Build and stage images
 
+Select either the Automatic and Manual process below.
+
+### Option 1: (Preferred) Automatic
+
+NOTE: Currently this process can only be used for new minor releases. Patch
+releases need to follow the manual process below.
+
+Images are continuously built as part of the PR release process and are listed
+in the following repository:
+[gcr.io/k8s-staging-autoscaling](http://gcr.io/k8s-staging-autoscaling). Also
+see the
+[dashboard](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-images)
+for build status.
+
+To stage an image:
+
+1. Pick an image to promote from the latest automatically built images in the
+repository. Make note of the automatically generated tag (the tag will contain
+the date, the name of the latest tag in the repository and a commit hash). For
+example `v20250430-cluster-autoscaler-chart-9.46.6-81-g6a6a912b4`.
+
+2. Set the `BUILD_TAG` variable to this tag in your shell:
+
+```sh
+export BUILD_TAG=<tag>
+```
+
+3. Now tag this image with the latest version tag and run the script:
+
+```sh
+cd vertical-pod-autoscaler/
+export TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
+./hack/tag-release.sh
+```
+
+### Option 2: Manual
+
 Create a fresh clone of the repo and switch to the `vpa-release-1.${minor}`
 branch. This makes sure you have no local changes while building the images.
 
@@ -57,6 +95,9 @@ git switch vpa-release-1.${minor}
 
 Once in the freshly cloned repo, build and stage the images.
 
+> [!NOTE]
+> Ensure you have run the following before building the images: `gcloud auth login` and `gcloud auth configure-docker -q`.
+
 ```sh
 cd vertical-pod-autoscaler/
 for component in recommender updater admission-controller ; do TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
@@ -67,7 +108,7 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
 1.  [ ] Create a Kubernetes cluster. If you're using GKE you can use the following command:
 
     ```shell
-    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3
+    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3 --release-channel=rapid
     ```
 
 1. [ ]  Create clusterrole. If you're using GKE you can use the following command:
@@ -119,37 +160,56 @@ we've been using them since `vertical-pod-autoscaler-0.1` and tags with the
 other pattern start only with `vertical-pod-autoscaler/v0.9.0` so we should make
 sure nothing we care about will break if we do.
 
-1.  [ ] Update information about newest version and K8s compatibility in
-    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation).
-
-1.  [ ] Update the yaml files:
+1.  [ ] Make the following changes in the release branch:
 
     ```sh
-    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment*.yaml ./hack/vpa-process-yaml.sh
+    git switch vpa-release-1.${minor}
     ```
-1.  [ ] Update the default tag in  [vpa-up.sh](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/vpa-up.sh).
 
-1.  [ ] Merge these changes into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release
-    (example PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
+2.  [ ] Update information about newest version and K8s compatibility in
+    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/installation.md#compatibility).
 
-1.  [ ] Tag the commit with version const change
+3.  [ ] Update the yaml and sh files:
 
     ```sh
+    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|g" ./deploy/*-deployment*.yaml
+    sed -i -s "s|DEFAULT_TAG=\"[0-9]\+\.[0-9]\+\.[0-9]\+\"|DEFAULT_TAG=\"[*vpa-version*]\"|g" ./hack/*.sh
+    ```
+
+4.  [ ] Generate the flags files:
+
+    ```sh
+    ./hack/generate-flags.sh
+    ```
+
+5.  [ ] Merge these changes into branch vpa-release-1.{$minor}. Make note of the commit hash and use it in the next step.
+
+    See https://github.com/kubernetes/autoscaler/pull/8154 as an example.
+
+6.  [ ] Tag the commit corresponding to the changes from above in the release branch.
+
+    ```sh
+    git checkout <commit hash>
     git tag -a vertical-pod-autoscaler-[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
     git tag -a vertical-pod-autoscaler/v[*vpa-version*] -m "Vertical Pod Autoscaler release [*vpa-version*]"
     ```
 
-1.  [ ] Push tag
+7.  [ ] Push tag
 
     ```sh
     git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler-[*vpa-version*]
     git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler/v[*vpa-version*]
     ```
 
-1.  [ ] To create and publish a github release from pushed tag go to
+8.  [ ] Create and publish a github release from pushed tag go to
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
-    press `Create release from tag`, complete release title and release notes, tick the
-    `This is a pre-release` box and press `Publish release`.
+    press `Create release from tag`, complete release title and release notes and press `Publish release`.
+
+9.  Repeat steps 2-5 above in the **main branch**.
+
+    After submitting, users who use `vpa-up.sh` will now start using the latest version.
+
+    IMPORTANT: Make sure the tags created above exist before merging into the main branch!
 
 ## Permissions
 

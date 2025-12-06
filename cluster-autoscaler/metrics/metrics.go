@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -100,8 +101,6 @@ const (
 const (
 	ScaleDown                  FunctionLabel = "scaleDown"
 	ScaleDownNodeDeletion      FunctionLabel = "scaleDown:nodeDeletion"
-	ScaleDownFindNodesToRemove FunctionLabel = "scaleDown:findNodesToRemove"
-	ScaleDownMiscOperations    FunctionLabel = "scaleDown:miscOperations"
 	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
 	ScaleUp                    FunctionLabel = "scaleUp"
 	BuildPodEquivalenceGroups  FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
@@ -418,6 +417,32 @@ var (
 			Help:      "Number of migs where instance count according to InstanceGroupManagers.List() differs from the results of Instances.List(). This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.",
 		},
 	)
+
+	binpackingHeterogeneity = k8smetrics.NewHistogramVec(
+		&k8smetrics.HistogramOpts{
+			Namespace: caNamespace,
+			Name:      "binpacking_heterogeneity",
+			Help:      "Number of groups of equivalent pods being processed as a part of the same binpacking simulation.",
+			Buckets:   k8smetrics.ExponentialBuckets(1, 2, 6), // 1, 2, 4, ..., 32
+		}, []string{"instance_type", "cpu_count", "namespace_count"},
+	)
+
+	maxNodeSkipEvalDurationSeconds = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "max_node_skip_eval_duration_seconds",
+			Help:      "Maximum evaluation time of a node being skipped during ScaleDown.",
+		},
+	)
+
+	scaleDownNodeRemovalLatency = k8smetrics.NewHistogramVec(
+		&k8smetrics.HistogramOpts{
+			Namespace: caNamespace,
+			Name:      "node_removal_latency_seconds",
+			Help:      "Latency from when an unneeded node is eligible for scale down until it is removed (deleted=true) or it became needed again (deleted=false).",
+			Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~24min
+		}, []string{"deleted"},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -453,6 +478,9 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(pendingNodeDeletions)
 	legacyregistry.MustRegister(nodeTaintsCount)
 	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
+	legacyregistry.MustRegister(binpackingHeterogeneity)
+	legacyregistry.MustRegister(maxNodeSkipEvalDurationSeconds)
+	legacyregistry.MustRegister(scaleDownNodeRemovalLatency)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -494,9 +522,7 @@ func UpdateDurationFromStart(label FunctionLabel, start time.Time) {
 
 // UpdateDuration records the duration of the step identified by the label
 func UpdateDuration(label FunctionLabel, duration time.Duration) {
-	// TODO(maciekpytel): remove second condition if we manage to get
-	// asynchronous node drain
-	if duration > LogLongDurationThreshold && label != ScaleDown {
+	if duration > LogLongDurationThreshold {
 		klog.V(4).Infof("Function %s took %v to complete", label, duration)
 	}
 	functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())
@@ -735,4 +761,22 @@ func ObserveNodeTaintsCount(taintType string, count float64) {
 // This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.
 func UpdateInconsistentInstancesMigsCount(migCount int) {
 	inconsistentInstancesMigsCount.Set(float64(migCount))
+}
+
+// ObserveBinpackingHeterogeneity records the number of pod equivalence groups
+// considered in a single binpacking estimation.
+func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount string, pegCount int) {
+	binpackingHeterogeneity.WithLabelValues(instanceType, cpuCount, namespaceCount).Observe(float64(pegCount))
+}
+
+// UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
+// again after being marked unneded
+func UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration) {
+	scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted)).Observe(duration.Seconds())
+}
+
+// ObserveMaxNodeSkipEvalDurationSeconds records the longest time during which node was skipped during ScaleDown.
+// If a node is skipped multiple times consecutively, we store only the earliest timestamp.
+func ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
+	maxNodeSkipEvalDurationSeconds.Set(duration.Seconds())
 }

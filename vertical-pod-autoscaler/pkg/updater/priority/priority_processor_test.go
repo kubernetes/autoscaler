@@ -19,14 +19,13 @@ package priority
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetUpdatePriority(t *testing.T) {
@@ -41,6 +40,16 @@ func TestGetUpdatePriority(t *testing.T) {
 			name: "simple scale up",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("2")).Get()).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            4.0,
+				ScaleUp:                 true,
+			},
+		}, {
+			name: "simple scale up, resources from containerStatus have higher priority",
+			pod: test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("10000")).Get()).
+				AddContainerStatus(test.ContainerStatus().WithName(containerName).WithCPURequest(resource.MustParse("2")).Get()).Get(),
+			vpa: test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            4.0,

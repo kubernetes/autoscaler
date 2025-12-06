@@ -33,6 +33,7 @@ import (
 	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 )
 
 var (
@@ -121,6 +122,23 @@ func (m *PodsEvictionRestrictionMock) CanEvict(pod *apiv1.Pod) bool {
 	return args.Bool(0)
 }
 
+// PodsInPlaceRestrictionMock is a mock of PodsInPlaceRestriction
+type PodsInPlaceRestrictionMock struct {
+	mock.Mock
+}
+
+// InPlaceUpdate is a mock implementation of PodsInPlaceRestriction.InPlaceUpdate
+func (m *PodsInPlaceRestrictionMock) InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+	args := m.Called(pod, eventRecorder)
+	return args.Error(0)
+}
+
+// CanInPlaceUpdate is a mock implementation of PodsInPlaceRestriction.CanInPlaceUpdate
+func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision {
+	args := m.Called(pod)
+	return args.Get(0).(utils.InPlaceDecision)
+}
+
 // PodListerMock is a mock of PodLister
 type PodListerMock struct {
 	mock.Mock
@@ -179,6 +197,36 @@ func (m *VerticalPodAutoscalerListerMock) VerticalPodAutoscalers(namespace strin
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalPodAutoscaler, error) {
+	return nil, fmt.Errorf("unimplemented")
+}
+
+// VerticalPodAutoscalerCheckPointListerMock is a mock of VerticalPodAutoscalerCheckPointLister
+type VerticalPodAutoscalerCheckPointListerMock struct {
+	mock.Mock
+}
+
+// List is a mock implementation of VerticalPodAutoscalerLister.List
+func (m *VerticalPodAutoscalerCheckPointListerMock) List(selector labels.Selector) (ret []*vpa_types.VerticalPodAutoscalerCheckpoint, err error) {
+	args := m.Called()
+	var returnArg []*vpa_types.VerticalPodAutoscalerCheckpoint
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).([]*vpa_types.VerticalPodAutoscalerCheckpoint)
+	}
+	return returnArg, args.Error(1)
+}
+
+// VerticalPodAutoscalerCheckpoints is a mock implementation of returning a lister for namespace.
+func (m *VerticalPodAutoscalerCheckPointListerMock) VerticalPodAutoscalerCheckpoints(namespace string) vpa_lister.VerticalPodAutoscalerCheckpointNamespaceLister {
+	args := m.Called(namespace)
+	var returnArg vpa_lister.VerticalPodAutoscalerCheckpointNamespaceLister
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).(vpa_lister.VerticalPodAutoscalerCheckpointNamespaceLister)
+	}
+	return returnArg
+}
+
+// Get is not implemented for this mock
+func (m *VerticalPodAutoscalerCheckPointListerMock) Get(name string) (*vpa_types.VerticalPodAutoscalerCheckpoint, error) {
 	return nil, fmt.Errorf("unimplemented")
 }
 

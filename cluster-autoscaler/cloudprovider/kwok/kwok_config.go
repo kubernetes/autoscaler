@@ -111,12 +111,12 @@ func LoadConfigFile(kubeClient kubeclient.Interface) (*KwokProviderConfig, error
 	}
 
 	if strings.TrimSpace(kwokConfig.Nodegroups.FromNodeLabelKey) == "" &&
-		strings.TrimSpace(kwokConfig.Nodegroups.FromNodeLabelAnnotation) == "" {
-		return nil, fmt.Errorf("please specify either 'nodegroups.fromNodeLabelKey' or 'nodegroups.fromNodeAnnotation' in kwok provider config (currently empty or undefined)")
+		strings.TrimSpace(kwokConfig.Nodegroups.FromNodeAnnotationKey) == "" {
+		return nil, fmt.Errorf("please specify either 'nodegroups.fromNodeLabelKey' or 'nodegroups.fromNodeAnnotationKey' in kwok provider config (currently empty or undefined)")
 	}
 	if strings.TrimSpace(kwokConfig.Nodegroups.FromNodeLabelKey) != "" &&
-		strings.TrimSpace(kwokConfig.Nodegroups.FromNodeLabelAnnotation) != "" {
-		return nil, fmt.Errorf("please specify either 'nodegroups.fromNodeLabelKey' or 'nodegroups.fromNodeAnnotation' in kwok provider config (you can't use both)")
+		strings.TrimSpace(kwokConfig.Nodegroups.FromNodeAnnotationKey) != "" {
+		return nil, fmt.Errorf("please specify either 'nodegroups.fromNodeLabelKey' or 'nodegroups.fromNodeAnnotationKey' in kwok provider config (you can't use both)")
 	}
 
 	if strings.TrimSpace(kwokConfig.Nodegroups.FromNodeLabelKey) != "" {
@@ -124,7 +124,7 @@ func LoadConfigFile(kubeClient kubeclient.Interface) (*KwokProviderConfig, error
 		kwokConfig.status.key = kwokConfig.Nodegroups.FromNodeLabelKey
 	} else {
 		kwokConfig.status.groupNodesBy = groupNodesByAnnotation
-		kwokConfig.status.key = kwokConfig.Nodegroups.FromNodeLabelAnnotation
+		kwokConfig.status.key = kwokConfig.Nodegroups.FromNodeAnnotationKey
 	}
 
 	if kwokConfig.Nodes == nil {

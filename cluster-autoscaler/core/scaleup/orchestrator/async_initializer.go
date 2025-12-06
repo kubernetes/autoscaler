@@ -25,7 +25,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
@@ -49,7 +49,7 @@ type AsyncNodeGroupInitializer struct {
 	taintConfig            taints.TaintConfig
 	daemonSets             []*appsv1.DaemonSet
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor
-	context                *context.AutoscalingContext
+	autoscalingCtx         *ca_context.AutoscalingContext
 	atomicScaleUp          bool
 }
 
@@ -61,7 +61,7 @@ func NewAsyncNodeGroupInitializer(
 	taintConfig taints.TaintConfig,
 	daemonSets []*appsv1.DaemonSet,
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor,
-	context *context.AutoscalingContext,
+	autoscalingCtx *ca_context.AutoscalingContext,
 	atomicScaleUp bool,
 ) *AsyncNodeGroupInitializer {
 	return &AsyncNodeGroupInitializer{
@@ -73,7 +73,7 @@ func NewAsyncNodeGroupInitializer(
 		taintConfig:            taintConfig,
 		daemonSets:             daemonSets,
 		scaleUpStatusProcessor: scaleUpStatusProcessor,
-		context:                context,
+		autoscalingCtx:         autoscalingCtx,
 		atomicScaleUp:          atomicScaleUp,
 	}
 }
@@ -155,9 +155,17 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 		return
 	}
 	klog.Infof("Initial scale-up succeeded. Scale ups: %v", scaleUpInfos)
+	s.emitScaleUpStatus(&status.ScaleUpStatus{
+		Result:                 status.ScaleUpSuccessful,
+		ScaleUpInfos:           scaleUpInfos,
+		CreateNodeGroupResults: []nodegroups.CreateNodeGroupResult{result.CreationResult},
+		PodsTriggeredScaleUp:   s.triggeringPods,
+	}, nil)
 }
 
 func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.ScaleUpStatus, err errors.AutoscalerError) {
-	status.UpdateScaleUpError(scaleUpStatus, err)
-	s.scaleUpStatusProcessor.Process(s.context, scaleUpStatus)
+	if err != nil {
+		status.UpdateScaleUpError(scaleUpStatus, err)
+	}
+	s.scaleUpStatusProcessor.Process(s.autoscalingCtx, scaleUpStatus)
 }

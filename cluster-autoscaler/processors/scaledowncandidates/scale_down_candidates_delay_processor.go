@@ -24,7 +24,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
@@ -37,18 +37,18 @@ type ScaleDownCandidatesDelayProcessor struct {
 }
 
 // GetPodDestinationCandidates returns nodes as is no processing is required here
-func (p *ScaleDownCandidatesDelayProcessor) GetPodDestinationCandidates(ctx *context.AutoscalingContext,
+func (p *ScaleDownCandidatesDelayProcessor) GetPodDestinationCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	return nodes, nil
 }
 
 // GetScaleDownCandidates returns filter nodes based on if scale down is enabled or disabled per nodegroup.
-func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(ctx *context.AutoscalingContext,
+func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := []*apiv1.Node{}
 
 	for _, node := range nodes {
-		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue
@@ -70,15 +70,15 @@ func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(ctx *context.
 			return false
 		}
 
-		if recent(p.scaleUps, ctx.ScaleDownDelayAfterAdd, "scaled up") {
+		if recent(p.scaleUps, autoscalingCtx.ScaleDownDelayAfterAdd, "scaled up") {
 			continue
 		}
 
-		if recent(p.scaleDowns, ctx.ScaleDownDelayAfterDelete, "scaled down") {
+		if recent(p.scaleDowns, autoscalingCtx.ScaleDownDelayAfterDelete, "scaled down") {
 			continue
 		}
 
-		if recent(p.scaleDownFailures, ctx.ScaleDownDelayAfterFailure, "failed to scale down") {
+		if recent(p.scaleDownFailures, autoscalingCtx.ScaleDownDelayAfterFailure, "failed to scale down") {
 			continue
 		}
 

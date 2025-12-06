@@ -1,0 +1,239 @@
+# Image pull secrets.
+imagePullSecrets: []
+
+# Override the name of the chart.
+nameOverride:
+
+# Override the full name of the chart.
+fullnameOverride:
+
+# Labels to add to all chart resources.
+commonLabels: {}
+
+rbac:
+  # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
+  create: true
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+
+containerSecurityContext: {}
+
+admissionController:
+  enabled: true
+  image:
+    # Image repository for the Admission Controller default container.
+    repository: registry.k8s.io/autoscaling/vpa-admission-controller
+    # Image tag for the Admission Controller default container; this will default to `.Chart.AppVersion` if not set
+    tag:
+    # Image pull policy for the Admission Controller default container.
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    # If `true`, create a new `ServiceAccount` for the Admission Controller.
+    create: true
+    # Labels to add to the Admission Controller service account.
+    labels: {}
+    # Annotations to add to the Admission Controller service account.
+    annotations: {}
+
+  service:
+    name: vpa-webhook
+    # Annotations to add to the Admission Controller service.
+    annotations: {}
+    ports:
+      - port: 443
+        protocol: TCP
+        targetPort: 8000
+
+  # Number of Admission Controller replicas to create.
+  replicas: 2
+
+  # Labels to add to the Admission Controller pod.
+  podLabels: {}
+
+  # Annotations to add to the Admission Controller pod.
+  podAnnotations: {}
+
+  # Additional environment variables for the Admission Controller default container.
+  extraEnv: []
+
+  # Additional args for the Admission Controller default container.
+  extraArgs: []
+
+  # Resources for the Admission Controller default container.
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 50m
+      memory: 200Mi
+
+  # Node selector labels for scheduling the Admission Controller.
+  nodeSelector: {}
+
+  # Affinity for pod assignment.
+  affinity: {}
+
+  # List of node taints to tolerate.
+  tolerations: []
+
+  tls:
+    secretName: vpa-tls-certs
+    caCert: ""
+    cert: ""
+    key: ""
+    existingSecret: ""
+
+  volumes:
+    - name: tls-certs
+      secret:
+        defaultMode: 420
+        secretName: vpa-tls-certs
+
+  volumeMounts:
+    - name: tls-certs
+      mountPath: /etc/tls-certs
+      readOnly: true
+
+  podDisruptionBudget:
+    enabled: true
+    # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    minAvailable: 1
+    # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    maxUnavailable:
+    # maxUnavailable: 1
+
+recommender:
+  enabled: true
+  image:
+    # Image repository for the Recommender default container.
+    repository: registry.k8s.io/autoscaling/vpa-recommender
+    # Image tag for the Recommender default container; this will default to `.Chart.AppVersion` if not set
+    tag:
+    # Image pull policy for the Recommender default container.
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    # If `true`, create a new `ServiceAccount` for the Recommender.
+    create: true
+    # Labels to add to the Recommender service account.
+    labels: {}
+    # Annotations to add to the Recommender service account.
+    annotations: {}
+
+  # Number of Recommender replicas to create.
+  replicas: 2
+
+  # Labels to add to the Recommender pod.
+  podLabels: {}
+
+  # Annotations to add to the Recommender pod.
+  podAnnotations: {}
+
+  # Additional environment variables for the Recommender default container.
+  extraEnv: []
+
+  # Additional args for the Recommender default container.
+  extraArgs: []
+
+  # Resources for the Recommender default container.
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1000Mi
+    requests:
+      cpu: 50m
+      memory: 500Mi
+
+  # Node selector labels for scheduling the Recommender.
+  nodeSelector: {}
+
+  # Affinity rules for scheduling the Recommender.
+  affinity: {}
+
+  # Tolerations for scheduling the Recommender.
+  tolerations: []
+
+  # Leader election configuration for the Recommender.
+  # When running multiple replicas, leader election ensures only one instance is actively processing.
+  leaderElection:
+    # Enable leader election. If not set (null), automatically enabled when replicas > 1
+    enabled:
+    # Namespace for the lease resource. Defaults to Release.Namespace if not set.
+    resourceNamespace: ""
+    # Name of the lease resource.
+    resourceName: "vpa-recommender-lease"
+    # Duration that non-leader candidates will wait after observing a leadership renewal.
+    leaseDuration: "15s"
+    # Interval between attempts by the acting master to renew a leadership slot.
+    renewDeadline: "10s"
+    # Duration the clients should wait between attempting acquisition and renewal of a leadership.
+    retryPeriod: "2s"
+
+  # PodDisruptionBudget for the Recommender.
+  podDisruptionBudget:
+    enabled: true
+    # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    minAvailable: 1
+    # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    maxUnavailable:
+    # maxUnavailable: 1
+
+updater:
+  enabled: true
+  image:
+    # Image repository for the Updater default container.
+    repository: registry.k8s.io/autoscaling/vpa-updater
+    # Image tag for the Updater default container; this will default to `.Chart.AppVersion` if not set
+    tag:
+    # Image pull policy for the Updater default container.
+    pullPolicy: IfNotPresent
+
+  # Number of Updater replicas to create.
+  replicas: 2
+
+  # Labels to add to the Updater pod.
+  podLabels: {}
+
+  # Annotations to add to the Updater pod.
+  podAnnotations: {}
+  serviceAccount:
+    # If `true`, create a new `ServiceAccount` for the Updater.
+    create: true
+    # Labels to add to the Updater service account.
+    labels: {}
+    # Annotations to add to the Updater service account.
+    annotations: {}
+  
+  # Leader election configuration for the Updater.
+  # When running multiple replicas, leader election ensures only one instance is actively processing.
+  leaderElection:
+    # Enable leader election. If not set (null), automatically enabled when replicas > 1
+    enabled:
+    # Namespace for the lease resource. Defaults to Release.Namespace if not set.
+    resourceNamespace: ""
+    # Name of the lease resource.
+    resourceName: vpa-updater-lease
+    # Duration that non-leader candidates will wait after observing a leadership renewal.
+    leaseDuration: 15s
+    # Interval between attempts by the acting master to renew a leadership slot.
+    renewDeadline: 10s
+    # Duration the clients should wait between attempting acquisition and renewal of a leadership.
+    retryPeriod: 2s
+
+  # PodDisruptionBudget for the Updater.
+  podDisruptionBudget:
+    enabled: true
+    # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    minAvailable: 1
+    # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
+    # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
+    maxUnavailable:

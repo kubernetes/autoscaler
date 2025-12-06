@@ -21,7 +21,7 @@ go get -u github.com/gofrs/flock
 
 ## Usage
 ```Go
-import "github.com/gofrs/flock"
+import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/gofrs/flock"
 
 fileLock := flock.New("/var/lock/go-lock.lock")
 

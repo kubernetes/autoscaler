@@ -28,7 +28,7 @@ import (
 	brightbox "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox/status"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
@@ -221,7 +221,7 @@ func (b *brightboxCloudProvider) Cleanup() error {
 
 // BuildBrightbox builds the Brightbox provider
 func BuildBrightbox(
-	opts config.AutoscalingOptions,
+	opts *coreoptions.AutoscalerOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 ) cloudprovider.CloudProvider {
