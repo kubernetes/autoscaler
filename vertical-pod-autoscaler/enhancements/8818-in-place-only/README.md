@@ -76,50 +76,55 @@ Modify the `CanInPlaceUpdate` to accomdate the new update mode:
 
 ```golang
 func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
-    switch updateMode {
-    case vpa_types.UpdateModeInPlaceOrRecreate:
-        if !features.Enabled(features.InPlaceOrRecreate) {
-            return utils.InPlaceEvict
-        }
-    case vpa_types.UpdateModeInPlace:
-        if !features.Enabled(features.InPlace) {
-            return utils.InPlaceEvict
-        }
-    default:
-        return utils.InPlaceEvict
-    }
+	switch updateMode {
+	case vpa_types.UpdateModeInPlaceOrRecreate:
+		if !features.Enabled(features.InPlaceOrRecreate) {
+			return utils.InPlaceEvict
+		}
+	case vpa_types.UpdateModeInPlace:
+		if !features.Enabled(features.InPlace) {
+			return utils.InPlaceEvict
+		}
+	case vpa_types.UpdateModeAuto:
+		// Auto mode is deprecated but still supports in-place updates
+		// when the feature gate is enabled
+		if !features.Enabled(features.InPlaceOrRecreate) {
+			return utils.InPlaceEvict
+		}
+	default:
+		// UpdateModeOff, UpdateModeInitial, UpdateModeRecreate, etc.
+		return utils.InPlaceEvict
+	}
 
-    cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
-    if present {
-        singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
-        if pod.Status.Phase == apiv1.PodPending {
-            return utils.InPlaceDeferred
-        }
-        if present {
-            if isInPlaceUpdating(pod) {
-                // For InPlace mode we wait indefinitely for Kubelet
-                if updateMode == vpa_types.UpdateModeInPlace {
-                    klog.V(4).InfoS("Pod is updating, waiting for completion (InPlace mode)",
-                        "pod", klog.KObj(pod))
-                    return utils.InPlaceDeferred
-                }
-
-                // For InPlaceOrRecreate mode, check timeout
-                canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
-                if canEvict {
+	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
+	if present {
+		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
+		if pod.Status.Phase == apiv1.PodPending {
+			return utils.InPlaceDeferred
+		}
+		if present {
+			if isInPlaceUpdating(pod) {
+				// For InPlace mode we wait indefinitely for Kubelet
+				if updateMode == vpa_types.UpdateModeInPlace {
+					klog.V(4).InfoS("Pod is updating, waiting for completion (InPlace mode)", "pod", klog.KObj(pod))
+					return utils.InPlaceDeferred
+				}
+				// For InPlaceOrRecreate mode, check timeout
+				canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
+				if canEvict {
                     klog.V(2).InfoS("Pod update timed out, suggesting eviction",
                         "pod", klog.KObj(pod))
-                    return utils.InPlaceEvict
-                }
-                return utils.InPlaceDeferred
-            }
-            if singleGroupStats.isPodDisruptable() {
-                return utils.InPlaceApproved
-            }
-        }
-    }
-    klog.V(4).InfoS("Can't in-place update pod, waiting for next loop", "pod", klog.KObj(pod))
-    return utils.InPlaceDeferred
+					return utils.InPlaceEvict
+				}
+				return utils.InPlaceDeferred
+			}
+			if singleGroupStats.isPodDisruptable() {
+				return utils.InPlaceApproved
+			}
+		}
+	}
+	    klog.V(4).InfoS("Can't in-place update pod, waiting for next loop", "pod", klog.KObj(pod))
+	return utils.InPlaceDeferred
 }
 ```
 
@@ -152,17 +157,28 @@ for _, pod := range podsForInPlace {
 
 
 Retry is handled entirely by the Kubelet based on pod conditions:
-- `PodResizePending` (reason: `Deferred`) - Kubelet will retry automatically
-- `PodResizePending` (reason: `Infeasible`) - Kubelet will never retry
-- `PodResizeInProgress` - Resize is being applied
+- `PodResizePending` (reason: `Deferred`) - Kubelet will retry automatically, , VPA continues to defer.
+- `PodResizePending` (reason: `Infeasible`) - Kubelet will never retry, but VPA will continue to defer (not evict) in InPlace mode.
+- `PodResizeInProgress` - Resize is being applied, VPA waits indefinitely in InPlace mode.
+
+### Behavior when Feature Gate is Disabled
+
+- When `InPlace` feature gate is disabled and a VPA is configured with `UpdateMode: InPlace`, the updater will skip processing that VPA entirely (not fall back to eviction).
+- In contrast, `InPlaceOrRecreate` with its feature gate disabled will fall back to eviction mode.
+
+This design ensures that `InPlace` mode truly guarantees no evictions, even in misconfiguration scenarios.
+
 
 ## Test Plan
 
 The following test scenarios will be added to e2e tests. The InPlace mode will be tested in the following scenarios:
 
 - Basic In-Place Update: Pod successfully updated in-place with InPlace mode
-- Failed Update - No Eviction: Update fails due to node capacity, verify no eviction occurs and pod remains running
+- No Eviction on Failure: Update fails due to node capacity, verify no eviction occurs and pod remains running
+- Feature Gate Disabled: Verify InPlace mode is rejected when feature gate is disabled
+- Indefinite Wait for In-Progress Updates: Update is in-progress for extended period, verify no timeout/eviction occurs (unlike `InPlaceOrRecreate`)
 - Failed Update - Retry Success: Update fails initially, conditions improve, verify successful retry
+- Infeasible Resize Handling: Pod resize marked as infeasible, verify pod is deferred (not evicted)
 
 ## Upgrade / Downgrade Strategy
 
