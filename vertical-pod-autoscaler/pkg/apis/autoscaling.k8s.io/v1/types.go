@@ -134,7 +134,7 @@ type EvictionRequirement struct {
 // PodUpdatePolicy describes the rules on how changes are applied to the pods.
 type PodUpdatePolicy struct {
 	// Controls when autoscaler applies changes to the pod resources.
-	// The default is 'Auto'.
+	// The default is 'Recreate'.
 	// +optional
 	UpdateMode *UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
 

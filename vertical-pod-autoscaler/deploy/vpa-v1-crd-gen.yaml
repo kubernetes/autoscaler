@@ -469,7 +469,7 @@ spec:
                   updateMode:
                     description: |-
                       Controls when autoscaler applies changes to the pod resources.
-                      The default is 'Auto'.
+                      The default is 'Recreate'.
                     enum:
                     - "Off"
                     - Initial
