@@ -19,6 +19,14 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
+# Support for enabling all feature gates via environment variable
+export FEATURE_GATES=""
+
+if [ "${ENABLE_ALL_FEATURE_GATES:-}" == "true" ] ; then
+  export FEATURE_GATES='AllAlpha=true,AllBeta=true'
+  echo " ** Enabling all feature gates: ${FEATURE_GATES}"
+fi
+
 SUITE=full-vpa
 REQUIRED_COMMANDS="
 docker
