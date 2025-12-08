@@ -112,7 +112,7 @@ func filterOutCapacityBuffersPod[T any](podsWrappers []T, getPod func(T) *apiv1.
 	filteredOutPodsSources := make([]T, 0)
 	for _, podsWrapper := range podsWrappers {
 		currentPod := getPod(podsWrapper)
-		if isFakeCapacityBuffersPod(currentPod) {
+		if IsFakeCapacityBuffersPod(currentPod) {
 			filteredOutPodsSources = append(filteredOutPodsSources, podsWrapper)
 		} else {
 			filteredPodsSources = append(filteredPodsSources, podsWrapper)
