@@ -1096,6 +1096,168 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
 	})
+
+	ginkgo.It("applies recommendations to native sidecar containers", framework.WithFeatureGate(features.NativeSidecar), func() {
+		ginkgo.By("Setting up a deployment with native sidecar")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("100m"),  /*main CPU*/
+			ParseQuantityOrDie("100Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),   /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"),  /*sidecar memory*/
+		)
+
+		ginkgo.By("Setting up a VPA CRD")
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		sidecarName := "native-sidecar"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(mainContainerName).
+					WithTarget("200m", "150Mi").
+					WithLowerBound("200m", "150Mi").
+					WithUpperBound("200m", "150Mi").
+					GetContainerResources()).
+			WithContainer(sidecarName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(sidecarName).
+					WithTarget("100m", "80Mi").
+					WithLowerBound("100m", "80Mi").
+					WithUpperBound("100m", "80Mi").
+					GetContainerResources()).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Verify main container gets recommended resources
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("150Mi")))
+
+			// Verify native sidecar gets recommended resources
+			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(1))
+			gomega.Expect(pod.Spec.InitContainers[0].Name).To(gomega.Equal(sidecarName))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
+
+			// Verify it's a native sidecar with RestartPolicy=Always
+			gomega.Expect(pod.Spec.InitContainers[0].RestartPolicy).ToNot(gomega.BeNil())
+			gomega.Expect(*pod.Spec.InitContainers[0].RestartPolicy).To(gomega.Equal(apiv1.ContainerRestartPolicyAlways))
+		}
+	})
+
+	ginkgo.It("respects container policy mode Off for native sidecars", framework.WithFeatureGate(features.NativeSidecar), func() {
+		ginkgo.By("Setting up a deployment with native sidecar")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("100m"),  /*main CPU*/
+			ParseQuantityOrDie("100Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),   /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"),  /*sidecar memory*/
+		)
+
+		ginkgo.By("Setting up a VPA CRD with sidecar mode Off")
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		sidecarName := "native-sidecar"
+		modeOff := vpa_types.ContainerScalingModeOff
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(mainContainerName).
+					WithTarget("200m", "150Mi").
+					WithLowerBound("200m", "150Mi").
+					WithUpperBound("200m", "150Mi").
+					GetContainerResources()).
+			WithContainer(sidecarName).
+			WithScalingMode(sidecarName, modeOff).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Verify main container gets recommended resources
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("150Mi")))
+
+			// Verify native sidecar keeps original resources (mode Off)
+			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(1))
+			gomega.Expect(pod.Spec.InitContainers[0].Name).To(gomega.Equal(sidecarName))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
+		}
+	})
+
+	ginkgo.It("applies limits correctly for native sidecars", framework.WithFeatureGate(features.NativeSidecar), func() {
+		ginkgo.By("Setting up a deployment with native sidecar with limits")
+		d := NewHamsterDeploymentWithNativeSidecarAndLimits(f,
+			ParseQuantityOrDie("100m"),  /*main CPU request*/
+			ParseQuantityOrDie("100Mi"), /*main memory request*/
+			ParseQuantityOrDie("200m"),  /*main CPU limit*/
+			ParseQuantityOrDie("200Mi"), /*main memory limit*/
+			ParseQuantityOrDie("50m"),   /*sidecar CPU request*/
+			ParseQuantityOrDie("50Mi"),  /*sidecar memory request*/
+			ParseQuantityOrDie("100m"),  /*sidecar CPU limit*/
+			ParseQuantityOrDie("100Mi"), /*sidecar memory limit*/
+		)
+
+		ginkgo.By("Setting up a VPA CRD")
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		sidecarName := "native-sidecar"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(mainContainerName).
+					WithTarget("250m", "250Mi").
+					WithLowerBound("250m", "250Mi").
+					WithUpperBound("250m", "250Mi").
+					GetContainerResources()).
+			WithContainer(sidecarName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(sidecarName).
+					WithTarget("150m", "150Mi").
+					WithLowerBound("150m", "150Mi").
+					WithUpperBound("150m", "150Mi").
+					GetContainerResources()).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Verify main container - recommendation should be capped to limits
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+
+			// Verify native sidecar - recommendation should be capped to limits
+			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(1))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+		}
+	})
 })
 
 func waitForVpaWebhookRegistration(f *framework.Framework) {

@@ -463,3 +463,67 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 	framework.Logf("finished waiting for at least one pod to be updated without eviction")
 	return err
 }
+
+// NewHamsterDeploymentWithNativeSidecar creates a hamster deployment with a native sidecar (init container with restartPolicy=Always)
+func NewHamsterDeploymentWithNativeSidecar(f *framework.Framework, mainCPU, mainMemory, sidecarCPU, sidecarMemory resource.Quantity) *appsv1.Deployment {
+	d := NewHamsterDeployment(f)
+	d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+		apiv1.ResourceCPU:    mainCPU,
+		apiv1.ResourceMemory: mainMemory,
+	}
+
+	// Add native sidecar as initContainer with RestartPolicy=Always
+	restartPolicy := apiv1.ContainerRestartPolicyAlways
+	sidecar := apiv1.Container{
+		Name:  "native-sidecar",
+		Image: "registry.k8s.io/pause:3.9",
+		Resources: apiv1.ResourceRequirements{
+			Requests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    sidecarCPU,
+				apiv1.ResourceMemory: sidecarMemory,
+			},
+		},
+		RestartPolicy: &restartPolicy,
+	}
+	d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, sidecar)
+
+	return d
+}
+
+// NewHamsterDeploymentWithNativeSidecarAndLimits creates a hamster deployment with a native sidecar including resource limits
+func NewHamsterDeploymentWithNativeSidecarAndLimits(f *framework.Framework,
+	mainCPURequest, mainMemoryRequest, mainCPULimit, mainMemoryLimit resource.Quantity,
+	sidecarCPURequest, sidecarMemoryRequest, sidecarCPULimit, sidecarMemoryLimit resource.Quantity) *appsv1.Deployment {
+	d := NewHamsterDeployment(f)
+	d.Spec.Template.Spec.Containers[0].Resources = apiv1.ResourceRequirements{
+		Requests: apiv1.ResourceList{
+			apiv1.ResourceCPU:    mainCPURequest,
+			apiv1.ResourceMemory: mainMemoryRequest,
+		},
+		Limits: apiv1.ResourceList{
+			apiv1.ResourceCPU:    mainCPULimit,
+			apiv1.ResourceMemory: mainMemoryLimit,
+		},
+	}
+
+	// Add native sidecar as initContainer with RestartPolicy=Always
+	restartPolicy := apiv1.ContainerRestartPolicyAlways
+	sidecar := apiv1.Container{
+		Name:  "native-sidecar",
+		Image: "registry.k8s.io/pause:3.9",
+		Resources: apiv1.ResourceRequirements{
+			Requests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    sidecarCPURequest,
+				apiv1.ResourceMemory: sidecarMemoryRequest,
+			},
+			Limits: apiv1.ResourceList{
+				apiv1.ResourceCPU:    sidecarCPULimit,
+				apiv1.ResourceMemory: sidecarMemoryLimit,
+			},
+		},
+		RestartPolicy: &restartPolicy,
+	}
+	d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, sidecar)
+
+	return d
+}

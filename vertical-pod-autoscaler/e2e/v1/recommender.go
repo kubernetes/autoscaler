@@ -477,6 +477,132 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 				int64(customBumpMemory),
 				oomBumpUpRatio))
 	})
+
+	ginkgo.It("generates recommendations for native sidecar containers", framework.WithFeatureGate(features.NativeSidecar), func() {
+		ginkgo.By("Setting up a deployment with native sidecar")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("100m"),  /*main CPU*/
+			ParseQuantityOrDie("100Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),   /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"),  /*sidecar memory*/
+		)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+		gomega.Expect(podList.Items).NotTo(gomega.BeEmpty())
+
+		// Verify native sidecar is present
+		for _, pod := range podList.Items {
+			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(1))
+			gomega.Expect(pod.Spec.InitContainers[0].Name).To(gomega.Equal("native-sidecar"))
+			gomega.Expect(pod.Spec.InitContainers[0].RestartPolicy).ToNot(gomega.BeNil())
+			gomega.Expect(*pod.Spec.InitContainers[0].RestartPolicy).To(gomega.Equal(apiv1.ContainerRestartPolicyAlways))
+		}
+
+		ginkgo.By("Setting up a VPA CRD")
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		sidecarName := "native-sidecar"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			WithContainer(sidecarName).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for both containers")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// Should have recommendations for both main container and native sidecar
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).To(gomega.HaveLen(2))
+
+		// Verify we have recommendations for both containers
+		var mainRec, sidecarRec *vpa_types.RecommendedContainerResources
+		for i := range vpa.Status.Recommendation.ContainerRecommendations {
+			rec := &vpa.Status.Recommendation.ContainerRecommendations[i]
+			if rec.ContainerName == mainContainerName {
+				mainRec = rec
+			} else if rec.ContainerName == sidecarName {
+				sidecarRec = rec
+			}
+		}
+
+		gomega.Expect(mainRec).NotTo(gomega.BeNil(), "Main container should have a recommendation")
+		gomega.Expect(sidecarRec).NotTo(gomega.BeNil(), "Native sidecar should have a recommendation")
+
+		// Verify recommendations are non-zero
+		mainCPUTarget := mainRec.Target[apiv1.ResourceCPU]
+		mainMemTarget := mainRec.Target[apiv1.ResourceMemory]
+		sidecarCPUTarget := sidecarRec.Target[apiv1.ResourceCPU]
+		sidecarMemTarget := sidecarRec.Target[apiv1.ResourceMemory]
+
+		gomega.Expect(mainCPUTarget.Value()).To(gomega.BeNumerically(">", 0))
+		gomega.Expect(mainMemTarget.Value()).To(gomega.BeNumerically(">", 0))
+		gomega.Expect(sidecarCPUTarget.Value()).To(gomega.BeNumerically(">", 0))
+		gomega.Expect(sidecarMemTarget.Value()).To(gomega.BeNumerically(">", 0))
+	})
+
+	ginkgo.It("tracks resource usage for native sidecar containers independently", framework.WithFeatureGate(features.NativeSidecar), func() {
+		ginkgo.By("Setting up a deployment with native sidecar")
+		// Use different initial resources to verify independent tracking
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("200m"),  /*main CPU*/
+			ParseQuantityOrDie("200Mi"), /*main memory*/
+			ParseQuantityOrDie("25m"),   /*sidecar CPU - much smaller*/
+			ParseQuantityOrDie("25Mi"),  /*sidecar memory - much smaller*/
+		)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+		gomega.Expect(podList.Items).NotTo(gomega.BeEmpty())
+
+		ginkgo.By("Setting up a VPA CRD")
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		sidecarName := "native-sidecar"
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			WithContainer(sidecarName).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).To(gomega.HaveLen(2))
+
+		// Get recommendations for both containers
+		var mainRec, sidecarRec *vpa_types.RecommendedContainerResources
+		for i := range vpa.Status.Recommendation.ContainerRecommendations {
+			rec := &vpa.Status.Recommendation.ContainerRecommendations[i]
+			if rec.ContainerName == mainContainerName {
+				mainRec = rec
+			} else if rec.ContainerName == sidecarName {
+				sidecarRec = rec
+			}
+		}
+
+		// Main container (hamster) should have higher CPU recommendation since it's actively using CPU
+		// Native sidecar (pause) should have minimal CPU recommendation since it's idle
+		mainCPUTarget := mainRec.Target[apiv1.ResourceCPU]
+		sidecarCPUTarget := sidecarRec.Target[apiv1.ResourceCPU]
+		mainCPU := mainCPUTarget.Value()
+		sidecarCPU := sidecarCPUTarget.Value()
+
+		framework.Logf("Main container CPU recommendation: %dm", mainCPU)
+		framework.Logf("Native sidecar CPU recommendation: %dm", sidecarCPU)
+
+		// Verify they have different recommendations (independent tracking)
+		// The main container should generally need more CPU than the pause container
+		gomega.Expect(mainCPU).To(gomega.BeNumerically(">", sidecarCPU),
+			"Main container should have higher CPU recommendation than idle sidecar")
+	})
 })
 
 func deleteRecommender(c clientset.Interface) error {
