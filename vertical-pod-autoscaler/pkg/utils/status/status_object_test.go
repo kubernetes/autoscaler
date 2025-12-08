@@ -129,7 +129,7 @@ func TestUpdateStatus(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			fc := fake.NewSimpleClientset()
+			fc := fake.NewClientset()
 			fc.PrependReactor("get", "leases", tc.updateReactor)
 			fc.PrependReactor("create", "leases", tc.updateReactor)
 			fc.PrependReactor("update", "leases", tc.updateReactor)
@@ -204,7 +204,7 @@ func TestGetStatus(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			fc := fake.NewSimpleClientset()
+			fc := fake.NewClientset()
 			fc.PrependReactor("get", "leases", tc.getReactor)
 			client := NewClient(fc, leaseName, leaseNamespace, 10*time.Second, leaseName)
 			_, err := client.getStatus(context.Background())

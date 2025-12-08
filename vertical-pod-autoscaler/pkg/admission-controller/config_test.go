@@ -29,7 +29,7 @@ import (
 
 func TestSelfRegistrationBase(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"
@@ -73,7 +73,7 @@ func TestSelfRegistrationBase(t *testing.T) {
 
 func TestSelfRegistrationWithURL(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"
@@ -101,7 +101,7 @@ func TestSelfRegistrationWithURL(t *testing.T) {
 
 func TestSelfRegistrationWithOutURL(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"
@@ -131,7 +131,7 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 
 func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"
@@ -162,7 +162,7 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 
 func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"
@@ -194,7 +194,7 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 
 func TestSelfRegistrationWithFailurePolicy(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"
@@ -221,7 +221,7 @@ func TestSelfRegistrationWithFailurePolicy(t *testing.T) {
 
 func TestSelfRegistrationWithOutFailurePolicy(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"
@@ -248,7 +248,7 @@ func TestSelfRegistrationWithOutFailurePolicy(t *testing.T) {
 
 func TestSelfRegistrationWithInvalidLabels(t *testing.T) {
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
 	namespace := "default"

@@ -453,7 +453,7 @@ func TestRunOnceIgnoreNamespaceMatching(t *testing.T) {
 }
 
 func TestNewEventRecorder(t *testing.T) {
-	fakeClient := fake.NewSimpleClientset()
+	fakeClient := fake.NewClientset()
 	er := newEventRecorder(fakeClient)
 
 	maxRetries := 5
