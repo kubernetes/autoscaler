@@ -19,6 +19,7 @@ package azure
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -30,8 +31,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	azStorage "github.com/Azure/azure-sdk-for-go/storage"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/Azure/go-autorest/autorest"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -117,22 +120,34 @@ func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error 
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	storageKeysResult, rerr := util.manager.azClient.storageAccountsClient.ListKeys(ctx, util.manager.config.SubscriptionID, util.manager.config.ResourceGroup, accountName)
+	storageKeysResult, rerr := util.manager.azClient.storageAccountsClient.ListKeys(ctx, util.manager.config.ResourceGroup, accountName, nil)
 	if rerr != nil {
-		return rerr.Error()
+		return rerr
 	}
 
-	keys := *storageKeysResult.Keys
-	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, ptr.Deref(keys[0].Value, ""), util.manager.env)
+	keys := storageKeysResult.Keys
+	if len(keys) == 0 {
+		return fmt.Errorf("no storage keys found for account %s", accountName)
+	}
+
+	// Construct service URL using the storage account endpoint
+	serviceURL := fmt.Sprintf("https://%s.blob.%s", accountName, util.manager.env.StorageEndpointSuffix)
+
+	// Create a SharedKeyCredential
+	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(keys[0].Value, ""))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create shared key credential: %w", err)
 	}
 
-	bs := client.GetBlobService()
-	containerRef := bs.GetContainerReference(vhdContainer)
-	blobRef := containerRef.GetBlobReference(vhdBlob)
+	// Create a service client
+	serviceClient, err := azblob.NewClientWithSharedKeyCredential(serviceURL, credential, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create service client: %w", err)
+	}
 
-	return blobRef.Delete(&azStorage.DeleteBlobOptions{})
+	// Delete the blob
+	_, err = serviceClient.DeleteBlob(ctx, vhdContainer, vhdBlob, nil)
+	return err
 }
 
 // DeleteVirtualMachine deletes a VM and any associated OS disk
@@ -140,28 +155,30 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	vm, rerr := util.manager.azClient.virtualMachinesClient.Get(ctx, rg, name, "")
+	vm, rerr := util.manager.azClient.virtualMachinesClient.Get(ctx, rg, name, nil)
 	if rerr != nil {
-		if exists, _ := checkResourceExistsFromRetryError(rerr); !exists {
+		// Check if it's a 404 error indicating resource doesn't exist
+		var respErr *azcore.ResponseError
+		if errors.As(rerr, &respErr) && respErr.StatusCode == http.StatusNotFound {
 			klog.V(2).Infof("VirtualMachine %s/%s has already been removed", rg, name)
 			return nil
 		}
 
 		klog.Errorf("failed to get VM: %s/%s: %s", rg, name, rerr.Error())
-		return rerr.Error()
+		return rerr
 	}
 
-	vhd := vm.VirtualMachineProperties.StorageProfile.OsDisk.Vhd
-	managedDisk := vm.VirtualMachineProperties.StorageProfile.OsDisk.ManagedDisk
+	vhd := vm.Properties.StorageProfile.OSDisk.Vhd
+	managedDisk := vm.Properties.StorageProfile.OSDisk.ManagedDisk
 	if vhd == nil && managedDisk == nil {
 		klog.Errorf("failed to get a valid os disk URI for VM: %s/%s", rg, name)
 		return fmt.Errorf("os disk does not have a VHD URI")
 	}
 
-	osDiskName := vm.VirtualMachineProperties.StorageProfile.OsDisk.Name
+	osDiskName := vm.Properties.StorageProfile.OSDisk.Name
 	var nicName string
 	var err error
-	nicID := (*vm.VirtualMachineProperties.NetworkProfile.NetworkInterfaces)[0].ID
+	nicID := (vm.Properties.NetworkProfile.NetworkInterfaces)[0].ID
 	if nicID == nil {
 		klog.Warningf("NIC ID is not set for VM (%s/%s)", rg, name)
 	} else {
@@ -177,10 +194,13 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 	defer deleteCancel()
 
 	klog.Infof("waiting for VirtualMachine deletion: %s/%s", rg, name)
-	rerr = util.manager.azClient.virtualMachinesClient.Delete(deleteCtx, rg, name)
-	_, realErr := checkResourceExistsFromRetryError(rerr)
-	if realErr != nil {
-		return realErr
+	poller, rerr := util.manager.azClient.virtualMachinesClient.BeginDelete(deleteCtx, rg, name, nil)
+	if rerr != nil {
+		return rerr
+	}
+	_, rerr = poller.PollUntilDone(deleteCtx, &runtime.PollUntilDoneOptions{Frequency: 30 * time.Second})
+	if rerr != nil {
+		return rerr
 	}
 	klog.V(2).Infof("VirtualMachine %s/%s removed", rg, name)
 
@@ -189,10 +209,13 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 		interfaceCtx, interfaceCancel := getContextWithCancel()
 		defer interfaceCancel()
 		klog.Infof("waiting for nic deletion: %s/%s", rg, nicName)
-		nicErr := util.manager.azClient.interfacesClient.Delete(interfaceCtx, rg, nicName)
-		_, realErr := checkResourceExistsFromRetryError(nicErr)
-		if realErr != nil {
-			return realErr
+		poller, nicErr := util.manager.azClient.interfacesClient.BeginDelete(interfaceCtx, rg, nicName, nil)
+		if nicErr != nil {
+			return nicErr
+		}
+		_, nicErr = poller.PollUntilDone(interfaceCtx, &runtime.PollUntilDoneOptions{Frequency: 30 * time.Second})
+		if nicErr != nil {
+			return nicErr
 		}
 		klog.V(2).Infof("interface %s/%s removed", rg, nicName)
 	}
@@ -220,12 +243,15 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 			klog.Infof("deleting managed disk: %s/%s", rg, *osDiskName)
 			disksCtx, disksCancel := getContextWithCancel()
 			defer disksCancel()
-			diskErr := util.manager.azClient.disksClient.Delete(disksCtx, util.manager.config.SubscriptionID, rg, *osDiskName)
-			_, realErr := checkResourceExistsFromRetryError(diskErr)
-			if realErr != nil {
-				return realErr
+			poller, diskErr := util.manager.azClient.disksClient.BeginDelete(disksCtx, rg, *osDiskName, nil)
+			if diskErr != nil {
+				return diskErr
 			}
-			klog.V(2).Infof("disk %s/%s removed", rg, *osDiskName)
+			_, diskErr = poller.PollUntilDone(disksCtx, &runtime.PollUntilDoneOptions{Frequency: 30 * time.Second})
+			if diskErr != nil {
+				return diskErr
+			}
+			klog.V(2).Infof("Managed disk %s/%s removed", rg, *osDiskName)
 		}
 	}
 	return nil
@@ -259,7 +285,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 		if ok && resourceType == nsgResourceType {
 			if nsgIndex != -1 {
 				err := fmt.Errorf("found 2 resources with type %s in the template. There should only be 1", nsgResourceType)
-				klog.Errorf(err.Error())
+				klog.Error(err.Error())
 				return err
 			}
 			nsgIndex = index
@@ -267,7 +293,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 		if ok && resourceType == rtResourceType {
 			if rtIndex != -1 {
 				err := fmt.Errorf("found 2 resources with type %s in the template. There should only be 1", rtResourceType)
-				klog.Warningf(err.Error())
+				klog.Warning(err.Error())
 				return err
 			}
 			rtIndex = index
@@ -296,7 +322,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 	indexesToRemove := []int{}
 	if nsgIndex == -1 {
 		err := fmt.Errorf("found no resources with type %s in the template. There should have been 1", nsgResourceType)
-		klog.Errorf(err.Error())
+		klog.Error(err.Error())
 		return err
 	}
 	if rtIndex == -1 {
@@ -478,15 +504,15 @@ func windowsVMNameParts(vmName string) (poolPrefix string, orch string, poolInde
 }
 
 // GetVMNameIndex return the index of VM in the node pools.
-func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, error) {
+func GetVMNameIndex(osType armcompute.OperatingSystemTypes, vmName string) (int, error) {
 	var agentIndex int
 	var err error
-	if osType == compute.OperatingSystemTypesLinux {
+	if osType == armcompute.OperatingSystemTypesLinux {
 		_, _, agentIndex, err = k8sLinuxVMNameParts(vmName)
 		if err != nil {
 			return 0, err
 		}
-	} else if osType == compute.OperatingSystemTypesWindows {
+	} else if osType == armcompute.OperatingSystemTypesWindows {
 		_, _, _, agentIndex, err = windowsVMNameParts(vmName)
 		if err != nil {
 			return 0, err
@@ -625,7 +651,7 @@ func isKnownVmPowerState(powerState string) bool {
 	return knownPowerStates[powerState]
 }
 
-func vmPowerStateFromStatuses(statuses []compute.InstanceViewStatus) string {
+func vmPowerStateFromStatuses(statuses []armcompute.InstanceViewStatus) string {
 	for _, status := range statuses {
 		if status.Code == nil || !isKnownVmPowerState(*status.Code) {
 			continue
