@@ -17,6 +17,10 @@ limitations under the License.
 package slicer
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"net/http"
 	"os"
 
 	kubeclient "k8s.io/client-go/kubernetes"
@@ -57,12 +61,21 @@ func BuildSlicer(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroup
 
 	klog.V(2).Infof("Slicer: K3S URL=%s", cfg.k3sURL)
 	klog.V(2).Infof("Slicer: K3S token length=%d", len(cfg.k3sToken))
+	if cfg.caBundle != "" {
+		klog.V(2).Infof("Slicer: Using custom CA bundle: %s", cfg.caBundle)
+	}
 
 	groups := []*SlicerNodeGroup{}
 	for nodeGroupName, nodeGroup := range cfg.nodeGroupCfg {
 		userAgent := "cluster-autoscaler/dev"
-		// Create API client
-		apiClient := sdk.NewSlicerClient(nodeGroup.slicerUrl, nodeGroup.slicerToken, userAgent, nil)
+
+		// Create custom HTTP client with CA bundle if specified
+		httpClient, err := createHTTPClientWithCABundle(cfg.caBundle)
+		if err != nil {
+			klog.Fatalf("Failed to create HTTP client with CA bundle for %s: %v", nodeGroupName, err)
+		}
+
+		apiClient := sdk.NewSlicerClient(nodeGroup.slicerUrl, nodeGroup.slicerToken, userAgent, httpClient)
 
 		restGroups, err := apiClient.GetHostGroups()
 		if err != nil {
@@ -277,4 +290,32 @@ func (s *SlicerCloudProvider) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 func (s *SlicerCloudProvider) Refresh() error {
 	return nil
+}
+
+// createHTTPClientWithCABundle creates an HTTP client with optional custom CA bundle
+func createHTTPClientWithCABundle(caBundlePath string) (*http.Client, error) {
+	if caBundlePath == "" {
+		return http.DefaultClient, nil
+	}
+
+	// Read the CA bundle file
+	caBundlePEM, err := os.ReadFile(caBundlePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read CA bundle file %s: %w", caBundlePath, err)
+	}
+
+	// Create a certificate pool and add the CA bundle
+	caCertPool := x509.NewCertPool()
+	if !caCertPool.AppendCertsFromPEM(caBundlePEM) {
+		return nil, fmt.Errorf("failed to parse CA bundle from %s", caBundlePath)
+	}
+
+	// Create HTTP client with custom TLS config
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: caCertPool,
+		},
+	}
+
+	return &http.Client{Transport: transport}, nil
 }

@@ -56,6 +56,7 @@ func (ng *nodeGroupConfig) MaxSize() int {
 type slicerConfig struct {
 	k3sURL         string
 	k3sToken       string
+	caBundle       string
 	defaultMinSize int
 	defaultMaxSize int
 	nodeGroupCfg   map[string]*nodeGroupConfig
@@ -71,10 +72,16 @@ func (sc *slicerConfig) DefaultMaxSize() int {
 	return sc.defaultMaxSize
 }
 
+// CABundle returns the CA bundle path
+func (sc *slicerConfig) CABundle() string {
+	return sc.caBundle
+}
+
 // GcfgGlobalConfig is the gcfg representation of the global section in the cloud config file for slicer.
 type GcfgGlobalConfig struct {
 	K3SURL         string `gcfg:"k3s-url"`
 	K3SToken       string `gcfg:"k3s-token"`
+	CABundle       string `gcfg:"ca-bundle"`
 	DefaultMinSize string `gcfg:"default-min-size"`
 	DefaultMaxSize string `gcfg:"default-max-size"`
 }
@@ -142,6 +149,7 @@ func buildConfig(config io.Reader) (*slicerConfig, error) {
 	return &slicerConfig{
 		k3sURL:         gcfgCloudConfig.Global.K3SURL,
 		k3sToken:       gcfgCloudConfig.Global.K3SToken,
+		caBundle:       gcfgCloudConfig.Global.CABundle,
 		defaultMinSize: defaultMinSize,
 		defaultMaxSize: defaultMaxSize,
 		nodeGroupCfg:   nodeGroupCfg,

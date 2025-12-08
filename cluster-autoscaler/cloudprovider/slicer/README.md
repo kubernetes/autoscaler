@@ -17,6 +17,7 @@ The `cluster-autoscaler` with Slicer needs a configuration file to work by using
 |-----|-------|-----------|---------|
 | `global/k3s-url` | The URL of the K3s control plane API server | yes | none |
 | `global/k3s-token` | The K3s join token for adding new agent nodes | yes | none |
+| `global/ca-bundle` | Path to custom CA bundle file for Slicer API calls | no | none (uses system default CAs) |
 | `global/default-min-size` | Default minimum size of a node group (must be > 0) | no | 1 |
 | `global/default-max-size` | Default maximum size of a node group | no | 8 |
 | `nodegroup \"slicer_host_group_name\"/slicer-url` | The URL of the Slicer API server for this node group | yes | none |
