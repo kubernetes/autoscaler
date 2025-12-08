@@ -354,39 +354,3 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 
 	return podList
 }
-
-func setupPodsForInPlaceMode(f *framework.Framework, hamsterCPU, hamsterMemory string, withRecommendation bool) *apiv1.PodList {
-	controller := &autoscaling.CrossVersionObjectReference{
-		APIVersion: "apps/v1",
-		Kind:       "Deployment",
-		Name:       "hamster-deployment",
-	}
-	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
-	setupHamsterController(f, controller.Kind, hamsterCPU, hamsterMemory, utils.DefaultHamsterReplicas)
-	podList, err := GetHamsterPods(f)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-	ginkgo.By("Setting up a VPA CRD with InPlace mode")
-	containerName := utils.GetHamsterContainerNameByIndex(0)
-	vpaBuilder := test.VerticalPodAutoscaler().
-		WithName("hamster-vpa").
-		WithNamespace(f.Namespace.Name).
-		WithTargetRef(controller).
-		WithUpdateMode(vpa_types.UpdateModeInPlace).
-		WithContainer(containerName)
-
-	if withRecommendation {
-		vpaBuilder = vpaBuilder.AppendRecommendation(
-			test.Recommendation().
-				WithContainer(containerName).
-				WithTarget(containerName, "200m").
-				WithLowerBound(containerName, "200m").
-				WithUpperBound(containerName, "200m").
-				GetContainerResources())
-	}
-
-	vpaCRD := vpaBuilder.Get()
-	utils.InstallVPA(f, vpaCRD)
-
-	return podList
-}
