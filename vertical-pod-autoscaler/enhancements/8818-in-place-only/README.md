@@ -50,7 +50,7 @@ In these scenarios, users would prefer:
 - Guarantee that all updates will eventually succeed (node capacity constraints may prevent this)
 - Provide mechanisms to automatically increase node capacity to accommodate updates
 - Change the behavior of existing update modes (Off, Recreate, InPlaceOrRecreate)
-- Eliminate all possible disruption scenarios (see Risk Mitigation for details on memory limit downsizing risks)
+- Eliminate all possible disruption scenarios (see [Risk Mitigation](#risk-mitigation) for details on memory limit downsizing risks)
 
 
 ## Proposal
