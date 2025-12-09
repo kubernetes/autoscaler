@@ -43,6 +43,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -154,6 +155,9 @@ func NewStaticAutoscaler(
 	}
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+
+	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(processors.TemplateNodeInfoProvider)
+
 	autoscalingCtx := ca_context.NewAutoscalingContext(
 		opts,
 		fwHandle,
@@ -165,7 +169,8 @@ func NewStaticAutoscaler(
 		debuggingSnapshotter,
 		remainingPdbTracker,
 		clusterStateRegistry,
-		draProvider)
+		draProvider,
+		templateNodeInfoRegistry)
 
 	taintConfig := taints.NewTaintConfig(opts)
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
@@ -358,11 +363,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return typedErr.AddPrefix("failed to initialize RemainingPdbTracker: ")
 	}
 
-	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingCtx, allNodes, daemonsets, a.taintConfig, currentTime)
-	if autoscalerError != nil {
-		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
-		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
+	if autoscalerError := a.AutoscalingContext.TemplateNodeInfoRegistry.Recompute(a.AutoscalingContext, allNodes, daemonsets, a.taintConfig, currentTime); autoscalerError != nil {
+		klog.Errorf("Failed to recompute template node infos: %v", autoscalerError)
+		return autoscalerError.AddPrefix("failed to recompute template node infos: ")
 	}
+	nodeInfosForGroups := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
 
 	a.DebuggingSnapshotter.SetTemplateNodes(nodeInfosForGroups)
 
