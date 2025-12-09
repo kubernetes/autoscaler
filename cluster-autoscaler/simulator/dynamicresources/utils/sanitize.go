@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
+	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 )
 
@@ -54,11 +55,13 @@ func SanitizedNodeResourceSlices(nodeLocalSlices []*resourceapi.ResourceSlice, n
 //   - ResourceClaims not owned by oldOwner are returned unchanged in the result. They are shared claims not bound to the
 //     lifecycle of the duplicated pod, so they shouldn't be duplicated.
 //   - Works for unallocated claims (e.g. if the pod being duplicated isn't scheduled).
+//   - Works for claims with only AdminAccess allocations, which can be safely duplicated without sanitization since they
+//     don't reserve devices.
 //   - Works for claims allocated on a single node that is being duplicated (e.g. if the pod being duplicated is a scheduled DS pod).
 //     The name of the old node and its pools have to be provided in this case. Such allocated claims are pointed to newNodeName,
-//     and nameSuffix is appended to all pool names in allocation results, to match the pool names of the new, duplicated node.
-//   - Returns an error if any of the allocated claims is not node-local on oldNodeName. Such allocations can't be sanitized, the only
-//     option is to clear the allocation and run scheduler filters&reserve to get a new allocation when duplicating a pod.
+//     and nameSuffix is appended to all pool names in non-AdminAccess allocation results, to match the pool names of the new, duplicated node.
+//   - Returns an error if any of the allocated non-AdminAccess claims is not node-local on oldNodeName. Such allocations can't be sanitized,
+//     the only option is to clear the allocation and run scheduler filters&reserve to get a new allocation when duplicating a pod.
 func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceapi.ResourceClaim, nameSuffix, newNodeName, oldNodeName string, oldNodePoolNames set.Set[string]) ([]*resourceapi.ResourceClaim, error) {
 	var result []*resourceapi.ResourceClaim
 	for _, claim := range claims {
@@ -81,20 +84,30 @@ func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceap
 			continue
 		}
 
-		if singleNodeSelector := nodeSelectorSingleNode(claimCopy.Status.Allocation.NodeSelector); singleNodeSelector == "" || singleNodeSelector != oldNodeName {
-			// This claim most likely has an allocation available on more than a single Node. We can't sanitize it, and it shouldn't be duplicated as we'd
-			// have multiple claims allocating the same devices.
-			return nil, fmt.Errorf("claim %s/%s is allocated, but not node-local on %s - can't be sanitized", claim.Namespace, claim.Name, oldNodeName)
-		}
-
 		var sanitizedAllocations []resourceapi.DeviceRequestAllocationResult
+		hasRegularAllocations := false
 		for _, devAlloc := range claim.Status.Allocation.Devices.Results {
+			if ptr.Deref(devAlloc.AdminAccess, false) {
+				// AdminAccess Device allocations don't actually reserve the Device, and the same Device can be allocated for multiple AdminAccess requests.
+				// When we just copy the allocation without sanitizing, we introduce multiple allocations for the same DRA Device.
+				// But this is fine for AdminAccess allocations, so in this case we can just copy it.
+				sanitizedAllocations = append(sanitizedAllocations, devAlloc)
+				continue
+			}
+			hasRegularAllocations = true
 			// It's possible to have both node-local and global allocations in a single resource claim. Make sure that all allocations were node-local on the old node.
 			if !oldNodePoolNames.Has(devAlloc.Pool) {
 				return nil, fmt.Errorf("claim %s/%s has an allocation %s, from a pool that isn't node-local on %s - can't be sanitized", claim.Namespace, claim.Name, devAlloc.Request, oldNodeName)
 			}
 			devAlloc.Pool = fmt.Sprintf("%s-%s", devAlloc.Pool, nameSuffix)
 			sanitizedAllocations = append(sanitizedAllocations, devAlloc)
+		}
+
+		// if all allocations were AdminAccess, we're done checking for node-locality, doesn't matter since it doesn't reserve anything.
+		if singleNodeSelector := nodeSelectorSingleNode(claimCopy.Status.Allocation.NodeSelector); hasRegularAllocations && (singleNodeSelector == "" || singleNodeSelector != oldNodeName) {
+			// This claim most likely has an allocation available on more than a single Node. We can't sanitize it, and it shouldn't be duplicated as we'd
+			// have multiple claims allocating the same devices.
+			return nil, fmt.Errorf("claim %s/%s is allocated, but not node-local on %s - can't be sanitized", claim.Namespace, claim.Name, oldNodeName)
 		}
 
 		claimCopy.Status.Allocation.Devices.Results = sanitizedAllocations
