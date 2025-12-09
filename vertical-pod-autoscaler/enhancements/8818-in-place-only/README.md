@@ -201,8 +201,15 @@ On downgrade of VPA from 1.6.0 (tentative release version), nothing will change.
     - updater
 
 Disabling of feature gate `InPlace` will cause the following to happen:
-- admission-controller to reject new VPA objects being created with `InPlace` configured
-    - A descriptive error message should be returned to the user letting them know that they are using a feature gated feature
+- admission-controller will:
+	- Reject new VPA objects being created with `InPlace` configured
+    	- A descriptive error message should be returned to the user letting them know that they are using a feature gated feature
+	- Continue to apply recommendations at pod admission time for existing VPAs configured with InPlace mode (behaving similarly to Initial mode)
+		- This ensures that when pods are deleted and recreated (e.g., by a deployment rollout or manual deletion), they receive the latest resource recommendations
+		- Only the in-place update functionality is disabled; admission-time updates remain functional
+- updater will:
+	- Skip processing VPAs with `InPlace` mode (no in-place updates or evictions will be attempted)
+	- Effectively treating these VPAs as if they were in Initial or Off mode for running pods
 
 Enabling of feature gate `InPlace` will cause the following to happen:
 - admission-controller to accept new VPA objects being created with `InPlace` configured
