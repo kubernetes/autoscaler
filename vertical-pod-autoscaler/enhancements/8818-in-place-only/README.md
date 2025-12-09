@@ -157,7 +157,7 @@ for _, pod := range podsForInPlace {
 
 
 Retry is handled entirely by the Kubelet based on pod conditions:
-- `PodResizePending` (reason: `Deferred`) - Kubelet will retry automatically, , VPA continues to defer.
+- `PodResizePending` (reason: `Deferred`) - Kubelet will retry automatically, VPA continues to defer.
 - `PodResizePending` (reason: `Infeasible`) - Kubelet will never retry, but VPA will continue to defer (not evict) in InPlace mode.
 - `PodResizeInProgress` - Resize is being applied, VPA waits indefinitely in InPlace mode.
 
