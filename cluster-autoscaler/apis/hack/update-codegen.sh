@@ -32,19 +32,18 @@ cd "${CURRENT_DIR}/.."
 # shellcheck source=/dev/null
 source "${CODEGEN_PKG}/kube_codegen.sh"
 
-kube::codegen::gen_helpers \
-    --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
-    "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest"
+crds='capacitybuffer capacityquota provisioningrequest'
 
-echo "Ran gen helpers, moving on to generating client code..."
-
-kube::codegen::gen_client \
-    --output-pkg k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client \
-    --output-dir "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest/client" \
+for crd in $crds
+do
+  kube::codegen::gen_client \
+    --output-pkg "k8s.io/autoscaler/cluster-autoscaler/apis/$crd/client" \
+    --output-dir "${REPO_ROOT}/cluster-autoscaler/apis/$crd/client" \
     --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
     --with-watch \
     --with-applyconfig \
-    "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest"
+    "${REPO_ROOT}/cluster-autoscaler/apis/$crd"
+done
 
 echo "Generated client code, running `go mod tidy`..."
 
