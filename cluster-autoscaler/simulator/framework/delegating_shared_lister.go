@@ -34,7 +34,7 @@ type SharedLister interface {
 	fwk.SharedDRAManager
 }
 
-// DelegatingSchedulerSharedLister implements fwk interfaces by passing the logic to a delegate. Delegate can be updated.
+// DelegatingSchedulerSharedLister implements k8s.io/kube-scheduler/framework interfaces by passing the logic to a delegate. Delegate can be updated.
 type DelegatingSchedulerSharedLister struct {
 	delegate SharedLister
 }

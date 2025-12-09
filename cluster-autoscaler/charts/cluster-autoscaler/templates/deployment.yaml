@@ -140,8 +140,6 @@ spec:
             - {{ . }}
           {{- end }}
           env:
-            - name: KUBE_FEATURE_WatchListClient
-              value: "true"
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
