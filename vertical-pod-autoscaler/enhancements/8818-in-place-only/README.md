@@ -7,6 +7,9 @@
 - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
+- [Risk Mitigation](#risk-mitigation)
+	- [Memory Limit Downsize Risk](#memory-limit-downsize-risk)
+	- [Mitigation Strategies](#mitigation-strategies)
 - [Test Plan](#test-plan)
 - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
   - [Upgrade](#upgrade)
@@ -47,6 +50,8 @@ In these scenarios, users would prefer:
 - Guarantee that all updates will eventually succeed (node capacity constraints may prevent this)
 - Provide mechanisms to automatically increase node capacity to accommodate updates
 - Change the behavior of existing update modes (Off, Recreate, InPlaceOrRecreate)
+- Eliminate all possible disruption scenarios (see Risk Mitigation for details on memory limit downsizing risks)
+
 
 ## Proposal
 
@@ -168,6 +173,21 @@ Retry is handled entirely by the Kubelet based on pod conditions:
 
 This design ensures that `InPlace` mode truly guarantees no evictions, even in misconfiguration scenarios.
 
+## Risk Mitigation
+
+### Memory Limit Downsize Risk
+
+While `InPlace` mode prevents pod eviction and eliminates the disruption associated with pod recreation, it is still subject to the behavior of Kubernetes' `InPlacePodVerticalScaling` feature.
+When a memory limit is decreased in-place, there is a small but non-zero risk of `OOMKill` if the container's current memory usage exceeds the new lower limit at the moment the resize is applied.
+This is an inherent limitation of in-place resource updates documented in [KEP-1287](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md), not a VPA-specific behavior.
+This risk may be unacceptable for workloads with strict SLO requirements where even brief disruptions (including `OOMKills`) cannot be tolerated.
+
+### Mitigation Strategies
+
+For workloads where even unintended OOMKills are unacceptable, users should implement one or more of the following strategies:
+
+- Disable memory limits for critical containers - configure your VPA's ResourcePolicy to prevent VPA from managing memory limits entirely.
+- Use conservative memory limit recommendations - if memory limits must be managed by VPA, configure generous bounds and safety buffers
 
 ## Test Plan
 
