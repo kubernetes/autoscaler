@@ -45,7 +45,5 @@ do
     "${REPO_ROOT}/cluster-autoscaler/apis/$crd"
 done
 
-echo "Generated client code, running `go mod tidy`..."
-
 # We need to clean up the go.mod file since code-generator adds temporary library to the go.mod file.
 "${GO_CMD}" mod tidy

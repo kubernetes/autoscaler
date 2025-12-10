@@ -20,7 +20,11 @@ package v1beta1
 
 // ReferenceApplyConfiguration represents a declarative configuration of the Reference type for use
 // with apply.
+//
+// Reference represents reference to an object within the same namespace.
 type ReferenceApplyConfiguration struct {
+	// Name of the referenced object.
+	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#names
 	Name *string `json:"name,omitempty"`
 }
 

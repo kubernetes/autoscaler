@@ -394,28 +394,33 @@ func (snapshot *DeltaSnapshotStore) getNodeInfo(nodeName string) (fwk.NodeInfo, 
 }
 
 // NodeInfos returns node lister.
-func (snapshot *DeltaSnapshotStore) NodeInfos() schedulerframework.NodeInfoLister {
+func (snapshot *DeltaSnapshotStore) NodeInfos() fwk.NodeInfoLister {
 	return (*deltaSnapshotStoreNodeLister)(snapshot)
 }
 
 // StorageInfos returns storage lister
-func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerframework.StorageInfoLister {
+func (snapshot *DeltaSnapshotStore) StorageInfos() fwk.StorageInfoLister {
 	return (*deltaSnapshotStoreStorageLister)(snapshot)
 }
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
-func (snapshot *DeltaSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
+func (snapshot *DeltaSnapshotStore) ResourceClaims() fwk.ResourceClaimTracker {
 	return snapshot.DraSnapshot().ResourceClaims()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
-func (snapshot *DeltaSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
+func (snapshot *DeltaSnapshotStore) ResourceSlices() fwk.ResourceSliceLister {
 	return snapshot.DraSnapshot().ResourceSlices()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
-func (snapshot *DeltaSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
+func (snapshot *DeltaSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 	return snapshot.DraSnapshot().DeviceClasses()
+}
+
+// DeviceClassResolver exposes the snapshot as DeviceClassResolver.
+func (snapshot *DeltaSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
+	return snapshot.DraSnapshot().DeviceClassResolver()
 }
 
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.

@@ -24,9 +24,14 @@ import (
 
 // CapacityQuotaSpecApplyConfiguration represents a declarative configuration of the CapacityQuotaSpec type for use
 // with apply.
+//
+// CapacityQuotaSpec defines the desired state of CapacityQuota
 type CapacityQuotaSpecApplyConfiguration struct {
-	Selector *v1.LabelSelectorApplyConfiguration    `json:"selector,omitempty"`
-	Limits   *CapacityQuotaLimitsApplyConfiguration `json:"limits,omitempty"`
+	// Selector is a label selector selecting the nodes to which the quota applies.
+	// Empty or nil selector matches all nodes.
+	Selector *v1.LabelSelectorApplyConfiguration `json:"selector,omitempty"`
+	// Limits define quota limits.
+	Limits *CapacityQuotaLimitsApplyConfiguration `json:"limits,omitempty"`
 }
 
 // CapacityQuotaSpecApplyConfiguration constructs a declarative configuration of the CapacityQuotaSpec type for use with
