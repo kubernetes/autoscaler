@@ -81,8 +81,9 @@ func TestCreatePlaceholders(t *testing.T) {
 			desiredCapacity: aws.Int64(1),
 			activities: []*autoscaling.Activity{
 				{
-					StatusCode: aws.String("Failed"),
-					StartTime:  aws.Time(time.Unix(10, 0)),
+					StatusCode:    aws.String("Failed"),
+					StartTime:     aws.Time(time.Unix(10, 0)),
+					StatusMessage: aws.String("Something failed"),
 				},
 			},
 			groupLastUpdateTime: time.Unix(9, 0),
