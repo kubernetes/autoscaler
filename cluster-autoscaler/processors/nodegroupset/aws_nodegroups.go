@@ -32,6 +32,7 @@ func CreateAwsNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.N
 		"k8s.amazonaws.com/eniConfig":    true, // this is a label used by the AWS CNI for custom networking.
 		"lifecycle":                      true, // this is a label used by the AWS for spot.
 		"topology.ebs.csi.aws.com/zone":  true, // this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
+		"topology.k8s.aws/zone-id":       true, // this is a label used to determine the location of resources in an account relative to those in another one
 	}
 
 	for k, v := range BasicIgnoredLabels {
