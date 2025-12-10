@@ -297,6 +297,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 				podsForEviction = append(podsForEviction, pod)
 				klog.V(2).InfoS("In-place update failed, falling back to eviction", "pod", klog.KObj(pod))
 				continue
+			case utils.InPlaceInfeasible:
+				// Retry in-place update (no backoff for alpha)
+				klog.V(2).InfoS("In-place update infeasible, retrying", "pod", klog.KObj(pod))
+				// Fall through to attempt in-place update
+			case utils.InPlaceApproved:
+				// Proceed with in-place update
 			}
 
 			err = u.inPlaceRateLimiter.Wait(ctx)
@@ -309,6 +315,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 			if err != nil {
 				klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
+				// for inPlace mode we don't evict pods even if we get an error.
+				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnable {
+					continue
+				}
 				podsForEviction = append(podsForEviction, pod)
 				continue
 			}

@@ -88,7 +88,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		}
 	case vpa_types.UpdateModeInPlace:
 		if !features.Enabled(features.InPlace) {
-			return utils.InPlaceEvict
+			return utils.InPlaceDeferred
 		}
 	case vpa_types.UpdateModeAuto:
 		// Auto mode is deprecated but still supports in-place updates
@@ -109,10 +109,32 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		}
 		if present {
 			if isInPlaceUpdating(pod) {
-				// For InPlace mode we wait indefinitely for Kubelet
+				resizeStatus := getResizeStatus(pod)
+				// For InPlace mode: wait for Deferred, retry for Infeasible (no backoff for alpha)
 				if updateMode == vpa_types.UpdateModeInPlace {
-					klog.V(4).InfoS("Pod is updating, waiting for completion (InPlace mode)", "pod", klog.KObj(pod))
-					return utils.InPlaceDeferred
+					switch resizeStatus {
+					case utils.ResizeStatusInfeasible:
+						// Infeasible means node can't accommodate the resize.
+						// For alpha, retry with no backoff.
+						klog.V(4).InfoS("In-place update infeasible, will retry", "pod", klog.KObj(pod))
+						return utils.InPlaceInfeasible
+					case utils.ResizeStatusDeferred:
+						// Deferred means kubelet is waiting to apply the resize.
+						// Do nothing, wait for kubelet to proceed.
+						klog.V(4).InfoS("In-place update deferred by kubelet, waiting", "pod", klog.KObj(pod))
+						return utils.InPlaceDeferred
+					case utils.ResizeStatusInProgress:
+						// Resize is actively being applied, wait for completion.
+						klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
+						return utils.InPlaceDeferred
+					case utils.ResizeStatusError:
+						// Error during resize, retry
+						klog.V(4).InfoS("In-place update error, will retry", "pod", klog.KObj(pod))
+						return utils.InPlaceInfeasible
+					default:
+						klog.V(4).InfoS("In-place update status unknown, waiting", "pod", klog.KObj(pod), "status", resizeStatus)
+						return utils.InPlaceDeferred
+					}
 				}
 				// For InPlaceOrRecreate mode, check timeout
 				canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)

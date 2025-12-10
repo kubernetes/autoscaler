@@ -612,8 +612,8 @@ func TestInPlaceModeInfeasible(t *testing.T) {
 
 	// Infeasible updates should still return InPlaceDeferred in InPlace mode
 	result := inplace.CanInPlaceUpdate(pods[0], updateMode)
-	assert.Equal(t, utils.InPlaceDeferred, result,
-		"InPlace mode should return InPlaceDeferred for infeasible updates")
+	assert.Equal(t, utils.InPlaceInfeasible, result,
+		"InPlace mode should return InPlaceInfeasible for infeasible updates")
 }
 
 func TestInPlaceModeAtLeastOne(t *testing.T) {
