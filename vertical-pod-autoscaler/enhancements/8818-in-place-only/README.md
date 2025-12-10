@@ -7,10 +7,13 @@
 - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
+	- [Resize Status Handling](#resize-status-handling)
 - [Risk Mitigation](#risk-mitigation)
 	- [Memory Limit Downsize Risk](#memory-limit-downsize-risk)
 	- [Mitigation Strategies](#mitigation-strategies)
 - [Test Plan](#test-plan)
+- [Graduation Criteria](#graduation-criteria)
+	- [Alpha](#alpha)
 - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
   - [Upgrade](#upgrade)
   - [Downgrade](#downgrade)
@@ -77,9 +80,19 @@ const (
 )
 ```
 
+### Resize Status Handling
+
+The InPlace mode handles different resize statuses with distinct behaviors:
+
+- Deferred: When the resize status is Deferred, VPA waits and lets kubelet handle it. This means kubelet is waiting to apply the resize, and VPA should not interfere.
+- Infeasible: When the resize status is Infeasible, VPA retries with no backoff in alpha. This status indicates the node cannot accommodate the resize currently, but conditions may change over time.
+- InProgress: When the resize status is InProgress, VPA waits for completion. The resize is actively being applied by kubelet.
+- Error: When the resize status is Error, VPA retries the operation. An error occurred during resize and retrying may succeed.
+
 Modify the `CanInPlaceUpdate` to accomdate the new update mode:
 
 ```golang
+// CanInPlaceUpdate checks if pod can be safely updated
 func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
 	switch updateMode {
 	case vpa_types.UpdateModeInPlaceOrRecreate:
@@ -88,7 +101,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		}
 	case vpa_types.UpdateModeInPlace:
 		if !features.Enabled(features.InPlace) {
-			return utils.InPlaceEvict
+			return utils.InPlaceDeferred
 		}
 	case vpa_types.UpdateModeAuto:
 		// Auto mode is deprecated but still supports in-place updates
@@ -109,16 +122,36 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		}
 		if present {
 			if isInPlaceUpdating(pod) {
-				// For InPlace mode we wait indefinitely for Kubelet
+				resizeStatus := getResizeStatus(pod)
+				// For InPlace mode: wait for Deferred, retry for Infeasible (no backoff for alpha)
 				if updateMode == vpa_types.UpdateModeInPlace {
-					klog.V(4).InfoS("Pod is updating, waiting for completion (InPlace mode)", "pod", klog.KObj(pod))
-					return utils.InPlaceDeferred
+					switch resizeStatus {
+					case utils.ResizeStatusInfeasible:
+						// Infeasible means node can't accommodate the resize.
+						// For alpha, retry with no backoff.
+						klog.V(4).InfoS("In-place update infeasible, will retry", "pod", klog.KObj(pod))
+						return utils.InPlaceInfeasible
+					case utils.ResizeStatusDeferred:
+						// Deferred means kubelet is waiting to apply the resize.
+						// Do nothing, wait for kubelet to proceed.
+						klog.V(4).InfoS("In-place update deferred by kubelet, waiting", "pod", klog.KObj(pod))
+						return utils.InPlaceDeferred
+					case utils.ResizeStatusInProgress:
+						// Resize is actively being applied, wait for completion.
+						klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
+						return utils.InPlaceDeferred
+					case utils.ResizeStatusError:
+						// Error during resize, retry
+						klog.V(4).InfoS("In-place update error, will retry", "pod", klog.KObj(pod))
+						return utils.InPlaceInfeasible
+					default:
+						klog.V(4).InfoS("In-place update status unknown, waiting", "pod", klog.KObj(pod), "status", resizeStatus)
+						return utils.InPlaceDeferred
+					}
 				}
 				// For InPlaceOrRecreate mode, check timeout
 				canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
 				if canEvict {
-                    klog.V(2).InfoS("Pod update timed out, suggesting eviction",
-                        "pod", klog.KObj(pod))
 					return utils.InPlaceEvict
 				}
 				return utils.InPlaceDeferred
@@ -128,7 +161,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 			}
 		}
 	}
-	    klog.V(4).InfoS("Can't in-place update pod, waiting for next loop", "pod", klog.KObj(pod))
+	klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
 	return utils.InPlaceDeferred
 }
 ```
@@ -137,26 +170,43 @@ The updater loop will handle the `InPlace` mode by never adding pods to `podsFor
 
 ```golang
 for _, pod := range podsForInPlace {
-    decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
+	withInPlaceUpdatable = true
+	decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
 
-    switch decision {
-    case utils.InPlaceDeferred:
-        klog.V(2).InfoS("In-place update deferred", "pod", klog.KObj(pod))
-        continue
+	switch decision {
+	case utils.InPlaceDeferred:
+		klog.V(2).InfoS("In-place update deferred", "pod", klog.KObj(pod))
+		continue
+	case utils.InPlaceEvict:
+		// This should only happen for InPlaceOrRecreate mode
+		podsForEviction = append(podsForEviction, pod)
+		klog.V(2).InfoS("In-place update failed, falling back to eviction", "pod", klog.KObj(pod))
+		continue
+	case utils.InPlaceInfeasible:
+		// Retry in-place update (no backoff for alpha)
+		klog.V(2).InfoS("In-place update infeasible, retrying", "pod", klog.KObj(pod))
+		// Fall through to attempt in-place update
+	case utils.InPlaceApproved:
+		// Proceed with in-place update
+	}
 
-    case utils.InPlaceEvict:
-        // This should only happen for InPlaceOrRecreate mode
-        podsForEviction = append(podsForEviction, pod)
-        klog.V(2).InfoS("In-place update failed, falling back to eviction",
-            "pod", klog.KObj(pod))
-        continue
-
-    case utils.InPlaceApproved:
-        // Proceed with in-place update
-        if err := u.evictionRateLimiter.TryUpdate(pod, vpa); err != nil {
-            klog.V(2).InfoS("Failed to update pod", "pod", klog.KObj(pod), "error", err)
-        }
-    }
+	err = u.inPlaceRateLimiter.Wait(ctx)
+	if err != nil {
+		klog.V(0).InfoS("In-place rate limiter wait failed for in-place resize", "error", err)
+		metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateRateLimiterWaitFailed")
+		return
+	}
+	err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
+	if err != nil {
+		klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
+		metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
+		// for inPlace mode we don't evict pods even if we get an error.
+		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnable {
+			continue
+		}
+		podsForEviction = append(podsForEviction, pod)
+		continue
+	}
 }
 ```
 
@@ -210,6 +260,16 @@ Existing VPAs will continue to work as before.
 ### Downgrade
 
 On downgrade of VPA from 1.6.0 (tentative release version), nothing will change. VPAs will continue to work as previously, unless, the user had enabled the feature gate. In which case downgrade could break their VPA that uses `InPlace`.
+
+## Graduation Criteria
+
+### Alpha
+
+- Feature gate InPlace is disabled by default
+- Basic functionality implemented including InPlace update mode accepted by admission controller, updater attempts in-place updates and never evicts pods, retry behavior for Infeasible status with no backoff, and deferred behavior for Deferred, InProgress, and unknown statuses
+- Unit tests covering core logic
+- E2E tests for basic scenarios
+- Documentation updated
 
 ## Feature Enablement and Rollback
 
