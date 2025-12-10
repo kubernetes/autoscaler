@@ -21,11 +21,14 @@ import (
 	"testing"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -35,12 +38,36 @@ import (
 	utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
+type mockTemplateNodeInfoRegistry struct {
+	nodeInfos map[string]*framework.NodeInfo
+}
+
+func newMockTemplateNodeInfoRegistry(nodeInfos map[string]*framework.NodeInfo) *mockTemplateNodeInfoRegistry {
+	return &mockTemplateNodeInfoRegistry{
+		nodeInfos: nodeInfos,
+	}
+}
+
+func (m *mockTemplateNodeInfoRegistry) GetNodeInfo(id string) (*framework.NodeInfo, bool) {
+	nodeInfo, found := m.nodeInfos[id]
+	return nodeInfo, found
+}
+
+func (m *mockTemplateNodeInfoRegistry) GetNodeInfos() map[string]*framework.NodeInfo {
+	return m.nodeInfos
+}
+
+func (m *mockTemplateNodeInfoRegistry) Recompute(_ *ca_context.AutoscalingContext, _ []*apiv1.Node, _ []*appsv1.DaemonSet, _ taints.TaintConfig, _ time.Time) errors.AutoscalerError {
+	return nil
+}
+
 func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 	testCases := map[string]struct {
 		nodeGroupsAllNodes        map[string][]*apiv1.Node
 		nodeGroupsTemplatesSlices map[string][]*resourceapi.ResourceSlice
 		nodesSlices               map[string][]*resourceapi.ResourceSlice
 		expectedNodesReadiness    map[string]bool
+		registryNodeInfos         map[string]*framework.NodeInfo
 	}{
 		"1 DRA node group all totally ready": {
 			nodeGroupsAllNodes: map[string][]*apiv1.Node{
@@ -306,6 +333,29 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 				"node_7": true,
 			},
 		},
+		"Custom DRA driver retrieved via cached template node info": {
+			nodeGroupsAllNodes: map[string][]*apiv1.Node{
+				"ng1": {
+					buildTestNode("node_1", true),
+					buildTestNode("node_2", true),
+				},
+			},
+			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{},
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": framework.NewNodeInfo(
+					buildTestNode("ng1_template", true),
+					createNodeResourceSlices("ng1_template", []int{1}),
+				),
+			},
+			nodesSlices: map[string][]*resourceapi.ResourceSlice{
+				"node_1": createNodeResourceSlices("node_1", []int{1}),
+				"node_2": {},
+			},
+			expectedNodesReadiness: map[string]bool{
+				"node_1": true,
+				"node_2": false,
+			},
+		},
 	}
 
 	for tcName, tc := range testCases {
@@ -336,7 +386,11 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 
-			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
+			autoscalingCtx := &ca_context.AutoscalingContext{
+				CloudProvider:            provider,
+				ClusterSnapshot:          clusterSnapshot,
+				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(tc.registryNodeInfos),
+			}
 			processor := DraCustomResourcesProcessor{}
 			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot)
 
