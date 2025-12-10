@@ -89,7 +89,7 @@ The InPlace mode handles different resize statuses with distinct behaviors:
 - InProgress: When the resize status is InProgress, VPA waits for completion. The resize is actively being applied by kubelet.
 - Error: When the resize status is Error, VPA retries the operation. An error occurred during resize and retrying may succeed.
 
-Modify the `CanInPlaceUpdate` to accomdate the new update mode:
+Modify the `CanInPlaceUpdate` to accommodate the new update mode:
 
 ```golang
 // CanInPlaceUpdate checks if pod can be safely updated
