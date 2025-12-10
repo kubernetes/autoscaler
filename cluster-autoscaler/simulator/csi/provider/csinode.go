@@ -1,3 +1,19 @@
+/*
+Copyright 2025 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package provider
 
 import (
@@ -10,12 +26,12 @@ import (
 
 // Provider provides access to CSI node information for the cluster.
 type Provider struct {
-	csINodesLister v1storagelister.CSINodeLister
+	csiNodesLister v1storagelister.CSINodeLister
 }
 
 // NewCSINodeProvider creates a new Provider with the given CSI node lister.
-func NewCSINodeProvider(csINodesLister v1storagelister.CSINodeLister) *Provider {
-	return &Provider{csINodesLister: csINodesLister}
+func NewCSINodeProvider(csiNodesLister v1storagelister.CSINodeLister) *Provider {
+	return &Provider{csiNodesLister: csiNodesLister}
 }
 
 // NewCSINodeProviderFromInformers creates a new Provider from an informer factory.
@@ -23,8 +39,9 @@ func NewCSINodeProviderFromInformers(informerFactory informers.SharedInformerFac
 	return NewCSINodeProvider(informerFactory.Storage().V1().CSINodes().Lister())
 }
 
+// Snapshot returns a snapshot of the CSI node information.
 func (p *Provider) Snapshot() (*csisnapshot.Snapshot, error) {
-	csiNodes, err := p.csINodesLister.List(labels.Everything())
+	csiNodes, err := p.csiNodesLister.List(labels.Everything())
 	if err != nil {
 		return nil, err
 	}

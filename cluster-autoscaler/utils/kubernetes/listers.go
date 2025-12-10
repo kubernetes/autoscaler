@@ -329,6 +329,7 @@ func filterNodes(nodes []*apiv1.Node, predicate func(*apiv1.Node) bool) []*apiv1
 	return filtered
 }
 
+// CSINodeLister lists CSI nodes.
 type CSINodeLister interface {
 	List() ([]*storagev1.CSINode, error)
 	Get(name string) (*storagev1.CSINode, error)

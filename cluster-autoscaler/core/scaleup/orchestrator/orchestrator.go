@@ -139,7 +139,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	var options []expander.Option
 
 	// This code here runs a simulation to see which pods can be scheduled on which node groups.
-	// TODO: Fix bug with CSI node not being added to the simulation.
 	for _, nodeGroup := range validNodeGroups {
 		schedulablePodGroups[nodeGroup.Id()] = o.SchedulablePodGroups(podEquivalenceGroups, nodeGroup, nodeInfos[nodeGroup.Id()])
 	}
@@ -150,7 +149,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 		if len(option.Pods) == 0 || option.NodeCount == 0 {
 			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
-			klog.Infof("hemant no pod can fit to %s", nodeGroup.Id())
 		} else if allOrNothing && len(option.Pods) < len(unschedulablePods) {
 			klog.V(4).Infof("Some pods can't fit to %s, giving up due to all-or-nothing scale-up strategy", nodeGroup.Id())
 		} else {

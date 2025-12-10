@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -1773,52 +1774,24 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 			}
 		}
 
-		// Validate CSINode if expected
+		if config.expectedCSINode == nil && nodeInfo.CSINode != nil {
+			t.Fatalf("Expected CSINode to be nil, but got non-nil with %d drivers", len(nodeInfo.CSINode.Spec.Drivers))
+			return
+		}
+
 		if config.expectedCSINode != nil {
 			if nodeInfo.CSINode == nil {
-				t.Errorf("Expected CSINode to be set, but got nil")
-			} else {
-				expectedDrivers := config.expectedCSINode.Spec.Drivers
-				gotDrivers := nodeInfo.CSINode.Spec.Drivers
-				if len(expectedDrivers) != len(gotDrivers) {
-					t.Errorf("Expected %d CSI drivers, but got %d", len(expectedDrivers), len(gotDrivers))
-				} else {
-					for i, expectedDriver := range expectedDrivers {
-						if i >= len(gotDrivers) {
-							t.Errorf("Expected driver at index %d but got only %d drivers", i, len(gotDrivers))
-							break
-						}
-						gotDriver := gotDrivers[i]
-						if expectedDriver.Name != gotDriver.Name {
-							t.Errorf("Expected CSI driver name at index %d to be %s, but got %s", i, expectedDriver.Name, gotDriver.Name)
-						}
-						if expectedDriver.Allocatable == nil {
-							if gotDriver.Allocatable != nil {
-								t.Errorf("Expected CSI driver Allocatable at index %d to be nil, but got non-nil", i)
-							}
-						} else {
-							if gotDriver.Allocatable == nil {
-								t.Errorf("Expected CSI driver Allocatable at index %d to be non-nil, but got nil", i)
-							} else {
-								if expectedDriver.Allocatable.Count == nil {
-									if gotDriver.Allocatable.Count != nil {
-										t.Errorf("Expected CSI driver Count at index %d to be nil, but got %d", i, *gotDriver.Allocatable.Count)
-									}
-								} else {
-									if gotDriver.Allocatable.Count == nil {
-										t.Errorf("Expected CSI driver Count at index %d to be %d, but got nil", i, *expectedDriver.Allocatable.Count)
-									} else if *expectedDriver.Allocatable.Count != *gotDriver.Allocatable.Count {
-										t.Errorf("Expected CSI driver Count at index %d to be %d, but got %d", i, *expectedDriver.Allocatable.Count, *gotDriver.Allocatable.Count)
-									}
-								}
-							}
-						}
-					}
-				}
+				t.Fatalf("Expected CSINode to be %+v, but got nil", config.expectedCSINode)
+				return
 			}
-		} else {
-			if nodeInfo.CSINode != nil {
-				t.Errorf("Expected CSINode to be nil, but got non-nil with %d drivers", len(nodeInfo.CSINode.Spec.Drivers))
+
+			// Validate CSINode if expected
+			expectedDrivers := config.expectedCSINode.Spec.Drivers
+			gotDrivers := nodeInfo.CSINode.Spec.Drivers
+			if len(expectedDrivers) != len(gotDrivers) {
+				t.Errorf("Expected %d CSI drivers, but got %d", len(expectedDrivers), len(gotDrivers))
+			} else {
+				validateCSIDrivers(t, expectedDrivers, gotDrivers)
 			}
 		}
 	}
@@ -1848,7 +1821,6 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 			})
 		})
 	}
-
 }
 
 func TestNodeGroupGetOptions(t *testing.T) {
@@ -2177,4 +2149,28 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 			})
 		}
 	})
+}
+
+func validateCSIDrivers(t *testing.T, expectedDrivers []storagev1.CSINodeDriver, gotDrivers []storagev1.CSINodeDriver) {
+	t.Helper()
+	for _, gotDriver := range gotDrivers {
+		foundDriver := false
+		realDriverAllocatable := gotDriver.Allocatable
+		for _, expectedDriver := range expectedDrivers {
+			expectedDriverAllocatable := expectedDriver.Allocatable
+			if expectedDriver.Name == gotDriver.Name {
+				if expectedDriverAllocatable == nil && realDriverAllocatable == nil {
+					foundDriver = true
+					break
+				}
+				if reflect.DeepEqual(expectedDriverAllocatable, realDriverAllocatable) {
+					foundDriver = true
+					break
+				}
+			}
+		}
+		if !foundDriver {
+			t.Fatalf("Expected CSI driver %s not found in got drivers", gotDriver.Name)
+		}
+	}
 }

@@ -141,16 +141,19 @@ func (n *NodeInfo) ResourceClaims() []*resourceapi.ResourceClaim {
 	return result
 }
 
+// AddNodeResourceSlices adds node resource slices to the NodeInfo.
 func (n *NodeInfo) AddNodeResourceSlices(slices []*resourceapi.ResourceSlice) *NodeInfo {
 	n.LocalResourceSlices = slices
 	return n
 }
 
+// AddCSINode adds a CSINode to the NodeInfo.
 func (n *NodeInfo) AddCSINode(csiNode *storagev1.CSINode) *NodeInfo {
 	n.CSINode = csiNode
 	return n
 }
 
+// AddPodExtraInfo adds pod extra info to the NodeInfo.
 func (n *NodeInfo) AddPodExtraInfo(podExtraInfo map[types.UID]PodExtraInfo) *NodeInfo {
 	n.podsExtraInfo = podExtraInfo
 	return n

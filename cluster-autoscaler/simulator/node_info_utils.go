@@ -133,6 +133,7 @@ func createSanitizedNode(node *apiv1.Node, newName string, taintConfig *taints.T
 	return newNode
 }
 
+// CreateSanitizedCSINode creates a sanitized CSINode object from a given csinode and template node info.
 func CreateSanitizedCSINode(csiNode *storagev1.CSINode, templateNodeInfo *framework.NodeInfo) *storagev1.CSINode {
 	newCSINode := csiNode.DeepCopy()
 	newCSINode.Name = templateNodeInfo.Node().Name
