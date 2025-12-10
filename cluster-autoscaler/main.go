@@ -139,7 +139,7 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
 		ScaleUpOrchestrator:  orchestrator.New(),
-		CsiProvider:          csiProvider,
+		CSIProvider:          csiProvider,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)

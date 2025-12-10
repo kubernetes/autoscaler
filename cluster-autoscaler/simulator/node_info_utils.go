@@ -76,7 +76,7 @@ func SanitizedTemplateNodeInfoFromNodeInfo(example *framework.NodeInfo, nodeGrou
 	}
 	templateNodeInfo := framework.NewNodeInfo(sanitizedExample.Node(), sanitizedExample.LocalResourceSlices, expectedPods...)
 	if example.CSINode != nil {
-		templateNodeInfo.AddCSINode(CreateSanitizedCSINode(example.CSINode, templateNodeInfo))
+		templateNodeInfo.SetCSINode(CreateSanitizedCSINode(example.CSINode, templateNodeInfo))
 	}
 
 	// No need to sanitize the expected pods again - they either come from sanitizedExample and were sanitized above,
@@ -99,6 +99,10 @@ func createSanitizedNodeInfo(nodeInfo *framework.NodeInfo, newNodeNameBase strin
 		return nil, err
 	}
 	result := framework.NewNodeInfo(freshNode, freshResourceSlices)
+
+	if nodeInfo.CSINode != nil {
+		result.SetCSINode(CreateSanitizedCSINode(nodeInfo.CSINode, result))
+	}
 
 	for _, podInfo := range nodeInfo.Pods() {
 		freshPod := createSanitizedPod(podInfo.Pod, freshNode.Name, namesSuffix)
@@ -133,6 +137,7 @@ func createSanitizedNode(node *apiv1.Node, newName string, taintConfig *taints.T
 	return newNode
 }
 
+// CreateSanitizedCSINode creates a sanitized CSINode object from a given csinode and template node info.
 func CreateSanitizedCSINode(csiNode *storagev1.CSINode, templateNodeInfo *framework.NodeInfo) *storagev1.CSINode {
 	newCSINode := csiNode.DeepCopy()
 	newCSINode.Name = templateNodeInfo.Node().Name

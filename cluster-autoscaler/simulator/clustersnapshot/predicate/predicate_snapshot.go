@@ -60,9 +60,8 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 	}
 
 	wrappedNodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
-
 	if s.draEnabled {
-		wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().AddDRAInfo(wrappedNodeInfo)
+		wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -86,13 +85,15 @@ func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
 	var result []*framework.NodeInfo
 	for _, schedNodeInfo := range schedNodeInfos {
 		wrappedNodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
+
 		var err error
 		if s.draEnabled {
-			wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().AddDRAInfo(wrappedNodeInfo)
+			wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
 			if err != nil {
 				return nil, err
 			}
 		}
+
 		if s.enableCSINodeAwareScheduling {
 			wrappedNodeInfo, err = s.ClusterSnapshotStore.CsiSnapshot().AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
 			if err != nil {

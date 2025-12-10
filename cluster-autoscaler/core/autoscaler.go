@@ -79,7 +79,7 @@ func NewAutoscaler(opts coreoptions.AutoscalerOptions, informerFactory informers
 		opts.DrainabilityRules,
 		opts.DraProvider,
 		opts.QuotasTrackerOptions,
-		opts.CsiProvider,
+		opts.CSIProvider,
 	), nil
 }
 

@@ -1,3 +1,19 @@
+/*
+Copyright 2025 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package snapshot
 
 import (
@@ -7,7 +23,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Snapshot represents a snapshot of CSI node information for cluster simulation.
@@ -40,15 +55,11 @@ func (s *Snapshot) CSINodes() fwk.CSINodeLister {
 // AddCSINodes adds a list of CSI nodes to the snapshot.
 func (s *Snapshot) AddCSINodes(csiNodes []*storagev1.CSINode) error {
 	for _, csiNode := range csiNodes {
-		if _, alreadyInSnapshot := s.csiNodes.FindValue(csiNode.Name); alreadyInSnapshot {
-			return fmt.Errorf("csi node %s already in snapshot", csiNode.Name)
+		err := s.AddCSINode(csiNode)
+		if err != nil {
+			return err
 		}
 	}
-
-	for _, csiNode := range csiNodes {
-		s.csiNodes.SetCurrent(csiNode.Name, csiNode)
-	}
-
 	return nil
 }
 
@@ -59,17 +70,6 @@ func (s *Snapshot) Get(name string) (*storagev1.CSINode, error) {
 		return nil, fmt.Errorf("csi nodes %s not found", name)
 	}
 	return csiNode, nil
-}
-
-// WrapSchedulerNodeInfo wraps a scheduler node info with a CSI node.
-func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo *schedulerframework.NodeInfo) (*framework.NodeInfo, error) {
-	csiNode, err := s.Get(schedNodeInfo.Node().Name)
-	if err != nil {
-		return nil, err
-	}
-	nodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
-	nodeInfo.CSINode = csiNode
-	return nodeInfo, nil
 }
 
 // AddCSINode adds a CSI node to the snapshot.
@@ -88,7 +88,7 @@ func (s *Snapshot) AddCSINodeInfoToNodeInfo(nodeInfo *framework.NodeInfo) (*fram
 	if err != nil {
 		return nil, err
 	}
-	return nodeInfo.AddCSINode(csiNode), nil
+	return nodeInfo.SetCSINode(csiNode), nil
 }
 
 // RemoveCSINode removes a CSI node from the snapshot.

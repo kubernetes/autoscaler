@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	intreeschedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DeltaSnapshotStore is an implementation of ClusterSnapshotStore optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
@@ -150,7 +150,7 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []fwk.NodeInfo {
 }
 
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) (fwk.NodeInfo, error) {
-	nodeInfo := intreeschedulerframework.NewNodeInfo()
+	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 	err := data.addNodeInfo(nodeInfo)
 	if err != nil {
@@ -250,7 +250,7 @@ func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 		return clustersnapshot.ErrNodeNotFound
 	}
 
-	podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
+	podInfo, _ := schedulerframework.NewPodInfo(pod)
 	ni.AddPodInfo(podInfo)
 
 	// Maybe consider deleting from the list in the future. Maybe not.
@@ -425,6 +425,11 @@ func (snapshot *DeltaSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolve
 	return snapshot.DraSnapshot().DeviceClassResolver()
 }
 
+// CSINodes returns the CSI node lister for this snapshot.
+func (snapshot *DeltaSnapshotStore) CSINodes() fwk.CSINodeLister {
+	return snapshot.csiSnapshot.CSINodes()
+}
+
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.
 func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 	snapshot := &DeltaSnapshotStore{
@@ -442,11 +447,6 @@ func (snapshot *DeltaSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
 // CsiSnapshot returns the CSI snapshot.
 func (snapshot *DeltaSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 	return snapshot.csiSnapshot
-}
-
-// CSINodes returns the CSI node lister for this snapshot.
-func (snapshot *DeltaSnapshotStore) CSINodes() fwk.CSINodeLister {
-	return snapshot.csiSnapshot.CSINodes()
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
@@ -467,7 +467,7 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsSequential(nodeInfos []fw
 	for _, pod := range scheduledPods {
 		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
+			podInfo, _ := schedulerframework.NewPodInfo(pod)
 			nodeInfos[nodeIdx].AddPodInfo(podInfo)
 		}
 	}
@@ -489,7 +489,7 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []
 		nodeInfo := nodeInfos[nodeIdx]
 		for _, pod := range podsForNode[nodeIdx] {
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
+			podInfo, _ := schedulerframework.NewPodInfo(pod)
 			nodeInfo.AddPodInfo(podInfo)
 		}
 	})

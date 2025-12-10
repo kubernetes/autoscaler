@@ -166,14 +166,6 @@ func (u *unsetResourceClaimTracker) AssumedClaimRestore(namespace, claimName str
 	klog.Errorf("lister not set in delegate")
 }
 
-func (u *unsetCSINodeLister) List() ([]*storagev1.CSINode, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-func (u *unsetCSINodeLister) Get(name string) (*storagev1.CSINode, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
 func (u *unsetResourceSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
@@ -189,6 +181,14 @@ func (u *unsetDeviceClassLister) Get(className string) (*resourceapi.DeviceClass
 func (u *unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceName) *resourceapi.DeviceClass {
 	klog.Errorf("lister not set in delegate")
 	return nil
+}
+
+func (u *unsetCSINodeLister) List() ([]*storagev1.CSINode, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u *unsetCSINodeLister) Get(name string) (*storagev1.CSINode, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 // NodeInfos returns a fake NodeInfoLister which always returns an error

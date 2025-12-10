@@ -146,8 +146,8 @@ func NewStaticAutoscaler(
 	deleteOptions options.NodeDeleteOptions,
 	drainabilityRules rules.Rules,
 	draProvider *draprovider.Provider,
-	csiProvider *csinodeprovider.Provider,
-	quotasTrackerOptions resourcequotas.TrackerOptions) *StaticAutoscaler {
+	quotasTrackerOptions resourcequotas.TrackerOptions,
+	csiProvider *csinodeprovider.Provider) *StaticAutoscaler {
 
 	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
 

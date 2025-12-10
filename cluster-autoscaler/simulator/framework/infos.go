@@ -56,7 +56,7 @@ type NodeInfo struct {
 	// LocalResourceSlices contains all node-local ResourceSlices exposed by this Node.
 	LocalResourceSlices []*resourceapi.ResourceSlice
 
-	// CSINodes contains all CSINodes exposed by this Node.
+	// CSINode contains the CSI node exposed by this Node.
 	CSINode *storagev1.CSINode
 }
 
@@ -141,18 +141,9 @@ func (n *NodeInfo) ResourceClaims() []*resourceapi.ResourceClaim {
 	return result
 }
 
-func (n *NodeInfo) AddNodeResourceSlices(slices []*resourceapi.ResourceSlice) *NodeInfo {
-	n.LocalResourceSlices = slices
-	return n
-}
-
-func (n *NodeInfo) AddCSINode(csiNode *storagev1.CSINode) *NodeInfo {
+// SetCSINode adds a CSINode to the NodeInfo.
+func (n *NodeInfo) SetCSINode(csiNode *storagev1.CSINode) *NodeInfo {
 	n.CSINode = csiNode
-	return n
-}
-
-func (n *NodeInfo) AddPodExtraInfo(podExtraInfo map[types.UID]PodExtraInfo) *NodeInfo {
-	n.podsExtraInfo = podExtraInfo
 	return n
 }
 

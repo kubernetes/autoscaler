@@ -60,5 +60,5 @@ type AutoscalerOptions struct {
 	DrainabilityRules      rules.Rules
 	DraProvider            *draprovider.Provider
 	QuotasTrackerOptions   resourcequotas.TrackerOptions
-	CsiProvider            *csinodeprovider.Provider
+	CSIProvider            *csinodeprovider.Provider
 }

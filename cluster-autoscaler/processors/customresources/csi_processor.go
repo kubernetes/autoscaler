@@ -1,3 +1,19 @@
+/*
+Copyright 2025 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package customresources
 
 import (
@@ -38,7 +54,8 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 			continue
 		}
 
-		nodeInfo, err := ng.TemplateNodeInfo()
+		// TODO: Use TemplateNodeInfoRegistry after #8882 is merged
+		templateNodeInfo, err := ng.TemplateNodeInfo()
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			klog.Warningf("Failed to get template node info for node group %s with error: %v", ng.Id(), err)
@@ -46,20 +63,20 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 
 		// if cloudprovider does not provide CSI related stuff, then we can skip the CSI readiness check
-		if nodeInfo.CSINode == nil {
+		if templateNodeInfo.CSINode == nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.Warningf("No CSI node found for node %s, Skipping CSI readiness check and keeping node in ready list.", node.Name)
+			klog.V(5).Infof("No CSI node found for node %s, Skipping CSI readiness check and keeping node in ready list.", node.Name)
 			continue
 		}
 
 		csiNode, err := csiSnapshot.Get(node.Name)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.Warningf("Failed to get CSI node for node %s, Skipping CSI readiness check and keeping node in ready list. Error: %v", node.Name, err)
+			klog.V(5).Infof("Failed to get CSI node for node %s, Skipping CSI readiness check and keeping node in ready list. Error: %v", node.Name, err)
 			continue
 		}
 
-		if areDriversInstalled(csiNode, nodeInfo.CSINode) {
+		if areDriversInstalled(csiNode, templateNodeInfo.CSINode) {
 			newReadyNodes = append(newReadyNodes, node)
 		} else {
 			nodesWithUnreadyCSI[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
@@ -87,7 +104,6 @@ func (p *CSICustomResourcesProcessor) CleanUp() {
 
 func areDriversInstalled(csiNode *storagev1.CSINode, templateCSINode *storagev1.CSINode) bool {
 	defaultDrivers := templateCSINode.Spec.Drivers
-	allDriversInstalled := true
 
 	installedDrivers := make(map[string]bool)
 	for _, csiDriver := range csiNode.Spec.Drivers {
@@ -95,9 +111,8 @@ func areDriversInstalled(csiNode *storagev1.CSINode, templateCSINode *storagev1.
 	}
 	for _, driver := range defaultDrivers {
 		if _, found := installedDrivers[driver.Name]; !found {
-			allDriversInstalled = false
-			break
+			return false
 		}
 	}
-	return allDriversInstalled
+	return true
 }

@@ -29,11 +29,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -58,6 +60,56 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		}
 		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, false), nil
 	},
+	"basic-csi": func() (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle, err := framework.NewTestFrameworkHandle()
+		if err != nil {
+			return nil, err
+		}
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true), nil
+	},
+	"delta-csi": func() (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle, err := framework.NewTestFrameworkHandle()
+		if err != nil {
+			return nil, err
+		}
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, true), nil
+	},
+}
+
+func isCSIAwareSnapshot(snapshot clustersnapshot.ClusterSnapshot) bool {
+	ps, ok := snapshot.(*PredicateSnapshot)
+	return ok && ps.enableCSINodeAwareScheduling
+}
+
+func emptyCSISnapshotForNodes(nodes []*apiv1.Node) *csisnapshot.Snapshot {
+	csiNodesMap := make(map[string]*storagev1.CSINode, len(nodes))
+	for _, n := range nodes {
+		csiNodesMap[n.Name] = &storagev1.CSINode{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: n.Name,
+				UID:  types.UID("test-csi-node-" + n.Name),
+			},
+			Spec: storagev1.CSINodeSpec{Drivers: []storagev1.CSINodeDriver{}},
+		}
+	}
+	return csisnapshot.NewSnapshot(csiNodesMap)
+}
+
+func ensureCSINodeForSnapshotNode(t *testing.T, snapshot clustersnapshot.ClusterSnapshot, nodeName string) {
+	t.Helper()
+	if !isCSIAwareSnapshot(snapshot) {
+		return
+	}
+	// Some operations (e.g. RemoveNodeInfo/GetNodeInfo/ListNodeInfos) wrap scheduler NodeInfo with CSINode information
+	// when CSI-aware scheduling is enabled. Seed an empty CSINode so these ops don't fail early with
+	// "csi nodes <name> not found" while the underlying Node exists.
+	_ = snapshot.CsiSnapshot().AddCSINode(&storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: nodeName,
+			UID:  types.UID("test-csi-node-" + nodeName),
+		},
+		Spec: storagev1.CSINodeSpec{Drivers: []storagev1.CSINodeDriver{}},
+	})
 }
 
 func extractNodes(nodeInfos []*framework.NodeInfo) []*apiv1.Node {
@@ -72,6 +124,7 @@ type snapshotState struct {
 	nodes       []*apiv1.Node
 	podsByNode  map[string][]*apiv1.Pod
 	draSnapshot *drasnapshot.Snapshot
+	csiSnapshot *csisnapshot.Snapshot
 }
 
 func compareStates(t *testing.T, a, b snapshotState) {
@@ -136,7 +189,12 @@ func getSnapshotState(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) sn
 			pods[nodeInfo.Node().Name] = append(pods[nodeInfo.Node().Name], podInfo.Pod)
 		}
 	}
-	return snapshotState{nodes: extractNodes(nodes), podsByNode: pods, draSnapshot: snapshot.DraSnapshot()}
+	return snapshotState{
+		nodes:       extractNodes(nodes),
+		podsByNode:  pods,
+		draSnapshot: snapshot.DraSnapshot(),
+		csiSnapshot: snapshot.CsiSnapshot(),
+	}
 }
 
 func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.ClusterSnapshot, error), state snapshotState) clustersnapshot.ClusterSnapshot {
@@ -144,13 +202,29 @@ func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.Cluster
 	assert.NoError(t, err)
 	var pods []*apiv1.Pod
 	for _, nodePods := range state.podsByNode {
-		for _, pod := range nodePods {
-			pods = append(pods, pod)
-		}
+		pods = append(pods, nodePods...)
 	}
 
 	draSnapshot := drasnapshot.CloneTestSnapshot(state.draSnapshot)
-	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot, nil)
+
+	// Ensure CSI-aware snapshots always have a non-nil CSI snapshot. If the test state doesn't
+	// provide one, we still provide an empty one (the store will then own it).
+	isCSIAware := isCSIAwareSnapshot(snapshot)
+
+	var csiSnapshot *csisnapshot.Snapshot
+	if state.csiSnapshot != nil {
+		csiNodes, err := state.csiSnapshot.CSINodes().List()
+		assert.NoError(t, err)
+		csiNodesMap := make(map[string]*storagev1.CSINode, len(csiNodes))
+		for _, cn := range csiNodes {
+			csiNodesMap[cn.Name] = cn.DeepCopy()
+		}
+		csiSnapshot = csisnapshot.NewSnapshot(csiNodesMap)
+	} else if isCSIAware {
+		csiSnapshot = emptyCSISnapshotForNodes(state.nodes)
+	}
+
+	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot, csiSnapshot)
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -161,6 +235,7 @@ type modificationTestCase struct {
 	wantErr       error
 	state         snapshotState
 	modifiedState snapshotState
+	requiresCSI   bool
 }
 
 func (tc modificationTestCase) runAndValidateOp(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) {
@@ -310,6 +385,38 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 
 	deviceClasses := map[string]*resourceapi.DeviceClass{
 		"defaultClass": {ObjectMeta: metav1.ObjectMeta{Name: "defaultClass", UID: "defaultClassUid"}},
+	}
+
+	csiNode := &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: node.Name,
+			UID:  types.UID("csi-node-uid-1"),
+		},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{
+				{
+					Name:         "ebs.csi.aws.com",
+					NodeID:       "node-id-1",
+					TopologyKeys: []string{"topology.ebs.csi.aws.com/zone"},
+				},
+			},
+		},
+	}
+
+	otherCSINode := &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: otherNode.Name,
+			UID:  types.UID("csi-node-uid-2"),
+		},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{
+				{
+					Name:         "ebs.csi.aws.com",
+					NodeID:       "node-id-2",
+					TopologyKeys: []string{"topology.ebs.csi.aws.com/zone"},
+				},
+			},
+		},
 	}
 
 	testCases := []modificationTestCase{
@@ -1158,19 +1265,83 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 		},
+		{
+			name:        "get/list NodeInfo with CSI objects",
+			requiresCSI: true,
+			state: snapshotState{
+				nodes:      []*apiv1.Node{node, otherNode},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				csiSnapshot: csisnapshot.NewSnapshot(map[string]*storagev1.CSINode{
+					node.Name:      csiNode,
+					otherNode.Name: otherCSINode,
+				}),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				// Verify GetNodeInfo wraps CSINode correctly.
+				gotNodeInfo, err := snapshot.GetNodeInfo(node.Name)
+				if err != nil {
+					return err
+				}
+				if gotNodeInfo.CSINode == nil {
+					t.Errorf("GetNodeInfo(): expected CSINode to be set for node %q, got nil", node.Name)
+				} else {
+					if diff := cmp.Diff(csiNode, gotNodeInfo.CSINode, cmpopts.IgnoreFields(metav1.ObjectMeta{}, "ResourceVersion")); diff != "" {
+						t.Errorf("GetNodeInfo(): unexpected CSINode (-want +got): %s", diff)
+					}
+				}
+
+				// Verify ListNodeInfos wraps CSINode correctly for all nodes.
+				gotNodeInfos, err := snapshot.ListNodeInfos()
+				if err != nil {
+					return err
+				}
+				gotByName := map[string]*framework.NodeInfo{}
+				for _, ni := range gotNodeInfos {
+					gotByName[ni.Node().Name] = ni
+				}
+				for _, wantName := range []string{node.Name, otherNode.Name} {
+					ni := gotByName[wantName]
+					if ni == nil {
+						t.Errorf("ListNodeInfos(): expected NodeInfo for node %q, but not found", wantName)
+						continue
+					}
+					if ni.CSINode == nil {
+						t.Errorf("ListNodeInfos(): expected CSINode to be set for node %q, got nil", wantName)
+					}
+				}
+				return nil
+			},
+			modifiedState: snapshotState{
+				nodes:      []*apiv1.Node{node, otherNode},
+				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				csiSnapshot: csisnapshot.NewSnapshot(map[string]*storagev1.CSINode{
+					node.Name:      csiNode,
+					otherNode.Name: otherCSINode,
+				}),
+			},
+		},
 	}
 
+	// Filter CSI-specific cases to run only when CSI-aware scheduling is enabled.
+	var filtered []modificationTestCase
+	isCSISnapshot := snapshotName == "basic-csi" || snapshotName == "delta-csi"
 	for i := range testCases {
-		if testCases[i].modifiedState.draSnapshot == nil {
-			testCases[i].modifiedState.draSnapshot = drasnapshot.NewEmptySnapshot()
-		}
-
-		if testCases[i].state.draSnapshot == nil {
-			testCases[i].state.draSnapshot = drasnapshot.NewEmptySnapshot()
+		if testCases[i].requiresCSI == isCSISnapshot {
+			filtered = append(filtered, testCases[i])
 		}
 	}
 
-	return testCases
+	for i := range filtered {
+		if testCases[i].modifiedState.draSnapshot == nil {
+			filtered[i].modifiedState.draSnapshot = drasnapshot.NewEmptySnapshot()
+		}
+
+		if filtered[i].state.draSnapshot == nil {
+			filtered[i].state.draSnapshot = drasnapshot.NewEmptySnapshot()
+		}
+	}
+
+	return filtered
 }
 
 func TestForking(t *testing.T) {
@@ -1313,7 +1484,7 @@ func TestSetClusterState(t *testing.T) {
 
 	extraNodes := clustersnapshot.CreateTestNodesWithPrefix("extra", extraNodeCount)
 
-	allNodes := make([]*apiv1.Node, len(nodes)+len(extraNodes), len(nodes)+len(extraNodes))
+	allNodes := make([]*apiv1.Node, len(nodes)+len(extraNodes))
 	copy(allNodes, nodes)
 	copy(allNodes[len(nodes):], extraNodes)
 
@@ -1343,7 +1514,11 @@ func TestSetClusterState(t *testing.T) {
 
 				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
 				newPodsByNode := clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, nil))
+				var csiSnapshot *csisnapshot.Snapshot
+				if isCSIAwareSnapshot(snapshot) {
+					csiSnapshot = emptyCSISnapshotForNodes(newNodes)
+				}
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csiSnapshot))
 
 				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
@@ -1357,6 +1532,7 @@ func TestSetClusterState(t *testing.T) {
 				for _, node := range extraNodes {
 					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
+					ensureCSINodeForSnapshotNode(t, snapshot, node.Name)
 				}
 
 				for _, pod := range extraPods {
@@ -1427,6 +1603,7 @@ func TestNode404(t *testing.T) {
 					node := BuildTestNode("node", 10, 100)
 					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
+					ensureCSINodeForSnapshotNode(t, snapshot, "node")
 
 					snapshot.Fork()
 					assert.NoError(t, err)
@@ -1454,6 +1631,7 @@ func TestNode404(t *testing.T) {
 					node := BuildTestNode("node", 10, 100)
 					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
+					ensureCSINodeForSnapshotNode(t, snapshot, "node")
 
 					err = snapshot.RemoveNodeInfo("node")
 					assert.NoError(t, err)

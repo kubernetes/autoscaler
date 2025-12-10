@@ -141,7 +141,7 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 			allPodsLister := fakeAllPodsLister{podsToList: append(append(tc.scheduledPods, tc.unschedulablePods...), tc.otherPods...)}
 			autoscalingCtx := ca_context.AutoscalingContext{
 				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
-					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, &allPodsLister, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
+					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, &allPodsLister, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
@@ -305,7 +305,7 @@ func TestGroupPods(t *testing.T) {
 
 			autoscalingCtx := ca_context.AutoscalingContext{
 				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
-					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
+					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 			}
 			controllers := listControllers(&autoscalingCtx)

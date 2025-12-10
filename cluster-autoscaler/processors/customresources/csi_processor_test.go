@@ -279,7 +279,7 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 				machineName := fmt.Sprintf("%s_machine_template", ng)
 				if csiNode, found := tc.nodeGroupsTemplatesCSINode[ng]; found {
 					machineTemplates[machineName] = framework.NewNodeInfo(buildTestNode(fmt.Sprintf("%s_template", ng), true), nil).
-						AddCSINode(csiNode)
+						SetCSINode(csiNode)
 				} else {
 					machineTemplates[machineName] = framework.NewTestNodeInfo(buildTestNode(fmt.Sprintf("%s_template", ng), true))
 				}
@@ -295,12 +295,8 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 			provider.SetMachineTemplates(machineTemplates)
 
 			var csiSnapshot *csisnapshot.Snapshot
-			if tc.csiSnapshot == nil {
-				if len(tc.nodesCSINode) > 0 {
-					csiSnapshot = csisnapshot.NewSnapshot(tc.nodesCSINode)
-				} else {
-					csiSnapshot = nil
-				}
+			if tc.csiSnapshot == nil && len(tc.nodesCSINode) > 0 {
+				csiSnapshot = csisnapshot.NewSnapshot(tc.nodesCSINode)
 			} else {
 				csiSnapshot = tc.csiSnapshot
 			}

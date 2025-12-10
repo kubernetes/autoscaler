@@ -67,7 +67,7 @@ func TestSoftTaintUpdate(t *testing.T) {
 		MaxBulkSoftTaintCount: 1,
 		MaxBulkSoftTaintTime:  3 * time.Second,
 	}
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	actx, err := test.NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
@@ -151,7 +151,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 		MaxBulkSoftTaintCount: 10,
 		MaxBulkSoftTaintTime:  maxSoftTaintDuration,
 	}
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	actx, err := test.NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)

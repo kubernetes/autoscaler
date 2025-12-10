@@ -255,10 +255,6 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 		return err
 	}
 
-	if template.CSINode != nil {
-		newNodeInfo.AddCSINode(core_utils.CreateSanitizedCSINode(template.CSINode, newNodeInfo))
-	}
-
 	if err := e.clusterSnapshot.AddNodeInfo(newNodeInfo); err != nil {
 		return err
 	}

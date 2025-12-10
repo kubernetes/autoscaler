@@ -25,7 +25,7 @@ import (
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	intreeschedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.
@@ -94,7 +94,7 @@ func (data *internalBasicSnapshotData) addPvcUsedByPod(pod *apiv1.Pod) {
 		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		k := intreeschedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
 		_, found := data.pvcNamespacePodMap[k]
 		if !found {
 			data.pvcNamespacePodMap[k] = make(map[string]bool)
@@ -113,7 +113,7 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		k := intreeschedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
 		if _, found := data.pvcNamespacePodMap[k]; found {
 			delete(data.pvcNamespacePodMap[k], pod.GetName())
 			if len(data.pvcNamespacePodMap[k]) == 0 {
@@ -152,7 +152,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	if _, found := data.nodeInfoMap[node.Name]; found {
 		return fmt.Errorf("node %s already in snapshot", node.Name)
 	}
-	nodeInfo := intreeschedulerframework.NewNodeInfo()
+	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 	data.nodeInfoMap[node.Name] = nodeInfo
 	return nil
@@ -173,7 +173,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
-	podInfo, _ := intreeschedulerframework.NewPodInfo(pod)
+	podInfo, _ := schedulerframework.NewPodInfo(pod)
 	data.nodeInfoMap[nodeName].AddPodInfo(podInfo)
 	data.addPvcUsedByPod(pod)
 	return nil
@@ -218,11 +218,6 @@ func (snapshot *BasicSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
 // CsiSnapshot returns the CSI snapshot.
 func (snapshot *BasicSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 	return snapshot.csiSnapshot
-}
-
-// CSINodes returns the CSI nodes snapshot.
-func (snapshot *BasicSnapshotStore) CSINodes() fwk.CSINodeLister {
-	return snapshot.csiSnapshot.CSINodes()
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
@@ -363,6 +358,11 @@ func (snapshot *BasicSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
 // DeviceClassResolver exposes the snapshot as DeviceClassResolver.
 func (snapshot *BasicSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
 	return snapshot.DraSnapshot().DeviceClassResolver()
+}
+
+// CSINodes returns the CSI nodes snapshot.
+func (snapshot *BasicSnapshotStore) CSINodes() fwk.CSINodeLister {
+	return snapshot.csiSnapshot.CSINodes()
 }
 
 // List returns the list of nodes in the snapshot.

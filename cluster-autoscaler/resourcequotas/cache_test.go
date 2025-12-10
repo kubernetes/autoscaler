@@ -26,6 +26,7 @@ import (
 	cptest "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -35,7 +36,10 @@ type mockCustomResourcesProcessor struct {
 	mock.Mock
 }
 
-func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+// Verify that mockCustomResourcesProcessor implements the CustomResourcesProcessor interface.
+var _ customresources.CustomResourcesProcessor = &mockCustomResourcesProcessor{}
+
+func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	return allNodes, readyNodes
 }
 

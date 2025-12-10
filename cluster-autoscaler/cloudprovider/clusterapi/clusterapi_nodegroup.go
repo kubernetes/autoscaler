@@ -384,7 +384,7 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
 	if csiNode != nil {
-		nodeInfo.AddCSINode(csiNode)
+		nodeInfo.SetCSINode(csiNode)
 	}
 	return nodeInfo, nil
 }
