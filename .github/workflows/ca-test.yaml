@@ -36,7 +36,7 @@ jobs:
 
       - name: Test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
-        run: hack/for-go-proj.sh cluster-autoscaler
+        run: hack/go-unit-tests-ca.sh
         env:
           GO111MODULE: auto
           PROJECT_NAMES: ""
