@@ -309,7 +309,7 @@ func TestChangedCAReloader(t *testing.T) {
 // 		t.Error(err)
 // 	}
 
-// 	testClientSet := fake.fake.NewClientset()
+// 	testClientSet := fake.NewClientset()
 
 // 	selfRegistration(
 // 		testClientSet,
