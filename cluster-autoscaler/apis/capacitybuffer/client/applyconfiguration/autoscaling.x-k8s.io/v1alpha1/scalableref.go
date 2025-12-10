@@ -20,10 +20,16 @@ package v1alpha1
 
 // ScalableRefApplyConfiguration represents a declarative configuration of the ScalableRef type for use
 // with apply.
+//
+// ScalableRef contains name, kind and API group of an object that can be scaled.
 type ScalableRefApplyConfiguration struct {
+	// APIGroup of the scalable object.
+	// Empty string for the core API group
 	APIGroup *string `json:"apiGroup,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Name     *string `json:"name,omitempty"`
+	// Kind of the scalable object (e.g., "Deployment", "StatefulSet").
+	Kind *string `json:"kind,omitempty"`
+	// Name of the scalable object.
+	Name *string `json:"name,omitempty"`
 }
 
 // ScalableRefApplyConfiguration constructs a declarative configuration of the ScalableRef type for use with

@@ -24,7 +24,15 @@ import (
 
 // CapacityQuotaLimitsApplyConfiguration represents a declarative configuration of the CapacityQuotaLimits type for use
 // with apply.
+//
+// CapacityQuotaLimits define quota limits.
 type CapacityQuotaLimitsApplyConfiguration struct {
+	// Resources define resource limits of this quota.
+	//
+	// Currently supported built-in resources: cpu, memory. Additionally,
+	// nodes key can be used to limit the number of existing nodes.
+	// Node autoscaler implementations and cloud providers can support custom
+	// resources, such as GPU.
 	Resources *autoscalingxk8siov1alpha1.ResourceList `json:"resources,omitempty"`
 }
 

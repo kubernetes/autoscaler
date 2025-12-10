@@ -24,13 +24,37 @@ import (
 
 // CapacityBufferSpecApplyConfiguration represents a declarative configuration of the CapacityBufferSpec type for use
 // with apply.
+//
+// CapacityBufferSpec defines the desired state of CapacityBuffer.
 type CapacityBufferSpecApplyConfiguration struct {
-	ProvisioningStrategy *string                                 `json:"provisioningStrategy,omitempty"`
-	PodTemplateRef       *LocalObjectRefApplyConfiguration       `json:"podTemplateRef,omitempty"`
-	ScalableRef          *ScalableRefApplyConfiguration          `json:"scalableRef,omitempty"`
-	Replicas             *int32                                  `json:"replicas,omitempty"`
-	Percentage           *int32                                  `json:"percentage,omitempty"`
-	Limits               *autoscalingxk8siov1alpha1.ResourceList `json:"limits,omitempty"`
+	// ProvisioningStrategy defines how the buffer is utilized.
+	// "buffer.x-k8s.io/active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
+	ProvisioningStrategy *string `json:"provisioningStrategy,omitempty"`
+	// PodTemplateRef is a reference to a PodTemplate resource in the same namespace
+	// that declares the shape of a single chunk of the buffer. The pods created
+	// from this template will be used as placeholder pods for the buffer capacity.
+	// Exactly one of `podTemplateRef`, `scalableRef` should be specified.
+	PodTemplateRef *LocalObjectRefApplyConfiguration `json:"podTemplateRef,omitempty"`
+	// ScalableRef is a reference to an object of a kind that has a scale subresource
+	// and specifies its label selector field. This allows the CapacityBuffer to
+	// manage the buffer by scaling an existing scalable resource.
+	// Exactly one of `podTemplateRef`, `scalableRef` should be specified.
+	ScalableRef *ScalableRefApplyConfiguration `json:"scalableRef,omitempty"`
+	// Replicas defines the desired number of buffer chunks to provision.
+	// If neither `replicas` nor `percentage` is set, as many chunks as fit within
+	// defined resource limits (if any) will be created. If both are set, the maximum
+	// of the two will be used.
+	Replicas *int32 `json:"replicas,omitempty"`
+	// Percentage defines the desired buffer capacity as a percentage of the
+	// `scalableRef`'s current replicas. This is only applicable if `scalableRef` is set.
+	// The absolute number of replicas is calculated from the percentage by rounding up to a minimum of 1.
+	// For example, if `scalableRef` has 10 replicas and `percentage` is 20, 2 buffer chunks will be created.
+	Percentage *int32 `json:"percentage,omitempty"`
+	// Limits, if specified, will limit the number of chunks created for this buffer
+	// based on total resource requests (e.g., CPU, memory). If there are no other
+	// limitations for the number of chunks (i.e., `replicas` or `percentage` are not set),
+	// this will be used to create as many chunks as fit into these limits.
+	Limits *autoscalingxk8siov1alpha1.ResourceList `json:"limits,omitempty"`
 }
 
 // CapacityBufferSpecApplyConfiguration constructs a declarative configuration of the CapacityBufferSpec type for use with

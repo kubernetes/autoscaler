@@ -319,9 +319,10 @@ func TestDebugInfo(t *testing.T) {
 
 	_, _, predicateErr := defaultPluginRunner.RunFiltersOnNode(p1, "n1")
 	assert.NotNil(t, predicateErr)
-	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
-	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
+	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint(s)")
+	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint(s)")
 	assert.Contains(t, predicateErr.Error(), "RandomTaint")
+	assert.Contains(t, predicateErr.Error(), "SomeTaint")
 
 	// with custom predicate checker
 

@@ -57,7 +57,7 @@ func NewCapacityQuotaInformer(client versioned.Interface, namespace string, resy
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredCapacityQuotaInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		&cache.ListWatch{
+		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
@@ -82,7 +82,7 @@ func NewFilteredCapacityQuotaInformer(client versioned.Interface, namespace stri
 				}
 				return client.AutoscalingV1alpha1().CapacityQuotas(namespace).Watch(ctx, options)
 			},
-		},
+		}, client),
 		&capacityquotaautoscalingxk8siov1alpha1.CapacityQuota{},
 		resyncPeriod,
 		indexers,

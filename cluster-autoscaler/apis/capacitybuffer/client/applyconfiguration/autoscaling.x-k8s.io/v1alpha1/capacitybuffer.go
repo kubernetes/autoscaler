@@ -26,11 +26,18 @@ import (
 
 // CapacityBufferApplyConfiguration represents a declarative configuration of the CapacityBuffer type for use
 // with apply.
+//
+// CapacityBuffer is the configuration that an autoscaler can use to provision buffer capacity within a cluster.
+// This buffer is represented by placeholder pods that trigger the Cluster Autoscaler to scale up nodes in advance,
+// ensuring that there is always spare capacity available to handle sudden workload spikes or to speed up scaling events.
 type CapacityBufferApplyConfiguration struct {
+	// Standard Kubernetes object metadata.
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *CapacityBufferSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                           *CapacityBufferStatusApplyConfiguration `json:"status,omitempty"`
+	// Spec defines the desired characteristics of the buffer.
+	Spec *CapacityBufferSpecApplyConfiguration `json:"spec,omitempty"`
+	// Status represents the current state of the buffer and its readiness for autoprovisioning.
+	Status *CapacityBufferStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // CapacityBuffer constructs a declarative configuration of the CapacityBuffer type for use with
@@ -43,6 +50,7 @@ func CapacityBuffer(name, namespace string) *CapacityBufferApplyConfiguration {
 	b.WithAPIVersion("autoscaling.x-k8s.io/v1alpha1")
 	return b
 }
+
 func (b CapacityBufferApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value
