@@ -145,7 +145,6 @@ skipped_names = [
     "cluster-autoscaler/update_toc.py",
     "cluster-autoscaler/hack/list-owners.py",
     "cluster-autoscaler/expander/grpcplugin/protos",
-    "cluster-autoscaler/cloudprovider/aws/aws-sdk-go",
     "cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3",
     "cluster-autoscaler/cloudprovider/bizflycloud/gobizfly",
     "cluster-autoscaler/cloudprovider/brightbox/gobrightbox",
