@@ -306,6 +306,7 @@ type HistogramCheckpoint struct {
 	ReferenceTimestamp metav1.Time `json:"referenceTimestamp,omitempty" protobuf:"bytes,1,opt,name=referenceTimestamp"`
 
 	// Map from bucket index to bucket weight.
+	// +k8s:openapi-gen=false
 	BucketWeights map[int]uint32 `json:"bucketWeights,omitempty" protobuf:"bytes,2,opt,name=bucketWeights"`
 
 	// Sum of samples to be used as denominator for weights from BucketWeights.

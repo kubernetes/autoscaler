@@ -97,7 +97,7 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.caseName, func(t *testing.T) {
-			fakeClient := vpa_fake.NewClientset(&vpa_types.VerticalPodAutoscalerList{Items: []vpa_types.VerticalPodAutoscaler{*tc.observedVpa}})
+			fakeClient := vpa_fake.NewClientset(tc.observedVpa)
 			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1().VerticalPodAutoscalers(tc.updatedVpa.Namespace),
 				tc.updatedVpa.Name, &tc.updatedVpa.Status, &tc.observedVpa.Status)
 			assert.NoError(t, err, "Unexpected error occurred.")

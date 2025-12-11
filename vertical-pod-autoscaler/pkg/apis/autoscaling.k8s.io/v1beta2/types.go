@@ -348,6 +348,7 @@ type HistogramCheckpoint struct {
 	// Map from bucket index to bucket weight.
 	// +kubebuilder:validation:Type=object
 	// +kubebuilder:validation:XPreserveUnknownFields
+	// +k8s:openapi-gen=false
 	BucketWeights map[int]uint32 `json:"bucketWeights,omitempty" protobuf:"bytes,2,opt,name=bucketWeights"`
 
 	// Sum of samples to be used as denominator for weights from BucketWeights.

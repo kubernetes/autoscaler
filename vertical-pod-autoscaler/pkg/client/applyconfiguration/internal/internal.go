@@ -39,6 +39,1039 @@ func Parser() *typed.Parser {
 var parserOnce sync.Once
 var parser *typed.Parser
 var schemaYAML = typed.YAMLObject(`types:
+- name: CrossVersionObjectReference.v1.autoscaling.api.k8s.io
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+      default: ""
+    - name: name
+      type:
+        scalar: string
+      default: ""
+    elementRelationship: atomic
+- name: FieldsV1.v1.meta.apis.pkg.apimachinery.k8s.io
+  map:
+    elementType:
+      scalar: untyped
+      list:
+        elementType:
+          namedType: __untyped_atomic_
+        elementRelationship: atomic
+      map:
+        elementType:
+          namedType: __untyped_deduced_
+        elementRelationship: separable
+- name: LabelSelector.v1.meta.apis.pkg.apimachinery.k8s.io
+  map:
+    fields:
+    - name: matchExpressions
+      type:
+        list:
+          elementType:
+            namedType: LabelSelectorRequirement.v1.meta.apis.pkg.apimachinery.k8s.io
+          elementRelationship: atomic
+    - name: matchLabels
+      type:
+        map:
+          elementType:
+            scalar: string
+    elementRelationship: atomic
+- name: LabelSelectorRequirement.v1.meta.apis.pkg.apimachinery.k8s.io
+  map:
+    fields:
+    - name: key
+      type:
+        scalar: string
+      default: ""
+    - name: operator
+      type:
+        scalar: string
+      default: ""
+    - name: values
+      type:
+        list:
+          elementType:
+            scalar: string
+          elementRelationship: atomic
+- name: ManagedFieldsEntry.v1.meta.apis.pkg.apimachinery.k8s.io
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: fieldsType
+      type:
+        scalar: string
+    - name: fieldsV1
+      type:
+        namedType: FieldsV1.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: manager
+      type:
+        scalar: string
+    - name: operation
+      type:
+        scalar: string
+    - name: subresource
+      type:
+        scalar: string
+    - name: time
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+- name: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+  map:
+    fields:
+    - name: annotations
+      type:
+        map:
+          elementType:
+            scalar: string
+    - name: creationTimestamp
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: deletionGracePeriodSeconds
+      type:
+        scalar: numeric
+    - name: deletionTimestamp
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: finalizers
+      type:
+        list:
+          elementType:
+            scalar: string
+          elementRelationship: associative
+    - name: generateName
+      type:
+        scalar: string
+    - name: generation
+      type:
+        scalar: numeric
+    - name: labels
+      type:
+        map:
+          elementType:
+            scalar: string
+    - name: managedFields
+      type:
+        list:
+          elementType:
+            namedType: ManagedFieldsEntry.v1.meta.apis.pkg.apimachinery.k8s.io
+          elementRelationship: atomic
+    - name: name
+      type:
+        scalar: string
+    - name: namespace
+      type:
+        scalar: string
+    - name: ownerReferences
+      type:
+        list:
+          elementType:
+            namedType: OwnerReference.v1.meta.apis.pkg.apimachinery.k8s.io
+          elementRelationship: associative
+          keys:
+          - uid
+    - name: resourceVersion
+      type:
+        scalar: string
+    - name: selfLink
+      type:
+        scalar: string
+    - name: uid
+      type:
+        scalar: string
+- name: OwnerReference.v1.meta.apis.pkg.apimachinery.k8s.io
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+      default: ""
+    - name: blockOwnerDeletion
+      type:
+        scalar: boolean
+    - name: controller
+      type:
+        scalar: boolean
+    - name: kind
+      type:
+        scalar: string
+      default: ""
+    - name: name
+      type:
+        scalar: string
+      default: ""
+    - name: uid
+      type:
+        scalar: string
+      default: ""
+    elementRelationship: atomic
+- name: Quantity.resource.api.pkg.apimachinery.k8s.io
+  scalar: string
+- name: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+  scalar: untyped
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.ContainerResourcePolicy
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: controlledResources
+      type:
+        list:
+          elementType:
+            scalar: string
+          elementRelationship: associative
+    - name: controlledValues
+      type:
+        scalar: string
+    - name: maxAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: minAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: mode
+      type:
+        scalar: string
+    - name: oomBumpUpRatio
+      type:
+        namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: oomMinBumpUp
+      type:
+        namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.EvictionRequirement
+  map:
+    fields:
+    - name: changeRequirement
+      type:
+        scalar: string
+      default: ""
+    - name: resources
+      type:
+        list:
+          elementType:
+            scalar: string
+          elementRelationship: atomic
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.HistogramCheckpoint
+  map:
+    fields:
+    - name: referenceTimestamp
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: totalWeight
+      type:
+        scalar: numeric
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.PodResourcePolicy
+  map:
+    fields:
+    - name: containerPolicies
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.ContainerResourcePolicy
+          elementRelationship: associative
+          keys:
+          - containerName
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.PodUpdatePolicy
+  map:
+    fields:
+    - name: evictionRequirements
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.EvictionRequirement
+          elementRelationship: atomic
+    - name: minReplicas
+      type:
+        scalar: numeric
+    - name: updateMode
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.RecommendedContainerResources
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: lowerBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: target
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: uncappedTarget
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: upperBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.RecommendedPodResources
+  map:
+    fields:
+    - name: containerRecommendations
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.RecommendedContainerResources
+          elementRelationship: atomic
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscaler
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerCheckpoint
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerCheckpointSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerCheckpointStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerCheckpointSpec
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: vpaObjectName
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerCheckpointStatus
+  map:
+    fields:
+    - name: cpuHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.HistogramCheckpoint
+      default: {}
+    - name: firstSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastUpdateTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: memoryHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.HistogramCheckpoint
+      default: {}
+    - name: totalSamplesCount
+      type:
+        scalar: numeric
+    - name: version
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerCondition
+  map:
+    fields:
+    - name: lastTransitionTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: message
+      type:
+        scalar: string
+    - name: reason
+      type:
+        scalar: string
+    - name: status
+      type:
+        scalar: string
+      default: ""
+    - name: type
+      type:
+        scalar: string
+      default: ""
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerRecommenderSelector
+  map:
+    fields:
+    - name: name
+      type:
+        scalar: string
+      default: ""
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerSpec
+  map:
+    fields:
+    - name: recommenders
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerRecommenderSelector
+          elementRelationship: atomic
+    - name: resourcePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.PodResourcePolicy
+    - name: targetRef
+      type:
+        namedType: CrossVersionObjectReference.v1.autoscaling.api.k8s.io
+    - name: updatePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.PodUpdatePolicy
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerStatus
+  map:
+    fields:
+    - name: conditions
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.VerticalPodAutoscalerCondition
+          elementRelationship: associative
+          keys:
+          - type
+    - name: recommendation
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1.RecommendedPodResources
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.ContainerResourcePolicy
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: maxAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: minAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: mode
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.HistogramCheckpoint
+  map:
+    fields:
+    - name: referenceTimestamp
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: totalWeight
+      type:
+        scalar: numeric
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.PodResourcePolicy
+  map:
+    fields:
+    - name: containerPolicies
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.ContainerResourcePolicy
+          elementRelationship: associative
+          keys:
+          - containerName
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.PodUpdatePolicy
+  map:
+    fields:
+    - name: updateMode
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.RecommendedContainerResources
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: lowerBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: target
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: uncappedTarget
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: upperBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.RecommendedPodResources
+  map:
+    fields:
+    - name: containerRecommendations
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.RecommendedContainerResources
+          elementRelationship: atomic
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscaler
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerCheckpoint
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerCheckpointSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerCheckpointStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerCheckpointSpec
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: vpaObjectName
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerCheckpointStatus
+  map:
+    fields:
+    - name: cpuHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.HistogramCheckpoint
+      default: {}
+    - name: firstSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastUpdateTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: memoryHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.HistogramCheckpoint
+      default: {}
+    - name: totalSamplesCount
+      type:
+        scalar: numeric
+    - name: version
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerCondition
+  map:
+    fields:
+    - name: lastTransitionTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: message
+      type:
+        scalar: string
+    - name: reason
+      type:
+        scalar: string
+    - name: status
+      type:
+        scalar: string
+      default: ""
+    - name: type
+      type:
+        scalar: string
+      default: ""
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerSpec
+  map:
+    fields:
+    - name: resourcePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.PodResourcePolicy
+    - name: selector
+      type:
+        namedType: LabelSelector.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: updatePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.PodUpdatePolicy
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerStatus
+  map:
+    fields:
+    - name: conditions
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.VerticalPodAutoscalerCondition
+          elementRelationship: associative
+          keys:
+          - type
+    - name: recommendation
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta1.RecommendedPodResources
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.ContainerResourcePolicy
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: maxAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: minAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: mode
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.HistogramCheckpoint
+  map:
+    fields:
+    - name: referenceTimestamp
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: totalWeight
+      type:
+        scalar: numeric
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.PodResourcePolicy
+  map:
+    fields:
+    - name: containerPolicies
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.ContainerResourcePolicy
+          elementRelationship: associative
+          keys:
+          - containerName
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.PodUpdatePolicy
+  map:
+    fields:
+    - name: updateMode
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.RecommendedContainerResources
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: lowerBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: target
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: uncappedTarget
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: upperBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.RecommendedPodResources
+  map:
+    fields:
+    - name: containerRecommendations
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.RecommendedContainerResources
+          elementRelationship: atomic
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscaler
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerCheckpoint
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerCheckpointSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerCheckpointStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerCheckpointSpec
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: vpaObjectName
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerCheckpointStatus
+  map:
+    fields:
+    - name: cpuHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.HistogramCheckpoint
+      default: {}
+    - name: firstSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastUpdateTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: memoryHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.HistogramCheckpoint
+      default: {}
+    - name: totalSamplesCount
+      type:
+        scalar: numeric
+    - name: version
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerCondition
+  map:
+    fields:
+    - name: lastTransitionTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: message
+      type:
+        scalar: string
+    - name: reason
+      type:
+        scalar: string
+    - name: status
+      type:
+        scalar: string
+      default: ""
+    - name: type
+      type:
+        scalar: string
+      default: ""
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerSpec
+  map:
+    fields:
+    - name: resourcePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.PodResourcePolicy
+    - name: targetRef
+      type:
+        namedType: CrossVersionObjectReference.v1.autoscaling.api.k8s.io
+    - name: updatePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.PodUpdatePolicy
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerStatus
+  map:
+    fields:
+    - name: conditions
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscalerCondition
+          elementRelationship: associative
+          keys:
+          - type
+    - name: recommendation
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.RecommendedPodResources
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.ContainerResourcePolicy
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: maxAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: minAllowed
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: mode
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.HistogramCheckpoint
+  map:
+    fields:
+    - name: referenceTimestamp
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: totalWeight
+      type:
+        scalar: numeric
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.PodResourcePolicy
+  map:
+    fields:
+    - name: containerPolicies
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.ContainerResourcePolicy
+          elementRelationship: associative
+          keys:
+          - containerName
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.PodUpdatePolicy
+  map:
+    fields:
+    - name: updateMode
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.RecommendedContainerResources
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: lowerBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: target
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+    - name: upperBound
+      type:
+        map:
+          elementType:
+            namedType: Quantity.resource.api.pkg.apimachinery.k8s.io
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.RecommendedPodResources
+  map:
+    fields:
+    - name: containerRecommendations
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.RecommendedContainerResources
+          elementRelationship: atomic
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscaler
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerCheckpoint
+  map:
+    fields:
+    - name: apiVersion
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+    - name: metadata
+      type:
+        namedType: ObjectMeta.v1.meta.apis.pkg.apimachinery.k8s.io
+      default: {}
+    - name: spec
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerCheckpointSpec
+      default: {}
+    - name: status
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerCheckpointStatus
+      default: {}
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerCheckpointSpec
+  map:
+    fields:
+    - name: containerName
+      type:
+        scalar: string
+    - name: vpaObjectName
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerCheckpointStatus
+  map:
+    fields:
+    - name: cpuHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.HistogramCheckpoint
+      default: {}
+    - name: firstSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastSampleStart
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: lastUpdateTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: memoryHistogram
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.HistogramCheckpoint
+      default: {}
+    - name: totalSamplesCount
+      type:
+        scalar: numeric
+    - name: version
+      type:
+        scalar: string
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerCondition
+  map:
+    fields:
+    - name: lastTransitionTime
+      type:
+        namedType: Time.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: message
+      type:
+        scalar: string
+    - name: reason
+      type:
+        scalar: string
+    - name: status
+      type:
+        scalar: string
+      default: ""
+    - name: type
+      type:
+        scalar: string
+      default: ""
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerSpec
+  map:
+    fields:
+    - name: resourcePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.PodResourcePolicy
+    - name: selector
+      type:
+        namedType: LabelSelector.v1.meta.apis.pkg.apimachinery.k8s.io
+    - name: updatePolicy
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.PodUpdatePolicy
+- name: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerStatus
+  map:
+    fields:
+    - name: conditions
+      type:
+        list:
+          elementType:
+            namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.VerticalPodAutoscalerCondition
+          elementRelationship: associative
+          keys:
+          - type
+    - name: recommendation
+      type:
+        namedType: io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.poc.autoscaling.k8s.io.v1alpha1.RecommendedPodResources
 - name: __untyped_atomic_
   scalar: untyped
   list:

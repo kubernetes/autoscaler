@@ -21,6 +21,9 @@ package v1beta2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
+	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
+	autoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	internal "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/applyconfiguration/internal"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
@@ -49,6 +52,47 @@ func VerticalPodAutoscaler(name, namespace string) *VerticalPodAutoscalerApplyCo
 	b.WithKind("VerticalPodAutoscaler")
 	b.WithAPIVersion("autoscaling.k8s.io/v1beta2")
 	return b
+}
+
+// ExtractVerticalPodAutoscalerFrom extracts the applied configuration owned by fieldManager from
+// verticalPodAutoscaler for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
+// verticalPodAutoscaler must be a unmodified VerticalPodAutoscaler API object that was retrieved from the Kubernetes API.
+// ExtractVerticalPodAutoscalerFrom provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractVerticalPodAutoscalerFrom(verticalPodAutoscaler *autoscalingk8siov1beta2.VerticalPodAutoscaler, fieldManager string, subresource string) (*VerticalPodAutoscalerApplyConfiguration, error) {
+	b := &VerticalPodAutoscalerApplyConfiguration{}
+	err := managedfields.ExtractInto(verticalPodAutoscaler, internal.Parser().Type("io.k8s.autoscaler.vertical-pod-autoscaler.pkg.apis.autoscaling.k8s.io.v1beta2.VerticalPodAutoscaler"), fieldManager, b, subresource)
+	if err != nil {
+		return nil, err
+	}
+	b.WithName(verticalPodAutoscaler.Name)
+	b.WithNamespace(verticalPodAutoscaler.Namespace)
+
+	b.WithKind("VerticalPodAutoscaler")
+	b.WithAPIVersion("autoscaling.k8s.io/v1beta2")
+	return b, nil
+}
+
+// ExtractVerticalPodAutoscaler extracts the applied configuration owned by fieldManager from
+// verticalPodAutoscaler. If no managedFields are found in verticalPodAutoscaler for fieldManager, a
+// VerticalPodAutoscalerApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// verticalPodAutoscaler must be a unmodified VerticalPodAutoscaler API object that was retrieved from the Kubernetes API.
+// ExtractVerticalPodAutoscaler provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractVerticalPodAutoscaler(verticalPodAutoscaler *autoscalingk8siov1beta2.VerticalPodAutoscaler, fieldManager string) (*VerticalPodAutoscalerApplyConfiguration, error) {
+	return ExtractVerticalPodAutoscalerFrom(verticalPodAutoscaler, fieldManager, "")
+}
+
+// ExtractVerticalPodAutoscalerStatus extracts the applied configuration owned by fieldManager from
+// verticalPodAutoscaler for the status subresource.
+func ExtractVerticalPodAutoscalerStatus(verticalPodAutoscaler *autoscalingk8siov1beta2.VerticalPodAutoscaler, fieldManager string) (*VerticalPodAutoscalerApplyConfiguration, error) {
+	return ExtractVerticalPodAutoscalerFrom(verticalPodAutoscaler, fieldManager, "status")
 }
 
 func (b VerticalPodAutoscalerApplyConfiguration) IsApplyConfiguration() {}
