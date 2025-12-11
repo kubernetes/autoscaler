@@ -23,7 +23,6 @@ cd "${KUBE_ROOT}"
 
 GOLINT=${GOLINT:-"golint"}
 excluded_packages=(
-  'cluster-autoscaler/cloudprovider/aws/aws-sdk-go'
   'cluster-autoscaler/cloudprovider/magnum/gophercloud'
   'cluster-autoscaler/cloudprovider/digitalocean/godo'
   'cluster-autoscaler/cloudprovider/bizflycloud/gobizfly'
