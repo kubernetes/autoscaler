@@ -858,7 +858,7 @@ func TestFilterVPAsIgnoreNamespaces(t *testing.T) {
 
 func TestCanCleanupCheckpoints(t *testing.T) {
 	_, tctx := ktesting.NewTestContext(t)
-	client := fake.NewSimpleClientset()
+	client := fake.NewClientset()
 	namespace := "testNamespace"
 
 	_, err := client.CoreV1().Namespaces().Create(tctx, &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})

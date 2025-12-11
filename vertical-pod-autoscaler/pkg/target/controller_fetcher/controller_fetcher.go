@@ -32,7 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/discovery"
-	cacheddiscovery "k8s.io/client-go/discovery/cached"
+	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -210,7 +210,7 @@ func (f *controllerFetcher) getParentOfController(ctx context.Context, controlle
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("unhandled targetRef %s / %s / %s, last error %v",
+		return nil, fmt.Errorf("unhandled targetRef %s / %s / %s, last error %w",
 			controllerKey.ApiVersion, controllerKey.Kind, controllerKey.Name, err)
 	}
 

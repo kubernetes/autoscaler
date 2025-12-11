@@ -22,6 +22,7 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
         "arm64": "",
         "amd64": ""
     },
+    "defaultSubnetIPRange": "10.0.0.0/16", // Optional, if not set the hetzner cloud default will be used - make sure this subnet exists within you private network and to use the cidr notation
     "nodeConfigs": {
         "pool1": { // This equals the pool name. Required for each pool that you have
             "cloudInit": "", // HCLOUD_CLOUD_INIT make sure it isn't base64 encoded twice ;]
@@ -35,7 +36,8 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
                     "value": "autoscaler-node",
                     "effect": "NoExecute"
                 }
-            ]
+            ],
+            "subnetIPRange": "10.0.0.0/24" // Optional, if not set the defaultSubnetIPRange will be used - make sure this subnet exists within you private network and to use the cidr notation
         }
     }
 }
@@ -54,6 +56,15 @@ The image selection logic works as follows:
 1. If a nodepool has its own `imagesForArch` configuration, it will be used for that specific nodepool
 1. If a nodepool doesn't have `imagesForArch` configured, the global `imagesForArch` configuration will be used as a fallback
 1. If neither is configured, the legacy `HCLOUD_IMAGE` environment variable will be used
+
+
+The `defaultSubnetIPRange` and `subnetIPRange` configuration can be used to place nodes within a specific IP range.
+This only applies to private networks. Make sure that the subnet exists within your private network.
+If you do not set this value, the default setting from Hetzner Cloud will be used.
+
+The global `defaultSubnetIPRange` can be overridden on a per-nodepool basis by adding a `subnetIPRange` field to individual nodepool configurations.
+
+
 
 `HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
 

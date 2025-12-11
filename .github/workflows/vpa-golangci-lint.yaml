@@ -1,0 +1,36 @@
+name: Vertical Pod Autoscaler
+
+on:
+  push:
+    paths:
+      - 'vertical-pod-autoscaler/**'
+  pull_request:
+    paths:
+      - 'vertical-pod-autoscaler/**'
+
+env:
+  GOPATH: ${{ github.workspace }}/go
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Run golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+          cache-dependency-path: |
+             ${{ env.GOPATH}}/src/k8s.io/autoscaler/vertical-pod-autoscaler/go.sum
+             ${{ env.GOPATH}}/src/k8s.io/autoscaler/vertical-pod-autoscaler/e2e/go.sum
+
+      - name: golangci-lint - vertical-pod-autoscaler
+        uses: golangci/golangci-lint-action@v8
+        with:
+          args: --timeout=30m
+          working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/vertical-pod-autoscaler

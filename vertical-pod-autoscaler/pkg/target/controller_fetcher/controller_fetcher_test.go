@@ -389,7 +389,7 @@ func TestControllerFetcher(t *testing.T) {
 				},
 			}},
 			expectedKey:   nil,
-			expectedError: fmt.Errorf("unhandled targetRef v1 / Node / node, last error node is not a valid owner"),
+			expectedError: fmt.Errorf("unhandled targetRef v1 / Node / node, last error %w", ErrNodeInvalidOwner),
 		},
 		{
 			name: "custom resource with no scale subresource",

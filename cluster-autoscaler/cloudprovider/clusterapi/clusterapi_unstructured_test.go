@@ -33,9 +33,14 @@ import (
 )
 
 const (
-	cpuStatusKey       = "cpu"
-	memoryStatusKey    = "memory"
-	nvidiaGpuStatusKey = "nvidia.com/gpu"
+	cpuStatusKey             = "cpu"
+	memoryStatusKey          = "memory"
+	nvidiaGpuStatusKey       = "nvidia.com/gpu"
+	architectureStatusKey    = "architecture"
+	operatingSystemStatusKey = "operatingSystem"
+
+	arm64 = "arm64"
+	linux = "linux"
 )
 
 func TestSetSize(t *testing.T) {
@@ -43,16 +48,17 @@ func TestSetSize(t *testing.T) {
 	updatedReplicas := 5
 	finalReplicas := 0
 
-	test := func(t *testing.T, testConfig *testConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+	test := func(t *testing.T, testConfig *TestConfig) {
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		testResource := testConfig.machineSet
 		if testConfig.machineDeployment != nil {
 			testResource = testConfig.machineDeployment
 		}
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -117,30 +123,26 @@ func TestSetSize(t *testing.T) {
 		}
 	}
 
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "0",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "0",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "0",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 }
 
@@ -148,16 +150,17 @@ func TestReplicas(t *testing.T) {
 	initialReplicas := 1
 	updatedReplicas := 5
 
-	test := func(t *testing.T, testConfig *testConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+	test := func(t *testing.T, testConfig *TestConfig) {
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		testResource := testConfig.machineSet
 		if testConfig.machineDeployment != nil {
 			testResource = testConfig.machineDeployment
 		}
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -191,7 +194,7 @@ func TestReplicas(t *testing.T) {
 			if !ok {
 				return false, nil
 			}
-			sr, err := newUnstructuredScalableResource(controller, u)
+			sr, err := newUnstructuredScalableResource(controller.machineController, u)
 			if err != nil {
 				return true, err
 			}
@@ -244,11 +247,19 @@ func TestReplicas(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(initialReplicas).
+			Build()
+		test(t, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), initialReplicas, nil, nil))
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(initialReplicas).
+			Build()
+		test(t, testConfig)
 	})
 }
 
@@ -256,16 +267,17 @@ func TestSetSizeAndReplicas(t *testing.T) {
 	initialReplicas := 1
 	updatedReplicas := 5
 
-	test := func(t *testing.T, testConfig *testConfig) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+	test := func(t *testing.T, testConfig *TestConfig) {
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
 		testResource := testConfig.machineSet
 		if testConfig.machineDeployment != nil {
 			testResource = testConfig.machineDeployment
 		}
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -294,30 +306,27 @@ func TestSetSizeAndReplicas(t *testing.T) {
 		}
 	}
 
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "1",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(
-			RandomString(6),
-			RandomString(6),
-			RandomString(6),
-			initialReplicas, map[string]string{
-				nodeGroupMinSizeAnnotationKey: "1",
-				nodeGroupMaxSizeAnnotationKey: "10",
-			},
-			nil,
-		))
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(initialReplicas).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
 	})
 }
 
@@ -363,11 +372,12 @@ func TestAnnotations(t *testing.T) {
 		draDriverKey:    draDriver,
 	}
 
-	test := func(t *testing.T, testConfig *testConfig, testResource *unstructured.Unstructured) {
-		controller, stop := mustCreateTestController(t, testConfig)
-		defer stop()
+	test := func(t *testing.T, testConfig *TestConfig, testResource *unstructured.Unstructured) {
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
 
-		sr, err := newUnstructuredScalableResource(controller, testResource)
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -421,12 +431,20 @@ func TestAnnotations(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(1).
+			WithAnnotations(annotations).
+			Build()
 		test(t, testConfig, testConfig.machineSet)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations, nil)
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(1).
+			WithAnnotations(annotations).
+			Build()
 		test(t, testConfig, testConfig.machineDeployment)
 	})
 }
@@ -531,13 +549,19 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineSet %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
-			controller, stop := mustCreateTestController(t, msTestConfig)
-			defer stop()
+			msTestConfig := NewTestConfigBuilder().
+				ForMachineSet().
+				WithNodeCount(1).
+				WithAnnotations(tc.annotations).
+				WithCapacity(tc.capacity).
+				Build()
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			controller.AddTestConfigs(msTestConfig)
 
 			testResource := msTestConfig.machineSet
 
-			sr, err := newUnstructuredScalableResource(controller, testResource)
+			sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -552,13 +576,19 @@ func TestCanScaleFromZero(t *testing.T) {
 	for _, tc := range testConfigs {
 		testname := fmt.Sprintf("MachineDeployment %s", tc.name)
 		t.Run(testname, func(t *testing.T) {
-			msTestConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations, tc.capacity)
-			controller, stop := mustCreateTestController(t, msTestConfig)
-			defer stop()
+			mdTestConfig := NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNodeCount(1).
+				WithAnnotations(tc.annotations).
+				WithCapacity(tc.capacity).
+				Build()
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			controller.AddTestConfigs(mdTestConfig)
 
-			testResource := msTestConfig.machineDeployment
+			testResource := mdTestConfig.machineDeployment
 
-			sr, err := newUnstructuredScalableResource(controller, testResource)
+			sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -566,6 +596,113 @@ func TestCanScaleFromZero(t *testing.T) {
 			canScale := sr.CanScaleFromZero()
 			if canScale != tc.canScale {
 				t.Errorf("expected %v, got %v", tc.canScale, canScale)
+			}
+		})
+	}
+}
+
+func TestInstanceSystemInfo(t *testing.T) {
+	// use a constant capacity as that's necessary for the business logic to consider the resource scalable
+	capacity := map[string]string{
+		cpuStatusKey:    "1",
+		memoryStatusKey: "4G",
+	}
+	testConfigs := []struct {
+		name         string
+		nodeInfo     map[string]string
+		expectedArch string
+		expectedOS   string
+	}{
+		{
+			"with no architecture or operating system in machine template's status' nodeInfo, the system info is empty",
+			map[string]string{},
+			"",
+			"",
+		},
+		{
+			"with architecture in machine template's status' nodeInfo, the system info is filled in the scalable resource",
+			map[string]string{
+				architectureStatusKey: arm64,
+			},
+			arm64,
+			"",
+		},
+		{
+			"with operating system in machine template's status' nodeInfo, the system info is filled in the scalable resource",
+			map[string]string{
+				operatingSystemStatusKey: linux,
+			},
+			"",
+			linux,
+		},
+		{
+			"with architecture and operating system in machine template's status' nodeInfo, the system info is filled in the scalable resource",
+			map[string]string{
+				architectureStatusKey:    arm64,
+				operatingSystemStatusKey: linux,
+			},
+			arm64,
+			linux,
+		},
+	}
+
+	for _, tc := range testConfigs {
+		testname := fmt.Sprintf("MachineSet %s", tc.name)
+		t.Run(testname, func(t *testing.T) {
+			mdTestConfig := NewTestConfigBuilder().
+				ForMachineSet().
+				WithNodeCount(1).
+				WithCapacity(capacity).
+				WithNodeInfo(tc.nodeInfo).
+				Build()
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			controller.AddTestConfigs(mdTestConfig)
+
+			testResource := mdTestConfig.machineSet
+
+			sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			sysInfo := sr.InstanceSystemInfo()
+			if sysInfo.Architecture != tc.expectedArch {
+				t.Errorf("expected architecture %s, got %s", tc.nodeInfo[architectureStatusKey], sysInfo.Architecture)
+			}
+			if sysInfo.OperatingSystem != tc.expectedOS {
+				t.Errorf("expected operating system %s, got %s", tc.nodeInfo[operatingSystemStatusKey], sysInfo.OperatingSystem)
+			}
+		})
+	}
+
+	for _, tc := range testConfigs {
+		testname := fmt.Sprintf("MachineDeployment %s", tc.name)
+		t.Run(testname, func(t *testing.T) {
+			mdTestConfig := NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNodeCount(1).
+				WithCapacity(capacity).
+				WithNodeInfo(tc.nodeInfo).
+				Build()
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			controller.AddTestConfigs(mdTestConfig)
+
+			testResource := mdTestConfig.machineDeployment
+
+			sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			sysInfo := sr.InstanceSystemInfo()
+			if sysInfo.Architecture != tc.expectedArch {
+				t.Errorf("expected architecture %s, got %s", tc.nodeInfo[architectureStatusKey], sysInfo.Architecture)
+			}
+
+			if sysInfo.OperatingSystem != tc.expectedOS {
+				t.Errorf("expected operating system %s, got %s", tc.nodeInfo[operatingSystemStatusKey], sysInfo.OperatingSystem)
 			}
 		})
 	}

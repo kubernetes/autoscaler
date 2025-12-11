@@ -17,7 +17,7 @@ limitations under the License.
 package filter
 
 import (
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 )
 
 // Filter filters CapacityBuffer based on some criteria.
@@ -26,34 +26,34 @@ type Filter interface {
 	CleanUp()
 }
 
-// combinedFilter is a list of Filter
-type combinedFilter struct {
+// combinedAnyFilter uses a list of Filter that adds buffers to filtered if any filter applied
+type combinedAnyFilter struct {
 	filters []Filter
 }
 
-// NewCombinedFilter construct combinedFilter.
-func NewCombinedFilter(filters []Filter) *combinedFilter {
-	return &combinedFilter{filters}
+// NewCombinedAnyFilter construct combinedFilter.
+func NewCombinedAnyFilter(filters []Filter) Filter {
+	return &combinedAnyFilter{filters}
 }
 
 // AddFilter append a filter to the list.
-func (f *combinedFilter) AddFilter(filter Filter) {
+func (f *combinedAnyFilter) AddFilter(filter Filter) {
 	f.filters = append(f.filters, filter)
 }
 
 // Filter runs sub-filters sequentially
-func (f *combinedFilter) Filter(buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
-	var totalFilteredOutBuffers []*v1.CapacityBuffer
+func (f *combinedAnyFilter) Filter(buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
+	var toBeProcessedBuffers []*v1.CapacityBuffer
 	for _, buffersFilter := range f.filters {
-		updatedBuffersList, filteredOutBuffers := buffersFilter.Filter(buffers)
-		buffers = updatedBuffersList
-		totalFilteredOutBuffers = append(totalFilteredOutBuffers, filteredOutBuffers...)
+		filteredToBeProcessed, filteredOut := buffersFilter.Filter(buffers)
+		buffers = filteredOut
+		toBeProcessedBuffers = append(toBeProcessedBuffers, filteredToBeProcessed...)
 	}
-	return buffers, totalFilteredOutBuffers
+	return toBeProcessedBuffers, buffers
 }
 
 // CleanUp cleans up the filter's internal structures.
-func (f *combinedFilter) CleanUp() {
+func (f *combinedAnyFilter) CleanUp() {
 	for _, filter := range f.filters {
 		filter.CleanUp()
 	}

@@ -17,10 +17,12 @@ limitations under the License.
 package simulator
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
@@ -91,6 +93,8 @@ const (
 	BlockedByPod
 	// UnexpectedError - node can't be removed because of an unexpected error.
 	UnexpectedError
+	// NoNodeInfo - node can't be removed because it doesn't have any node info in the cluster snapshot.
+	NoNodeInfo
 )
 
 // RemovalSimulator is a helper object for simulating node removal scenarios.
@@ -115,29 +119,6 @@ func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clust
 	}
 }
 
-// FindNodesToRemove finds nodes that can be removed.
-func (r *RemovalSimulator) FindNodesToRemove(
-	candidates []string,
-	destinations []string,
-	timestamp time.Time,
-	remainingPdbTracker pdb.RemainingPdbTracker,
-) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode) {
-	destinationMap := make(map[string]bool, len(destinations))
-	for _, destination := range destinations {
-		destinationMap[destination] = true
-	}
-
-	for _, nodeName := range candidates {
-		rn, urn := r.SimulateNodeRemoval(nodeName, destinationMap, timestamp, remainingPdbTracker)
-		if rn != nil {
-			nodesToRemove = append(nodesToRemove, *rn)
-		} else if urn != nil {
-			unremovableNodes = append(unremovableNodes, urn)
-		}
-	}
-	return nodesToRemove, unremovableNodes
-}
-
 // SimulateNodeRemoval simulates removing a node from the cluster to check
 // whether it is possible to move its pods. Depending on
 // the outcome, exactly one of (NodeToBeRemoved, UnremovableNode) will be
@@ -151,6 +132,12 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	nodeInfo, err := r.clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
+		unremovableReason := UnexpectedError
+		if errors.Is(err, clustersnapshot.ErrNodeNotFound) {
+			unremovableReason = NoNodeInfo
+		}
+		unremovableNode := &UnremovableNode{Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: nodeName}}, Reason: unremovableReason}
+		return nil, unremovableNode
 	}
 	klog.V(2).Infof("Simulating node %s removal", nodeName)
 
@@ -176,24 +163,6 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		PodsToReschedule: podsToRemove,
 		DaemonSetPods:    daemonSetPods,
 	}, nil
-}
-
-// FindEmptyNodesToRemove finds empty nodes that can be removed.
-func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp time.Time) []string {
-	result := make([]string, 0)
-	for _, node := range candidates {
-		nodeInfo, err := r.clusterSnapshot.GetNodeInfo(node)
-		if err != nil {
-			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", node, err)
-			continue
-		}
-		// Should block on all pods
-		podsToRemove, _, _, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, nil, nil, timestamp)
-		if err == nil && len(podsToRemove) == 0 {
-			result = append(result, node)
-		}
-	}
-	return result
 }
 
 func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {

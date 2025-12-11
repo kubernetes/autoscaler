@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: capacitybuffers.autoscaling.x-k8s.io
 spec:
   group: autoscaling.x-k8s.io
@@ -14,7 +14,7 @@ spec:
     shortNames:
     - cb
     singular: capacitybuffer
-  scope: Cluster
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - description: The strategy used for provisioning buffer capacity.
@@ -33,7 +33,7 @@ spec:
       jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    name: v1
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: |-
@@ -80,9 +80,7 @@ spec:
                   `scalableRef`'s current replicas. This is only applicable if `scalableRef` is set.
                   The absolute number of replicas is calculated from the percentage by rounding up to a minimum of 1.
                   For example, if `scalableRef` has 10 replicas and `percentage` is 20, 2 buffer chunks will be created.
-                  This field is mutually exclusive with `replicas`.
                 format: int32
-                maximum: 100
                 minimum: 0
                 type: integer
               podTemplateRef:
@@ -104,8 +102,6 @@ spec:
                 description: |-
                   ProvisioningStrategy defines how the buffer is utilized.
                   "buffer.x-k8s.io/active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
-                enum:
-                - buffer.x-k8s.io/active-capacity
                 type: string
               replicas:
                 description: |-
@@ -113,7 +109,6 @@ spec:
                   If neither `replicas` nor `percentage` is set, as many chunks as fit within
                   defined resource limits (if any) will be created. If both are set, the maximum
                   of the two will be used.
-                  This field is mutually exclusive with `percentage` when `scalableRef` is set.
                 format: int32
                 minimum: 0
                 type: integer
@@ -143,6 +138,11 @@ spec:
                 - name
                 type: object
             type: object
+            x-kubernetes-validations:
+            - message: If X is set, replicas or limits must also be set
+              rule: '!has(self.podTemplateRef) || has(self.replicas) || has(self.limits)'
+            - message: You must define both PodTemplateRef and ScalableRef
+              rule: '!(has(self.podTemplateRef) && has(self.scalableRef))'
           status:
             description: Status represents the current state of the buffer and its
               readiness for autoprovisioning.
@@ -154,16 +154,8 @@ spec:
                   and active. Other conditions may report on various aspects of the buffer's
                   health and provisioning process.
                 items:
-                  description: "Condition contains details for one aspect of the current
-                    state of this API Resource.\n---\nThis struct is intended for
-                    direct use as an array at the field path .status.conditions.  For
-                    example,\n\n\n\ttype FooStatus struct{\n\t    // Represents the
-                    observations of a foo's current state.\n\t    // Known .status.conditions.type
-                    are: \"Available\", \"Progressing\", and \"Degraded\"\n\t    //
-                    +patchMergeKey=type\n\t    // +patchStrategy=merge\n\t    // +listType=map\n\t
-                    \   // +listMapKey=type\n\t    Conditions []metav1.Condition `json:\"conditions,omitempty\"
-                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`\n\n\n\t
-                    \   // other fields\n\t}"
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
                   properties:
                     lastTransitionTime:
                       description: |-
@@ -204,12 +196,7 @@ spec:
                       - Unknown
                       type: string
                     type:
-                      description: |-
-                        type of condition in CamelCase or in foo.example.com/CamelCase.
-                        ---
-                        Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
-                        useful (see .node.status.conditions), the ability to deconflict is important.
-                        The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
                       maxLength: 316
                       pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                       type: string
@@ -243,6 +230,10 @@ spec:
                 required:
                 - name
                 type: object
+              provisioningStrategy:
+                description: ProvisioningStrategy defines how the buffer should be
+                  utilized.
+                type: string
               replicas:
                 description: Replicas is the actual number of buffer chunks currently
                   provisioned.

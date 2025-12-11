@@ -17,7 +17,7 @@ limitations under the License.
 package filter
 
 import (
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 )
 
 // statusFilter filters out buffers with the defined conditions
@@ -26,9 +26,9 @@ type statusFilter struct {
 }
 
 // NewStatusFilter creates an instance of statusFilter that filters out the buffers with condition in passed conditions.
-func NewStatusFilter(conditions map[string]string) *statusFilter {
+func NewStatusFilter(conditionsToFilterOut map[string]string) *statusFilter {
 	return &statusFilter{
-		conditions: conditions,
+		conditions: conditionsToFilterOut,
 	}
 }
 

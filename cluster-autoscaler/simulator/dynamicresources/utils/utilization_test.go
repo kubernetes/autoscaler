@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/utils/ptr"
 )
 
 func TestDynamicResourceUtilization(t *testing.T) {
@@ -58,7 +59,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			testName: "single slice, single pool, 6/10 devices used",
 			nodeInfo: framework.NewNodeInfo(node,
 				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 1)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, false)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -77,9 +78,9 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(barDriver, "pool1", "node", 0, 8, 2),
 				),
 				mergeLists(
-					testPodsWithClaims(fooDriver, "pool1", "node", 6, 2),
-					testPodsWithClaims(fooDriver, "pool2", "node", 18, 3),
-					testPodsWithClaims(barDriver, "pool1", "node", 2, 1),
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false),
+					testPodsWithClaims(fooDriver, "pool2", "node", 18, 3, false),
+					testPodsWithClaims(barDriver, "pool1", "node", 2, 1, false),
 				)...,
 			),
 			wantUtilization: map[string]map[string]float64{
@@ -102,7 +103,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(fooDriver, "pool1", "node", 1, 20, 2),
 					testResourceSlices(fooDriver, "pool1", "node", 2, 30, 2),
 				),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -120,7 +121,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(fooDriver, "pool1", "node", 1, 20, 2),
 					testResourceSlices(fooDriver, "pool1", "node", 2, 30, 2)[:14],
 				),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false)...,
 			),
 			wantErr: cmpopts.AnyError,
 		},
@@ -132,7 +133,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(fooDriver, "pool1", "node", 1, 20, 2)[:7],
 					testResourceSlices(fooDriver, "pool1", "node", 2, 30, 2),
 				),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -176,7 +177,51 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					"pool1": 0.25,
 				},
 			},
-			wantHighestUtilization:     0.25,
+			wantHighestUtilization: 0.25,
+		},
+		{
+			testName: "Single Pod with AdminAccess ResourceClaim doesn't count for utilization",
+			nodeInfo: framework.NewNodeInfo(node,
+				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, true)...,
+			),
+			wantUtilization: map[string]map[string]float64{
+				fooDriver: {
+					"pool1": 0,
+				},
+			},
+			wantHighestUtilization:     0,
+			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
+		},
+		{
+			testName: "Multiple Pods with AdminAccess ResourceClaims don't count for utilization",
+			nodeInfo: framework.NewNodeInfo(node,
+				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
+				mergeLists(
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, true),
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, false),
+				)...,
+			),
+			wantUtilization: map[string]map[string]float64{
+				fooDriver: {
+					"pool1": 0.6,
+				},
+			},
+			wantHighestUtilization:     0.6,
+			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
+		},
+		{
+			testName: "Pod with mixed AdminAccess requests counts only non-admin",
+			nodeInfo: framework.NewNodeInfo(node,
+				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
+				testPodsWithMixedAdminAccessClaims(fooDriver, "pool1", "node", 6, []bool{true, true, false, false, false, false})...,
+			),
+			wantUtilization: map[string]map[string]float64{
+				fooDriver: {
+					"pool1": 0.4,
+				},
+			},
+			wantHighestUtilization:     0.4,
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 	} {
@@ -299,7 +344,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, 
 	return []*resourceapi.ResourceSlice{resourceSlice}
 }
 
-func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devicesPerPod int64) []*framework.PodInfo {
+func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devicesPerPod int64, adminAccess bool) []*framework.PodInfo {
 	podCount := deviceCount / devicesPerPod
 
 	deviceIndex := 0
@@ -310,13 +355,25 @@ func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devi
 		for podDevIndex := range devicesPerPod {
 			claimName := fmt.Sprintf("%s-claim-%d", pod.Name, podDevIndex)
 			devName := fmt.Sprintf("%s-%s-dev-%d", driverName, poolName, deviceIndex)
+			devReqName := fmt.Sprintf("request-%d", podDevIndex)
+			devReq := resourceapi.DeviceRequest{
+				Name: devReqName,
+				Exactly: &resourceapi.ExactDeviceRequest{
+					AdminAccess: ptr.To(adminAccess),
+				},
+			}
 			claims = append(claims, &resourceapi.ResourceClaim{
 				ObjectMeta: metav1.ObjectMeta{Name: claimName, UID: types.UID(claimName)},
+				Spec: resourceapi.ResourceClaimSpec{
+					Devices: resourceapi.DeviceClaim{
+						Requests: []resourceapi.DeviceRequest{devReq},
+					},
+				},
 				Status: resourceapi.ResourceClaimStatus{
 					Allocation: &resourceapi.AllocationResult{
 						Devices: resourceapi.DeviceAllocationResult{
 							Results: []resourceapi.DeviceRequestAllocationResult{
-								{Request: fmt.Sprintf("request-%d", podDevIndex), Driver: driverName, Pool: poolName, Device: devName},
+								{Request: devReqName, Driver: driverName, Pool: poolName, Device: devName, AdminAccess: ptr.To(adminAccess)},
 							},
 						},
 					},
@@ -360,6 +417,20 @@ func testPodsWithCustomClaims(driverName, poolName, nodeName string, devices []s
 	deviceIndex++
 	result = append(result, framework.NewPodInfo(pod, claims))
 	return result
+}
+
+// testPodsWithMixedAdminAccessClaims creates Pods with ResourceClaims that have mixed AdminAccess settings.
+func testPodsWithMixedAdminAccessClaims(driverName, poolName, nodeName string, deviceCount int64, adminAccessPattern []bool) []*framework.PodInfo {
+	pis := testPodsWithClaims(driverName, poolName, nodeName, deviceCount, int64(len(adminAccessPattern)), true)
+	for i, podInfo := range pis {
+		claims := podInfo.NeededResourceClaims
+		for claimsIndex, claim := range claims {
+			claim.Status.Allocation.Devices.Results[0].AdminAccess = ptr.To(adminAccessPattern[claimsIndex])
+		}
+		pi := framework.NewPodInfo(podInfo.Pod, claims)
+		pis[i] = pi
+	}
+	return pis
 }
 
 func mergeLists[T any](sliceLists ...[]T) []T {

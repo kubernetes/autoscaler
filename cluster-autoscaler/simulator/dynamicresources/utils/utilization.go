@@ -23,6 +23,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/utils/ptr"
 )
 
 // CalculateDynamicResourceUtilization calculates a map of ResourceSlice pool utilization grouped by the driver and pool. Returns
@@ -30,7 +31,7 @@ import (
 func CalculateDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (map[string]map[string]float64, error) {
 	result := map[string]map[string]float64{}
 	claims := nodeInfo.ResourceClaims()
-	allocatedDevices, err := groupAllocatedDevices(claims)
+	allocatedDevices, err := groupAllocatedReservedDevices(claims)
 	if err != nil {
 		return nil, err
 	}
@@ -206,9 +207,10 @@ func getAllDevices(slices []*resourceapi.ResourceSlice) []resourceapi.Device {
 	return devices
 }
 
-// groupAllocatedDevices groups the devices from claim allocations by their driver and pool. Returns an error
-// if any of the claims isn't allocated.
-func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[string][]string, error) {
+// groupAllocatedReservedDevices groups reserved devices from claim allocations by their driver and pool.
+// If a deviced will not exclusively reserved (i.e. AdminAccess), it will not be included in the result.
+// Returns an error if any of the claims isn't allocated.
+func groupAllocatedReservedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[string][]string, error) {
 	result := map[string]map[string][]string{}
 	for _, claim := range claims {
 		alloc := claim.Status.Allocation
@@ -217,6 +219,11 @@ func groupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[
 		}
 
 		for _, deviceAlloc := range alloc.Devices.Results {
+			if ptr.Deref(deviceAlloc.AdminAccess, false) {
+				// Admin access Device allocations don't actually reserve the Device, so they shouldn't be counted towards utilization.
+				continue
+			}
+
 			if result[deviceAlloc.Driver] == nil {
 				result[deviceAlloc.Driver] = map[string][]string{}
 			}

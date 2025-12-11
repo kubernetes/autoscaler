@@ -22,8 +22,8 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1"
-	autoscalingxk8siov1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/applyconfiguration/autoscaling.x-k8s.io/v1"
+	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	autoscalingxk8siov1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/applyconfiguration/autoscaling.x-k8s.io/v1alpha1"
 	internal "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/applyconfiguration/internal"
 )
 
@@ -31,17 +31,17 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=autoscaling.x-k8s.io, Version=v1
-	case v1.SchemeGroupVersion.WithKind("CapacityBuffer"):
-		return &autoscalingxk8siov1.CapacityBufferApplyConfiguration{}
-	case v1.SchemeGroupVersion.WithKind("CapacityBufferSpec"):
-		return &autoscalingxk8siov1.CapacityBufferSpecApplyConfiguration{}
-	case v1.SchemeGroupVersion.WithKind("CapacityBufferStatus"):
-		return &autoscalingxk8siov1.CapacityBufferStatusApplyConfiguration{}
-	case v1.SchemeGroupVersion.WithKind("LocalObjectRef"):
-		return &autoscalingxk8siov1.LocalObjectRefApplyConfiguration{}
-	case v1.SchemeGroupVersion.WithKind("ScalableRef"):
-		return &autoscalingxk8siov1.ScalableRefApplyConfiguration{}
+	// Group=autoscaling.x-k8s.io, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("CapacityBuffer"):
+		return &autoscalingxk8siov1alpha1.CapacityBufferApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("CapacityBufferSpec"):
+		return &autoscalingxk8siov1alpha1.CapacityBufferSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("CapacityBufferStatus"):
+		return &autoscalingxk8siov1alpha1.CapacityBufferStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LocalObjectRef"):
+		return &autoscalingxk8siov1alpha1.LocalObjectRefApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ScalableRef"):
+		return &autoscalingxk8siov1alpha1.ScalableRefApplyConfiguration{}
 
 	}
 	return nil

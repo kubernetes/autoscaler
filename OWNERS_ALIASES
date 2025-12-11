@@ -1,9 +1,42 @@
 aliases:
+  api-approvers:
+    - deads2k
+    - msau42
+    - smarterclayton
+    - thockin
+    - liggitt
+  api-reviewers:
+    - andrewsykim
+    - smarterclayton
+    - thockin
+    - liggitt
+    - wojtek-t
+    - deads2k
+    - yujuhong
+    - derekwaynecarr
+    - mikedanese
+    - sttts
+    - dchen1107
+    - saad-ali
+    - luxas
+    - janetkuo
+    - justinsb
+    - pwittrock
+    - tallclair
+    - mwielgus
+    - soltysh
+    - jsafrane
+    - dims
+    - cici37
   sig-autoscaling-leads:
+    - adrianmoisey
     - gjtempleton
     - jackfrancis
-    - raywainman
     - towca
+  # emeritus:
+  # - maciekpytel
+  # - mwielgus
+  # - raywainman 2025-09-29
   sig-autoscaling-vpa-approvers:
     - kwiesmueller
     - voelzmo
@@ -20,3 +53,9 @@ aliases:
     - omerap12
   # emeritus:
   # - jbartosik 2025-08-09
+  sig-autoscaling-vpa-helm-chart-approvers:
+    - adrianmoisey
+    - omerap12
+  sig-autoscaling-vpa-helm-chart-reviewers:
+    - adrianmoisey
+    - omerap12

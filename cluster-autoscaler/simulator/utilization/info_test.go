@@ -82,7 +82,7 @@ func TestCalculate(t *testing.T) {
 	SetNodeReadyState(node, true, time.Time{})
 	nodeInfo := framework.NewTestNodeInfo(node, pod, pod, pod2)
 
-	gpuConfig := getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig := getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err := Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
@@ -91,7 +91,7 @@ func TestCalculate(t *testing.T) {
 	node2 := BuildTestNode("node2", 2000, -1)
 	nodeInfo = framework.NewTestNodeInfo(node2, pod, pod, pod2)
 
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	_, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.Error(t, err)
 
@@ -99,7 +99,7 @@ func TestCalculate(t *testing.T) {
 	SetNodeReadyState(node3, true, time.Time{})
 	nodeInfo = framework.NewTestNodeInfo(node3, pod, podWithInitContainers, podWithLargeNonRestartableInitContainers)
 
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 50.25, utilInfo.Utilization, 0.01)
@@ -113,13 +113,13 @@ func TestCalculate(t *testing.T) {
 	daemonSetPod4.Annotations = map[string]string{"cluster-autoscaler.kubernetes.io/daemonset-pod": "true"}
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod, pod2, daemonSetPod3, daemonSetPod4)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, true, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.5/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod2, daemonSetPod3)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
@@ -127,7 +127,7 @@ func TestCalculate(t *testing.T) {
 	terminatedPod := BuildTestPod("podTerminated", 100, 200000)
 	terminatedPod.DeletionTimestamp = &metav1.Time{Time: testTime.Add(-10 * time.Minute)}
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod, pod2, terminatedPod)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
@@ -138,19 +138,19 @@ func TestCalculate(t *testing.T) {
 	}
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod, pod2, mirrorPod)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, false, true, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/9.0, utilInfo.Utilization, 0.01)
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, pod2, mirrorPod)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = framework.NewTestNodeInfo(node, pod, mirrorPod, daemonSetPod3)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, true, true, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1.0/8.0, utilInfo.Utilization, 0.01)
@@ -161,7 +161,7 @@ func TestCalculate(t *testing.T) {
 	RequestGpuForPod(gpuPod, 1)
 	TolerateGpuForPod(gpuPod)
 	nodeInfo = framework.NewTestNodeInfo(gpuNode, pod, pod, gpuPod)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1/1, utilInfo.Utilization, 0.01)
@@ -170,7 +170,7 @@ func TestCalculate(t *testing.T) {
 	gpuNode = BuildTestNode("gpu_node", 2000, 2000000)
 	AddGpuLabelToNode(gpuNode)
 	nodeInfo = framework.NewTestNodeInfo(gpuNode, pod, pod)
-	gpuConfig = getGpuConfigFromNode(nodeInfo.Node())
+	gpuConfig = getGpuConfigFromNode(nodeInfo.Node(), false)
 	utilInfo, err = Calculate(nodeInfo, false, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.Zero(t, utilInfo.Utilization)
@@ -182,7 +182,8 @@ func TestCalculateWithDynamicResources(t *testing.T) {
 	gpuNode := BuildTestNode("gpuNode", 1000, 1000)
 	AddGpusToNode(gpuNode, 1)
 	AddGpuLabelToNode(gpuNode)
-	gpuConfig := getGpuConfigFromNode(gpuNode)
+	gpuConfig := getGpuConfigFromNode(gpuNode, false)
+	gpuConfigDra := getGpuConfigFromNode(gpuNode, true)
 	pod1 := BuildTestPod("pod1", 250, 0, WithNodeName("node"))
 	pod2 := BuildTestPod("pod2", 250, 0, WithNodeName("node"))
 	resourceSlice1 := &resourceapi.ResourceSlice{
@@ -343,7 +344,14 @@ func TestCalculateWithDynamicResources(t *testing.T) {
 			nodeInfo:     nodeInfoGpuAndDra,
 			gpuConfig:    gpuConfig,
 			draEnabled:   true,
-			wantUtilInfo: Info{Utilization: 0, ResourceName: gpuConfig.ResourceName},
+			wantUtilInfo: Info{Utilization: 0, ResourceName: gpuConfig.ExtendedResourceName},
+		},
+		{
+			testName:     "DRA slices and claims present, DRA enabled, DRA GPU config passed -> DRA util returned",
+			nodeInfo:     nodeInfoGpuAndDra,
+			gpuConfig:    gpuConfigDra,
+			draEnabled:   true,
+			wantUtilInfo: Info{DynamicResourceUtil: 0.8, Utilization: 0.8, ResourceName: apiv1.ResourceName("driver.foo.com/node-pool1")},
 		},
 		{
 			testName:     "DRA slices and claims present, DRA enabled, error while calculating DRA util -> error returned",
@@ -365,15 +373,23 @@ func TestCalculateWithDynamicResources(t *testing.T) {
 	}
 }
 
-func getGpuConfigFromNode(node *apiv1.Node) *cloudprovider.GpuConfig {
+func getGpuConfigFromNode(node *apiv1.Node, dra bool) *cloudprovider.GpuConfig {
 	gpuLabel := "cloud.google.com/gke-accelerator"
 	gpuType, hasGpuLabel := node.Labels[gpuLabel]
 	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
 	if hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero()) {
+		if !dra {
+			return &cloudprovider.GpuConfig{
+				Label:                gpuLabel,
+				Type:                 gpuType,
+				ExtendedResourceName: gpu.ResourceNvidiaGPU,
+			}
+		}
+
 		return &cloudprovider.GpuConfig{
-			Label:        gpuLabel,
-			Type:         gpuType,
-			ResourceName: gpu.ResourceNvidiaGPU,
+			Label:         gpuLabel,
+			Type:          gpuType,
+			DraDriverName: "gpu.nvidia.com",
 		}
 	}
 	return nil
