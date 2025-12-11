@@ -20,19 +20,20 @@ package fake
 
 import (
 	v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
-	autoscalingk8siov1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
+	autoscalingk8siov1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/applyconfiguration/autoscaling.k8s.io/v1beta1"
+	typedautoscalingk8siov1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeVerticalPodAutoscalers implements VerticalPodAutoscalerInterface
 type fakeVerticalPodAutoscalers struct {
-	*gentype.FakeClientWithList[*v1beta1.VerticalPodAutoscaler, *v1beta1.VerticalPodAutoscalerList]
+	*gentype.FakeClientWithListAndApply[*v1beta1.VerticalPodAutoscaler, *v1beta1.VerticalPodAutoscalerList, *autoscalingk8siov1beta1.VerticalPodAutoscalerApplyConfiguration]
 	Fake *FakeAutoscalingV1beta1
 }
 
-func newFakeVerticalPodAutoscalers(fake *FakeAutoscalingV1beta1, namespace string) autoscalingk8siov1beta1.VerticalPodAutoscalerInterface {
+func newFakeVerticalPodAutoscalers(fake *FakeAutoscalingV1beta1, namespace string) typedautoscalingk8siov1beta1.VerticalPodAutoscalerInterface {
 	return &fakeVerticalPodAutoscalers{
-		gentype.NewFakeClientWithList[*v1beta1.VerticalPodAutoscaler, *v1beta1.VerticalPodAutoscalerList](
+		gentype.NewFakeClientWithListAndApply[*v1beta1.VerticalPodAutoscaler, *v1beta1.VerticalPodAutoscalerList, *autoscalingk8siov1beta1.VerticalPodAutoscalerApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1beta1.SchemeGroupVersion.WithResource("verticalpodautoscalers"),

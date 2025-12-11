@@ -20,19 +20,20 @@ package fake
 
 import (
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	autoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
+	autoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/applyconfiguration/autoscaling.k8s.io/v1beta2"
+	typedautoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeVerticalPodAutoscalerCheckpoints implements VerticalPodAutoscalerCheckpointInterface
 type fakeVerticalPodAutoscalerCheckpoints struct {
-	*gentype.FakeClientWithList[*v1beta2.VerticalPodAutoscalerCheckpoint, *v1beta2.VerticalPodAutoscalerCheckpointList]
+	*gentype.FakeClientWithListAndApply[*v1beta2.VerticalPodAutoscalerCheckpoint, *v1beta2.VerticalPodAutoscalerCheckpointList, *autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpointApplyConfiguration]
 	Fake *FakeAutoscalingV1beta2
 }
 
-func newFakeVerticalPodAutoscalerCheckpoints(fake *FakeAutoscalingV1beta2, namespace string) autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpointInterface {
+func newFakeVerticalPodAutoscalerCheckpoints(fake *FakeAutoscalingV1beta2, namespace string) typedautoscalingk8siov1beta2.VerticalPodAutoscalerCheckpointInterface {
 	return &fakeVerticalPodAutoscalerCheckpoints{
-		gentype.NewFakeClientWithList[*v1beta2.VerticalPodAutoscalerCheckpoint, *v1beta2.VerticalPodAutoscalerCheckpointList](
+		gentype.NewFakeClientWithListAndApply[*v1beta2.VerticalPodAutoscalerCheckpoint, *v1beta2.VerticalPodAutoscalerCheckpointList, *autoscalingk8siov1beta2.VerticalPodAutoscalerCheckpointApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1beta2.SchemeGroupVersion.WithResource("verticalpodautoscalercheckpoints"),

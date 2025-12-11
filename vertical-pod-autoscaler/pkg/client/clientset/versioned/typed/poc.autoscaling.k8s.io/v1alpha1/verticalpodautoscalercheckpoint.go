@@ -25,6 +25,7 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	pocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	applyconfigurationpocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/applyconfiguration/poc.autoscaling.k8s.io/v1alpha1"
 	scheme "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -45,18 +46,19 @@ type VerticalPodAutoscalerCheckpointInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, err error)
+	Apply(ctx context.Context, verticalPodAutoscalerCheckpoint *applyconfigurationpocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointApplyConfiguration, opts v1.ApplyOptions) (result *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, err error)
 	VerticalPodAutoscalerCheckpointExpansion
 }
 
 // verticalPodAutoscalerCheckpoints implements VerticalPodAutoscalerCheckpointInterface
 type verticalPodAutoscalerCheckpoints struct {
-	*gentype.ClientWithList[*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointList]
+	*gentype.ClientWithListAndApply[*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointList, *applyconfigurationpocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointApplyConfiguration]
 }
 
 // newVerticalPodAutoscalerCheckpoints returns a VerticalPodAutoscalerCheckpoints
 func newVerticalPodAutoscalerCheckpoints(c *PocV1alpha1Client, namespace string) *verticalPodAutoscalerCheckpoints {
 	return &verticalPodAutoscalerCheckpoints{
-		gentype.NewClientWithList[*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointList](
+		gentype.NewClientWithListAndApply[*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointList, *applyconfigurationpocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointApplyConfiguration](
 			"verticalpodautoscalercheckpoints",
 			c.RESTClient(),
 			scheme.ParameterCodec,

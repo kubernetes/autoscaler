@@ -25,6 +25,7 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	autoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	applyconfigurationautoscalingk8siov1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/applyconfiguration/autoscaling.k8s.io/v1beta2"
 	scheme "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -47,18 +48,21 @@ type VerticalPodAutoscalerInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*autoscalingk8siov1beta2.VerticalPodAutoscalerList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *autoscalingk8siov1beta2.VerticalPodAutoscaler, err error)
+	Apply(ctx context.Context, verticalPodAutoscaler *applyconfigurationautoscalingk8siov1beta2.VerticalPodAutoscalerApplyConfiguration, opts v1.ApplyOptions) (result *autoscalingk8siov1beta2.VerticalPodAutoscaler, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, verticalPodAutoscaler *applyconfigurationautoscalingk8siov1beta2.VerticalPodAutoscalerApplyConfiguration, opts v1.ApplyOptions) (result *autoscalingk8siov1beta2.VerticalPodAutoscaler, err error)
 	VerticalPodAutoscalerExpansion
 }
 
 // verticalPodAutoscalers implements VerticalPodAutoscalerInterface
 type verticalPodAutoscalers struct {
-	*gentype.ClientWithList[*autoscalingk8siov1beta2.VerticalPodAutoscaler, *autoscalingk8siov1beta2.VerticalPodAutoscalerList]
+	*gentype.ClientWithListAndApply[*autoscalingk8siov1beta2.VerticalPodAutoscaler, *autoscalingk8siov1beta2.VerticalPodAutoscalerList, *applyconfigurationautoscalingk8siov1beta2.VerticalPodAutoscalerApplyConfiguration]
 }
 
 // newVerticalPodAutoscalers returns a VerticalPodAutoscalers
 func newVerticalPodAutoscalers(c *AutoscalingV1beta2Client, namespace string) *verticalPodAutoscalers {
 	return &verticalPodAutoscalers{
-		gentype.NewClientWithList[*autoscalingk8siov1beta2.VerticalPodAutoscaler, *autoscalingk8siov1beta2.VerticalPodAutoscalerList](
+		gentype.NewClientWithListAndApply[*autoscalingk8siov1beta2.VerticalPodAutoscaler, *autoscalingk8siov1beta2.VerticalPodAutoscalerList, *applyconfigurationautoscalingk8siov1beta2.VerticalPodAutoscalerApplyConfiguration](
 			"verticalpodautoscalers",
 			c.RESTClient(),
 			scheme.ParameterCodec,

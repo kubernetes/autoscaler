@@ -40,7 +40,8 @@ kube::codegen::gen_client \
   --output-pkg k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client \
   --output-dir "$(dirname ${BASH_SOURCE})/../pkg/client" \
   --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
-  --with-watch
+  --with-watch \
+  --with-applyconfig
 
 echo "Generated client code, running `go mod tidy`..."
 
