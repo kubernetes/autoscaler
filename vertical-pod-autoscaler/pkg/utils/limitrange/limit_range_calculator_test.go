@@ -38,7 +38,7 @@ func TestNewNoopLimitsChecker(t *testing.T) {
 }
 
 func TestNoLimitRange(t *testing.T) {
-	cs := fake.NewSimpleClientset()
+	cs := fake.NewClientset()
 	factory := informers.NewSharedInformerFactory(cs, 0)
 	lc, err := NewLimitsRangeCalculator(factory)
 
@@ -133,7 +133,7 @@ func TestGetContainerLimitRangeItem(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cs := fake.NewSimpleClientset(tc.limitRanges...)
+			cs := fake.NewClientset(tc.limitRanges...)
 			factory := informers.NewSharedInformerFactory(cs, 0)
 			lc, err := NewLimitsRangeCalculator(factory)
 
