@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 )
 
@@ -76,33 +77,33 @@ func newTestAwsManagerWithAutoAsgs(t *testing.T, mockAutoScaling autoScalingI, m
 	return m
 }
 
-func testNamedDescribeAutoScalingGroupsOutput(groupName string, desiredCap int64, instanceIds ...string) *autoscaling.DescribeAutoScalingGroupsOutput {
-	instances := []*autoscaling.Instance{}
+func testNamedDescribeAutoScalingGroupsOutput(groupName string, desiredCap int32, instanceIds ...string) *autoscaling.DescribeAutoScalingGroupsOutput {
+	var instances []autoscalingtypes.Instance
 	for _, id := range instanceIds {
-		instances = append(instances, &autoscaling.Instance{
+		instances = append(instances, autoscalingtypes.Instance{
 			InstanceId:       aws.String(id),
 			AvailabilityZone: aws.String("us-east-1a"),
-			LifecycleState:   aws.String(autoscaling.LifecycleStateInService),
+			LifecycleState:   autoscalingtypes.LifecycleStateInService,
 		})
 	}
 	return &autoscaling.DescribeAutoScalingGroupsOutput{
-		AutoScalingGroups: []*autoscaling.Group{
+		AutoScalingGroups: []autoscalingtypes.AutoScalingGroup{
 			{
 				AutoScalingGroupName: aws.String(groupName),
-				DesiredCapacity:      aws.Int64(desiredCap),
-				MinSize:              aws.Int64(1),
-				MaxSize:              aws.Int64(5),
+				DesiredCapacity:      aws.Int32(desiredCap),
+				MinSize:              aws.Int32(1),
+				MaxSize:              aws.Int32(5),
 				Instances:            instances,
-				AvailabilityZones:    aws.StringSlice([]string{"us-east-1a"}),
+				AvailabilityZones:    []string{"us-east-1a"},
 			},
 		},
 	}
 }
 
-func testSetASGInstanceLifecycle(asg *autoscaling.DescribeAutoScalingGroupsOutput, lifecycleState string) *autoscaling.DescribeAutoScalingGroupsOutput {
+func testSetASGInstanceLifecycle(asg *autoscaling.DescribeAutoScalingGroupsOutput, lifecycleState autoscalingtypes.LifecycleState) *autoscaling.DescribeAutoScalingGroupsOutput {
 	for _, asg := range asg.AutoScalingGroups {
-		for _, instance := range asg.Instances {
-			instance.LifecycleState = aws.String(lifecycleState)
+		for i := range asg.Instances {
+			asg.Instances[i].LifecycleState = lifecycleState
 		}
 	}
 	return asg
@@ -166,18 +167,15 @@ func TestAutoDiscoveredNodeGroups(t *testing.T) {
 		},
 	}))
 
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			Filters: []*autoscaling.Filter{
-				{Name: aws.String("tag-key"), Values: aws.StringSlice([]string{"test"})},
+			Filters: []autoscalingtypes.Filter{
+				{Name: aws.String("tag-key"), Values: []string{"test"}},
 			},
-			MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
+			MaxRecords: aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("auto-asg", 1, "test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("auto-asg", 1, "test-instance-id"), nil)
 
 	provider.Refresh()
 
@@ -197,16 +195,13 @@ func TestNodeGroupForNode(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), nil)
 
 	provider.Refresh()
 
@@ -222,7 +217,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, []cloudprovider.Instance{{Id: "aws:///us-east-1a/test-instance-id"}}, nodes)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	// test node in cluster that is not in a group managed by cluster autoscaler
 	nodeNotInGroup := &apiv1.Node{
@@ -235,7 +230,7 @@ func TestNodeGroupForNode(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Nil(t, group)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 }
 
 func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
@@ -324,16 +319,13 @@ func TestTargetSize(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups()
 
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), nil)
 
 	provider.Refresh()
 
@@ -341,7 +333,7 @@ func TestTargetSize(t *testing.T) {
 	assert.Equal(t, targetSize, 2)
 	assert.NoError(t, err)
 
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 }
 
 func TestIncreaseSize(t *testing.T) {
@@ -349,22 +341,20 @@ func TestIncreaseSize(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups()
 
-	a.On("SetDesiredCapacity", &autoscaling.SetDesiredCapacityInput{
-		AutoScalingGroupName: aws.String(asgs[0].Id()),
-		DesiredCapacity:      aws.Int64(3),
-		HonorCooldown:        aws.Bool(false),
-	}).Return(&autoscaling.SetDesiredCapacityOutput{})
+	a.On("SetDesiredCapacity", mock.Anything,
+		&autoscaling.SetDesiredCapacityInput{
+			AutoScalingGroupName: aws.String(asgs[0].Id()),
+			DesiredCapacity:      aws.Int32(3),
+			HonorCooldown:        aws.Bool(false),
+		}).Return(&autoscaling.SetDesiredCapacityOutput{}, nil)
 
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), nil)
 
 	provider.Refresh()
 
@@ -375,7 +365,7 @@ func TestIncreaseSize(t *testing.T) {
 	err = asgs[0].IncreaseSize(1)
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
@@ -387,16 +377,13 @@ func TestBelongs(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups()
 
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{asgs[0].Id()}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{asgs[0].Id()},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), nil)
 
 	provider.Refresh()
 
@@ -407,7 +394,7 @@ func TestBelongs(t *testing.T) {
 	}
 	_, err := asgs[0].(*AwsNodeGroup).Belongs(invalidNode)
 	assert.Error(t, err)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	validNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
@@ -418,37 +405,38 @@ func TestBelongs(t *testing.T) {
 	assert.Equal(t, belongs, true)
 	assert.NoError(t, err)
 	// As "test-instance-id" is already known to be managed by test-asg since
-	// the first `Belongs` call, no additional DescribAutoScalingGroupsPages
+	// the first `Belongs` call, no additional DescribAutoScalingGroups
 	// call is made.
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 }
 
 func TestDeleteNodes(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups()
+	var expectedInstancesCount int32 = 2
 
-	a.On("TerminateInstanceInAutoScalingGroup", &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     aws.String("test-instance-id"),
-		ShouldDecrementDesiredCapacity: aws.Bool(true),
-	}).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
-		Activity: &autoscaling.Activity{Description: aws.String("Deleted instance")},
-	})
+	a.On("TerminateInstanceInAutoScalingGroup",
+		mock.Anything,
+		&autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     aws.String("test-instance-id"),
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
+		},
+	).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+		Activity: &autoscalingtypes.Activity{Description: aws.String("Deleted instance")},
+	}, nil)
 
 	// Look up the current number of instances...
-	var expectedInstancesCount int64 = 2
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), false)
-		// we expect the instance count to be 1 after the call to DeleteNodes
 		expectedInstancesCount = 1
-	}).Return(nil)
+	},
+	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), nil)
 
 	provider.Refresh()
 
@@ -464,7 +452,7 @@ func TestDeleteNodes(t *testing.T) {
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
@@ -476,27 +464,31 @@ func TestDeleteNodesTerminatingInstances(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups()
 
-	a.On("TerminateInstanceInAutoScalingGroup", &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     aws.String("test-instance-id"),
-		ShouldDecrementDesiredCapacity: aws.Bool(true),
-	}).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
-		Activity: &autoscaling.Activity{Description: aws.String("Deleted instance")},
-	})
+	a.On("TerminateInstanceInAutoScalingGroup",
+		mock.Anything,
+		&autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     aws.String("test-instance-id"),
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
+		},
+	).Return(
+		&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+			Activity: &autoscalingtypes.Activity{Description: aws.String("Deleted instance")},
+		},
+		nil,
+	)
 
 	// Look up the current number of instances...
-	var expectedInstancesCount int64 = 2
-	a.On("DescribeAutoScalingGroupsPages",
+	var expectedInstancesCount int32 = 2
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), autoscaling.LifecycleStateTerminatingWait), false)
 		// we expect the instance count to be 1 after the call to DeleteNodes
 		expectedInstancesCount = 1
-	}).Return(nil)
+	}).Return(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), autoscalingtypes.LifecycleStateTerminatingWait), nil)
 
 	provider.Refresh()
 
@@ -512,7 +504,7 @@ func TestDeleteNodesTerminatingInstances(t *testing.T) {
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 0) // instances which are terminating don't need to be terminated again
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
@@ -524,31 +516,34 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups()
 
-	a.On("TerminateInstanceInAutoScalingGroup", &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     aws.String("test-instance-id"),
-		ShouldDecrementDesiredCapacity: aws.Bool(true),
-	}).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
-		Activity: &autoscaling.Activity{Description: aws.String("Deleted instance")},
-	})
-
-	expectedInstancesCount := 2
-	a.On("DescribeAutoScalingGroupsPages",
-		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+	a.On("TerminateInstanceInAutoScalingGroup",
+		mock.Anything,
+		&autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     aws.String("test-instance-id"),
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", int64(expectedInstancesCount), "test-instance-id", "second-test-instance-id"), autoscaling.LifecycleStateTerminated), false)
-	}).Return(nil)
+	).Return(
+		&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+			Activity: &autoscalingtypes.Activity{Description: aws.String("Deleted instance")},
+		},
+		nil,
+	)
+
+	var expectedInstancesCount int32 = 2
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
+		},
+	).Return(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), autoscalingtypes.LifecycleStateTerminated), nil)
 
 	// load ASG state into cache
 	provider.Refresh()
 
 	initialSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, expectedInstancesCount, initialSize)
+	assert.Equal(t, expectedInstancesCount, int32(initialSize))
 
 	// try deleting a node, but all of them are already in a
 	// Terminated state, so we should see no calls to Terminate.
@@ -562,7 +557,7 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 	// we expect no calls to TerminateInstanceInAutoScalingGroup,
 	// because the Node we tried to Delete was already terminating.
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 0)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
@@ -577,32 +572,37 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups()
 
-	a.On("SetDesiredCapacity", &autoscaling.SetDesiredCapacityInput{
-		AutoScalingGroupName: aws.String(asgs[0].Id()),
-		DesiredCapacity:      aws.Int64(1),
-		HonorCooldown:        aws.Bool(false),
-	}).Return(&autoscaling.SetDesiredCapacityOutput{})
+	a.On("SetDesiredCapacity",
+		mock.Anything,
+		&autoscaling.SetDesiredCapacityInput{
+			AutoScalingGroupName: aws.String(asgs[0].Id()),
+			DesiredCapacity:      aws.Int32(1),
+			HonorCooldown:        aws.Bool(false),
+		},
+	).Return(&autoscaling.SetDesiredCapacityOutput{}, nil)
 
 	// Look up the current number of instances...
-	var expectedInstancesCount int64 = 2
-	a.On("DescribeAutoScalingGroupsPages",
+	var expectedInstancesCount int32 = 2
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id"), false)
 		// we expect the instance count to be 1 after the call to DeleteNodes
 		expectedInstancesCount = 1
-	}).Return(nil)
+	}).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id"), nil)
 
 	a.On("DescribeScalingActivities",
+		mock.Anything,
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("test-asg"),
 		},
-	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
+	).Return(
+		&autoscaling.DescribeScalingActivitiesOutput{},
+		nil,
+	)
 
 	provider.Refresh()
 
@@ -618,7 +618,7 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 2)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
@@ -631,24 +631,27 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 	provider := testProvider(t, manager)
 	asgs := provider.NodeGroups()
 
-	a.On("TerminateInstanceInAutoScalingGroup", &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     aws.String("test-instance-id"),
-		ShouldDecrementDesiredCapacity: aws.Bool(true),
-	}).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
-		Activity: &autoscaling.Activity{Description: aws.String("Deleted instance")},
-	})
+	a.On("TerminateInstanceInAutoScalingGroup",
+		mock.Anything,
+		&autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     aws.String("test-instance-id"),
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
+		},
+	).Return(
+		&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+			Activity: &autoscalingtypes.Activity{Description: aws.String("Deleted instance")},
+		},
+		nil,
+	)
 
 	// Look up the current number of instances...
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
-	}).Return(nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), nil)
 
 	provider.Refresh()
 	// Call the manager directly as otherwise the call would be a noop as its within less then 60s
@@ -771,28 +774,29 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	}
 
 	// desired capacity will be set as 6 as ASG has 4 placeholders
-	a.On("SetDesiredCapacity", &autoscaling.SetDesiredCapacityInput{
-		AutoScalingGroupName: aws.String(asgs[0].Id()),
-		DesiredCapacity:      aws.Int64(6),
-		HonorCooldown:        aws.Bool(false),
-	}).Return(&autoscaling.SetDesiredCapacityOutput{})
+	a.On("SetDesiredCapacity",
+		mock.Anything,
+		&autoscaling.SetDesiredCapacityInput{
+			AutoScalingGroupName: aws.String(asgs[0].Id()),
+			DesiredCapacity:      aws.Int32(6),
+			HonorCooldown:        aws.Bool(false),
+		},
+	).Return(&autoscaling.SetDesiredCapacityOutput{}, nil)
 
 	// Look up the current number of instances...
-	var expectedInstancesCount int64 = 10
-	a.On("DescribeAutoScalingGroupsPages",
+	var expectedInstancesCount int32 = 10
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "i-0000", "i-0001", "i-0002", "i-0003", "i-0004", "i-0005"), false)
-
 		expectedInstancesCount = 4
-	}).Return(nil)
+	}).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "i-0000", "i-0001", "i-0002", "i-0003", "i-0004", "i-0005"), nil)
 
 	a.On("DescribeScalingActivities",
+		mock.Anything,
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("test-asg"),
 		},
@@ -834,12 +838,17 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 		// only setting 2 instances to be terminated out of 3 active instances
 		if i < 2 {
 			nodes = append(nodes, node)
-			a.On("TerminateInstanceInAutoScalingGroup", &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-				InstanceId:                     aws.String(fmt.Sprintf("i-000%d", i)),
-				ShouldDecrementDesiredCapacity: aws.Bool(true),
-			}).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
-				Activity: &autoscaling.Activity{Description: aws.String("Deleted instance")},
-			})
+			a.On("TerminateInstanceInAutoScalingGroup",
+				mock.Anything,
+				&autoscaling.TerminateInstanceInAutoScalingGroupInput{
+					InstanceId:                     aws.String(fmt.Sprintf("i-000%d", i)),
+					ShouldDecrementDesiredCapacity: aws.Bool(true),
+				},
+			).Return(
+				&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+					Activity: &autoscalingtypes.Activity{Description: aws.String("Deleted instance")},
+				}, nil,
+			)
 		}
 		awsInstanceRef := AwsInstanceRef{
 			ProviderID: providerId,
@@ -857,7 +866,7 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	err = asgs[0].DeleteNodes(nodes)
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 2)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
 
 	// This ensures only 2 instances are terminated which are mocked in this unit test
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 2)
