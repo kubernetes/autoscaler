@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM golang:1.24.3 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24.11 AS builder
 
 WORKDIR /workspace
 
