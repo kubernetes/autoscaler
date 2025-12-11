@@ -82,12 +82,13 @@ const (
 
 ### Resize Status Handling
 
-The InPlace mode handles different resize statuses with distinct behaviors:
+The `InPlace` mode handles different resize statuses with distinct behaviors. Critically, before checking the resize status, VPA first compares the current recommendation against the pod's spec.resources. If they differ, VPA attempts to apply the new recommendation regardless of the current resize status, as the new recommendation may be feasible (e.g., a smaller resource request that fits on the node).
 
-- Deferred: When the resize status is Deferred, VPA waits and lets kubelet handle it. This means kubelet is waiting to apply the resize, and VPA should not interfere.
-- Infeasible: When the resize status is Infeasible, VPA retries with no backoff in alpha. This status indicates the node cannot accommodate the resize currently, but conditions may change over time.
-- InProgress: When the resize status is InProgress, VPA waits for completion. The resize is actively being applied by kubelet.
-- Error: When the resize status is Error, VPA retries the operation. An error occurred during resize and retrying may succeed.
+- `Deferred`: When the resize status is Deferred and the recommendation matches spec, VPA waits and lets kubelet handle it. This means kubelet is waiting to apply the resize, and VPA should not interfere.
+- `Infeasible`: When the resize status is Infeasible and the recommendation matches spec, VPA defers action. The node cannot accommodate the current resize, but if the recommendation changes, VPA will attempt the new resize.
+- `InProgress`: When the resize status is InProgress and the recommendation matches spec, VPA waits for completion. The resize is actively being applied by kubelet.
+- `Error`: When the resize status is Error, VPA retries the operation. An error occurred during resize and retrying may succeed.
+
 
 Modify the `CanInPlaceUpdate` to accommodate the new update mode:
 
@@ -165,56 +166,6 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 	return utils.InPlaceDeferred
 }
 ```
-
-The updater loop will handle the `InPlace` mode by never adding pods to `podsForEviction` as follows:
-
-```golang
-for _, pod := range podsForInPlace {
-	withInPlaceUpdatable = true
-	decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
-
-	switch decision {
-	case utils.InPlaceDeferred:
-		klog.V(2).InfoS("In-place update deferred", "pod", klog.KObj(pod))
-		continue
-	case utils.InPlaceEvict:
-		// This should only happen for InPlaceOrRecreate mode
-		podsForEviction = append(podsForEviction, pod)
-		klog.V(2).InfoS("In-place update failed, falling back to eviction", "pod", klog.KObj(pod))
-		continue
-	case utils.InPlaceInfeasible:
-		// Retry in-place update (no backoff for alpha)
-		klog.V(2).InfoS("In-place update infeasible, retrying", "pod", klog.KObj(pod))
-		// Fall through to attempt in-place update
-	case utils.InPlaceApproved:
-		// Proceed with in-place update
-	}
-
-	err = u.inPlaceRateLimiter.Wait(ctx)
-	if err != nil {
-		klog.V(0).InfoS("In-place rate limiter wait failed for in-place resize", "error", err)
-		metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateRateLimiterWaitFailed")
-		return
-	}
-	err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
-	if err != nil {
-		klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
-		metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
-		// for inPlace mode we don't evict pods even if we get an error.
-		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnable {
-			continue
-		}
-		podsForEviction = append(podsForEviction, pod)
-		continue
-	}
-}
-```
-
-
-Retry is handled entirely by the Kubelet based on pod conditions:
-- `PodResizePending` (reason: `Deferred`) - Kubelet will retry automatically, VPA continues to defer.
-- `PodResizePending` (reason: `Infeasible`) - Kubelet will never retry, but VPA will continue to defer (not evict) in InPlace mode.
-- `PodResizeInProgress` - Resize is being applied, VPA waits indefinitely in InPlace mode.
 
 ### Behavior when Feature Gate is Disabled
 
