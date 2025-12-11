@@ -17,6 +17,7 @@ limitations under the License.
 package slicer
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -77,7 +78,8 @@ func BuildSlicer(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroup
 
 		apiClient := sdk.NewSlicerClient(nodeGroup.slicerUrl, nodeGroup.slicerToken, userAgent, httpClient)
 
-		restGroups, err := apiClient.GetHostGroups()
+		restGroups, err := apiClient.GetHostGroups(context.Background())
+
 		if err != nil {
 			klog.Fatalf("Failed to fetch node groups from %s, error: %v", nodeGroup.slicerUrl, err)
 		}
@@ -208,7 +210,7 @@ func (s *SlicerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 				klog.V(4).Infof("Slicer: Node %s belongs to managed hostgroup %s", node.Name, hostGroupLabel)
 
 				// Also verify the node exists in the Slicer API
-				nodes, err := group.apiClient.GetHostGroupNodes(group.Id())
+				nodes, err := group.apiClient.GetHostGroupNodes(context.Background(), group.Id())
 				if err != nil {
 					klog.V(4).Infof("Slicer: Failed to get nodes for group %s: %v", group.Id(), err)
 					return true, nil // Assume it exists if we can't check

@@ -18,6 +18,8 @@ package slicer
 
 import (
 	"context"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -82,13 +84,39 @@ func (g *SlicerNodeGroup) IncreaseSize(delta int) error {
 HOSTNAME=$(hostname)
 
 # Populate with the join token from the master node
-export K3S_TOKEN="%s"
+export K3S_TOKEN="$(cat /run/slicer/secrets/k3s-token)"
 
 # Join k3s agent with random node ID but label with Slicer hostname for mapping
 curl -sfL https://get.k3s.io | K3S_URL=%s sh -s - --with-node-id --node-label "slicer/hostgroup=%s" --node-label "k3sup.dev/node-type=agent" --node-label "slicer/hostname=$HOSTNAME"
-`, g.k3sToken, g.k3sUrl, g.id)
+`, g.k3sUrl, g.id)
 
 	klog.V(2).Infof("Slicer: About to create %d nodes via API", delta)
+
+	secrets, err := g.apiClient.ListSecrets(context.Background())
+	if err != nil {
+		klog.Errorf("Slicer: Failed to list secrets: %v", err)
+		return fmt.Errorf("failed to list secrets: %w", err)
+	}
+
+	foundK3sToken := false
+	for _, secret := range secrets {
+		if secret.Name == "k3s-token" {
+			foundK3sToken = true
+			break
+		}
+	}
+
+	if !foundK3sToken {
+		// Ensure the join token secret exists
+		err := g.apiClient.CreateSecret(context.Background(), sdk.CreateSecretRequest{
+			Name: "k3s-token",
+			Data: base64.StdEncoding.EncodeToString([]byte(g.k3sToken)),
+		})
+		if err != nil && !errors.Is(err, sdk.ErrSecretExists) {
+			klog.Errorf("Slicer: Failed to create k3s token secret: %v", err)
+			return fmt.Errorf("failed to create k3s-token secret: %w", err)
+		}
+	}
 
 	// Create the nodes via API
 	for i := 0; i < delta; i++ {
@@ -97,11 +125,12 @@ curl -sfL https://get.k3s.io | K3S_URL=%s sh -s - --with-node-id --node-label "s
 			CPUs:       slicerCPUs,
 			ImportUser: slicerImportUser,
 			Userdata:   userdata,
+			Secrets:    []string{"k3s-token"},
 		}
 
 		klog.V(2).Infof("Slicer: Creating node via API client")
 
-		result, err := g.apiClient.CreateNode(g.id, payload)
+		result, err := g.apiClient.CreateNode(context.Background(), g.id, payload)
 		if err != nil {
 			klog.Errorf("Slicer: Failed to create node: %v", err)
 			return fmt.Errorf("failed to create node: %w", err)
@@ -211,7 +240,7 @@ func (g *SlicerNodeGroup) Debug() string { return g.id }
 // Nodes returns a list of all nodes that belong to this node group.
 func (g *SlicerNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	klog.V(4).Infof("Slicer: Fetching nodes for group %s", g.id)
-	nodes, err := g.apiClient.GetHostGroupNodes(g.id)
+	nodes, err := g.apiClient.GetHostGroupNodes(context.Background(), g.id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch nodes: %w", err)
 	}
@@ -265,7 +294,7 @@ func (g *SlicerNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	klog.V(2).Infof("Slicer: Fetching hostgroup sizing for %s", g.id)
 
 	// Fetch hostgroup sizing
-	groups, err := g.apiClient.GetHostGroups()
+	groups, err := g.apiClient.GetHostGroups(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch hostgroups: %w", err)
 	}

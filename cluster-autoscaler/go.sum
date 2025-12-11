@@ -361,12 +361,8 @@ github.com/rogpeppe/go-internal v1.13.1/go.mod h1:uMEvuHeurkdAXX61udpOXGD/AzZDWN
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
-github.com/slicervm/sdk v0.0.1 h1:OqPEVbNeDnMRbq0Unc9asDEyTATkkfCrJ07NDNjlVpY=
-github.com/slicervm/sdk v0.0.1/go.mod h1:OZ7hMDRJ9OUK4d6XH/F40gfWpuEvhdbfabDJ91fGnLk=
-github.com/slicervm/sdk v0.0.2 h1:wTFTbLzviYh1VS6bBDLamqhWD840sNpLi7yZm133H3A=
-github.com/slicervm/sdk v0.0.2/go.mod h1:loZZauzbYFQ9hQI1iPkKh7FlHs8lU63y3I8fvUQ2dvc=
-github.com/slicervm/sdk v0.0.5 h1:KO1+I7R/LOzR13NkkC2pDEyNpWQNCy8cudYebmIYSSo=
-github.com/slicervm/sdk v0.0.5/go.mod h1:loZZauzbYFQ9hQI1iPkKh7FlHs8lU63y3I8fvUQ2dvc=
+github.com/slicervm/sdk v0.0.9 h1:Lro9wcit2lVBW1gA4+w5wEv54c2gpXh9IUBPCqc/w08=
+github.com/slicervm/sdk v0.0.9/go.mod h1:loZZauzbYFQ9hQI1iPkKh7FlHs8lU63y3I8fvUQ2dvc=
 github.com/soheilhy/cmux v0.1.5 h1:jjzc5WVemNEDTLwv9tlmemhC73tI08BNOIGwBOo10Js=
 github.com/soheilhy/cmux v0.1.5/go.mod h1:T7TcVDs9LWfQgPlPsdngu6I6QIoyIFZDDC6sNE1GqG0=
 github.com/spf13/cobra v1.9.1 h1:CXSaggrXdbHK9CF+8ywj8Amf7PBRmPCOJugH954Nnlo=
