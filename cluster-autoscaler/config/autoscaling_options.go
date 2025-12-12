@@ -364,6 +364,7 @@ type AutoscalingOptions struct {
 	MaxNodeSkipEvalTimeTrackerEnabled bool
 	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
 	NodeRemovalLatencyTrackingEnabled bool
+	CapacityQuotasEnabled             bool
 }
 
 // KubeClientOptions specify options for kube client

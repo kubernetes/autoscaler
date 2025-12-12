@@ -238,6 +238,7 @@ var (
 	capacitybufferPodInjectionEnabled            = flag.Bool("capacity-buffer-pod-injection-enabled", false, "Whether to enable pod list processor that processes ready capacity buffers and injects fake pods accordingly")
 	nodeRemovalLatencyTrackingEnabled            = flag.Bool("node-removal-latency-tracking-enabled", false, "Whether to track latency from when an unneeded node is eligible for scale down until it is removed or needed again.")
 	maxNodeSkipEvalTimeTrackerEnabled            = flag.Bool("max-node-skip-eval-time-tracker-enabled", false, "Whether to enable the tracking of the maximum time of node being skipped during ScaleDown")
+	capacityQuotasEnabled                        = flag.Bool("capacity-quotas-enabled", false, "Whether to enable CapacityQuota CRD support.")
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
@@ -442,6 +443,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CapacitybufferPodInjectionEnabled:            *capacitybufferPodInjectionEnabled,
 		NodeRemovalLatencyTrackingEnabled:            *nodeRemovalLatencyTrackingEnabled,
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
+		CapacityQuotasEnabled:                        *capacityQuotasEnabled,
 	}
 }
 
