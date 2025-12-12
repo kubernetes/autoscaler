@@ -26,7 +26,9 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
@@ -41,7 +43,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/kubernetes/pkg/features"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,7 +81,6 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
@@ -86,6 +92,16 @@ import (
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
 )
+
+var (
+	scheme = runtime.NewScheme()
+)
+
+func init() {
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(cqv1alpha1.AddToScheme(scheme))
+	// TODO: add other CRDs
+}
 
 func registerSignalHandlers(autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
@@ -102,7 +118,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
+func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, mgr manager.Manager) (core.Autoscaler, *loop.LoopTrigger, error) {
 	// Get AutoscalingOptions from flags.
 	autoscalingOptions := flags.AutoscalingOptions()
 
@@ -135,6 +151,8 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
 		ScaleUpOrchestrator:  orchestrator.New(),
+		KubeClientNew:        mgr.GetClient(),
+		KubeCache:            mgr.GetCache(),
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
@@ -191,7 +209,7 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 
 	if autoscalingOptions.CapacitybufferPodInjectionEnabled {
 		// Add CapacityBuffer types to the default scheme for event recording.
-		if err := cbv1beta1.AddToScheme(scheme.Scheme); err != nil {
+		if err := cbv1beta1.AddToScheme(clientgoscheme.Scheme); err != nil {
 			klog.Warningf("Failed to add CapacityBuffer (v1beta1) to scheme: %v", err)
 		}
 		if capacitybufferClient == nil {
@@ -310,12 +328,29 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	autoscaler, trigger, err := buildAutoscaler(ctx, debuggingSnapshotter)
+	restConfig := kube_util.GetKubeConfig(autoscalingOpts.KubeClientOpts)
+	mgr, err := ctrl.NewManager(restConfig, ctrl.Options{
+		Scheme: scheme,
+		Cache: cache.Options{
+			DefaultTransform: cache.TransformStripManagedFields(),
+		},
+		// TODO: migrate leader election, metrics, healthcheck, pprof servers to Manager
+		LeaderElection:         false,
+		Metrics:                metricsserver.Options{BindAddress: "0"},
+		HealthProbeBindAddress: "0",
+		PprofBindAddress:       "0",
+	})
+	if err != nil {
+		klog.Fatalf("Failed to create manager: %v", err)
+	}
+
+	autoscaler, trigger, err := buildAutoscaler(ctx, debuggingSnapshotter, mgr)
 	if err != nil {
 		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
 
 	// Register signal handlers for graceful shutdown.
+	// TODO: replace with ctrl.SetupSignalHandlers() and handle graceful shutdown with context
 	registerSignalHandlers(autoscaler)
 
 	// Start updating health check endpoint.
@@ -326,22 +361,42 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 		klog.Fatalf("Failed to autoscaler background components: %v", err)
 	}
 
-	// Autoscale ad infinitum.
-	if autoscalingOpts.FrequentLoopsEnabled {
-		// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
-		// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
-		lastRun := time.Now()
-		previousRun := time.Now()
-		for {
-			trigger.Wait(previousRun)
-			previousRun, lastRun = lastRun, time.Now()
-			loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
+		// Autoscale ad infinitum.
+		if autoscalingOpts.FrequentLoopsEnabled {
+			// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
+			// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
+			lastRun := time.Now()
+			previousRun := time.Now()
+			for {
+				select {
+				case <-ctx.Done():
+					// TODO: handle graceful shutdown with context
+					return nil
+				default:
+					trigger.Wait(previousRun)
+					previousRun, lastRun = lastRun, time.Now()
+					loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+				}
+			}
+		} else {
+			for {
+				select {
+				case <-ctx.Done():
+					// TODO: handle graceful shutdown with context
+					return nil
+				case <-time.After(autoscalingOpts.ScanInterval):
+					loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
+				}
+			}
 		}
-	} else {
-		for {
-			time.Sleep(autoscalingOpts.ScanInterval)
-			loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
-		}
+	}))
+	if err != nil {
+		klog.Fatalf("Failed to add runnable to manager: %v", err)
+	}
+
+	if err := mgr.Start(ctx); err != nil {
+		klog.Fatalf("Manager exited with error: %v", err)
 	}
 }
 
@@ -385,6 +440,7 @@ func main() {
 	if err := logsapi.ValidateAndApplyWithOptions(loggingConfig, opts, featureGate); err != nil {
 		klog.Fatalf("Failed to validate and apply logging configuration: %v", err)
 	}
+	ctrl.SetLogger(klog.NewKlogr())
 
 	healthCheck := metrics.NewHealthCheck(autoscalingOpts.MaxInactivityTime, autoscalingOpts.MaxFailingTime)
 
