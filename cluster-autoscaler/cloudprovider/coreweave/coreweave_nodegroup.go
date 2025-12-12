@@ -18,13 +18,13 @@ package coreweave
 
 import (
 	"fmt"
+	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	"sync"
 )
 
 // CoreWeaveNodeGroup represents a node group in the CoreWeave cloud provider.
@@ -84,13 +84,6 @@ func (ng *CoreWeaveNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	if err != nil {
 		return fmt.Errorf("some nodes do not belong to node group %s: %v", ng.Name, err)
 	}
-	// If we reach here, it means we can delete the nodes
-	for _, node := range nodes {
-		// Mark the node for removal
-		if err := ng.nodepool.MarkNodeForRemoval(node); err != nil {
-			return fmt.Errorf("failed to mark node %s for removal: %v", node.Name, err)
-		}
-	}
 	//update target size
 	if err := ng.nodepool.SetSize(ng.nodepool.GetTargetSize() - len(nodes)); err != nil {
 		return fmt.Errorf("failed to update target size after marking nodes for removal: %v", err)
@@ -107,6 +100,9 @@ func (ng *CoreWeaveNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // DecreaseTargetSize decreases the target size of the node group by the specified delta.
 func (ng *CoreWeaveNodeGroup) DecreaseTargetSize(delta int) error {
 	klog.V(4).Infof("Decreasing target size of node group %s by %d", ng.Name, delta)
+	if delta < 0 {
+		delta = -delta
+	}
 	return ng.nodepool.SetSize(ng.nodepool.GetTargetSize() - delta)
 }
 
