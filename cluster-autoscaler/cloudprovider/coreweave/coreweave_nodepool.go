@@ -199,3 +199,53 @@ func (np *CoreWeaveNodePool) ValidateNodes(nodes []*apiv1.Node) error {
 	}
 	return nil
 }
+
+// GetInstanceType returns the instance type of the node pool.
+func (np *CoreWeaveNodePool) GetInstanceType() string {
+	instanceType, found, _ := unstructured.NestedString(np.nodepool.Object, "spec", "instanceType")
+	if !found {
+		return ""
+	}
+	return instanceType
+}
+
+// GetNodeLabels returns the node labels defined in the node pool spec.
+func (np *CoreWeaveNodePool) GetNodeLabels() map[string]string {
+	labels, found, _ := unstructured.NestedStringMap(np.nodepool.Object, "spec", "nodeLabels")
+	if !found {
+		return map[string]string{} // Return empty map if not found
+	}
+	return labels
+}
+
+// GetNodeTaints returns the node taints defined in the node pool spec.
+func (np *CoreWeaveNodePool) GetNodeTaints() []apiv1.Taint {
+	taintsRaw, found, _ := unstructured.NestedSlice(np.nodepool.Object, "spec", "nodeTaints")
+	if !found || len(taintsRaw) == 0 {
+		return []apiv1.Taint{} // Return empty slice if not found
+	}
+
+	taints := make([]apiv1.Taint, 0, len(taintsRaw))
+	for _, t := range taintsRaw {
+		taintMap, ok := t.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		taint := apiv1.Taint{}
+
+		if key, ok := taintMap["key"].(string); ok {
+			taint.Key = key
+		}
+		if value, ok := taintMap["value"].(string); ok {
+			taint.Value = value
+		}
+		if effect, ok := taintMap["effect"].(string); ok {
+			taint.Effect = apiv1.TaintEffect(effect)
+		}
+
+		taints = append(taints, taint)
+	}
+
+	return taints
+}
