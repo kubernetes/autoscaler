@@ -367,11 +367,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to recompute template node infos: %v", autoscalerError)
 		return autoscalerError.AddPrefix("failed to recompute template node infos: ")
 	}
-	nodeInfosForGroups := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
 
-	a.DebuggingSnapshotter.SetTemplateNodes(nodeInfosForGroups)
+	a.DebuggingSnapshotter.SetTemplateNodes(autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos())
 
-	if typedErr := a.updateClusterState(allNodes, nodeInfosForGroups, currentTime); typedErr != nil {
+	if typedErr := a.updateClusterState(allNodes, currentTime); typedErr != nil {
 		klog.Errorf("Failed to update cluster state: %v", typedErr)
 		return typedErr
 	}
@@ -463,7 +462,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	// them and not trigger another scale-up.
 	// The fake nodes are intentionally not added to the all nodes list, so that they are not considered as candidates for scale-down (which
 	// doesn't make sense as they're not real).
-	err = a.addUpcomingNodesToClusterSnapshot(upcomingCounts, nodeInfosForGroups)
+	err = a.addUpcomingNodesToClusterSnapshot(upcomingCounts)
 	if err != nil {
 		klog.Errorf("Failed adding upcoming nodes to cluster snapshot: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
@@ -568,7 +567,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		for i, nodeInfo := range allNodeInfos {
 			nodes[i] = nodeInfo.Node()
 		}
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, nodeInfosForGroups, false)
+		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, nodeInfos, false)
 		postScaleUp(scaleUpStart)
 	}
 
@@ -677,7 +677,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		for i, nodeInfo := range allNodeInfos {
 			nodes[i] = nodeInfo.Node()
 		}
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfosForGroups)
+		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
 		postScaleUp(scaleUpStart)
 	}
 
@@ -699,11 +700,12 @@ func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
 	}
 }
 
-func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int, nodeInfosForGroups map[string]*framework.NodeInfo) error {
+func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int) error {
 	nodeGroups := a.nodeGroupsById()
 	upcomingNodeGroups := make(map[string]int)
 	upcomingNodesFromUpcomingNodeGroups := 0
-	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups)
+	nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, nodeInfos)
 	if err != nil {
 		return err
 	}
@@ -1048,8 +1050,9 @@ func filterNodesFromSelectedGroups(cp cloudprovider.CloudProvider, nodes ...*api
 	return filtered
 }
 
-func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*framework.NodeInfo, currentTime time.Time) caerrors.AutoscalerError {
-	err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfosForGroups, currentTime)
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) caerrors.AutoscalerError {
+	nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+	err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfos, currentTime)
 	if err != nil {
 		klog.Errorf("Failed to update node registry: %v", err)
 		a.scaleDownPlanner.CleanUpUnneededNodes()
