@@ -61,10 +61,18 @@ type AutoscalingContext struct {
 	RemainingPdbTracker pdb.RemainingPdbTracker
 	// ClusterStateRegistry tracks the health of the node groups and pending scale-ups and scale-downs
 	ClusterStateRegistry *clusterstate.ClusterStateRegistry
-	//ProvisionRequstScaleUpMode indicates whether ClusterAutoscaler tries to accommodate ProvisioningRequest in current scale up iteration.
+	// ProvisionRequstScaleUpMode indicates whether ClusterAutoscaler tries to accommodate ProvisioningRequest in current scale up iteration.
 	ProvisioningRequestScaleUpMode bool
 	// DraProvider is the provider for dynamic resources allocation.
 	DraProvider *draprovider.Provider
+	// TemplateNodeInfoRegistry allows accessing template node infos.
+	TemplateNodeInfoRegistry TemplateNodeInfoRegistry
+}
+
+// TemplateNodeInfoRegistry is the interface for getting template node infos.
+type TemplateNodeInfoRegistry interface {
+	GetNodeInfo(id string) (*framework.NodeInfo, bool)
+	GetNodeInfos() map[string]*framework.NodeInfo
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -112,19 +120,21 @@ func NewAutoscalingContext(
 	remainingPdbTracker pdb.RemainingPdbTracker,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	draProvider *draprovider.Provider,
+	templateNodeInfoRegistry TemplateNodeInfoRegistry,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
-		AutoscalingOptions:     options,
-		CloudProvider:          cloudProvider,
-		AutoscalingKubeClients: *autoscalingKubeClients,
-		FrameworkHandle:        fwHandle,
-		ClusterSnapshot:        clusterSnapshot,
-		ExpanderStrategy:       expanderStrategy,
-		ProcessorCallbacks:     processorCallbacks,
-		DebuggingSnapshotter:   debuggingSnapshotter,
-		RemainingPdbTracker:    remainingPdbTracker,
-		ClusterStateRegistry:   clusterStateRegistry,
-		DraProvider:            draProvider,
+		AutoscalingOptions:       options,
+		CloudProvider:            cloudProvider,
+		AutoscalingKubeClients:   *autoscalingKubeClients,
+		FrameworkHandle:          fwHandle,
+		ClusterSnapshot:          clusterSnapshot,
+		ExpanderStrategy:         expanderStrategy,
+		ProcessorCallbacks:       processorCallbacks,
+		DebuggingSnapshotter:     debuggingSnapshotter,
+		RemainingPdbTracker:      remainingPdbTracker,
+		ClusterStateRegistry:     clusterStateRegistry,
+		DraProvider:              draProvider,
+		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
 	}
 }
 
