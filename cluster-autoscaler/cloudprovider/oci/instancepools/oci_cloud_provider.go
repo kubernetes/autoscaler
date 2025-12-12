@@ -5,6 +5,7 @@ Copyright 2021-2023 Oracle and/or its affiliates.
 package instancepools
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -150,6 +151,7 @@ func (ocp *OciCloudProvider) Refresh() error {
 
 // BuildOCI constructs the OciCloudProvider object that implements the could provider interface (InstancePoolManager).
 func BuildOCI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	common.EnableInstanceMetadataServiceLookup()
 	ocidType, err := ocicommon.GetAllPoolTypes(opts.NodeGroups)
 	if err != nil {
 		klog.Fatalf("Failed to get pool type: %v", err)
