@@ -786,7 +786,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-TN1", 0, 10, 0, "TN1")
 	autoprovisionedTN1 := reflect.ValueOf(provider.GetNodeGroup("autoprovisioned-TN1")).Interface().(*testprovider.TestNodeGroup)
 	assert.NotNil(t, autoprovisionedTN1)
-	provider.AddNode("ng1,", n1)
+	provider.AddNode("ng1", n1)
 	assert.NotNil(t, provider)
 
 	// Create context with mocked lister registry.
