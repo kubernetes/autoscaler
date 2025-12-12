@@ -29,6 +29,27 @@ type NodeFilter interface {
 	ExcludeFromTracking(node *corev1.Node) bool
 }
 
+// CombinedNodeFilter combines multiple node filters.
+type CombinedNodeFilter struct {
+	filters []NodeFilter
+}
+
+// NewCombinedNodeFilter creates a new CombinedNodeFilter.
+func NewCombinedNodeFilter(filters []NodeFilter) *CombinedNodeFilter {
+	return &CombinedNodeFilter{filters: filters}
+}
+
+// ExcludeFromTracking calls ExcludeFromTracking on all filters and returns true
+// if any of them returns true.
+func (f *CombinedNodeFilter) ExcludeFromTracking(node *corev1.Node) bool {
+	for _, filter := range f.filters {
+		if filter.ExcludeFromTracking(node) {
+			return true
+		}
+	}
+	return false
+}
+
 type usageCalculator struct {
 	nodeFilter NodeFilter
 	nodeCache  *nodeResourcesCache

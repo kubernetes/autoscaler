@@ -20,6 +20,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	"k8s.io/klog/v2"
 )
 
 // TrackerFactory builds quota trackers.
@@ -63,6 +64,7 @@ func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingCon
 	}
 	var quotaStatuses []*quotaStatus
 	for _, rq := range quotas {
+		klog.V(5).Infof("Quota %q status: limits: %v, usages: %v", rq.ID(), rq.Limits(), usages[rq.ID()])
 		limitsLeft := make(resourceList)
 		limits := rq.Limits()
 		for resourceType, limit := range limits {

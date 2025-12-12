@@ -17,35 +17,54 @@ limitations under the License.
 package orchestrator
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 )
 
 func TestMaxResourceLimitReached(t *testing.T) {
 	tests := []struct {
-		name        string
-		resources   []string
-		wantReasons []string
+		name           string
+		exceededQuotas []resourcequotas.ExceededQuota
+		wantReasons    []string
+		wantResources  []string
 	}{
 		{
-			name:        "simple test",
-			resources:   []string{"gpu"},
-			wantReasons: []string{"max cluster gpu limit reached"},
+			name: "simple-case",
+			exceededQuotas: []resourcequotas.ExceededQuota{
+				{ID: "test", ExceededResources: []string{"gpu"}},
+			},
+			wantReasons:   []string{`exceeded quota: "test", resources: gpu`},
+			wantResources: []string{"gpu"},
 		},
 		{
-			name:        "multiple resources",
-			resources:   []string{"gpu1", "gpu3", "tpu", "ram"},
-			wantReasons: []string{"max cluster gpu1, gpu3, tpu, ram limit reached"},
+			name: "multiple-resources",
+			exceededQuotas: []resourcequotas.ExceededQuota{
+				{ID: "test", ExceededResources: []string{"gpu1", "gpu3", "tpu", "ram"}},
+			},
+			wantReasons:   []string{`exceeded quota: "test", resources: gpu1, gpu3, tpu, ram`},
+			wantResources: []string{"gpu1", "gpu3", "tpu", "ram"},
 		},
 		{
-			name:        "no resources",
-			wantReasons: []string{"max cluster  limit reached"},
+			name: "multiple-exceeded-quotas",
+			exceededQuotas: []resourcequotas.ExceededQuota{
+				{ID: "cluster-quota", ExceededResources: []string{"gpu", "cpu"}},
+				{ID: "other-quota", ExceededResources: []string{"cpu", "nodes"}},
+			},
+			wantReasons:   []string{`exceeded quota: "cluster-quota", resources: gpu, cpu`, `exceeded quota: "other-quota", resources: cpu, nodes`},
+			wantResources: []string{"gpu", "cpu", "nodes"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMaxResourceLimitReached(tt.resources); !reflect.DeepEqual(got.Reasons(), tt.wantReasons) {
-				t.Errorf("MaxResourceLimitReached(%v) = %v, want %v", tt.resources, got.Reasons(), tt.wantReasons)
+			got := NewMaxResourceLimitReached(tt.exceededQuotas)
+			if diff := cmp.Diff(tt.wantReasons, got.Reasons()); diff != "" {
+				t.Errorf("Resources() mismatch (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.wantResources, got.Resources(), cmpopts.SortSlices(func(a, b string) bool { return a < b })); diff != "" {
+				t.Errorf("Resources() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
