@@ -164,7 +164,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
-	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
+	inPlaceOrRecreateFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
+	inPlaceFeatureEnable := features.Enabled(features.InPlace)
 
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
@@ -175,9 +176,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 		// Log deprecation warnings for VPAs using deprecated modes
 		logDeprecationWarnings(vpa)
 
-		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
-			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
-			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
+		// TODO(omerap12): move it to a dedicated function (maybe in pkg/api) instead of hard coded update modes here.
+		updateMode := vpa_api_util.GetUpdateMode(vpa)
+		if updateMode != vpa_types.UpdateModeRecreate &&
+			updateMode != vpa_types.UpdateModeAuto &&
+			updateMode != vpa_types.UpdateModeInPlaceOrRecreate &&
+			updateMode != vpa_types.UpdateModeInPlace {
+			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"InPlace\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
@@ -259,14 +264,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		podsForInPlace := make([]*apiv1.Pod, 0)
 		podsForEviction := make([]*apiv1.Pod, 0)
-
-		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceFeatureEnable {
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
+		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnable) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnable) {
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter, updateMode), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 		} else {
 			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
 			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
+			} else if updateMode == vpa_types.UpdateModeInPlace {
+				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlace, "updateMode", vpa_types.UpdateModeInPlace)
+				continue
 			}
 			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
@@ -279,15 +286,28 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		for _, pod := range podsForInPlace {
 			withInPlaceUpdatable = true
-			decision := inPlaceLimiter.CanInPlaceUpdate(pod)
+			decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
 
-			if decision == utils.InPlaceDeferred {
-				klog.V(0).InfoS("In-place update deferred", "pod", klog.KObj(pod))
-				continue
-			} else if decision == utils.InPlaceEvict {
+			switch decision {
+			case utils.InPlaceDeferred:
+				// Pod passed priority calculator, meaning recommendations differ from spec.
+				// Retry the in-place update.
+				klog.V(2).InfoS("In-place update deferred but recommendations differ from spec, retrying", "pod", klog.KObj(pod))
+				// Fall through to attempt in-place update
+			case utils.InPlaceEvict:
+				// This should only happen for InPlaceOrRecreate mode
 				podsForEviction = append(podsForEviction, pod)
+				klog.V(2).InfoS("In-place update failed, falling back to eviction", "pod", klog.KObj(pod))
 				continue
+			case utils.InPlaceInfeasible:
+				// Retry in-place update (no backoff for alpha)
+				klog.V(2).InfoS("In-place update infeasible, retrying", "pod", klog.KObj(pod))
+				// Fall through to attempt in-place update
+			case utils.InPlaceApproved:
+				klog.V(2).InfoS("In-place update approved", "pod", klog.KObj(pod))
+				// Proceed with in-place update
 			}
+
 			err = u.inPlaceRateLimiter.Wait(ctx)
 			if err != nil {
 				klog.V(0).InfoS("In-place rate limiter wait failed for in-place resize", "error", err)
@@ -298,6 +318,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 			if err != nil {
 				klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
+				// for inPlace mode we don't evict pods even if we get an error.
+				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnable {
+					continue
+				}
 				podsForEviction = append(podsForEviction, pod)
 				continue
 			}
@@ -381,9 +405,22 @@ func filterPods(pods []*apiv1.Pod, predicate func(*apiv1.Pod) bool) []*apiv1.Pod
 	return result
 }
 
-func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction) []*apiv1.Pod {
+func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, updateMode vpa_types.UpdateMode) []*apiv1.Pod {
 	return filterPods(pods, func(pod *apiv1.Pod) bool {
-		return inplaceRestriction.CanInPlaceUpdate(pod) != utils.InPlaceDeferred
+		decision := inplaceRestriction.CanInPlaceUpdate(pod, updateMode)
+		switch decision {
+		case utils.InPlaceApproved, utils.InPlaceInfeasible:
+			return true
+		case utils.InPlaceDeferred:
+			// For InPlace mode, include deferred pods so the priority calculator
+			// can check if recommendations differ significantly from current spec.
+			// The priority calculator will filter out pods where spec ≈ recommendations.
+			return updateMode == vpa_types.UpdateModeInPlace
+		case utils.InPlaceEvict:
+			return false
+		default:
+			return false
+		}
 	})
 }
 

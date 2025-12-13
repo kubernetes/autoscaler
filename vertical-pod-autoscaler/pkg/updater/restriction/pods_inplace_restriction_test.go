@@ -28,9 +28,11 @@ import (
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	baseclocktest "k8s.io/utils/clock/testing"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 type CanInPlaceUpdateTestParams struct {
@@ -40,10 +42,12 @@ type CanInPlaceUpdateTestParams struct {
 	evictionTolerance       float64
 	lastInPlaceAttempt      time.Time
 	expectedInPlaceDecision utils.InPlaceDecision
+	vpa                     *vpa_types.VerticalPodAutoscaler
 }
 
 func TestCanInPlaceUpdate(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
 
 	rc := apiv1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
@@ -75,6 +79,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.Time{},
 			expectedInPlaceDecision: utils.InPlaceApproved,
+			vpa:                     getIPORVpa(),
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceDeferred - no pods can be in-placed, one missing",
@@ -86,6 +91,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.Time{},
 			expectedInPlaceDecision: utils.InPlaceDeferred,
+			vpa:                     getIPORVpa(),
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceApproved - small tolerance, all running",
@@ -98,6 +104,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.1,
 			lastInPlaceAttempt:      time.Time{},
 			expectedInPlaceDecision: utils.InPlaceApproved,
+			vpa:                     getIPORVpa(),
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceApproved - small tolerance, one missing",
@@ -109,6 +116,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.Time{},
 			expectedInPlaceDecision: utils.InPlaceDeferred,
+			vpa:                     getIPORVpa(),
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceDeferred - resize Deferred, conditions not met to fallback",
@@ -127,6 +135,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.UnixMilli(3600000), // 1 hour from epoch
 			expectedInPlaceDecision: utils.InPlaceDeferred,
+			vpa:                     getIPORVpa(),
 		},
 		{
 			name: ("CanInPlaceUpdate=InPlaceEvict - resize inProgress for more too long"),
@@ -144,6 +153,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.UnixMilli(0), // epoch (too long ago...)
 			expectedInPlaceDecision: utils.InPlaceEvict,
+			vpa:                     getIPORVpa(),
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceDeferred - resize InProgress, conditions not met to fallback",
@@ -161,6 +171,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.UnixMilli(3600000), // 1 hour from epoch
 			expectedInPlaceDecision: utils.InPlaceDeferred,
+			vpa:                     getIPORVpa(),
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceEvict - infeasible",
@@ -179,6 +190,38 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.Time{},
 			expectedInPlaceDecision: utils.InPlaceEvict,
+			vpa:                     getIPORVpa(),
+		},
+		{
+			name: "InPlace - CanInPlaceUpdate=InPlaceApproved - all pods running",
+			pods: []*apiv1.Pod{
+				generatePod().Get(),
+				generatePod().Get(),
+				generatePod().Get(),
+			},
+			replicas:                3,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceApproved,
+			vpa:                     getIPVpa(),
+		},
+		{
+			name: "InPlace - CanInPlaceUpdate=InPlaceDeferred - resize InProgress, waits indefinitely (no timeout)",
+			pods: []*apiv1.Pod{
+				generatePod().WithPodConditions([]apiv1.PodCondition{
+					{
+						Type:   apiv1.PodResizeInProgress,
+						Status: apiv1.ConditionTrue,
+					},
+				}).Get(),
+				generatePod().Get(),
+				generatePod().Get(),
+			},
+			replicas:                3,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.UnixMilli(0), // epoch (too long ago...)
+			expectedInPlaceDecision: utils.InPlaceDeferred,
+			vpa:                     getIPVpa(),
 		},
 	}
 	for _, tc := range testCases {
@@ -189,6 +232,8 @@ func TestCanInPlaceUpdate(t *testing.T) {
 
 			selectedPod := tc.pods[whichPodIdxForCanInPlaceUpdate]
 
+			updateMode := vpa_api_util.GetUpdateMode(tc.vpa)
+
 			clock := baseclocktest.NewFakeClock(time.UnixMilli(3600001)) // 1 hour from epoch + 1 millis
 			lipatm := map[string]time.Time{getPodID(selectedPod): tc.lastInPlaceAttempt}
 
@@ -198,7 +243,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			assert.NoError(t, err)
 			inPlace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
-			result := inPlace.CanInPlaceUpdate(selectedPod)
+			result := inPlace.CanInPlaceUpdate(selectedPod, updateMode)
 			assert.Equal(t, tc.expectedInPlaceDecision, result)
 		})
 	}
@@ -230,6 +275,7 @@ func TestInPlaceDisabledFeatureGate(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
+	updateMode := vpa_api_util.GetUpdateMode(basicVpa)
 	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
@@ -237,7 +283,7 @@ func TestInPlaceDisabledFeatureGate(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceEvict, inplace.CanInPlaceUpdate(pod))
+		assert.Equal(t, utils.InPlaceEvict, inplace.CanInPlaceUpdate(pod, updateMode))
 	}
 }
 
@@ -270,6 +316,7 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
+	updateMode := vpa_api_util.GetUpdateMode(basicVpa)
 	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10 /*minReplicas*/, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
@@ -277,7 +324,7 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod))
+		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, updateMode))
 	}
 
 	for _, pod := range pods {
@@ -315,6 +362,7 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
+	updateMode := vpa_api_util.GetUpdateMode(basicVpa)
 	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
@@ -322,7 +370,7 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, updateMode))
 	}
 
 	for _, pod := range pods[:4] {
@@ -361,6 +409,7 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
+	updateMode := vpa_api_util.GetUpdateMode(basicVpa)
 	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
@@ -368,7 +417,7 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, updateMode))
 	}
 
 	for _, pod := range pods[:1] {
@@ -423,5 +472,196 @@ func TestInPlaceUpdate_EventEmission(t *testing.T) {
 		assert.Contains(t, event, "InPlaceResizedByVPA")
 	case <-time.After(1 * time.Second):
 		assert.Fail(t, "timeout waiting for event")
+	}
+}
+
+func TestInPlaceModeDisabledFeatureGate(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, false)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 1.0
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	for _, pod := range pods {
+		assert.Equal(t, utils.InPlaceEvict, inplace.CanInPlaceUpdate(pod, updateMode),
+			"InPlace mode should return InPlaceEvict when feature gate is disabled")
+	}
+}
+
+func TestInPlaceModeWaitsIndefinitely(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// Create a pod that's been updating for a very long time
+	pods := []*apiv1.Pod{
+		test.Pod().WithName("test-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			WithPodConditions([]apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizeInProgress,
+					Status: apiv1.ConditionTrue,
+				},
+			}).Get(),
+		test.Pod().WithName("test-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+		test.Pod().WithName("test-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+
+	// Set last attempt to a very old time (would timeout in InPlaceOrRecreate mode)
+	clock := baseclocktest.NewFakeClock(time.UnixMilli(7200000))         // 2 hours from epoch
+	lipatm := map[string]time.Time{getPodID(pods[0]): time.UnixMilli(0)} // epoch (very old)
+
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// InPlace mode should return Deferred even after a very long time
+	result := inplace.CanInPlaceUpdate(pods[0], updateMode)
+	assert.Equal(t, utils.InPlaceDeferred, result,
+		"InPlace mode should wait indefinitely for in-progress updates, not timeout")
+}
+
+func TestInPlaceModeInfeasible(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// Create a pod with infeasible resize condition
+	pods := []*apiv1.Pod{
+		test.Pod().WithName("test-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			WithPodConditions([]apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizePending,
+					Status: apiv1.ConditionTrue,
+					Reason: apiv1.PodReasonInfeasible,
+				},
+			}).Get(),
+		test.Pod().WithName("test-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+		test.Pod().WithName("test-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// Infeasible updates should still return InPlaceDeferred in InPlace mode
+	result := inplace.CanInPlaceUpdate(pods[0], updateMode)
+	assert.Equal(t, utils.InPlaceInfeasible, result,
+		"InPlace mode should return InPlaceInfeasible for infeasible updates")
+}
+
+func TestInPlaceModeAtLeastOne(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1 // Very small tolerance, but at least one should be allowed
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	inPlaceVpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceVpa)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	for _, pod := range pods {
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, updateMode))
+	}
+
+	// At least one pod should be updatable even with very small tolerance
+	for _, pod := range pods[:1] {
+		err := inplace.InPlaceUpdate(pod, inPlaceVpa, test.FakeEventRecorder())
+		assert.NoError(t, err, "Should in-place update at least one pod even with small tolerance")
+	}
+
+	// Rest should fail
+	for _, pod := range pods[1:] {
+		err := inplace.InPlaceUpdate(pod, inPlaceVpa, test.FakeEventRecorder())
+		assert.Error(t, err, "Should fail to update additional pods with small tolerance")
 	}
 }
