@@ -22,6 +22,7 @@ import (
 
 // InPlaceDecision is the type of decision that can be made for a pod.
 type InPlaceDecision string
+
 // ResizeStatus is the status of resize api call.
 type ResizeStatus string
 
