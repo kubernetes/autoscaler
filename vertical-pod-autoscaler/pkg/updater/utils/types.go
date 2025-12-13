@@ -22,6 +22,7 @@ import (
 
 // InPlaceDecision is the type of decision that can be made for a pod.
 type InPlaceDecision string
+// ResizeStatus is the status of resize api call.
 type ResizeStatus string
 
 const (
@@ -31,7 +32,7 @@ const (
 	InPlaceDeferred InPlaceDecision = "InPlaceDeferred"
 	// InPlaceEvict means we will attempt to evict the pod.
 	InPlaceEvict InPlaceDecision = "InPlaceEvict"
-	// Infeasible means we can't in-place update the pod right now but we want to retry
+	// InPlaceInfeasible means we can't in-place update the pod right now but we want to retry
 	InPlaceInfeasible InPlaceDecision = "InPlaceInfeasible"
 	// ResizeStatusDeferred indicates the resize is deferred by kubelet
 	ResizeStatusDeferred ResizeStatus = "Deferred"
