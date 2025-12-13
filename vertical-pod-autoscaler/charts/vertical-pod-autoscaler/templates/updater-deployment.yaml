@@ -52,9 +52,16 @@ spec:
           - --leader-elect-renew-deadline={{ .Values.updater.leaderElection.renewDeadline }}
           - --leader-elect-retry-period={{ .Values.updater.leaderElection.retryPeriod }}
           {{- end }}
+          {{- with .Values.updater.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: prometheus
               containerPort: 8943
+          {{- with .Values.updater.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: /health-check

@@ -11,6 +11,13 @@ WARNING: This chart is currently under development and is not ready for producti
 ## Introduction
 The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resource requests of pods to match their actual resource utilization.
 
+## Helm Installation & upgrade
+
+```bash
+helm repo add autoscalers https://kubernetes.github.io/autoscaler
+helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
+```
+
 {{ template "chart.maintainersSection" . }}
 
 {{ template "chart.requirementsSection" . }}

@@ -63,13 +63,13 @@ admissionController:
   extraArgs: []
 
   # Resources for the Admission Controller default container.
-  resources:
-    limits:
-      cpu: 200m
-      memory: 500Mi
-    requests:
-      cpu: 50m
-      memory: 200Mi
+  resources: {}
+    # limits:
+    #   cpu: 200m
+    #   memory: 500Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 200Mi
 
   # Node selector labels for scheduling the Admission Controller.
   nodeSelector: {}
@@ -142,13 +142,13 @@ recommender:
   extraArgs: []
 
   # Resources for the Recommender default container.
-  resources:
-    limits:
-      cpu: 200m
-      memory: 1000Mi
-    requests:
-      cpu: 50m
-      memory: 500Mi
+  resources: {}
+    # limits:
+    #   cpu: 200m
+    #   memory: 1000Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 500Mi
 
   # Node selector labels for scheduling the Recommender.
   nodeSelector: {}
@@ -188,6 +188,10 @@ recommender:
 
 updater:
   enabled: true
+
+  # Additional args for the updater
+  extraArgs: []
+
   image:
     # Image repository for the Updater default container.
     repository: registry.k8s.io/autoscaling/vpa-updater
@@ -237,3 +241,12 @@ updater:
     # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
     maxUnavailable:
+
+  # Resources for the updater Controller
+  resources: {}
+    # limits:
+    #   cpu: 200m
+    #   memory: 500Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 200Mi
