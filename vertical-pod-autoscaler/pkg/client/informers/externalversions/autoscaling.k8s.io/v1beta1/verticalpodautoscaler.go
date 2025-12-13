@@ -57,7 +57,7 @@ func NewVerticalPodAutoscalerInformer(client versioned.Interface, namespace stri
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredVerticalPodAutoscalerInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		&cache.ListWatch{
+		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
@@ -82,7 +82,7 @@ func NewFilteredVerticalPodAutoscalerInformer(client versioned.Interface, namesp
 				}
 				return client.AutoscalingV1beta1().VerticalPodAutoscalers(namespace).Watch(ctx, options)
 			},
-		},
+		}, client),
 		&apisautoscalingk8siov1beta1.VerticalPodAutoscaler{},
 		resyncPeriod,
 		indexers,

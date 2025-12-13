@@ -25,6 +25,7 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	autoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	applyconfigurationautoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/applyconfiguration/autoscaling.k8s.io/v1"
 	scheme "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -45,18 +46,19 @@ type VerticalPodAutoscalerCheckpointInterface interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*autoscalingk8siov1.VerticalPodAutoscalerCheckpointList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *autoscalingk8siov1.VerticalPodAutoscalerCheckpoint, err error)
+	Apply(ctx context.Context, verticalPodAutoscalerCheckpoint *applyconfigurationautoscalingk8siov1.VerticalPodAutoscalerCheckpointApplyConfiguration, opts metav1.ApplyOptions) (result *autoscalingk8siov1.VerticalPodAutoscalerCheckpoint, err error)
 	VerticalPodAutoscalerCheckpointExpansion
 }
 
 // verticalPodAutoscalerCheckpoints implements VerticalPodAutoscalerCheckpointInterface
 type verticalPodAutoscalerCheckpoints struct {
-	*gentype.ClientWithList[*autoscalingk8siov1.VerticalPodAutoscalerCheckpoint, *autoscalingk8siov1.VerticalPodAutoscalerCheckpointList]
+	*gentype.ClientWithListAndApply[*autoscalingk8siov1.VerticalPodAutoscalerCheckpoint, *autoscalingk8siov1.VerticalPodAutoscalerCheckpointList, *applyconfigurationautoscalingk8siov1.VerticalPodAutoscalerCheckpointApplyConfiguration]
 }
 
 // newVerticalPodAutoscalerCheckpoints returns a VerticalPodAutoscalerCheckpoints
 func newVerticalPodAutoscalerCheckpoints(c *AutoscalingV1Client, namespace string) *verticalPodAutoscalerCheckpoints {
 	return &verticalPodAutoscalerCheckpoints{
-		gentype.NewClientWithList[*autoscalingk8siov1.VerticalPodAutoscalerCheckpoint, *autoscalingk8siov1.VerticalPodAutoscalerCheckpointList](
+		gentype.NewClientWithListAndApply[*autoscalingk8siov1.VerticalPodAutoscalerCheckpoint, *autoscalingk8siov1.VerticalPodAutoscalerCheckpointList, *applyconfigurationautoscalingk8siov1.VerticalPodAutoscalerCheckpointApplyConfiguration](
 			"verticalpodautoscalercheckpoints",
 			c.RESTClient(),
 			scheme.ParameterCodec,
