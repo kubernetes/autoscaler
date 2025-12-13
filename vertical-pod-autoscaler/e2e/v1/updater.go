@@ -23,6 +23,7 @@ import (
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -265,6 +266,87 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
+	framework.It("InPlace mode retries when recommendations change", framework.WithSerial(), framework.WithFeatureGate(features.InPlace), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		// Set up pods with initial recommendation (100m -> 200m)
+		podList := setupPodsForUpscalingInPlace(f, vpa_types.UpdateModeInPlace)
+		initialPodSet := MakePodSet(podList)
+		initialPods := podList.DeepCopy()
+
+		ginkgo.By("Waiting for initial in-place update")
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Recording current pod state after first update")
+		podListAfterFirstUpdate, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podsAfterFirstUpdate := podListAfterFirstUpdate.DeepCopy()
+
+		ginkgo.By("Updating VPA with new recommendations (300m)")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaClientSet := utils.GetVpaClientSet(f)
+
+		vpaCRD, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).
+			Get(context.TODO(), "hamster-vpa", metav1.GetOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: containerName,
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("300m"),
+						apiv1.ResourceMemory: resource.MustParse("200Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("300m"),
+						apiv1.ResourceMemory: resource.MustParse("200Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("300m"),
+						apiv1.ResourceMemory: resource.MustParse("200Mi"),
+					},
+				},
+			},
+		}
+
+		_, err = vpaClientSet.AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).
+			UpdateStatus(context.TODO(), vpaCRD, metav1.UpdateOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Waiting for pods to be updated again with new recommendations")
+		err = WaitForPodsUpdatedWithoutEviction(f, podsAfterFirstUpdate)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Verifying no pods were evicted during the process")
+		currentPods, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		currentPodSet := MakePodSet(currentPods)
+
+		// Verify no pods were evicted by checking UIDs remain the same
+		evictedCount := GetEvictedPodsCount(currentPodSet, initialPodSet)
+		gomega.Expect(evictedCount).To(gomega.Equal(0),
+			"No pods should be evicted when using InPlace mode")
 	})
 })
 

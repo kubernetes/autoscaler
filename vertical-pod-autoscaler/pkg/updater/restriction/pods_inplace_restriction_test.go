@@ -509,7 +509,7 @@ func TestInPlaceModeDisabledFeatureGate(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceEvict, inplace.CanInPlaceUpdate(pod, updateMode),
+		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, updateMode),
 			"InPlace mode should return InPlaceEvict when feature gate is disabled")
 	}
 }
@@ -653,15 +653,250 @@ func TestInPlaceModeAtLeastOne(t *testing.T) {
 		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, updateMode))
 	}
 
-	// At least one pod should be updatable even with very small tolerance
-	for _, pod := range pods[:1] {
+	for _, pod := range pods {
 		err := inplace.InPlaceUpdate(pod, inPlaceVpa, test.FakeEventRecorder())
 		assert.NoError(t, err, "Should in-place update at least one pod even with small tolerance")
 	}
+}
 
-	// Rest should fail
-	for _, pod := range pods[1:] {
-		err := inplace.InPlaceUpdate(pod, inPlaceVpa, test.FakeEventRecorder())
-		assert.Error(t, err, "Should fail to update additional pods with small tolerance")
+func TestInPlaceModeResizeStatuses(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
 	}
+
+	testCases := []struct {
+		name               string
+		podConditions      []apiv1.PodCondition
+		updateMode         vpa_types.UpdateMode
+		expectedDecision   utils.InPlaceDecision
+		lastInPlaceAttempt time.Time
+		clockTime          time.Time
+	}{
+		// InPlace mode tests
+		{
+			name: "InPlace mode - ResizeStatusDeferred returns InPlaceDeferred",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizePending,
+					Status: apiv1.ConditionTrue,
+					Reason: apiv1.PodReasonDeferred,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlace,
+			expectedDecision:   utils.InPlaceDeferred,
+			lastInPlaceAttempt: time.UnixMilli(0),
+			clockTime:          time.UnixMilli(3600000),
+		},
+		{
+			name: "InPlace mode - ResizeStatusInfeasible returns InPlaceInfeasible",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizePending,
+					Status: apiv1.ConditionTrue,
+					Reason: apiv1.PodReasonInfeasible,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlace,
+			expectedDecision:   utils.InPlaceInfeasible,
+			lastInPlaceAttempt: time.UnixMilli(0),
+			clockTime:          time.UnixMilli(3600000),
+		},
+		{
+			name: "InPlace mode - ResizeStatusInProgress returns InPlaceDeferred",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizeInProgress,
+					Status: apiv1.ConditionTrue,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlace,
+			expectedDecision:   utils.InPlaceDeferred,
+			lastInPlaceAttempt: time.UnixMilli(0),
+			clockTime:          time.UnixMilli(3600000),
+		},
+		{
+			name: "InPlace mode - ResizeStatusError returns InPlaceInfeasible (retry)",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:    apiv1.PodResizeInProgress,
+					Status:  apiv1.ConditionTrue,
+					Reason:  apiv1.PodReasonError,
+					Message: "some error",
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlace,
+			expectedDecision:   utils.InPlaceInfeasible,
+			lastInPlaceAttempt: time.UnixMilli(0),
+			clockTime:          time.UnixMilli(3600000),
+		},
+		// InPlaceOrRecreate mode tests - same conditions, different behavior
+		{
+			name: "InPlaceOrRecreate mode - ResizeStatusDeferred within timeout returns InPlaceDeferred",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizePending,
+					Status: apiv1.ConditionTrue,
+					Reason: apiv1.PodReasonDeferred,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlaceOrRecreate,
+			expectedDecision:   utils.InPlaceDeferred,
+			lastInPlaceAttempt: time.UnixMilli(3600000), // 1 hour from epoch
+			clockTime:          time.UnixMilli(3600001), // just 1ms later
+		},
+		{
+			name: "InPlaceOrRecreate mode - ResizeStatusDeferred past timeout returns InPlaceEvict",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizePending,
+					Status: apiv1.ConditionTrue,
+					Reason: apiv1.PodReasonDeferred,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlaceOrRecreate,
+			expectedDecision:   utils.InPlaceEvict,
+			lastInPlaceAttempt: time.UnixMilli(0),                                          // epoch
+			clockTime:          time.UnixMilli(int64(10 * time.Minute / time.Millisecond)), // 10 minutes later (past 5 min timeout)
+		},
+		{
+			name: "InPlaceOrRecreate mode - ResizeStatusInfeasible returns InPlaceEvict",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizePending,
+					Status: apiv1.ConditionTrue,
+					Reason: apiv1.PodReasonInfeasible,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlaceOrRecreate,
+			expectedDecision:   utils.InPlaceEvict,
+			lastInPlaceAttempt: time.UnixMilli(0),
+			clockTime:          time.UnixMilli(3600000),
+		},
+		{
+			name: "InPlaceOrRecreate mode - ResizeStatusInProgress within timeout returns InPlaceDeferred",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizeInProgress,
+					Status: apiv1.ConditionTrue,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlaceOrRecreate,
+			expectedDecision:   utils.InPlaceDeferred,
+			lastInPlaceAttempt: time.UnixMilli(3600000),
+			clockTime:          time.UnixMilli(3600001),
+		},
+		{
+			name: "InPlaceOrRecreate mode - ResizeStatusInProgress past timeout returns InPlaceEvict",
+			podConditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodResizeInProgress,
+					Status: apiv1.ConditionTrue,
+				},
+			},
+			updateMode:         vpa_types.UpdateModeInPlaceOrRecreate,
+			expectedDecision:   utils.InPlaceEvict,
+			lastInPlaceAttempt: time.UnixMilli(0),                                       // epoch
+			clockTime:          time.UnixMilli(int64(2 * time.Hour / time.Millisecond)), // 2 hours later (past 1 hour timeout)
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pod := test.Pod().WithName("test-pod").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+				WithPodConditions(tc.podConditions).Get()
+			pods := []*apiv1.Pod{
+				pod,
+				test.Pod().WithName("test-pod-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+				test.Pod().WithName("test-pod-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+			}
+
+			clock := baseclocktest.NewFakeClock(tc.clockTime)
+			lipatm := map[string]time.Time{getPodID(pod): tc.lastInPlaceAttempt}
+
+			var vpa *vpa_types.VerticalPodAutoscaler
+			if tc.updateMode == vpa_types.UpdateModeInPlace {
+				vpa = getIPVpa()
+			} else {
+				vpa = getIPORVpa()
+			}
+
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+			assert.NoError(t, err)
+			creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, vpa)
+			assert.NoError(t, err)
+			inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+			result := inplace.CanInPlaceUpdate(pod, tc.updateMode)
+			assert.Equal(t, tc.expectedDecision, result)
+		})
+	}
+}
+
+func TestInPlaceModeAllowsRetryForInfeasible(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// Pod with infeasible resize status
+	pod := test.Pod().WithName("test-pod").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+		WithPodConditions([]apiv1.PodCondition{
+			{
+				Type:   apiv1.PodResizePending,
+				Status: apiv1.ConditionTrue,
+				Reason: apiv1.PodReasonInfeasible,
+			},
+		}).Get()
+	pods := []*apiv1.Pod{
+		pod,
+		test.Pod().WithName("test-pod-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+		test.Pod().WithName("test-pod-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+	}
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	vpa := getIPVpa()
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, vpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// CanInPlaceUpdate should return InPlaceInfeasible
+	decision := inplace.CanInPlaceUpdate(pod, vpa_types.UpdateModeInPlace)
+	assert.Equal(t, utils.InPlaceInfeasible, decision,
+		"InPlace mode should return InPlaceInfeasible for infeasible pods")
+
+	// InPlaceUpdate should succeed for InPlaceInfeasible decision in InPlace mode
+	err = inplace.InPlaceUpdate(pod, vpa, test.FakeEventRecorder())
+	assert.NoError(t, err, "InPlace mode should allow retry for infeasible pods")
 }

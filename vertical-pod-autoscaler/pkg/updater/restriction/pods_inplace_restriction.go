@@ -164,8 +164,8 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 	decision := ip.CanInPlaceUpdate(podToUpdate, updateMode)
 	canProceed := decision == utils.InPlaceApproved
 	if updateMode == vpa_types.UpdateModeInPlace {
-		// For InPlace mode, also allow retrying Deferred and Infeasible
-		canProceed = canProceed || decision == utils.InPlaceDeferred || decision == utils.InPlaceInfeasible
+		// For InPlace mode, also allow retrying Infeasible (no backoff for alpha)
+		canProceed = canProceed || decision == utils.InPlaceInfeasible || decision == utils.InPlaceDeferred
 	}
 	if !canProceed {
 		return fmt.Errorf("cannot in-place update pod %s, decision: %v", klog.KObj(podToUpdate), decision)

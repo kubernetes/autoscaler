@@ -318,10 +318,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 			if err != nil {
 				klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
-				// for inPlace mode we don't evict pods even if we get an error.
-				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnable {
+				// For InPlace mode, don't evict pods even if we get an error
+				if updateMode == vpa_types.UpdateModeInPlace {
 					continue
 				}
+				// For InPlaceOrRecreate mode, fall back to eviction
 				podsForEviction = append(podsForEviction, pod)
 				continue
 			}
@@ -409,14 +410,15 @@ func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restric
 	return filterPods(pods, func(pod *apiv1.Pod) bool {
 		decision := inplaceRestriction.CanInPlaceUpdate(pod, updateMode)
 		switch decision {
-		case utils.InPlaceApproved, utils.InPlaceInfeasible:
+		case utils.InPlaceApproved:
 			return true
-		case utils.InPlaceDeferred:
-			// For InPlace mode, include deferred pods so the priority calculator
-			// can check if recommendations differ significantly from current spec.
-			// The priority calculator will filter out pods where spec ≈ recommendations.
+		case utils.InPlaceInfeasible:
+			// For InPlace mode, include infeasible pods to retry (no backoff for alpha)
 			return updateMode == vpa_types.UpdateModeInPlace
 		case utils.InPlaceEvict:
+			// For InPlaceOrRecreate, include so they can be redirected to eviction in the loop
+			return updateMode == vpa_types.UpdateModeInPlaceOrRecreate
+		case utils.InPlaceDeferred:
 			return false
 		default:
 			return false
