@@ -160,8 +160,15 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 		return fmt.Errorf("pod not suitable for in-place update %v: not in replicated pods map", podToUpdate.Name)
 	}
 
-	if ip.CanInPlaceUpdate(podToUpdate, vpa_api_util.GetUpdateMode(vpa)) != utils.InPlaceApproved {
-		return fmt.Errorf("cannot in-place update pod %s", klog.KObj(podToUpdate))
+	updateMode := vpa_api_util.GetUpdateMode(vpa)
+	decision := ip.CanInPlaceUpdate(podToUpdate, updateMode)
+	canProceed := decision == utils.InPlaceApproved
+	if updateMode == vpa_types.UpdateModeInPlace {
+		// For InPlace mode, also allow retrying Deferred and Infeasible
+		canProceed = canProceed || decision == utils.InPlaceDeferred || decision == utils.InPlaceInfeasible
+	}
+	if !canProceed {
+		return fmt.Errorf("cannot in-place update pod %s, decision: %v", klog.KObj(podToUpdate), decision)
 	}
 
 	// separate patches since we have to patch resize and spec separately

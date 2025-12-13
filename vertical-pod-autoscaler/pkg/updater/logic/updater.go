@@ -290,8 +290,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 			switch decision {
 			case utils.InPlaceDeferred:
-				klog.V(2).InfoS("In-place update deferred", "pod", klog.KObj(pod))
-				continue
+				// Pod passed priority calculator, meaning recommendations differ from spec.
+				// Retry the in-place update.
+				klog.V(2).InfoS("In-place update deferred but recommendations differ from spec, retrying", "pod", klog.KObj(pod))
+				// Fall through to attempt in-place update
 			case utils.InPlaceEvict:
 				// This should only happen for InPlaceOrRecreate mode
 				podsForEviction = append(podsForEviction, pod)
@@ -302,6 +304,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.V(2).InfoS("In-place update infeasible, retrying", "pod", klog.KObj(pod))
 				// Fall through to attempt in-place update
 			case utils.InPlaceApproved:
+				klog.V(2).InfoS("In-place update approved", "pod", klog.KObj(pod))
 				// Proceed with in-place update
 			}
 
@@ -404,7 +407,20 @@ func filterPods(pods []*apiv1.Pod, predicate func(*apiv1.Pod) bool) []*apiv1.Pod
 
 func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, updateMode vpa_types.UpdateMode) []*apiv1.Pod {
 	return filterPods(pods, func(pod *apiv1.Pod) bool {
-		return inplaceRestriction.CanInPlaceUpdate(pod, updateMode) != utils.InPlaceDeferred
+		decision := inplaceRestriction.CanInPlaceUpdate(pod, updateMode)
+		switch decision {
+		case utils.InPlaceApproved, utils.InPlaceInfeasible:
+			return true
+		case utils.InPlaceDeferred:
+			// For InPlace mode, include deferred pods so the priority calculator
+			// can check if recommendations differ significantly from current spec.
+			// The priority calculator will filter out pods where spec ≈ recommendations.
+			return updateMode == vpa_types.UpdateModeInPlace
+		case utils.InPlaceEvict:
+			return false
+		default:
+			return false
+		}
 	})
 }
 
