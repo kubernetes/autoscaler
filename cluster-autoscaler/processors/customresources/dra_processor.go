@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/dra"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
@@ -129,10 +130,69 @@ func getResourceSliceDevicesSet(resourcesSlice *resourceapi.ResourceSlice) sets.
 	return devices
 }
 
-// GetNodeResourceTargets returns the resource targets for DRA resource slices, not implemented.
-func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.AutoscalingContext, _ *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
-	// TODO(DRA): Figure out resource limits for DRA here.
-	return []CustomResourceTarget{}, nil
+// GetNodeResourceTargets returns the resource targets for DRA resource slices.
+// It counts unique devices by their UID across all resource slices in the node template.
+func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.AutoscalingContext, node *apiv1.Node, ng cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+	// deviceResourceMap maps a resourceType to a set of unique device UIDs exposed as this resource type.
+	// Using a map of sets prevents double-counting the same device.
+	deviceResourceMap := make(map[string]sets.Set[string])
+
+	nodeInfo, err := ng.TemplateNodeInfo()
+	if err != nil {
+		// Template building is not supported by this cloud provider, return empty targets.
+		// This is expected for cloud providers that don't support DRA resource templates yet.
+		klog.V(4).Infof("Template not available for node %v: %v, skipping DRA resource target calculation", node.Name, err)
+		return []CustomResourceTarget{}, nil
+	}
+
+	for _, rs := range nodeInfo.LocalResourceSlices {
+		uidAttributeName, productNameAttributeName, supported := getDriverAttributes(rs.Spec.Driver)
+		if !supported {
+			klog.Warningf("Unknown DRA driver %s for node %s, skipping DRA resource target calculation", rs.Spec.Driver, node.Name)
+			continue
+		}
+
+		for _, device := range rs.Spec.Devices {
+			uid, foundUID := device.Attributes[resourceapi.QualifiedName(uidAttributeName)]
+			if !foundUID {
+				klog.Warningf("Device %s on node %s is missing uid attribute, this might indicate that autoscaler is out of date with the driver, skipping", device.Name, node.Name)
+				continue
+			}
+
+			productName, foundProduct := device.Attributes[resourceapi.QualifiedName(productNameAttributeName)]
+			if !foundProduct {
+				klog.Warningf("Device %s on node %s is missing product name attribute, this might indicate that autoscaler is out of date with the driver, skipping", device.Name, node.Name)
+				continue
+			}
+
+			resourceName := dra.GetDraResourceName(rs.Spec.Driver, *productName.StringValue)
+			if _, exists := deviceResourceMap[resourceName]; !exists {
+				deviceResourceMap[resourceName] = sets.New[string]()
+			}
+			deviceResourceMap[resourceName].Insert(uid.String())
+		}
+	}
+
+	customResourceTargets := make([]CustomResourceTarget, 0, len(deviceResourceMap))
+	for resourceName, deviceUIDs := range deviceResourceMap {
+		customResourceTargets = append(customResourceTargets, CustomResourceTarget{
+			ResourceType:  resourceName,
+			ResourceCount: int64(deviceUIDs.Len()),
+		})
+	}
+
+	return customResourceTargets, nil
+}
+
+// getDriverAttributes returns the UID and product name attribute keys for a given driver.
+// Returns empty strings and false if the driver is not supported.
+func getDriverAttributes(driver string) (uidAttribute string, productNameAttribute string, supported bool) {
+	switch driver {
+	case dra.DriverNvidiaGPUName:
+		return dra.DriverNvidiaGPUUid, dra.DriverNvidiaGPUProductName, true
+	default:
+		return "", "", false
+	}
 }
 
 // CleanUp cleans up processor's internal structures.
