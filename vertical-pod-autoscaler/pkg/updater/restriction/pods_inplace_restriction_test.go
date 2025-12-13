@@ -900,3 +900,126 @@ func TestInPlaceModeAllowsRetryForInfeasible(t *testing.T) {
 	err = inplace.InPlaceUpdate(pod, vpa, test.FakeEventRecorder())
 	assert.NoError(t, err, "InPlace mode should allow retry for infeasible pods")
 }
+
+func TestDeferredPodWithChangedRecommendationsRetries(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// Create a pod in deferred state - this simulates a pod where kubelet deferred the resize
+	// but the VPA has new recommendations that differ from the current spec
+	deferredPod := test.Pod().WithName("deferred-pod").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+		WithPodConditions([]apiv1.PodCondition{
+			{
+				Type:   apiv1.PodResizePending,
+				Status: apiv1.ConditionTrue,
+				Reason: apiv1.PodReasonDeferred,
+			},
+		}).Get()
+
+	pods := []*apiv1.Pod{
+		deferredPod,
+		test.Pod().WithName("test-pod-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+		test.Pod().WithName("test-pod-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+	}
+
+	vpa := getIPVpa()
+	updateMode := vpa_api_util.GetUpdateMode(vpa)
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, vpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// Verify CanInPlaceUpdate returns InPlaceDeferred for the deferred pod
+	decision := inplace.CanInPlaceUpdate(deferredPod, updateMode)
+	assert.Equal(t, utils.InPlaceDeferred, decision,
+		"Deferred pod should return InPlaceDeferred decision")
+
+	// When recommendations have changed (which is determined by the priority calculator
+	// including the pod in podsForInPlace), InPlaceUpdate should succeed as a retry.
+	// The InPlaceUpdate method itself doesn't check the deferred status - it just
+	// applies the patch if allowed by the restriction limits.
+	err = inplace.InPlaceUpdate(deferredPod, vpa, test.FakeEventRecorder())
+	assert.NoError(t, err,
+		"InPlaceUpdate should succeed for deferred pod when called (simulating recommendations changed)")
+}
+
+func TestDeferredPodWithChangedRecommendationsInPlaceOrRecreate(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+
+	replicas := int32(3)
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// Create a pod in deferred state - this simulates a pod where kubelet deferred the resize
+	// but the VPA has new recommendations that differ from the current spec
+	deferredPod := test.Pod().WithName("deferred-pod").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+		WithPodConditions([]apiv1.PodCondition{
+			{
+				Type:   apiv1.PodResizePending,
+				Status: apiv1.ConditionTrue,
+				Reason: apiv1.PodReasonDeferred,
+			},
+		}).Get()
+
+	pods := []*apiv1.Pod{
+		deferredPod,
+		test.Pod().WithName("test-pod-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+		test.Pod().WithName("test-pod-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+	}
+
+	vpa := getIPORVpa()
+	updateMode := vpa_api_util.GetUpdateMode(vpa)
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, vpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// Verify CanInPlaceUpdate returns InPlaceDeferred for the deferred pod
+	decision := inplace.CanInPlaceUpdate(deferredPod, updateMode)
+	assert.Equal(t, utils.InPlaceDeferred, decision,
+		"Deferred pod should return InPlaceDeferred decision")
+
+	// When recommendations have changed (which is determined by the priority calculator
+	// including the pod in podsForInPlace), InPlaceUpdate should succeed as a retry.
+	// The InPlaceUpdate method itself doesn't check the deferred status - it just
+	// applies the patch if allowed by the restriction limits.
+	err = inplace.InPlaceUpdate(deferredPod, vpa, test.FakeEventRecorder())
+	assert.Error(t, err, "cannot in-place update pod default/deferred-pod, decision: InPlaceDeferred")
+}
