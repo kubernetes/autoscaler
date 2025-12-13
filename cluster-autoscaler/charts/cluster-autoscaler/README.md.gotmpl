@@ -4,6 +4,8 @@
 
 ## TL;DR
 
+### Using Helm Repository
+
 ```console
 $ helm repo add autoscaler https://kubernetes.github.io/autoscaler
 
@@ -13,6 +15,20 @@ $ helm install my-release autoscaler/cluster-autoscaler \
 
 # Method 2 - Specifying groups manually
 $ helm install my-release autoscaler/cluster-autoscaler \
+    --set "autoscalingGroups[0].name=your-asg-name" \
+    --set "autoscalingGroups[0].maxSize=10" \
+    --set "autoscalingGroups[0].minSize=1"
+```
+
+### Using OCI Registry
+
+```console
+# Method 1 - Using Autodiscovery
+$ helm install my-release oci://ghcr.io/kubernetes/charts/cluster-autoscaler \
+    --set 'autoDiscovery.clusterName'=<CLUSTER NAME>
+
+# Method 2 - Specifying groups manually
+$ helm install my-release oci://ghcr.io/kubernetes/charts/cluster-autoscaler \
     --set "autoscalingGroups[0].name=your-asg-name" \
     --set "autoscalingGroups[0].maxSize=10" \
     --set "autoscalingGroups[0].minSize=1"

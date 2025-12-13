@@ -13,8 +13,6 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 
 ## Helm Installation & upgrade
 
-## Installation
-
 ### Using Helm Repository
 
 ```console
