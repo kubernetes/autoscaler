@@ -180,7 +180,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(stopCh, config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {

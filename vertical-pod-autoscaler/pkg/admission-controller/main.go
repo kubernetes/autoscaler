@@ -81,6 +81,9 @@ var (
 )
 
 func main() {
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+
 	commonFlags := common.InitCommonFlags()
 	klog.InitFlags(nil)
 	common.InitLoggingFlags()
@@ -104,7 +107,7 @@ func main() {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(stopCh, config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
@@ -116,8 +119,6 @@ func main() {
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
 	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
 
-	stopCh := make(chan struct{})
-	defer close(stopCh)
 	factory.Start(stopCh)
 	informerMap := factory.WaitForCacheSync(stopCh)
 	for kind, synced := range informerMap {

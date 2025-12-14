@@ -112,7 +112,7 @@ func (f *controllerFetcher) Start(ctx context.Context, loopPeriod time.Duration)
 }
 
 // NewControllerFetcher returns a new instance of controllerFetcher
-func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, betweenRefreshes, lifeTime time.Duration, jitterFactor float64) *controllerFetcher {
+func NewControllerFetcher(stopCh <-chan struct{}, config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, betweenRefreshes, lifeTime time.Duration, jitterFactor float64) *controllerFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.ErrorS(err, "Could not create discoveryClient")
@@ -124,7 +124,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	mapper := restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscoveryClient)
 	go wait.Until(func() {
 		mapper.Reset()
-	}, discoveryResetPeriod, make(chan struct{}))
+	}, discoveryResetPeriod, stopCh)
 
 	informersMap := map[wellKnownController]cache.SharedIndexInformer{
 		daemonSet:             factory.Apps().V1().DaemonSets().Informer(),

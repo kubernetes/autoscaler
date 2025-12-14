@@ -247,7 +247,7 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(stopCh, config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlag.VpaObjectNamespace, stopCh)
 
 	factory.Start(stopCh)
