@@ -23,8 +23,7 @@ rules:
 - apiGroups:
   - "coordination.k8s.io"
   resourceNames:
-  - vpa-recommender
-  - vpa-recommender-lease
+  - {{ .Values.recommender.leaderElection.resourceName }}
   resources:
   - leases
   verbs:
