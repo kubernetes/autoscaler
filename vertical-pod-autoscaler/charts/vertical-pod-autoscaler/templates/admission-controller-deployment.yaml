@@ -64,7 +64,7 @@ spec:
           - --v=4
           - --stderrthreshold=info
           {{- with .Values.admissionController.extraArgs }}
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml . | nindent 10 }}
           {{- end }}
           ports:
             - containerPort: 8000
