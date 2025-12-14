@@ -22,8 +22,11 @@ rules:
   resources:
   - mutatingwebhookconfigurations
   verbs:
-  - list
+  - create
+  - delete
   - get
+  - list
+  - patch
 - apiGroups:
   - autoscaling.k8s.io
   resources:
@@ -39,6 +42,34 @@ rules:
   verbs:
   - create
   - update
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - replicationcontrollers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
   - get
   - list
   - watch
