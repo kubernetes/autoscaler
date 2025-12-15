@@ -208,6 +208,10 @@ updater:
 
   # Annotations to add to the Updater pod.
   podAnnotations: {}
+
+  # Node selector labels for scheduling the Updater.
+  nodeSelector: {}
+
   serviceAccount:
     # If `true`, create a new `ServiceAccount` for the Updater.
     create: true
