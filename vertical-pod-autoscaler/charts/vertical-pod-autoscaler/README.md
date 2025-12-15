@@ -4,12 +4,19 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.5.1](https://img.shields.io/badge/AppVersion-1.5.1-informational?style=flat-square)
 
 ## Introduction
 The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resource requests of pods to match their actual resource utilization.
+
+## Helm Installation & upgrade
+
+```bash
+helm repo add autoscalers https://kubernetes.github.io/autoscaler
+helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
+```
 
 ## Maintainers
 
@@ -36,10 +43,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.replicas | int | `2` |  |
-| admissionController.resources.limits.cpu | string | `"200m"` |  |
-| admissionController.resources.limits.memory | string | `"500Mi"` |  |
-| admissionController.resources.requests.cpu | string | `"50m"` |  |
-| admissionController.resources.requests.memory | string | `"200Mi"` |  |
+| admissionController.resources | object | `{}` |  |
 | admissionController.service.annotations | object | `{}` |  |
 | admissionController.service.name | string | `"vpa-webhook"` |  |
 | admissionController.service.ports[0].port | int | `443` |  |
@@ -88,15 +92,13 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | recommender.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podLabels | object | `{}` |  |
 | recommender.replicas | int | `2` |  |
-| recommender.resources.limits.cpu | string | `"200m"` |  |
-| recommender.resources.limits.memory | string | `"1000Mi"` |  |
-| recommender.resources.requests.cpu | string | `"50m"` |  |
-| recommender.resources.requests.memory | string | `"500Mi"` |  |
+| recommender.resources | object | `{}` |  |
 | recommender.serviceAccount.annotations | object | `{}` |  |
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
 | updater.enabled | bool | `true` |  |
+| updater.extraArgs | list | `[]` |  |
 | updater.image.pullPolicy | string | `"IfNotPresent"` |  |
 | updater.image.repository | string | `"registry.k8s.io/autoscaling/vpa-updater"` |  |
 | updater.image.tag | string | `nil` |  |
@@ -112,6 +114,7 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 | updater.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | updater.podLabels | object | `{}` |  |
 | updater.replicas | int | `2` |  |
+| updater.resources | object | `{}` |  |
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |
