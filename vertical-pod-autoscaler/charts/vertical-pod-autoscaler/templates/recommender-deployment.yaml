@@ -37,63 +37,63 @@ spec:
         {{ toYaml . | nindent 8 | trim }}
       {{- end }}
       containers:
-      - name: recommender
-        image: {{ include "vertical-pod-autoscaler.recommender.image" . }}
-        imagePullPolicy: {{ .Values.recommender.image.pullPolicy }}
-        env:
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        {{- with .Values.recommender.extraEnv }}
-          {{- toYaml . | nindent 8 }}
-        {{- end }}
-        args:
-        - --v=4
-        - --stderrthreshold=info
-        {{- /* Smart auto-enable: if enabled is null, auto-enable when replicas > 1 */ -}}
-        {{- $leaderElectionEnabled := .Values.recommender.leaderElection.enabled }}
-        {{- if eq $leaderElectionEnabled nil }}
-          {{- $leaderElectionEnabled = gt (int .Values.recommender.replicas) 1 }}
-        {{- end }}
-        {{- if $leaderElectionEnabled }}
-        - --leader-elect=true
-        - --leader-elect-resource-namespace={{ .Values.recommender.leaderElection.resourceNamespace | default .Release.Namespace }}
-        - --leader-elect-resource-name={{ .Values.recommender.leaderElection.resourceName }}
-        - --leader-elect-lease-duration={{ .Values.recommender.leaderElection.leaseDuration }}
-        - --leader-elect-renew-deadline={{ .Values.recommender.leaderElection.renewDeadline }}
-        - --leader-elect-retry-period={{ .Values.recommender.leaderElection.retryPeriod }}
-        {{- end }}
-        {{- with .Values.recommender.extraArgs }}
-          {{- toYaml . | nindent 8 }}
-        {{- end }}
-        ports:
-        - name: prometheus
-          containerPort: 8942
-          protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /health-check
-            port: prometheus
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /health-check
-            port: prometheus
-            scheme: HTTP
-          periodSeconds: 10
-          failureThreshold: 3
-        {{- with .Values.recommender.resources }}
-        resources:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- with .Values.containerSecurityContext }}
-        securityContext:
-          {{ toYaml . | nindent 10 | trim }}
-        {{- end }}
+        - name: recommender
+          image: {{ include "vertical-pod-autoscaler.recommender.image" . }}
+          imagePullPolicy: {{ .Values.recommender.image.pullPolicy }}
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          {{- with .Values.recommender.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - --v=4
+            - --stderrthreshold=info
+            {{- /* Smart auto-enable: if enabled is null, auto-enable when replicas > 1 */ -}}
+            {{- $leaderElectionEnabled := .Values.recommender.leaderElection.enabled }}
+            {{- if eq $leaderElectionEnabled nil }}
+              {{- $leaderElectionEnabled = gt (int .Values.recommender.replicas) 1 }}
+            {{- end }}
+            {{- if $leaderElectionEnabled }}
+            - --leader-elect=true
+            - --leader-elect-resource-namespace={{ .Values.recommender.leaderElection.resourceNamespace | default .Release.Namespace }}
+            - --leader-elect-resource-name={{ .Values.recommender.leaderElection.resourceName }}
+            - --leader-elect-lease-duration={{ .Values.recommender.leaderElection.leaseDuration }}
+            - --leader-elect-renew-deadline={{ .Values.recommender.leaderElection.renewDeadline }}
+            - --leader-elect-retry-period={{ .Values.recommender.leaderElection.retryPeriod }}
+            {{- end }}
+          {{- with .Values.recommender.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: prometheus
+              containerPort: 8942
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            periodSeconds: 10
+            failureThreshold: 3
+          {{- with .Values.recommender.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{ toYaml . | nindent 12 | trim }}
+          {{- end }}
       {{- with .Values.recommender.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

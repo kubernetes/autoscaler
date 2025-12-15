@@ -11,9 +11,9 @@ roleRef:
   kind: ClusterRole
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-metrics-reader
 subjects:
-- kind: ServiceAccount
-  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -26,9 +26,9 @@ roleRef:
   kind: ClusterRole
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-actor
 subjects:
-- kind: ServiceAccount
-  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -41,9 +41,9 @@ roleRef:
   kind: ClusterRole
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-status-actor
 subjects:
-- kind: ServiceAccount
-  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -56,9 +56,9 @@ roleRef:
   kind: ClusterRole
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-checkpoint-actor
 subjects:
-- kind: ServiceAccount
-  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -71,8 +71,8 @@ roleRef:
   kind: ClusterRole
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-target-reader
 subjects:
-- kind: ServiceAccount
-  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 {{- end -}}
 

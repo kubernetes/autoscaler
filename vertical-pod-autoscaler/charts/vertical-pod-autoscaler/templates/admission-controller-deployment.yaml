@@ -61,10 +61,10 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           args:
-          - --v=4
-          - --stderrthreshold=info
+            - --v=4
+            - --stderrthreshold=info
           {{- with .Values.admissionController.extraArgs }}
-            {{- toYaml . | nindent 10 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:
             - containerPort: 8000
@@ -98,5 +98,5 @@ spec:
             {{ toYaml . | nindent 12 | trim }}
           {{- end }}
       volumes:
-        {{- toYaml .Values.admissionController.volumes | nindent 12 }}
+        {{- toYaml .Values.admissionController.volumes | nindent 8 }}
 {{- end -}}
