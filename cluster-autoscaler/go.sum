@@ -426,6 +426,8 @@ github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75 h1:6fotK7
 github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75/go.mod h1:KO6IkyS8Y3j8OdNO85qEYBsRPuteD+YciPomcXdrMnk=
 github.com/vburenin/ifacemaker v1.3.0 h1:X5//v/1tyORf5157wLATgP1wgquW3FUW91/OGHLRqGo=
 github.com/vburenin/ifacemaker v1.3.0/go.mod h1:SxTD9m+6uBQyhd0aohV7R4iirO+l9mEoTn4nSe67vMs=
+github.com/vladimirvivien/gexe v0.5.0 h1:AWBVaYnrTsGYBktXvcO0DfWPeSiZxn6mnQ5nvL+A1/A=
+github.com/vladimirvivien/gexe v0.5.0/go.mod h1:3gjgTqE2c0VyHnU5UOIwk7gyNzZDGulPb/DJPgcw64E=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
 github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
 github.com/xiang90/probing v0.0.0-20221125231312-a49e3df8f510 h1:S2dVYn90KE98chqDkyE9Z4N61UnQd+KOfgp5Iu53llk=
@@ -684,6 +686,8 @@ sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.8.4 h1:Sy+dyfxemdQ
 sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.8.4/go.mod h1:RgIi9n/PhULbvPjYZGsjP2zWJf1ZEd1qyA0CYUuSgcE=
 sigs.k8s.io/controller-runtime v0.24.1 h1:miPEwrmirImAvgME1L9qebGHrOnGJoVmVdtOU9fRfo4=
 sigs.k8s.io/controller-runtime v0.24.1/go.mod h1:vFkfY5fGt5xAC/sKb8IBFKgWPNKG9OUG29dR8Y2wImw=
+sigs.k8s.io/e2e-framework v0.7.0 h1:AHkySTC6MvnnMbVSxaO4z1m2MhQKNFP+2Ihs5pRNLlM=
+sigs.k8s.io/e2e-framework v0.7.0/go.mod h1:1ZgXkUSjmnf18/JgHZNEATWjv48O5lJm9aI1QIsRdbw=
 sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 h1:IpInykpT6ceI+QxKBbEflcR5EXP7sU1kvOlxwZh5txg=
 sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730/go.mod h1:mdzfpAEoE6DHQEN0uh9ZbOCuHbLK5wOm7dK4ctXE9Tg=
 sigs.k8s.io/randfill v1.0.0 h1:JfjMILfT8A6RbawdsK2JXGBR5AQVfd+9TbzrlneTyrU=
