@@ -75,7 +75,16 @@ admissionController:
   nodeSelector: {}
 
   # Affinity for pod assignment.
-  affinity: {}
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/component
+            operator: In
+            values:
+            - admission-controller
+        topologyKey: kubernetes.io/hostname
 
   # List of node taints to tolerate.
   tolerations: []
@@ -158,7 +167,16 @@ recommender:
   nodeSelector: {}
 
   # Affinity rules for scheduling the Recommender.
-  affinity: {}
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/component
+            operator: In
+            values:
+            - recommender
+        topologyKey: kubernetes.io/hostname
 
   # Tolerations for scheduling the Recommender.
   tolerations: []
@@ -223,6 +241,24 @@ updater:
     labels: {}
     # Annotations to add to the Updater service account.
     annotations: {}
+
+  # Affinity rules for scheduling the Updater.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/component
+            operator: In
+            values:
+            - updater
+        topologyKey: kubernetes.io/hostname
+
+  # Node selector labels for scheduling the Updater.
+  nodeSelector: {}
+
+  # Tolerations for scheduling the Updater.
+  tolerations: []
   
   # Leader election configuration for the Updater.
   # When running multiple replicas, leader election ensures only one instance is actively processing.

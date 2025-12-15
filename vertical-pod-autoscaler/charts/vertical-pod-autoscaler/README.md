@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.5.1](https://img.shields.io/badge/AppVersion-1.5.1-informational?style=flat-square)
 
@@ -29,7 +29,10 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| admissionController.affinity | object | `{}` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].operator | string | `"In"` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values[0] | string | `"admission-controller"` |  |
+| admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey | string | `"kubernetes.io/hostname"` |  |
 | admissionController.enabled | bool | `true` |  |
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
@@ -73,7 +76,10 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.runAsUser | int | `65534` |  |
 | rbac.create | bool | `true` |  |
-| recommender.affinity | object | `{}` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].operator | string | `"In"` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values[0] | string | `"recommender"` |  |
+| recommender.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey | string | `"kubernetes.io/hostname"` |  |
 | recommender.enabled | bool | `true` |  |
 | recommender.extraArgs | list | `[]` |  |
 | recommender.extraEnv | list | `[]` |  |
@@ -99,6 +105,10 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].operator | string | `"In"` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values[0] | string | `"updater"` |  |
+| updater.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey | string | `"kubernetes.io/hostname"` |  |
 | updater.enabled | bool | `true` |  |
 | updater.extraArgs | list | `[]` |  |
 | updater.image.pullPolicy | string | `"IfNotPresent"` |  |
@@ -110,6 +120,7 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | updater.leaderElection.resourceName | string | `"vpa-updater-lease"` |  |
 | updater.leaderElection.resourceNamespace | string | `""` |  |
 | updater.leaderElection.retryPeriod | string | `"2s"` |  |
+| updater.nodeSelector | object | `{}` |  |
 | updater.podAnnotations | object | `{}` |  |
 | updater.podDisruptionBudget.enabled | bool | `true` |  |
 | updater.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
@@ -121,3 +132,4 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |
+| updater.tolerations | list | `[]` |  |
