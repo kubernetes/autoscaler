@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -39,7 +40,7 @@ type ProvisioningClass interface {
 	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*framework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
 	Initialize(*ca_context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
-		estimator.EstimatorBuilder, taints.TaintConfig, *scheduling.HintingSimulator)
+		estimator.EstimatorBuilder, taints.TaintConfig, *scheduling.HintingSimulator, *resourcequotas.TrackerFactory)
 }
 
 // provReqOrchestrator is an orchestrator that contains orchestrators for all supported Provisioning Classes.
@@ -66,12 +67,13 @@ func (o *provReqOrchestrator) Initialize(
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
+	quotasTrackerFactory *resourcequotas.TrackerFactory,
 ) {
 	o.initialized = true
 	o.autoscalingCtx = autoscalingCtx
 	o.injector = scheduling.NewHintingSimulator()
 	for _, mode := range o.provisioningClasses {
-		mode.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector)
+		mode.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector, quotasTrackerFactory)
 	}
 }
 
