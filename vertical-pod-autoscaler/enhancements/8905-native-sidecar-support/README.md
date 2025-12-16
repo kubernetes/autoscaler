@@ -10,6 +10,7 @@
    - [Update / Admission](#update--admission)
    - [Test Plan](#test-plan)
    - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
+- [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
 <!-- /toc -->
 
@@ -43,12 +44,33 @@ When the `NativeSidecar` feature gate is enabled, the `ClusterFeeder` processes 
 - They are stored in a separate `InitSidecarsContainers` map in the pod state
 - Resource usage samples are collected and aggregated for recommendations
 - Recommendations are generated using the same logic as standard containers
+```go
+for _, container := range pod.Containers {
+  if err := feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
+    klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
+  }
+}
+for _, initContainer := range pod.InitContainers {
+  if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeInitSidecar {
+    if err := feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
+      klog.V(0).InfoS("Failed to add initContainer", "container", initContainer.ID, "error", err)
+    }
+  } else {
+    // existing init container logic...
+  }
+}
+```
 
 The VPA custom resource definition remains unchanged. Native sidecar recommendations are included in the `containerRecommendations` array alongside standard container recommendations, using the unique container name to identify them.
 
 ### Update / Admission
 
-Both Updater and Admission Controller components retrieve recommendations for init containers (including native sidecars) separately from standard containers using `GetContainersResourcesForPod`.
+`GetContainersResourcesForPod` has been updated to retrieve recommendations for native sidecars, Updater and Admission Controller both use this method so the logic is fairly contained.
+
+```go
+GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources /*containers*/, []vpa_api_util.ContainerResources /*native sidecars*/, vpa_api_util.ContainerToAnnotationsMap, error)
+```
+
 The patch generation logic is updated to target `/spec/initContainers` for native sidecar containers, while normal containers will continue to update `/spec/containers`.
 
 ### Test Plan
@@ -75,8 +97,13 @@ by passing `--feature-gates=NativeSidecar=true` to the VPA components.
 On downgrade of VPA from 1.6.0 (tentative release version), nothing will change.
 VPAs will continue to work as previously. Checkpoints may contain sidecar resource information until updated, but updater and admission will modify sidecar resources.
 
+## Implementation History
+
+- 2025-12-08: Initial proposal
+
 ## Alternatives
 
 ### Treat as Standard Containers
 
 We could treat them as standard containers, but they are technically init containers in the Pod spec, so the patch path would be incorrect (`/spec/containers` vs `/spec/initContainers`).
+
