@@ -19,6 +19,9 @@ package orchestrator
 import (
 	"fmt"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 )
 
 // SkippedReasons contains information why given node group was skipped.
@@ -61,10 +64,17 @@ func (sr *MaxResourceLimitReached) Resources() []string {
 	return sr.resources
 }
 
-// NewMaxResourceLimitReached returns a reason describing which cluster wide resource limits were reached.
-func NewMaxResourceLimitReached(resources []string) *MaxResourceLimitReached {
+// NewMaxResourceLimitReached returns a reason describing which resource limits were reached.
+func NewMaxResourceLimitReached(exceededQuotas []resourcequotas.ExceededQuota) *MaxResourceLimitReached {
+	var messages []string
+	resources := make(sets.Set[string])
+	for _, quota := range exceededQuotas {
+		msg := fmt.Sprintf("exceeded quota: %q, resources: %s", quota.ID, strings.Join(quota.ExceededResources, ", "))
+		messages = append(messages, msg)
+		resources.Insert(quota.ExceededResources...)
+	}
 	return &MaxResourceLimitReached{
-		messages:  []string{fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", "))},
-		resources: resources,
+		messages:  messages,
+		resources: resources.UnsortedList(),
 	}
 }

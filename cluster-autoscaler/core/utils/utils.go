@@ -41,6 +41,14 @@ func isVirtualKubeletNode(node *apiv1.Node) bool {
 	return node.ObjectMeta.Labels["type"] == VirtualKubeletNodeLabelValue
 }
 
+// VirtualKubeletNodeFilter excludes virtual kubelet nodes from quota tracking.
+type VirtualKubeletNodeFilter struct{}
+
+// ExcludeFromTracking returns true if the node is created by virtual kubelet.
+func (f VirtualKubeletNodeFilter) ExcludeFromTracking(node *apiv1.Node) bool {
+	return isVirtualKubeletNode(node)
+}
+
 // FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
 // return autoscaled node group.
 func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {

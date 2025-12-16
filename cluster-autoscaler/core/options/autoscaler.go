@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
@@ -57,4 +58,5 @@ type AutoscalerOptions struct {
 	DeleteOptions          options.NodeDeleteOptions
 	DrainabilityRules      rules.Rules
 	DraProvider            *draprovider.Provider
+	QuotasTrackerOptions   resourcequotas.TrackerOptions
 }
