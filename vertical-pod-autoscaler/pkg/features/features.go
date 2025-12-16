@@ -62,7 +62,7 @@ const (
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlace featuregate.Feature = "InPlace"
 
-	// alpha: v1.5.0
+	// alpha: v1.6.0
 	// components: admission-controller, recommender, updater
 
 	// NativeSidecar enables support for native sidecars in VPA
