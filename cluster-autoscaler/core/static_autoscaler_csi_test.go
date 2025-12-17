@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -33,10 +34,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	sdplanner "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	informers "k8s.io/client-go/informers"
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
@@ -101,13 +105,13 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			nodeGroups: map[*testNodeGroupCSI]int{node1GroupCSI: 1},
 			templatePods: map[string][]*apiv1.Pod{
 				// A DaemonSet-like pod that consumes some CSI volumes on every node.
-				node1GroupCSI.name: {buildCSITestPod("template-ds", templateVolUse, storageClass)},
+				node1GroupCSI.name: {buildCSITestPod("template-ds", templateVolUse, node1GroupCSI.name+"-0")},
 			},
 			// Two pending pods, each using podVolUse volumes.
 			pods: []*apiv1.Pod{
-				buildCSITestPod("pending-0", podVolUse, storageClass),
-				buildCSITestPod("pending-1", podVolUse, storageClass),
-				buildCSITestPod("pending-2", podVolUse, storageClass),
+				buildCSITestPod("pending-0", podVolUse, ""),
+				buildCSITestPod("pending-1", podVolUse, ""),
+				buildCSITestPod("pending-2", podVolUse, ""),
 			},
 			// One existing node has the CSI pod already; only one pending pod can fit because (5 + 3 + 3) > 10.
 			// CA should add one node for the second pending pod.
@@ -119,12 +123,13 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			templatePods: map[string][]*apiv1.Pod{
 				// DaemonSet-like pod is part of the template (will run on every new node), so it should be
 				// accounted for in binpacking even when scaling from zero.
-				node1GroupCSI.name: {buildCSITestPod("template-ds", templateVolUse, storageClass)},
+				node1GroupCSI.name: {buildCSITestPod("template-ds", templateVolUse, node1GroupCSI.name+
+					"-0")},
 			},
 			pods: []*apiv1.Pod{
-				buildCSITestPod("pending-0", podVolUse, storageClass),
-				buildCSITestPod("pending-1", podVolUse, storageClass),
-				buildCSITestPod("pending-2", podVolUse, storageClass),
+				buildCSITestPod("pending-0", podVolUse, ""),
+				buildCSITestPod("pending-1", podVolUse, ""),
+				buildCSITestPod("pending-2", podVolUse, ""),
 			},
 			// With volumeLimit=10, templateVolUse=2 and podVolUse=6:
 			// - 2+6 fits, but 2+6+6 doesn't, so each new node can host at most one pending pod.
@@ -135,12 +140,20 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			nodeGroups: map[*testNodeGroupCSI]int{node1GroupCSI: 1},
 			templatePods: map[string][]*apiv1.Pod{
 				// A DaemonSet-like pod that consumes some CSI volumes on every node.
-				node1GroupCSI.name: {buildCSITestPod("template-ds", templateVolUse, storageClass)},
+				node1GroupCSI.name: {buildCSITestPod("template-ds", templateVolUse, node1GroupCSI.name+"-0")},
 			},
 			// Two pending pods, each using podVolUse volumes.
 			pods: []*apiv1.Pod{
-				buildCSITestPod("pending-0", podVolUse, storageClass),
+				buildCSITestPod("pending-0", podVolUse, ""),
 			},
+		},
+		"scale-down: single pod left with 6 volumes": {
+			nodeGroups: map[*testNodeGroupCSI]int{node1GroupCSI: 3},
+			pods: []*apiv1.Pod{
+				// Keep one node non-empty; the other two should be removable.
+				buildCSITestPod("scheduled-0", podVolUse, node1GroupCSI.name+"-0"),
+			},
+			expectedScaleDowns: map[string][]string{node1GroupCSI.name: {node1GroupCSI.name + "-1", node1GroupCSI.name + "-2"}},
 		},
 	}
 
@@ -176,7 +189,6 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 					templateNodeInfo.SetCSINode(nodeGroupDef.csiNodeTemplateFunc(templateNode.Name))
 				}
 				for _, p := range tc.templatePods[nodeGroupDef.name] {
-					WithDSController()(p)
 					templateNodeInfo.AddPod(framework.NewPodInfo(p, nil))
 				}
 
@@ -189,45 +201,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 				})
 			}
 
-			// Add existing scheduled pods (e.g. DS pods) to the current cluster state.
-			for ngName, pods := range tc.templatePods {
-				if len(pods) == 0 {
-					continue
-				}
-				// Schedule the DS pod on the first node of the node group for realism.
-				var targetNodeName string
-				for _, ng := range nodeGroups {
-					if ng.name == ngName && len(ng.nodes) > 0 {
-						targetNodeName = ng.nodes[0].Name
-						break
-					}
-				}
-				// If there are no nodes in the group (scale-from-zero), don't add a "scheduled" pod with empty NodeName.
-				if targetNodeName == "" {
-					continue
-				}
-				for _, p := range pods {
-					scheduled := p.DeepCopy()
-					scheduled.Namespace = "default"
-					scheduled.Name = fmt.Sprintf("%s-%s", ngName, p.Name)
-					scheduled.UID = types.UID(scheduled.Name)
-					scheduled.Spec.NodeName = targetNodeName
-					allPods = append(allPods, scheduled)
-				}
-			}
-
-			// Add pending pods.
-			for _, p := range tc.pods {
-				pending := p.DeepCopy()
-				MarkUnschedulable()(pending)
-				if pending.Namespace == "" {
-					pending.Namespace = "default"
-				}
-				if pending.UID == "" {
-					pending.UID = types.UID(pending.Name)
-				}
-				allPods = append(allPods, pending)
-			}
+			allPods = append(allPods, tc.pods...)
 
 			// Create StorageClass + CSIDriver used by PVCs.
 			sc := &storagev1.StorageClass{
@@ -259,8 +233,15 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			mocks.podDisruptionBudgetLister.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
 			mocks.allPodLister.On("List").Return(allPods, nil)
 			for nodeGroup, delta := range tc.expectedScaleUps {
-				if delta > 0 {
-					mocks.onScaleUp.On("ScaleUp", nodeGroup, delta).Return(nil).Once()
+				mocks.onScaleUp.On("ScaleUp", nodeGroup, delta).Return(nil).Once()
+			}
+
+			allExpectedScaleDowns := 0
+
+			for nodeGroup, nodes := range tc.expectedScaleDowns {
+				for _, node := range nodes {
+					mocks.onScaleDown.On("ScaleDown", nodeGroup, node).Return(nil).Once()
+					allExpectedScaleDowns++
 				}
 			}
 
@@ -272,7 +253,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 						ScaleDownUtilizationThreshold: 0.7,
 						MaxNodeProvisionTime:          time.Hour,
 					},
-					ScaleDownEnabled:               false,
+					ScaleDownEnabled:               true,
 					MaxNodesTotal:                  1000,
 					MaxCoresTotal:                  1000,
 					MaxMemoryTotal:                 100000000,
@@ -284,8 +265,10 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 				nodeGroups:             nodeGroups,
 				nodeStateUpdateTime:    now,
 				mocks:                  mocks,
-				optionsBlockDefaulting: true,
-				nodesDeleted:           make(chan bool, 1),
+				optionsBlockDefaulting: false,
+				// setupCloudProvider sends on this channel from the ScaleDown callback; it must be able to
+				// accommodate multiple deletions without blocking the test.
+				nodesDeleted: make(chan bool, allExpectedScaleDowns+1),
 			}
 
 			autoscaler, err := setupAutoscaler(setupConfig)
@@ -298,11 +281,41 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			// Provide CSI nodes snapshotting for the real nodes.
 			autoscaler.AutoscalingContext.CsiProvider = csinodeprovider.NewCSINodeProvider(&fakeCSINodeLister{nodes: csiNodes})
 
+			// IMPORTANT: setupAutoscaler() builds the scale-down planner with whatever ClusterSnapshot existed at that time.
+			// We replaced ClusterSnapshot above (to use a CSI-aware PredicateSnapshot), so we must rebuild the planner so its
+			// internal removal simulator uses the same snapshot instance that RunOnce() initializes.
+			deleteOptions := options.NewNodeDeleteOptions(autoscaler.AutoscalingOptions)
+			drainabilityRules := rules.Default(deleteOptions)
+			newSDPlanner := sdplanner.New(autoscaler.AutoscalingContext, autoscaler.processors, deleteOptions, drainabilityRules)
+			autoscaler.scaleDownPlanner = newSDPlanner
+			autoscaler.processorCallbacks.scaleDownPlanner = newSDPlanner
+
 			scaleUpProcessor := &fakeScaleUpStatusProcessor{}
+			scaleDownProcessor := &fakeScaleDownStatusProcessor{}
 			autoscaler.processors.ScaleUpStatusProcessor = scaleUpProcessor
+			autoscaler.processors.ScaleDownStatusProcessor = scaleDownProcessor
+
+			if len(tc.expectedScaleDowns) > 0 {
+				err = autoscaler.RunOnce(now)
+				assert.NoError(t, err)
+			}
 
 			// Run one autoscaler loop.
-			require.NoError(t, autoscaler.RunOnce(now))
+			require.NoError(t, autoscaler.RunOnce(now.Add(2*time.Minute)))
+
+			// Scale-down is a multi-iteration process (mark unneeded -> taint -> delete after delay).
+			// Run one more loop to allow the actuator to call the cloud provider ScaleDown callbacks.
+			if len(tc.expectedScaleDowns) > 0 {
+				require.NoError(t, autoscaler.RunOnce(now.Add(4*time.Minute)))
+				for range allExpectedScaleDowns {
+					select {
+					case <-setupConfig.nodesDeleted:
+						// ok
+					case <-time.After(20 * time.Second):
+						t.Fatalf("Scale-down deletes not finished")
+					}
+				}
+			}
 
 			// If we expected a scale-up but didn't call ScaleUp(), fail with a helpful snapshot of the scale-up status.
 			if len(tc.expectedScaleUps) > 0 && len(mocks.onScaleUp.Calls) == 0 {
@@ -328,11 +341,22 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 				t.Fatalf("unexpected scale-up triggered: %v", scaleUpProcessor.lastStatus.PodsTriggeredScaleUp)
 			}
 
+			if len(tc.expectedScaleDowns) > 0 && len(mocks.onScaleDown.Calls) == 0 {
+				if scaleDownProcessor.lastStatus == nil {
+					t.Fatalf("expected ScaleDown to be called, but it wasn't (scaleDownStatus was nil)")
+				}
+				t.Fatalf("expected ScaleDown to be called, but it wasn't (triggered=%d result=%v)",
+					len(scaleDownProcessor.lastStatus.UnremovableNodes),
+					scaleDownProcessor.lastStatus.Result,
+				)
+			}
+
 			mock.AssertExpectationsForObjects(t,
 				mocks.allPodLister,
 				mocks.podDisruptionBudgetLister,
 				mocks.daemonSetLister,
 				mocks.onScaleUp,
+				mocks.onScaleDown,
 			)
 		})
 	}
@@ -359,7 +383,7 @@ func csiNodeTemplate(driver string, attachCount *int32) func(nodeName string) *s
 	}
 }
 
-func buildCSITestPod(name string, volumeCount int, storageClass string) *apiv1.Pod {
+func buildCSITestPod(name string, volumeCount int, nodeName string) *apiv1.Pod {
 	pod1 := BuildTestPod(name, 6, 100)
 	pod1.Namespace = "default"
 	pod1.UID = types.UID(name)
@@ -374,6 +398,13 @@ func buildCSITestPod(name string, volumeCount int, storageClass string) *apiv1.P
 			},
 		})
 	}
+
+	if nodeName != "" {
+		pod1.Spec.NodeName = nodeName
+	} else {
+		MarkUnschedulable()(pod1)
+	}
+
 	return pod1
 }
 
