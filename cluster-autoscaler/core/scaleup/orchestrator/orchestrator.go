@@ -27,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/equivalence"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -48,7 +47,6 @@ import (
 type ScaleUpOrchestrator struct {
 	autoscalingCtx       *ca_context.AutoscalingContext
 	processors           *ca_processors.AutoscalingProcessors
-	resourceManager      *resource.Manager
 	quotasTrackerFactory *resourcequotas.TrackerFactory
 	clusterStateRegistry *clusterstate.ClusterStateRegistry
 	scaleUpExecutor      *scaleUpExecutor
@@ -78,7 +76,6 @@ func (o *ScaleUpOrchestrator) Initialize(
 	o.clusterStateRegistry = clusterStateRegistry
 	o.estimatorBuilder = estimatorBuilder
 	o.taintConfig = taintConfig
-	o.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
 	o.scaleUpExecutor = newScaleUpExecutor(autoscalingCtx, processors.ScaleStateNotifier, o.processors.AsyncNodeGroupStateChecker)
 	o.quotasTrackerFactory = quotasTrackerFactory
 	o.initialized = true
