@@ -22,6 +22,13 @@ require (
 	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
 )
 
+exclude (
+	k8s.io/client-go v1.4.0
+	k8s.io/client-go v1.5.0
+	k8s.io/client-go v1.5.1
+	k8s.io/client-go v1.5.2
+)
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect

@@ -21,6 +21,13 @@ require (
 	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
 )
 
+exclude (
+	k8s.io/client-go v1.4.0
+	k8s.io/client-go v1.5.0
+	k8s.io/client-go v1.5.1
+	k8s.io/client-go v1.5.2
+)
+
 require (
 	cel.dev/expr v0.24.0 // indirect
 	github.com/JeffAshton/win_pdh v0.0.0-20161109143554-76bb4ee9f0ab // indirect
