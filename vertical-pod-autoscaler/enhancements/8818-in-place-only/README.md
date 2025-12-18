@@ -63,7 +63,7 @@ This mode will:
 - Apply recommendations during pod admission (like all other modes)
 - Attempt in-place updates for running pods under the same conditions as `InPlaceOrRecreate`
 - Never add pods to `podsForEviction` if in-place updates fail
-- Continuously retry failed in-place update
+- Continue monitoring for recommendation changes and re-attempt updates when new recommendations differ from the current `spec.resources` (see [Resize Status Handling](#resize-status-handling) for details)
 
 ## Design Details
 
@@ -82,13 +82,23 @@ const (
 
 ### Resize Status Handling
 
-The `InPlace` mode handles different resize statuses with distinct behaviors. Critically, before checking the resize status, VPA first compares the current recommendation against the pod's spec.resources. If they differ, VPA attempts to apply the new recommendation regardless of the current resize status, as the new recommendation may be feasible (e.g., a smaller resource request that fits on the node).
+The `InPlace` mode handles different resize statuses with distinct behaviors. Critically, before checking the resize status, VPA first compares the current recommendation against the pod's `spec.resources`. If they differ, VPA attempts to apply the new recommendation regardless of the current resize status, as the new recommendation may be feasible (e.g., a smaller resource request that fits on the node).
 
-- `Deferred`: When the resize status is Deferred and the recommendation matches spec, VPA waits and lets kubelet handle it. This means kubelet is waiting to apply the resize, and VPA should not interfere.
-- `Infeasible`: When the resize status is Infeasible and the recommendation matches spec, VPA defers action. The node cannot accommodate the current resize, but if the recommendation changes, VPA will attempt the new resize.
-- `InProgress`: When the resize status is InProgress and the recommendation matches spec, VPA waits for completion. The resize is actively being applied by kubelet.
-- `Error`: When the resize status is Error, VPA retries the operation. An error occurred during resize and retrying may succeed.
+When the current recommendation matches `spec.resources`, VPA handles each resize status as follows:
 
+- **`Deferred`**: VPA takes no action and waits. The kubelet has accepted the resize but is waiting for the right conditions to apply it (e.g., waiting for container restart). VPA continues to monitor for recommendation changes—if a new recommendation arrives that differs from `spec.resources`, VPA will attempt to apply it.
+
+- **`Infeasible`**: VPA takes no action and waits. The node cannot accommodate the current resize request. VPA continues to monitor for recommendation changes—if a new recommendation arrives that differs from `spec.resources` (e.g., a lower resource request), VPA will attempt to apply it, as the new values may be feasible on the node.
+
+- **`InProgress`**: VPA takes no action and waits for completion. The resize is actively being applied by kubelet.
+
+- **Error Handling**: There are two types of errors that can occur:
+  1. **API Server Error**: The patch request to update `spec.resources` fails (e.g., due to conflicts, validation errors, or transient API server issues). In this case, VPA will retry the patch operation in the next reconciliation loop.
+  2. **Resize Condition Error**: The resize status indicates an error occurred during the kubelet's attempt to apply the resize (reflected in the pod's status conditions). In this case, VPA will retry by re-applying the patch, as the error may be transient.
+
+**Key Difference from `InPlaceOrRecreate`**: In `InPlace` mode, both `Deferred` and `Infeasible` statuses are treated the same way—VPA waits and monitors for recommendation changes without taking any action. In contrast, `InPlaceOrRecreate` mode treats these statuses differently, potentially falling back to eviction after a timeout. This unified handling in `InPlace` mode ensures that pods are never evicted, regardless of how long they remain in a non-updatable state.
+
+"Retry" in this context means VPA will attempt to patch `spec.resources` with the current recommendation. VPA does not artificially adjust recommendations to work around constraints—the Recommender component is solely responsible for generating recommendations. If the recommendation changes (because the Recommender produces a new value), VPA will attempt to apply the new recommendation, which may succeed where the previous one failed (e.g., if the new recommendation requests fewer resources).
 
 Modify the `CanInPlaceUpdate` to accommodate the new update mode:
 
