@@ -35,7 +35,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -2015,55 +2014,6 @@ func nodeGroupIds(nodeGroups []cloudprovider.NodeGroup) map[string]bool {
 		result[ng.Id()] = true
 	}
 	return result
-}
-
-func TestCheckDeltaWithinLimits(t *testing.T) {
-	type testcase struct {
-		limits            resource.Limits
-		delta             resource.Delta
-		exceededResources []string
-	}
-	tests := []testcase{
-		{
-			limits:            resource.Limits{"a": 10},
-			delta:             resource.Delta{"a": 10},
-			exceededResources: []string{},
-		},
-		{
-			limits:            resource.Limits{"a": 10},
-			delta:             resource.Delta{"a": 11},
-			exceededResources: []string{"a"},
-		},
-		{
-			limits:            resource.Limits{"a": 10},
-			delta:             resource.Delta{"b": 10},
-			exceededResources: []string{},
-		},
-		{
-			limits:            resource.Limits{"a": resource.LimitUnknown},
-			delta:             resource.Delta{"a": 0},
-			exceededResources: []string{},
-		},
-		{
-			limits:            resource.Limits{"a": resource.LimitUnknown},
-			delta:             resource.Delta{"a": 1},
-			exceededResources: []string{"a"},
-		},
-		{
-			limits:            resource.Limits{"a": 10, "b": 20, "c": 30},
-			delta:             resource.Delta{"a": 11, "b": 20, "c": 31},
-			exceededResources: []string{"a", "c"},
-		},
-	}
-
-	for _, test := range tests {
-		checkResult := resource.CheckDeltaWithinLimits(test.limits, test.delta)
-		if len(test.exceededResources) == 0 {
-			assert.Equal(t, resource.LimitsNotExceeded(), checkResult)
-		} else {
-			assert.Equal(t, resource.LimitsCheckResult{Exceeded: true, ExceededResources: test.exceededResources}, checkResult)
-		}
-	}
 }
 
 func TestAuthErrorHandling(t *testing.T) {
