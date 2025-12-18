@@ -70,7 +70,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 		fakedClient[i] = apiObjectVPAs[i]
 	}
 
-	fakeClient := vpa_fake.NewSimpleClientset(fakedClient...).AutoscalingV1()
+	fakeClient := vpa_fake.NewSimpleClientset(fakedClient...).AutoscalingV1() //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
 	r := &recommender{
 		clusterState:                model.NewClusterState(time.Minute),
 		vpaClient:                   fakeClient,
