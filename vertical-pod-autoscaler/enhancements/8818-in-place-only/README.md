@@ -258,7 +258,7 @@ Enabling of feature gate `InPlace` will cause the following to happen:
 
 ## Kubernetes version compatibility
 
-`InPlace` is being built assuming that it will be running on a Kubernetes version of at least 1.33 with the beta version of [KEP-1287: In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287) enabled.
+`InPlace` is being built assuming that it will be running on a Kubernetes version of at least 1.34 with the beta version of [KEP-1287: In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287) enabled.
 Should these conditions not be true, the VPA shall not be able to scale your workload at all.
 
 ## Implementation History
