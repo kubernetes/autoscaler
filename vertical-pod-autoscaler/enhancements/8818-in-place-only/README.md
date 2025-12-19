@@ -1,7 +1,6 @@
 # AEP-8818: Non-Disruptive In-Place Updates in VPA
 
 <!-- toc -->
-<!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
 - [Goals](#goals)
@@ -9,6 +8,9 @@
 - [Proposal](#proposal)
 - [Design Details](#design-details)
   - [Infeasible Attempt Tracking](#infeasible-attempt-tracking)
+  - [Version-Agnostic Infeasibility Detection](#version-agnostic-infeasibility-detection)
+    - [Detection Path 1: Resize Status (Pre-admission-check versions)](#detection-path-1-resize-status-pre-admission-check-versions)
+    - [Detection Path 2: Patch Rejection (Post-admission-check versions)](#detection-path-2-patch-rejection-post-admission-check-versions)
   - [Complete Flow Description](#complete-flow-description)
   - [Behavior when Feature Gate is Disabled](#behavior-when-feature-gate-is-disabled)
 - [Risk Mitigation](#risk-mitigation)
@@ -24,7 +26,7 @@
   - [How can this feature be enabled / disabled in a live cluster?](#how-can-this-feature-be-enabled--disabled-in-a-live-cluster)
 - [Kubernetes version compatibility](#kubernetes-version-compatibility)
 - [Implementation History](#implementation-history)
-<!-- /toc --><!-- /toc -->
+<!-- /toc -->
 
 ## Summary
 
@@ -86,10 +88,12 @@ const (
 ### Infeasible Attempt Tracking
 
 VPA must track `infeasible` resize attempts to prevent infinite retry loops. This is necessary because infeasibility can be detected at different points depending on the Kubernetes version:
-| Kubernetes Version | When Infeasibility Is Detected                     | `spec.resources` After Attempt | How VPA Learns            |
-|--------------------|----------------------------------------------------|--------------------------------|---------------------------|
-| < 1.36             | After patch succeeds, kubelet reports status       | Updated to attempted value     | Resize status = Infeasible|
-| >= 1.36            | At patch time, API server rejects                  | Unchanged (old value)          | Patch error response      |
+| Kubernetes Version                  | When Infeasibility Is Detected                     | `spec.resources` After Attempt | How VPA Learns            |
+|-------------------------------------|----------------------------------------------------|--------------------------------|---------------------------|
+|  < 1.36 (or later if KEP slips)     | After patch succeeds, kubelet reports status       | Updated to attempted value     | Resize status = Infeasible|
+|  >= 1.36 (targeted, not guaranteed) | At patch time, API server rejects                  | Unchanged (old value)          | Patch error response      |
+
+> **Note:** The Kubernetes sig-node team is *targeting* admission-time feasibility checks for 1.36, but this timeline is not guaranteed and may slip to a later release. VPA implements version-agnostic detection that works correctly regardless of which version introduces this change.
 
 To handle both cases uniformly, VPA maintains a map of infeasible attempts:
 
@@ -110,37 +114,70 @@ type podResourceValues struct {
 	}
 ```
 
+### Version-Agnostic Infeasibility Detection
+
+Since VPA cannot know at runtime which Kubernetes version is running (and the admission-time check may ship in 1.36 or later), VPA implements dual detection paths that handle both scenarios simultaneously:
+
+#### Detection Path 1: Resize Status (Pre-admission-check versions)
+
+VPA attempts patch → Patch succeeds → `spec.resources` updated → Kubelet evaluates → Status = Infeasible → VPA stores `spec.resources`
+
+In this path:
+- The patch succeeds and `spec.resources` is updated to the attempted values
+- Kubelet later determines the resize is infeasible and sets the resize status
+- VPA detects the `Infeasible` status during reconciliation
+- VPA stores `spec.resources` (which contains the infeasible values)
+
+
+#### Detection Path 2: Patch Rejection (Post-admission-check versions)
+
+VPA attempts patch → API server rejects with infeasibility error → VPA stores attempted recommendation
+
+In this path:
+- The API server validates feasibility at admission time
+- If infeasible, the patch is rejected with an error
+- `spec.resources` remains unchanged
+- VPA detects the error and stores the recommendation it attempted to apply
+
+
+These paths are mutually exclusive for any given update attempt:
+- If the patch succeeds, you're on Path 1 (status-based detection)
+- If the patch fails with infeasibility, you're on Path 2 (error-based detection)
+
+VPA implements both paths unconditionally, so it works correctly on any Kubernetes version without needing version detection.
+
+
 ### Complete Flow Description
 
 The reconciliation loop follows this sequence of steps for each pod:
 
 VPA retrieves the current recommendation for the pod from the VPA object. Then the VPA checks if there is a stored infeasible attempt for this pod in the `infeasibleAttempts` map.
-- If a stored attempt exists: Compare the current recommendation against the stored attempt.
-	- If they match: Skip this pod entirely. The same values were already determined to be infeasible, so retrying would fail again. Wait for the next reconciliation loop in case the recommendation changes.
-	- If they differ: The recommendation has changed since the last infeasible attempt. Clear the stored attempt and proceed.
 
-Then the VPA will check the current resize Status (if applicable). If the pod is currently undergoing an `in-place` resize (i.e., `spec.resources` differs from `status.resources`), check the resize status:
+- If stored attempt exists AND matches current recommendation: Skip this pod entirely. The same values were already determined to be infeasible, so retrying would fail again. Wait for the next reconciliation loop in case the recommendation changes.
+- If stored attempt exists AND differs from current recommendation: The recommendation has changed since the last infeasible attempt. Clear the stored attempt and proceed.
+- If no stored attempt exists: Proceed to next step.
 
-- `InProgress`: VPA takes no action and waits for completion. The resize is actively being applied by kubelet.
+If the pod is currently undergoing an in-place resize (i.e., `spec.resources` differs from `status.resources`), check the resize status:
 
-- `Deferred`:  VPA takes no action and waits. The kubelet has accepted the resize but is waiting for the right conditions to apply it (e.g., waiting for container restart). VPA continues to monitor for recommendation changes—if a new recommendation arrives that differs from `spec.resources`, VPA will attempt to apply it.
+| Status       | Action                                             | Rationale                                                                                                                   |
+| ------------ | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `InProgress` | Wait, take no action                               | Resize is actively being applied by kubelet                                                                                 |
+| `Deferred`   | Wait, take no action                               | Kubelet has accepted resize but is waiting for the right conditions                                                         |
+| `Infeasible` | Store `spec.resources` as infeasible, skip pod     | Pre-admission-check path: kubelet determined resize cannot be accommodated. `spec.resources` contains the attempted values. |
+| `Error`      | Take no action                                     | Kubelet will automatically retry                                                                                            |
 
-- `Infeasible`: The kubelet determined the resize cannot be accommodated on the node. Store `spec.resources` as an infeasible attempt (this is the pre-1.36 case where the patch succeeded but the resize is infeasible). Skip further processing and wait for the recommendation to change.
 
-- `Error`: There are two types of errors that can occur:
-	1. API Server Error: The patch request to update `spec.resources` fails (e.g., due to conflicts, validation errors, or transient API server issues). In this case, VPA will retry the patch operation in the next reconciliation loop.
-	2. Resize Condition Error: The resize status indicates an error occurred during the kubelet's attempt to apply the resize (reflected in the pod's status conditions). In this case, VPA will retry by re-applying the patch, as the error may be transient.
+VPA attempts to patch the pod's `spec.resources` with the current recommendation:
 
-VPA attempts to patch the pod's spec.resources with the current recommendation.
+| Outcome                                  | Action                                                     | Rationale                                                                             |
+| ---------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Patch succeeds                           | Clear any stored infeasible attempt                        | Update is now in progress; previous infeasibility no longer relevant                  |
+| Patch fails with **infeasibility error** | Store attempted recommendation as infeasible, skip pod     | Post-admission-check path: API server rejected because resources exceed node capacity |
+| Patch fails with **transient error**     | Do nothing                                                 | Will retry in next reconciliation loop                                                |
 
-- If the patch succeeds: Clear any stored infeasible attempt for this pod (if one existed). The update is now in progress; VPA will monitor the resize status in subsequent loops.
-- If the patch fails: Examine the error to determine the cause:
-	- If it's an infeasibility error (Kubernetes 1.36+): The API server rejected the patch because the requested resources exceed what the node can accommodate. Store the attempted recommendation as an infeasible attempt. Do not retry until the recommendation changes.
-	- If it's a transient error (e.g., conflict, network issue, API server unavailable): Do not store anything. The patch will be retried in the next reconciliation loop.
+Periodically, VPA removes entries from the infeasibleAttempts map for pods that no longer exist. This prevents memory leaks from accumulating stale entries. This cleanup behavior is targeted for beta.
 
-Periodically, VPA removes entries from the infeasibleAttempts map for pods that no longer exist. This prevents memory leaks from accumulating stale entries.
-
-**Key Difference from `InPlaceOrRecreate`**: In `InPlace` mode, both `Deferred` and `Infeasible` statuses are treated the same way—VPA waits and monitors for recommendation changes without taking any action. In contrast, `InPlaceOrRecreate` mode treats these statuses differently, potentially falling back to eviction after a timeout. This unified handling in `InPlace` mode ensures that pods are never evicted, regardless of how long they remain in a non-updatable state.
+**Key Difference from `InPlaceOrRecreate`**: In `InPlace` mode, `Deferred`, `Infeasible`, and `InProgress` statuses all result in waiting—VPA never falls back to eviction. In contrast, `InPlaceOrRecreate` mode may fall back to eviction after a timeout. This ensures that `InPlace` mode pods are never evicted, regardless of how long they remain in a non-updatable state.
 
 Modify the `CanInPlaceUpdate` to accommodate the new update mode:
 
@@ -259,7 +296,7 @@ Infeasible Attempt Tracking Tests:
 - No Retry for Unchanged Recommendation: After infeasible attempt is stored, verify same recommendation is not retried
 - Retry After Recommendation Change: After infeasible attempt is stored, verify changed recommendation triggers a new attempt and clears stored value
 - Successful Update Clears Stored Attempt: After successful patch, verify any stored infeasible attempt is cleared
-- Stale Entry Cleanup: Verify infeasible attempts for deleted pods are cleaned up
+- Stale Entry Cleanup: Verify infeasible attempts for deleted pods are cleaned up (targeted for beta)
 
 ## Upgrade / Downgrade Strategy
 
