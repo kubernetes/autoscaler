@@ -104,14 +104,9 @@ type updater struct {
     // infeasibleAttempts maps pod key (namespace/name) to the last resource values
     // that were determined to be infeasible. This prevents retrying the same
     // infeasible values repeatedly.
-    infeasibleAttempts map[string]podResourceValues
-    infeasibleMu       sync.RWMutex
+    infeasibleAttempts           map[string]*vpa_types.RecommendedPodResources
+    infeasibleMu                 sync.RWMutex
 }
-
-// podResourceValues stores the resource values that were attempted
-type podResourceValues struct {
-    ContainerResources map[string]apiv1.ResourceRequirements // containerName -> resources
-	}
 ```
 
 ### Version-Agnostic Infeasibility Detection
