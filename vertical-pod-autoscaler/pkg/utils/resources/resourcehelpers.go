@@ -17,11 +17,10 @@ limitations under the License.
 package resourcehelpers
 
 import (
-	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog/v2"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	metrics_resources "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/resources"
 )
 
@@ -132,7 +131,7 @@ func RecommendationsEqual(a, b *vpa_types.RecommendedPodResources) bool {
 	return true
 }
 
-func ResourcesEqual(a, b apiv1.ResourceList) bool {
+func ResourcesEqual(a, b v1.ResourceList) bool {
 	if len(a) != len(b) {
 		return false
 	}
