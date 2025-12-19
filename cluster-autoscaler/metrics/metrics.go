@@ -110,6 +110,7 @@ const (
 	FilterOutSchedulable       FunctionLabel = "filterOutSchedulable"
 	CloudProviderRefresh       FunctionLabel = "cloudProviderRefresh"
 	Main                       FunctionLabel = "main"
+	MainSuccessful             FunctionLabel = "mainSuccessful"
 	Poll                       FunctionLabel = "poll"
 	Reconfigure                FunctionLabel = "reconfigure"
 	Autoscaling                FunctionLabel = "autoscaling"
