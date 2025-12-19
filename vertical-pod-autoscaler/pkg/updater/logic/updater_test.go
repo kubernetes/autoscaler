@@ -567,3 +567,53 @@ func TestLogDeprecationWarnings(t *testing.T) {
 		})
 	}
 }
+
+func TestInfeasibleAttempts(t *testing.T) {
+	containerName := "container1"
+	pod1 := test.Pod().WithName("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()
+	pod2 := test.Pod().WithName("pod2").AddContainer(test.Container().WithName(containerName).Get()).Get()
+
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
+
+	// Initialize updater with required fields for these functions
+	u := &updater{
+		recommendationProcessor: &test.FakeRecommendationProcessor{},
+		infeasibleAttempts:      make(map[string]*vpa_types.RecommendedPodResources),
+	}
+
+	t.Run("recordInfeasibleAttempt stores recommendation", func(t *testing.T) {
+		u.recordInfeasibleAttempt(pod1, vpa)
+		u.recordInfeasibleAttempt(pod2, vpa)
+
+		u.infeasibleMu.RLock()
+		defer u.infeasibleMu.RUnlock()
+
+		assert.Len(t, u.infeasibleAttempts, 2)
+		assert.Contains(t, u.infeasibleAttempts, getPodKey(pod1))
+		assert.Contains(t, u.infeasibleAttempts, getPodKey(pod2))
+	})
+
+	t.Run("cleanupStaleInfeasibleAttempts removes old pods", func(t *testing.T) {
+		// Only pod1 is "live" now
+		livePods := []*apiv1.Pod{pod1}
+
+		u.cleanupStaleInfeasibleAttempts(livePods)
+
+		u.infeasibleMu.RLock()
+		defer u.infeasibleMu.RUnlock()
+
+		// pod1 should stay, pod2 should be deleted
+		assert.Len(t, u.infeasibleAttempts, 1)
+		assert.Contains(t, u.infeasibleAttempts, getPodKey(pod1))
+		assert.NotContains(t, u.infeasibleAttempts, getPodKey(pod2))
+	})
+
+	t.Run("cleanupStaleInfeasibleAttempts clears all if none live", func(t *testing.T) {
+		u.cleanupStaleInfeasibleAttempts([]*apiv1.Pod{})
+
+		u.infeasibleMu.RLock()
+		defer u.infeasibleMu.RUnlock()
+
+		assert.Empty(t, u.infeasibleAttempts)
+	})
+}
