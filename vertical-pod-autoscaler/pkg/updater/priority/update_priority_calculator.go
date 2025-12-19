@@ -18,6 +18,7 @@ package priority
 
 import (
 	"flag"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -81,11 +83,24 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
-func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
+func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time, infeasibleAttempts map[string]*vpa_types.RecommendedPodResources) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa, pod)
 	if err != nil {
 		klog.V(2).ErrorS(err, "Cannot process recommendation for pod", "pod", klog.KObj(pod))
 		return
+	}
+
+	podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
+	// Check if this recommendation was already tried and failed as infeasible
+	if lastAttempt, exists := infeasibleAttempts[podKey]; exists {
+		if resourcehelpers.RecommendationsEqual(lastAttempt, processedRecommendation) {
+			klog.V(4).InfoS("Skipping pod, recommendation unchanged since last infeasible attempt",
+				"pod", klog.KObj(pod))
+			return
+		}
+		// Recommendation changed, clear the infeasible record and proceed
+		klog.V(4).InfoS("Recommendation changed since last infeasible attempt, will retry",
+			"pod", klog.KObj(pod))
 	}
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
