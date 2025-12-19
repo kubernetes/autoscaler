@@ -21,7 +21,20 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
+
+type mockMetrics struct {
+	mock.Mock
+}
+
+func (m *mockMetrics) ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
+	m.Called(duration)
+}
+
+func newMaxNodeSkipEvalTime(currentTime time.Time, metrics metricObserver) *MaxNodeSkipEvalTime {
+	return &MaxNodeSkipEvalTime{lastEvalTime: currentTime, metrics: metrics}
+}
 
 func TestMaxNodeSkipEvalTime(t *testing.T) {
 	type testCase struct {
@@ -66,11 +79,15 @@ func TestMaxNodeSkipEvalTime(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			timestamp := start
-			maxNodeSkipEvalTime := NewMaxNodeSkipEvalTime(start)
+			mockMetrics := &mockMetrics{}
+			maxNodeSkipEvalTime := newMaxNodeSkipEvalTime(start, mockMetrics)
+			mockMetrics.On("ObserveMaxNodeSkipEvalDurationSeconds", mock.Anything).Return()
+
 			for i := 0; i < len(tc.unprocessedNodes); i++ {
 				timestamp = timestamp.Add(1 * time.Second)
 				assert.Equal(t, time.Duration(tc.wantMaxSkipEvalTimeSeconds[i])*time.Second, maxNodeSkipEvalTime.Update(tc.unprocessedNodes[i], timestamp))
 				assert.Equal(t, len(tc.unprocessedNodes[i]), len(maxNodeSkipEvalTime.nodeNamesWithTimeStamps))
+				mockMetrics.AssertCalled(t, "ObserveMaxNodeSkipEvalDurationSeconds", time.Duration(tc.wantMaxSkipEvalTimeSeconds[i])*time.Second)
 			}
 		})
 	}
