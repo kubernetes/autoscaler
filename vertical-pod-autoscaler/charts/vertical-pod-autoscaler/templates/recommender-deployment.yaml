@@ -36,6 +36,9 @@ spec:
       securityContext:
         {{ toYaml . | nindent 8 | trim }}
       {{- end }}
+      {{- with .Values.recommender.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       containers:
         - name: recommender
           image: {{ include "vertical-pod-autoscaler.recommender.image" . }}

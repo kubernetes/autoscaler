@@ -48,6 +48,9 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.admissionController.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       containers:
         - name: admission-controller
           image: {{ include "vertical-pod-autoscaler.admissionController.image" . }}

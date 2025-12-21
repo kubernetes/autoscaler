@@ -108,6 +108,10 @@ admissionController:
     maxUnavailable:
     # maxUnavailable: 1
 
+  # name of priorityclass for scheduling
+  priorityClassName:
+  # priorityClassName : high-priority
+
 recommender:
   enabled: true
   image:
@@ -186,6 +190,10 @@ recommender:
     maxUnavailable:
     # maxUnavailable: 1
 
+  # name of priorityclass for scheduling
+  priorityClassName:
+  # priorityClassName : high-priority
+
 updater:
   enabled: true
 
@@ -250,3 +258,7 @@ updater:
     # requests:
     #   cpu: 50m
     #   memory: 200Mi
+  
+  # name of priorityclass for scheduling
+  priorityClassName:
+  # priorityClassName : high-priority
