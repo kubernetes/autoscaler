@@ -178,7 +178,7 @@ func (oc *ObjectCounter) Add(vpa *model.Vpa) {
 		has:               vpa.HasRecommendation(),
 		apiVersion:        apiVersion(vpa.APIVersion),
 		matchesPods:       vpa.HasMatchedPods(),
-		unsupportedConfig: vpa.Conditions.ConditionActive(vpa_types.ConfigUnsupported),
+		unsupportedConfig: vpa.ConditionActive(vpa_types.ConfigUnsupported),
 	}
 	oc.mutex.Lock()
 	oc.cnt[key]++
