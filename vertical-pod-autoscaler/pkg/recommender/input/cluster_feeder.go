@@ -443,11 +443,7 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 			vpaKeys[vpaID] = true
 
 			for _, condition := range conditions {
-				if condition.delete {
-					delete(feeder.clusterState.VPAs()[vpaID].Conditions, condition.conditionType)
-				} else {
-					feeder.clusterState.VPAs()[vpaID].Conditions.Set(condition.conditionType, true, "", condition.message)
-				}
+				feeder.clusterState.VPAs()[vpaID].Conditions.Set(condition.conditionType, condition.status, condition.reason, condition.message)
 			}
 		}
 	}
@@ -572,14 +568,14 @@ func newContainerUsageSamplesWithKey(metrics *metrics.ContainerMetricsSnapshot) 
 
 type condition struct {
 	conditionType vpa_types.VerticalPodAutoscalerConditionType
-	delete        bool
+	status        bool
+	reason        string
 	message       string
 }
 
 func (feeder *clusterStateFeeder) validateTargetRef(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (bool, condition) {
-	//
 	if vpa.Spec.TargetRef == nil {
-		return false, condition{}
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, status: true, message: "targetRef cannot be empty"}
 	}
 
 	target := fmt.Sprintf("%s.%s/%s", vpa.Spec.TargetRef.APIVersion, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name)
@@ -594,15 +590,15 @@ func (feeder *clusterStateFeeder) validateTargetRef(ctx context.Context, vpa *vp
 	}
 	top, err := feeder.controllerFetcher.FindTopMostWellKnownOrScalable(ctx, &k)
 	if err != nil {
-		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Error checking if target %s is a topmost well-known or scalable controller: %s", target, err)}
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, status: true, message: fmt.Sprintf("Error checking if target %s is a topmost well-known or scalable controller: %s", target, err)}
 	}
 	if top == nil {
-		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Unknown error during checking if target %s is a topmost well-known or scalable controller", target)}
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, status: true, message: fmt.Sprintf("Unknown error during checking if target %s is a topmost well-known or scalable controller", target)}
 	}
 	if *top != k {
-		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("The target %s has a parent controller but it should point to a topmost well-known or scalable controller", target)}
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, status: true, message: fmt.Sprintf("The target %s has a parent controller but it should point to a topmost well-known or scalable controller", target)}
 	}
-	return true, condition{}
+	return true, condition{conditionType: vpa_types.ConfigUnsupported, status: false, message: "Configuration supported"}
 }
 
 func (feeder *clusterStateFeeder) getSelector(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, []condition) {
@@ -612,12 +608,12 @@ func (feeder *clusterStateFeeder) getSelector(ctx context.Context, vpa *vpa_type
 		if !validTargetRef {
 			return labels.Nothing(), []condition{
 				unsupportedCondition,
-				{conditionType: vpa_types.ConfigDeprecated, delete: true},
+				{conditionType: vpa_types.ConfigDeprecated, status: false, message: "Configuration supported"},
 			}
 		}
 		return selector, []condition{
-			{conditionType: vpa_types.ConfigUnsupported, delete: true},
-			{conditionType: vpa_types.ConfigDeprecated, delete: true},
+			{conditionType: vpa_types.ConfigUnsupported, status: false, message: "Configuration supported"},
+			{conditionType: vpa_types.ConfigDeprecated, status: false, message: "Configuration supported"},
 		}
 	}
 	msg := "Cannot read targetRef"
@@ -626,7 +622,7 @@ func (feeder *clusterStateFeeder) getSelector(ctx context.Context, vpa *vpa_type
 		msg = fmt.Sprintf("Cannot read targetRef. Reason: %s", fetchErr.Error())
 	}
 	return labels.Nothing(), []condition{
-		{conditionType: vpa_types.ConfigUnsupported, delete: false, message: msg},
-		{conditionType: vpa_types.ConfigDeprecated, delete: true},
+		{conditionType: vpa_types.ConfigUnsupported, status: true, message: msg},
+		{conditionType: vpa_types.ConfigDeprecated, status: false, message: "Configuration supported"},
 	}
 }
