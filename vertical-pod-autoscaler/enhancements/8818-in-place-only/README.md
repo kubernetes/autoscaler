@@ -68,7 +68,7 @@ This mode will:
 - Apply recommendations during pod admission (like all other modes)
 - Attempt in-place updates for running pods under the same conditions as `InPlaceOrRecreate`
 - Never add pods to `podsForEviction` if in-place updates fail
-- Continue monitoring for recommendation changes and re-attempt updates when new recommendations differ from the current `spec.resources` (see [Resize Status Handling](#resize-status-handling) for details)
+- Continue monitoring for recommendation changes and re-attempt updates when new recommendations differ from the current `spec.resources` (see [Resize Status Handling](#complete-flow-description) for details)
 
 ## Design Details
 
