@@ -63,7 +63,8 @@ admissionController:
   extraArgs: []
 
   # Resources for the Admission Controller default container.
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 200m
     #   memory: 500Mi
@@ -142,7 +143,8 @@ recommender:
   extraArgs: []
 
   # Resources for the Recommender default container.
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 200m
     #   memory: 1000Mi
@@ -208,6 +210,10 @@ updater:
 
   # Annotations to add to the Updater pod.
   podAnnotations: {}
+
+  # Tolerations for scheduling the Updater.
+  tolerations: []
+
   serviceAccount:
     # If `true`, create a new `ServiceAccount` for the Updater.
     create: true
@@ -215,7 +221,7 @@ updater:
     labels: {}
     # Annotations to add to the Updater service account.
     annotations: {}
-  
+
   # Leader election configuration for the Updater.
   # When running multiple replicas, leader election ensures only one instance is actively processing.
   leaderElection:
@@ -243,7 +249,8 @@ updater:
     maxUnavailable:
 
   # Resources for the updater Controller
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 200m
     #   memory: 500Mi
