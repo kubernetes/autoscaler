@@ -1,4 +1,4 @@
-# AEP-XXXX: Restore Label Selector Support to VPA
+# AEP-XXXX: Support for Heterogeneous Workloads in StatefulSets and Deployments
 
 ## Summary
 
@@ -19,6 +19,29 @@ By restoring the `selector` field, users can partition a single workload into mu
 2.  **VPA-Follower:** Selects `role=follower`
 
 When a Pod promotes from Follower to Leader, its label changes, and it effectively migrates from the Follower VPA to the Leader VPA instantly.
+
+### Use Cases
+
+The primary motivation for this feature is to support **Deployments** and **StatefulSets** where the *Identity* is uniform (single Controller) but the *Resource Need* is skewed based on the Pod's role or data distribution.
+
+#### 1. Lease-Based Active/Standby (Controllers)
+* **Pattern:** Pods race to acquire a `coordination.k8s.io/Lease`. The winner becomes "Active"; others wait in "Standby."
+* **Resource Profile:**
+    * **Active:** 100% utilization (Performing reconciliation).
+    * **Standby:** ~0% utilization (Idling/Polling).
+* **VPA Role:** Allows the Active pod to scale up to full capacity, while Standby pods remain minimal (often just enough to run the health check), maximizing density.
+
+#### 2. Consensus-Based Leaders (Databases)
+* **Resource Profile:**
+    * **Leader:** High CPU/Memory (Processing all writes + coordination).
+    * **Follower:** Medium CPU/Memory (Passive replication + read queries).
+* **VPA Role:** Ensures the Leader gets "Peak" resources while Followers get "Baseline" resources to save costs.
+
+
+#### 3. Data-Based Asymmetry (Hot Shards)
+* **Pattern:** No specific "Leader" role, but traffic/data is unevenly distributed across shards.
+* **Resource Profile:** Specific pods ("Hot Shards") experience sustained high load due to noisy tenants or large partitions.
+* **VPA Role:** Allows operators to target and vertically scale only the specific "Hot Nodes" (e.g., labeled `load=high`) without over-provisioning the entire cluster.
 
 ## Proposal
 
@@ -67,19 +90,33 @@ Result: The VPA only generates recommendations and acts upon pods that pass the 
 **Reactive Resizing**: The VPA Updater will detect the role=leader label transition and perform an In-Place Update to increase capacity to the "Leader Profile."
 
 #### Conflicting Targets
-**Risk**: A user might configure two VPAs for the same TargetRef that overlap.
+**Risk**: A user might configure two VPAs for the same TargetRef that overlap, causing "Split Brain" scaling where two Recommenders fight over the same Pod.
 
-**VPA A**: `targetRef: app` (No selector = All pods)
+VPA A: `targetRef: app (No selector = All pods)`
 
-**VPA B**: `targetRef: app, selector: role=leader`
+VPA B: `targetRef: app, selector: role=leader`
 
-**Result**: The Leader pod is managed by both.
+**Result**: The Leader pod matches both. VPA A wants 1GB, VPA B wants 8GB. The Pod thrashes.
 
-**Mitigation**: The Admission Webhook must be updated.
+**Mitigation**: The Admission Webhook will be updated to enforce Strict Selector Disjointness.
 
-**Current Rule**: "One VPA per TargetRef."
+**Current Rule**: "Reject if more than one VPA points to the same TargetRef."
 
-**New Rule**: "Multiple VPAs per TargetRef are allowed only if their Selectors are non-overlapping."
+**New Validation Logic**: "Allow multiple VPAs per TargetRef only if they are proven disjoint."
+
+To ensure safety without complex constraint solving, the Webhook will enforce the "Shared Key Exclusion" heuristic. Two VPAs targeting the same controller are considered disjoint if they filter on the same label key but require different values.
+
+**Validation Algorithm**: When a new VPA (VPA-New) is created/updated:
+
+**Identify Siblings**: Find all existing VPAs (VPA-Existing) pointing to the same TargetRef.
+
+**Iterate & Compare**: For each VPA-Existing:
+
+Case 1: Catch-All Conflict (Reject) If either VPA-New or VPA-Existing has a nil selector, REJECT. (You cannot have a "Default" VPA alongside a "Specific" VPA).
+
+Case 2: Different Keys (Reject - Ambiguous) If VPA-New selects on role=leader and VPA-Existing selects on env=prod, REJECT. Reason: A pod could theoretically have {role: leader, env: prod}. We cannot predict future labels, so we must assume overlap is possible.
+
+Case 3: Same Key, Different Values (Allow) If VPA-New selects role=leader and VPA-Existing selects role=follower, ALLOW. Reason: A single label key cannot hold two values simultaneously. Disjointness is mathematically guaranteed.
 
 #### Recommender Data Sparsity
 **Risk**: Partitioning a set of pods reduces the sample size for the histogram (e.g., a single Leader pod).
