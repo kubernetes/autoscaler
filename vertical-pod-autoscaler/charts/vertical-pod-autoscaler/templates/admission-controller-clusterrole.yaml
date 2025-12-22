@@ -22,6 +22,9 @@ rules:
     resources:
       - mutatingwebhookconfigurations
     verbs:
+      - create
+      - update
+      - delete
       - list
       - get
   - apiGroups:
@@ -39,6 +42,34 @@ rules:
     verbs:
       - create
       - update
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - statefulsets
+      - replicasets
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers
+    verbs:
       - get
       - list
       - watch
