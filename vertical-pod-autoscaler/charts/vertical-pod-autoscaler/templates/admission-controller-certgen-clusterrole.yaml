@@ -1,0 +1,21 @@
+{{- if and .Values.admissionController.enabled .Values.admissionController.certGen.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-10"
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.certGen.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+    verbs:
+      - get
+      - update
+      - patch
+{{- end -}}
