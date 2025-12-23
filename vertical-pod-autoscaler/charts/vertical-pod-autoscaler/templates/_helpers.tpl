@@ -66,12 +66,32 @@ app.kubernetes.io/component: admission-controller
 Create the name of the tls secret to use
 */}}
 {{- define "vertical-pod-autoscaler.admissionController.tls.secretName" -}}
-{{- if .Values.admissionController.tls.existingSecret -}}
-    {{ .Values.admissionController.tls.existingSecret }}
+{{- if .Values.admissionController.tls.secretName -}}
+    {{ .Values.admissionController.tls.secretName }}
 {{- else -}}
     {{- printf "%s-%s" (include "vertical-pod-autoscaler.admissionController.fullname" .) "tls" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+admissionController webhook
+*/}}
+
+{{- define "vertical-pod-autoscaler.admissionController.webhook.configName" -}}
+{{ include "vertical-pod-autoscaler.fullname" . }}-webhook-config
+{{- end }}
+
+{{/*
+admissionController certGen
+*/}}
+{{- define "vertical-pod-autoscaler.admissionController.certGen.fullname" -}}
+{{ include "vertical-pod-autoscaler.fullname" . }}-admission-certgen
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.admissionController.certGen.labels" -}}
+{{ include "vertical-pod-autoscaler.labels" . }}
+app.kubernetes.io/component: admission-certgen
+{{- end }}
 
 
 {{/*

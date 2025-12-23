@@ -1,0 +1,49 @@
+{{- if and .Values.admissionController.enabled .Values.admissionController.certGen.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.webhook.configName" . }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.mutatingWebhookConfiguration.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    # caBundle will be injected by the certgen patch job (post-install/post-upgrade hook)
+    service:
+      name: {{ .Values.admissionController.service.name }}
+      namespace: {{ .Release.Namespace }}
+      port: 443
+  failurePolicy: {{ .Values.admissionController.mutatingWebhookConfiguration.failurePolicy }}
+  matchPolicy: Equivalent
+  name: vpa.k8s.io
+  namespaceSelector: {{ .Values.admissionController.mutatingWebhookConfiguration.namespaceSelector | toYaml | nindent 4 }}
+  objectSelector: {{ .Values.admissionController.mutatingWebhookConfiguration.objectSelector | toYaml | nindent 4 }}
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+    scope: '*'
+  - apiGroups:
+    - autoscaling.k8s.io
+    apiVersions:
+    - '*'
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - verticalpodautoscalers
+    scope: '*'
+  sideEffects: None
+  timeoutSeconds: {{ .Values.admissionController.mutatingWebhookConfiguration.timeoutSeconds }}
+{{- end }}
