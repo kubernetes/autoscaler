@@ -68,6 +68,8 @@ const (
 	ScaleUpInCooldown
 	// ScaleUpLimitedByMaxNodesTotal - the scale up wasn't attempted, because the cluster reached max nodes total
 	ScaleUpLimitedByMaxNodesTotal
+	// ScaleUpPartialCapacityAvailable - there is available capacity for some pods in a request
+	ScaleUpPartialCapacityAvailable
 )
 
 // WasSuccessful returns true if the scale-up was successful.

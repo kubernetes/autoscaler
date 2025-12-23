@@ -36,6 +36,10 @@ const (
 	CapacityIsFoundReason = "CapacityIsFound"
 	// CapacityIsFoundMsg is added when capacity was found in the cluster.
 	CapacityIsFoundMsg = "Capacity is found in the cluster"
+	// PartialCapacityIsFoundReason is added when capacity was found in the cluster for some pods.
+	PartialCapacityIsFoundReason = "PartialCapacityIsFound"
+	// PartialCapacityIsFoundMsg is added when partial capacity was found in the cluster.
+	PartialCapacityIsFoundMsg = "Partial capacity is found in the cluster."
 	// CapacityIsProvisionedReason is added when capacity was requested successfully.
 	CapacityIsProvisionedReason = "CapacityIsProvisioned"
 	// CapacityIsProvisionedMsg is added when capacity was requested successfully.
