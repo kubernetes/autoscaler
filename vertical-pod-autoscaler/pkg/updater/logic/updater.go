@@ -26,6 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/sets"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	corescheme "k8s.io/client-go/kubernetes/scheme"
@@ -166,6 +167,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
 
+	seenPods := sets.New[*apiv1.Pod]()
+
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
@@ -185,6 +188,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
 			continue
 		}
+		podsWithSelector, err := u.podLister.List(selector)
+		if err != nil {
+			klog.ErrorS(err, "Failed to get pods", "selector", selector)
+			continue
+		}
+
+		// handle the case of overlapping VPA selectors
+		for _, pod := range podsWithSelector {
+			seenPods.Insert(pod)
+		}
 
 		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
 			Vpa:      vpa,
@@ -200,13 +213,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 		return
 	}
 
-	podsList, err := u.podLister.List(labels.Everything())
-	if err != nil {
-		klog.ErrorS(err, "Failed to get pods list")
-		return
-	}
 	timer.ObserveStep("ListPods")
-	allLivePods := filterDeletedPods(podsList)
+	allLivePods := filterDeletedPodsFromSet(seenPods)
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
@@ -391,10 +399,14 @@ func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriction restriction.P
 	return filterPods(pods, evictionRestriction.CanEvict)
 }
 
-func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
-	return filterPods(pods, func(pod *apiv1.Pod) bool {
-		return pod.DeletionTimestamp == nil
-	})
+func filterDeletedPodsFromSet(pods sets.Set[*apiv1.Pod]) []*apiv1.Pod {
+	result := make([]*apiv1.Pod, 0)
+	for p := range pods {
+		if p.DeletionTimestamp == nil {
+			result = append(result, p)
+		}
+	}
+	return result
 }
 
 func newPodLister(kubeClient kube_client.Interface, namespace string) v1lister.PodLister {
