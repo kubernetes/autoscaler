@@ -38,7 +38,13 @@ import (
 )
 
 // NewTestProcessors returns a set of simple processors for use in tests.
+// Note: This function injects a default TemplateNodeInfoRegistry into the provided AutoscalingContext.
+// This is a necessary workaround for synthetic tests that manually construct the context without using NewStaticAutoscaler, ensuring they have access to the registry.
 func NewTestProcessors(autoscalingCtx *ca_context.AutoscalingContext) *processors.AutoscalingProcessors {
+	templateNodeInfoProvider := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false)
+	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(templateNodeInfoProvider)
+	autoscalingCtx.TemplateNodeInfoRegistry = templateNodeInfoRegistry
+
 	return &processors.AutoscalingProcessors{
 		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
@@ -50,7 +56,7 @@ func NewTestProcessors(autoscalingCtx *ca_context.AutoscalingContext) *processor
 		ScaleDownStatusProcessor:    &status.NoOpScaleDownStatusProcessor{},
 		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
-		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
+		TemplateNodeInfoProvider:    templateNodeInfoProvider,
 		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(true),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),

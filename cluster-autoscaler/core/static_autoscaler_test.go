@@ -2490,7 +2490,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	csr := clusterstate.NewClusterStateRegistry(provider, csrConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 15 * time.Minute}), processors.AsyncNodeGroupStateChecker)
 
 	// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
-	actuator := actuation.NewActuator(&autoscalingCtx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processorstest.NewTestProcessors(&autoscalingCtx).NodeGroupConfigProcessor)
+	actuator := actuation.NewActuator(&autoscalingCtx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, processors.NodeGroupConfigProcessor)
 	autoscalingCtx.ScaleDownActuator = actuator
 
 	// Fake planner that keeps track of the scale-down candidates passed to UpdateClusterState.
