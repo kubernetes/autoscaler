@@ -94,7 +94,10 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 		nodeName := unremovableNode.Node.Name
 		if info, exists := t.unneededNodes[nodeName]; exists {
 			duration := time.Since(info.unneededSince)
-			metrics.UpdateScaleDownNodeRemovalLatency(false, duration)
+			latency := duration - info.removalThreshold
+			if latency > 0 {
+				metrics.UpdateScaleDownNodeRemovalLatency(false, latency)
+			}
 			klog.V(4).Infof("Node %q is unremovable, became needed again (unneeded for %s).", nodeName, duration)
 			delete(t.unneededNodes, nodeName)
 		}
