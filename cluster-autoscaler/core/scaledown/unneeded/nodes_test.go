@@ -44,6 +44,8 @@ const (
 	defaultNodeCpu          = 10
 	defaultNodeMem          = 100
 	defaultNodeGroupMaxSize = 100
+	defaultUnneededTime     = 10 * time.Minute
+	defaultUnreadyTime      = 5 * time.Minute
 )
 
 func TestUpdate(t *testing.T) {
@@ -55,6 +57,7 @@ func TestUpdate(t *testing.T) {
 		finalNodes     []simulator.NodeToBeRemoved
 		wantTimestamps map[string]time.Time
 		wantVersions   map[string]string
+		wantThresholds map[string]time.Duration
 	}{
 		{
 			desc: "added then deleted",
@@ -75,6 +78,7 @@ func TestUpdate(t *testing.T) {
 			},
 			wantTimestamps: map[string]time.Time{"n1": finalTimestamp, "n2": finalTimestamp, "n3": finalTimestamp},
 			wantVersions:   map[string]string{"n1": "v1", "n2": "v1", "n3": "v1"},
+			wantThresholds: map[string]time.Duration{"n1": defaultUnreadyTime, "n2": defaultUnreadyTime, "n3": defaultUnreadyTime},
 		},
 		{
 			desc: "single one remaining",
@@ -88,6 +92,7 @@ func TestUpdate(t *testing.T) {
 			},
 			wantTimestamps: map[string]time.Time{"n2": initialTimestamp},
 			wantVersions:   map[string]string{"n2": "v2"},
+			wantThresholds: map[string]time.Duration{"n2": defaultUnreadyTime},
 		},
 		{
 			desc: "single one older",
@@ -101,15 +106,51 @@ func TestUpdate(t *testing.T) {
 			},
 			wantTimestamps: map[string]time.Time{"n1": finalTimestamp, "n2": initialTimestamp, "n3": finalTimestamp},
 			wantVersions:   map[string]string{"n1": "v2", "n2": "v2", "n3": "v2"},
+			wantThresholds: map[string]time.Duration{"n1": defaultUnreadyTime, "n2": defaultUnreadyTime, "n3": defaultUnreadyTime},
+		},
+		{
+			desc: "threshold updated on existing node (Ready -> Unready)",
+			initialNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n2", "v1", true),
+			},
+			finalNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n2", "v2", false),
+			},
+			wantTimestamps: map[string]time.Time{"n2": initialTimestamp},
+			wantVersions:   map[string]string{"n2": "v2"},
+			wantThresholds: map[string]time.Duration{"n2": defaultUnreadyTime},
+		},
+		{
+			desc: "mixed update and preservation",
+			initialNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n1", "v1", true),
+			},
+			finalNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n1", "v2", true),
+				makeNodeWithReadyStatus("n2", "v2", false),
+			},
+			wantTimestamps: map[string]time.Time{"n1": initialTimestamp, "n2": finalTimestamp},
+			wantVersions:   map[string]string{"n1": "v2", "n2": "v2"},
+			wantThresholds: map[string]time.Duration{"n1": defaultUnneededTime, "n2": defaultUnreadyTime},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			nodes := NewNodes(nil, nil)
 
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			ng := testprovider.NewTestNodeGroup("ng1", 100, 0, 10, true, false, "", nil, nil)
+			provider.InsertNodeGroup(ng)
+			for _, nn := range append(tc.initialNodes, tc.finalNodes...) {
+				provider.AddNode("ng1", nn.Node)
+			}
+			fakeTimeGetter := &fakeScaleDownTimeGetter{
+				unneededTime: defaultUnneededTime,
+				unreadyTime:  defaultUnreadyTime,
+			}
+
+			nodes := NewNodes(fakeTimeGetter, nil)
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
 
 			nodes.Update(ctx, tc.initialNodes, initialTimestamp)
@@ -123,6 +164,7 @@ func TestUpdate(t *testing.T) {
 				assert.True(t, found)
 				assert.Equal(t, tc.wantTimestamps[n.Node.Name], nn.since)
 				assert.Equal(t, tc.wantVersions[n.Node.Name], version(nn.ntbr))
+				assert.Equal(t, tc.wantThresholds[n.Node.Name], n.RemovalThreshold)
 			}
 		})
 	}
@@ -134,6 +176,12 @@ func makeNode(name, version string) simulator.NodeToBeRemoved {
 	n := BuildTestNode(name, 1000, 10)
 	n.Annotations = map[string]string{testVersion: version}
 	return simulator.NodeToBeRemoved{Node: n}
+}
+
+func makeNodeWithReadyStatus(name, version string, ready bool) simulator.NodeToBeRemoved {
+	nn := makeNode(name, version)
+	SetNodeReadyState(nn.Node, ready, time.Now())
+	return nn
 }
 
 func version(n simulator.NodeToBeRemoved) string {
