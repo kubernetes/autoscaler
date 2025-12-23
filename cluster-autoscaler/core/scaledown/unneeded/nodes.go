@@ -136,12 +136,12 @@ func (n *Nodes) updateInternalState(autoscalingCtx *ca_context.AutoscalingContex
 
 		val, found := n.byName[name]
 		if found {
-			updated[name] = &node{
-				ntbr:                     nn,
-				since:                    val.since,
-				removalThreshold:         val.removalThreshold,
-				thresholdRetrievalFailed: val.thresholdRetrievalFailed,
+			newNodeState := &node{
+				ntbr:  nn,
+				since: val.since,
 			}
+			n.lookupAndSetRemovalThreshold(newNodeState, autoscalingCtx.CloudProvider)
+			updated[name] = newNodeState
 		} else {
 			updated[name] = n.newNode(nn, timestampGetter, ts, autoscalingCtx.CloudProvider)
 		}
