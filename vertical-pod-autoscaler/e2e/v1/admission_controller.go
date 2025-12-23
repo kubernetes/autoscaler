@@ -689,6 +689,95 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
+	ginkgo.It("raises cpu requests and limits according to pod min limit set in LimitRange", func() {
+		d := utils.NewNHamstersDeployment(f, 3)
+
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[2].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[2].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
+		container3Name := utils.GetHamsterContainerNameByIndex(2)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithTarget("4m", "100Mi").
+					WithLowerBound("4m", "100Mi").
+					WithUpperBound("4m", "100Mi").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithTarget("21m", "100Mi").
+					WithLowerBound("21m", "100Mi").
+					WithUpperBound("21m", "100Mi").
+					GetContainerResources()).
+			WithContainer(container3Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container3Name).
+					WithTarget("90m", "100Mi").
+					WithLowerBound("90m", "100Mi").
+					WithUpperBound("90m", "100Mi").
+					GetContainerResources()).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		minCpu := ParseQuantityOrDie("150m")
+		installLimitRange(f, &minCpu, nil, nil, nil, apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		expectedRequestsLimits := map[string]string{
+			container1Name: "6m",   // ceil((4*150)/115)
+			container2Name: "28m",  // ceil((21*150)/115)
+			container3Name: "118m", // ceil((90*150)/115)
+		}
+
+		for _, pod := range podList.Items {
+			for _, container := range pod.Spec.Containers {
+				gomega.Expect(*container.Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie(expectedRequestsLimits[container.Name])))
+				gomega.Expect(*container.Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+				gomega.Expect(*container.Resources.Limits.Cpu()).To(gomega.Equal(ParseQuantityOrDie(expectedRequestsLimits[container.Name])))
+				gomega.Expect(*container.Resources.Limits.Memory()).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+				gomega.Expect(float64(container.Resources.Limits.Cpu().MilliValue()) / float64(container.Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1))
+				gomega.Expect(float64(container.Resources.Limits.Memory().Value()) / float64(container.Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 1))
+			}
+		}
+	})
+
 	ginkgo.It("raises request according to pod min limit set in LimitRange", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f,
 			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/

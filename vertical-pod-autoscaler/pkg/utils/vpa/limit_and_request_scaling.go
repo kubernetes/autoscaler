@@ -79,7 +79,7 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 		return &result, ""
 	}
 	if resourceName == core.ResourceCPU {
-		result, capped := scaleQuantityProportionallyCPU( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
+		result, capped := scaleQuantityProportionallyCPU( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest)
 		if !capped {
 			return result, ""
 		}
@@ -112,7 +112,7 @@ func GetBoundaryRequest(resourceName core.ResourceName, originalRequest, origina
 	// Determine which scaling function to use based on resource type.
 	var result *resource.Quantity
 	if resourceName == core.ResourceCPU {
-		result, _ = scaleQuantityProportionallyCPU(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/, noRounding)
+		result, _ = scaleQuantityProportionallyCPU(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/)
 		return result
 	}
 	result, _ = scaleQuantityProportionallyMem(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/, noRounding)
@@ -129,23 +129,20 @@ const (
 
 // scaleQuantityProportionallyCPU returns a value in milliunits which has the same proportion to scaledQuantity as scaleResult has to scaleBase.
 // It also returns a bool indicating if it had to cap result to MaxInt64 milliunits.
-func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, bool) {
+func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *resource.Quantity) (*resource.Quantity, bool) {
 	originalMilli := big.NewInt(scaledQuantity.MilliValue())
 	scaleBaseMilli := big.NewInt(scaleBase.MilliValue())
 	scaleResultMilli := big.NewInt(scaleResult.MilliValue())
-	var scaledOriginal big.Int
-	scaledOriginal.Mul(originalMilli, scaleResultMilli)
-	scaledOriginal.Div(&scaledOriginal, scaleBaseMilli)
-	if scaledOriginal.IsInt64() {
-		result := resource.NewMilliQuantity(scaledOriginal.Int64(), scaledQuantity.Format)
-		if rounding == roundUpToFullUnit {
-			result.RoundUp(resource.Scale(0))
+
+	var result big.Int
+	result.Mul(originalMilli, scaleResultMilli)
+	// divide and round up (ceil) if there is a remainder
+	z, m := new(big.Int).DivMod(&result, scaleBaseMilli, new(big.Int))
+	if z.IsInt64() {
+		if m.Sign() != 0 {
+			z.Add(z, big.NewInt(1))
 		}
-		if rounding == roundDownToFullUnit {
-			result.Sub(*resource.NewMilliQuantity(999, result.Format))
-			result.RoundUp(resource.Scale(0))
-		}
-		return result, false
+		return resource.NewMilliQuantity(z.Int64(), scaledQuantity.Format), false
 	}
 	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), true
 }

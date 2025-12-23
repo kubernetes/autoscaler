@@ -87,7 +87,7 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 			originalLimit:      mustParseToPointer("2"),
 			originalRequest:    mustParseToPointer("1.50"),
 			recommendedRequest: mustParseToPointer("1"),
-			expectLimit:        mustParseToPointer("1.333"),
+			expectLimit:        mustParseToPointer("1.334"), // ceil((2*1)/1.5)
 		},
 		{
 			name:               "go over milli cap",
