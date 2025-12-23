@@ -21,6 +21,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/dynamic-resource-allocation/structured"
@@ -32,12 +33,15 @@ import (
 type SharedLister interface {
 	fwk.SharedLister
 	fwk.SharedDRAManager
+	fwk.CSIManager
 }
 
 // DelegatingSchedulerSharedLister implements k8s.io/kube-scheduler/framework interfaces by passing the logic to a delegate. Delegate can be updated.
 type DelegatingSchedulerSharedLister struct {
 	delegate SharedLister
 }
+
+var _ SharedLister = &DelegatingSchedulerSharedLister{}
 
 // NewDelegatingSchedulerSharedLister creates new NewDelegatingSchedulerSharedLister
 func NewDelegatingSchedulerSharedLister() *DelegatingSchedulerSharedLister {
@@ -71,19 +75,24 @@ func (lister *DelegatingSchedulerSharedLister) DeviceClasses() fwk.DeviceClassLi
 	return lister.delegate.DeviceClasses()
 }
 
+// CSINodes returns a CSINodeLister.
+func (lister *DelegatingSchedulerSharedLister) CSINodes() fwk.CSINodeLister {
+	return lister.delegate.CSINodes()
+}
+
 // UpdateDelegate updates the delegate
 func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate SharedLister) {
 	lister.delegate = delegate
 }
 
-// ResetDelegate resets delegate to
-func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
-	lister.delegate = unsetSharedListerSingleton
-}
-
-// DeviceClassResolver returns a DeviceClassResolver.
+// DeviceClassResolver returns a device class resolver.
 func (lister *DelegatingSchedulerSharedLister) DeviceClassResolver() fwk.DeviceClassResolver {
 	return lister.delegate.DeviceClassResolver()
+}
+
+// ResetDelegate resets delegate to the unsetSharedListerSingleton.
+func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
+	lister.delegate = unsetSharedListerSingleton
 }
 
 type unsetSharedLister struct{}
@@ -93,6 +102,7 @@ type unsetResourceClaimTracker unsetSharedLister
 type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
 type unsetDeviceClassResolver unsetSharedLister
+type unsetCSINodeLister unsetSharedLister
 
 // List always returns an error
 func (lister *unsetNodeInfoLister) List() ([]fwk.NodeInfo, error) {
@@ -118,59 +128,67 @@ func (lister *unsetStorageInfoLister) IsPVCUsedByPods(key string) bool {
 	return false
 }
 
-func (u unsetResourceClaimTracker) List() ([]*resourceapi.ResourceClaim, error) {
+func (u *unsetResourceClaimTracker) List() ([]*resourceapi.ResourceClaim, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceClaimTracker) Get(namespace, claimName string) (*resourceapi.ResourceClaim, error) {
+func (u *unsetResourceClaimTracker) Get(namespace, claimName string) (*resourceapi.ResourceClaim, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.DeviceID], error) {
+func (u *unsetResourceClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.DeviceID], error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceClaimTracker) GatherAllocatedState() (*structured.AllocatedState, error) {
+func (u *unsetResourceClaimTracker) GatherAllocatedState() (*structured.AllocatedState, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceClaimTracker) SignalClaimPendingAllocation(claimUID types.UID, allocatedClaim *resourceapi.ResourceClaim) error {
+func (u *unsetResourceClaimTracker) SignalClaimPendingAllocation(claimUID types.UID, allocatedClaim *resourceapi.ResourceClaim) error {
 	return fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceClaimTracker) ClaimHasPendingAllocation(claimUID types.UID) bool {
+func (u *unsetResourceClaimTracker) ClaimHasPendingAllocation(claimUID types.UID) bool {
 	klog.Errorf("lister not set in delegate")
 	return false
 }
 
-func (u unsetResourceClaimTracker) RemoveClaimPendingAllocation(claimUID types.UID) (deleted bool) {
+func (u *unsetResourceClaimTracker) RemoveClaimPendingAllocation(claimUID types.UID) (deleted bool) {
 	klog.Errorf("lister not set in delegate")
 	return false
 }
 
-func (u unsetResourceClaimTracker) AssumeClaimAfterAPICall(claim *resourceapi.ResourceClaim) error {
+func (u *unsetResourceClaimTracker) AssumeClaimAfterAPICall(claim *resourceapi.ResourceClaim) error {
 	return fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceClaimTracker) AssumedClaimRestore(namespace, claimName string) {
+func (u *unsetResourceClaimTracker) AssumedClaimRestore(namespace, claimName string) {
 	klog.Errorf("lister not set in delegate")
 }
 
-func (u unsetResourceSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
+func (u *unsetResourceSliceLister) ListWithDeviceTaintRules() ([]*resourceapi.ResourceSlice, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetDeviceClassLister) List() ([]*resourceapi.DeviceClass, error) {
+func (u *unsetDeviceClassLister) List() ([]*resourceapi.DeviceClass, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetDeviceClassLister) Get(className string) (*resourceapi.DeviceClass, error) {
+func (u *unsetDeviceClassLister) Get(className string) (*resourceapi.DeviceClass, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-func (u unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceName) *resourceapi.DeviceClass {
+func (u *unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceName) *resourceapi.DeviceClass {
 	klog.Errorf("lister not set in delegate")
 	return nil
+}
+
+func (u *unsetCSINodeLister) List() ([]*storagev1.CSINode, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u *unsetCSINodeLister) Get(name string) (*storagev1.CSINode, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 // NodeInfos returns a fake NodeInfoLister which always returns an error
@@ -197,6 +215,10 @@ func (lister *unsetSharedLister) DeviceClasses() fwk.DeviceClassLister {
 
 func (lister *unsetSharedLister) DeviceClassResolver() fwk.DeviceClassResolver {
 	return (*unsetDeviceClassResolver)(lister)
+}
+
+func (lister *unsetSharedLister) CSINodes() fwk.CSINodeLister {
+	return (*unsetCSINodeLister)(lister)
 }
 
 var unsetSharedListerSingleton *unsetSharedLister

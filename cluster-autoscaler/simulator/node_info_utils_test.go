@@ -29,6 +29,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/controller/daemon"
@@ -188,9 +189,11 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 		pods       []*apiv1.Pod
 		daemonSets []*appsv1.DaemonSet
 		forceDS    bool
+		csiNode    *storagev1.CSINode
 
-		wantPods  []*apiv1.Pod
-		wantError bool
+		wantPods    []*apiv1.Pod
+		wantCSINode bool
+		wantError   bool
 	}{
 		{
 			name: "node without any pods",
@@ -305,6 +308,56 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 				buildDSPod(ds4, "n"),
 			},
 		},
+		{
+			name:        "node without CSINode",
+			wantCSINode: false,
+		},
+		{
+			name: "node with CSINode",
+			csiNode: &storagev1.CSINode{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "n",
+					UID:  types.UID("original-csi-node-uid"),
+				},
+				Spec: storagev1.CSINodeSpec{
+					Drivers: []storagev1.CSINodeDriver{
+						{
+							Name:         "test-driver",
+							NodeID:       "test-node-id",
+							TopologyKeys: []string{"topology-key"},
+						},
+					},
+				},
+			},
+			wantCSINode: true,
+		},
+		{
+			name: "node with CSINode and pods",
+			pods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+			},
+			daemonSets: testDaemonSets,
+			csiNode: &storagev1.CSINode{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "n",
+					UID:  types.UID("original-csi-node-uid"),
+				},
+				Spec: storagev1.CSINodeSpec{
+					Drivers: []storagev1.CSINodeDriver{
+						{
+							Name:         "test-driver",
+							NodeID:       "test-node-id",
+							TopologyKeys: []string{"topology-key"},
+						},
+					},
+				},
+			},
+			wantPods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+				buildDSPod(ds4, "n"),
+			},
+			wantCSINode: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -313,6 +366,9 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			exampleNodeInfo := framework.NewNodeInfo(exampleNode, nil)
 			for _, pod := range tc.pods {
 				exampleNodeInfo.AddPod(&framework.PodInfo{Pod: pod})
+			}
+			if tc.csiNode != nil {
+				exampleNodeInfo.SetCSINode(tc.csiNode)
 			}
 
 			templateNodeInfo, err := SanitizedTemplateNodeInfoFromNodeInfo(exampleNodeInfo, nodeGroupId, tc.daemonSets, tc.forceDS, taints.TaintConfig{})
@@ -325,6 +381,21 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			}
 			if err != nil {
 				t.Fatalf("TemplateNodeInfoFromExampleNodeInfo(): expected no error, but got %v", err)
+			}
+
+			// Verify CSINode behavior
+			if tc.wantCSINode {
+				if templateNodeInfo.CSINode == nil {
+					t.Fatal("TemplateNodeInfoFromExampleNodeInfo(): want CSINode, but got nil")
+				}
+				// Verify CSINode is sanitized
+				if err := verifySanitizedCSINode(tc.csiNode, templateNodeInfo.CSINode, templateNodeInfo.Node()); err != nil {
+					t.Fatalf("TemplateNodeInfoFromExampleNodeInfo(): CSINode wasn't properly sanitized: %v", err)
+				}
+			} else {
+				if templateNodeInfo.CSINode != nil {
+					t.Fatalf("TemplateNodeInfoFromExampleNodeInfo(): don't want CSINode, but got %v", templateNodeInfo.CSINode)
+				}
 			}
 
 			// Verify that the taints are correctly sanitized.
@@ -748,6 +819,44 @@ func verifySanitizedPodResourceClaimStatuses(initialStatuses, sanitizedStatuses 
 			}
 		}
 	}
+	return nil
+}
+
+func verifySanitizedCSINode(initialCSINode, sanitizedCSINode *storagev1.CSINode, templateNode *apiv1.Node) error {
+	if sanitizedCSINode == nil {
+		return fmt.Errorf("sanitized CSINode is nil")
+	}
+
+	// Verify name matches template node name
+	if sanitizedCSINode.Name != templateNode.Name {
+		return fmt.Errorf("sanitized CSINode name unexpected: want %q, got %q", templateNode.Name, sanitizedCSINode.Name)
+	}
+
+	// Verify UID is different from original
+	if sanitizedCSINode.UID == "" || sanitizedCSINode.UID == initialCSINode.UID {
+		return fmt.Errorf("sanitized CSINode UID wasn't randomized - got %q, old UID was %q", sanitizedCSINode.UID, initialCSINode.UID)
+	}
+
+	// Verify owner references point to template node
+	if len(sanitizedCSINode.OwnerReferences) != 1 {
+		return fmt.Errorf("sanitized CSINode should have exactly one owner reference, got %d", len(sanitizedCSINode.OwnerReferences))
+	}
+	ownerRef := sanitizedCSINode.OwnerReferences[0]
+	if ownerRef.Kind != "Node" {
+		return fmt.Errorf("sanitized CSINode owner reference kind unexpected: want %q, got %q", "Node", ownerRef.Kind)
+	}
+	if ownerRef.Name != templateNode.Name {
+		return fmt.Errorf("sanitized CSINode owner reference name unexpected: want %q, got %q", templateNode.Name, ownerRef.Name)
+	}
+	if ownerRef.UID != templateNode.UID {
+		return fmt.Errorf("sanitized CSINode owner reference UID unexpected: want %q, got %q", templateNode.UID, ownerRef.UID)
+	}
+
+	// Verify spec is preserved (deep copied)
+	if diff := cmp.Diff(initialCSINode.Spec, sanitizedCSINode.Spec); diff != "" {
+		return fmt.Errorf("sanitized CSINode spec unexpected diff (-want +got): %s", diff)
+	}
+
 	return nil
 }
 
