@@ -32,6 +32,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 )
 
 const (
@@ -354,4 +355,38 @@ func isInPlaceUpdating(podToCheck *apiv1.Pod) bool {
 		}
 	}
 	return false
+}
+
+// getResizeStatus returns the current resize status of a pod based on its conditions.
+// This is used to determine the appropriate action for pods undergoing in-place updates.
+func getResizeStatus(pod *apiv1.Pod) utils.ResizeStatus {
+	if !isInPlaceUpdating(pod) {
+		return utils.ResizeStatusNone
+	}
+
+	resizePendingCondition, ok := utils.GetPodCondition(pod, apiv1.PodResizePending)
+	if ok {
+		switch resizePendingCondition.Reason {
+		case apiv1.PodReasonDeferred:
+			return utils.ResizeStatusDeferred
+		case apiv1.PodReasonInfeasible:
+			return utils.ResizeStatusInfeasible
+		default:
+			return utils.ResizeStatusUnknown
+		}
+	}
+
+	resizeInProgressCondition, ok := utils.GetPodCondition(pod, apiv1.PodResizeInProgress)
+	if ok {
+		if resizeInProgressCondition.Reason == "" && resizeInProgressCondition.Message == "" {
+			return utils.ResizeStatusInProgress
+		}
+		if resizeInProgressCondition.Reason == apiv1.PodReasonError {
+			return utils.ResizeStatusError
+		}
+		return utils.ResizeStatusUnknown
+	}
+
+	// Pod is in-place updating but no specific condition found
+	return utils.ResizeStatusUnknown
 }
