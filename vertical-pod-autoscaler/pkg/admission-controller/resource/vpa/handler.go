@@ -107,6 +107,11 @@ func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
 
 // ValidateVPA checks the correctness of VPA Spec and returns an error if there is a problem.
 func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
+	// check that perVPA is on if being used
+	if err := validatePerVPAFeatureFlag(vpa); err != nil {
+		return err
+	}
+
 	if vpa.Spec.UpdatePolicy != nil {
 		mode := vpa.Spec.UpdatePolicy.UpdateMode
 		if mode == nil {
@@ -122,17 +127,13 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
 			return fmt.Errorf("minReplicas has to be positive, got %v", *minReplicas)
 		}
+
 	}
 
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
 			if policy.ContainerName == "" {
 				return fmt.Errorf("containerPolicies.ContainerName is required")
-			}
-
-			// check that perVPA is on if being used
-			if err := validatePerVPAFeatureFlag(&policy); err != nil {
-				return err
 			}
 
 			// Validate OOMBumpUpRatio
@@ -216,11 +217,20 @@ func validateMemoryResolution(val apires.Quantity) error {
 	return nil
 }
 
-func validatePerVPAFeatureFlag(policy *vpa_types.ContainerResourcePolicy) error {
+func validatePerVPAFeatureFlag(vpa *vpa_types.VerticalPodAutoscaler) error {
 	featureFlagOn := features.Enabled(features.PerVPAConfig)
-	perVPA := policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil
-	if !featureFlagOn && perVPA {
-		return fmt.Errorf("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag %s is disabled", features.PerVPAConfig)
+	if !featureFlagOn && vpa.Spec.UpdatePolicy.EvictAfterOOMThreshold != nil {
+		return fmt.Errorf("EvictAfterOOMThreshold is not supported when feature flag %s is disabled", features.PerVPAConfig)
+	}
+
+	if vpa.Spec.ResourcePolicy != nil {
+		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
+			perVPA := policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil
+			if !featureFlagOn && perVPA {
+				return fmt.Errorf("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag %s is disabled", features.PerVPAConfig)
+			}
+		}
+
 	}
 	return nil
 }
