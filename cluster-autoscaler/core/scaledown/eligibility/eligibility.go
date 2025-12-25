@@ -185,6 +185,11 @@ func (c *Checker) isNodeBelowUtilizationThreshold(autoscalingCtx *ca_context.Aut
 			return false, err
 		}
 	}
+	// Special case: when utilization is exactly 0 and threshold is 0,
+	// the node should be considered below threshold (user explicitly allows scale-down).
+	if utilInfo.Utilization == 0 && threshold == 0 {
+		return true, nil
+	}
 	if utilInfo.Utilization >= threshold {
 		return false, nil
 	}
