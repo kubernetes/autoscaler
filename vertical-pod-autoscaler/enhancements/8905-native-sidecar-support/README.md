@@ -32,7 +32,9 @@ Addresses [issue #7229](https://github.com/kubernetes/autoscaler/issues/7229)
 
 ## Proposal
 
-The proposal is to introduce a new feature gate `NativeSidecar` in VPA. When enabled, VPA components will recognize and handle native sidecar containers.
+The proposal is to extend VPA to support native sidecar containers. This involves updating the Recommender to generate recommendations for these containers, and updating the Updater and Admission Controller to apply these recommendations.
+
+This functionality will be guarded by a new feature gate `NativeSidecar` to allow for safe rollout.
 
 ## Design Details
 
@@ -81,6 +83,7 @@ The following test scenarios will be added to e2e tests.
 - Updater will update sidecar container resources in-place or evict.
 - Admission will patch sidecar container resources.
 - When the feature gate `NativeSidecar` is false VPA components will not modify native sidecars.
+- Verify that regular init containers (without `restartPolicy: Always`) are not treated as sidecars and do not receive recommendations intended for sidecars.
 
 ### Upgrade / Downgrade Strategy
 
@@ -95,7 +98,7 @@ by passing `--feature-gates=NativeSidecar=true` to the VPA components.
 #### Downgrade
 
 On downgrade of VPA from 1.6.0 (tentative release version), nothing will change.
-VPAs will continue to work as previously. Checkpoints may contain sidecar resource information until updated, but updater and admission will modify sidecar resources.
+VPAs will continue to work as previously. Checkpoints may contain sidecar resource information until updated, but updater and admission will not modify sidecar resources.
 
 ## Implementation History
 
@@ -106,4 +109,3 @@ VPAs will continue to work as previously. Checkpoints may contain sidecar resour
 ### Treat as Standard Containers
 
 We could treat them as standard containers, but they are technically init containers in the Pod spec, so the patch path would be incorrect (`/spec/containers` vs `/spec/initContainers`).
-
