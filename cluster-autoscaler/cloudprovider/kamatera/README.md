@@ -36,12 +36,14 @@ it is an INI file with the following fields:
 | global/kamatera-api-secret             | Kamatera API Secret                                                                                                                                     | yes       | none                               |
 | global/cluster-name                    | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string used to set the cluster server tag                       | yes       | none                               |
 | global/filter-name-prefix              | autoscaler will only handle server names that start with this prefix                                                                                    | no        | none                               |
+| global/provider-id-prefix              | prefix used for Kubernetes node `.spec.providerID` (and for matching nodes to Kamatera instances)                                                        | no        | kamatera://                        |
 | global/default-min-size                | default minimum size of a node group (must be > 0)                                                                                                      | no        | 1                                  |
 | global/default-max-size                | default maximum size of a node group                                                                                                                    | no        | 254                                |
 | global/default-<SERVER_CONFIG_KEY>     | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | see below | see below                          |
 | nodegroup \"name\"                     | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string within the cluster used to set the node group server tag | yes       | none                               |
 | nodegroup \"name\"/min-size            | minimum size for a specific node group                                                                                                                  | no        | global/defaut-min-size             |
 | nodegroup \"name\"/max-size            | maximum size for a specific node group                                                                                                                  | no        | global/defaut-min-size             |
+| nodegroup \"name\"/template-label      | Set labels on the node template used for scale up checks (See below for details)                                                                        | no        | none                               |
 | nodegroup \"name\"/<SERVER_CONFIG_KEY> | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | no        | global/default-<SERVER_CONFIG_KEY> |
 
 ### Server configuration keys
@@ -110,29 +112,26 @@ network = "name=lan-12345-abcde,ip=auto"
 This script is required so that the server will connect to the relevant cluster. The specific script depends on
 how you create and manage the cluster.
 
-See below for some common configurations, but the exact script may need to be modified depending on your requirements
-and server image.
-
 The script needs to be provided as a base64 encoded string. You can encode your script using the following command: 
 `cat script.sh | base64 -w0`.
 
-#### Kamatera Rancher Server Initialization Script
+### Node Templates
 
-Using Kamatera Rancher you need to get the command to join a server to the cluster. This is available from the
-following URL: `https://rancher.domain/v3/clusterregistrationtokens`. The relevant command is available under
-`data[].nodeCommand`, if you have a single cluster, it will be the first one. If you have multiple cluster you
-will have to locate the relevant cluster from the array using `clusterId`. The command will look like this:
+When autoscaler makes scaling decisions it checks if added nodes will be able to run pending pods.
+
+If pods have node selectors or affinity restrictions, the autoscaler needs to know if the new nodes will match these requirements.
+
+Following example shows how to set labels on the node template used for scale up checks:
 
 ```
-sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run  rancher/rancher-agent:v2.6.4 --server https://rancher.domain --token aaa --ca-checksum bbb
+[nodegroup "ng1"]
+template-label = "disktype=ssd"
+template-label = "kubernetes.io/os=linux"
 ```
 
-You can replace this command in the example script at [examples/server-init-rancher.sh.txt](examples/server-init-rancher.sh.txt)
+This will cause the relevant node group to be considered for pending pods that require those labels.
 
-#### Kubeadm Initialization Script
-
-The example script at [examples/server-init-kubeadm.sh.txt](examples/server-init-kubeadm.sh.txt) can be used as a base for
-writing your own script to join the server to your cluster.
+It's still your responsibility to make sure the actual nodes created by the autoscaler will have these labels.
 
 ## Development
 

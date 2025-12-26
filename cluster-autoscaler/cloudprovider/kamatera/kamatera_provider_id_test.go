@@ -23,36 +23,51 @@ import (
 )
 
 func TestFormatKamateraProviderID(t *testing.T) {
-	// test empty string returns empty string
-	result := formatKamateraProviderID("")
+	// test empty server name returns empty string
+	result := formatKamateraProviderID("", "")
 	assert.Equal(t, "", result)
 
-	// test server name is prefixed with kamatera://
+	// test server name is prefixed with default prefix when prefix is empty
 	serverName := "my-server-123"
-	result = formatKamateraProviderID(serverName)
+	result = formatKamateraProviderID("", serverName)
 	assert.Equal(t, "kamatera://my-server-123", result)
+
+	// test server name is prefixed with a custom prefix
+	result = formatKamateraProviderID("kamatera:///", serverName)
+	assert.Equal(t, "kamatera:///my-server-123", result)
 }
 
 func TestParseKamateraProviderID(t *testing.T) {
 	// test empty string returns empty string
-	result := parseKamateraProviderID("")
+	result := parseKamateraProviderID("", "")
 	assert.Equal(t, "", result)
 
-	// test provider ID with kamatera:// prefix returns server name
+	// test provider ID with default prefix returns server name
 	providerID := "kamatera://my-server-123"
-	result = parseKamateraProviderID(providerID)
+	result = parseKamateraProviderID("", providerID)
+	assert.Equal(t, "my-server-123", result)
+
+	// test provider ID with custom prefix returns server name
+	providerID = "kamatera:///my-server-123"
+	result = parseKamateraProviderID("kamatera:///", providerID)
 	assert.Equal(t, "my-server-123", result)
 
 	// test provider ID without prefix returns the same string (for backwards compatibility)
 	providerIDWithoutPrefix := "my-server-456"
-	result = parseKamateraProviderID(providerIDWithoutPrefix)
+	result = parseKamateraProviderID("", providerIDWithoutPrefix)
 	assert.Equal(t, "my-server-456", result)
+
+	// Backwards compatibility: accept the old default prefix even if the configured prefix differs.
+	providerID = "kamatera://my-server-789"
+	result = parseKamateraProviderID("kamatera:///", providerID)
+	assert.Equal(t, "my-server-789", result)
 }
 
 func TestFormatAndParseRoundTrip(t *testing.T) {
 	// test that formatting and then parsing returns the original server name
 	serverName := mockKamateraServerName()
-	providerID := formatKamateraProviderID(serverName)
-	parsedServerName := parseKamateraProviderID(providerID)
+	providerIDPrefix := "kamatera:///"
+	providerID := formatKamateraProviderID(providerIDPrefix, serverName)
+	parsedServerName := parseKamateraProviderID(providerIDPrefix, providerID)
 	assert.Equal(t, serverName, parsedServerName)
 }

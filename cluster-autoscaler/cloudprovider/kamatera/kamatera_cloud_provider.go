@@ -41,7 +41,6 @@ type kamateraCloudProvider struct {
 }
 
 var _ cloudprovider.CloudProvider = (*kamateraCloudProvider)(nil)
-const kamateraProviderIDPrefix = "kamatera://"
 
 // Name returns name of the cloud provider.
 func (k *kamateraCloudProvider) Name() string {

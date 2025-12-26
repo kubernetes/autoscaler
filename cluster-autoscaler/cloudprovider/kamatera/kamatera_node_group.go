@@ -36,12 +36,13 @@ import (
 // configuration info and functions to control a set of nodes that have the
 // same capacity and set of labels.
 type NodeGroup struct {
-	id           string
-	manager      *manager
-	minSize      int
-	maxSize      int
-	instances    map[string]*Instance // key is the instance ID
-	serverConfig ServerConfig
+	id             string
+	manager        *manager
+	minSize        int
+	maxSize        int
+	instances      map[string]*Instance // key is the instance ID
+	serverConfig   ServerConfig
+	templateLabels []string
 }
 
 var _ cloudprovider.NodeGroup = (*NodeGroup)(nil)
@@ -151,9 +152,13 @@ func (n *NodeGroup) Debug() string {
 // This list should include also instances that might have not become a kubernetes node yet.
 func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	var instances []cloudprovider.Instance
+	providerIDPrefix := ""
+	if n.manager != nil && n.manager.config != nil {
+		providerIDPrefix = n.manager.config.providerIDPrefix
+	}
 	for _, instance := range n.instances {
 		instances = append(instances, cloudprovider.Instance{
-			Id:     formatKamateraProviderID(instance.Id),
+			Id:     formatKamateraProviderID(providerIDPrefix, instance.Id),
 			Status: instance.Status,
 		})
 	}
@@ -171,10 +176,17 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource list for node group %s error: %v", n.id, err)
 	}
+	labels := make(map[string]string)
+	for _, templateLabel := range n.templateLabels {
+		parts := strings.SplitN(templateLabel, "=", 2)
+		if len(parts) == 2 {
+			labels[parts[0]] = parts[1]
+		}
+	}
 	node := apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   kamateraServerName(""),
-			Labels: map[string]string{},
+			Labels: labels,
 		},
 		Status: apiv1.NodeStatus{
 			Capacity:   resourceList,
@@ -220,7 +232,11 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 }
 
 func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
-	parsedProviderID := parseKamateraProviderID(node.Spec.ProviderID)
+	providerIDPrefix := ""
+	if n.manager != nil && n.manager.config != nil {
+		providerIDPrefix = n.manager.config.providerIDPrefix
+	}
+	parsedProviderID := parseKamateraProviderID(providerIDPrefix, node.Spec.ProviderID)
 	for _, instance := range n.instances {
 		if instance.Id == parsedProviderID {
 			klog.V(2).Infof("findInstanceForNode(%s): found based on node ProviderID", node.Name)
@@ -229,7 +245,7 @@ func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
 			klog.V(2).Infof("findInstanceForNode(%s): found based on node Id", node.Name)
 			// Rancher does not set providerID for nodes, so we use node name as providerID
 			// We also set the ProviderID as some autoscaler code expects it to be set
-			node.Spec.ProviderID = formatKamateraProviderID(instance.Id)
+			node.Spec.ProviderID = formatKamateraProviderID(providerIDPrefix, instance.Id)
 			err := setNodeProviderID(n.manager.kubeClient, node.Name, node.Spec.ProviderID)
 			if err != nil {
 				// this is not a critical error, the autoscaler can continue functioning in this condition

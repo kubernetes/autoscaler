@@ -18,16 +18,40 @@ package kamatera
 
 import "strings"
 
-func formatKamateraProviderID(serverName string) string {
+const defaultKamateraProviderIDPrefix = "kamatera://"
+
+func normalizeKamateraProviderIDPrefix(providerIDPrefix string) string {
+	if providerIDPrefix == "" {
+		return defaultKamateraProviderIDPrefix
+	}
+	return providerIDPrefix
+}
+
+func formatKamateraProviderID(providerIDPrefix, serverName string) string {
 	if serverName == "" {
 		return ""
 	}
-	return kamateraProviderIDPrefix + serverName
+	return normalizeKamateraProviderIDPrefix(providerIDPrefix) + serverName
 }
 
-func parseKamateraProviderID(providerID string) string {
+func parseKamateraProviderID(providerIDPrefix, providerID string) string {
 	if providerID == "" {
 		return ""
 	}
-	return strings.TrimPrefix(providerID, kamateraProviderIDPrefix)
+
+	prefix := normalizeKamateraProviderIDPrefix(providerIDPrefix)
+	trimmed := strings.TrimPrefix(providerID, prefix)
+	if trimmed != providerID {
+		return trimmed
+	}
+
+	// Backwards compatibility: accept the old default prefix even if the configured prefix differs.
+	if prefix != defaultKamateraProviderIDPrefix {
+		trimmed = strings.TrimPrefix(providerID, defaultKamateraProviderIDPrefix)
+		if trimmed != providerID {
+			return trimmed
+		}
+	}
+
+	return providerID
 }

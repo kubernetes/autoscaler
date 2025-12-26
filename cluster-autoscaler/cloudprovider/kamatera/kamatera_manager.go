@@ -174,12 +174,13 @@ func (m *manager) buildNodeGroup(name string, cfg *nodeGroupConfig, servers []Se
 		Tags:           tags,
 	}
 	ng := &NodeGroup{
-		id:           name,
-		manager:      m,
-		minSize:      cfg.minSize,
-		maxSize:      cfg.maxSize,
-		instances:    instances,
-		serverConfig: serverConfig,
+		id:             name,
+		manager:        m,
+		minSize:        cfg.minSize,
+		maxSize:        cfg.maxSize,
+		instances:      instances,
+		serverConfig:   serverConfig,
+		templateLabels: cfg.TemplateLabels,
 	}
 	return ng, nil
 }
