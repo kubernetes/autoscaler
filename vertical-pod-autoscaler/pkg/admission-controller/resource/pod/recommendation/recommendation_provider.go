@@ -30,7 +30,7 @@ import (
 
 // Provider gets current recommendation, annotations and vpaName for the given pod.
 type Provider interface {
-	GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error)
+	GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error)
 }
 
 type recommendationProvider struct {
@@ -51,72 +51,88 @@ func NewProvider(calculator limitrange.LimitRangeCalculator,
 // If addAll is set to true, containers w/o a recommendation are also added to the list (and their non-recommended requests and limits will always be preserved if present),
 // otherwise they're skipped (default behaviour).
 func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *core.LimitRangeItem,
-	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
-	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
-	for i, container := range pod.Spec.Containers {
-		containerRequests, containerLimits := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
-		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
-		if recommendation == nil {
-			if !addAll {
-				klog.V(2).InfoS("No recommendation found for container, skipping", "container", container.Name)
-				continue
-			}
-			klog.V(2).InfoS("No match found for container, using Pod request", "container", container.Name)
-			resources[i].Requests = containerRequests
-		} else {
-			resources[i].Requests = recommendation.Target
-		}
-		defaultLimit := core.ResourceList{}
-		if limitRange != nil {
-			defaultLimit = limitRange.Default
-		}
-		containerControlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpaResourcePolicy)
-		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(containerLimits, containerRequests, resources[i].Requests, defaultLimit)
-			if proportionalLimits != nil {
-				resources[i].Limits = proportionalLimits
-				if len(limitAnnotations) > 0 {
-					annotations[container.Name] = append(annotations[container.Name], limitAnnotations...)
-				}
-			}
-		}
-		// If the recommendation only contains CPU or Memory (if the VPA was configured this way), we need to make sure we "backfill" the other.
-		// Only do this when the addAll flag is true.
-		if addAll {
-			if resources[i].Requests == nil {
-				resources[i].Requests = core.ResourceList{}
-			}
-			if resources[i].Limits == nil {
-				resources[i].Limits = core.ResourceList{}
-			}
+	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources) {
+	initResources := getResourcesForPodContainers(pod.Spec.InitContainers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
+	containerResources := getResourcesForPodContainers(pod.Spec.Containers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
+	return initResources, containerResources
+}
 
-			cpuRequest, hasCpuRequest := containerRequests[core.ResourceCPU]
-			if _, ok := resources[i].Requests[core.ResourceCPU]; !ok && hasCpuRequest {
-				resources[i].Requests[core.ResourceCPU] = cpuRequest
-			}
-			memRequest, hasMemRequest := containerRequests[core.ResourceMemory]
-			if _, ok := resources[i].Requests[core.ResourceMemory]; !ok && hasMemRequest {
-				resources[i].Requests[core.ResourceMemory] = memRequest
-			}
-			cpuLimit, hasCpuLimit := containerLimits[core.ResourceCPU]
-			if _, ok := resources[i].Limits[core.ResourceCPU]; !ok && hasCpuLimit {
-				resources[i].Limits[core.ResourceCPU] = cpuLimit
-			}
-			memLimit, hasMemLimit := containerLimits[core.ResourceMemory]
-			if _, ok := resources[i].Limits[core.ResourceMemory]; !ok && hasMemLimit {
-				resources[i].Limits[core.ResourceMemory] = memLimit
-			}
-		}
+// getResourcesForPodContainers processes a list of containers and returns their recommended resources.
+func getResourcesForPodContainers(containers []core.Container, pod *core.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources,
+	limitRange *core.LimitRangeItem, addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
+	resources := make([]vpa_api_util.ContainerResources, len(containers))
+	for i, container := range containers {
+		resources[i] = getSingleContainerResources(container, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
 	}
 	return resources
 }
 
+// getSingleContainerResources returns the recommended resources for a single container.
+func getSingleContainerResources(container core.Container, pod *core.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources,
+	limitRange *core.LimitRangeItem, addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) vpa_api_util.ContainerResources {
+	containerRequests, containerLimits := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+	recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
+	res := vpa_api_util.ContainerResources{}
+
+	if recommendation == nil {
+		if !addAll {
+			klog.V(2).InfoS("No recommendation found for container, skipping", "container", container.Name)
+			return res
+		}
+		klog.V(2).InfoS("No match found for container, using Pod request", "container", container.Name)
+		res.Requests = containerRequests
+	} else {
+		res.Requests = recommendation.Target
+	}
+
+	defaultLimit := core.ResourceList{}
+	if limitRange != nil {
+		defaultLimit = limitRange.Default
+	}
+	containerControlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpaResourcePolicy)
+	if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
+		proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(containerLimits, containerRequests, res.Requests, defaultLimit)
+		if proportionalLimits != nil {
+			res.Limits = proportionalLimits
+			if len(limitAnnotations) > 0 {
+				annotations[container.Name] = append(annotations[container.Name], limitAnnotations...)
+			}
+		}
+	}
+	// Backfill missing resources if addAll is true
+	if addAll {
+		if res.Requests == nil {
+			res.Requests = core.ResourceList{}
+		}
+		if res.Limits == nil {
+			res.Limits = core.ResourceList{}
+		}
+		cpuRequest, hasCpuRequest := containerRequests[core.ResourceCPU]
+		if _, ok := res.Requests[core.ResourceCPU]; !ok && hasCpuRequest {
+			res.Requests[core.ResourceCPU] = cpuRequest
+		}
+		memRequest, hasMemRequest := containerRequests[core.ResourceMemory]
+		if _, ok := res.Requests[core.ResourceMemory]; !ok && hasMemRequest {
+			res.Requests[core.ResourceMemory] = memRequest
+		}
+		cpuLimit, hasCpuLimit := containerLimits[core.ResourceCPU]
+		if _, ok := res.Limits[core.ResourceCPU]; !ok && hasCpuLimit {
+			res.Limits[core.ResourceCPU] = cpuLimit
+		}
+		memLimit, hasMemLimit := containerLimits[core.ResourceMemory]
+		if _, ok := res.Limits[core.ResourceMemory]; !ok && hasMemLimit {
+			res.Limits[core.ResourceMemory] = memLimit
+		}
+	}
+	return res
+}
+
 // GetContainersResourcesForPod returns recommended request for a given pod and associated annotations.
 // The returned slice corresponds 1-1 to containers in the Pod.
-func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
 	if vpa == nil || pod == nil {
 		klog.V(2).InfoS("Can't calculate recommendations, one of VPA or Pod is nil", "vpa", vpa, "pod", pod)
-		return nil, nil, nil
+		return nil, nil, nil, nil
 	}
 	klog.V(2).InfoS("Updating requirements for pod", "pod", klog.KObj(pod))
 
@@ -128,18 +144,25 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpa, pod)
 		if err != nil {
 			klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod))
-			return nil, annotations, err
+			return nil, nil, annotations, err
 		}
 	}
 	containerLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error getting containerLimitRange: %s", err)
+		return nil, nil, nil, fmt.Errorf("error getting containerLimitRange: %s", err)
 	}
 	var resourcePolicy *vpa_types.PodResourcePolicy
 	if vpa.Spec.UpdatePolicy == nil || vpa.Spec.UpdatePolicy.UpdateMode == nil || *vpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeOff {
 		resourcePolicy = vpa.Spec.ResourcePolicy
 	}
-	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, false, annotations)
+	initContainerResources, containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, false, annotations)
+
+	// Ensure that we are not propagating empty resource key if any.
+	for _, resource := range initContainerResources {
+		if resource.RemoveEmptyResourceKeyIfAny() {
+			klog.InfoS("An empty resource key was found and purged", "pod", klog.KObj(pod), "vpa", klog.KObj(vpa))
+		}
+	}
 
 	// Ensure that we are not propagating empty resource key if any.
 	for _, resource := range containerResources {
@@ -147,6 +170,5 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 			klog.InfoS("An empty resource key was found and purged", "pod", klog.KObj(pod), "vpa", klog.KObj(vpa))
 		}
 	}
-
-	return containerResources, annotations, nil
+	return initContainerResources, containerResources, annotations, nil
 }
