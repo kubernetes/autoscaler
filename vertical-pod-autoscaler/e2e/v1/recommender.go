@@ -42,6 +42,7 @@ import (
 	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
+	"k8s.io/utils/ptr"
 )
 
 func init() {
@@ -486,11 +487,15 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 			ParseQuantityOrDie("50m"),   /*sidecar CPU*/
 			ParseQuantityOrDie("50Mi"),  /*sidecar memory*/
 		)
+		initContainerRestartNever := d.Spec.Template.Spec.InitContainers[0].DeepCopy()
+		initContainerRestartNever.Name = "normal-init-container"
+		initContainerRestartNever.RestartPolicy = ptr.To(apiv1.ContainerRestartPolicyNever)
+		d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *initContainerRestartNever)
 		podList := utils.StartDeploymentPods(f, d)
 
 		// Verify native sidecar is present with original resources
 		for _, pod := range podList.Items {
-			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(1))
+			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(2))
 			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
 			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
 		}
@@ -512,7 +517,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		// Should have recommendations for both main container and native sidecar
+		// Should have recommendations for both main container and native sidecar but NOT the normal init container
 		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).To(gomega.HaveLen(2))
 
 		// Verify we have recommendations for both containers
