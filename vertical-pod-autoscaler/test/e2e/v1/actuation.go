@@ -809,6 +809,58 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		}
 	})
 
+	f.It("doesn't evict and update pods with native sidecars when feature gate not enabled", func() {
+		if features.Enabled(features.NativeSidecar) {
+			ginkgo.Skip("only test when NativeSidecar feature gate is disabled")
+		}
+		ginkgo.By("Setting up a hamster deployment with native sidecar")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("50m"),  /*main CPU*/
+			ParseQuantityOrDie("50Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),  /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"), /*sidecar memory*/
+		)
+
+		ginkgo.By("Setting up a VPA CRD")
+		sidecarName := d.Spec.Template.Spec.InitContainers[0].Name
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(sidecarName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(sidecarName).
+					WithTarget("100m", "100Mi").
+					WithLowerBound("100m", "100Mi").
+					WithUpperBound("100m", "100Mi").
+					GetContainerResources()).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Verify native sidecar is present with original resources
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.InitContainers).To(gomega.HaveLen(1))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
+		}
+
+		for _, pod := range podList.Items {
+			observedContainers, ok := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
+			gomega.Expect(ok).To(gomega.Equal(true))
+			containers, err := annotations.ParseVpaObservedContainersValue(observedContainers)
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			gomega.Expect(containers).To(gomega.HaveLen(1))
+			gomega.Expect(pod.Spec.Containers).To(gomega.HaveLen(1))
+		}
+
+		podSet := MakePodSet(podList)
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
+	})
+
 	f.It("does not evict pods when native sidecar recommendations are within bounds", framework.WithFeatureGate(features.NativeSidecar), func() {
 		ginkgo.By("Setting up a deployment with native sidecar")
 		d := NewHamsterDeploymentWithNativeSidecar(f,
