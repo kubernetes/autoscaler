@@ -8,6 +8,7 @@
 - [Proposal](#proposal)
 - [Design Details](#design-details)
   - [Infeasible Attempt Tracking](#infeasible-attempt-tracking)
+	- [Limitations of In-Memory Storage](#limitations-of-in-memory-storage)
   - [Version-Agnostic Infeasibility Detection](#version-agnostic-infeasibility-detection)
     - [Detection Path 1: Resize Status (Pre-admission-check versions)](#detection-path-1-resize-status-pre-admission-check-versions)
     - [Detection Path 2: Patch Rejection (Post-admission-check versions)](#detection-path-2-patch-rejection-post-admission-check-versions)
@@ -108,6 +109,14 @@ type updater struct {
     infeasibleMu                 sync.RWMutex
 }
 ```
+
+#### Limitations of In-Memory Storage
+
+The `infeasibleAttempts` map is stored in-memory within the updater component. This has the following implications:
+- When running the updater with multiple replicas in HA mode, or when the updater pod is restarted/replaced, the in-memory `infeasibleAttempts` data is lost. This means:
+1. The new updater instance will not know which resize attempts were previously determined to be infeasible
+2. The updater may retry a previously-infeasible resize attempt once before re-learning it is infeasible
+3. This results in at most one wasted update cycle per pod after an updater restart
 
 ### Version-Agnostic Infeasibility Detection
 
