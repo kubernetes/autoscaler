@@ -217,7 +217,8 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		if present {
 			if isInPlaceUpdating(pod) {
 				resizeStatus := getResizeStatus(pod)
-				// For InPlace mode: wait for Deferred, retry for Infeasible (no backoff for alpha)
+				// For InPlace mode: wait for all non-terminal statuses, never evict.
+				// Infeasible attempts are tracked and only retried when recommendation changes.
 				if updateMode == vpa_types.UpdateModeInPlace {
 					switch resizeStatus {
 					case utils.ResizeStatusInfeasible:
