@@ -81,11 +81,13 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 	}
 
 	updatesAnnotation := []string{}
-	for i, containerResources := range initContainersResources {
-		newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containerResources, model.ContainerTypeInitSidecar)
-		if len(newPatches) > 0 {
-			result = append(result, newPatches...)
-			updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
+	if features.Enabled(features.NativeSidecar) {
+		for i, containerResources := range initContainersResources {
+			newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containerResources, model.ContainerTypeInitSidecar)
+			if len(newPatches) > 0 {
+				result = append(result, newPatches...)
+				updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
+			}
 		}
 	}
 
