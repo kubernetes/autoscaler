@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -55,9 +56,11 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod,
 		return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
 	}
 
-	for i, containerResources := range initContainersResources {
-		newPatches := getInitContainerPatch(pod, i, containerResources)
-		result = append(result, newPatches...)
+	if features.Enabled(features.NativeSidecar) {
+		for i, containerResources := range initContainersResources {
+			newPatches := getInitContainerPatch(pod, i, containerResources)
+			result = append(result, newPatches...)
+		}
 	}
 
 	for i, containerResources := range containersResources {
