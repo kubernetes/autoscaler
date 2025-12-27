@@ -78,7 +78,7 @@ Result: The VPA only generates recommendations and acts upon pods that pass the 
 
 ### Risks and Mitigations
 
-#### Spec Divergence
+#### 1. Spec Divergence
 **Risk**: A Pod's role may not be known at creation time. Therefore, every new Pod inherits the Deployment pod spec and only promotes to "Leader" (and the corresponding VPA profile) after the application starts and wins an election.
 
 **Consequence**: There is an unavoidable window between Election and VPA Actuation where the new Leader is running with default pod spec resources.
@@ -89,41 +89,26 @@ Result: The VPA only generates recommendations and acts upon pods that pass the 
 
 **Reactive Resizing**: The VPA Updater will detect the role=leader label transition and perform an In-Place Update to increase capacity to the "Leader Profile."
 
-#### Conflicting Targets
-**Risk**: A user might configure two VPAs for the same TargetRef that overlap, causing "Split Brain" scaling where two Recommenders fight over the same Pod.
+#### 2. Conflicting Targets (Overlap & Precedence)
+**Context:** Historically, VPA behavior was undefined if multiple VPA objects targeted the same workload. However, with AEP-8026 moving configuration parameters (e.g., Safety Margins, History Length) to the VPA Custom Resource, users will increasingly require multiple VPA objects to apply different scaling policies to different subsets of a single Deployment.
 
-VPA A: `targetRef: app (No selector = All pods)`
+**Risk:** A Pod might match multiple Active VPAs simultaneously. For example, a pod labeled `role=leader` matches both a global VPA (Selector: `nil`) and a specific VPA (Selector: `role=leader`).
 
-VPA B: `targetRef: app, selector: role=leader`
+**Mitigation: Specificity Precedence**
+To support granular configuration without conflict, the VPA Updater will resolve overlaps using **Selector Specificity**, similar to Kubernetes Network Policies or CSS:
 
-**Result**: The Leader pod matches both. VPA A wants 1GB, VPA B wants 8GB. The Pod thrashes.
+1.  **Rule:** If a Pod matches multiple VPAs, the VPA with the **Most Specific Selector** takes precedence.
+    * *Level 0 (Global):* `selector: null` (Matches everything in TargetRef).
+    * *Level 1 (Refined):* `selector: {key: value}` (Matches specific subset).
+2.  **Resolution:** The Updater will respect the recommendations from the *Level 1* VPA and ignore the *Level 0* VPA for that specific pod.
+3.  **Tie-Breaking:** If two VPAs have equally specific selectors (e.g., VPA-A selects `role=leader` and VPA-B selects `tier=gold`), and a pod matches *both*, this is considered a misconfiguration. The Updater will deterministically break the tie by choosing the VPA with the oldest `CreationTimestamp` and emit a Warning Event.
 
-**Mitigation**: The Admission Webhook will be updated to enforce Strict Selector Disjointness.
-
-**Current Rule**: "Reject if more than one VPA points to the same TargetRef."
-
-**New Validation Logic**: "Allow multiple VPAs per TargetRef only if they are proven disjoint."
-
-To ensure safety without complex constraint solving, the Webhook will enforce the "Shared Key Exclusion" heuristic. Two VPAs targeting the same controller are considered disjoint if they filter on the same label key but require different values.
-
-**Validation Algorithm**: When a new VPA (VPA-New) is created/updated:
-
-**Identify Siblings**: Find all existing VPAs (VPA-Existing) pointing to the same TargetRef.
-
-**Iterate & Compare**: For each VPA-Existing:
-
-Case 1: Catch-All Conflict (Reject) If either VPA-New or VPA-Existing has a nil selector, REJECT. (You cannot have a "Default" VPA alongside a "Specific" VPA).
-
-Case 2: Different Keys (Reject - Ambiguous) If VPA-New selects on role=leader and VPA-Existing selects on env=prod, REJECT. Reason: A pod could theoretically have {role: leader, env: prod}. We cannot predict future labels, so we must assume overlap is possible.
-
-Case 3: Same Key, Different Values (Allow) If VPA-New selects role=leader and VPA-Existing selects role=follower, ALLOW. Reason: A single label key cannot hold two values simultaneously. Disjointness is mathematically guaranteed.
-
-#### Recommender Data Sparsity
+#### 3. Recommender Data Sparsity
 **Risk**: Partitioning a set of pods reduces the sample size for the histogram (e.g., a single Leader pod).
 
-**Mitigation**: The Recommender must aggregate historical samples at the VPA Object Level.
-
-This ensures that when a Pod promotes to Leader, it inherits the "Leader Profile" history immediately, rather than starting with a cold cache.
+**Mitigation**: The VPA object acts as a persistent store for the *Role*, rather than the specific Pod instance.
+* **Inheritance:** When leadership rotates (e.g., `pod-0` steps down and `pod-1` becomes Leader), `pod-1` immediately inherits the historical resource profile built by `pod-0`.
+* **Result:** The VPA aggregates data at the **Selector Level**, ensuring that the "Leader Profile" is continuous and robust over time, even if the specific Pod holding the title changes frequently.
 
 #### Unmanaged Pods
 **Risk**: A pod might match the TargetRef but fail to match any VPA Selector.
@@ -140,3 +125,38 @@ This proposal (or something similar) will be required to support such a feature 
 
 1.  **The Foundation:** To support Leader/Follower scaling, the VPA core must first possess the ability to maintain separate metric histories and generate distinct recommendations for subsets of a single Controller. The `Selector` field provides this mechanism.
 2.  **The Additive Layer:** Once `Selector` support is added, future enhancements could allow VPA to automatically infer these selectors by watching a Lease, or users can simply use a "Lease-to-Label" controller to bridge the gap without modifying VPA core further.
+
+## Feature Enablement
+
+This feature will be guarded by the `VPASelectorRefinement` feature gate.
+* **Default:** `false` (Alpha).
+* **Rollback:** If disabling the feature or rolling back the binary, administrators **must** delete any VPA objects using the `selector` field first. Older binaries will ignore the field and mistakenly apply the VPA to the entire TargetRef.
+
+## Graduation Criteria
+
+**Alpha → Beta**
+* Feature gate enabled by default.
+* E2E tests passing consistently in CI.
+* User feedback collected from at least one production adopter.
+
+**Beta → GA**
+* No critical bugs reported regarding target overlaps or race conditions.
+* Feature stable for 2 releases.
+
+## Test Plan
+
+### 1. Unit Tests
+* **Matcher Logic:** Verify that `GetControllingVPA` correctly filters pods based on the new `selector` field.
+* **Precedence Logic:** create mock VPAs with conflicting selectors and assert that the most specific one is chosen.
+* **Admission Validation:** Verify the webhook rejects invalid selectors (e.g. malformed strings).
+
+### 2. End-to-End (E2E) Tests
+* **Scenario:** `LeaderFollowerScaling`
+* **Setup:** Deploy a StatefulSet and two VPAs (Base + Leader).
+* **Action:** Apply the `role=leader` label to one Pod.
+* **Assertion:** Verify that the "Leader VPA" takes over control of that specific Pod and updates its recommended resources, while the other pods remain under the "Base VPA."
+
+## Implementation History
+
+- **2025-12-26:** Initial AEP draft submitted.
+- **2025-XX-XX:** [Pending] Proposal approved by SIG Autoscaling.
