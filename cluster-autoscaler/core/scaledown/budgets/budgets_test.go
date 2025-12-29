@@ -451,7 +451,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 				NodeDeleteDelayAfterTaint:   1 * time.Second,
 			}
 
-			autoscalingCtx, err := test.NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+			autoscalingCtx, err := test.NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil, nil)
 			assert.NoError(t, err)
 			ndt := deletiontracker.NewNodeDeletionTracker(1 * time.Hour)
 			for i := 0; i < tc.emptyDeletionsInProgress; i++ {

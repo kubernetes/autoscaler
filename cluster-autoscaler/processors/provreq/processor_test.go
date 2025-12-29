@@ -294,7 +294,7 @@ func TestBookCapacity(t *testing.T) {
 				maxUpdated: 20,
 				injector:   injector,
 			}
-			autoscalingCtx, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, nil, nil, nil)
+			autoscalingCtx, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, nil, nil, nil, nil)
 			processor.bookCapacity(&autoscalingCtx)
 			if (test.capacityIsBooked && len(injector.pods) == 0) || (!test.capacityIsBooked && len(injector.pods) > 0) {
 				t.Fail()

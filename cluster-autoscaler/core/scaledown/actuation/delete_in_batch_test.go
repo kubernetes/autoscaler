@@ -35,7 +35,7 @@ import (
 
 func TestAddNodeToBucket(t *testing.T) {
 	provider := testprovider.NewTestCloudProviderBuilder().Build()
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, provider, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, provider, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
 	}
@@ -158,7 +158,7 @@ func TestRemove(t *testing.T) {
 					return true, obj, nil
 				})
 
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}

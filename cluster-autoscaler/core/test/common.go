@@ -170,6 +170,7 @@ func NewScaleTestAutoscalingContext(
 	options config.AutoscalingOptions, fakeClient kube_client.Interface,
 	listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider,
 	processorCallbacks processor_callbacks.ProcessorCallbacks, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
+	templateNodeInfoRegistry ca_context.TemplateNodeInfoRegistry,
 ) (ca_context.AutoscalingContext, error) {
 	// Not enough buffer space causes the test to hang without printing any logs.
 	// This is not useful.
@@ -194,13 +195,14 @@ func NewScaleTestAutoscalingContext(
 			LogRecorder:    fakeLogRecorder,
 			ListerRegistry: listers,
 		},
-		CloudProvider:        provider,
-		ClusterSnapshot:      clusterSnapshot,
-		FrameworkHandle:      fwHandle,
-		ExpanderStrategy:     random.NewStrategy(),
-		ProcessorCallbacks:   processorCallbacks,
-		DebuggingSnapshotter: debuggingSnapshotter,
-		RemainingPdbTracker:  remainingPdbTracker,
+		CloudProvider:            provider,
+		ClusterSnapshot:          clusterSnapshot,
+		FrameworkHandle:          fwHandle,
+		ExpanderStrategy:         random.NewStrategy(),
+		ProcessorCallbacks:       processorCallbacks,
+		DebuggingSnapshotter:     debuggingSnapshotter,
+		RemainingPdbTracker:      remainingPdbTracker,
+		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
 	}, nil
 }
 
