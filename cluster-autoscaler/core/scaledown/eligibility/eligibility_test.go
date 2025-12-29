@@ -229,7 +229,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 			for _, n := range tc.nodes {
 				provider.AddNode("ng1", n)
 			}
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil, nil)
 			if err != nil {
 				t.Fatalf("Could not create autoscaling context: %v", err)
 			}
