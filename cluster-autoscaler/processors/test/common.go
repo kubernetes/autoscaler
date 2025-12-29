@@ -38,17 +38,14 @@ import (
 )
 
 // NewTestProcessors returns a set of simple processors for use in tests.
-// Note: This function injects a default TemplateNodeInfoRegistry into the provided AutoscalingContext.
-// This is a necessary workaround for synthetic tests that manually construct the context without using NewStaticAutoscaler, ensuring they have access to the registry.
-func NewTestProcessors(autoscalingCtx *ca_context.AutoscalingContext) *processors.AutoscalingProcessors {
+func NewTestProcessors(options config.AutoscalingOptions) (*processors.AutoscalingProcessors, ca_context.TemplateNodeInfoRegistry) {
 	templateNodeInfoProvider := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false)
 	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(templateNodeInfoProvider)
-	autoscalingCtx.TemplateNodeInfoRegistry = templateNodeInfoRegistry
 
 	return &processors.AutoscalingProcessors{
 		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
-		BinpackingLimiter:      binpacking.NewTimeLimiter(autoscalingCtx.MaxNodeGroupBinpackingDuration),
+		BinpackingLimiter:      binpacking.NewTimeLimiter(options.MaxNodeGroupBinpackingDuration),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor:  nodes.NewAtomicResizeFilteringProcessor(),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
@@ -57,12 +54,12 @@ func NewTestProcessors(autoscalingCtx *ca_context.AutoscalingContext) *processor
 		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
 		TemplateNodeInfoProvider:    templateNodeInfoProvider,
-		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults),
+		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(true),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 		ScaleStateNotifier:          nodegroupchange.NewNodeGroupChangeObserversList(),
 		AsyncNodeGroupStateChecker:  asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
 		ScaleUpEnforcer:             pods.NewDefaultScaleUpEnforcer(),
-	}
+	}, templateNodeInfoRegistry
 }

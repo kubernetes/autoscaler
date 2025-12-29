@@ -33,7 +33,6 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
@@ -492,17 +491,18 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		options.CheckCapacityProvisioningRequestBatchTimebox = batchTimebox
 	}
 
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	if autoprovisioning {
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 	}
-	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(
 		estimator.BinpackingEstimatorName,
