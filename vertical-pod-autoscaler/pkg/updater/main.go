@@ -103,6 +103,8 @@ func main() {
 	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
 
 	kube_flag.InitFlags()
+
+	updater_config.ValidateUpdaterConfig(config)
 	klog.V(1).InfoS("Vertical Pod Autoscaler Updater", "version", common.VerticalPodAutoscalerVersion())
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
