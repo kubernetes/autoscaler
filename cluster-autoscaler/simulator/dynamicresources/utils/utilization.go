@@ -71,6 +71,31 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 	return highestResourceName, highestUtil, nil
 }
 
+// calculatePoolUtil calculates the utilization of a ResourceSlice pool, accounting for both partitionable (shared counter) and atomic (non-partitionable) devices.
+// The calculation is comprised of steps:
+//
+//  1. Partitionable (Shared) Utilization:
+//     Identifies the single highest utilization ratio across all shared counters
+//     in the entire pool. This ratio represents the most constrained resource within the pool.
+//     For example, if a GPU pool has shared counters for memory and compute cycles, and the memory's shared counter is at 80% utilization, and the compute cycles' counter is at 50%,
+//     the partitionable utilization for the pool would be 80%.
+//
+//  2. Atomic (Non-partitionable) Utilization:
+//     Calculated as the simple ratio of allocated devices to total devices for all devices
+//     that do not support shared counters.
+//
+//  3. Final Weighted Average:
+//     The result is a weighted average of the two types based on their population count in the pool.
+//     This ensures that in mixed pools, the fullness of one resource type doesn't disproportionately
+//     mask or amplify the state of the other.
+//
+// Example (3 total devices: 2 atomic, 1 partitionable):
+//   - 2 atomic allocated, partitionable at 0% util:
+//     Result: (1.0 * 2/3) + (0.0 * 1/3) = 66.6%
+//   - 0 atomic allocated, partitionable at 100% util:
+//     Result: (0.0 * 2/3) + (1.0 * 1/3) = 33.3%
+//   - 1 atomic allocated, partitionable at 50% util:
+//     Result: (0.5 * 2/3) + (0.5 * 1/3) = 50%
 func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
 	totalConsumedCounters := map[string]map[string]resource.Quantity{}
 	for _, resourceSlice := range resourceSlices {
@@ -129,7 +154,7 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	var totalUniqueDevices float64 = uniquePartitionableDevicesCount + float64(devicesWithoutCounters)
 	var partitionableDevicesUtilizationWeight float64 = uniquePartitionableDevicesCount / totalUniqueDevices
 	var nonPartitionableDevicesUtilizationWeight float64 = 1 - partitionableDevicesUtilizationWeight
-	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive
+	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive (a partitionable device can't be allocated as an atomic device and vice versa).
 	return partitionableUtilization*partitionableDevicesUtilizationWeight + atomicDevicesUtilization*nonPartitionableDevicesUtilizationWeight
 }
 
