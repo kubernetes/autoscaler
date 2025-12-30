@@ -329,6 +329,15 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, 
 			NodeName: &nodeName,
 			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: 1},
 			Devices:  devices,
+		},
+	}
+
+	countersSlice := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-counters", sliceName), UID: types.UID(fmt.Sprintf("%s-counters", sliceName))},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver:   driverName,
+			NodeName: &nodeName,
+			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: 1},
 			SharedCounters: []resourceapi.CounterSet{
 				{
 					Name: "gpu-0-counter-set",
@@ -341,7 +350,8 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, 
 			},
 		},
 	}
-	return []*resourceapi.ResourceSlice{resourceSlice}
+
+	return []*resourceapi.ResourceSlice{resourceSlice, countersSlice}
 }
 
 func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devicesPerPod int64, adminAccess bool) []*framework.PodInfo {
