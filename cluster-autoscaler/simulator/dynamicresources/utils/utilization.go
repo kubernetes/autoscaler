@@ -72,14 +72,14 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 }
 
 func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
-	TotalConsumedCounters := map[string]map[string]resource.Quantity{}
+	totalConsumedCounters := map[string]map[string]resource.Quantity{}
 	for _, resourceSlice := range resourceSlices {
 		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
-			if _, ok := TotalConsumedCounters[sharedCounter.Name]; !ok {
-				TotalConsumedCounters[sharedCounter.Name] = map[string]resource.Quantity{}
+			if _, ok := totalConsumedCounters[sharedCounter.Name]; !ok {
+				totalConsumedCounters[sharedCounter.Name] = map[string]resource.Quantity{}
 			}
 			for counter, value := range sharedCounter.Counters {
-				TotalConsumedCounters[sharedCounter.Name][counter] = value.Value
+				totalConsumedCounters[sharedCounter.Name][counter] = value.Value
 			}
 		}
 	}
@@ -107,10 +107,10 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	if devicesWithoutCounters != 0 {
 		atomicDevicesUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
 	}
-	if len(TotalConsumedCounters) == 0 {
+	if len(totalConsumedCounters) == 0 {
 		return atomicDevicesUtilization
 	}
-	for counterSet, counters := range TotalConsumedCounters {
+	for counterSet, counters := range totalConsumedCounters {
 		for counterName, totalValue := range counters {
 			if totalValue.IsZero() {
 				continue
