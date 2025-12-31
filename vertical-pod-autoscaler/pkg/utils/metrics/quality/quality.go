@@ -120,15 +120,15 @@ var (
 
 // Register initializes all VPA quality metrics
 func Register() {
-	prometheus.MustRegister(usageRecommendationRelativeDiff)
-	prometheus.MustRegister(usageMissingRecommendationCounter)
-	prometheus.MustRegister(cpuRecommendationOverUsageDiff)
-	prometheus.MustRegister(memoryRecommendationOverUsageDiff)
-	prometheus.MustRegister(cpuRecommendationLowerOrEqualUsageDiff)
-	prometheus.MustRegister(memoryRecommendationLowerOrEqualUsageDiff)
-	prometheus.MustRegister(cpuRecommendations)
-	prometheus.MustRegister(memoryRecommendations)
-	prometheus.MustRegister(relativeRecommendationChange)
+	_ = prometheus.Register(usageRecommendationRelativeDiff)
+	_ = prometheus.Register(usageMissingRecommendationCounter)
+	_ = prometheus.Register(cpuRecommendationOverUsageDiff)
+	_ = prometheus.Register(memoryRecommendationOverUsageDiff)
+	_ = prometheus.Register(cpuRecommendationLowerOrEqualUsageDiff)
+	_ = prometheus.Register(memoryRecommendationLowerOrEqualUsageDiff)
+	_ = prometheus.Register(cpuRecommendations)
+	_ = prometheus.Register(memoryRecommendations)
+	_ = prometheus.Register(relativeRecommendationChange)
 }
 
 // observeUsageRecommendationRelativeDiff records relative diff between usage and

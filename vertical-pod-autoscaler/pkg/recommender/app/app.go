@@ -103,10 +103,10 @@ func (app *RecommenderApp) Run(ctx context.Context, leaderElection componentbase
 	metrics_recommender.Register()
 	metrics_quality.Register()
 	metrics_resources.Register()
-	server.Initialize(&app.config.CommonFlags.EnableProfiling, healthCheck, &app.config.Address)
+	server.InitializeWithContext(ctx, &app.config.CommonFlags.EnableProfiling, healthCheck, &app.config.Address)
 
 	if !leaderElection.LeaderElect {
-		return app.run(ctx, healthCheck)
+		return app.run(ctx, stopCh, healthCheck)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -140,7 +140,7 @@ func (app *RecommenderApp) Run(ctx context.Context, leaderElection componentbase
 			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ context.Context) {
-					if err := app.run(ctx, healthCheck); err != nil {
+					if err := app.run(ctx, stopCh, healthCheck); err != nil {
 						klog.Fatalf("Error running recommender: %v", err)
 					}
 				},
@@ -154,16 +154,12 @@ func (app *RecommenderApp) Run(ctx context.Context, leaderElection componentbase
 	return nil
 }
 
-func (app *RecommenderApp) run(ctx context.Context, healthCheck *metrics.HealthCheck) error {
-	// Create a stop channel that will be used to signal shutdown
-	stopCh := make(chan struct{})
-	defer close(stopCh)
-
+func (app *RecommenderApp) run(ctx context.Context, stopCh chan struct{}, healthCheck *metrics.HealthCheck) error {
 	config := common.CreateKubeConfigOrDie(app.config.CommonFlags.KubeConfig, float32(app.config.CommonFlags.KubeApiQps), int(app.config.CommonFlags.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(app.config.CommonFlags.VpaObjectNamespace))
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(ctx, config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, app.config.CommonFlags.VpaObjectNamespace, stopCh)
 
 	factory.Start(stopCh)
@@ -225,7 +221,7 @@ func (app *RecommenderApp) run(ctx context.Context, healthCheck *metrics.HealthC
 		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), stopCh, app.config.CommonFlags.VpaObjectNamespace),
 		VpaCheckpointLister: vpa_api_util.NewVpaCheckpointLister(vpa_clientset.NewForConfigOrDie(config), stopCh, app.config.CommonFlags.VpaObjectNamespace),
 		ClusterState:        clusterState,
-		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
+		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(ctx, config, kubeClient, factory),
 		MemorySaveMode:      app.config.MemorySaver,
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     app.config.RecommenderName,
