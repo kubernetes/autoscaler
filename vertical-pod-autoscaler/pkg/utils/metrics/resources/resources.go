@@ -56,7 +56,7 @@ var (
 
 // Register initializes all metrics for VPA resources
 func Register() {
-	prometheus.MustRegister(getResourcesCount)
+	_ = prometheus.Register(getResourcesCount)
 }
 
 // RecordGetResourcesCount records how many times VPA requested the resources (
