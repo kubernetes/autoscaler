@@ -68,13 +68,6 @@ func init() {
 	}
 }
 
-// HamsterTargetRef is CrossVersionObjectReference of hamster app
-var HamsterTargetRef = &autoscaling.CrossVersionObjectReference{
-	APIVersion: "apps/v1",
-	Kind:       "Deployment",
-	Name:       "hamster-deployment",
-}
-
 // RecommenderLabels are labels of VPA recommender
 var RecommenderLabels = map[string]string{"app": "vpa-recommender"}
 
