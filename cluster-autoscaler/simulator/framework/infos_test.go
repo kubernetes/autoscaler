@@ -135,7 +135,7 @@ func TestNodeInfo(t *testing.T) {
 				result := NewNodeInfo(nil, nil)
 				result.SetNode(info.Node())
 				for _, pod := range info.GetPods() {
-					result.AddPod(&PodInfo{Pod: pod.GetPod()})
+					result.AddPod(NewPodInfo(pod.GetPod(), nil))
 				}
 				return result
 			},
@@ -206,7 +206,10 @@ func TestNodeInfo(t *testing.T) {
 				cmpopts.SortSlices(func(p1, p2 fwk.PodInfo) bool {
 					return p1.GetPod().Name < p2.GetPod().Name
 				}),
-				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
+				// Allow unexported fields in PodInfo to enable full comparison.
+				cmp.AllowUnexported(schedulerframework.PodInfo{}),
+				// Ignore cachedResource as it is lazily initialized and may differ between fresh and processed PodInfo objects.
+				cmpopts.IgnoreFields(schedulerframework.PodInfo{}, "cachedResource"),
 			}
 			if diff := cmp.Diff(tc.wantSchedNodeInfo, wrappedNodeInfo.ToScheduler(), nodeInfoCmpOpts...); diff != "" {
 				t.Errorf("ToScheduler() output differs from expected, diff (-want +got): %s", diff)
@@ -222,13 +225,16 @@ func TestNodeInfo(t *testing.T) {
 				t.Errorf("LocalResourceSlices differ from expected, diff  (-want +got): %s", diff)
 			}
 
-			// Assert that the pods list in the wrapper is as expected.
-			// The pod order changes in a particular way whenever schedulerframework.RemovePod() is called. Instead of
-			// relying on that schedulerframework implementation detail in assertions, just ignore the order.
-			podsInfosIgnoreOrderOpt := cmpopts.SortSlices(func(p1, p2 *PodInfo) bool {
-				return p1.Name < p2.Name
-			})
-			if diff := cmp.Diff(tc.wantPods, wrappedNodeInfo.Pods(), podsInfosIgnoreOrderOpt); diff != "" {
+			podsInfosCmpOpts := []cmp.Option{
+				// Assert that the pods list in the wrapper is as expected.
+				// The pod order changes in a particular way whenever schedulerframework.RemovePod() is called. Instead of
+				// relying on that schedulerframework implementation detail in assertions, just ignore the order.
+				cmpopts.SortSlices(func(p1, p2 *PodInfo) bool { return p1.Name < p2.Name }),
+				cmp.AllowUnexported(schedulerframework.PodInfo{}),
+				// Ignore cachedResource as it is lazily initialized and may differ between fresh and processed PodInfo objects.
+				cmpopts.IgnoreFields(schedulerframework.PodInfo{}, "cachedResource"),
+			}
+			if diff := cmp.Diff(tc.wantPods, wrappedNodeInfo.Pods(), podsInfosCmpOpts...); diff != "" {
 				t.Errorf("Pods() output differs from expected, diff (-want +got): %s", diff)
 			}
 
@@ -251,16 +257,11 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 	nodeName := "node"
 	node := test.BuildTestNode(nodeName, 1000, 1000)
 	pods := []*PodInfo{
-		{Pod: test.BuildTestPod("p1", 80, 0, test.WithNodeName(node.Name))},
-		{
-			Pod: test.BuildTestPod("p2", 80, 0, test.WithNodeName(node.Name)),
-			PodExtraInfo: PodExtraInfo{
-				NeededResourceClaims: []*resourceapi.ResourceClaim{
-					{ObjectMeta: v1.ObjectMeta{Name: "claim1"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req1"}}}}},
-					{ObjectMeta: v1.ObjectMeta{Name: "claim2"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req2"}}}}},
-				},
-			},
-		},
+		NewPodInfo(test.BuildTestPod("p1", 80, 0, test.WithNodeName(node.Name)), nil),
+		NewPodInfo(test.BuildTestPod("p2", 80, 0, test.WithNodeName(node.Name)), []*resourceapi.ResourceClaim{
+			{ObjectMeta: v1.ObjectMeta{Name: "claim1"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req1"}}}}},
+			{ObjectMeta: v1.ObjectMeta{Name: "claim2"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req2"}}}}},
+		}),
 	}
 	slices := []*resourceapi.ResourceSlice{
 		{ObjectMeta: v1.ObjectMeta{Name: "slice1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &nodeName}},
@@ -300,7 +301,9 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 				// We don't care about this field staying the same, and it differs because it's a global counter bumped
 				// on every AddPod.
 				cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
-				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
+				cmp.AllowUnexported(schedulerframework.PodInfo{}),
+				// Ignore cachedResource as it is lazily initialized and may differ between fresh and processed PodInfo objects.
+				cmpopts.IgnoreFields(schedulerframework.PodInfo{}, "cachedResource"),
 			); diff != "" {
 				t.Errorf("nodeInfo differs after DeepCopyNodeInfo, diff (-want +got): %s", diff)
 			}
@@ -391,7 +394,7 @@ func TestNodeInfoResourceClaims(t *testing.T) {
 func testPodInfos(pods []*apiv1.Pod, addClaims bool) []*PodInfo {
 	var result []*PodInfo
 	for _, pod := range pods {
-		podInfo := &PodInfo{Pod: pod}
+		podInfo := NewPodInfo(pod, nil)
 		if addClaims {
 			for i := range 3 {
 				podInfo.NeededResourceClaims = append(podInfo.NeededResourceClaims, testClaim(fmt.Sprintf("%s-claim-%d", pod.Name, i)))

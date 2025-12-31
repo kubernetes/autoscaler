@@ -204,7 +204,7 @@ func podsExpectedOnFreshNode(sanitizedExampleNodeInfo *framework.NodeInfo, daemo
 		}
 		// There's technically no need to sanitize these pods since they're created from scratch, but
 		// it's nice to have the same suffix for all names in one sanitized NodeInfo when debugging.
-		result = append(result, &framework.PodInfo{Pod: createSanitizedPod(pod.Pod, sanitizedExampleNodeInfo.Node().Name, nameSuffix)})
+		result = append(result, framework.NewPodInfo(createSanitizedPod(pod.Pod, sanitizedExampleNodeInfo.Node().Name, nameSuffix), nil))
 	}
 	return result, nil
 }
