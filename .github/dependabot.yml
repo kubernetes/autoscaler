@@ -90,7 +90,7 @@ updates:
     - dependency-name: "github.com/gofrs/uuid"
     - dependency-name: "github.com/google/go-querystring"
     - dependency-name: "github.com/jmattheis/goverter"
-    - dependency-name: "github.com/jmespath/go-jmespath"
+    - dependency-name: "github.com/jmespath-community/go-jmespath"
     - dependency-name: "github.com/vburenin/ifacemaker"
     - dependency-name: "golang.org/x/oauth2"
     - dependency-name: "golang.org/x/sys"
