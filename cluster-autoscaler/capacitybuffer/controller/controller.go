@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"sort"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -93,6 +94,7 @@ func NewDefaultBufferController(
 				translators.NewPodTemplateBufferTranslator(client),
 				translators.NewDefaultScalableObjectsTranslator(client),
 				translators.NewResourceLimitsTranslator(client),
+				translators.NewResourceQuotasTranslator(client),
 			},
 		),
 		updater:                  *updater.NewStatusUpdater(client),
@@ -137,6 +139,15 @@ func (c *bufferController) reconcile() {
 		c.currentIteration = 0
 		klog.V(2).Infof("Capacity buffer controller skipped buffers status filter, translating all %v buffers", len(filteredBuffers))
 	}
+
+	// Sort buffers deterministically by CreationTimestamp, then Name. It's required
+	// for getting deterministic results in ResourceQuotasTranslator.
+	sort.Slice(filteredBuffers, func(i, j int) bool {
+		if filteredBuffers[i].CreationTimestamp.Time.Equal(filteredBuffers[j].CreationTimestamp.Time) {
+			return filteredBuffers[i].Name < filteredBuffers[j].Name
+		}
+		return filteredBuffers[i].CreationTimestamp.Before(&filteredBuffers[j].CreationTimestamp)
+	})
 
 	// Extract pod specs and number of replicas from filtered buffers
 	errors := c.translator.Translate(filteredBuffers)

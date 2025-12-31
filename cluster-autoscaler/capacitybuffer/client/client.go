@@ -18,6 +18,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -63,6 +64,7 @@ type CapacityBufferClient struct {
 	jobsLister            batchv1lister.JobLister
 	deploymentLister      appsv1listers.DeploymentLister
 	replicationContLister corev1listers.ReplicationControllerLister
+	rqLister              corev1listers.ResourceQuotaLister
 }
 
 // NewCapacityBufferClient returns a capacityBufferClient.
@@ -141,6 +143,7 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 		jobsLister:            factory.Batch().V1().Jobs().Lister(),
 		deploymentLister:      factory.Apps().V1().Deployments().Lister(),
 		replicationContLister: factory.Core().V1().ReplicationControllers().Lister(),
+		rqLister:              factory.Core().V1().ResourceQuotas().Lister(),
 	}
 	factory.Start(stopChannel)
 	informersSynced := factory.WaitForCacheSync(stopChannel)
@@ -183,6 +186,25 @@ func (c *CapacityBufferClient) ListCapacityBuffers() ([]*v1.CapacityBuffer, erro
 		buffersCopy = append(buffersCopy, buffer.DeepCopy())
 	}
 	return buffersCopy, nil
+}
+
+// ListResourceQuotas lists all resource quotas in the passed namespace
+func (c *CapacityBufferClient) ListResourceQuotas(namespace string) ([]*corev1.ResourceQuota, error) {
+	if c.rqLister != nil {
+		return c.rqLister.ResourceQuotas(namespace).List(labels.Everything())
+	}
+	if c.kubernetesClient != nil {
+		rqList, err := c.kubernetesClient.CoreV1().ResourceQuotas(namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
+		res := make([]*corev1.ResourceQuota, len(rqList.Items))
+		for i := range rqList.Items {
+			res[i] = &rqList.Items[i]
+		}
+		return res, nil
+	}
+	return nil, errors.New("capacity buffer client is not configured for getting resource quotas")
 }
 
 // GetPodTemplate returns pod template with the passed name
