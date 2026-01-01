@@ -25,6 +25,54 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | adrianmoisey | <kubernetes-sig-autoscaling@googlegroups.com> |  |
 | omerap12 | <kubernetes-sig-autoscaling@googlegroups.com> |  |
 
+## Webhook Management
+The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports two mutually exclusive modes:
+
+### Helm-managed (default)
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: true
+```
+In this mode:
+- Helm creates the MutatingWebhookConfiguration
+- The kube-webhook-certgen job generates TLS certificates and stores them in a Secret
+- The certificates are automatically injected into the webhook configuration
+
+### Application-managed
+```yaml
+admissionController:
+  registerWebhook: true
+  certGen:
+    enabled: false
+```
+In this mode:
+- The VPA admission controller creates and manages the webhook itself
+Important: You are responsible for creating the TLS secret before or after installing the chart. The admission controller will only create the `MutatingWebhookConfiguration` once the secret exists.
+If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
+
+## Migration Guides
+
+### Migrating from vpa-up.sh script
+TBD
+
+### Migrating from Application-managed to Helm-managed webhook
+If you previously deployed with registerWebhook: true and want to switch to Helm-managed:
+- Delete the existing webhook:
+```bash
+kubectl delete mutatingwebhookconfiguration vpa-webhook-config
+```
+- Delete the existing secret (to allow certgen to create new certificates):
+```bash
+kubectl delete secret -n <namespace> vpa-tls-certs
+```
+- Upgrade with the new values:
+```bash
+helm upgrade <release-name> <chart> \
+  --set admissionController.registerWebhook=false \
+  --set admissionController.certGen.enabled=true
+```
 ## Values
 
 | Key | Type | Default | Description |
@@ -33,12 +81,28 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].operator | string | `"In"` |  |
 | admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values[0] | string | `"admission-controller"` |  |
 | admissionController.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey | string | `"kubernetes.io/hostname"` |  |
+| admissionController.certGen.affinity | object | `{}` |  |
+| admissionController.certGen.enabled | bool | `true` |  |
+| admissionController.certGen.env | object | `{}` | Additional environment variables to be added to the certgen container. Format is KEY: Value format |
+| admissionController.certGen.image.pullPolicy | string | `"IfNotPresent"` | The pull policy for the certgen image. Recommend not changing this |
+| admissionController.certGen.image.repository | string | `"registry.k8s.io/ingress-nginx/kube-webhook-certgen"` | An image that contains certgen for creating certificates. |
+| admissionController.certGen.image.tag | string | `"v20231011-8b53cabe0"` | An image tag for the admissionController.certGen.image.repository image. |
+| admissionController.certGen.nodeSelector | object | `{}` |  |
+| admissionController.certGen.podSecurityContext | object | `{"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | The securityContext block for the certgen pod(s) |
+| admissionController.certGen.resources | object | `{}` | The resources block for the certgen pod |
+| admissionController.certGen.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | The securityContext block for the certgen container(s) |
+| admissionController.certGen.tolerations | list | `[]` |  |
 | admissionController.enabled | bool | `true` |  |
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
 | admissionController.image.pullPolicy | string | `"IfNotPresent"` |  |
 | admissionController.image.repository | string | `"registry.k8s.io/autoscaling/vpa-admission-controller"` |  |
 | admissionController.image.tag | string | `nil` |  |
+| admissionController.mutatingWebhookConfiguration.annotations | object | `{}` | Additional annotations for the MutatingWebhookConfiguration |
+| admissionController.mutatingWebhookConfiguration.failurePolicy | string | `"Ignore"` | The failurePolicy for the mutating webhook. Allowed values are: Ignore, Fail |
+| admissionController.mutatingWebhookConfiguration.namespaceSelector | object | `{}` | The namespaceSelector controls which namespaces are affected by the webhook |
+| admissionController.mutatingWebhookConfiguration.objectSelector | object | `{}` | The objectSelector can filter objects on e.g. labels |
+| admissionController.mutatingWebhookConfiguration.timeoutSeconds | int | `5` | Sets the amount of time the API server will wait on a response from the webhook service |
 | admissionController.nodeSelector | object | `{}` |  |
 | admissionController.podAnnotations | object | `{}` |  |
 | admissionController.podDisruptionBudget.enabled | bool | `true` |  |
@@ -46,6 +110,7 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.priorityClassName | string | `nil` |  |
+| admissionController.registerWebhook | bool | `false` |  |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources | object | `{}` |  |
 | admissionController.service.annotations | object | `{}` |  |
@@ -58,7 +123,7 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | admissionController.serviceAccount.labels | object | `{}` |  |
 | admissionController.tls.caCert | string | `""` |  |
 | admissionController.tls.cert | string | `""` |  |
-| admissionController.tls.existingSecret | string | `""` |  |
+| admissionController.tls.create | bool | `false` |  |
 | admissionController.tls.key | string | `""` |  |
 | admissionController.tls.secretName | string | `"vpa-tls-certs"` |  |
 | admissionController.tolerations | list | `[]` |  |
@@ -67,6 +132,12 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | admissionController.volumeMounts[0].readOnly | bool | `true` |  |
 | admissionController.volumes[0].name | string | `"tls-certs"` |  |
 | admissionController.volumes[0].secret.defaultMode | int | `420` |  |
+| admissionController.volumes[0].secret.items[0].key | string | `"ca"` |  |
+| admissionController.volumes[0].secret.items[0].path | string | `"caCert.pem"` |  |
+| admissionController.volumes[0].secret.items[1].key | string | `"cert"` |  |
+| admissionController.volumes[0].secret.items[1].path | string | `"serverCert.pem"` |  |
+| admissionController.volumes[0].secret.items[2].key | string | `"key"` |  |
+| admissionController.volumes[0].secret.items[2].path | string | `"serverKey.pem"` |  |
 | admissionController.volumes[0].secret.secretName | string | `"vpa-tls-certs"` |  |
 | commonLabels | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |

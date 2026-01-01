@@ -89,18 +89,74 @@ admissionController:
   # List of node taints to tolerate.
   tolerations: []
 
+  # Whether to register webhook via the application itself or via Helm
+  # Set to false when using Helm-managed webhook
+  registerWebhook: false
+
+  certGen:
+    enabled: true
+    image:
+      # admissionController.certGen.image.repository -- An image that contains certgen for creating certificates.
+      repository: registry.k8s.io/ingress-nginx/kube-webhook-certgen
+      # admissionController.certGen.image.tag -- An image tag for the admissionController.certGen.image.repository image.
+      tag: v20231011-8b53cabe0
+      # admissionController.certGen.image.pullPolicy -- The pull policy for the certgen image. Recommend not changing this
+      pullPolicy: IfNotPresent
+       # admissionController.certGen.env -- Additional environment variables to be added to the certgen container. Format is KEY: Value format
+    env: {}
+    # admissionController.certGen.resources -- The resources block for the certgen pod
+    resources: {}
+    # admissionController.certGen.podSecurityContext -- The securityContext block for the certgen pod(s)
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      seccompProfile:
+        type: RuntimeDefault
+    # admissionController.certGen.securityContext -- The securityContext block for the certgen container(s)
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  mutatingWebhookConfiguration:
+    # admissionController.mutatingWebhookConfiguration.annotations -- Additional annotations for the MutatingWebhookConfiguration
+    annotations: {}
+    # admissionController.mutatingWebhookConfiguration.failurePolicy -- The failurePolicy for the mutating webhook. Allowed values are: Ignore, Fail
+    failurePolicy: Ignore
+    # admissionController.mutatingWebhookConfiguration.namespaceSelector -- The namespaceSelector controls which namespaces are affected by the webhook
+    namespaceSelector: {}
+    # admissionController.mutatingWebhookConfiguration.objectSelector -- The objectSelector can filter objects on e.g. labels
+    objectSelector: {}
+    # admissionController.mutatingWebhookConfiguration.timeoutSeconds -- Sets the amount of time the API server will wait on a response from the webhook service
+    timeoutSeconds: 5
+
+
   tls:
+    # If true, Helm will generate the TLS secret using genCA/genSignedCert
+    create: false
+    # Name of the TLS secret
     secretName: vpa-tls-certs
     caCert: ""
     cert: ""
     key: ""
-    existingSecret: ""
 
   volumes:
     - name: tls-certs
       secret:
         defaultMode: 420
         secretName: vpa-tls-certs
+        items:
+          - key: ca
+            path: caCert.pem
+          - key: cert
+            path: serverCert.pem
+          - key: key
+            path: serverKey.pem
 
   volumeMounts:
     - name: tls-certs
@@ -259,7 +315,7 @@ updater:
 
   # Tolerations for scheduling the Updater.
   tolerations: []
-  
+
   # Leader election configuration for the Updater.
   # When running multiple replicas, leader election ensures only one instance is actively processing.
   leaderElection:
@@ -294,7 +350,7 @@ updater:
     # requests:
     #   cpu: 50m
     #   memory: 200Mi
-  
+
   # name of priorityclass for scheduling
   priorityClassName:
   # priorityClassName : high-priority
