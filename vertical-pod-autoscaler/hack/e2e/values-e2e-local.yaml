@@ -1,0 +1,51 @@
+# Helm values for local E2E testing
+# Used by deploy-for-e2e-locally.sh
+
+# Image settings - will be overridden via --set at install time
+# admissionController.image.repository, admissionController.image.tag, etc.
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+
+# Component configurations optimized for local KIND cluster
+admissionController:
+  enabled: false  # Enabled dynamically based on suite
+  replicas: 1
+  image:
+    pullPolicy: Never
+  # Disable pod anti-affinity for single-node clusters
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  # Use Helm-managed webhook (certgen creates certificates)
+  registerWebhook: false
+  certGen:
+    enabled: true
+
+recommender:
+  enabled: false  # Enabled dynamically based on suite
+  replicas: 1
+  image:
+    pullPolicy: Never
+  # Disable pod anti-affinity for single-node clusters
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  # Disable leader election for single replica
+  leaderElection:
+    enabled: false
+
+updater:
+  enabled: false  # Enabled dynamically based on suite
+  replicas: 1
+  image:
+    pullPolicy: Never
+  # Disable pod anti-affinity for single-node clusters
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  # Disable leader election for single replica
+  leaderElection:
+    enabled: false
