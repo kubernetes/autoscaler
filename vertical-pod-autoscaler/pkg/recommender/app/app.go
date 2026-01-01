@@ -105,49 +105,48 @@ func (app *RecommenderApp) Run(ctx context.Context, leaderElection componentbase
 
 	if !leaderElection.LeaderElect {
 		return app.run(ctx, stopCh, healthCheck)
-	} else {
-		id, err := os.Hostname()
-		if err != nil {
-			return fmt.Errorf("unable to get hostname: %w", err)
-		}
-
-		id = id + "_" + string(uuid.NewUUID())
-
-		config := common.CreateKubeConfigOrDie(app.config.CommonFlags.KubeConfig, float32(app.config.CommonFlags.KubeApiQps), int(app.config.CommonFlags.KubeApiBurst))
-		kubeClient := kube_client.NewForConfigOrDie(config)
-
-		lock, err := resourcelock.New(
-			leaderElection.ResourceLock,
-			leaderElection.ResourceNamespace,
-			leaderElection.ResourceName,
-			kubeClient.CoreV1(),
-			kubeClient.CoordinationV1(),
-			resourcelock.ResourceLockConfig{
-				Identity: id,
-			},
-		)
-		if err != nil {
-			return fmt.Errorf("unable to create leader election lock: %w", err)
-		}
-
-		leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
-			Lock:            lock,
-			LeaseDuration:   leaderElection.LeaseDuration.Duration,
-			RenewDeadline:   leaderElection.RenewDeadline.Duration,
-			RetryPeriod:     leaderElection.RetryPeriod.Duration,
-			ReleaseOnCancel: true,
-			Callbacks: leaderelection.LeaderCallbacks{
-				OnStartedLeading: func(_ context.Context) {
-					if err := app.run(ctx, stopCh, healthCheck); err != nil {
-						klog.Fatalf("Error running recommender: %v", err)
-					}
-				},
-				OnStoppedLeading: func() {
-					klog.Fatal("lost master")
-				},
-			},
-		})
 	}
+	id, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("unable to get hostname: %w", err)
+	}
+
+	id = id + "_" + string(uuid.NewUUID())
+
+	config := common.CreateKubeConfigOrDie(app.config.CommonFlags.KubeConfig, float32(app.config.CommonFlags.KubeApiQps), int(app.config.CommonFlags.KubeApiBurst))
+	kubeClient := kube_client.NewForConfigOrDie(config)
+
+	lock, err := resourcelock.New(
+		leaderElection.ResourceLock,
+		leaderElection.ResourceNamespace,
+		leaderElection.ResourceName,
+		kubeClient.CoreV1(),
+		kubeClient.CoordinationV1(),
+		resourcelock.ResourceLockConfig{
+			Identity: id,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create leader election lock: %w", err)
+	}
+
+	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
+		Lock:            lock,
+		LeaseDuration:   leaderElection.LeaseDuration.Duration,
+		RenewDeadline:   leaderElection.RenewDeadline.Duration,
+		RetryPeriod:     leaderElection.RetryPeriod.Duration,
+		ReleaseOnCancel: true,
+		Callbacks: leaderelection.LeaderCallbacks{
+			OnStartedLeading: func(_ context.Context) {
+				if err := app.run(ctx, stopCh, healthCheck); err != nil {
+					klog.Fatalf("Error running recommender: %v", err)
+				}
+			},
+			OnStoppedLeading: func() {
+				klog.Fatal("lost master")
+			},
+		},
+	})
 
 	return nil
 }
