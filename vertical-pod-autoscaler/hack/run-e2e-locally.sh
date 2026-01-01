@@ -45,6 +45,7 @@ SUITE=$1
 REQUIRED_COMMANDS="
 docker
 go
+helm
 kind
 kubectl
 make
@@ -97,7 +98,8 @@ fi
 
 case ${SUITE} in
   recommender|recommender-externalmetrics|updater|admission-controller|actuation|full-vpa)
-    ${SCRIPT_ROOT}/hack/vpa-down.sh
+    # Cleanup any existing VPA Helm release
+    helm uninstall vpa --namespace kube-system 2>/dev/null || true
     echo " ** Deploying for suite ${SUITE}"
     ${SCRIPT_ROOT}/hack/deploy-for-e2e-locally.sh ${SUITE}
 
