@@ -158,12 +158,17 @@ if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
 
   # Upgrade Helm release with external metrics configuration
   echo " ** Updating recommender with external metrics args"
+  # Determine starting index for external metrics args (after feature gates if set)
+  EXTERNAL_METRICS_START_INDEX=0
+  if [ -n "${FEATURE_GATES:-}" ]; then
+    EXTERNAL_METRICS_START_INDEX=1
+  fi
   helm upgrade ${HELM_RELEASE_NAME} ${HELM_CHART_PATH} \
     --namespace ${HELM_NAMESPACE} \
     --values ${VALUES_FILE} \
     ${HELM_SET_ARGS} \
-    --set "recommender.extraArgs[0]=--use-external-metrics=true" \
-    --set "recommender.extraArgs[1]=--external-metrics-cpu-metric=cpu" \
-    --set "recommender.extraArgs[2]=--external-metrics-memory-metric=mem" \
+    --set "recommender.extraArgs[${EXTERNAL_METRICS_START_INDEX}]=--use-external-metrics=true" \
+    --set "recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 1))]=--external-metrics-cpu-metric=cpu" \
+    --set "recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 2))]=--external-metrics-memory-metric=mem" \
     --wait
 fi
