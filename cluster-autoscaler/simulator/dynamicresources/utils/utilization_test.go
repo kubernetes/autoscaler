@@ -242,7 +242,7 @@ func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devi
 	deviceIndex := 0
 	var result []*framework.PodInfo
 	for podIndex := range podCount {
-		pod := test.BuildTestPod(fmt.Sprintf("%s-%s-pod-%d", driverName, poolName, podIndex), 1, 1)
+		pod := test.BuildTestPod(fmt.Sprintf("%s-%s-pod-%v-%d", driverName, poolName, adminAccess, podIndex), 1, 1)
 		var claims []*resourceapi.ResourceClaim
 		for podDevIndex := range devicesPerPod {
 			claimName := fmt.Sprintf("%s-claim-%d", pod.Name, podDevIndex)

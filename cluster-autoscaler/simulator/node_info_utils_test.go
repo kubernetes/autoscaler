@@ -630,7 +630,7 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 		return err
 	}
 
-	gotDeclaredFeatures := sanitizedNodeInfo.ToScheduler().GetNodeDeclaredFeatures()
+	gotDeclaredFeatures := sanitizedNodeInfo.GetNodeDeclaredFeatures()
 	// Verify DeclaredFeatures on the NodeInfo struct
 	if nodeDeclaredFeaturesEnabled {
 		wantDeclaredFeatures := ndf.NewFeatureSet(initialNodeInfo.Node().Status.DeclaredFeatures...)
@@ -638,7 +638,7 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 			return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected, diff (-want +got): %s", diff)
 		}
 	} else if gotDeclaredFeatures.Len() != 0 {
-		return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected: got %v, want empty when feature gate is disabled", sanitizedNodeInfo.ToScheduler().GetNodeDeclaredFeatures())
+		return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected: got %v, want empty when feature gate is disabled", sanitizedNodeInfo.GetNodeDeclaredFeatures())
 	}
 
 	if wantsCSINode {

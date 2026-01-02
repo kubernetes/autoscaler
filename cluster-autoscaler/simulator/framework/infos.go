@@ -56,8 +56,10 @@ type PodExtraInfo struct {
 // It's essentially a wrapper around schedulerframework.NodeInfo, with extra data on top.
 // TODO: Rewrite NodeInfo to be an interface extending fwk.NodeInfo
 type NodeInfo struct {
-	// schedNodeInfo is the part of information needed by the scheduler.
-	schedNodeInfo fwk.NodeInfo
+	// Embed fwk.NodeInfo to implement the interface.
+	fwk.NodeInfo
+	// pods is a cached list of internal PodInfo objects.
+	pods []*PodInfo
 	// podsExtraInfo contains extra pod-level data needed only by CA.
 	podsExtraInfo map[types.UID]PodExtraInfo
 
@@ -70,48 +72,48 @@ type NodeInfo struct {
 	CSINode *storagev1.CSINode
 }
 
-// SetNode sets the Node in this NodeInfo
-func (n *NodeInfo) SetNode(node *apiv1.Node) {
-	n.schedNodeInfo.SetNode(node)
-}
-
-// Node returns the Node set in this NodeInfo.
-func (n *NodeInfo) Node() *apiv1.Node {
-	return n.schedNodeInfo.Node()
-}
-
 // Pods returns the Pods scheduled on this NodeInfo, along with all their associated data.
 func (n *NodeInfo) Pods() []*PodInfo {
-	var result []*PodInfo
-	for _, pod := range n.schedNodeInfo.GetPods() {
-		extraInfo := n.podsExtraInfo[pod.GetPod().UID]
-		podInfo := &PodInfo{Pod: pod.GetPod(), PodInfo: pod, PodExtraInfo: extraInfo}
-		result = append(result, podInfo)
-	}
-	return result
+	return n.pods
 }
 
 // AddPod adds the given Pod and associated data to the NodeInfo.
 func (n *NodeInfo) AddPod(pod *PodInfo) {
-	n.schedNodeInfo.AddPodInfo(pod.PodInfo)
+	n.pods = append(n.pods, pod)
+	n.NodeInfo.AddPodInfo(pod.PodInfo)
 	if len(pod.PodExtraInfo.NeededResourceClaims) > 0 {
 		n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
 	}
 }
 
+// AddPodInfo adds a fwk.PodInfo to the NodeInfo.
+func (n *NodeInfo) AddPodInfo(pod fwk.PodInfo) {
+	if pi, ok := pod.(*PodInfo); ok {
+		n.AddPod(pi)
+		return
+	}
+
+	pi := &PodInfo{Pod: pod.GetPod(), PodInfo: pod}
+	n.AddPod(pi)
+}
+
 // RemovePod removes the given pod and its associated data from the NodeInfo.
-func (n *NodeInfo) RemovePod(pod *apiv1.Pod) error {
-	err := n.schedNodeInfo.RemovePod(klog.Background(), pod)
+func (n *NodeInfo) RemovePod(logger klog.Logger, pod *apiv1.Pod) error {
+	err := n.NodeInfo.RemovePod(logger, pod)
 	if err != nil {
 		return err
 	}
 	delete(n.podsExtraInfo, pod.UID)
-	return nil
-}
 
-// ToScheduler returns the embedded fwk.NodeInfo portion of the tracked data.
-func (n *NodeInfo) ToScheduler() fwk.NodeInfo {
-	return n.schedNodeInfo
+	for i, p := range n.pods {
+		if p.UID == pod.UID {
+			// Delete the element by moving it to the end of the list.
+			n.pods[i] = n.pods[len(n.pods)-1]
+			n.pods = n.pods[:len(n.pods)-1]
+			break
+		}
+	}
+	return nil
 }
 
 // DeepCopy clones the NodeInfo.
@@ -163,12 +165,12 @@ func (n *NodeInfo) SetCSINode(csiNode *storagev1.CSINode) *NodeInfo {
 // NewNodeInfo returns a new internal NodeInfo from the provided data.
 func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...*PodInfo) *NodeInfo {
 	result := &NodeInfo{
-		schedNodeInfo:       schedulerframework.NewNodeInfo(),
+		NodeInfo:            schedulerframework.NewNodeInfo(),
 		podsExtraInfo:       map[types.UID]PodExtraInfo{},
 		LocalResourceSlices: slices,
 	}
 	if node != nil {
-		result.schedNodeInfo.SetNode(node)
+		result.SetNode(node)
 	}
 	for _, pod := range pods {
 		result.AddPod(pod)
@@ -181,9 +183,18 @@ func WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo, slices []*resourceapi.Res
 	if podExtraInfos == nil {
 		podExtraInfos = map[types.UID]PodExtraInfo{}
 	}
-	return &NodeInfo{
-		schedNodeInfo:       schedNodeInfo,
+	// Avoid multi-layer wrapping.
+	if ni, ok := schedNodeInfo.(*NodeInfo); ok {
+		schedNodeInfo = ni.NodeInfo
+	}
+	ni := &NodeInfo{
+		NodeInfo:            schedNodeInfo,
 		podsExtraInfo:       podExtraInfos,
 		LocalResourceSlices: slices,
 	}
+	for _, pod := range schedNodeInfo.GetPods() {
+		extraInfo := podExtraInfos[pod.GetPod().UID]
+		ni.pods = append(ni.pods, &PodInfo{Pod: pod.GetPod(), PodInfo: pod, PodExtraInfo: extraInfo})
+	}
+	return ni
 }
