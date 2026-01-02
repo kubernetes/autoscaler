@@ -984,7 +984,10 @@ func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod,
 			}
 		}
 
-		if podAge > podScaleUpDelay {
+		// newPodScaleUpDelay <= 0 means that young pod filtering out is disabled. 
+		// As pod age is calculated from CA loop start time, it is technically possible that some pods will have negative
+		// age and would be unnecesarily skipped by the current loop.
+		if podScaleUpDelay <= 0 || podAge > podScaleUpDelay {
 			oldUnschedulablePods = append(oldUnschedulablePods, pod)
 		} else {
 			klog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
