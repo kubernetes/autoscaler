@@ -22,6 +22,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -162,7 +163,7 @@ func TestNodeInfo(t *testing.T) {
 			modFn: func(info fwk.NodeInfo) *NodeInfo {
 				result := NewNodeInfo(info.Node(), slices, testPodInfos(pods, true)...)
 				for _, pod := range []*apiv1.Pod{pods[0], pods[2], pods[4]} {
-					if err := result.RemovePod(pod); err != nil {
+					if err := result.RemovePod(klog.Background(), pod); err != nil {
 						t.Errorf("RemovePod unexpected error: %v", err)
 					}
 				}
@@ -211,8 +212,8 @@ func TestNodeInfo(t *testing.T) {
 				// Ignore cachedResource as it is lazily initialized and may differ between fresh and processed PodInfo objects.
 				cmpopts.IgnoreFields(schedulerframework.PodInfo{}, "cachedResource"),
 			}
-			if diff := cmp.Diff(tc.wantSchedNodeInfo, wrappedNodeInfo.ToScheduler(), nodeInfoCmpOpts...); diff != "" {
-				t.Errorf("ToScheduler() output differs from expected, diff (-want +got): %s", diff)
+			if diff := cmp.Diff(tc.wantSchedNodeInfo, wrappedNodeInfo.NodeInfo, nodeInfoCmpOpts...); diff != "" {
+				t.Errorf("NodeInfo output differs from expected, diff (-want +got): %s", diff)
 			}
 
 			// Assert that the Node() method matches the scheduler object.
@@ -312,7 +313,7 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 			if tc.nodeInfo == nodeInfoCopy {
 				t.Error("nodeInfo address identical after DeepCopyNodeInfo")
 			}
-			if tc.nodeInfo.ToScheduler() == nodeInfoCopy.ToScheduler() {
+			if tc.nodeInfo.NodeInfo == nodeInfoCopy.NodeInfo {
 				t.Error("schedulerframework.NodeInfo address identical after DeepCopyNodeInfo")
 			}
 			for i := range len(tc.nodeInfo.LocalResourceSlices) {
