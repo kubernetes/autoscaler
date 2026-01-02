@@ -83,10 +83,14 @@ func (c *nodePoolCache) removeInstance(nodePoolID, instanceID string, nodeName s
 
 	// always try to remove the instance. This call is idempotent
 	scaleDown := true
+	overrideEvictionGraceDuration := "PT0M"
+	forceDeletionAfterOverrideGraceDuration := true
 	resp, err := c.okeClient.DeleteNode(context.Background(), oke.DeleteNodeRequest{
-		NodePoolId:      &nodePoolID,
-		NodeId:          &instanceID,
-		IsDecrementSize: &scaleDown,
+		NodePoolId:                    &nodePoolID,
+		NodeId:                        &instanceID,
+		IsDecrementSize:               &scaleDown,
+		OverrideEvictionGraceDuration: &overrideEvictionGraceDuration,
+		IsForceDeletionAfterOverrideGraceDuration: &forceDeletionAfterOverrideGraceDuration,
 	})
 
 	klog.Infof("Delete Node API returned response: %v, err: %v", resp, err)
