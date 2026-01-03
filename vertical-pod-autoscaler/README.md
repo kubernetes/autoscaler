@@ -2,12 +2,13 @@
 
 ## Contents
 
-- [Contents](#contents)
+<!-- toc -->
 - [Intro](#intro)
-- [Getting started](#getting-started)
+- [Getting Started](#getting-started)
 - [Components and Architecture](#components-and-architecture)
 - [Features and Known limitations](#features-and-known-limitations)
 - [Related links](#related-links)
+<!-- /toc -->
 
 ## Intro
 

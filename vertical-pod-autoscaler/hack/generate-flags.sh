@@ -133,6 +133,12 @@ echo "Generating flags documentation..."
     echo
     echo "> **Note:** This document is auto-generated from the default branch (master) of the VPA repository."
     echo
+    echo "<!-- toc -->"
+    for component in "${COMPONENTS[@]}"; do
+        echo "- [What are the parameters to VPA $component?](#what-are-the-parameters-to-vpa-$component)"
+    done
+    echo "<!-- /toc -->"
+    echo
 
     for component in "${COMPONENTS[@]}"; do
         binary="${SCRIPT_ROOT}/pkg/${component}/${component}"

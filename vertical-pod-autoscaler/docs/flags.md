@@ -5,6 +5,12 @@ To view the most recent _release_ of flags for all VPA components, consult the r
 
 > **Note:** This document is auto-generated from the default branch (master) of the VPA repository.
 
+<!-- toc -->
+- [What are the parameters to VPA admission-controller?](#what-are-the-parameters-to-vpa-admission-controller)
+- [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
+- [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
+<!-- /toc -->
+
 # What are the parameters to VPA admission-controller?
 This document is auto-generated from the flag definitions in the VPA admission-controller code.
 

@@ -2,11 +2,20 @@
 
 ## Contents
 
+<!-- toc -->
 - [Limits control](#limits-control)
 - [Memory Value Humanization](#memory-value-humanization)
 - [CPU Recommendation Rounding](#cpu-recommendation-rounding)
 - [Memory Recommendation Rounding](#memory-recommendation-rounding)
-- [In-Place Updates](#in-place-updates-inplaceorrecreate)
+- [In-Place Updates (<code>InPlaceOrRecreate</code>)](#in-place-updates-inplaceorrecreate)
+  - [Usage](#usage)
+  - [Behavior](#behavior)
+  - [Requirements:](#requirements)
+  - [Configuration](#configuration)
+  - [Limitations](#limitations)
+  - [Fallback Behavior](#fallback-behavior)
+  - [Monitoring](#monitoring)
+<!-- /toc -->
 
 ## Limits control
 
