@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 /*
 Copyright The Kubernetes Authors.
 
@@ -26,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kubernetes/test/integration/framework"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
@@ -37,19 +39,20 @@ import (
 func TestRecommenderWithNamespaceFiltering(t *testing.T) {
 	ctx := t.Context()
 
-	server, kubeClient, vpaClient := createTestServerAndInstallCRDsWithClients(t)
-	defer server.TearDownFn()
-
-	kubeconfig, cleanup := setupKubeconfig(t, server.ClientConfig)
-	defer cleanup()
-
 	// Create test namespaces
-	watchedNS := "watched-ns"
-	ignoredNS := "ignored-ns"
+	watchedNS := "ns-filtering-watched"
+	ignoredNS := "ns-filtering-ignored"
 
 	for _, ns := range []string{watchedNS, ignoredNS} {
-		ns := framework.CreateNamespaceOrDie(kubeClient, ns, t)
-		defer framework.DeleteNamespaceOrDie(kubeClient, ns, t)
+		_, err := kubeClient.CoreV1().Namespaces().Create(ctx, &apiv1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{Name: ns},
+		}, metav1.CreateOptions{})
+		if err != nil {
+			t.Fatalf("Failed to create namespace %s: %v", ns, err)
+		}
+		defer func(ns string) {
+			_ = kubeClient.CoreV1().Namespaces().Delete(ctx, ns, metav1.DeleteOptions{})
+		}(ns)
 	}
 
 	// Create VPA objects in both namespaces
@@ -111,19 +114,20 @@ func TestRecommenderWithNamespaceFiltering(t *testing.T) {
 func TestRecommenderWithNamespaceExclusions(t *testing.T) {
 	ctx := t.Context()
 
-	server, kubeClient, vpaClient := createTestServerAndInstallCRDsWithClients(t)
-	defer server.TearDownFn()
-
-	kubeconfig, cleanup := setupKubeconfig(t, server.ClientConfig)
-	defer cleanup()
-
 	// Create test namespaces
-	watchedNS := "watched-ns"
-	ignoredNS := "ignored-ns"
+	watchedNS := "ns-exclusions-watched"
+	ignoredNS := "ns-exclusions-ignored"
 
 	for _, ns := range []string{watchedNS, ignoredNS} {
-		ns := framework.CreateNamespaceOrDie(kubeClient, ns, t)
-		defer framework.DeleteNamespaceOrDie(kubeClient, ns, t)
+		_, err := kubeClient.CoreV1().Namespaces().Create(ctx, &apiv1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{Name: ns},
+		}, metav1.CreateOptions{})
+		if err != nil {
+			t.Fatalf("Failed to create namespace %s: %v", ns, err)
+		}
+		defer func(ns string) {
+			_ = kubeClient.CoreV1().Namespaces().Delete(ctx, ns, metav1.DeleteOptions{})
+		}(ns)
 	}
 
 	// Create VPA objects in both namespaces
@@ -185,19 +189,24 @@ func TestRecommenderWithNamespaceExclusions(t *testing.T) {
 func TestCRDCheckpointGC(t *testing.T) {
 	ctx := t.Context()
 
-	server, kubeClient, vpaClient := createTestServerAndInstallCRDsWithClients(t)
-	defer server.TearDownFn()
+	ns := "checkpoint-gc-test"
 
-	kubeconfig, cleanup := setupKubeconfig(t, server.ClientConfig)
-	defer cleanup()
-
-	ns := "default"
+	// Create test namespace
+	_, err := kubeClient.CoreV1().Namespaces().Create(ctx, &apiv1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: ns},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("Failed to create namespace %s: %v", ns, err)
+	}
+	defer func(ns string) {
+		_ = kubeClient.CoreV1().Namespaces().Delete(ctx, ns, metav1.DeleteOptions{})
+	}(ns)
 
 	// Create a Deployment that the VPA will target
 	deploymentLabel := map[string]string{"app": "hamster"}
 	deployment := newHamsterDeployment(ns, 1, deploymentLabel)
 
-	_, err := kubeClient.AppsV1().Deployments(ns).Create(ctx, deployment, metav1.CreateOptions{})
+	_, err = kubeClient.AppsV1().Deployments(ns).Create(ctx, deployment, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Failed to create Deployment in namespace %s: %v", ns, err)
 	}
@@ -301,11 +310,18 @@ func TestCRDCheckpointGC(t *testing.T) {
 func TestRecommenderName(t *testing.T) {
 	ctx := t.Context()
 
-	server, _, vpaClient := createTestServerAndInstallCRDsWithClients(t)
-	defer server.TearDownFn()
+	ns := "recommender-name-test"
 
-	kubeconfig, cleanup := setupKubeconfig(t, server.ClientConfig)
-	defer cleanup()
+	// Create test namespace
+	_, err := kubeClient.CoreV1().Namespaces().Create(ctx, &apiv1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: ns},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("Failed to create namespace %s: %v", ns, err)
+	}
+	defer func(ns string) {
+		_ = kubeClient.CoreV1().Namespaces().Delete(ctx, ns, metav1.DeleteOptions{})
+	}(ns)
 
 	// Create two VPAs that target different recommenders:
 	// - "vpa-for-custom-recommender" uses recommender "custom-recommender"
@@ -313,7 +329,7 @@ func TestRecommenderName(t *testing.T) {
 	vpaCustom := test.VerticalPodAutoscaler().
 		WithName("vpa-for-custom-recommender").
 		WithContainer("hamster").
-		WithNamespace("default").
+		WithNamespace(ns).
 		WithRecommender("custom-recommender").
 		WithTargetRef(utils.HamsterTargetRef).
 		Get()
@@ -321,16 +337,16 @@ func TestRecommenderName(t *testing.T) {
 	vpaDefault := test.VerticalPodAutoscaler().
 		WithName("vpa-for-default-recommender").
 		WithContainer("hamster").
-		WithNamespace("default").
+		WithNamespace(ns).
 		WithTargetRef(utils.HamsterTargetRef). // No WithRecommender = uses default recommender
 		Get()
 
-	_, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers("default").Create(ctx, vpaCustom, metav1.CreateOptions{})
+	_, err = vpaClient.AutoscalingV1().VerticalPodAutoscalers(ns).Create(ctx, vpaCustom, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Failed to create VPA: %v", err)
 	}
 
-	_, err = vpaClient.AutoscalingV1().VerticalPodAutoscalers("default").Create(ctx, vpaDefault, metav1.CreateOptions{})
+	_, err = vpaClient.AutoscalingV1().VerticalPodAutoscalers(ns).Create(ctx, vpaDefault, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Failed to create VPA: %v", err)
 	}
@@ -349,7 +365,7 @@ func TestRecommenderName(t *testing.T) {
 
 	// The VPA targeting "custom-recommender" should get status updates
 	err = wait.PollUntilContextTimeout(ctx, 1*time.Second, 50*time.Second, true, func(ctx context.Context) (done bool, err error) {
-		vpa, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers("default").Get(ctx, "vpa-for-custom-recommender", metav1.GetOptions{})
+		vpa, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers(ns).Get(ctx, "vpa-for-custom-recommender", metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -362,7 +378,7 @@ func TestRecommenderName(t *testing.T) {
 		t.Fatalf("VPA targeting custom-recommender should have status conditions: %v", err)
 	}
 
-	vpa, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers("default").Get(ctx, "vpa-for-default-recommender", metav1.GetOptions{})
+	vpa, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers(ns).Get(ctx, "vpa-for-default-recommender", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Unable to get VPA for the default recommender: %v", err)
 	}
