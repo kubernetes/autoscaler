@@ -153,7 +153,7 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	var instances []cloudprovider.Instance
 	for _, instance := range n.instances {
 		instances = append(instances, cloudprovider.Instance{
-			Id:     instance.Id,
+			Id:     formatKamateraProviderID(instance.Id),
 			Status: instance.Status,
 		})
 	}
@@ -220,16 +220,17 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 }
 
 func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
+	parsedProviderID := parseKamateraProviderID(node.Spec.ProviderID)
 	for _, instance := range n.instances {
-		if instance.Id == node.Spec.ProviderID {
+		if instance.Id == parsedProviderID {
 			klog.V(2).Infof("findInstanceForNode(%s): found based on node ProviderID", node.Name)
 			return instance, nil
-		} else if node.Spec.ProviderID == "" && instance.Id == node.Name {
+		} else if parsedProviderID == "" && instance.Id == node.Name {
 			klog.V(2).Infof("findInstanceForNode(%s): found based on node Id", node.Name)
 			// Rancher does not set providerID for nodes, so we use node name as providerID
 			// We also set the ProviderID as some autoscaler code expects it to be set
-			node.Spec.ProviderID = instance.Id
-			err := setNodeProviderID(n.manager.kubeClient, node.Name, instance.Id)
+			node.Spec.ProviderID = formatKamateraProviderID(instance.Id)
+			err := setNodeProviderID(n.manager.kubeClient, node.Name, node.Spec.ProviderID)
 			if err != nil {
 				// this is not a critical error, the autoscaler can continue functioning in this condition
 				// as the same node object is used in later code the ProviderID change will be picked up
@@ -310,7 +311,7 @@ func (n *NodeGroup) getResourceList() (apiv1.ResourceList, error) {
 		// TODO somehow determine the actual pods that will be running
 		apiv1.ResourcePods:    *resource.NewQuantity(110, resource.DecimalSI),
 		apiv1.ResourceCPU:     *resource.NewQuantity(int64(cpuCores), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(ramMb*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceMemory:  *resource.NewQuantity(int64(ramMb*1024*1024), resource.DecimalSI),
 		apiv1.ResourceStorage: *resource.NewQuantity(int64(firstDiskSizeGb*1024*1024*1024), resource.DecimalSI),
 	}, nil
 }

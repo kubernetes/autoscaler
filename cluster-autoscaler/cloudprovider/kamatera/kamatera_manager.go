@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/kubernetes"
 	"regexp"
+	"sync"
 
 	klog "k8s.io/klog/v2"
 )
@@ -36,11 +37,13 @@ const (
 // manager handles Kamatera communication and holds information about
 // the node groups
 type manager struct {
-	client     kamateraAPIClient
-	config     *kamateraConfig
-	nodeGroups map[string]*NodeGroup // key: NodeGroup.id
-	instances  map[string]*Instance  // key: Instance.id (which is also the Kamatera server name)
-	kubeClient kubernetes.Interface
+	client       kamateraAPIClient
+	config       *kamateraConfig
+	nodeGroupsMu sync.RWMutex
+	nodeGroups   map[string]*NodeGroup // key: NodeGroup.id
+	instancesMu  sync.RWMutex
+	instances    map[string]*Instance // key: Instance.id (which is also the Kamatera server name)
+	kubeClient   kubernetes.Interface
 }
 
 func newManager(config io.Reader, kubeClient kubernetes.Interface) (*manager, error) {
@@ -60,9 +63,10 @@ func newManager(config io.Reader, kubeClient kubernetes.Interface) (*manager, er
 }
 
 func (m *manager) refresh() error {
+	instancesSnapshot := m.snapshotInstances()
 	servers, err := m.client.ListServers(
 		context.Background(),
-		m.instances,
+		instancesSnapshot,
 		m.config.filterNamePrefix,
 	)
 	if err != nil {
@@ -83,7 +87,9 @@ func (m *manager) refresh() error {
 		klog.V(2).Infof("%s", ng.extendedDebug())
 	}
 
+	m.nodeGroupsMu.Lock()
 	m.nodeGroups = nodeGroups
+	m.nodeGroupsMu.Unlock()
 	return nil
 }
 
@@ -182,6 +188,8 @@ func (m *manager) getNodeGroupInstances(name string, servers []Server) (map[stri
 	clusterTag := fmt.Sprintf("%s%s", clusterServerTagPrefix, m.config.clusterName)
 	nodeGroupTag := fmt.Sprintf("%s%s", nodeGroupTagPrefix, name)
 	instances := make(map[string]*Instance)
+	m.instancesMu.Lock()
+	defer m.instancesMu.Unlock()
 	for _, server := range servers {
 		hasClusterTag := false
 		hasNodeGroupTag := false
@@ -225,6 +233,8 @@ func (m *manager) getNodeGroupInstances(name string, servers []Server) (map[stri
 }
 
 func (m *manager) addInstance(server Server, state cloudprovider.InstanceState) (*Instance, error) {
+	m.instancesMu.Lock()
+	defer m.instancesMu.Unlock()
 	if m.instances[server.Name] == nil {
 		m.instances[server.Name] = &Instance{
 			Id:      server.Name,
@@ -238,4 +248,14 @@ func (m *manager) addInstance(server Server, state cloudprovider.InstanceState) 
 		m.instances[server.Name].Tags = server.Tags
 	}
 	return m.instances[server.Name], nil
+}
+
+func (m *manager) snapshotInstances() map[string]*Instance {
+	m.instancesMu.RLock()
+	defer m.instancesMu.RUnlock()
+	instances := make(map[string]*Instance, len(m.instances))
+	for key, value := range m.instances {
+		instances[key] = value
+	}
+	return instances
 }

@@ -1,3 +1,6 @@
+{{- if and .Values.admissionController.registerWebhook .Values.admissionController.certGen.enabled }}
+{{- fail "admissionController.registerWebhook and admissionController.certGen.enabled cannot both be true. Choose either application-managed webhook (registerWebhook: true) or Helm-managed webhook with certGen (certGen.enabled: true)." -}}
+{{- end -}}
 {{- if .Values.admissionController.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -66,6 +69,12 @@ spec:
           args:
             - --v=4
             - --stderrthreshold=info
+          {{- if .Values.admissionController.registerWebhook }}
+            - --register-webhook=true
+            {{- else }}
+            - --register-webhook=false
+          {{- end }}
+            - --webhook-service={{ .Values.admissionController.service.name }}
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
