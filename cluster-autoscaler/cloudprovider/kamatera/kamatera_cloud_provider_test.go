@@ -18,6 +18,8 @@ package kamatera
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -26,6 +28,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -428,4 +431,40 @@ cluster-name=aaabbb
 	}
 
 	wg.Wait()
+}
+
+func TestCreateKubeClient(t *testing.T) {
+	// Create a temporary kubeconfig file
+	tmpDir := t.TempDir()
+	kubeConfigPath := filepath.Join(tmpDir, "kubeconfig")
+
+	kubeConfigContent := `apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: https://localhost:6443
+    insecure-skip-tls-verify: true
+  name: test-cluster
+contexts:
+- context:
+    cluster: test-cluster
+    user: test-user
+  name: test-context
+current-context: test-context
+users:
+- name: test-user
+  user:
+    token: test-token
+`
+	err := os.WriteFile(kubeConfigPath, []byte(kubeConfigContent), 0600)
+	assert.NoError(t, err)
+
+	opts := config.AutoscalingOptions{
+		KubeClientOpts: config.KubeClientOptions{
+			KubeConfigPath: kubeConfigPath,
+		},
+	}
+
+	client := createKubeClient(opts)
+	assert.NotNil(t, client)
 }
