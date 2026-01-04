@@ -41,6 +41,8 @@ type kamateraCloudProvider struct {
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
+const kamateraProviderIDPrefix = "kamatera://"
+
 // Name returns name of the cloud provider.
 func (k *kamateraCloudProvider) Name() string {
 	return cloudprovider.KamateraProviderName

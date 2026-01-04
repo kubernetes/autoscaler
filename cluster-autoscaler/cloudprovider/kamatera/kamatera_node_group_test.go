@@ -145,7 +145,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	).Return(nil).Once()
 	err := ng.DeleteNodes([]*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: serverName1}},
-		{Spec: apiv1.NodeSpec{ProviderID: serverName2}},
+		{Spec: apiv1.NodeSpec{ProviderID: formatKamateraProviderID(serverName2)}},
 		{Spec: apiv1.NodeSpec{ProviderID: serverName6}},
 	})
 	assert.NoError(t, err)
