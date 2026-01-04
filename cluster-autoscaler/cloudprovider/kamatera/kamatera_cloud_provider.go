@@ -41,6 +41,8 @@ type kamateraCloudProvider struct {
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
+var _ cloudprovider.CloudProvider = (*kamateraCloudProvider)(nil)
+
 // Name returns name of the cloud provider.
 func (k *kamateraCloudProvider) Name() string {
 	return cloudprovider.KamateraProviderName
@@ -127,7 +129,14 @@ func (k *kamateraCloudProvider) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (k *kamateraCloudProvider) Refresh() error {
-	return k.manager.refresh()
+	klog.V(4).Infof("Refreshing Kamatera node groups")
+	err := k.manager.refresh()
+	if err != nil {
+		klog.V(4).Infof("Failed to refresh Kamatera node groups: %v", err)
+		return err
+	}
+	klog.V(4).Infof("Finished refreshing Kamatera node groups")
+	return nil
 }
 
 // BuildKamatera builds the Kamatera cloud provider.
