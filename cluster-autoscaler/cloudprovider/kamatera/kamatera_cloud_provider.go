@@ -22,8 +22,6 @@ import (
 	"os"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,6 +30,7 @@ import (
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	klog "k8s.io/klog/v2"
 )
 
@@ -177,15 +176,6 @@ func newKamateraCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimite
 	}, nil
 }
 
-func getKubeConfig(opts config.AutoscalingOptions) *rest.Config {
-	klog.V(1).Infof("Using kubeconfig file: %s", opts.KubeClientOpts.KubeConfigPath)
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeClientOpts.KubeConfigPath)
-	if err != nil {
-		klog.Fatalf("Failed to build kubeConfig: %v", err)
-	}
-	return kubeConfig
-}
-
 func createKubeClient(opts config.AutoscalingOptions) kubernetes.Interface {
-	return kubernetes.NewForConfigOrDie(getKubeConfig(opts))
+	return kubernetes.NewForConfigOrDie(kube_util.GetKubeConfig(opts.KubeClientOpts))
 }
