@@ -224,16 +224,19 @@ func TestNodeGroup_getResourceList(t *testing.T) {
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourcePods:    *resource.NewQuantity(110, resource.DecimalSI),
 		apiv1.ResourceCPU:     *resource.NewQuantity(int64(55), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(1024*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceMemory:  *resource.NewQuantity(int64(1024*1024*1024), resource.DecimalSI),
 		apiv1.ResourceStorage: *resource.NewQuantity(int64(0*1024*1024*1024), resource.DecimalSI),
 	}, rl)
+	ng.serverConfig.Disks = []string{"size=oops"}
+	_, err = ng.getResourceList()
+	assert.ErrorContains(t, err, "invalid syntax")
 	ng.serverConfig.Disks = []string{"size=50"}
 	rl, err = ng.getResourceList()
 	assert.NoError(t, err)
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourcePods:    *resource.NewQuantity(110, resource.DecimalSI),
 		apiv1.ResourceCPU:     *resource.NewQuantity(int64(55), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(1024*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceMemory:  *resource.NewQuantity(int64(1024*1024*1024), resource.DecimalSI),
 		apiv1.ResourceStorage: *resource.NewQuantity(int64(50*1024*1024*1024), resource.DecimalSI),
 	}, rl)
 }
@@ -251,7 +254,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 	assert.Equal(t, nodeInfo.Node().Status.Capacity, apiv1.ResourceList{
 		apiv1.ResourcePods:    *resource.NewQuantity(110, resource.DecimalSI),
 		apiv1.ResourceCPU:     *resource.NewQuantity(int64(5), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(1024*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceMemory:  *resource.NewQuantity(int64(1024*1024*1024), resource.DecimalSI),
 		apiv1.ResourceStorage: *resource.NewQuantity(int64(50*1024*1024*1024), resource.DecimalSI),
 	})
 }

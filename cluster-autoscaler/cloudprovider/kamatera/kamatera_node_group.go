@@ -303,7 +303,7 @@ func (n *NodeGroup) getResourceList() (apiv1.ResourceList, error) {
 		// TODO somehow determine the actual pods that will be running
 		apiv1.ResourcePods:    *resource.NewQuantity(110, resource.DecimalSI),
 		apiv1.ResourceCPU:     *resource.NewQuantity(int64(cpuCores), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(ramMb*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceMemory:  *resource.NewQuantity(int64(ramMb*1024*1024), resource.DecimalSI),
 		apiv1.ResourceStorage: *resource.NewQuantity(int64(firstDiskSizeGb*1024*1024*1024), resource.DecimalSI),
 	}, nil
 }
