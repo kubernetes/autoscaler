@@ -146,7 +146,7 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	var instances []cloudprovider.Instance
 	for _, instance := range n.instances {
 		instances = append(instances, cloudprovider.Instance{
-			Id:     instance.Id,
+			Id:     formatKamateraProviderID(instance.Id),
 			Status: instance.Status,
 		})
 	}

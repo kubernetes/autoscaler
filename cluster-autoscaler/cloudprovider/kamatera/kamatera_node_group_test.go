@@ -194,6 +194,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 	}
 
 	// test nodes returned from Nodes() are only the ones we are expecting
+	// Instance.Id should be prefixed with kamatera:// to match node.Spec.ProviderID
 	instancesList, err := ng.Nodes()
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(instancesList))
@@ -202,9 +203,9 @@ func TestNodeGroup_Nodes(t *testing.T) {
 		serverIds = append(serverIds, instance.Id)
 	}
 	assert.Equal(t, 3, len(serverIds))
-	assert.Contains(t, serverIds, serverName1)
-	assert.Contains(t, serverIds, serverName2)
-	assert.Contains(t, serverIds, serverName3)
+	assert.Contains(t, serverIds, formatKamateraProviderID(serverName1))
+	assert.Contains(t, serverIds, formatKamateraProviderID(serverName2))
+	assert.Contains(t, serverIds, formatKamateraProviderID(serverName3))
 }
 
 func TestNodeGroup_getResourceList(t *testing.T) {
@@ -354,8 +355,9 @@ func TestNodeGroup_findInstanceForNode_EmptyProviderID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, instance)
 	assert.Equal(t, serverName1, instance.Id)
-	// Verify that ProviderID was set on the node object (even though the kubernetes update may fail)
-	assert.Equal(t, serverName1, node.Spec.ProviderID)
+	// Verify that ProviderID was set on the node object with kamatera:// prefix
+	// (even though the kubernetes update may fail)
+	assert.Equal(t, formatKamateraProviderID(serverName1), node.Spec.ProviderID)
 
 	// Test not finding when neither ProviderID nor name matches
 	node2 := &apiv1.Node{
