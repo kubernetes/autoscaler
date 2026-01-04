@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 func TestManager_newManager(t *testing.T) {
@@ -157,5 +158,171 @@ cluster-name=aaabbb
 	} else {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), expectedError)
+	}
+}
+
+func TestManager_addInstance(t *testing.T) {
+	cfg := strings.NewReader(`
+[global]
+kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
+kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
+cluster-name=aaabbb
+`)
+	m, err := newManager(cfg, nil)
+	assert.NoError(t, err)
+
+	serverName1 := mockKamateraServerName()
+	server1 := Server{
+		Name:    serverName1,
+		PowerOn: true,
+		Tags:    []string{"tag1", "tag2"},
+	}
+
+	// Test adding a new instance
+	instance, err := m.addInstance(server1, cloudprovider.InstanceCreating)
+	assert.NoError(t, err)
+	assert.NotNil(t, instance)
+	assert.Equal(t, serverName1, instance.Id)
+	assert.Equal(t, cloudprovider.InstanceCreating, instance.Status.State)
+	assert.True(t, instance.PowerOn)
+	assert.Equal(t, []string{"tag1", "tag2"}, instance.Tags)
+
+	// Verify instance was added to manager's instances map
+	assert.NotNil(t, m.instances[serverName1])
+	assert.Equal(t, serverName1, m.instances[serverName1].Id)
+
+	// Test updating an existing instance
+	server1Updated := Server{
+		Name:    serverName1,
+		PowerOn: false,
+		Tags:    []string{"tag3"},
+	}
+	instanceUpdated, err := m.addInstance(server1Updated, cloudprovider.InstanceRunning)
+	assert.NoError(t, err)
+	assert.NotNil(t, instanceUpdated)
+	assert.Equal(t, serverName1, instanceUpdated.Id)
+	assert.Equal(t, cloudprovider.InstanceRunning, instanceUpdated.Status.State)
+	assert.False(t, instanceUpdated.PowerOn)
+	assert.Equal(t, []string{"tag3"}, instanceUpdated.Tags)
+
+	// Verify the updated instance in the map
+	assert.Equal(t, cloudprovider.InstanceRunning, m.instances[serverName1].Status.State)
+	assert.False(t, m.instances[serverName1].PowerOn)
+}
+
+func TestManager_snapshotInstances(t *testing.T) {
+	cfg := strings.NewReader(`
+[global]
+kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
+kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
+cluster-name=aaabbb
+`)
+	m, err := newManager(cfg, nil)
+	assert.NoError(t, err)
+
+	serverName1 := mockKamateraServerName()
+	serverName2 := mockKamateraServerName()
+	m.instances[serverName1] = &Instance{Id: serverName1, PowerOn: true}
+	m.instances[serverName2] = &Instance{Id: serverName2, PowerOn: false}
+
+	// Get snapshot
+	snapshot := m.snapshotInstances()
+
+	// Verify snapshot has same content
+	assert.Equal(t, 2, len(snapshot))
+	assert.Equal(t, serverName1, snapshot[serverName1].Id)
+	assert.Equal(t, serverName2, snapshot[serverName2].Id)
+
+	// Verify snapshot is independent copy (modifying snapshot doesn't affect original)
+	delete(snapshot, serverName1)
+	assert.Equal(t, 1, len(snapshot))
+	assert.Equal(t, 2, len(m.instances))
+
+	// Verify original still has both instances
+	assert.NotNil(t, m.instances[serverName1])
+	assert.NotNil(t, m.instances[serverName2])
+}
+
+func TestManager_addInstanceConcurrent(t *testing.T) {
+	cfg := strings.NewReader(`
+[global]
+kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
+kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
+cluster-name=aaabbb
+`)
+	m, err := newManager(cfg, nil)
+	assert.NoError(t, err)
+
+	const numGoroutines = 50
+	done := make(chan bool, numGoroutines)
+
+	// Concurrently add instances
+	for i := 0; i < numGoroutines; i++ {
+		go func(idx int) {
+			serverName := fmt.Sprintf("server-%d", idx)
+			server := Server{
+				Name:    serverName,
+				PowerOn: true,
+				Tags:    []string{"tag1"},
+			}
+			_, err := m.addInstance(server, cloudprovider.InstanceRunning)
+			assert.NoError(t, err)
+			done <- true
+		}(i)
+	}
+
+	// Wait for all goroutines to complete
+	for i := 0; i < numGoroutines; i++ {
+		<-done
+	}
+
+	// Verify all instances were added
+	assert.Equal(t, numGoroutines, len(m.instances))
+}
+
+func TestManager_snapshotInstancesConcurrent(t *testing.T) {
+	cfg := strings.NewReader(`
+[global]
+kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
+kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
+cluster-name=aaabbb
+`)
+	m, err := newManager(cfg, nil)
+	assert.NoError(t, err)
+
+	// Pre-populate some instances
+	for i := 0; i < 10; i++ {
+		serverName := fmt.Sprintf("server-%d", i)
+		m.instances[serverName] = &Instance{Id: serverName, PowerOn: true}
+	}
+
+	const numGoroutines = 50
+	done := make(chan bool, numGoroutines*2)
+
+	// Concurrently snapshot and add instances
+	for i := 0; i < numGoroutines; i++ {
+		// Snapshot goroutine
+		go func() {
+			snapshot := m.snapshotInstances()
+			assert.NotNil(t, snapshot)
+			done <- true
+		}()
+		// Add instance goroutine
+		go func(idx int) {
+			serverName := fmt.Sprintf("new-server-%d", idx)
+			server := Server{
+				Name:    serverName,
+				PowerOn: true,
+				Tags:    []string{"tag1"},
+			}
+			_, err := m.addInstance(server, cloudprovider.InstanceRunning)
+			assert.NoError(t, err)
+			done <- true
+		}(i)
+	}
+
+	// Wait for all goroutines to complete
+	for i := 0; i < numGoroutines*2; i++ {
+		<-done
 	}
 }
