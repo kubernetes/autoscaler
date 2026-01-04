@@ -88,10 +88,10 @@ type observer struct {
 	channel chan recommendationChange
 }
 
-func (*observer) OnAdd(obj interface{}, isInInitialList bool) {}
-func (*observer) OnDelete(obj interface{})                    {}
+func (*observer) OnAdd(obj any, isInInitialList bool) {}
+func (*observer) OnDelete(obj any)                    {}
 
-func (o *observer) OnUpdate(oldObj, newObj interface{}) {
+func (o *observer) OnUpdate(oldObj, newObj any) {
 	get := func(vpa *vpa_types.VerticalPodAutoscaler) (result resourceRecommendation, found bool) {
 		if vpa.Status.Recommendation == nil || len(vpa.Status.Recommendation.ContainerRecommendations) == 0 {
 			found = false

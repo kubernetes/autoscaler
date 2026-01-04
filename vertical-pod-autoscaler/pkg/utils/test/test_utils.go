@@ -297,15 +297,15 @@ type fakeEventRecorder struct{}
 func (f *fakeEventRecorder) Event(object runtime.Object, eventtype, reason, message string) {}
 
 // Eventf is a dummy implementation of record.EventRecorder interface.
-func (f *fakeEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...interface{}) {
+func (f *fakeEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // PastEventf is a dummy implementation of record.EventRecorder interface.
-func (f *fakeEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...interface{}) {
+func (f *fakeEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // AnnotatedEventf is a dummy implementation of record.EventRecorder interface.
-func (f *fakeEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...interface{}) {
+func (f *fakeEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // FakeEventRecorder returns a dummy implementation of record.EventRecorder.
@@ -324,15 +324,15 @@ func (m *mockedEventRecorder) Event(object runtime.Object, eventtype, reason, me
 }
 
 // Eventf is a dummy implementation of record.EventRecorder interface.
-func (m *mockedEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...interface{}) {
+func (m *mockedEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // PastEventf is a dummy implementation of record.EventRecorder interface.
-func (m *mockedEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...interface{}) {
+func (m *mockedEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // AnnotatedEventf is a dummy implementation of record.EventRecorder interface.
-func (m *mockedEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...interface{}) {
+func (m *mockedEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // MockEventRecorder returns a dummy implementation of record.EventRecorder.
