@@ -19,13 +19,15 @@ package kamatera
 import (
 	"context"
 	"fmt"
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestNodeGroup_IncreaseSize(t *testing.T) {
@@ -300,4 +302,70 @@ func TestNodeGroup_Others(t *testing.T) {
 	err = ng.Delete()
 	assert.Error(t, err)
 	assert.Equal(t, "Not implemented", err.Error())
+}
+
+func TestNodeGroup_AtomicIncreaseSize(t *testing.T) {
+	ng := &NodeGroup{}
+	err := ng.AtomicIncreaseSize(1)
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+}
+
+func TestNodeGroup_ForceDeleteNodes(t *testing.T) {
+	ng := &NodeGroup{}
+	err := ng.ForceDeleteNodes([]*apiv1.Node{})
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+}
+
+func TestNodeGroup_GetOptions(t *testing.T) {
+	ng := &NodeGroup{}
+	opts, err := ng.GetOptions(config.NodeGroupAutoscalingOptions{})
+	assert.Nil(t, opts)
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+}
+
+func TestNodeGroup_findInstanceForNode_EmptyProviderID(t *testing.T) {
+	serverName1 := mockKamateraServerName()
+	serverName2 := mockKamateraServerName()
+
+	// Create a fake kubernetes client
+	fakeClient := fake.NewSimpleClientset()
+
+	ng := NodeGroup{
+		id: "ng1",
+		instances: map[string]*Instance{
+			serverName1: {Id: serverName1, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+			serverName2: {Id: serverName2, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+		},
+		manager: &manager{kubeClient: fakeClient},
+	}
+
+	// Test finding an instance when ProviderID is empty but node name matches instance ID
+	node := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "",
+		},
+	}
+	node.Name = serverName1
+
+	instance, err := ng.findInstanceForNode(node)
+	assert.NoError(t, err)
+	assert.NotNil(t, instance)
+	assert.Equal(t, serverName1, instance.Id)
+	// Verify that ProviderID was set on the node object (even though the kubernetes update may fail)
+	assert.Equal(t, serverName1, node.Spec.ProviderID)
+
+	// Test not finding when neither ProviderID nor name matches
+	node2 := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "",
+		},
+	}
+	node2.Name = mockKamateraServerName()
+
+	instance2, err := ng.findInstanceForNode(node2)
+	assert.NoError(t, err)
+	assert.Nil(t, instance2)
 }
