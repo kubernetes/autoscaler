@@ -34,6 +34,8 @@ import (
 	"time"
 )
 
+var kamateraHTTPClient = &http.Client{Timeout: 5 * time.Minute}
+
 // ProviderConfig is the configuration for the Kamatera cloud provider
 type ProviderConfig struct {
 	ApiUrl      string
@@ -67,7 +69,7 @@ func request(ctx context.Context, provider ProviderConfig, method string, path s
 		req.Header.Add("AuthSecret", provider.ApiSecret)
 		req.Header.Add("Accept", "application/json")
 		req.Header.Add("Content-Type", "application/json")
-		res, e := http.DefaultClient.Do(req)
+		res, e := kamateraHTTPClient.Do(req)
 		if e != nil {
 			err = e
 			continue
