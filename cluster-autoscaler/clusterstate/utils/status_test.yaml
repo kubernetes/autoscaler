@@ -15,17 +15,17 @@ clusterWide:
           resourceUnready: 1
       longUnregistered: 1
       unregistered: 2
-    lastProbeTime: "2023-11-24T04:28:19.000048988Z"
-    lastTransitionTime: "2023-11-23T14:52:02.000011Z"
+    lastProbeTime: "2023-11-24T04:28:19Z"
+    lastTransitionTime: "2023-11-23T14:52:02Z"
   scaleUp:
     status: "NoActivity"
-    lastProbeTime: "2023-11-24T04:28:19.000048988Z"
-    lastTransitionTime: "2023-11-23T14:52:02.000011Z"
+    lastProbeTime: "2023-11-24T04:28:19Z"
+    lastTransitionTime: "2023-11-23T14:52:02Z"
   scaleDown:
     status: "NoCandidates"
     candidates: 2
-    lastProbeTime: "2023-11-24T04:28:19.000048988Z"
-    lastTransitionTime: "2023-11-23T14:52:02.000011Z"
+    lastProbeTime: "2023-11-24T04:28:19Z"
+    lastTransitionTime: "2023-11-23T14:52:02Z"
 nodeGroups:
   -
     name: "sample-node-group"
@@ -45,17 +45,17 @@ nodeGroups:
       cloudProviderTarget: 8
       minSize: 2
       maxSize: 12
-      lastProbeTime: "2023-11-24T04:28:19.000048988Z"
-      lastTransitionTime: "2023-11-23T14:52:02.000011Z"
+      lastProbeTime: "2023-11-24T04:28:19Z"
+      lastTransitionTime: "2023-11-23T14:52:02Z"
     scaleUp:
       status: "Backoff"
       backoffInfo:
         errorCode: "QUOTA_EXCEEDED"
         errorMessage: "Instance 'sample-node-group-40ce0341-t28s' creation failed: Quota 'CPUS' exceeded. Limit: 57.0 in region us-central1."
-      lastProbeTime: "2023-11-24T04:28:19.000048988Z"
-      lastTransitionTime: "2023-11-23T14:52:02.000011Z"
+      lastProbeTime: "2023-11-24T04:28:19Z"
+      lastTransitionTime: "2023-11-23T14:52:02Z"
     scaleDown:
       status: "NoCandidates"
       candidates: 2
-      lastProbeTime: "2023-11-24T04:28:19.000048988Z"
-      lastTransitionTime: "2023-11-23T14:52:02.000011Z"
+      lastProbeTime: "2023-11-24T04:28:19Z"
+      lastTransitionTime: "2023-11-23T14:52:02Z"
