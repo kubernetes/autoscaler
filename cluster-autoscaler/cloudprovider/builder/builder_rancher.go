@@ -1,5 +1,4 @@
 //go:build rancher
-// +build rancher
 
 /*
 Copyright 2018 The Kubernetes Authors.

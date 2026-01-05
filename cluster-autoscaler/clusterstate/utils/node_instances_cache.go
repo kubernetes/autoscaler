@@ -97,15 +97,12 @@ func (cache *CloudProviderNodeInstancesCache) GetCloudProviderNodeInstances() (m
 	// Fetch missing node instances.
 	var wg sync.WaitGroup
 	for _, nodeGroup := range nodeGroups {
-		nodeGroup := nodeGroup
 		if _, found := cache.getCacheEntryLocked(nodeGroup); !found {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				if _, err := cache.fetchCloudProviderNodeInstancesForNodeGroup(nodeGroup); err != nil {
 					klog.Errorf("Failed to fetch cloud provider node instances for %v, error %v", nodeGroup.Id(), err)
 				}
-			}()
+			})
 		}
 	}
 	wg.Wait()

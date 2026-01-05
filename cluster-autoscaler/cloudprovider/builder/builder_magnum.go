@@ -1,5 +1,4 @@
 //go:build magnum
-// +build magnum
 
 /*
 Copyright 2019 The Kubernetes Authors.

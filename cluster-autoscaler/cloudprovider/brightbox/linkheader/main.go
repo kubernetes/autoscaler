@@ -83,12 +83,12 @@ func Parse(raw string) Links {
 	var links Links
 
 	// One chunk: <url>; rel="foo"
-	for _, chunk := range strings.Split(raw, ",") {
+	for chunk := range strings.SplitSeq(raw, ",") {
 
 		link := Link{URL: "", Rel: "", Params: make(map[string]string)}
 
 		// Figure out what each piece of the chunk is
-		for _, piece := range strings.Split(chunk, ";") {
+		for piece := range strings.SplitSeq(chunk, ";") {
 
 			piece = strings.Trim(piece, " ")
 			if piece == "" {

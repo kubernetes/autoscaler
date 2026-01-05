@@ -17,6 +17,7 @@ limitations under the License.
 package labels
 
 import (
+	"maps"
 	"reflect"
 	"sort"
 	"strings"
@@ -72,9 +73,7 @@ statloop:
 			}
 		}
 		// All labels are non-infra and/or, can be added.
-		for k, v := range nss.nodeSelector {
-			selector[k] = v
-		}
+		maps.Copy(selector, nss.nodeSelector)
 	}
 	return selector
 }

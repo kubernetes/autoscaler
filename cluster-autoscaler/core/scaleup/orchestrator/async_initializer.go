@@ -96,10 +96,7 @@ func (s *AsyncNodeGroupInitializer) SetTargetSize(nodeGroup string, size int64) 
 func (s *AsyncNodeGroupInitializer) ChangeTargetSize(nodeGroup string, delta int64) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	size := s.allTargetSizes[nodeGroup] + delta
-	if size < 0 {
-		size = 0
-	}
+	size := max(s.allTargetSizes[nodeGroup]+delta, 0)
 	s.allTargetSizes[nodeGroup] = size
 }
 

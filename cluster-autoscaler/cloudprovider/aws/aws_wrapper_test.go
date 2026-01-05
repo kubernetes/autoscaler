@@ -301,7 +301,7 @@ func TestMoreThen100Groups(t *testing.T) {
 
 	// Generate 101 ASG names
 	names := make([]string, 101)
-	for i := 0; i < len(names); i++ {
+	for i := range names {
 		names[i] = fmt.Sprintf("asg-%d", i)
 	}
 

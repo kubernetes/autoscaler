@@ -502,7 +502,7 @@ func TestClient_do(t *testing.T) {
 		defer server.Close()
 
 		client := createTestClient(t, server.URL)
-		var resp map[string]interface{}
+		var resp map[string]any
 		_, err := client.do(context.Background(), nil, &resp)
 
 		assert.Error(t, err)
@@ -517,7 +517,7 @@ func TestClient_do(t *testing.T) {
 		defer server.Close()
 
 		client := createTestClient(t, server.URL)
-		var resp map[string]interface{}
+		var resp map[string]any
 		_, err := client.do(context.Background(), &scalewayRequest{
 			Method: "GET",
 			Path:   "/test",
@@ -535,7 +535,7 @@ func TestClient_do(t *testing.T) {
 		defer server.Close()
 
 		client := createTestClient(t, server.URL)
-		var resp map[string]interface{}
+		var resp map[string]any
 		_, err := client.do(context.Background(), &scalewayRequest{
 			Method: "GET",
 			Path:   "/test",
@@ -554,7 +554,7 @@ func TestClient_do(t *testing.T) {
 		defer server.Close()
 
 		client := createTestClient(t, server.URL)
-		var resp map[string]interface{}
+		var resp map[string]any
 		_, err := client.do(context.Background(), &scalewayRequest{
 			Method: "GET",
 			Path:   "/test",
@@ -573,7 +573,7 @@ func TestClient_do(t *testing.T) {
 		defer server.Close()
 
 		client := createTestClient(t, server.URL)
-		var resp map[string]interface{}
+		var resp map[string]any
 		_, err := client.do(context.Background(), &scalewayRequest{
 			Method: "GET",
 			Path:   "/test",

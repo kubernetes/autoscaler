@@ -30,7 +30,7 @@ func testGetInstanceCacheWithStates(t *testing.T, vms []compute.VirtualMachineSc
 	states []cloudprovider.InstanceState) []cloudprovider.Instance {
 	assert.Equal(t, len(vms), len(states))
 	var instanceCacheTest []cloudprovider.Instance
-	for i := 0; i < len(vms); i++ {
+	for i := range vms {
 		instanceCacheTest = append(instanceCacheTest, cloudprovider.Instance{
 			Id:     azurePrefix + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, i),
 			Status: &cloudprovider.InstanceStatus{State: states[i]},

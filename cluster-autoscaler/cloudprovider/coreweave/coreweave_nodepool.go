@@ -158,8 +158,8 @@ func (np *CoreWeaveNodePool) SetSize(size int) error {
 	defer cancel()
 
 	// Set the target size in the patch payload
-	patch := map[string]interface{}{
-		"spec": map[string]interface{}{
+	patch := map[string]any{
+		"spec": map[string]any{
 			targetSizeSpecField: size,
 		},
 	}
@@ -227,7 +227,7 @@ func (np *CoreWeaveNodePool) GetNodeTaints() []apiv1.Taint {
 
 	taints := make([]apiv1.Taint, 0, len(taintsRaw))
 	for _, t := range taintsRaw {
-		taintMap, ok := t.(map[string]interface{})
+		taintMap, ok := t.(map[string]any)
 		if !ok {
 			continue
 		}

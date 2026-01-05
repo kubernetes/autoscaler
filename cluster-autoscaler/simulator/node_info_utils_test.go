@@ -18,6 +18,7 @@ package simulator
 
 import (
 	"fmt"
+	"maps"
 	"math/rand"
 	"strings"
 	"testing"
@@ -597,9 +598,7 @@ func verifySanitizedNode(initialNode, sanitizedNode *apiv1.Node, wantNodeName st
 	}
 
 	wantLabels := make(map[string]string)
-	for k, v := range initialNode.Labels {
-		wantLabels[k] = v
-	}
+	maps.Copy(wantLabels, initialNode.Labels)
 	wantLabels[apiv1.LabelHostname] = wantNodeName
 	if wantDeprecatedLabels {
 		labels.UpdateDeprecatedLabels(wantLabels)

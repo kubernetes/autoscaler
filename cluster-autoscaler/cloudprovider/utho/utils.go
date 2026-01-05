@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -101,9 +102,7 @@ func join(dst, src map[string]string) map[string]string {
 	if dst == nil {
 		dst = map[string]string{}
 	}
-	for k, v := range src {
-		dst[k] = v
-	}
+	maps.Copy(dst, src)
 	return dst
 }
 

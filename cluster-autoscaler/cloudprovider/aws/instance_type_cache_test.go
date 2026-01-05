@@ -51,7 +51,7 @@ func TestLTVersionChange(t *testing.T) {
 	a := &autoScalingMock{}
 	e := &ec2Mock{}
 
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		e.On("DescribeLaunchTemplateVersions",
 			mock.Anything,
 			&ec2.DescribeLaunchTemplateVersionsInput{
@@ -73,7 +73,7 @@ func TestLTVersionChange(t *testing.T) {
 
 	fakeClock := test_clock.NewFakeClock(time.Unix(0, 0))
 	fakeStore := cache.NewFakeExpirationStore(
-		func(obj interface{}) (s string, e error) {
+		func(obj any) (s string, e error) {
 			return obj.(instanceTypeCachedObject).name, nil
 		},
 		nil,
@@ -85,7 +85,7 @@ func TestLTVersionChange(t *testing.T) {
 	)
 	m := newAsgInstanceTypeCacheWithClock(&awsWrapper{a, e, nil}, fakeClock, fakeStore)
 
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		asgRef := AwsRef{Name: asgName}
 		err := m.populate(map[AwsRef]*asg{
 			asgRef: {

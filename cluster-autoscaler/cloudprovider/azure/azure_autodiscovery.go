@@ -74,7 +74,7 @@ func parseLabelAutoDiscoverySpec(spec string) (labelAutoDiscoveryConfig, error) 
 		return cfg, fmt.Errorf("unsupported discoverer specified: %s", discoverer)
 	}
 
-	for _, arg := range strings.Split(tokens[1], ",") {
+	for arg := range strings.SplitSeq(tokens[1], ",") {
 		kv := strings.Split(arg, "=")
 		if len(kv) != 2 {
 			return cfg, fmt.Errorf("invalid key=value pair %s", kv)

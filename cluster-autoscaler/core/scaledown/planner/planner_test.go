@@ -479,7 +479,6 @@ func TestUpdateClusterState(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			if tc.replicasSets == nil {
@@ -673,7 +672,6 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			nodes := make([]*apiv1.Node, tc.nodes)
@@ -993,7 +991,6 @@ func TestNodesToDelete(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
@@ -1045,7 +1042,7 @@ func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
 
 func buildRemovableNode(name string, podCount int) simulator.NodeToBeRemoved {
 	podsToReschedule := []*apiv1.Pod{}
-	for i := 0; i < podCount; i++ {
+	for range podCount {
 		podsToReschedule = append(podsToReschedule, &apiv1.Pod{})
 	}
 	return simulator.NodeToBeRemoved{

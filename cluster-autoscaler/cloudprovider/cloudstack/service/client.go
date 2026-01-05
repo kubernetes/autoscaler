@@ -38,7 +38,7 @@ import (
 // APIClient is an interface to communicate to CloudStack via HTTP calls
 type APIClient interface {
 	// NewRequest makes an API request to configured management server
-	NewRequest(api string, args map[string]string, out interface{}) (map[string]interface{}, error)
+	NewRequest(api string, args map[string]string, out any) (map[string]any, error)
 
 	// Close terminates the client
 	Close()
@@ -67,21 +67,21 @@ type QueryAsyncJobResponse struct {
 
 // JobResponse contains the async job details
 type JobResponse struct {
-	JobStatus float64     `json:"jobstatus"`
-	JobID     string      `json:"jobid"`
-	JobResult interface{} `json:"jobresult"`
+	JobStatus float64 `json:"jobstatus"`
+	JobID     string  `json:"jobid"`
+	JobResult any     `json:"jobresult"`
 }
 
-func (client *client) getResponseData(data map[string]interface{}) map[string]interface{} {
+func (client *client) getResponseData(data map[string]any) map[string]any {
 	for k := range data {
 		if strings.HasSuffix(k, "response") {
-			return data[k].(map[string]interface{})
+			return data[k].(map[string]any)
 		}
 	}
 	return nil
 }
 
-func (client *client) pollAsyncJob(jobID string, out interface{}) (map[string]interface{}, error) {
+func (client *client) pollAsyncJob(jobID string, out any) (map[string]any, error) {
 	timeout := time.NewTimer(time.Duration(client.config.Timeout) * time.Second)
 	ticker := time.NewTicker(time.Duration(client.config.PollInterval) * time.Second)
 
@@ -112,7 +112,7 @@ func (client *client) pollAsyncJob(jobID string, out interface{}) (map[string]in
 			case status == 1:
 				data, err := json.Marshal(result["jobresult"])
 				json.Unmarshal(data, out)
-				return result["jobresult"].(map[string]interface{}), err
+				return result["jobresult"].(map[string]any), err
 			case status > 1:
 				err := fmt.Errorf("API failed for job %s : %v", jobID, result)
 				klog.Error(err)
@@ -123,7 +123,7 @@ func (client *client) pollAsyncJob(jobID string, out interface{}) (map[string]in
 }
 
 // NewRequest makes an API request to configured management server
-func (client *client) NewRequest(api string, args map[string]string, out interface{}) (map[string]interface{}, error) {
+func (client *client) NewRequest(api string, args map[string]string, out any) (map[string]any, error) {
 	return client.newRequest(api, args, true, out)
 }
 
@@ -161,7 +161,7 @@ func createMaskedURL(url string) string {
 	return url
 }
 
-func (client *client) newRequest(api string, args map[string]string, async bool, out interface{}) (map[string]interface{}, error) {
+func (client *client) newRequest(api string, args map[string]string, async bool, out any) (map[string]any, error) {
 	params := client.createQueryString(api, args)
 
 	requestURL := fmt.Sprintf("%s?%s", client.config.Endpoint, params)
@@ -175,7 +175,7 @@ func (client *client) newRequest(api string, args map[string]string, async bool,
 	klog.Info("NewAPIRequest response status code:", response.StatusCode)
 
 	body, _ := ioutil.ReadAll(response.Body)
-	var data map[string]interface{}
+	var data map[string]any
 	_ = json.Unmarshal([]byte(body), &data)
 
 	if data != nil && async {

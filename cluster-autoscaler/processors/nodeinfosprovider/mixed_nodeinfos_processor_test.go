@@ -344,10 +344,7 @@ func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) int64 {
 		return 0
 	}
 
-	nodeCapacityValue := nodeCapacity.Value()
-	if nodeCapacityValue < 0 {
-		nodeCapacityValue = 0
-	}
+	nodeCapacityValue := max(nodeCapacity.Value(), 0)
 
 	return nodeCapacityValue
 }

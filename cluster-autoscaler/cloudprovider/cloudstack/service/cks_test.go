@@ -29,7 +29,7 @@ type mockClient struct {
 	mock.Mock
 }
 
-func (m *mockClient) NewRequest(api string, args map[string]string, out interface{}) (map[string]interface{}, error) {
+func (m *mockClient) NewRequest(api string, args map[string]string, out any) (map[string]any, error) {
 	m.Called(api, args, out)
 	return nil, nil
 }

@@ -18,6 +18,7 @@ package cloudprovider
 
 import (
 	"fmt"
+	"maps"
 	"math"
 	"strings"
 
@@ -45,9 +46,7 @@ func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64) 
 			minLimitsCopy[key] = value
 		}
 	}
-	for key, value := range maxLimits {
-		maxLimitsCopy[key] = value
-	}
+	maps.Copy(maxLimitsCopy, maxLimits)
 	return &ResourceLimiter{minLimitsCopy, maxLimitsCopy}
 }
 

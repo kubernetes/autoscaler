@@ -51,7 +51,7 @@ func (m *MockExpanderClient) EXPECT() *MockExpanderClientMockRecorder {
 // BestOptions mocks base method.
 func (m *MockExpanderClient) BestOptions(ctx context.Context, in *protos.BestOptionsRequest, opts ...grpc.CallOption) (*protos.BestOptionsResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, in}
+	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -62,9 +62,9 @@ func (m *MockExpanderClient) BestOptions(ctx context.Context, in *protos.BestOpt
 }
 
 // BestOptions indicates an expected call of BestOptions.
-func (mr *MockExpanderClientMockRecorder) BestOptions(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockExpanderClientMockRecorder) BestOptions(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, in}, opts...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BestOptions", reflect.TypeOf((*MockExpanderClient)(nil).BestOptions), varargs...)
 }
 
@@ -101,7 +101,7 @@ func (m *MockExpanderServer) BestOptions(arg0 context.Context, arg1 *protos.Best
 }
 
 // BestOptions indicates an expected call of BestOptions.
-func (mr *MockExpanderServerMockRecorder) BestOptions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockExpanderServerMockRecorder) BestOptions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BestOptions", reflect.TypeOf((*MockExpanderServer)(nil).BestOptions), arg0, arg1)
 }

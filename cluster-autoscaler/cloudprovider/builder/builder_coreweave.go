@@ -1,5 +1,4 @@
 //go:build coreweave
-// +build coreweave
 
 /*
 Copyright 2025 The Kubernetes Authors.

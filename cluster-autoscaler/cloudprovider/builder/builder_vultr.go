@@ -1,5 +1,4 @@
 //go:build vultr
-// +build vultr
 
 /*
 Copyright 2022 The Kubernetes Authors.

@@ -18,6 +18,7 @@ package store
 
 import (
 	"fmt"
+	"maps"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
@@ -136,9 +137,7 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	clonedPvcNamespaceNodeMap := make(map[string]map[string]bool)
 	for k, v := range data.pvcNamespacePodMap {
 		clonedPvcNamespaceNodeMap[k] = make(map[string]bool)
-		for k1, v1 := range v {
-			clonedPvcNamespaceNodeMap[k][k1] = v1
-		}
+		maps.Copy(clonedPvcNamespaceNodeMap[k], v)
 	}
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        clonedNodeInfoMap,

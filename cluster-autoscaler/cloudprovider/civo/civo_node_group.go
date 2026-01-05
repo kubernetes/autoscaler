@@ -19,6 +19,7 @@ package civo
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"math/rand"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -335,9 +336,7 @@ func buildLabels(template *CivoNodeTemplate, nodeName string) map[string]string 
 	result := make(map[string]string)
 
 	// NodeLabels
-	for key, value := range template.Labels {
-		result[key] = value
-	}
+	maps.Copy(result, template.Labels)
 
 	// GenericLabels
 	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS

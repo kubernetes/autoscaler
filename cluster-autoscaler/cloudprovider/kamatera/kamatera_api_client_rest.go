@@ -100,8 +100,8 @@ func (c *KamateraApiClientRest) ListServers(ctx context.Context, instances map[s
 		return nil, err
 	}
 	var servers []Server
-	for _, server := range res.([]interface{}) {
-		server := server.(map[string]interface{})
+	for _, server := range res.([]any) {
+		server := server.(map[string]any)
 		serverName := server["name"].(string)
 		if len(namePrefix) == 0 || strings.HasPrefix(serverName, namePrefix) {
 			serverPowerOn := server["power"].(string) == "on"
@@ -131,7 +131,7 @@ func (c *KamateraApiClientRest) DeleteServer(ctx context.Context, name string) e
 		c.expSecondsBetweenRetries,
 	)
 	if err == nil {
-		commandId := res.([]interface{})[0].(string)
+		commandId := res.([]any)[0].(string)
 		_, err = waitCommand(
 			ctx,
 			ProviderConfig{ApiUrl: c.url, ApiClientID: c.clientId, ApiSecret: c.secret},
@@ -179,7 +179,7 @@ func (c *KamateraApiClientRest) CreateServers(ctx context.Context, count int, co
 		return nil, err
 	}
 	serverNameCommandIds := make(map[string]string)
-	for i := 0; i < count; i++ {
+	for range count {
 		serverName := kamateraServerName(config.NamePrefix)
 		res, err := request(
 			ctx,
@@ -214,11 +214,11 @@ func (c *KamateraApiClientRest) CreateServers(ctx context.Context, count int, co
 			return nil, err
 		}
 		if config.Password == "__generate__" {
-			resData := res.(map[string]interface{})
+			resData := res.(map[string]any)
 			klog.V(2).Infof("Generated password for server %s: %s", serverName, resData["password"].(string))
-			serverNameCommandIds[serverName] = resData["commandIds"].([]interface{})[0].(string)
+			serverNameCommandIds[serverName] = resData["commandIds"].([]any)[0].(string)
 		} else {
-			serverNameCommandIds[serverName] = res.([]interface{})[0].(string)
+			serverNameCommandIds[serverName] = res.([]any)[0].(string)
 		}
 	}
 	results, err := waitCommands(
@@ -256,8 +256,8 @@ func (c *KamateraApiClientRest) getServerTags(ctx context.Context, serverName st
 			return nil, err
 		}
 		tags := make([]string, 0)
-		for _, row := range res.([]interface{}) {
-			row := row.(map[string]interface{})
+		for _, row := range res.([]any) {
+			row := row.(map[string]any)
 			tags = append(tags, row["tagName"].(string))
 		}
 		return tags, nil

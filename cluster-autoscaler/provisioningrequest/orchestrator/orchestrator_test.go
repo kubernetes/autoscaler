@@ -58,13 +58,13 @@ func TestScaleUp(t *testing.T) {
 	// - 100 nodes with high memory, low cpu not in autoscaled group
 	now := time.Now()
 	allNodes := []*apiv1.Node{}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		name := fmt.Sprintf("test-cpu-node-%d", i)
 		node := BuildTestNode(name, 100, 10)
 		SetNodeReadyState(node, true, now.Add(-2*time.Minute))
 		allNodes = append(allNodes, node)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		name := fmt.Sprintf("test-mem-node-%d", i)
 		node := BuildTestNode(name, 1, 1000)
 		SetNodeReadyState(node, true, now.Add(-2*time.Minute))
@@ -404,7 +404,6 @@ func TestScaleUp(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		tc := tc
 
 		nodes := []*apiv1.Node{}
 		for _, n := range allNodes {

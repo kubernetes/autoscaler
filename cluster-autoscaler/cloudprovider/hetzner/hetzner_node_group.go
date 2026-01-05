@@ -131,16 +131,14 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 	// try other node groups if configured.
 	waitGroup := sync.WaitGroup{}
 	errsCh := make(chan error, delta)
-	for i := 0; i < delta; i++ {
-		waitGroup.Add(1)
-		go func() {
-			defer waitGroup.Done()
+	for range delta {
+		waitGroup.Go(func() {
 			err := createServer(n)
 			if err != nil {
 				actualDelta--
 				errsCh <- err
 			}
-		}()
+		})
 	}
 	waitGroup.Wait()
 	close(errsCh)

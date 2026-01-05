@@ -17,6 +17,8 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"maps"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
@@ -35,9 +37,7 @@ func CreateAwsNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.N
 		"topology.k8s.aws/zone-id":       true, // this is a label used to determine the location of resources in an account relative to those in another one
 	}
 
-	for k, v := range BasicIgnoredLabels {
-		awsIgnoredLabels[k] = v
-	}
+	maps.Copy(awsIgnoredLabels, BasicIgnoredLabels)
 
 	for _, k := range extraIgnoredLabels {
 		awsIgnoredLabels[k] = true

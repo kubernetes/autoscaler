@@ -91,7 +91,7 @@ func TestEventManager(t *testing.T) {
 	autoscalingCtx := &ca_context.AutoscalingContext{AutoscalingKubeClients: ca_context.AutoscalingKubeClients{Recorder: eventRecorder}}
 	unscheduledPods := []*corev1.Pod{BuildTestPod("pod", 500, 10)}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		prPod := BuildTestPod(fmt.Sprintf("pr-pod-%d", i), 10, 10)
 		prPod.Annotations[v1.ProvisioningRequestPodAnnotationKey] = "pr-class"
 		unscheduledPods = append(unscheduledPods, prPod)
@@ -102,7 +102,7 @@ func TestEventManager(t *testing.T) {
 		t.Errorf("Want 1 unschedulable pod, got: %v", got)
 	}
 	assert.Equal(t, eventManager.loggedEvents, eventLimit)
-	for i := 0; i < eventLimit; i++ {
+	for range eventLimit {
 		select {
 		case event := <-eventRecorder.Events:
 			assert.Contains(t, event, "Unschedulable pod didn't trigger scale-up, because it's consuming ProvisioningRequest default/pr-class")

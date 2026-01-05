@@ -29,10 +29,10 @@ type ErrorResponse struct {
 
 // Error represents a single error returned by the Utho API.
 type Error struct {
-	Message     string      `json:"message"`
-	LongMessage string      `json:"long_message"`
-	Code        string      `json:"code"`
-	Meta        interface{} `json:"meta,omitempty"`
+	Message     string `json:"message"`
+	LongMessage string `json:"long_message"`
+	Code        string `json:"code"`
+	Meta        any    `json:"meta,omitempty"`
 }
 
 // Error implements the error interface for ErrorResponse.

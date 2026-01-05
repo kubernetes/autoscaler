@@ -42,7 +42,7 @@ type ServerBGP struct {
 type Project struct {
 	ID   int        `json:"id,omitempty"`
 	Name string     `json:"name,omitempty"`
-	Bgp  ProjectBGP `json:"bgp,omitempty"`
+	Bgp  ProjectBGP `json:"bgp"`
 	Href string     `json:"href,omitempty"`
 }
 
@@ -52,7 +52,7 @@ type Region struct {
 	Slug       string    `json:"slug,omitempty"`
 	Name       string    `json:"name,omitempty"`
 	RegionIso2 string    `json:"region_iso_2,omitempty"`
-	BGP        RegionBGP `json:"bgp,omitempty"`
+	BGP        RegionBGP `json:"bgp"`
 	Href       string    `json:"href,omitempty"`
 }
 
@@ -74,7 +74,7 @@ type Plan struct {
 	Slug             string             `json:"slug,omitempty"`
 	Name             string             `json:"name,omitempty"`
 	Custom           bool               `json:"custom,omitempty"`
-	Specs            Specs              `json:"specs,omitempty"`
+	Specs            Specs              `json:"specs"`
 	Pricing          []Pricing          `json:"pricing,omitempty"`
 	AvailableRegions []AvailableRegions `json:"available_regions,omitempty"`
 }
@@ -112,7 +112,7 @@ type BlockStorage struct {
 	AllowEditSize bool       `json:"allow_edit_size"`
 	Unit          string     `json:"unit"`
 	Description   string     `json:"description,omitempty"`
-	AttachedTo    AttachedTo `json:"attached_to,omitempty"`
+	AttachedTo    AttachedTo `json:"attached_to"`
 	VlanID        string     `json:"vlan_id"`
 	VlanIP        string     `json:"vlan_ip"`
 	Initiator     string     `json:"initiator"`
@@ -126,9 +126,9 @@ type AssignedTo struct {
 	Href     string  `json:"href,omitempty"`
 	Hostname string  `json:"hostname,omitempty"`
 	Image    string  `json:"image,omitempty"`
-	Region   Region  `json:"region,omitempty"`
+	Region   Region  `json:"region"`
 	State    string  `json:"state,omitempty"`
-	Pricing  Pricing `json:"pricing,omitempty"`
+	Pricing  Pricing `json:"pricing"`
 }
 
 // RoutedTo routing of a floating IP to an underlying IP
@@ -139,7 +139,7 @@ type RoutedTo struct {
 	Cidr          string `json:"cidr,omitempty"`
 	Gateway       string `json:"gateway,omitempty"`
 	Type          string `json:"type,omitempty"`
-	Region        Region `json:"region,omitempty"`
+	Region        Region `json:"region"`
 }
 
 // IPAddresses individual IP address
@@ -150,11 +150,11 @@ type IPAddresses struct {
 	Cidr          string            `json:"cidr,omitempty"`
 	Gateway       string            `json:"gateway,omitempty"`
 	Type          string            `json:"type,omitempty"`
-	Region        Region            `json:"region,omitempty"`
-	RoutedTo      RoutedTo          `json:"routed_to,omitempty"`
-	AssignedTo    AssignedTo        `json:"assigned_to,omitempty"`
-	TargetedTo    AssignedTo        `json:"targeted_to,omitempty"`
-	Project       Project           `json:"project,omitempty"`
+	Region        Region            `json:"region"`
+	RoutedTo      RoutedTo          `json:"routed_to"`
+	AssignedTo    AssignedTo        `json:"assigned_to"`
+	TargetedTo    AssignedTo        `json:"targeted_to"`
+	Project       Project           `json:"project"`
 	PtrRecord     string            `json:"ptr_record,omitempty"`
 	ARecord       string            `json:"a_record,omitempty"`
 	Tags          map[string]string `json:"tags,omitempty"`
@@ -169,17 +169,17 @@ type Server struct {
 	Hostname         string            `json:"hostname,omitempty"`
 	Image            string            `json:"image,omitempty"`
 	SpotInstance     bool              `json:"spot_instance"`
-	BGP              ServerBGP         `json:"bgp,omitempty"`
-	Project          Project           `json:"project,omitempty"`
-	Region           Region            `json:"region,omitempty"`
+	BGP              ServerBGP         `json:"bgp"`
+	Project          Project           `json:"project"`
+	Region           Region            `json:"region"`
 	State            string            `json:"state,omitempty"`
-	Plan             Plan              `json:"plan,omitempty"`
-	AvailableRegions AvailableRegions  `json:"availableregions,omitempty"`
-	Pricing          Pricing           `json:"pricing,omitempty"`
+	Plan             Plan              `json:"plan"`
+	AvailableRegions AvailableRegions  `json:"availableregions"`
+	Pricing          Pricing           `json:"pricing"`
 	IPAddresses      []IPAddresses     `json:"ip_addresses,omitempty"`
 	SSHKeys          []SSHKeys         `json:"ssh_keys,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
-	Storage          BlockStorage      `json:"storage,omitempty"`
+	Storage          BlockStorage      `json:"storage"`
 	Created          string            `json:"created_at,omitempty"`
 	TerminationDate  string            `json:"termination_date,omitempty"`
 }
@@ -237,12 +237,12 @@ type Bandwidth struct {
 
 // Specs aggregated specs for a server
 type Specs struct {
-	Cpus      Cpus      `json:"cpus,omitempty"`
-	Memory    Memory    `json:"memory,omitempty"`
+	Cpus      Cpus      `json:"cpus"`
+	Memory    Memory    `json:"memory"`
 	Storage   []Storage `json:"storage,omitempty"`
-	Raid      Raid      `json:"raid,omitempty"`
-	Nics      Nics      `json:"nics,omitempty"`
-	Bandwidth Bandwidth `json:"bandwidth,omitempty"`
+	Raid      Raid      `json:"raid"`
+	Nics      Nics      `json:"nics"`
+	Bandwidth Bandwidth `json:"bandwidth"`
 }
 
 // IPAddressCreateRequest represents a request to create a new IP address within a CreateServer request

@@ -17,7 +17,6 @@ limitations under the License.
 package provider
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -190,8 +189,7 @@ func TestNewProviderFromInformers(t *testing.T) {
 			informerFactory := informers.NewSharedInformerFactory(client, 0)
 			provider := NewProviderFromInformers(informerFactory)
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := t.Context()
 			informerFactory.Start(ctx.Done())
 			informerFactory.WaitForCacheSync(ctx.Done())
 

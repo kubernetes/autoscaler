@@ -1,5 +1,4 @@
 //go:build cloudstack
-// +build cloudstack
 
 /*
 Copyright 2020 The Kubernetes Authors.

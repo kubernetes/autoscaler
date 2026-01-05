@@ -2438,11 +2438,11 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	readyNodesCount := 4
 	unreadyNodesCount := 2
 	nodeGroupCount := 2
-	for ngNum := 0; ngNum < nodeGroupCount; ngNum++ {
+	for ngNum := range nodeGroupCount {
 		ngName := fmt.Sprintf("ng-%d", ngNum)
 		provider.AddNodeGroup(ngName, 0, 1000, readyNodesCount+unreadyNodesCount)
 
-		for i := 0; i < readyNodesCount; i++ {
+		for i := range readyNodesCount {
 			node := BuildTestNode(fmt.Sprintf("%s-ready-node-%d", ngName, i), 2000, 1000)
 			node.CreationTimestamp = metav1.NewTime(startTime)
 			SetNodeReadyState(node, true, startTime)
@@ -2454,7 +2454,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 			readyNodes = append(readyNodes, node)
 			readyNodeNames[node.Name] = true
 		}
-		for i := 0; i < unreadyNodesCount; i++ {
+		for i := range unreadyNodesCount {
 			node := BuildTestNode(fmt.Sprintf("%s-unready-node-%d", ngName, i), 2000, 1000)
 			node.CreationTimestamp = metav1.NewTime(startTime)
 			SetNodeReadyState(node, false, startTime)
@@ -2725,7 +2725,7 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 	assert.True(t, removed)
 
 	wantNames, deletedNames := []string{}, []string{}
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		deletedNames = append(deletedNames, core_utils.GetStringFromChan(deletedNodes))
 		wantNames = append(wantNames, fmt.Sprintf("atomic-ng/atomic-ng-%v", i))
 	}
@@ -2761,7 +2761,7 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 	assert.True(t, removed)
 
 	wantNames, deletedNames = []string{}, []string{}
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		deletedNames = append(deletedNames, core_utils.GetStringFromChan(deletedNodes))
 		wantNames = append(wantNames, fmt.Sprintf("atomic-ng/atomic-ng-%v", i))
 	}
@@ -2771,7 +2771,7 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 
 func TestSubtractNodes(t *testing.T) {
 	ns := make([]*apiv1.Node, 5)
-	for i := 0; i < len(ns); i++ {
+	for i := range ns {
 		ns[i] = BuildTestNode(fmt.Sprintf("n%d", i), 1000, 1000)
 	}
 	testCases := []struct {
@@ -3014,7 +3014,6 @@ func TestStaticAutoscalerRunOnceInvokesScaleDownStatusProcessor(t *testing.T) {
 
 	for testName, test := range testCases {
 		// prevent issues with scoping, we should be able to get rid of that with Go 1.22
-		test := test
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 

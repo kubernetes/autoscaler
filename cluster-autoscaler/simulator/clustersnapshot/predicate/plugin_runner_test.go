@@ -374,13 +374,13 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 	nodes := make([]*apiv1.Node, 0, 5001)
 	podsOnNodes := make(map[string][]*apiv1.Pod)
 
-	for i := 0; i < 5000; i++ {
+	for i := range 5000 {
 		nodeName := fmt.Sprintf("n-%d", i)
 		node := BuildTestNode(nodeName, 10, 1000)
 		nodes = append(nodes, node)
 		// Add 10 small pods to each node
 		pods := make([]*apiv1.Pod, 0, 10)
-		for j := 0; j < 10; j++ {
+		for j := range 10 {
 			pods = append(pods, BuildTestPod(fmt.Sprintf("p-%d-%d", i, j), 1, 1))
 		}
 		podsOnNodes[nodeName] = pods

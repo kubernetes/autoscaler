@@ -1024,7 +1024,7 @@ func TestAllOrNothing(t *testing.T) {
 
 	extraPods := []PodConfig{}
 	extraPodNames := []string{}
-	for i := 0; i < 11; i++ {
+	for i := range 11 {
 		podName := fmt.Sprintf("pod-%d", i)
 		extraPods = append(extraPods, PodConfig{Name: podName, Cpu: 1000, Memory: 100})
 		extraPodNames = append(extraPodNames, podName)
@@ -1689,7 +1689,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 			pods := make([]*apiv1.Pod, 0)
-			for i := 0; i < 2; i++ {
+			for i := range 2 {
 				pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
 			}
 
@@ -1832,7 +1832,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
 	expandedGroupMap := map[string]bool{}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		expandedGroupMap[utils.GetStringFromChan(expandedGroups)] = true
 	}
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-1"])

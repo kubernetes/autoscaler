@@ -52,32 +52,32 @@ func TestBasicSetterWorkflow(t *testing.T) {
 	op, err := snapshot.GetOutputBytes()
 	assert.False(t, err)
 
-	type JSONList = []interface{}
-	type JSONMap = map[string]interface{}
+	type JSONList = []any
+	type JSONMap = map[string]any
 	var String = "test"
 
-	var parsed map[string]interface{}
+	var parsed map[string]any
 	er := json.Unmarshal(op, &parsed)
 	assert.NoError(t, er)
 	assert.IsType(t, JSONMap{}, parsed)
 	assert.IsType(t, JSONList{}, parsed["NodeList"])
-	assert.Greater(t, len(parsed["NodeList"].([]interface{})), 0)
-	assert.IsType(t, JSONMap{}, parsed["NodeList"].([]interface{})[0])
-	pNodeInfo := parsed["NodeList"].([]interface{})[0].(map[string]interface{})
-	assert.IsType(t, JSONMap{}, pNodeInfo["Node"].(map[string]interface{}))
-	pNode := pNodeInfo["Node"].(map[string]interface{})
-	assert.IsType(t, JSONMap{}, pNode["metadata"].(map[string]interface{}))
-	pNodeObjectMeta := pNode["metadata"].(map[string]interface{})
+	assert.Greater(t, len(parsed["NodeList"].([]any)), 0)
+	assert.IsType(t, JSONMap{}, parsed["NodeList"].([]any)[0])
+	pNodeInfo := parsed["NodeList"].([]any)[0].(map[string]any)
+	assert.IsType(t, JSONMap{}, pNodeInfo["Node"].(map[string]any))
+	pNode := pNodeInfo["Node"].(map[string]any)
+	assert.IsType(t, JSONMap{}, pNode["metadata"].(map[string]any))
+	pNodeObjectMeta := pNode["metadata"].(map[string]any)
 	assert.IsType(t, String, pNodeObjectMeta["name"])
 	pNodeName := pNodeObjectMeta["name"].(string)
 	assert.Equal(t, pNodeName, "testNode")
 
 	assert.IsType(t, JSONList{}, pNodeInfo["Pods"])
-	assert.Greater(t, len(pNodeInfo["Pods"].([]interface{})), 0)
-	assert.IsType(t, JSONMap{}, pNodeInfo["Pods"].([]interface{})[0])
-	pPod := pNodeInfo["Pods"].([]interface{})[0].(map[string]interface{})
+	assert.Greater(t, len(pNodeInfo["Pods"].([]any)), 0)
+	assert.IsType(t, JSONMap{}, pNodeInfo["Pods"].([]any)[0])
+	pPod := pNodeInfo["Pods"].([]any)[0].(map[string]any)
 	assert.IsType(t, JSONMap{}, pPod["metadata"])
-	pPodMeta := pPod["metadata"].(map[string]interface{})
+	pPodMeta := pPod["metadata"].(map[string]any)
 	assert.IsType(t, String, pPodMeta["name"])
 	pPodName := pPodMeta["name"].(string)
 	assert.Equal(t, pPodName, "Pod1")

@@ -27,7 +27,7 @@ import (
 func TestLoggingQuota(t *testing.T) {
 	q := NewLoggingQuota(3)
 
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		assert.Equal(t, 3-i, q.Left())
 		assert.Equal(t, i < 3, V(0).UpTo(q).enabled)
 		assert.Equal(t, i >= 3, V(0).Over(q).enabled)
@@ -38,7 +38,7 @@ func TestLoggingQuota(t *testing.T) {
 func TestReset(t *testing.T) {
 	q := NewLoggingQuota(3)
 
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		assert.Equal(t, i < 3, V(0).UpTo(q).enabled)
 	}
 

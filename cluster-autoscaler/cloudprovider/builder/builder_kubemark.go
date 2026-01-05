@@ -1,5 +1,4 @@
 //go:build kubemark
-// +build kubemark
 
 /*
 Copyright 2018 The Kubernetes Authors.

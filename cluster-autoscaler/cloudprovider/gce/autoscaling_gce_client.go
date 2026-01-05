@@ -303,7 +303,7 @@ func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName st
 	req := gce.InstanceGroupManagersCreateInstancesRequest{}
 	instanceNames := instanceIdsToNamesMap(existingInstanceProviderIds)
 	req.Instances = make([]*gce.PerInstanceConfig, 0, delta)
-	for i := int64(0); i < delta; i++ {
+	for range delta {
 		newInstanceName := generateInstanceName(baseName, instanceNames)
 		instanceNames[newInstanceName] = true
 		req.Instances = append(req.Instances, &gce.PerInstanceConfig{Name: newInstanceName})
@@ -350,7 +350,7 @@ func (client *autoscalingGceClientV1) WaitForOperation(operationName, operationT
 			if op.Error != nil {
 				errBytes, err := op.Error.MarshalJSON()
 				if err != nil {
-					errBytes = []byte(fmt.Sprintf("operation failed, but error couldn't be recovered: %v", err))
+					errBytes = fmt.Appendf(nil, "operation failed, but error couldn't be recovered: %v", err)
 				}
 				return fmt.Errorf("error while waiting for operation %s/%s: %s", operationType, operationName, errBytes)
 			}
@@ -711,7 +711,7 @@ func isInvalidReservationError(errorMessage string) bool {
 }
 
 func generateInstanceName(baseName string, existingNames map[string]bool) string {
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		name := fmt.Sprintf("%v-%v", baseName, rand.String(4))
 		if ok, _ := existingNames[name]; !ok {
 			return name

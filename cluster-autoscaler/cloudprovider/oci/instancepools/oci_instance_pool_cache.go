@@ -7,6 +7,7 @@ package instancepools
 import (
 	"context"
 	"fmt"
+	"maps"
 	"math"
 	"strings"
 	"sync"
@@ -74,9 +75,7 @@ func newInstancePoolCache(computeManagementClient ComputeMgmtClient, computeClie
 
 func (c *instancePoolCache) InstancePools() map[string]*core.InstancePool {
 	result := map[string]*core.InstancePool{}
-	for k, v := range c.poolCache {
-		result[k] = v
-	}
+	maps.Copy(result, c.poolCache)
 	return result
 }
 

@@ -403,7 +403,7 @@ func mergeServerGroups(data map[string]string) []string {
 }
 
 func addFromSplit(uniqueMap map[string]bool, source string) {
-	for _, element := range strings.Split(source, ",") {
+	for element := range strings.SplitSeq(source, ",") {
 		if element != "" {
 			uniqueMap[element] = true
 		}
