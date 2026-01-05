@@ -87,16 +87,27 @@ type ProvisioningRequestSpec struct {
 	// ProvisioningClassName describes the different modes of provisioning the resources.
 	// Currently there is no support for 'ProvisioningClass' objects.
 	// Supported values:
-	// * check-capacity.kubernetes.io - check if current cluster state can fullfil this request,
+	// * check-capacity.kubernetes.io - check if current cluster state can fulfill this request,
 	//   do not reserve the capacity. Users should provide a reference to a valid PodTemplate object.
-	//   CA will check if there is enough capacity in cluster to fulfill the request and put
-	//   the answer in 'CapacityAvailable' condition.
+	//   CA will check if there is enough capacity in the cluster to fulfill the request.
+	//
+	//   Behavior:
+	//   - If all requested capacity is available: CA sets 'Provisioned' condition with Status=True
+	//     and Reason=CapacityIsFound.
+	//   - If partial capacity is available and 'partialCapacityCheck' parameter is set to "true":
+	//     CA sets 'Provisioned' condition with Status=True and Reason=PartialCapacityIsFound.
+	//   - If capacity is not available (or only partial capacity exists but 'partialCapacityCheck'
+	//     is not enabled): CA sets either 'Failed' condition with Status=True and Reason=CapacityIsNotFound
+	//     (if 'noRetry' parameter is set to "true") or 'Provisioned' condition with Status=False and
+	//     Reason=CapacityIsNotFound (will retry by default).
+	//
 	// * atomic-scale-up.kubernetes.io - provision the resources in an atomic manner.
 	//   Users should provide a reference to a valid PodTemplate object.
 	//   CA will try to create the VMs in an atomic manner, clean any partially provisioned VMs
 	//   and re-try the operation in a exponential back-off manner. Users can configure the timeout
 	//   duration after which the request will fail by 'ValidUntilSeconds' key in 'Parameters'.
 	//   CA will set 'Failed=true' or 'Provisioned=true' condition according to the outcome.
+	//
 	// * ... - potential other classes that are specific to the cloud providers.
 	// 'kubernetes.io' suffix is reserved for the modes defined in Kubernetes projects.
 	//
@@ -107,8 +118,19 @@ type ProvisioningRequestSpec struct {
 	ProvisioningClassName string `json:"provisioningClassName"`
 
 	// Parameters contains all other parameters classes may require.
-	// 'atomic-scale-up.kubernetes.io' supports 'ValidUntilSeconds' parameter, which should contain
-	//  a string denoting duration for which we should retry (measured since creation fo the CR).
+	//
+	// 'atomic-scale-up.kubernetes.io' supports:
+	//   - 'ValidUntilSeconds': String denoting duration for which CA should retry
+	//     (measured since creation of the CR).
+	//
+	// 'check-capacity.kubernetes.io' supports:
+	//   - 'partialCapacityCheck': Set to "true" to allow CA to report success when only
+	//     some of the requested pods can be scheduled. When enabled and partial capacity is
+	//     found, CA sets 'Provisioned=true' with Reason=PartialCapacityIsFound. Default: "false".
+	//   - 'noRetry': Set to "true" to prevent CA from retrying when capacity is not found.
+	//     When enabled, CA sets 'Failed=true' with Reason=CapacityIsNotFound instead of
+	//     'Provisioned=false'. This signals that the request is terminal and should not be
+	//     retried. Default: "false".
 	//
 	// +optional
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable"
