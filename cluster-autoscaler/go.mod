@@ -54,7 +54,7 @@ require (
 	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
 	k8s.io/client-go v0.35.0
 	k8s.io/cloud-provider v0.35.0
-	k8s.io/cloud-provider-aws v1.27.0
+	k8s.io/cloud-provider-aws v1.35.0
 	k8s.io/cloud-provider-gcp/providers v0.28.2
 	k8s.io/component-base v0.35.0
 	k8s.io/component-helpers v0.35.0
@@ -100,13 +100,15 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
-	github.com/aws/aws-sdk-go v1.44.241 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.15 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.15 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.29.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.45.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.15 // indirect
+	github.com/aws/aws-sdk-go-v2/service/kms v1.41.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.11 // indirect
@@ -169,6 +171,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mistifyio/go-zfs v2.1.2-0.20190413222219-f784269be439+incompatible // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/moby/spdystream v0.5.0 // indirect
 	github.com/moby/sys/mountinfo v0.7.2 // indirect
 	github.com/moby/sys/userns v0.1.0 // indirect
@@ -190,6 +193,7 @@ require (
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/samber/lo v1.49.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cobra v1.10.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
@@ -219,7 +223,7 @@ require (
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
-	golang.org/x/time v0.9.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 	golang.org/x/tools v0.38.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a // indirect
@@ -241,6 +245,7 @@ require (
 	k8s.io/mount-utils v0.26.0-alpha.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.31.2 // indirect
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.0.4 // indirect
+	sigs.k8s.io/controller-runtime v0.22.4 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
