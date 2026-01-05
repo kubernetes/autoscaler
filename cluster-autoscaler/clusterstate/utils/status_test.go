@@ -97,7 +97,7 @@ func TestWriteStatusConfigMap(t *testing.T) {
 			Namespace:   "kube-system",
 			Annotations: map[string]string{ConfigMapLastUpdatedKey: "2023-12-21 00:00:00 +0000 UTC"},
 		},
-		Data: map[string]string{"status": "time: 2023-12-21 00:00:00 +0000 UTC\nmessage: TEST_MSG\n"},
+		Data: map[string]string{"status": "clusterWide:\n  health:\n    lastProbeTime: null\n    lastTransitionTime: null\n    nodeCounts:\n      longUnregistered: 0\n      registered:\n        notStarted: 0\n        ready: 0\n        total: 0\n        unready:\n          resourceUnready: 0\n          total: 0\n      unregistered: 0\n  scaleDown:\n    lastProbeTime: null\n    lastTransitionTime: null\n  scaleUp:\n    lastProbeTime: null\n    lastTransitionTime: null\nmessage: TEST_MSG\ntime: 2023-12-21 00:00:00 +0000 UTC\n"},
 	}
 	testCases := []struct {
 		name             string
