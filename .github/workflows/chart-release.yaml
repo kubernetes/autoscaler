@@ -56,6 +56,7 @@ jobs:
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: vertical-pod-autoscaler/charts
+          skip_existing: true
 name: Release Charts
 on:
   push:
