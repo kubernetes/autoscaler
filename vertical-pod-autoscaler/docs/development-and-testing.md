@@ -2,12 +2,13 @@
 
 ## Contents
 
-- [Development and testing](#development-and-testing)
-  - [Introduction](#introduction)
-  - [Running e2e tests](#running-e2e-tests)
-    - [Feature gates](#feature-gates)
-    - [Parallelism](#parallelism)
-    - [External Metrics Tests](#external-metrics-tests)
+<!-- toc -->
+- [Introduction](#introduction)
+- [Running e2e tests](#running-e2e-tests)
+  - [Feature gates](#feature-gates)
+  - [Parallelism](#parallelism)
+  - [External Metrics Tests](#external-metrics-tests)
+<!-- /toc -->
 
 ## Introduction
 
