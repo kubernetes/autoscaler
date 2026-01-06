@@ -15,7 +15,7 @@ This project contains various scripts and tools to aid in the development of the
 
 ## Running e2e tests
 
-The VPA contains some e2e tests that test how each component interacts with Pods and VPA resources inside a real Kubernetes cluster.
+VPA contains some e2e tests that test how each component interacts with Pods and VPA resources inside a real Kubernetes cluster.
 
 They can be run using the `./hack/run-e2e-locally.sh` helper script. Please note that this script will delete any existing [kind](https://kind.sigs.k8s.io) cluster running on the local machine before creating a fresh cluster for executing the tests.
 

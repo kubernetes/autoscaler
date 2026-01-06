@@ -25,7 +25,7 @@ up-scale pods that are under-requesting resources based on their usage over
 time.
 
 Autoscaling is configured with a
-[Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)
+[Custom Resource](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)
 called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go).
 It allows to specify which pods should be vertically autoscaled as well as if/how the
 resource recommendations are applied.
