@@ -34,7 +34,7 @@ import (
 )
 
 var (
-	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{
+	possibleScalingModes = map[vpa_types.ContainerScalingMode]any{
 		vpa_types.ContainerScalingModeAuto: struct{}{},
 		vpa_types.ContainerScalingModeOff:  struct{}{},
 	}
