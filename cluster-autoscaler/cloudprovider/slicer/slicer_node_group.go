@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/go-units"
 	sdk "github.com/slicervm/sdk"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -33,13 +34,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-)
-
-const (
-	slicerNodeGroupName = "k3s-agent"
-	slicerImportUser    = "alexellis"
-	slicerRAMGB         = 8
-	slicerCPUs          = 4
 )
 
 // SlicerNodeGroup implements cloudprovider.NodeGroup for the slicer REST API.
@@ -121,11 +115,8 @@ curl -sfL https://get.k3s.io | K3S_URL=%s sh -s - --with-node-id --node-label "s
 	// Create the nodes via API
 	for i := 0; i < delta; i++ {
 		payload := sdk.SlicerCreateNodeRequest{
-			RamGB:      slicerRAMGB,
-			CPUs:       slicerCPUs,
-			ImportUser: slicerImportUser,
-			Userdata:   userdata,
-			Secrets:    []string{"k3s-token"},
+			Userdata: userdata,
+			Secrets:  []string{"k3s-token"},
 		}
 
 		klog.V(2).Infof("Slicer: Creating node via API client")
@@ -312,13 +303,13 @@ func (g *SlicerNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	}
 
 	cpu := groupInfo.CPUs
-	ramGB := groupInfo.RamGB
-	if cpu <= 0 || ramGB <= 0 {
-		return nil, fmt.Errorf("invalid cpu or ram from hostgroup: cpu=%d ramGB=%d", cpu, ramGB)
+	ramBytes := groupInfo.RamBytes
+	if cpu <= 0 || ramBytes <= 0 {
+		return nil, fmt.Errorf("invalid cpu or ram from hostgroup: cpu=%d ram=%s", cpu, units.BytesSize(float64(ramBytes)))
 	}
 
 	nodeName := "slicer-node-template"
-	ramQty := resource.NewQuantity(int64(ramGB)*1024*1024*1024, resource.BinarySI)
+	ramQty := resource.NewQuantity(ramBytes, resource.BinarySI)
 	cpuQty := resource.NewQuantity(int64(cpu), resource.DecimalSI)
 	labels := map[string]string{
 		"kubernetes.io/arch":          g.arch,

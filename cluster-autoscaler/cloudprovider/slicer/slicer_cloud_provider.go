@@ -32,6 +32,7 @@ import (
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
+	"github.com/docker/go-units"
 	sdk "github.com/slicervm/sdk"
 	klog "k8s.io/klog/v2"
 )
@@ -95,7 +96,7 @@ func BuildSlicer(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroup
 		if restGroup == nil {
 			klog.Fatalf("Failed to find slicer host group with name %s", nodeGroupName)
 		}
-		klog.Infof("Slicer: Host group: Name=%s, RAMGB=%d, VCPU=%d, Arch=%s", restGroup.Name, restGroup.RamGB, restGroup.CPUs, restGroup.Arch)
+		klog.Infof("Slicer: Host group: Name=%s, RAM=%s, VCPU=%d, Arch=%s", restGroup.Name, units.BytesSize(float64(restGroup.RamBytes)), restGroup.CPUs, restGroup.Arch)
 
 		arch := restGroup.Arch
 		if len(nodeGroup.arch) > 0 {
