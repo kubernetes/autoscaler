@@ -17,6 +17,8 @@ limitations under the License.
 package priority
 
 import (
+	"slices"
+
 	apiv1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -80,7 +82,7 @@ func (s *scalingDirectionPodEvictionAdmission) checkEvictionRequirementsForConta
 			resultsForResources = append(resultsForResources, s.checkChangeRequirement(currentlyRequestedValue.MilliValue(), recommendedValue.MilliValue(), requirement.ChangeRequirement))
 		}
 		// *All* EvictionRequirements need to be evaluated to `true`, so if there's a single one which evaluates to `false`, we can exit here and don't admit the Container
-		if !contains(resultsForResources, true) {
+		if !slices.Contains(resultsForResources, true) {
 			return false
 		}
 	}
@@ -93,15 +95,6 @@ func (s *scalingDirectionPodEvictionAdmission) checkChangeRequirement(currentReq
 	}
 	if changeRequirement == vpa_types.TargetLowerThanRequests {
 		return recommendation < currentRequests
-	}
-	return false
-}
-
-func contains(results []bool, b bool) bool {
-	for _, result := range results {
-		if result == b {
-			return true
-		}
 	}
 	return false
 }

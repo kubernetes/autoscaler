@@ -2,13 +2,16 @@
 
 ## Contents
 
-- [Installation](#installation)
-  - [Compatibility](#compatibility)
-  - [Notice on deprecation of v1beta2 version (>=0.13.0)](#notice-on-deprecation-of-v1beta2-version-0130)
-  - [Notice on removal of v1beta1 version (>=0.5.0)](#notice-on-removal-of-v1beta1-version-050)
-  - [Prerequisites](#prerequisites)
-  - [Install command](#install-command)
-  - [Tear down](#tear-down)
+<!-- toc -->
+- [Compatibility](#compatibility)
+- [Notice on CRD update (&gt;=1.0.0)](#notice-on-crd-update-100)
+- [Notice on deprecation of v1beta2 version (&gt;=0.13.0)](#notice-on-deprecation-of-v1beta2-version-0130)
+- [Notice on removal of v1beta1 version (&gt;=0.5.0)](#notice-on-removal-of-v1beta1-version-050)
+- [Prerequisites](#prerequisites)
+- [Install command](#install-command)
+  - [Feature gates](#feature-gates)
+- [Tear down](#tear-down)
+<!-- /toc -->
 
 The current default version is Vertical Pod Autoscaler 1.3.1
 

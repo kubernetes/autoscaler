@@ -156,7 +156,7 @@ func TestUpdateLonglivedPods(t *testing.T) {
 
 	// Pretend that the test pods started 13 hours ago.
 	timestampNow := pods[0].Status.StartTime.Add(time.Hour * 13)
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		calculator.AddPod(pods[i], timestampNow)
 	}
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
@@ -190,7 +190,7 @@ func TestUpdateShortlivedPods(t *testing.T) {
 
 	// Pretend that the test pods started 11 hours ago.
 	timestampNow := pods[0].Status.StartTime.Add(time.Hour * 11)
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		calculator.AddPod(pods[i], timestampNow)
 	}
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
