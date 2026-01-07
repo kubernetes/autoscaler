@@ -31,22 +31,23 @@ import (
 	azurecore_policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+	armcomputev7 "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	klog "k8s.io/klog/v2"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient"
-	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/accountclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/deploymentclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/diskclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/interfaceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/policy/ratelimit"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 )
 
 //go:generate sh -c "mockgen -source=azure_client.go -destination azure_mock_agentpool_client.go -package azure -exclude_interfaces DeploymentsClient"
@@ -55,6 +56,20 @@ const (
 	vmsContextTimeout      = 5 * time.Minute
 	vmsAsyncContextTimeout = 30 * time.Minute
 )
+
+// convertRateLimitConfig converts old azureclients.RateLimitConfig to new ratelimit.Config
+func convertRateLimitConfig(old *azureclients.RateLimitConfig) *ratelimit.Config {
+	if old == nil {
+		return nil
+	}
+	return &ratelimit.Config{
+		CloudProviderRateLimit:            old.CloudProviderRateLimit,
+		CloudProviderRateLimitQPS:         old.CloudProviderRateLimitQPS,
+		CloudProviderRateLimitBucket:      old.CloudProviderRateLimitBucket,
+		CloudProviderRateLimitQPSWrite:    old.CloudProviderRateLimitQPSWrite,
+		CloudProviderRateLimitBucketWrite: old.CloudProviderRateLimitBucketWrite,
+	}
+}
 
 // AgentPoolsClient interface defines the methods needed for scaling vms pool.
 // it is implemented by track2 sdk armcontainerservice.AgentPoolsClient
@@ -185,76 +200,119 @@ func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCreden
 }
 
 type azClient struct {
-	virtualMachineScaleSetsClient   vmssclient.Interface
-	virtualMachineScaleSetVMsClient vmssvmclient.Interface
-	virtualMachinesClient           vmclient.Interface
+	clientFactory                   azclient.ClientFactory
+	virtualMachineScaleSetsClient   virtualmachinescalesetclient.Interface
+	virtualMachineScaleSetVMsClient virtualmachinescalesetvmclient.Interface
+	virtualMachinesClient           virtualmachineclient.Interface
 	deploymentClient                deploymentclient.Interface
 	interfacesClient                interfaceclient.Interface
 	disksClient                     diskclient.Interface
-	storageAccountsClient           storageaccountclient.Interface
-	skuClient                       compute.ResourceSkusClient
+	storageAccountsClient           accountclient.Interface
+	skuClient                       *armcomputev7.ResourceSKUsClient
 	agentPoolClient                 AgentPoolsClient
-}
-
-func newAuthorizer(config *Config, env *azure.Environment) (autorest.Authorizer, error) {
-	switch config.AuthMethod {
-	case authMethodCLI:
-		return auth.NewAuthorizerFromCLI()
-	case "", authMethodPrincipal:
-		token, err := providerazureconfig.GetServicePrincipalToken(&config.AzureAuthConfig, env, "")
-		if err != nil {
-			return nil, fmt.Errorf("retrieve service principal token: %v", err)
-		}
-		return autorest.NewBearerAuthorizer(token), nil
-	default:
-		return nil, fmt.Errorf("unsupported authorization method: %s", config.AuthMethod)
-	}
+	// Wrapper for delete operations
+	vmssClientForDelete VMSSDeleteClient
 }
 
 func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
-	authorizer, err := newAuthorizer(cfg, env)
-	if err != nil {
-		return nil, err
+	// Create ARMClientConfig for azclient factory
+	armConfig := &azclient.ARMClientConfig{
+		Cloud:                   cfg.Cloud,
+		TenantID:                cfg.TenantID,
+		UserAgent:               getUserAgentExtension(),
+		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
 	}
 
-	azClientConfig := cfg.getAzureClientConfig(authorizer, env)
-	azClientConfig.UserAgent = getUserAgentExtension()
+	// Apply proxy URL or hosted subscription overrides
+	if cfg.HostedResourceProxyURL != "" {
+		armConfig.ResourceManagerEndpoint = cfg.HostedResourceProxyURL
+	}
 
-	vmssClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
-	scaleSetsClient := vmssclient.New(vmssClientConfig)
-	klog.V(5).Infof("Created scale set client with authorizer: %v", scaleSetsClient)
+	// Create AzureAuthConfig for auth provider
+	authConfig := &azclient.AzureAuthConfig{
+		AADClientID:                           cfg.AADClientID,
+		AADClientSecret:                       cfg.AADClientSecret,
+		AADClientCertPath:                     cfg.AADClientCertPath,
+		AADClientCertPassword:                 cfg.AADClientCertPassword,
+		UseManagedIdentityExtension:           cfg.UseManagedIdentityExtension,
+		UserAssignedIdentityID:                cfg.UserAssignedIdentityID,
+		AADFederatedTokenFile:                 cfg.AADFederatedTokenFile,
+		UseFederatedWorkloadIdentityExtension: cfg.UseFederatedWorkloadIdentityExtension,
+	}
 
-	vmssVMClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
-	scaleSetVMsClient := vmssvmclient.New(vmssVMClientConfig)
-	klog.V(5).Infof("Created scale set vm client with authorizer: %v", scaleSetVMsClient)
+	// Create auth provider
+	authProvider, err := azclient.NewAuthProvider(armConfig, authConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create auth provider: %w", err)
+	}
 
-	vmClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineRateLimit)
-	virtualMachinesClient := vmclient.New(vmClientConfig)
-	klog.V(5).Infof("Created vm client with authorizer: %v", virtualMachinesClient)
+	// Get credentials from auth provider
+	cred := authProvider.GetAzIdentity()
+	if cred == nil {
+		return nil, fmt.Errorf("failed to get Azure credentials from auth provider")
+	}
 
-	deploymentConfig := azClientConfig.WithRateLimiter(cfg.DeploymentRateLimit)
-	deploymentClient := deploymentclient.New(deploymentConfig)
-	klog.V(5).Infof("Created deployments client with authorizer: %v", deploymentClient)
+	// Create ClientFactoryConfig with subscription ID and rate limit settings
+	subscriptionID := cfg.SubscriptionID
+	if cfg.HostedSubscriptionID != "" {
+		subscriptionID = cfg.HostedSubscriptionID
+	}
 
-	interfaceClientConfig := azClientConfig.WithRateLimiter(cfg.InterfaceRateLimit)
-	interfacesClient := interfaceclient.New(interfaceClientConfig)
-	klog.V(5).Infof("Created interfaces client with authorizer: %v", interfacesClient)
+	factoryConfig := &azclient.ClientFactoryConfig{
+		SubscriptionID:       subscriptionID,
+		CloudProviderBackoff: cfg.CloudProviderBackoff,
+		CloudProviderRateLimitConfig: ratelimit.CloudProviderRateLimitConfig{
+			Config: ratelimit.Config{
+				CloudProviderRateLimit:            cfg.CloudProviderRateLimit,
+				CloudProviderRateLimitBucket:      cfg.CloudProviderRateLimitBucket,
+				CloudProviderRateLimitBucketWrite: cfg.CloudProviderRateLimitBucketWrite,
+				CloudProviderRateLimitQPS:         cfg.CloudProviderRateLimitQPS,
+				CloudProviderRateLimitQPSWrite:    cfg.CloudProviderRateLimitQPSWrite,
+			},
+			Entries: map[string]*ratelimit.Config{
+				"InterfaceClient":              convertRateLimitConfig(cfg.InterfaceRateLimit),
+				"VirtualMachineScaleSetClient": convertRateLimitConfig(cfg.VirtualMachineScaleSetRateLimit),
+				"VirtualMachineClient":         convertRateLimitConfig(cfg.VirtualMachineRateLimit),
+				"StorageAccountClient":         convertRateLimitConfig(cfg.StorageAccountRateLimit),
+				"DiskClient":                   convertRateLimitConfig(cfg.DiskRateLimit),
+				"SnapshotClient":               convertRateLimitConfig(cfg.SnapshotRateLimit),
+				"LoadBalancerClient":           convertRateLimitConfig(cfg.LoadBalancerRateLimit),
+				"RouteTableClient":             convertRateLimitConfig(cfg.RouteTableRateLimit),
+				"PublicIPAddressClient":        convertRateLimitConfig(cfg.PublicIPAddressRateLimit),
+				"SecurityGroupClient":          convertRateLimitConfig(cfg.SecurityGroupRateLimit),
+				"RouteClient":                  convertRateLimitConfig(cfg.RouteRateLimit),
+			},
+		},
+	}
 
-	accountClientConfig := azClientConfig.WithRateLimiter(cfg.StorageAccountRateLimit)
-	storageAccountsClient := storageaccountclient.New(accountClientConfig)
-	klog.V(5).Infof("Created storage accounts client with authorizer: %v", storageAccountsClient)
+	// Create client factory
+	clientFactory, err := azclient.NewClientFactory(factoryConfig, armConfig, cred)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create azclient factory: %w", err)
+	}
+	klog.V(5).Infof("Created Azure client factory")
 
-	diskClientConfig := azClientConfig.WithRateLimiter(cfg.DiskRateLimit)
-	disksClient := diskclient.New(diskClientConfig)
-	klog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
+	// Create SKU client separately using v7 (it's not part of the factory, and skewer v2 requires v7)
+	skuClient, err := armcomputev7.NewResourceSKUsClient(subscriptionID, cred, &policy.ClientOptions{
+		ClientOptions: azurecore_policy.ClientOptions{
+			Cloud: cloud.Configuration{
+				Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+					cloud.ResourceManager: {
+						Endpoint: armConfig.ResourceManagerEndpoint,
+						Audience: env.TokenAudience,
+					},
+				},
+			},
+			Telemetry: azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
+			Transport: azextensions.DefaultHTTPClient(),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SKU client: %w", err)
+	}
+	klog.V(5).Infof("Created sku client")
 
-	// Reference on why selecting ResourceManagerEndpoint as baseURI -
-	// https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go
-	skuClient := compute.NewResourceSkusClientWithBaseURI(azClientConfig.ResourceManagerEndpoint, cfg.SubscriptionID)
-	skuClient.Authorizer = azClientConfig.Authorizer
-	skuClient.UserAgent = azClientConfig.UserAgent
-	klog.V(5).Infof("Created sku client with authorizer: %v", skuClient)
-
+	// Create agent pool client
 	agentPoolClient, err := newAgentpoolClient(cfg)
 	if err != nil {
 		klog.Errorf("newAgentpoolClient failed with error: %s", err)
@@ -264,15 +322,36 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		}
 	}
 
+	// Create raw SDK VMSS client for DeleteInstances operation (not available in azclient wrapper)
+	rawVMSSClient, err := armcompute.NewVirtualMachineScaleSetsClient(subscriptionID, cred, &policy.ClientOptions{
+		ClientOptions: azurecore_policy.ClientOptions{
+			Cloud: cloud.Configuration{
+				Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+					cloud.ResourceManager: {
+						Endpoint: armConfig.ResourceManagerEndpoint,
+						Audience: env.TokenAudience,
+					},
+				},
+			},
+			Telemetry: azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
+			Transport: azextensions.DefaultHTTPClient(),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create VMSS client for delete: %w", err)
+	}
+
 	return &azClient{
-		disksClient:                     disksClient,
-		interfacesClient:                interfacesClient,
-		virtualMachineScaleSetsClient:   scaleSetsClient,
-		virtualMachineScaleSetVMsClient: scaleSetVMsClient,
-		deploymentClient:                deploymentClient,
-		virtualMachinesClient:           virtualMachinesClient,
-		storageAccountsClient:           storageAccountsClient,
+		clientFactory:                   clientFactory,
+		virtualMachineScaleSetsClient:   clientFactory.GetVirtualMachineScaleSetClient(),
+		virtualMachineScaleSetVMsClient: clientFactory.GetVirtualMachineScaleSetVMClient(),
+		virtualMachinesClient:           clientFactory.GetVirtualMachineClient(),
+		deploymentClient:                clientFactory.GetDeploymentClient(),
+		interfacesClient:                clientFactory.GetInterfaceClient(),
+		disksClient:                     clientFactory.GetDiskClient(),
+		storageAccountsClient:           clientFactory.GetAccountClient(),
 		skuClient:                       skuClient,
 		agentPoolClient:                 agentPoolClient,
+		vmssClientForDelete:             NewVMSSDeleteClient(rawVMSSClient),
 	}, nil
 }
