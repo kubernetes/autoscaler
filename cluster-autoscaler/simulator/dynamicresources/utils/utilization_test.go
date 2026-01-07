@@ -147,7 +147,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			testName: "partitionable devices, 2/4 partitions used",
 			nodeInfo: framework.NewNodeInfo(node,
 				mergeLists(
-					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 2, 4),
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 1, 4, 2),
 				),
 				mergeLists(
 					testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
@@ -162,11 +162,12 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 		{
-			testName: "multi-GPU partitionable devices, 2/8 partitions used",
+			// testName: "multi-GPU partitionable devices, 2/8 partitions used",
+			testName: "",
 			nodeInfo: framework.NewNodeInfo(node,
 				mergeLists(
-					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 2, 4),
-					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-1", "node", 0, 4),
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 1, 4, 4),
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-1", "node", 1, 4, 4),
 				),
 				mergeLists(
 					testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
@@ -276,7 +277,7 @@ func testResourceSlices(driverName, poolName, nodeName string, poolGen, deviceCo
 	return result
 }
 
-func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, nodeName string, poolGen, partitionCount int) []*resourceapi.ResourceSlice {
+func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, nodeName string, poolGen, partitionCount, slicecount int) []*resourceapi.ResourceSlice {
 	sliceName := fmt.Sprintf("%s-%s-slice", driverName, poolName)
 	var devices []resourceapi.Device
 	for i := 0; i < partitionCount; i++ {
@@ -327,7 +328,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, 
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   driverName,
 			NodeName: &nodeName,
-			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: 1},
+			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: int64(slicecount)},
 			Devices:  devices,
 		},
 	}
@@ -337,7 +338,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, 
 		Spec: resourceapi.ResourceSliceSpec{
 			Driver:   driverName,
 			NodeName: &nodeName,
-			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: 1},
+			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: int64(slicecount)},
 			SharedCounters: []resourceapi.CounterSet{
 				{
 					Name: "gpu-0-counter-set",
