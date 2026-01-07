@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
@@ -244,13 +245,12 @@ func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (fwk.No
 	return dni, true
 }
 
-func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalDeltaSnapshotData) addPodInfo(podInfo fwk.PodInfo, nodeName string) error {
 	ni, found := data.nodeInfoToModify(nodeName)
 	if !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
 
-	podInfo, _ := schedulerframework.NewPodInfo(pod)
 	ni.AddPodInfo(podInfo)
 
 	// Maybe consider deleting from the list in the future. Maybe not.
@@ -455,7 +455,7 @@ func (snapshot *DeltaSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) 
 		return err
 	}
 	for _, podInfo := range nodeInfo.GetPods() {
-		if err := snapshot.data.addPod(podInfo.GetPod(), nodeInfo.Node().Name); err != nil {
+		if err := snapshot.data.addPodInfo(podInfo, nodeInfo.Node().Name); err != nil {
 			return err
 		}
 	}
@@ -541,13 +541,13 @@ func (snapshot *DeltaSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) err
 	return snapshot.data.removeNodeInfo(nodeName)
 }
 
-// ForceAddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *DeltaSnapshotStore) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.data.addPod(pod, nodeName)
+// StorePodInfo adds pod to the snapshot and schedules it to given node.
+func (snapshot *DeltaSnapshotStore) StorePodInfo(podInfo *framework.PodInfo, nodeName string) error {
+	return snapshot.data.addPodInfo(podInfo, nodeName)
 }
 
-// ForceRemovePod removes pod from the snapshot.
-func (snapshot *DeltaSnapshotStore) ForceRemovePod(namespace, podName, nodeName string) error {
+// RemovePodInfo removes pod from the snapshot.
+func (snapshot *DeltaSnapshotStore) RemovePodInfo(namespace, podName, nodeName string) error {
 	return snapshot.data.removePod(namespace, podName, nodeName)
 }
 

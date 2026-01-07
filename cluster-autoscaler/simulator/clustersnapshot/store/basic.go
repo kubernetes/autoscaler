@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -169,13 +170,12 @@ func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
 	return nil
 }
 
-func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalBasicSnapshotData) addPodInfo(podInfo fwk.PodInfo, nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
-	podInfo, _ := schedulerframework.NewPodInfo(pod)
 	data.nodeInfoMap[nodeName].AddPodInfo(podInfo)
-	data.addPvcUsedByPod(pod)
+	data.addPvcUsedByPod(podInfo.GetPod())
 	return nil
 }
 
@@ -226,7 +226,7 @@ func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) 
 		return err
 	}
 	for _, podInfo := range nodeInfo.GetPods() {
-		if err := snapshot.getInternalData().addPod(podInfo.GetPod(), nodeInfo.Node().Name); err != nil {
+		if err := snapshot.getInternalData().addPodInfo(podInfo, nodeInfo.Node().Name); err != nil {
 			return err
 		}
 	}
@@ -246,7 +246,8 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.getInternalData().addPod(pod, pod.Spec.NodeName); err != nil {
+			podInfo, _ := schedulerframework.NewPodInfo(pod)
+			if err := snapshot.getInternalData().addPodInfo(podInfo, pod.Spec.NodeName); err != nil {
 				return err
 			}
 		}
@@ -272,13 +273,13 @@ func (snapshot *BasicSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) err
 	return snapshot.getInternalData().removeNodeInfo(nodeName)
 }
 
-// ForceAddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *BasicSnapshotStore) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.getInternalData().addPod(pod, nodeName)
+// StorePodInfo adds pod to the snapshot and schedules it to given node.
+func (snapshot *BasicSnapshotStore) StorePodInfo(podInfo *framework.PodInfo, nodeName string) error {
+	return snapshot.getInternalData().addPodInfo(podInfo, nodeName)
 }
 
-// ForceRemovePod removes pod from the snapshot.
-func (snapshot *BasicSnapshotStore) ForceRemovePod(namespace, podName, nodeName string) error {
+// RemovePodInfo removes pod from the snapshot.
+func (snapshot *BasicSnapshotStore) RemovePodInfo(namespace, podName, nodeName string) error {
 	return snapshot.getInternalData().removePod(namespace, podName, nodeName)
 }
 
