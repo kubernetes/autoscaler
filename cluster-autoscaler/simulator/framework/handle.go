@@ -26,6 +26,7 @@ import (
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerplugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
@@ -54,9 +55,11 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 	}
 
 	sharedLister := NewDelegatingSchedulerSharedLister()
+	sharedCSIManager := nodevolumelimits.NewCSIManager(informerFactory.Storage().V1().CSINodes().Lister())
 	opts := []schedulerframeworkruntime.Option{
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
+		schedulerframeworkruntime.WithSharedCSIManager(sharedCSIManager),
 	}
 	if draEnabled {
 		opts = append(opts, schedulerframeworkruntime.WithSharedDRAManager(sharedLister))
