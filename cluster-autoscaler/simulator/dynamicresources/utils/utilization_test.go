@@ -162,8 +162,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 		{
-			// testName: "multi-GPU partitionable devices, 2/8 partitions used",
-			testName: "",
+			testName: "multi-GPU partitionable devices, 2/8 partitions used",
 			nodeInfo: framework.NewNodeInfo(node,
 				mergeLists(
 					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 1, 4, 4),
@@ -178,7 +177,8 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					"pool1": 0.25,
 				},
 			},
-			wantHighestUtilization: 0.25,
+			wantHighestUtilization:     0.25,
+			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 		{
 			testName: "Single Pod with AdminAccess ResourceClaim doesn't count for utilization",
