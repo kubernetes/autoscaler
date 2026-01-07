@@ -93,6 +93,7 @@ func NewUpdater(
 	evictionRateBurst int,
 	evictionToleranceFraction float64,
 	useAdmissionControllerStatus bool,
+	inPlaceSkipDisruptionBudget bool,
 	statusNamespace string,
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
@@ -111,6 +112,7 @@ func NewUpdater(
 		minReplicasForEviction,
 		evictionToleranceFraction,
 		patchCalculators,
+		inPlaceSkipDisruptionBudget,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create restriction factory: %v", err)
