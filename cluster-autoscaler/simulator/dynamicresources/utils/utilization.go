@@ -104,7 +104,12 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 				totalConsumedCounters[sharedCounter.Name] = map[string]resource.Quantity{}
 			}
 			for counter, value := range sharedCounter.Counters {
-				totalConsumedCounters[sharedCounter.Name][counter] = value.Value
+				if _, ok := totalConsumedCounters[sharedCounter.Name][counter]; !ok {
+					totalConsumedCounters[sharedCounter.Name][counter] = resource.Quantity{}
+				}
+				v := totalConsumedCounters[sharedCounter.Name][counter]
+				v.Add(value.Value)
+				totalConsumedCounters[sharedCounter.Name][counter] = v
 			}
 		}
 	}
