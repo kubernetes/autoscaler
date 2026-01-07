@@ -31,25 +31,23 @@ import (
 	azurecore_policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	armcomputev7 "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	klog "k8s.io/klog/v2"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient"
-	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/accountclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/diskclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/interfaceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient"
 )
 
-//go:generate sh -c "mockgen -source=azure_client.go -destination azure_mock_agentpool_client.go -package azure -exclude_interfaces DeploymentsClient"
+//go:generate sh -c "mockgen -source=azure_client.go -package azure -exclude_interfaces DeploymentsClient | cat ../../../hack/boilerplate/boilerplate.go.txt - > azure_mock_agentpool_client.go"
+//go:generate sh -c "mockgen -package=azure sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient Interface | cat ../../../hack/boilerplate/boilerplate.go.txt - > azure_mock_virtualmachine_client_test.go"
 
 const (
 	vmsContextTimeout      = 5 * time.Minute
@@ -185,76 +183,107 @@ func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCreden
 }
 
 type azClient struct {
-	virtualMachineScaleSetsClient   vmssclient.Interface
-	virtualMachineScaleSetVMsClient vmssvmclient.Interface
-	virtualMachinesClient           vmclient.Interface
-	deploymentClient                deploymentclient.Interface
+	clientFactory                   azclient.ClientFactory
+	virtualMachineScaleSetsClient   virtualmachinescalesetclient.Interface
+	virtualMachineScaleSetVMsClient virtualmachinescalesetvmclient.Interface
+	virtualMachinesClient           virtualmachineclient.Interface
+	deploymentClient                DeploymentClient
 	interfacesClient                interfaceclient.Interface
 	disksClient                     diskclient.Interface
-	storageAccountsClient           storageaccountclient.Interface
-	skuClient                       compute.ResourceSkusClient
+	storageAccountsClient           accountclient.Interface
+	skuClient                       *armcomputev7.ResourceSKUsClient
 	agentPoolClient                 AgentPoolsClient
-}
-
-func newAuthorizer(config *Config, env *azure.Environment) (autorest.Authorizer, error) {
-	switch config.AuthMethod {
-	case authMethodCLI:
-		return auth.NewAuthorizerFromCLI()
-	case "", authMethodPrincipal:
-		token, err := providerazureconfig.GetServicePrincipalToken(&config.AzureAuthConfig, env, "")
-		if err != nil {
-			return nil, fmt.Errorf("retrieve service principal token: %v", err)
-		}
-		return autorest.NewBearerAuthorizer(token), nil
-	default:
-		return nil, fmt.Errorf("unsupported authorization method: %s", config.AuthMethod)
-	}
+	// Wrapper for delete operations
+	vmssClientForDelete VMSSDeleteClient
 }
 
 func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
-	authorizer, err := newAuthorizer(cfg, env)
-	if err != nil {
-		return nil, err
+	// Create ARMClientConfig for azclient factory
+	armConfig := &azclient.ARMClientConfig{
+		Cloud:                   cfg.Cloud,
+		TenantID:                cfg.TenantID,
+		UserAgent:               getUserAgentExtension(),
+		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
 	}
 
-	azClientConfig := cfg.getAzureClientConfig(authorizer, env)
-	azClientConfig.UserAgent = getUserAgentExtension()
+	// Apply proxy URL or hosted subscription overrides
+	if cfg.HostedResourceProxyURL != "" {
+		armConfig.ResourceManagerEndpoint = cfg.HostedResourceProxyURL
+	}
 
-	vmssClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
-	scaleSetsClient := vmssclient.New(vmssClientConfig)
-	klog.V(5).Infof("Created scale set client with authorizer: %v", scaleSetsClient)
+	// Create AzureAuthConfig for auth provider
+	authConfig := &azclient.AzureAuthConfig{
+		AADClientID:                           cfg.AADClientID,
+		AADClientSecret:                       cfg.AADClientSecret,
+		AADClientCertPath:                     cfg.AADClientCertPath,
+		AADClientCertPassword:                 cfg.AADClientCertPassword,
+		UseManagedIdentityExtension:           cfg.UseManagedIdentityExtension,
+		UserAssignedIdentityID:                cfg.UserAssignedIdentityID,
+		AADFederatedTokenFile:                 cfg.AADFederatedTokenFile,
+		UseFederatedWorkloadIdentityExtension: cfg.UseFederatedWorkloadIdentityExtension,
+	}
 
-	vmssVMClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
-	scaleSetVMsClient := vmssvmclient.New(vmssVMClientConfig)
-	klog.V(5).Infof("Created scale set vm client with authorizer: %v", scaleSetVMsClient)
+	// Create auth provider
+	authProvider, err := azclient.NewAuthProvider(armConfig, authConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create auth provider: %w", err)
+	}
 
-	vmClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineRateLimit)
-	virtualMachinesClient := vmclient.New(vmClientConfig)
-	klog.V(5).Infof("Created vm client with authorizer: %v", virtualMachinesClient)
+	// Get credentials from auth provider
+	cred := authProvider.GetAzIdentity()
+	if cred == nil {
+		return nil, fmt.Errorf("failed to get Azure credentials from auth provider")
+	}
 
-	deploymentConfig := azClientConfig.WithRateLimiter(cfg.DeploymentRateLimit)
-	deploymentClient := deploymentclient.New(deploymentConfig)
-	klog.V(5).Infof("Created deployments client with authorizer: %v", deploymentClient)
+	// Create ClientFactoryConfig with subscription ID and rate limit settings
+	subscriptionID := cfg.SubscriptionID
+	if cfg.HostedSubscriptionID != "" {
+		subscriptionID = cfg.HostedSubscriptionID
+	}
 
-	interfaceClientConfig := azClientConfig.WithRateLimiter(cfg.InterfaceRateLimit)
-	interfacesClient := interfaceclient.New(interfaceClientConfig)
-	klog.V(5).Infof("Created interfaces client with authorizer: %v", interfacesClient)
+	factoryConfig := &azclient.ClientFactoryConfig{
+		SubscriptionID:               subscriptionID,
+		CloudProviderRateLimitConfig: cfg.CloudProviderRateLimitConfig,
+	}
 
-	accountClientConfig := azClientConfig.WithRateLimiter(cfg.StorageAccountRateLimit)
-	storageAccountsClient := storageaccountclient.New(accountClientConfig)
-	klog.V(5).Infof("Created storage accounts client with authorizer: %v", storageAccountsClient)
+	// Create cloud configuration for NewClientFactory
+	cloudConfig := cloud.Configuration{
+		Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+			cloud.ResourceManager: {
+				Endpoint: armConfig.ResourceManagerEndpoint,
+				Audience: env.TokenAudience,
+			},
+		},
+	}
 
-	diskClientConfig := azClientConfig.WithRateLimiter(cfg.DiskRateLimit)
-	disksClient := diskclient.New(diskClientConfig)
-	klog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
+	// Create client factory
+	clientFactory, err := azclient.NewClientFactory(factoryConfig, armConfig, cloudConfig, cred)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create azclient factory: %w", err)
+	}
+	klog.V(5).Infof("Created Azure client factory")
 
-	// Reference on why selecting ResourceManagerEndpoint as baseURI -
-	// https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go
-	skuClient := compute.NewResourceSkusClientWithBaseURI(azClientConfig.ResourceManagerEndpoint, cfg.SubscriptionID)
-	skuClient.Authorizer = azClientConfig.Authorizer
-	skuClient.UserAgent = azClientConfig.UserAgent
-	klog.V(5).Infof("Created sku client with authorizer: %v", skuClient)
+	// Create SKU client separately using v7 (it's not part of the factory, and skewer v2 requires v7)
+	skuClient, err := armcomputev7.NewResourceSKUsClient(subscriptionID, cred, &policy.ClientOptions{
+		ClientOptions: azurecore_policy.ClientOptions{
+			Cloud: cloud.Configuration{
+				Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+					cloud.ResourceManager: {
+						Endpoint: armConfig.ResourceManagerEndpoint,
+						Audience: env.TokenAudience,
+					},
+				},
+			},
+			Telemetry: azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
+			Transport: azextensions.DefaultHTTPClient(),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SKU client: %w", err)
+	}
+	klog.V(5).Infof("Created sku client")
 
+	// Create agent pool client
 	agentPoolClient, err := newAgentpoolClient(cfg)
 	if err != nil {
 		klog.Errorf("newAgentpoolClient failed with error: %s", err)
@@ -264,15 +293,31 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		}
 	}
 
+	// Get VMSS client from ClientFactory - the azclient's Client embeds the SDK client
+	// which provides access to BeginDeleteInstances
+	vmssClient := clientFactory.GetVirtualMachineScaleSetClient()
+
+	vmssClientForDelete := NewVMSSDeleteClient(vmssClient)
+	if vmssClientForDelete == nil {
+		return nil, fmt.Errorf("failed to create VMSS delete client wrapper: unexpected client type")
+	}
+
+	deploymentClient := NewDeploymentClient(clientFactory.GetDeploymentClient())
+	if deploymentClient == nil {
+		return nil, fmt.Errorf("failed to create deployment client wrapper: unexpected client type")
+	}
+
 	return &azClient{
-		disksClient:                     disksClient,
-		interfacesClient:                interfacesClient,
-		virtualMachineScaleSetsClient:   scaleSetsClient,
-		virtualMachineScaleSetVMsClient: scaleSetVMsClient,
-		deploymentClient:                deploymentClient,
-		virtualMachinesClient:           virtualMachinesClient,
-		storageAccountsClient:           storageAccountsClient,
+		clientFactory:                   clientFactory,
+		virtualMachineScaleSetsClient:   vmssClient,
+		virtualMachineScaleSetVMsClient: clientFactory.GetVirtualMachineScaleSetVMClient(),
+		virtualMachinesClient:           clientFactory.GetVirtualMachineClient(),
+		deploymentClient:                NewDeploymentClient(clientFactory.GetDeploymentClient()),
+		interfacesClient:                clientFactory.GetInterfaceClient(),
+		disksClient:                     clientFactory.GetDiskClient(),
+		storageAccountsClient:           clientFactory.GetAccountClient(),
 		skuClient:                       skuClient,
 		agentPoolClient:                 agentPoolClient,
+		vmssClientForDelete:             vmssClientForDelete,
 	}, nil
 }
