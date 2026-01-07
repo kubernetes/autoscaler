@@ -218,6 +218,14 @@ var (
 		}, []string{"node_group"},
 	)
 
+	nodesGroupUnfulfilledNodeCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_unfulfilled_node_count",
+			Help:      "Difference between node group target size and number of K8S registered nodes excluding deleted nodes(in k8s but not in cloud provider)",
+		}, []string{"node_group"},
+	)
+
 	nodesGroupHealthiness = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
@@ -487,6 +495,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
 		legacyregistry.MustRegister(nodesGroupMaxNodes)
 		legacyregistry.MustRegister(nodesGroupTargetSize)
+		legacyregistry.MustRegister(nodesGroupUnfulfilledNodeCount)
 		legacyregistry.MustRegister(nodesGroupHealthiness)
 		legacyregistry.MustRegister(nodeGroupBackOffStatus)
 	}
@@ -611,6 +620,13 @@ func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
 func UpdateNodeGroupTargetSize(targetSizes map[string]int) {
 	for nodeGroup, targetSize := range targetSizes {
 		nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
+	}
+}
+
+// UpdateNodeGroupUnfulfilledNodeCount records the node group unfulfilled node count
+func UpdateNodeGroupUnfulfilledNodeCount(unfulfilledNodeCount map[string]int) {
+	for nodeGroup, count := range unfulfilledNodeCount {
+		nodesGroupUnfulfilledNodeCount.WithLabelValues(nodeGroup).Set(float64(count))
 	}
 }
 
