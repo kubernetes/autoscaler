@@ -34,7 +34,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	smithymiddleware "github.com/aws/smithy-go/middleware"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
-	provider_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
+	aws_config "k8s.io/cloud-provider-aws/pkg/providers/v1/config"
 	"k8s.io/klog/v2"
 )
 
@@ -103,12 +103,12 @@ func getMaxRetriesFromEnv() (int, bool, error) {
 
 type awsSDKProvider struct {
 	cfg         aws.Config
-	cloudConfig *provider_aws.CloudConfig
+	cloudConfig *aws_config.CloudConfig
 }
 
 // readAWSCloudConfig reads an instance of AWSCloudConfig from config reader.
-func readAWSCloudConfig(config io.Reader) (*provider_aws.CloudConfig, error) {
-	var cfg provider_aws.CloudConfig
+func readAWSCloudConfig(config io.Reader) (*aws_config.CloudConfig, error) {
+	var cfg aws_config.CloudConfig
 	var err error
 
 	if config != nil {
@@ -121,7 +121,7 @@ func readAWSCloudConfig(config io.Reader) (*provider_aws.CloudConfig, error) {
 	return &cfg, nil
 }
 
-func validateOverrides(cfg *provider_aws.CloudConfig) error {
+func validateOverrides(cfg *aws_config.CloudConfig) error {
 	if len(cfg.ServiceOverride) == 0 {
 		return nil
 	}
@@ -161,12 +161,12 @@ func validateOverrides(cfg *provider_aws.CloudConfig) error {
 
 type ec2OverrideResolver struct {
 	defaultResolver ec2.EndpointResolver
-	cloudConfig     *provider_aws.CloudConfig
+	cloudConfig     *aws_config.CloudConfig
 }
 
 var _ ec2.EndpointResolver = &ec2OverrideResolver{}
 
-func newEc2OverrideResolver(cloudConfig *provider_aws.CloudConfig) *ec2OverrideResolver {
+func newEc2OverrideResolver(cloudConfig *aws_config.CloudConfig) *ec2OverrideResolver {
 	return &ec2OverrideResolver{
 		defaultResolver: ec2.NewDefaultEndpointResolver(),
 		cloudConfig:     cloudConfig,
@@ -189,12 +189,12 @@ func (r *ec2OverrideResolver) ResolveEndpoint(region string, options ec2.Endpoin
 
 type autoscalingOverrideResolver struct {
 	defaultResolver autoscaling.EndpointResolver
-	cloudConfig     *provider_aws.CloudConfig
+	cloudConfig     *aws_config.CloudConfig
 }
 
 var _ autoscaling.EndpointResolver = &autoscalingOverrideResolver{}
 
-func newAutoscalingOverrideResolver(cloudConfig *provider_aws.CloudConfig) *autoscalingOverrideResolver {
+func newAutoscalingOverrideResolver(cloudConfig *aws_config.CloudConfig) *autoscalingOverrideResolver {
 	return &autoscalingOverrideResolver{
 		defaultResolver: autoscaling.NewDefaultEndpointResolver(),
 		cloudConfig:     cloudConfig,
@@ -217,12 +217,12 @@ func (r *autoscalingOverrideResolver) ResolveEndpoint(region string, options aut
 
 type eksOverrideResolver struct {
 	defaultResolver eks.EndpointResolver
-	cloudConfig     *provider_aws.CloudConfig
+	cloudConfig     *aws_config.CloudConfig
 }
 
 var _ eks.EndpointResolver = &eksOverrideResolver{}
 
-func newEksOverrideResolver(cloudConfig *provider_aws.CloudConfig) *eksOverrideResolver {
+func newEksOverrideResolver(cloudConfig *aws_config.CloudConfig) *eksOverrideResolver {
 	return &eksOverrideResolver{
 		defaultResolver: eks.NewDefaultEndpointResolver(),
 		cloudConfig:     cloudConfig,
