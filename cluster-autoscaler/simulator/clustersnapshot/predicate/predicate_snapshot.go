@@ -52,59 +52,6 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	return snapshot
 }
 
-// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerframework.NodeInfo.
-func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
-	schedNodeInfo, err := s.ClusterSnapshotStore.NodeInfos().Get(nodeName)
-	if err != nil {
-		return nil, err
-	}
-
-	wrappedNodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
-	if s.draEnabled {
-		wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if s.enableCSINodeAwareScheduling {
-		wrappedNodeInfo, err = s.ClusterSnapshotStore.CsiSnapshot().AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return wrappedNodeInfo, nil
-}
-
-// ListNodeInfos returns internal NodeInfos wrapping all schedulerframework.NodeInfos in the snapshot.
-func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
-	schedNodeInfos, err := s.ClusterSnapshotStore.NodeInfos().List()
-	if err != nil {
-		return nil, err
-	}
-	var result []*framework.NodeInfo
-	for _, schedNodeInfo := range schedNodeInfos {
-		wrappedNodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
-
-		var err error
-		if s.draEnabled {
-			wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if s.enableCSINodeAwareScheduling {
-			wrappedNodeInfo, err = s.ClusterSnapshotStore.CsiSnapshot().AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
-			if err != nil {
-				return nil, err
-			}
-		}
-		result = append(result, wrappedNodeInfo)
-	}
-	return result, nil
-}
-
 // AddNodeInfo adds the provided internal NodeInfo to the snapshot.
 func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 	if s.draEnabled {

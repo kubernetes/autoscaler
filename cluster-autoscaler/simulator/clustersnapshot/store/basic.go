@@ -42,8 +42,8 @@ type internalBasicSnapshotData struct {
 	pvcNamespacePodMap map[string]map[string]bool
 }
 
-func (data *internalBasicSnapshotData) listNodeInfos() []fwk.NodeInfo {
-	nodeInfoList := make([]fwk.NodeInfo, 0, len(data.nodeInfoMap))
+func (data *internalBasicSnapshotData) listNodeInfos() []*framework.NodeInfo {
+	nodeInfoList := make([]*framework.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		nodeInfoList = append(nodeInfoList, v)
 	}
@@ -72,7 +72,7 @@ func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredAnti
 	return havePodsWithRequiredAntiAffinityList, nil
 }
 
-func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (fwk.NodeInfo, error) {
+func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*framework.NodeInfo, error) {
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
 	}
@@ -372,9 +372,24 @@ func (snapshot *BasicSnapshotStore) CSINodes() fwk.CSINodeLister {
 	return snapshot.csiSnapshot.CSINodes()
 }
 
+// GetNodeInfo returns the internal NodeInfo of the given node name.
+func (snapshot *BasicSnapshotStore) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	return snapshot.getInternalData().getNodeInfo(nodeName)
+}
+
+// ListNodeInfos returns the list of internal NodeInfos in the snapshot.
+func (snapshot *BasicSnapshotStore) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	return snapshot.getInternalData().listNodeInfos(), nil
+}
+
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicSnapshotStoreNodeLister) List() ([]fwk.NodeInfo, error) {
-	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos(), nil
+	nodeInfos := (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos()
+	result := make([]fwk.NodeInfo, len(nodeInfos))
+	for i, v := range nodeInfos {
+		result[i] = v
+	}
+	return result, nil
 }
 
 // HavePodsWithAffinityList returns the list of nodes with at least one pods with inter-pod affinity
