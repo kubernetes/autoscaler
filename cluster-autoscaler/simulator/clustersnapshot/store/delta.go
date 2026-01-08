@@ -27,7 +27,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DeltaSnapshotStore is an implementation of ClusterSnapshotStore optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
@@ -146,15 +145,6 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []fwk.NodeInfo {
 	}
 
 	return nodeInfoList
-}
-
-func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) (fwk.NodeInfo, error) {
-	nodeInfo := framework.NewNodeInfo(node, nil)
-	err := data.addNodeInfo(nodeInfo)
-	if err != nil {
-		return nil, err
-	}
-	return nodeInfo, nil
 }
 
 func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo *framework.NodeInfo) error {
@@ -446,18 +436,23 @@ func (snapshot *DeltaSnapshotStore) StoreNodeInfo(nodeInfo *framework.NodeInfo) 
 }
 
 // setClusterStatePodsSequential sets the pods in cluster state in a sequential way.
-func (snapshot *DeltaSnapshotStore) setClusterStatePodsSequential(nodeInfos []fwk.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
+func (snapshot *DeltaSnapshotStore) setClusterStatePodsSequential(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
 	for _, pod := range scheduledPods {
 		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
+			claims, err := snapshot.draSnapshot.PodClaims(pod)
+			if err != nil {
+				return err
+			}
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerframework.NewPodInfo(pod)
-			nodeInfos[nodeIdx].AddPodInfo(podInfo)
+			podInfo := framework.NewPodInfo(pod, claims)
+			nodeInfos[nodeIdx].AddPod(podInfo)
 		}
 	}
+	return nil
 }
 
 // setClusterStatePodsParallelized sets the pods in cluster state in parallel based on snapshot.parallelism value.
-func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []fwk.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
+func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
 	podsForNode := make([][]*apiv1.Pod, len(nodeInfos))
 	for _, pod := range scheduledPods {
 		nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]
@@ -468,25 +463,42 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []
 	}
 
 	ctx := context.Background()
+	var err error
 	workqueue.ParallelizeUntil(ctx, snapshot.parallelism, len(nodeInfos), func(nodeIdx int) {
+		if err != nil {
+			return
+		}
 		nodeInfo := nodeInfos[nodeIdx]
 		for _, pod := range podsForNode[nodeIdx] {
+			claims, podErr := snapshot.draSnapshot.PodClaims(pod)
+			if podErr != nil {
+				err = podErr
+				return
+			}
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerframework.NewPodInfo(pod)
-			nodeInfo.AddPodInfo(podInfo)
+			podInfo := framework.NewPodInfo(pod, claims)
+			nodeInfo.AddPod(podInfo)
 		}
 	})
+	return err
 }
 
 // SetClusterState sets the cluster state.
 func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
 	snapshot.clear()
 
+	if draSnapshot == nil {
+		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.draSnapshot = draSnapshot
+	}
+
 	nodeNameToIdx := make(map[string]int, len(nodes))
-	nodeInfos := make([]fwk.NodeInfo, len(nodes))
+	nodeInfos := make([]*framework.NodeInfo, len(nodes))
 	for i, node := range nodes {
-		nodeInfo, err := snapshot.data.addNode(node)
-		if err != nil {
+		slices, _ := snapshot.draSnapshot.NodeResourceSlices(node.Name)
+		nodeInfo := framework.NewNodeInfo(node, slices)
+		if err := snapshot.data.addNodeInfo(nodeInfo); err != nil {
 			return err
 		}
 		nodeNameToIdx[node.Name] = i
@@ -494,21 +506,19 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 	}
 
 	if snapshot.parallelism > 1 {
-		snapshot.setClusterStatePodsParallelized(nodeInfos, nodeNameToIdx, scheduledPods)
+		if err := snapshot.setClusterStatePodsParallelized(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
+			return err
+		}
 	} else {
 		// TODO(macsko): Migrate to setClusterStatePodsParallelized for parallelism == 1
 		// after making sure the implementation is always correct in CA 1.33.
-		snapshot.setClusterStatePodsSequential(nodeInfos, nodeNameToIdx, scheduledPods)
+		if err := snapshot.setClusterStatePodsSequential(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
+			return err
+		}
 	}
 
 	// Clear caches after adding pods.
 	snapshot.data.clearCaches()
-
-	if draSnapshot == nil {
-		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
-	} else {
-		snapshot.draSnapshot = draSnapshot
-	}
 
 	return nil
 }

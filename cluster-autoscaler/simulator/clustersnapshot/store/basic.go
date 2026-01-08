@@ -147,12 +147,11 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	}
 }
 
-func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
-	if _, found := data.nodeInfoMap[node.Name]; found {
-		return fmt.Errorf("node %s already in snapshot", node.Name)
+func (data *internalBasicSnapshotData) addNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if _, found := data.nodeInfoMap[nodeInfo.Node().Name]; found {
+		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
 	}
-	nodeInfo := framework.NewNodeInfo(node, nil)
-	data.nodeInfoMap[node.Name] = nodeInfo
+	data.nodeInfoMap[nodeInfo.Node().Name] = nodeInfo
 	return nil
 }
 
@@ -214,10 +213,9 @@ func (snapshot *BasicSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
 
 // StoreNodeInfo adds a NodeInfo.
 func (snapshot *BasicSnapshotStore) StoreNodeInfo(nodeInfo *framework.NodeInfo) error {
-	if _, found := snapshot.getInternalData().nodeInfoMap[nodeInfo.Node().Name]; found {
-		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
+	if err := snapshot.getInternalData().addNodeInfo(nodeInfo); err != nil {
+		return err
 	}
-	snapshot.getInternalData().nodeInfoMap[nodeInfo.Node().Name] = nodeInfo
 	for _, pod := range nodeInfo.Pods() {
 		snapshot.getInternalData().addPvcUsedByPod(pod.Pod)
 	}
@@ -228,26 +226,32 @@ func (snapshot *BasicSnapshotStore) StoreNodeInfo(nodeInfo *framework.NodeInfo) 
 func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot) error {
 	snapshot.clear()
 
+	if draSnapshot == nil {
+		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
+	} else {
+		snapshot.draSnapshot = draSnapshot
+	}
+
 	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
-		if err := snapshot.getInternalData().addNode(node); err != nil {
+		slices, _ := snapshot.draSnapshot.NodeResourceSlices(node.Name)
+		nodeInfo := framework.NewNodeInfo(node, slices)
+		if err := snapshot.getInternalData().addNodeInfo(nodeInfo); err != nil {
 			return err
 		}
 		knownNodes[node.Name] = true
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			podInfo, _ := schedulerframework.NewPodInfo(pod)
+			claims, err := snapshot.draSnapshot.PodClaims(pod)
+			if err != nil {
+				return err
+			}
+			podInfo := framework.NewPodInfo(pod, claims)
 			if err := snapshot.getInternalData().addPodInfo(podInfo, pod.Spec.NodeName); err != nil {
 				return err
 			}
 		}
-	}
-
-	if draSnapshot == nil {
-		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
-	} else {
-		snapshot.draSnapshot = draSnapshot
 	}
 
 	return nil
