@@ -135,7 +135,7 @@ func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 		}
 	}
 
-	return s.ClusterSnapshotStore.AddSchedulerNodeInfo(nodeInfo)
+	return s.ClusterSnapshotStore.StoreNodeInfo(nodeInfo)
 }
 
 // RemoveNodeInfo removes a NodeInfo matching the provided nodeName from the snapshot.
@@ -145,7 +145,7 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 		return err
 	}
 
-	if err := s.ClusterSnapshotStore.RemoveSchedulerNodeInfo(nodeName); err != nil {
+	if err := s.ClusterSnapshotStore.RemoveNodeInfo(nodeName); err != nil {
 		return err
 	}
 

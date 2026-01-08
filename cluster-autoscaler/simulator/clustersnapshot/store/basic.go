@@ -38,7 +38,7 @@ type BasicSnapshotStore struct {
 }
 
 type internalBasicSnapshotData struct {
-	nodeInfoMap        map[string]fwk.NodeInfo
+	nodeInfoMap        map[string]*framework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
 }
 
@@ -126,15 +126,15 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 
 func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
-		nodeInfoMap:        make(map[string]fwk.NodeInfo),
+		nodeInfoMap:        make(map[string]*framework.NodeInfo),
 		pvcNamespacePodMap: make(map[string]map[string]bool),
 	}
 }
 
 func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
-	clonedNodeInfoMap := make(map[string]fwk.NodeInfo)
+	clonedNodeInfoMap := make(map[string]*framework.NodeInfo)
 	for k, v := range data.nodeInfoMap {
-		clonedNodeInfoMap[k] = v.Snapshot()
+		clonedNodeInfoMap[k] = v.DeepCopy()
 	}
 	clonedPvcNamespaceNodeMap := make(map[string]map[string]bool)
 	for k, v := range data.pvcNamespacePodMap {
@@ -153,8 +153,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	if _, found := data.nodeInfoMap[node.Name]; found {
 		return fmt.Errorf("node %s already in snapshot", node.Name)
 	}
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
+	nodeInfo := framework.NewNodeInfo(node, nil)
 	data.nodeInfoMap[node.Name] = nodeInfo
 	return nil
 }
@@ -220,15 +219,14 @@ func (snapshot *BasicSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 	return snapshot.csiSnapshot
 }
 
-// AddSchedulerNodeInfo adds a NodeInfo.
-func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
-	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
-		return err
+// StoreNodeInfo adds a NodeInfo.
+func (snapshot *BasicSnapshotStore) StoreNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if _, found := snapshot.getInternalData().nodeInfoMap[nodeInfo.Node().Name]; found {
+		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
 	}
-	for _, podInfo := range nodeInfo.GetPods() {
-		if err := snapshot.getInternalData().addPodInfo(podInfo, nodeInfo.Node().Name); err != nil {
-			return err
-		}
+	snapshot.getInternalData().nodeInfoMap[nodeInfo.Node().Name] = nodeInfo
+	for _, pod := range nodeInfo.Pods() {
+		snapshot.getInternalData().addPvcUsedByPod(pod.Pod)
 	}
 	return nil
 }
@@ -268,8 +266,8 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 	return nil
 }
 
-// RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *BasicSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *BasicSnapshotStore) RemoveNodeInfo(nodeName string) error {
 	return snapshot.getInternalData().removeNodeInfo(nodeName)
 }
 

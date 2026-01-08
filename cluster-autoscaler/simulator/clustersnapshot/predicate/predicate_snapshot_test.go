@@ -1636,9 +1636,8 @@ func TestNodeAlreadyExists(t *testing.T) {
 		op   func(clustersnapshot.ClusterSnapshot) error
 	}{
 		{"add scheduler nodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			nodeInfo := schedulerframework.NewNodeInfo()
-			nodeInfo.SetNode(node)
-			return snapshot.AddSchedulerNodeInfo(nodeInfo)
+			nodeInfo := framework.NewNodeInfo(node, nil)
+			return snapshot.StoreNodeInfo(nodeInfo)
 		}},
 		{"add internal NodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod))
