@@ -48,7 +48,13 @@ fi
 SUITE=$1
 
 case ${SUITE} in
-  recommender|recommender-externalmetrics|updater|admission-controller)
+  recommender)
+    COMPONENTS="recommender"
+    ;;
+  recommender-externalmetrics)
+    COMPONENTS="recommender"
+    ;;
+  updater|admission-controller)
     COMPONENTS="${SUITE}"
     ;;
   full-vpa)
@@ -73,9 +79,6 @@ kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/k8s-metrics-server.yaml
 # Build and load Docker images for each component
 for i in ${COMPONENTS}; do
   COMPONENT_NAME=$i
-  if [ $i == recommender-externalmetrics ] ; then
-    COMPONENT_NAME=recommender
-  fi
   ALL_ARCHITECTURES=${ARCH} make --directory ${SCRIPT_ROOT}/pkg/${COMPONENT_NAME} docker-build REGISTRY=${REGISTRY} TAG=${TAG}
   docker tag ${REGISTRY}/vpa-${COMPONENT_NAME}-${ARCH}:${TAG} ${REGISTRY}/vpa-${COMPONENT_NAME}:${TAG}
   kind load docker-image ${REGISTRY}/vpa-${COMPONENT_NAME}:${TAG}
@@ -132,14 +135,6 @@ fi
 # Uninstall any existing VPA Helm release
 helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} 2>/dev/null || true
 
-# Install VPA using Helm chart
-echo " ** Installing VPA via Helm chart"
-helm install ${HELM_RELEASE_NAME} ${HELM_CHART_PATH} \
-  --namespace ${HELM_NAMESPACE} \
-  --values ${VALUES_FILE} \
-  ${HELM_SET_ARGS} \
-  --wait
-
 # Handle external metrics special case
 if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
   echo " ** Setting up external metrics infrastructure"
@@ -156,19 +151,22 @@ if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
   kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/prometheus-adapter.yaml
   kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/metrics-pump.yaml
 
-  # Upgrade Helm release with external metrics configuration
-  echo " ** Updating recommender with external metrics args"
+  # Initialize external metrics args
+  echo " ** Configuring recommender with external metrics args"
   # Determine starting index for external metrics args (after feature gates if set)
   EXTERNAL_METRICS_START_INDEX=0
   if [ -n "${FEATURE_GATES:-}" ]; then
     EXTERNAL_METRICS_START_INDEX=1
   fi
-  helm upgrade ${HELM_RELEASE_NAME} ${HELM_CHART_PATH} \
-    --namespace ${HELM_NAMESPACE} \
-    --values ${VALUES_FILE} \
-    ${HELM_SET_ARGS} \
-    --set "recommender.extraArgs[${EXTERNAL_METRICS_START_INDEX}]=--use-external-metrics=true" \
-    --set "recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 1))]=--external-metrics-cpu-metric=cpu" \
-    --set "recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 2))]=--external-metrics-memory-metric=mem" \
-    --wait
+  HELM_SET_ARGS="${HELM_SET_ARGS} --set recommender.extraArgs[${EXTERNAL_METRICS_START_INDEX}]=--use-external-metrics=true"
+  HELM_SET_ARGS="${HELM_SET_ARGS} --set recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 1))]=--external-metrics-cpu-metric=cpu"
+  HELM_SET_ARGS="${HELM_SET_ARGS} --set recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 2))]=--external-metrics-memory-metric=mem"
 fi
+
+# Install/Upgrade VPA using Helm chart
+echo " ** Installing/Upgrading VPA via Helm chart"
+helm upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_PATH} \
+  --namespace ${HELM_NAMESPACE} \
+  --values ${VALUES_FILE} \
+  ${HELM_SET_ARGS} \
+  --wait
