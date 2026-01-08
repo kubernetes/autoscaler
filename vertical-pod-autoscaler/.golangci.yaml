@@ -2,12 +2,17 @@ version: "2"
 linters:
   enable:
     - forbidigo
+    - revive
   settings:
     forbidigo:
       forbid:
         # Forbid use of archived package "github.com/pkg/errors". Context: https://github.com/kubernetes/autoscaler/pull/7845
         - pkg: github.com/pkg/errors
       analyze-types: true
+    revive:
+      enable-all-rules: false # Disabling all rules for now and enabling each one later
+      rules:
+        - name: increment-decrement
 formatters:
   enable:
     - goimports
