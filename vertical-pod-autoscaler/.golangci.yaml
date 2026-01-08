@@ -13,6 +13,15 @@ linters:
       enable-all-rules: false # Disabling all rules for now and enabling each one later
       rules:
         - name: increment-decrement
+        - name: bare-return
+        - name: indent-error-flow
+        - name: useless-fallthrough
+
+        # Below lists the rules disabled
+        - name: argument-limit
+          disabled: true
+        - name: unsecure-url-scheme
+          disabled: true
 formatters:
   enable:
     - goimports

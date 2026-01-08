@@ -56,7 +56,7 @@ func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName st
 	bytes, err := json.Marshal(patches)
 	if err != nil {
 		klog.ErrorS(err, "Cannot marshal VPA status patches", "patches", patches)
-		return
+		return nil, err
 	}
 
 	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, meta.PatchOptions{}, "status")
