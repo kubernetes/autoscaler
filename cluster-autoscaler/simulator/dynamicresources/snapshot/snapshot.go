@@ -317,6 +317,10 @@ func (s *Snapshot) getDeviceClass(className string) (*resourceapi.DeviceClass, b
 // findPodClaims retrieves all ResourceClaim objects referenced by a given pod.
 // If ignoreNotTracked is true, it skips claims not found in the snapshot; otherwise, it returns an error.
 func (s *Snapshot) findPodClaims(pod *apiv1.Pod, ignoreNotTracked bool) ([]*resourceapi.ResourceClaim, error) {
+	if len(pod.Spec.ResourceClaims) == 0 {
+		return nil, nil
+	}
+
 	result := make([]*resourceapi.ResourceClaim, len(pod.Spec.ResourceClaims))
 	for claimIndex, claimRef := range pod.Spec.ResourceClaims {
 		claimName := claimRefToName(pod, claimRef)
