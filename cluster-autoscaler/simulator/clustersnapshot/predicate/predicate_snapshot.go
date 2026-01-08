@@ -50,40 +50,6 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	return snapshot
 }
 
-// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerframework.NodeInfo.
-func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
-	schedNodeInfo, err := s.ClusterSnapshotStore.NodeInfos().Get(nodeName)
-	if err != nil {
-		return nil, err
-	}
-
-	if s.draEnabled {
-		return s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
-	}
-	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil), nil
-}
-
-// ListNodeInfos returns internal NodeInfos wrapping all schedulerframework.NodeInfos in the snapshot.
-func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
-	schedNodeInfos, err := s.ClusterSnapshotStore.NodeInfos().List()
-	if err != nil {
-		return nil, err
-	}
-	var result []*framework.NodeInfo
-	for _, schedNodeInfo := range schedNodeInfos {
-		if s.draEnabled {
-			nodeInfo, err := s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
-			if err != nil {
-				return nil, err
-			}
-			result = append(result, nodeInfo)
-		} else {
-			result = append(result, framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil))
-		}
-	}
-	return result, nil
-}
-
 // AddNodeInfo adds the provided internal NodeInfo to the snapshot.
 func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 	if s.draEnabled {
