@@ -140,13 +140,14 @@ func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *reso
 	// - with roundUpToFullUnit, we apply ceiling to the value
 	// - with noRounding or roundDownToFullUnit, we apply floor to the value
 	// TODO(iamzili) - I think we eventually want to get rid of the noRounding mode.
-	z, m := new(big.Int).DivMod(&result, scaleBaseMilli, new(big.Int))
-	if z.IsInt64() {
-		if m.Sign() != 0 && rounding == roundUpToFullUnit {
-				z.Add(z, big.NewInt(1))
-			}
+	quotient := new(big.Int)
+	remainder := new(big.Int)
+	quotient.DivMod(&result, scaleBaseMilli, remainder)
+	if quotient.IsInt64() {
+		if remainder.Sign() != 0 && rounding == roundUpToFullUnit {
+			quotient.Add(quotient, big.NewInt(1))
 		}
-		return resource.NewMilliQuantity(z.Int64(), scaledQuantity.Format), false
+		return resource.NewMilliQuantity(quotient.Int64(), scaledQuantity.Format), false
 	}
 	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), true
 }
