@@ -39,15 +39,16 @@ import (
 )
 
 type testCase struct {
-	desc                        string
-	nodes                       []*apiv1.Node
-	pods                        []*apiv1.Pod
-	draSnapshot                 drasnapshot.Snapshot
-	draEnabled                  bool
-	wantUnneeded                []string
-	wantUnremovable             []*simulator.UnremovableNode
-	scaleDownUnready            bool
-	ignoreDaemonSetsUtilization bool
+	desc                          string
+	nodes                         []*apiv1.Node
+	pods                          []*apiv1.Pod
+	draSnapshot                   drasnapshot.Snapshot
+	draEnabled                    bool
+	wantUnneeded                  []string
+	wantUnremovable               []*simulator.UnremovableNode
+	scaleDownUnready              bool
+	ignoreDaemonSetsUtilization   bool
+	scaleDownUtilizationThreshold *float64
 }
 
 func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time) []testCase {
@@ -196,6 +197,19 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 				wantUnremovable:             []*simulator.UnremovableNode{},
 				scaleDownUnready:            true,
 				ignoreDaemonSetsUtilization: true,
+			},
+			testCase{
+				desc:                        "only daemonsets pods on this nodes",
+				nodes:                       []*apiv1.Node{regularNode},
+				pods:                        []*apiv1.Pod{dsPod},
+				wantUnneeded:                []string{"regular"},
+				wantUnremovable:             []*simulator.UnremovableNode{},
+				scaleDownUnready:            true,
+				ignoreDaemonSetsUtilization: true,
+				scaleDownUtilizationThreshold: func() *float64 {
+					threshold := float64(0)
+					return &threshold
+				}(),
 			})
 	}
 
@@ -209,12 +223,16 @@ func TestFilterOutUnremovable(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
+			utilizationThreshold := config.DefaultScaleDownUtilizationThreshold
+			if tc.scaleDownUtilizationThreshold != nil {
+				utilizationThreshold = *tc.scaleDownUtilizationThreshold
+			}
 			options := config.AutoscalingOptions{
 				DynamicResourceAllocationEnabled: tc.draEnabled,
 				UnremovableNodeRecheckTimeout:    5 * time.Minute,
 				ScaleDownUnreadyEnabled:          tc.scaleDownUnready,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
-					ScaleDownUtilizationThreshold:    config.DefaultScaleDownUtilizationThreshold,
+					ScaleDownUtilizationThreshold:    utilizationThreshold,
 					ScaleDownGpuUtilizationThreshold: config.DefaultScaleDownGpuUtilizationThreshold,
 					ScaleDownUnneededTime:            config.DefaultScaleDownUnneededTime,
 					ScaleDownUnreadyTime:             config.DefaultScaleDownUnreadyTime,
