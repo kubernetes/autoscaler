@@ -17,9 +17,16 @@ limitations under the License.
 package controller
 
 import (
+	"errors"
+	"fmt"
 	"sort"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
@@ -29,9 +36,6 @@ import (
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
 )
-
-const defaultloopInterval = time.Second * 5
-const defaultResyncInterval = time.Minute * 5
 
 // BufferController performs updates on Buffers and convert them to pods to be injected
 type BufferController interface {
@@ -44,9 +48,7 @@ type bufferController struct {
 	strategyFilter filters.Filter
 	translator     translators.Translator
 	updater        updater.StatusUpdater
-	loopInterval   time.Duration
-	resyncInterval time.Duration
-	tracker        *DirtyNamespaceTracker
+	queue          workqueue.TypedRateLimitingInterface[string]
 }
 
 // NewBufferController creates new bufferController object
@@ -55,25 +57,23 @@ func NewBufferController(
 	strategyFilter filters.Filter,
 	translator translators.Translator,
 	updater updater.StatusUpdater,
-	loopInterval time.Duration,
-	resyncInterval time.Duration,
 ) BufferController {
-	return &bufferController{
+	bc := &bufferController{
 		client:         client,
 		strategyFilter: strategyFilter,
 		translator:     translator,
 		updater:        updater,
-		loopInterval:   loopInterval,
-		resyncInterval: resyncInterval,
-		tracker:        NewDirtyNamespaceTracker(client),
+		queue:          workqueue.NewTypedRateLimitingQueueWithConfig(workqueue.DefaultTypedControllerRateLimiter[string](), workqueue.TypedRateLimitingQueueConfig[string]{Name: "CapacityBuffers"}),
 	}
+	bc.configureEventHandlers()
+	return bc
 }
 
 // NewDefaultBufferController creates bufferController with default configs
 func NewDefaultBufferController(
 	client *cbclient.CapacityBufferClient,
 ) BufferController {
-	return &bufferController{
+	bc := &bufferController{
 		client: client,
 		// Accepting empty string as it represents nil value for ProvisioningStrategy
 		strategyFilter: filters.NewStrategyFilter([]string{common.ActiveProvisioningStrategy, ""}),
@@ -85,126 +85,159 @@ func NewDefaultBufferController(
 				translators.NewResourceQuotasTranslator(client),
 			},
 		),
-		updater:        *updater.NewStatusUpdater(client),
-		loopInterval:   defaultloopInterval,
-		resyncInterval: defaultResyncInterval,
-		tracker:        NewDirtyNamespaceTracker(client),
+		updater: *updater.NewStatusUpdater(client),
+		queue:   workqueue.NewTypedRateLimitingQueueWithConfig(workqueue.DefaultTypedControllerRateLimiter[string](), workqueue.TypedRateLimitingQueueConfig[string]{Name: "CapacityBuffers"}),
+	}
+	bc.configureEventHandlers()
+	return bc
+}
+
+func (c *bufferController) configureEventHandlers() {
+	// CapacityBuffer Informer
+	c.client.GetBufferInformer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: c.enqueueNamespace,
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldBuf := oldObj.(*v1.CapacityBuffer)
+			newBuf := newObj.(*v1.CapacityBuffer)
+
+			// 1. Resync (periodic refresh): reconcile.
+			if oldBuf.ResourceVersion == newBuf.ResourceVersion {
+				c.enqueueNamespace(newObj)
+				return
+			}
+
+			// 2. Generation changes (spec changes): reconcile.
+			if oldBuf.Generation != newBuf.Generation {
+				c.enqueueNamespace(newObj)
+				return
+			}
+		},
+		DeleteFunc: c.enqueueNamespace,
+	})
+
+	// ResourceQuota Informer
+	c.client.GetResourceQuotaInformer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: c.enqueueNamespace,
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			// Always reconcile on Quota updates (Spec OR Status.Used change)
+			c.enqueueNamespace(newObj)
+		},
+		DeleteFunc: c.enqueueNamespace,
+	})
+
+	// PodTemplate Informer
+	c.client.GetPodTemplateInformer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingPodTemplate(obj)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			c.enqueueBuffersReferencingPodTemplate(newObj)
+		},
+		DeleteFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingPodTemplate(obj)
+		},
+	})
+	// TODO: scalable objects
+}
+
+func (c *bufferController) enqueueNamespace(obj interface{}) {
+	var ns string
+	if object, ok := obj.(interface{ GetNamespace() string }); ok {
+		ns = object.GetNamespace()
+	}
+	if tombstone, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+		if object, ok := tombstone.Obj.(interface{ GetNamespace() string }); ok {
+			ns = object.GetNamespace()
+		}
+	}
+	if ns != "" {
+		c.queue.Add(ns)
+	}
+}
+
+func (c *bufferController) enqueueBuffersReferencingPodTemplate(obj interface{}) {
+	template, ok := obj.(*corev1.PodTemplate)
+	if !ok {
+		// handle tombstone
+		if tombstone, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+			if cast, ok := tombstone.Obj.(*corev1.PodTemplate); ok {
+				template = cast
+			}
+		}
+	}
+	if template == nil {
+		return
+	}
+
+	// Use indexer to find buffers referencing this template
+	buffers, err := c.client.GetBufferInformer().GetIndexer().ByIndex(cbclient.PodTemplateRefIndex, template.Name)
+	if err != nil {
+		runtime.HandleError(fmt.Errorf("error looking up buffers for pod template %s: %w", template.Name, err))
+		return
+	}
+
+	for _, obj := range buffers {
+		buffer := obj.(*v1.CapacityBuffer)
+		if buffer.Namespace == template.Namespace {
+			c.queue.Add(buffer.Namespace)
+			return // no need to check other buffers
+		}
 	}
 }
 
 // Run to run the controller reconcile loop
 func (c *bufferController) Run(stopCh <-chan struct{}) {
-	c.reconcileAll()
+	defer runtime.HandleCrash()
+	defer c.queue.ShutDown()
 
-	loopTicker := time.NewTicker(c.loopInterval)
-	defer loopTicker.Stop()
-	resyncTicker := time.NewTicker(c.resyncInterval)
-	defer resyncTicker.Stop()
+	klog.Info("Starting CapacityBuffer controller workers")
 
-	for {
-		select {
-		case <-stopCh:
-			return
-		case <-resyncTicker.C:
-			c.reconcileAll()
-		case <-loopTicker.C:
-			c.reconcile()
-		}
+	// Wait for all caches to sync
+	// Note: We assume the client passed to us has informers that are running and synced.
+	// CapacityBufferClient.NewCapacityBufferClientFromClients waits for sync before returning.
+
+	// Launch a single worker (namespace processing is serial per namespace anyway)
+	go wait.Until(c.runWorker, time.Second, stopCh)
+
+	<-stopCh
+	klog.Info("Stopping CapacityBuffer controller")
+}
+
+func (c *bufferController) runWorker() {
+	for c.processNextItem() {
 	}
 }
 
-// reconcileAll performs a full resync of all namespaces
-func (c *bufferController) reconcileAll() {
-	klog.V(2).Infof("Capacity buffer controller starting full resync")
-	allBuffers, err := c.client.ListCapacityBuffers("")
-	if err != nil {
-		klog.Errorf("Capacity buffer controller failed to list all buffers for full resync: %v", err)
-		return
+func (c *bufferController) processNextItem() bool {
+	key, quit := c.queue.Get()
+	if quit {
+		return false
 	}
+	defer c.queue.Done(key)
 
-	namespaces := make(map[string]bool)
-	for _, buffer := range allBuffers {
-		namespaces[buffer.Namespace] = true
-	}
+	err := c.reconcileNamespace(key)
 
-	klog.V(2).Infof("Capacity buffer controller full resync processing %d namespaces", len(namespaces))
-	for namespace := range namespaces {
-		c.reconcileNamespace(namespace)
+	if err == nil {
+		c.queue.Forget(key)
+	} else {
+		// Put the item back on the queue to handle it later
+		c.queue.AddRateLimited(key)
+		runtime.HandleError(fmt.Errorf("error syncing namespace %q", key))
 	}
+	return true
 }
 
-// Reconcile represents single iteration in the main-loop of Updater
-func (c *bufferController) reconcile() {
-	namespacesToProcess := make(map[string]bool)
-
-	// 1. Add Dirty Namespaces (Event-Driven)
-	dirtyNamespaces := c.tracker.GetAndClearDirtyNamespaces()
-	for _, ns := range dirtyNamespaces {
-		namespacesToProcess[ns] = true
-	}
-
-	// 2. Add Retry Namespaces (Polling for unstable buffers)
-	retryNamespaces := c.getNamespacesNeedingRetry()
-	for _, ns := range retryNamespaces {
-		namespacesToProcess[ns] = true
-	}
-
-	if len(namespacesToProcess) == 0 {
-		return
-	}
-
-	klog.V(2).Infof("Capacity buffer controller processing %d namespaces", len(namespacesToProcess))
-
-	for namespace := range namespacesToProcess {
-		c.reconcileNamespace(namespace)
-	}
-}
-
-func (c *bufferController) getNamespacesNeedingRetry() []string {
-	// List all buffers (from cache) to find those that are not in a stable state
-	// We use empty string namespace to list all
-	allBuffers, err := c.client.ListCapacityBuffers("")
-	if err != nil {
-		klog.Errorf("Capacity buffer controller failed to list all buffers for retry check: %v", err)
-		return nil
-	}
-
-	namespaces := make(map[string]bool)
-	for _, buffer := range allBuffers {
-		if !isBufferStable(buffer) {
-			namespaces[buffer.Namespace] = true
-		}
-	}
-
-	result := make([]string, 0, len(namespaces))
-	for ns := range namespaces {
-		result = append(result, ns)
-	}
-	return result
-}
-
-func isBufferStable(buffer *v1.CapacityBuffer) bool {
-	ready := false
-	provisioning := false
-
-	for _, cond := range buffer.Status.Conditions {
-		if cond.Type == common.ReadyForProvisioningCondition && cond.Status == common.ConditionTrue {
-			ready = true
-		}
-		if cond.Type == common.ProvisioningCondition && cond.Status == common.ConditionTrue {
-			provisioning = true
-		}
-	}
-	return ready || provisioning
-}
-
-func (c *bufferController) reconcileNamespace(namespace string) {
-	klog.V(2).Infof("Reconciling namespace: %s", namespace)
+// reconcileNamespace reconciles all buffers in a namespace.
+//
+// We must reconcile all buffers in a namespace because of resource quota allocation.
+// If one buffer in a namespace changes, e.g. it requests more resources,
+// it may impact other buffers in the namespace.
+func (c *bufferController) reconcileNamespace(namespace string) error {
+	klog.V(5).Infof("CapcityBuffer controller: reconciling namespace: %s", namespace)
 	// List all capacity buffers in the target namespace
 	buffers, err := c.client.ListCapacityBuffers(namespace)
 	if err != nil {
-		klog.Errorf("Capacity buffer controller failed to list buffers in namespace %s with error: %v", namespace, err.Error())
-		return
+		return err
 	}
 
 	// Filter the desired provisioning strategy
@@ -212,10 +245,11 @@ func (c *bufferController) reconcileNamespace(namespace string) {
 	filteredBuffers, _ := c.strategyFilter.Filter(buffers)
 
 	if len(filteredBuffers) == 0 {
-		return
+		return nil
 	}
 
-	// Sort buffers deterministically by CreationTimestamp, then Name
+	// Sort buffers deterministically by CreationTimestamp, then Name. Stable order
+	// is required to prevent flakiness of resource quotas allocation.
 	sort.Slice(filteredBuffers, func(i, j int) bool {
 		if filteredBuffers[i].CreationTimestamp.Time.Equal(filteredBuffers[j].CreationTimestamp.Time) {
 			return filteredBuffers[i].Name < filteredBuffers[j].Name
@@ -224,16 +258,21 @@ func (c *bufferController) reconcileNamespace(namespace string) {
 	})
 
 	// Extract pod specs and number of replicas from filtered buffers
-	errors := c.translator.Translate(filteredBuffers)
-	logErrors(errors)
+	translationErrors := c.translator.Translate(filteredBuffers)
+	for _, err := range translationErrors {
+		runtime.HandleError(fmt.Errorf("capacity buffer controller error: %w", err))
+	}
 
 	// Update buffer status by calling API server
-	errors = c.updater.Update(filteredBuffers)
-	logErrors(errors)
-}
-
-func logErrors(errors []error) {
-	for _, error := range errors {
-		klog.Errorf("Capacity buffer controller error: %v", error.Error())
+	updateErrors := c.updater.Update(filteredBuffers)
+	for _, err := range updateErrors {
+		runtime.HandleError(fmt.Errorf("capacity buffer controller error: %w", err))
 	}
+
+	// If there were any errors, return one to trigger requeue
+	if len(translationErrors) > 0 || len(updateErrors) > 0 {
+		return errors.New("encountered errors during reconciliation")
+	}
+
+	return nil
 }

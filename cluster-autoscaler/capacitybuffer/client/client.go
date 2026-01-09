@@ -52,6 +52,9 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+// PodTemplateRefIndex is the name of the index for buffers referencing a pod template
+const PodTemplateRefIndex = "podTemplateRef"
+
 // CapacityBufferClient represents client for v1 capacitybuffer CRD.
 type CapacityBufferClient struct {
 	buffersClient         capacitybuffer.Interface
@@ -132,9 +135,26 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 
 	stopChannel := make(chan struct{})
 
-	buffersFactory := externalversions.NewSharedInformerFactory(buffersClient, 5*time.Second)
+	buffersFactory := externalversions.NewSharedInformerFactory(buffersClient, 5*time.Minute)
 	bufferInformer := buffersFactory.Autoscaling().V1alpha1().CapacityBuffers().Informer()
 	buffersLister := buffersFactory.Autoscaling().V1alpha1().CapacityBuffers().Lister()
+
+	// Add indexer for PodTemplateRef
+	err := bufferInformer.AddIndexers(cache.Indexers{
+		PodTemplateRefIndex: func(obj interface{}) ([]string, error) {
+			buffer, ok := obj.(*v1.CapacityBuffer)
+			if !ok {
+				return []string{}, nil
+			}
+			if buffer.Spec.PodTemplateRef != nil {
+				return []string{buffer.Spec.PodTemplateRef.Name}, nil
+			}
+			return []string{}, nil
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to add indexers: %v", err)
+	}
 
 	buffersFactory.Start(stopChannel)
 	// We wait for sync in the original implementation, let's keep that logic but reuse the factory we just made
@@ -146,7 +166,7 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 	}
 	klog.V(2).Info("Successful initial buffers sync")
 
-	factory := informers.NewSharedInformerFactory(kubernetesClient, 1*time.Minute)
+	factory := informers.NewSharedInformerFactory(kubernetesClient, 5*time.Minute)
 	bufferClient := &CapacityBufferClient{
 		buffersClient:         buffersClient,
 		kubernetesClient:      kubernetesClient,

@@ -106,8 +106,6 @@ func TestControllerIntegration(t *testing.T) {
 	assert.NoError(t, err)
 
 	controller := NewDefaultBufferController(client).(*bufferController)
-	// Override loop interval for faster tests
-	controller.loopInterval = 100 * time.Millisecond
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
