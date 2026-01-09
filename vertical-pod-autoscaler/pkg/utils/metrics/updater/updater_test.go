@@ -339,26 +339,42 @@ func TestSizeBasedGauge(t *testing.T) {
 		labels []string
 		value  float64
 	}
+	type iteration struct {
+		additions    []addition
+		expectations []expectation
+	}
 	testCases := []struct {
-		desc            string
-		newCounter      func() *SizeBasedGauge
-		metric          *prometheus.GaugeVec
-		metricName      string
-		additions       []addition
-		expectedMetrics []expectation
+		desc       string
+		newCounter func() *SizeBasedGauge
+		metric     *prometheus.GaugeVec
+		metricName string
+		iterations []iteration
 	}{
 		{
 			desc:       "InPlaceUpdatablePodsCounter",
 			newCounter: NewInPlaceUpdatablePodsCounter,
 			metric:     inPlaceUpdatableCount,
 			metricName: "vpa_updater_in_place_updatable_pods_total",
-			additions: []addition{
-				{1, 5},
-				{2, 10},
-			},
-			expectedMetrics: []expectation{
-				{[]string{"0" /* log2(1) */}, 5},
-				{[]string{"1" /* log2(2) */}, 10},
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{1, 5},
+						{2, 10},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */}, 5},
+						{[]string{"1" /* log2(2) */}, 10},
+					},
+				},
+				{
+					additions: []addition{
+						{1, 5},
+						{1, 1},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */}, 6},
+					},
+				},
 			},
 		},
 		{
@@ -366,13 +382,26 @@ func TestSizeBasedGauge(t *testing.T) {
 			newCounter: NewVpasWithInPlaceUpdatablePodsCounter,
 			metric:     vpasWithInPlaceUpdatablePodsCount,
 			metricName: "vpa_updater_vpas_with_in_place_updatable_pods_total",
-			additions: []addition{
-				{10, 1},
-				{20, 1},
-			},
-			expectedMetrics: []expectation{
-				{[]string{"3" /* log2(10) */}, 1},
-				{[]string{"4" /* log2(20) */}, 1},
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{10, 1},
+						{20, 1},
+					},
+					expectations: []expectation{
+						{[]string{"3" /* log2(10) */}, 1},
+						{[]string{"4" /* log2(20) */}, 1},
+					},
+				},
+				{
+					additions: []addition{
+						{20, 1},
+						{20, 1},
+					},
+					expectations: []expectation{
+						{[]string{"4" /* log2(20) */}, 2},
+					},
+				},
 			},
 		},
 		{
@@ -380,30 +409,47 @@ func TestSizeBasedGauge(t *testing.T) {
 			newCounter: NewVpasWithInPlaceUpdatedPodsCounter,
 			metric:     vpasWithInPlaceUpdatedPodsCount,
 			metricName: "vpa_updater_vpas_with_in_place_updated_pods_total",
-			additions: []addition{
-				{2, 4},
-				{4, 5},
-			},
-			expectedMetrics: []expectation{
-				{[]string{"1" /* log2(2) */}, 4},
-				{[]string{"2" /* log2(4) */}, 5},
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{2, 4},
+						{4, 5},
+					},
+					expectations: []expectation{
+						{[]string{"1" /* log2(2) */}, 4},
+						{[]string{"2" /* log2(4) */}, 5},
+					},
+				},
+				{
+					additions: []addition{
+						{4, 5},
+						{4, 5},
+						{4, 5},
+						{4, 5},
+					},
+					expectations: []expectation{
+						{[]string{"2" /* log2(4) */}, 20},
+					},
+				},
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			t.Cleanup(tc.metric.Reset)
-			counter := tc.newCounter()
-			for _, add := range tc.additions {
-				counter.Add(add.vpaSize, add.value)
-			}
-			counter.Observe()
-			for _, expected := range tc.expectedMetrics {
-				val := testutil.ToFloat64(tc.metric.WithLabelValues(expected.labels...))
-				if val != expected.value {
-					t.Errorf("Unexpected value for metric %s with labels %v: got %v, want %v", tc.metricName, expected.labels, val, expected.value)
+			for _, i := range tc.iterations {
+				counter := tc.newCounter()
+				for _, add := range i.additions {
+					counter.Add(add.vpaSize, add.value)
 				}
+				counter.Observe()
+				for _, expected := range i.expectations {
+					val := testutil.ToFloat64(tc.metric.WithLabelValues(expected.labels...))
+					if val != expected.value {
+						t.Errorf("Unexpected value for metric %s with labels %v: got %v, want %v", tc.metricName, expected.labels, val, expected.value)
+					}
+				}
+
 			}
 		})
 	}
