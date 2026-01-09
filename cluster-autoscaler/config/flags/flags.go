@@ -19,6 +19,7 @@ package flags
 import (
 	"flag"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -262,9 +263,20 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
+	maxGiB := int64(math.MaxInt64 / units.GiB)
 	// Convert memory limits to bytes.
-	minMemoryTotal = minMemoryTotal * units.GiB
-	maxMemoryTotal = maxMemoryTotal * units.GiB
+	if minMemoryTotal > maxGiB {
+		klog.Warning("Min memory limit overflowed, defaulting to 0")
+		minMemoryTotal = 0
+	} else {
+		minMemoryTotal = minMemoryTotal * units.GiB
+	}
+	if maxMemoryTotal > maxGiB {
+		klog.Warning("Max memory limit overflowed, defaulting to MaxInt64")
+		maxMemoryTotal = math.MaxInt64
+	} else {
+		maxMemoryTotal = maxMemoryTotal * units.GiB
+	}
 
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
 	if err != nil {
