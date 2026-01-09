@@ -55,9 +55,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 	}
 
 	switch minTlsVersion {
-	case "":
-		fallthrough
-	case "tls1_2":
+	case "", "tls1_2":
 		tlsVersion = tls.VersionTLS12
 	case "tls1_3":
 		tlsVersion = tls.VersionTLS13
