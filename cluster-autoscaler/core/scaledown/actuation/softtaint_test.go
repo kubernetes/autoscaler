@@ -69,7 +69,7 @@ func TestSoftTaintUpdate(t *testing.T) {
 	}
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
-	actx, err := test.NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
+	actx, err := test.NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil, nil)
 	assert.NoError(t, err)
 
 	// Test no superfluous nodes
@@ -153,7 +153,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	}
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
-	actx, err := test.NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
+	actx, err := test.NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil, nil)
 	assert.NoError(t, err)
 
 	// Test bulk taint

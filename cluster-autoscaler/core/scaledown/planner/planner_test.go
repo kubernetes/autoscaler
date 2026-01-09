@@ -493,17 +493,19 @@ func TestUpdateClusterState(t *testing.T) {
 			for _, node := range tc.nodes {
 				provider.AddNode("ng1", node)
 			}
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+			opts := config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: 10 * time.Minute,
 				},
 				ScaleDownSimulationTimeout: 1 * time.Second,
 				MaxScaleDownParallelism:    10,
-			}, &fake.Clientset{}, registry, provider, nil, nil)
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(opts)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, &fake.Clientset{}, registry, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				autoscalingCtx.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -689,17 +691,19 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			for _, node := range nodes {
 				provider.AddNode("ng1", node)
 			}
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+			autoscalingOpts := config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: tc.maxUnneededTime,
 				},
 				ScaleDownSimulationTimeout: 1 * time.Hour,
 				MaxScaleDownParallelism:    tc.maxParallelism,
-			}, &fake.Clientset{}, nil, provider, nil, nil)
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOpts)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(&autoscalingCtx, previouslyUnneeded, time.Now())
@@ -817,6 +821,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 				provider.AddNode("ng1", node)
 			}
 
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(
 				autoscalingOptions,
 				&fake.Clientset{},
@@ -829,11 +834,12 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 				provider,
 				nil,
 				nil,
+				templateNodeInfoRegistry,
 			)
 			assert.NoError(t, err)
 
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 
 			p.unneededNodes.AsList()
 		})
@@ -1014,16 +1020,18 @@ func TestNodesToDelete(t *testing.T) {
 					provider.AddNode(ng, node)
 				}
 			}
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+			autoscalingOpts := config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: 10 * time.Minute,
 					ScaleDownUnreadyTime:  0 * time.Minute,
 				},
-			}, &fake.Clientset{}, nil, provider, nil, nil)
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOpts)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processorstest.NewTestProcessors(&autoscalingCtx), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 			p.latestUpdate = time.Now()
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 			p.unneededNodes.Update(&autoscalingCtx, allRemovables, time.Now().Add(-1*time.Hour))
