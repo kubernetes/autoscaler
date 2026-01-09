@@ -142,8 +142,7 @@ func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *reso
 	// TODO(iamzili) - I think we eventually want to get rid of the noRounding mode.
 	z, m := new(big.Int).DivMod(&result, scaleBaseMilli, new(big.Int))
 	if z.IsInt64() {
-		if m.Sign() != 0 {
-			if rounding == roundUpToFullUnit {
+		if m.Sign() != 0 && rounding == roundUpToFullUnit {
 				z.Add(z, big.NewInt(1))
 			}
 		}
