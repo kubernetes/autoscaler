@@ -189,29 +189,45 @@ func TestUpdateModeAndSizeBasedGauge(t *testing.T) {
 		labels []string
 		value  float64
 	}
+	type iteration struct {
+		additions    []addition
+		expectations []expectation
+	}
 	testCases := []struct {
-		desc            string
-		newCounter      func() *UpdateModeAndSizeBasedGauge
-		metric          *prometheus.GaugeVec
-		metricName      string
-		additions       []addition
-		expectedMetrics []expectation
+		desc       string
+		newCounter func() *UpdateModeAndSizeBasedGauge
+		metric     *prometheus.GaugeVec
+		metricName string
+		iterations []iteration
 	}{
 		{
 			desc:       "ControlledPodsCounter",
 			newCounter: NewControlledPodsCounter,
 			metric:     controlledCount,
 			metricName: "vpa_updater_controlled_pods_total",
-			additions: []addition{
-				{1, vpa_types.UpdateModeAuto, 5},
-				{2, vpa_types.UpdateModeOff, 10},
-				{2, vpa_types.UpdateModeAuto, 2},
-				{2, vpa_types.UpdateModeAuto, 7},
-			},
-			expectedMetrics: []expectation{
-				{[]string{"0" /* log2(1) */, "Auto"}, 5},
-				{[]string{"1" /* log2(2) */, "Auto"}, 9},
-				{[]string{"1" /* log2(2) */, "Off"}, 10},
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeAuto, 5},
+						{2, vpa_types.UpdateModeOff, 10},
+						{2, vpa_types.UpdateModeAuto, 2},
+						{2, vpa_types.UpdateModeAuto, 7},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Auto"}, 5},
+						{[]string{"1" /* log2(2) */, "Auto"}, 9},
+						{[]string{"1" /* log2(2) */, "Off"}, 10},
+					},
+				},
+				{
+					additions: []addition{
+						{2, vpa_types.UpdateModeAuto, 2},
+						{2, vpa_types.UpdateModeAuto, 3},
+					},
+					expectations: []expectation{
+						{[]string{"1" /* log2(2) */, "Auto"}, 5},
+					},
+				},
 			},
 		},
 		{
@@ -219,13 +235,27 @@ func TestUpdateModeAndSizeBasedGauge(t *testing.T) {
 			newCounter: NewEvictablePodsCounter,
 			metric:     evictableCount,
 			metricName: "vpa_updater_evictable_pods_total",
-			additions: []addition{
-				{4, vpa_types.UpdateModeAuto, 3},
-				{1, vpa_types.UpdateModeRecreate, 8},
-			},
-			expectedMetrics: []expectation{
-				{[]string{"2" /* log2(4) */, "Auto"}, 3},
-				{[]string{"0" /* log2(1) */, "Recreate"}, 8},
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{4, vpa_types.UpdateModeAuto, 3},
+						{1, vpa_types.UpdateModeRecreate, 8},
+					},
+					expectations: []expectation{
+						{[]string{"2" /* log2(4) */, "Auto"}, 3},
+						{[]string{"0" /* log2(1) */, "Recreate"}, 8},
+					},
+				},
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeRecreate, 4},
+						{1, vpa_types.UpdateModeRecreate, 1},
+						{1, vpa_types.UpdateModeRecreate, 3},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Recreate"}, 8},
+					},
+				},
 			},
 		},
 		{
@@ -233,13 +263,25 @@ func TestUpdateModeAndSizeBasedGauge(t *testing.T) {
 			newCounter: NewVpasWithEvictablePodsCounter,
 			metric:     vpasWithEvictablePodsCount,
 			metricName: "vpa_updater_vpas_with_evictable_pods_total",
-			additions: []addition{
-				{1, vpa_types.UpdateModeOff, 1},
-				{2, vpa_types.UpdateModeAuto, 1},
-			},
-			expectedMetrics: []expectation{
-				{[]string{"0" /* log2(1) */, "Off"}, 1},
-				{[]string{"1" /* log2(2) */, "Auto"}, 1},
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeOff, 1},
+						{2, vpa_types.UpdateModeAuto, 1},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Off"}, 1},
+						{[]string{"1" /* log2(2) */, "Auto"}, 1},
+					},
+				},
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeOff, 1},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Off"}, 1},
+					},
+				},
 			},
 		},
 		{
@@ -247,28 +289,41 @@ func TestUpdateModeAndSizeBasedGauge(t *testing.T) {
 			newCounter: NewVpasWithEvictedPodsCounter,
 			metric:     vpasWithEvictedPodsCount,
 			metricName: "vpa_updater_vpas_with_evicted_pods_total",
-			additions: []addition{
-				{1, vpa_types.UpdateModeAuto, 2},
-				{1, vpa_types.UpdateModeAuto, 3},
-			},
-			expectedMetrics: []expectation{
-				{[]string{"0" /* log2(1) */, "Auto"}, 5},
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeAuto, 2},
+						{1, vpa_types.UpdateModeAuto, 3},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Auto"}, 5},
+					},
+				},
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeAuto, 5},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Auto"}, 5},
+					},
+				},
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			t.Cleanup(tc.metric.Reset)
-			counter := tc.newCounter()
-			for _, add := range tc.additions {
-				counter.Add(add.vpaSize, add.mode, add.value)
-			}
-			counter.Observe()
-			for _, expected := range tc.expectedMetrics {
-				val := testutil.ToFloat64(tc.metric.WithLabelValues(expected.labels...))
-				if val != expected.value {
-					t.Errorf("Unexpected value for metric %s with labels %v: got %v, want %v", tc.metricName, expected.labels, val, expected.value)
+			for _, i := range tc.iterations {
+				counter := tc.newCounter()
+				for _, add := range i.additions {
+					counter.Add(add.vpaSize, add.mode, add.value)
+				}
+				counter.Observe()
+				for _, expected := range i.expectations {
+					val := testutil.ToFloat64(tc.metric.WithLabelValues(expected.labels...))
+					if val != expected.value {
+						t.Errorf("Unexpected value for metric %s with labels %v: got %v, want %v", tc.metricName, expected.labels, val, expected.value)
+					}
 				}
 			}
 		})
