@@ -50,40 +50,6 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	return snapshot
 }
 
-// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerframework.NodeInfo.
-func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
-	schedNodeInfo, err := s.ClusterSnapshotStore.NodeInfos().Get(nodeName)
-	if err != nil {
-		return nil, err
-	}
-
-	if s.draEnabled {
-		return s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
-	}
-	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil), nil
-}
-
-// ListNodeInfos returns internal NodeInfos wrapping all schedulerframework.NodeInfos in the snapshot.
-func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
-	schedNodeInfos, err := s.ClusterSnapshotStore.NodeInfos().List()
-	if err != nil {
-		return nil, err
-	}
-	var result []*framework.NodeInfo
-	for _, schedNodeInfo := range schedNodeInfos {
-		if s.draEnabled {
-			nodeInfo, err := s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
-			if err != nil {
-				return nil, err
-			}
-			result = append(result, nodeInfo)
-		} else {
-			result = append(result, framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil))
-		}
-	}
-	return result, nil
-}
-
 // AddNodeInfo adds the provided internal NodeInfo to the snapshot.
 func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 	if s.draEnabled {
@@ -106,7 +72,7 @@ func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 		}
 	}
 
-	return s.ClusterSnapshotStore.AddSchedulerNodeInfo(nodeInfo.ToScheduler())
+	return s.ClusterSnapshotStore.StoreNodeInfo(nodeInfo)
 }
 
 // RemoveNodeInfo removes a NodeInfo matching the provided nodeName from the snapshot.
@@ -116,7 +82,7 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 		return err
 	}
 
-	if err := s.ClusterSnapshotStore.RemoveSchedulerNodeInfo(nodeName); err != nil {
+	if err := s.ClusterSnapshotStore.RemoveNodeInfo(nodeName); err != nil {
 		return err
 	}
 
@@ -147,7 +113,11 @@ func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) cluster
 		}
 	}
 
-	if err := s.ClusterSnapshotStore.ForceAddPod(pod, nodeName); err != nil {
+	podInfo, err := s.createPodInfo(pod)
+	if err != nil {
+		return clustersnapshot.NewSchedulingInternalError(pod, err.Error())
+	}
+	if err := s.ClusterSnapshotStore.StorePodInfo(podInfo, nodeName); err != nil {
 		return clustersnapshot.NewSchedulingInternalError(pod, err.Error())
 	}
 	return nil
@@ -170,7 +140,11 @@ func (s *PredicateSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, anyNode
 		}
 	}
 
-	if err := s.ClusterSnapshotStore.ForceAddPod(pod, node.Name); err != nil {
+	podInfo, err := s.createPodInfo(pod)
+	if err != nil {
+		return "", clustersnapshot.NewSchedulingInternalError(pod, err.Error())
+	}
+	if err := s.ClusterSnapshotStore.StorePodInfo(podInfo, node.Name); err != nil {
 		return "", clustersnapshot.NewSchedulingInternalError(pod, err.Error())
 	}
 	return node.Name, nil
@@ -202,7 +176,30 @@ func (s *PredicateSnapshot) UnschedulePod(namespace string, podName string, node
 		}
 	}
 
-	return s.ClusterSnapshotStore.ForceRemovePod(namespace, podName, nodeName)
+	return s.ClusterSnapshotStore.RemovePodInfo(namespace, podName, nodeName)
+}
+
+// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
+// This method will allocate internal PodInfo and include all the DRA-related information (taken from the DRA snapshot).
+// It will store it to NodeInfo via StorePodInfo.
+func (s *PredicateSnapshot) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
+	if s.draEnabled {
+		if err := s.ClusterSnapshotStore.DraSnapshot().ReservePodClaims(pod); err != nil {
+			return fmt.Errorf("couldn't reserve pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
+		}
+	}
+
+	podInfo, err := s.createPodInfo(pod)
+	if err != nil {
+		return err
+	}
+
+	return s.ClusterSnapshotStore.StorePodInfo(podInfo, nodeName)
+}
+
+// ForceRemovePod removes the given Pod and its claims from the snapshot.
+func (s *PredicateSnapshot) ForceRemovePod(namespace string, podName string, nodeName string) error {
+	return s.UnschedulePod(namespace, podName, nodeName)
 }
 
 // CheckPredicates checks whether scheduler predicates pass for the given pod on the given node.
@@ -223,6 +220,18 @@ func (s *PredicateSnapshot) verifyScheduledPodResourceClaims(pod *apiv1.Pod, nod
 		}
 	}
 	return nil
+}
+
+func (s *PredicateSnapshot) createPodInfo(pod *apiv1.Pod) (*framework.PodInfo, error) {
+	var claims []*resourceapi.ResourceClaim
+	if s.draEnabled {
+		var err error
+		claims, err = s.ClusterSnapshotStore.DraSnapshot().PodClaims(pod)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
+		}
+	}
+	return framework.NewPodInfo(pod, claims), nil
 }
 
 func (s *PredicateSnapshot) modifyResourceClaimsForScheduledPod(pod *apiv1.Pod, node *apiv1.Node, postFilterState *schedulerframework.CycleState) error {

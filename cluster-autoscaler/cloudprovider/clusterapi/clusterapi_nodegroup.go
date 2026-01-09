@@ -381,7 +381,7 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
+	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.scalableResource.Name()), nil))
 	return nodeInfo, nil
 }
 
