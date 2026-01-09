@@ -154,7 +154,7 @@ func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context
 		}
 	}
 
-	underutilized, err := c.isNodeBelowUtilizationThreshold(autoscalingCtx, node, nodeGroup, utilInfo)
+	underutilized, err := c.isNodeAtOrBelowUtilizationThreshold(autoscalingCtx, node, nodeGroup, utilInfo)
 	if err != nil {
 		klog.Warningf("Failed to check utilization thresholds for %s: %v", node.Name, err)
 		return simulator.UnexpectedError, nil
@@ -169,8 +169,8 @@ func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context
 	return simulator.NoReason, &utilInfo
 }
 
-// isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
-func (c *Checker) isNodeBelowUtilizationThreshold(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
+// isNodeAtOrBelowUtilizationThreshold determines if a given node utilization is at or below threshold.
+func (c *Checker) isNodeAtOrBelowUtilizationThreshold(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
 	var threshold float64
 	var err error
 	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
@@ -185,7 +185,7 @@ func (c *Checker) isNodeBelowUtilizationThreshold(autoscalingCtx *ca_context.Aut
 			return false, err
 		}
 	}
-	if utilInfo.Utilization >= threshold {
+	if utilInfo.Utilization > threshold {
 		return false, nil
 	}
 	return true, nil
