@@ -36,6 +36,7 @@ import (
 	batchv1lister "k8s.io/client-go/listers/batch/v1"
 	corev1listers "k8s.io/client-go/listers/core/v1"
 	scaleclient "k8s.io/client-go/scale"
+	"k8s.io/client-go/tools/cache"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingapi "k8s.io/api/autoscaling/v1"
@@ -65,6 +66,11 @@ type CapacityBufferClient struct {
 	deploymentLister      appsv1listers.DeploymentLister
 	replicationContLister corev1listers.ReplicationControllerLister
 	rqLister              corev1listers.ResourceQuotaLister
+
+	// Informers
+	bufferInformer        cache.SharedIndexInformer
+	podTemplateInformer   cache.SharedIndexInformer
+	resourceQuotaInformer cache.SharedIndexInformer
 }
 
 // NewCapacityBufferClient returns a capacityBufferClient.
@@ -125,10 +131,20 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 	}
 
 	stopChannel := make(chan struct{})
-	buffersLister, err := newBuffersLister(buffersClient, stopChannel, 5*time.Second)
-	if err != nil {
-		return nil, err
+
+	buffersFactory := externalversions.NewSharedInformerFactory(buffersClient, 5*time.Second)
+	bufferInformer := buffersFactory.Autoscaling().V1alpha1().CapacityBuffers().Informer()
+	buffersLister := buffersFactory.Autoscaling().V1alpha1().CapacityBuffers().Lister()
+
+	buffersFactory.Start(stopChannel)
+	// We wait for sync in the original implementation, let's keep that logic but reuse the factory we just made
+	informersSynced := buffersFactory.WaitForCacheSync(stopChannel)
+	for _, synced := range informersSynced {
+		if !synced {
+			return nil, fmt.Errorf("can't create buffers lister")
+		}
 	}
+	klog.V(2).Info("Successful initial buffers sync")
 
 	factory := informers.NewSharedInformerFactory(kubernetesClient, 1*time.Minute)
 	bufferClient := &CapacityBufferClient{
@@ -144,9 +160,14 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 		deploymentLister:      factory.Apps().V1().Deployments().Lister(),
 		replicationContLister: factory.Core().V1().ReplicationControllers().Lister(),
 		rqLister:              factory.Core().V1().ResourceQuotas().Lister(),
+
+		// Store Informers
+		bufferInformer:        bufferInformer,
+		podTemplateInformer:   factory.Core().V1().PodTemplates().Informer(),
+		resourceQuotaInformer: factory.Core().V1().ResourceQuotas().Informer(),
 	}
 	factory.Start(stopChannel)
-	informersSynced := factory.WaitForCacheSync(stopChannel)
+	informersSynced = factory.WaitForCacheSync(stopChannel)
 	for _, synced := range informersSynced {
 		if !synced {
 			return nil, fmt.Errorf("Can't initiate informer factory syncer")
@@ -155,8 +176,14 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 	return bufferClient, nil
 }
 
-// newBuffersLister creates a lister for the buffers in the cluster.
 func newBuffersLister(client capacitybuffer.Interface, stopChannel <-chan struct{}, defaultResync time.Duration) (bufferslisters.CapacityBufferLister, error) {
+	// This function is now redundant or needs to be refactored if we want to keep it.
+	// But since NewCapacityBufferClientFromClients handles initialization, we might not use it there anymore.
+	// It was used in NewCapacityBufferClientFromClients.
+	// I'll keep it for compatibility if it's used elsewhere, but NewCapacityBufferClientFromClients now inlines the logic.
+	// Actually, NewCapacityBufferClientFromClients was calling newBuffersLister. I replaced that call.
+	// So I can leave this function as is (unused inside this package) or remove it.
+	// To minimize diff noise, I'll leave it but unused by the main constructor.
 	factory := externalversions.NewSharedInformerFactory(client, defaultResync)
 	buffersLister := factory.Autoscaling().V1alpha1().CapacityBuffers().Lister()
 
@@ -171,13 +198,34 @@ func newBuffersLister(client capacitybuffer.Interface, stopChannel <-chan struct
 	return buffersLister, nil
 }
 
+// Accessors for Informers
+
+func (c *CapacityBufferClient) GetBufferInformer() cache.SharedIndexInformer {
+	return c.bufferInformer
+}
+
+func (c *CapacityBufferClient) GetPodTemplateInformer() cache.SharedIndexInformer {
+	return c.podTemplateInformer
+}
+
+func (c *CapacityBufferClient) GetResourceQuotaInformer() cache.SharedIndexInformer {
+	return c.resourceQuotaInformer
+}
+
 // ListCapacityBuffers lists all Capacity buffer.
-func (c *CapacityBufferClient) ListCapacityBuffers() ([]*v1.CapacityBuffer, error) {
+func (c *CapacityBufferClient) ListCapacityBuffers(namespace string) ([]*v1.CapacityBuffer, error) {
 	if c.buffersLister == nil {
 		return nil, fmt.Errorf("Capacity buffer client is not configured to list capacity buffers")
 	}
 
-	buffers, err := c.buffersLister.List(labels.Everything())
+	var buffers []*v1.CapacityBuffer
+	var err error
+	if namespace == "" {
+		buffers, err = c.buffersLister.List(labels.Everything())
+	} else {
+		buffers, err = c.buffersLister.CapacityBuffers(namespace).List(labels.Everything())
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("Error fetching capacity buffers: %v", err)
 	}
@@ -186,6 +234,14 @@ func (c *CapacityBufferClient) ListCapacityBuffers() ([]*v1.CapacityBuffer, erro
 		buffersCopy = append(buffersCopy, buffer.DeepCopy())
 	}
 	return buffersCopy, nil
+}
+
+// GetCapacityBuffer fetches a CapacityBuffer by name and namespace.
+func (c *CapacityBufferClient) GetCapacityBuffer(namespace, name string) (*v1.CapacityBuffer, error) {
+	if c.buffersLister == nil {
+		return nil, fmt.Errorf("Capacity buffer client is not configured to get capacity buffers")
+	}
+	return c.buffersLister.CapacityBuffers(namespace).Get(name)
 }
 
 // ListResourceQuotas lists all resource quotas in the passed namespace

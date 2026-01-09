@@ -26,6 +26,7 @@ import (
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 )
 
@@ -49,6 +50,7 @@ func (r *resourceQuotasTranslator) Translate(buffers []*v1.CapacityBuffer) []err
 	for _, buffer := range buffers {
 		// Skip buffers that are not ready for provisioning or have no replicas
 		if buffer.Status.PodTemplateRef == nil || buffer.Status.Replicas == nil || *buffer.Status.Replicas <= 0 {
+			klog.V(4).Infof("ResourceQuotasTranslator: Skipping buffer %s (not ready or no replicas)", buffer.Name)
 			continue
 		}
 
@@ -84,13 +86,10 @@ func (r *resourceQuotasTranslator) Translate(buffers []*v1.CapacityBuffer) []err
 		}
 
 		if allowedReplicas < currentReplicas {
+			klog.V(2).Infof("ResourceQuotasTranslator: Limiting buffer %s from %d to %d due to quotas: %v", buffer.Name, currentReplicas, allowedReplicas, blockingQuotas)
 			buffer.Status.Replicas = ptr.To(allowedReplicas)
 			msg := fmt.Sprintf("Buffer replicas limited from %d to %d due to quotas: %s", currentReplicas, allowedReplicas, strings.Join(blockingQuotas, ", "))
 			common.UpdateBufferStatusLimitedByQuotas(buffer, true, msg)
-
-			if allowedReplicas == 0 {
-				common.UpdateBufferStatusToFailedProvisioing(buffer, "LimitedByQuotas", fmt.Sprintf("Scaled down to 0 due to quotas: %v", blockingQuotas))
-			}
 		} else {
 			// Not limited, but maybe previous run had it set, so clear it/set to False
 			common.UpdateBufferStatusLimitedByQuotas(buffer, false, "")
