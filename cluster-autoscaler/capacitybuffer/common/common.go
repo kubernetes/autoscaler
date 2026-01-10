@@ -31,6 +31,7 @@ const (
 	CapacityBufferApiVersion      = "autoscaling.x-k8s.io/v1alpha1"
 	ReadyForProvisioningCondition = "ReadyForProvisioning"
 	ProvisioningCondition         = "Provisioning"
+	LimitedByQuotasCondition      = "LimitedByQuotas"
 	ConditionTrue                 = "True"
 	ConditionFalse                = "False"
 )
@@ -99,4 +100,30 @@ func UpdateBufferStatusToSuccessfullyProvisioing(buffer *v1.CapacityBuffer, reas
 		Reason:             reason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 	}}
+}
+
+// UpdateBufferStatusLimitedByQuotas adds or updates the LimitedByQuotas condition
+func UpdateBufferStatusLimitedByQuotas(buffer *v1.CapacityBuffer, isLimited bool, message string) {
+	status := ConditionFalse
+	if isLimited {
+		status = ConditionTrue
+	}
+
+	newCondition := metav1.Condition{
+		Type:               LimitedByQuotasCondition,
+		Status:             metav1.ConditionStatus(status),
+		Message:            message,
+		Reason:             "QuotaLimitCalculated",
+		LastTransitionTime: metav1.Time{Time: time.Now()},
+	}
+
+	// Filter out existing LimitedByQuotas condition
+	newConditions := []metav1.Condition{}
+	for _, c := range buffer.Status.Conditions {
+		if c.Type != LimitedByQuotasCondition {
+			newConditions = append(newConditions, c)
+		}
+	}
+	newConditions = append(newConditions, newCondition)
+	buffer.Status.Conditions = newConditions
 }

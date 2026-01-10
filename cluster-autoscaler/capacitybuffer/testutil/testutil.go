@@ -116,3 +116,33 @@ func GetConditionNotReady() []metav1.Condition {
 	}
 	return []metav1.Condition{notReadyCondition}
 }
+
+// BufferOption is a functional option for creating a CapacityBuffer
+type BufferOption func(*v1.CapacityBuffer)
+
+// NewBuffer creates a new CapacityBuffer with the given options
+func NewBuffer(opts ...BufferOption) *v1.CapacityBuffer {
+	b := &v1.CapacityBuffer{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+		},
+	}
+	for _, opt := range opts {
+		opt(b)
+	}
+	return b
+}
+
+// WithStatusPodTemplateRef sets the Status.PodTemplateRef
+func WithStatusPodTemplateRef(name string) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Status.PodTemplateRef = &v1.LocalObjectRef{Name: name}
+	}
+}
+
+// WithStatusReplicas sets the Status.Replicas
+func WithStatusReplicas(replicas int32) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Status.Replicas = &replicas
+	}
+}
