@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -99,12 +100,14 @@ func main() {
 
 	config := common.CreateKubeConfigOrDie(commonFlags.KubeConfig, float32(commonFlags.KubeApiQps), int(commonFlags.KubeApiBurst))
 
+	ctx := context.Background()
+
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), commonFlags.VpaObjectNamespace)
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(ctx, config, kubeClient, factory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(ctx, config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator

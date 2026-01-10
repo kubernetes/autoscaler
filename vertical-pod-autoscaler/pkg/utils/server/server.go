@@ -18,6 +18,7 @@ limitations under the License.
 package server
 
 import (
+	"context"
 	"net/http"
 	"net/http/pprof"
 
@@ -29,6 +30,12 @@ import (
 
 // Initialize sets up Prometheus to expose metrics & (optionally) health-check and profiling on the given address
 func Initialize(enableProfiling *bool, healthCheck *metrics.HealthCheck, address *string) {
+	InitializeWithContext(context.Background(), enableProfiling, healthCheck, address)
+}
+
+// InitializeWithContext sets up Prometheus to expose metrics & (optionally) health-check and profiling on the given address.
+// The server will shut down gracefully when the context is canceled.
+func InitializeWithContext(ctx context.Context, enableProfiling *bool, healthCheck *metrics.HealthCheck, address *string) {
 	go func() {
 		mux := http.NewServeMux()
 
@@ -45,8 +52,23 @@ func Initialize(enableProfiling *bool, healthCheck *metrics.HealthCheck, address
 			mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 		}
 
-		err := http.ListenAndServe(*address, mux)
-		klog.ErrorS(err, "Failed to start metrics")
-		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		server := &http.Server{
+			Addr:    *address,
+			Handler: mux,
+		}
+
+		// Start server shutdown when context is canceled
+		go func() {
+			<-ctx.Done()
+			if err := server.Shutdown(context.Background()); err != nil {
+				klog.ErrorS(err, "Failed to shutdown metrics server")
+			}
+		}()
+
+		err := server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			klog.ErrorS(err, "Failed to start metrics")
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
 	}()
 }
