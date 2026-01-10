@@ -257,7 +257,7 @@ func (vpa *Vpa) UpdateConditions(podsMatched bool) {
 	reason := ""
 	msg := ""
 	if podsMatched {
-		delete(vpa.Conditions, vpa_types.NoPodsMatched)
+		vpa.Conditions.Set(vpa_types.NoPodsMatched, false, "Cleared", "Matching pods detected")
 	} else {
 		reason = "NoPodsMatched"
 		msg = "No pods match this VPA object"
