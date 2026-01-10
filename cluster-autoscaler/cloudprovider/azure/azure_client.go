@@ -19,6 +19,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -50,6 +51,19 @@ import (
 )
 
 //go:generate sh -c "mockgen -source=azure_client.go -destination azure_mock_agentpool_client.go -package azure -exclude_interfaces DeploymentsClient"
+
+// targetServicePolicy is a custom policy that adds the X-Target-Service header to requests
+type targetServicePolicy struct {
+	headerValue string
+}
+
+// Do implements the azurecore_policy.Policy interface
+func (p *targetServicePolicy) Do(req *azurecore_policy.Request) (*http.Response, error) {
+	if p.headerValue != "" {
+		req.Raw().Header.Set("X-Target-Service", p.headerValue)
+	}
+	return req.Next()
+}
 
 const (
 	vmsContextTimeout      = 5 * time.Minute
@@ -150,31 +164,40 @@ func newAgentpoolClient(cfg *Config) (AgentPoolsClient, error) {
 
 	if cfg.ARMBaseURLForAPClient != "" {
 		klog.V(10).Infof("Using ARMBaseURLForAPClient to create agent pool client")
-		return newAgentpoolClientWithConfig(cfg.SubscriptionID, cred, cfg.ARMBaseURLForAPClient, env.TokenAudience, retryOptions, true /*insecureAllowCredentialWithHTTP*/)
+		return newAgentpoolClientWithConfig(cfg.SubscriptionID, cred, cfg.ARMBaseURLForAPClient, env.TokenAudience, retryOptions, true /*insecureAllowCredentialWithHTTP*/, cfg.TargetServiceForAPClient)
 	}
 
-	return newAgentpoolClientWithConfig(cfg.SubscriptionID, cred, env.ResourceManagerEndpoint, env.TokenAudience, retryOptions, false /*insecureAllowCredentialWithHTTP*/)
+	return newAgentpoolClientWithConfig(cfg.SubscriptionID, cred, env.ResourceManagerEndpoint, env.TokenAudience, retryOptions, false /*insecureAllowCredentialWithHTTP*/, cfg.TargetServiceForAPClient)
 }
 
 func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCredential,
-	cloudCfgEndpoint, cloudCfgAudience string, retryOptions azurecore_policy.RetryOptions, insecureAllowCredentialWithHTTP bool) (AgentPoolsClient, error) {
-	agentPoolsClient, err := armcontainerservice.NewAgentPoolsClient(subscriptionID, cred,
-		&policy.ClientOptions{
-			ClientOptions: azurecore_policy.ClientOptions{
-				Cloud: cloud.Configuration{
-					Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
-						cloud.ResourceManager: {
-							Endpoint: cloudCfgEndpoint,
-							Audience: cloudCfgAudience,
-						},
+	cloudCfgEndpoint, cloudCfgAudience string, retryOptions azurecore_policy.RetryOptions, insecureAllowCredentialWithHTTP bool, targetServiceForAPClient string) (AgentPoolsClient, error) {
+
+	clientOpts := &policy.ClientOptions{
+		ClientOptions: azurecore_policy.ClientOptions{
+			Cloud: cloud.Configuration{
+				Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+					cloud.ResourceManager: {
+						Endpoint: cloudCfgEndpoint,
+						Audience: cloudCfgAudience,
 					},
 				},
-				InsecureAllowCredentialWithHTTP: insecureAllowCredentialWithHTTP,
-				Telemetry:                       azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
-				Transport:                       azextensions.DefaultHTTPClient(),
-				Retry:                           retryOptions,
 			},
-		})
+			InsecureAllowCredentialWithHTTP: insecureAllowCredentialWithHTTP,
+			Telemetry:                       azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
+			Transport:                       azextensions.DefaultHTTPClient(),
+			Retry:                           retryOptions,
+		},
+	}
+
+	// Add custom policy to set X-Target-Service header if targetServiceForAPClient is provided
+	if targetServiceForAPClient != "" {
+		clientOpts.PerCallPolicies = []azurecore_policy.Policy{
+			&targetServicePolicy{headerValue: targetServiceForAPClient},
+		}
+	}
+
+	agentPoolsClient, err := armcontainerservice.NewAgentPoolsClient(subscriptionID, cred, clientOpts)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to init cluster agent pools client: %w", err)
