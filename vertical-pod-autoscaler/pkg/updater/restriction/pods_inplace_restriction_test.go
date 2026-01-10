@@ -270,7 +270,7 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10 /*minReplicas*/, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -315,7 +315,7 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)

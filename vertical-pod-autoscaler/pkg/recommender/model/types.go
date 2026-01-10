@@ -166,6 +166,7 @@ func resourceAmountFromFloat(amount float64) ResourceAmount {
 
 // HumanizeMemoryQuantity converts raw bytes to human-readable string using binary units (KiB, MiB, GiB, TiB) with two decimal places.
 func HumanizeMemoryQuantity(bytes int64) string {
+	//nolint:revive // local unit constants use conventional KiB/MiB/GiB/TiB names
 	const (
 		KiB = 1024
 		MiB = 1024 * KiB
