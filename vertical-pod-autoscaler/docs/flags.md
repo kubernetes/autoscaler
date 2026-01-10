@@ -146,7 +146,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `add-dir-header` |  |  | If true, adds the file directory to the header of the log messages |
 | `address` | string |  ":8943" | The address to expose Prometheus metrics.  |
 | `alsologtostderr` |  |  | log to standard error as well as files (no effect when -logtostderr=true) |
-| `evict-after-oom-threshold` |  |  10m0s | duration                              Evict pod that has OOMed in less than evict-after-oom-threshold since start.  |
+| `evict-after-oom-threshold` |  |  10m0s | duration                              The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.  |
 | `eviction-rate-burst` | int |  1 | Burst of pods that can be evicted.  |
 | `eviction-rate-limit` | float |  | Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable<br>the rate limiter. (default -1) |
 | `eviction-tolerance` | float |  0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted.  |
@@ -180,4 +180,3 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `v,` |  | : 4 | , --v Level                                                         set the log level verbosity  (default 4) |
 | `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
 | `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
-
