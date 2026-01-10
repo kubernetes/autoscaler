@@ -94,7 +94,7 @@ func TestEvictionTolerance(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance, nil, nil, nil)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, nil, nil, nil)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)

@@ -46,10 +46,10 @@ func TestPercentileEstimator(t *testing.T) {
 	memoryPeaksHistogram.AddSample(2e9, 1.0, anyTime)
 	memoryPeaksHistogram.AddSample(3e9, 1.0, anyTime)
 	// Create an estimator.
-	CPUPercentile := 0.2
-	MemoryPercentile := 0.5
-	cpuEstimator := NewPercentileCPUEstimator(CPUPercentile)
-	memoryEstimator := NewPercentileMemoryEstimator(MemoryPercentile)
+	cpuPercentile := 0.2
+	memoryPercentile := 0.5
+	cpuEstimator := NewPercentileCPUEstimator(cpuPercentile)
+	memoryEstimator := NewPercentileMemoryEstimator(memoryPercentile)
 	combinedEstimator := NewCombinedEstimator(cpuEstimator, memoryEstimator)
 
 	resourceEstimation := combinedEstimator.GetResourceEstimation(
