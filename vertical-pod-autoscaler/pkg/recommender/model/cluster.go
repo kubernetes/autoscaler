@@ -46,7 +46,7 @@ type ClusterState interface {
 	AddOrUpdatePod(podID PodID, newLabels labels.Set, phase apiv1.PodPhase)
 	GetContainer(containerID ContainerID) *ContainerState
 	DeletePod(podID PodID)
-	AddOrUpdateContainer(containerID ContainerID, request Resources) error
+	AddOrUpdateContainer(containerID ContainerID, request Resources, containerType ContainerType) error
 	AddSample(sample *ContainerUsageSampleWithKey) error
 	RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error
 	AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler, selector labels.Selector) error
@@ -120,6 +120,8 @@ type PodState struct {
 	labelSetKey labelSetKey
 	// Containers that belong to the Pod, keyed by the container name.
 	Containers map[string]*ContainerState
+	// InitSidecarsContainers that belong to the Pod, keyed by the container name.
+	InitSidecarsContainers map[string]*ContainerState
 	// InitContainers is a list of init containers names which belong to the Pod.
 	InitContainers []string
 	// PodPhase describing current life cycle phase of the Pod.
@@ -170,7 +172,10 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
-
+		for containerName, container := range pod.InitSidecarsContainers {
+			containerID := ContainerID{PodID: podID, ContainerName: containerName}
+			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
+		}
 		cluster.addPodToItsVpa(pod)
 	}
 	pod.Phase = phase
@@ -204,6 +209,10 @@ func (cluster *clusterState) GetContainer(containerID ContainerID) *ContainerSta
 		if containerExists {
 			return container
 		}
+		container, containerExists = pod.InitSidecarsContainers[containerID.ContainerName]
+		if containerExists {
+			return container
+		}
 	}
 	return nil
 }
@@ -221,14 +230,27 @@ func (cluster *clusterState) DeletePod(podID PodID) {
 // adds it to the parent pod in the clusterState object, if not yet present.
 // Requires the pod to be added to the clusterState first. Otherwise an error is
 // returned.
-func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, request Resources) error {
+// TODO maybe make this take in the containerspec since it has all this info?
+func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, request Resources, containerType ContainerType) error {
+
 	pod, podExists := cluster.pods[containerID.PodID]
 	if !podExists {
 		return NewKeyError(containerID.PodID)
 	}
-	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
+
+	if containerType == ContainerTypeInit {
+		pod.InitContainers = append(pod.InitContainers, containerID.ContainerName)
+		return nil
+	}
+
+	containerStateMap := pod.Containers
+	if containerType == ContainerTypeInitSidecar {
+		containerStateMap = pod.InitSidecarsContainers
+	}
+
+	if container, containerExists := containerStateMap[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
-		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		containerStateMap[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
@@ -246,7 +268,11 @@ func (cluster *clusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 	}
 	containerState, containerExists := pod.Containers[sample.Container.ContainerName]
 	if !containerExists {
-		return NewKeyError(sample.Container)
+		// check if the container exists as a sidecar
+		containerState, containerExists = pod.InitSidecarsContainers[sample.Container.ContainerName]
+		if !containerExists {
+			return NewKeyError(sample.Container)
+		}
 	}
 	if !containerState.AddSample(&sample.ContainerUsageSample) {
 		return fmt.Errorf("sample discarded (invalid or out of order)")
@@ -262,7 +288,10 @@ func (cluster *clusterState) RecordOOM(containerID ContainerID, timestamp time.T
 	}
 	containerState, containerExists := pod.Containers[containerID.ContainerName]
 	if !containerExists {
-		return NewKeyError(containerID.ContainerName)
+		containerState, containerExists = pod.InitSidecarsContainers[containerID.ContainerName]
+		if !containerExists {
+			return NewKeyError(containerID.ContainerName)
+		}
 	}
 	err := containerState.RecordOOM(timestamp, requestedMemory)
 	if err != nil {
@@ -348,8 +377,9 @@ func (cluster *clusterState) ObservedVPAs() []*vpa_types.VerticalPodAutoscaler {
 
 func newPod(id PodID) *PodState {
 	return &PodState{
-		ID:         id,
-		Containers: make(map[string]*ContainerState),
+		ID:                     id,
+		Containers:             make(map[string]*ContainerState),
+		InitSidecarsContainers: make(map[string]*ContainerState),
 	}
 }
 

@@ -39,6 +39,22 @@ type BasicPodSpec struct {
 	Phase v1.PodPhase
 }
 
+// GetContainerSpec is a quick way to get container specs
+func (p *BasicPodSpec) GetContainerSpec(name string) *BasicContainerSpec {
+	for _, container := range p.Containers {
+		if container.ID.ContainerName == name {
+			return &container
+		}
+	}
+	for _, initContainer := range p.InitContainers {
+		if initContainer.ID.ContainerName == name {
+			return &initContainer
+		}
+	}
+
+	return nil
+}
+
 // BasicContainerSpec contains basic information defining a container.
 type BasicContainerSpec struct {
 	// ID identifies the container within a cluster.
@@ -47,6 +63,8 @@ type BasicContainerSpec struct {
 	Image string
 	// Currently requested resources for this container.
 	Request model.Resources
+	// Type of the container (e.g. main, init, init_sidecar)
+	ContainerType model.ContainerType
 }
 
 // SpecClient provides information about pods and containers Specification
@@ -94,33 +112,39 @@ func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
 	}
 	return basicPodSpec
 }
-
 func newContainerSpecs(pod *v1.Pod, containers []v1.Container, isInitContainer bool) []BasicContainerSpec {
 	var containerSpecs []BasicContainerSpec
 	for _, container := range containers {
-		containerSpec := newContainerSpec(pod, container, isInitContainer)
+		var containerType model.ContainerType
+		if !isInitContainer {
+			containerType = model.ContainerTypeStandard
+		} else if container.RestartPolicy != nil && *container.RestartPolicy == v1.ContainerRestartPolicyAlways {
+			containerType = model.ContainerTypeInitSidecar
+		} else {
+			containerType = model.ContainerTypeInit
+		}
+
+		containerSpec := newContainerSpec(pod, container, containerType)
 		containerSpecs = append(containerSpecs, containerSpec)
 	}
 	return containerSpecs
 }
 
-func newContainerSpec(pod *v1.Pod, container v1.Container, isInitContainer bool) BasicContainerSpec {
+func newContainerSpec(pod *v1.Pod, container v1.Container, containerType model.ContainerType) BasicContainerSpec {
 	containerSpec := BasicContainerSpec{
 		ID: model.ContainerID{
 			PodID:         podID(pod),
 			ContainerName: container.Name,
 		},
-		Image:   container.Image,
-		Request: calculateRequestedResources(pod, container, isInitContainer),
+		Image:         container.Image,
+		Request:       calculateRequestedResources(pod, container),
+		ContainerType: containerType,
 	}
 	return containerSpec
 }
 
-func calculateRequestedResources(pod *v1.Pod, container v1.Container, isInitContainer bool) model.Resources {
+func calculateRequestedResources(pod *v1.Pod, container v1.Container) model.Resources {
 	requestsAndLimitsFn := resourcehelpers.ContainerRequestsAndLimits
-	if isInitContainer {
-		requestsAndLimitsFn = resourcehelpers.InitContainerRequestsAndLimits
-	}
 	requests, _ := requestsAndLimitsFn(container.Name, pod)
 
 	cpuQuantity := requests[v1.ResourceCPU]
@@ -133,7 +157,6 @@ func calculateRequestedResources(pod *v1.Pod, container v1.Container, isInitCont
 		model.ResourceCPU:    model.ResourceAmount(cpuMillicores),
 		model.ResourceMemory: model.ResourceAmount(memoryBytes),
 	}
-
 }
 
 func podID(pod *v1.Pod) model.PodID {
