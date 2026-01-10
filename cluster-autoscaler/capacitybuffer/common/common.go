@@ -45,15 +45,14 @@ func SetBufferAsReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *
 		Type:               ReadyForProvisioningCondition,
 		Status:             ConditionTrue,
 		Message:            "ready",
-		Reason:             "atrtibutesSetSuccessfully",
+		Reason:             "attributesSetSuccessfully",
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 	}
 	buffer.Status.Conditions = []metav1.Condition{readyCondition}
 }
 
 // SetBufferAsNotReadyForProvisioning updates the passed buffer object with the rest of the attributes and sets its condition to not ready with the passed error
-func SetBufferAsNotReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *v1.LocalObjectRef, podTemplateGeneration *int64, replicas *int32, provStrategy *string, err error) {
-	errorMessage := "Buffer not ready for provisioing"
+func SetBufferAsNotReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *v1.LocalObjectRef, podTemplateGeneration *int64, replicas *int32, provStrategy *string, err error) {	errorMessage := "Buffer not ready for provisioning"
 	if err != nil {
 		errorMessage = err.Error()
 	}
@@ -80,8 +79,8 @@ func mapEmptyProvStrategyToDefault(ps *string) *string {
 	return ps
 }
 
-// UpdateBufferStatusToFailedProvisioing updates the status of the passed buffer and set Provisioning to false with the passes reason and message
-func UpdateBufferStatusToFailedProvisioing(buffer *v1.CapacityBuffer, reason, errorMessage string) {
+// UpdateBufferStatusToFailedProvisioning updates the status of the passed buffer and set Provisioning to false with the passed reason and message
+func UpdateBufferStatusToFailedProvisioning(buffer *v1.CapacityBuffer, reason, errorMessage string) {
 	buffer.Status.Conditions = []metav1.Condition{{
 		Type:               ProvisioningCondition,
 		Status:             ConditionFalse,
@@ -91,8 +90,8 @@ func UpdateBufferStatusToFailedProvisioing(buffer *v1.CapacityBuffer, reason, er
 	}}
 }
 
-// UpdateBufferStatusToSuccessfullyProvisioing updates the status of the passed buffer and set Provisioning to true with the passes reason
-func UpdateBufferStatusToSuccessfullyProvisioing(buffer *v1.CapacityBuffer, reason string) {
+// UpdateBufferStatusToSuccessfullyProvisioning updates the status of the passed buffer and set Provisioning to true with the passed reason
+func UpdateBufferStatusToSuccessfullyProvisioning(buffer *v1.CapacityBuffer, reason string) {
 	buffer.Status.Conditions = []metav1.Condition{{
 		Type:               ProvisioningCondition,
 		Status:             ConditionTrue,
