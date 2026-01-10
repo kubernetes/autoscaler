@@ -48,6 +48,7 @@ type estimationState struct {
 	newNodeNameIndex int
 	lastNodeName     string
 	newNodeNames     map[string]bool
+	// map of node name that has at least one pod scheduled on it
 	newNodesWithPods map[string]bool
 }
 
@@ -253,6 +254,7 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	if err != nil {
 		return err
 	}
+
 	if err := e.clusterSnapshot.AddNodeInfo(newNodeInfo); err != nil {
 		return err
 	}

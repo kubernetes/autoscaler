@@ -27,6 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -357,6 +358,25 @@ func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64) *apiv
 	}
 
 	return node
+}
+
+// BuildCSINode returns a CSINode object given a node object
+func BuildCSINode(node *apiv1.Node) *storagev1.CSINode {
+	return &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: node.Name,
+			UID:  types.UID("csi-node" + node.UID),
+		},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{
+				{
+					Name:         "ebs.csi.aws.com",
+					NodeID:       string(node.UID),
+					TopologyKeys: []string{"topology.ebs.csi.aws.com/zone"},
+				},
+			},
+		},
+	}
 }
 
 // WithSchedulingGatedStatus upserts the condition with type PodScheduled to be of status false

@@ -252,7 +252,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Could not create autoscaling context: %v", err)
 			}
-			if err := autoscalingCtx.ClusterSnapshot.SetClusterState(tc.nodes, tc.pods, tc.draSnapshot); err != nil {
+			if err := autoscalingCtx.ClusterSnapshot.SetClusterState(tc.nodes, tc.pods, tc.draSnapshot, nil); err != nil {
 				t.Fatalf("Could not SetClusterState: %v", err)
 			}
 			unremovableNodes := unremovable.NewNodes()

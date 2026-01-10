@@ -29,6 +29,7 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -59,4 +60,5 @@ type AutoscalerOptions struct {
 	DrainabilityRules      rules.Rules
 	DraProvider            *draprovider.Provider
 	QuotasTrackerOptions   resourcequotas.TrackerOptions
+	CSIProvider            *csinodeprovider.Provider
 }

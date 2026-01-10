@@ -42,7 +42,7 @@ type Handle struct {
 }
 
 // NewHandle builds a framework Handle based on the provided informers and scheduler config.
-func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool) (*Handle, error) {
+func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool) (*Handle, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = schedulerconfiglatest.Default()
@@ -64,7 +64,14 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 	if draEnabled {
 		opts = append(opts, schedulerframeworkruntime.WithSharedDRAManager(sharedLister))
 	}
-
+	// TODO: We should always use sharedLister once this CSINode aware changes in CAS are
+	// enabled by default.
+	if csiEnabled {
+		opts = append(opts, schedulerframeworkruntime.WithSharedCSIManager(sharedLister))
+	} else {
+		sharedCSIManager := nodevolumelimits.NewCSIManager(informerFactory.Storage().V1().CSINodes().Lister())
+		opts = append(opts, schedulerframeworkruntime.WithSharedCSIManager(sharedCSIManager))
+	}
 	initMetricsOnce.Do(func() {
 		schedulermetrics.InitMetrics()
 	})

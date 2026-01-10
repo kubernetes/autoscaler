@@ -133,6 +133,7 @@ func TestSnapshotClaimTrackerGet(t *testing.T) {
 			}
 			snapshot := NewSnapshot(claims, nil, nil, nil)
 			var resourceClaimTracker fwk.ResourceClaimTracker = snapshot.ResourceClaims()
+
 			claim, err := resourceClaimTracker.Get(tc.claimNamespace, tc.claimName)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("snapshotClaimTracker.Get(): unexpected error (-want +got): %s", diff)

@@ -38,7 +38,7 @@ func InitializeClusterSnapshotOrDie(
 	pods []*apiv1.Pod) {
 	var err error
 
-	assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
+	assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil))
 
 	for _, node := range nodes {
 		err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
