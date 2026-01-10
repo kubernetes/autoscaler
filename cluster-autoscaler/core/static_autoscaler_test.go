@@ -2838,6 +2838,8 @@ func TestFilterOutYoungPods(t *testing.T) {
 	p4.Annotations = map[string]string{
 		annotations.PodScaleUpDelayAnnotationKey: "error",
 	}
+	p5 := BuildTestPod("p5", 500, 1000)
+	p5.CreationTimestamp = metav1.NewTime(now)
 
 	tests := []struct {
 		name               string
@@ -2883,6 +2885,20 @@ func TestFilterOutYoungPods(t *testing.T) {
 			pods:               []*apiv1.Pod{p1, p4},
 			expectedPods:       []*apiv1.Pod{p1, p4},
 			expectedError:      "Failed to parse pod",
+		},
+		{
+			name:               "future pods included when podScaleUpDelay is 0",
+			newPodScaleUpDelay: 0,
+			runTime:            now,
+			pods:               []*apiv1.Pod{p1, p5},
+			expectedPods:       []*apiv1.Pod{p1, p5},
+		},
+		{
+			name:               "future pods excluded when podScaleUpDelay is above 0",
+			newPodScaleUpDelay: 1 * time.Second,
+			runTime:            now,
+			pods:               []*apiv1.Pod{p1, p5},
+			expectedPods:       []*apiv1.Pod{p1},
 		},
 	}
 
