@@ -102,14 +102,14 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 			klog.Fatal(err2)
 		}
 	}
-	RegisterClientConfig := admissionregistration.WebhookClientConfig{}
+	registerClientConfig := admissionregistration.WebhookClientConfig{}
 	if !registerByURL {
-		RegisterClientConfig.Service = &admissionregistration.ServiceReference{
+		registerClientConfig.Service = &admissionregistration.ServiceReference{
 			Namespace: namespace,
 			Name:      serviceName,
 		}
 	} else {
-		RegisterClientConfig.URL = &url
+		registerClientConfig.URL = &url
 	}
 	sideEffects := admissionregistration.SideEffectClassNone
 
@@ -120,7 +120,7 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 		failurePolicy = admissionregistration.Ignore
 	}
 
-	RegisterClientConfig.CABundle = caCert
+	registerClientConfig.CABundle = caCert
 
 	var namespaceSelector metav1.LabelSelector
 	if len(ignoredNamespaces) > 0 {
@@ -177,7 +177,7 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 					},
 				},
 				FailurePolicy:     &failurePolicy,
-				ClientConfig:      RegisterClientConfig,
+				ClientConfig:      registerClientConfig,
 				SideEffects:       &sideEffects,
 				TimeoutSeconds:    &timeoutSeconds,
 				NamespaceSelector: &namespaceSelector,
