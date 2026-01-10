@@ -630,6 +630,9 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 // GetNodePoolForInstance returns NodePool to which the given instance belongs.
 func (m *ociManagerImpl) GetNodePoolForInstance(instance ocicommon.OciRef) (NodePool, error) {
+	if strings.Contains(instance.InstanceID, npconsts.OciVirtualNodeResourceIdent) {
+		return nil, nil
+	}
 	if instance.NodePoolID == "" {
 		klog.V(4).Infof("node pool id missing from reference: %+v", instance)
 
