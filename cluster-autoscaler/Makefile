@@ -138,4 +138,27 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 test-in-docker: clean docker-builder
 	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
 
-.PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
+.PHONY: docker-build-e2e
+docker-build-e2e:
+	docker build --build-arg GOARCH=$(GOARCH) -t $(IMAGE):$(TAG) .
+
+.PHONY: setup-test-e2e
+setup-test-e2e:
+	@command -v kind >/dev/null 2>&1 || { echo "Kind is not installed. Please install Kind manually."; exit 1; }
+	@if [ -z "$$(kind get clusters | grep api-test-e2e)" ]; then \
+		echo "Creating Kind cluster 'api-test-e2e'..."; \
+		kind create cluster --name api-test-e2e --config test/e2e/kind-cluster.yaml; \
+	else \
+		echo "Kind cluster 'api-test-e2e' already exists. Skipping creation."; \
+	fi
+
+.PHONY: test-e2e
+test-e2e: setup-test-e2e
+	KIND_CLUSTER=api-test-e2e go test ./test/e2e/ -v -ginkgo.v
+	$(MAKE) cleanup-test-e2e
+
+.PHONY: cleanup-test-e2e
+cleanup-test-e2e:
+	@kind delete cluster --name api-test-e2e
+
+.PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest docker-build-e2e setup-test-e2e test-e2e cleanup-test-e2e
