@@ -133,19 +133,21 @@ func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *reso
 	originalMilli := big.NewInt(scaledQuantity.MilliValue())
 	scaleBaseMilli := big.NewInt(scaleBase.MilliValue())
 	scaleResultMilli := big.NewInt(scaleResult.MilliValue())
-	var scaledOriginal big.Int
-	scaledOriginal.Mul(originalMilli, scaleResultMilli)
-	scaledOriginal.Div(&scaledOriginal, scaleBaseMilli)
-	if scaledOriginal.IsInt64() {
-		result := resource.NewMilliQuantity(scaledOriginal.Int64(), scaledQuantity.Format)
-		if rounding == roundUpToFullUnit {
-			result.RoundUp(resource.Scale(0))
+
+	var result big.Int
+	result.Mul(originalMilli, scaleResultMilli)
+	// If the division produces a remainder:
+	// - with roundUpToFullUnit, we apply ceiling to the value
+	// - with noRounding or roundDownToFullUnit, we apply floor to the value
+	// TODO(iamzili) - I think we eventually want to get rid of the noRounding mode.
+	quotient := new(big.Int)
+	remainder := new(big.Int)
+	quotient.DivMod(&result, scaleBaseMilli, remainder)
+	if quotient.IsInt64() {
+		if remainder.Sign() != 0 && rounding == roundUpToFullUnit {
+			quotient.Add(quotient, big.NewInt(1))
 		}
-		if rounding == roundDownToFullUnit {
-			result.Sub(*resource.NewMilliQuantity(999, result.Format))
-			result.RoundUp(resource.Scale(0))
-		}
-		return result, false
+		return resource.NewMilliQuantity(quotient.Int64(), scaledQuantity.Format), false
 	}
 	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), true
 }
