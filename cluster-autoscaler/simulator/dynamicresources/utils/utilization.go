@@ -21,6 +21,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/utils/ptr"
 )
@@ -44,7 +45,7 @@ func CalculateDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (map[stri
 			poolDevices := getAllDevices(currentSlices)
 			allocatedDeviceNames := allocatedDevices[driverName][poolName]
 			unallocated, allocated := splitDevicesByAllocation(poolDevices, allocatedDeviceNames)
-			result[driverName][poolName] = calculatePoolUtil(unallocated, allocated)
+			result[driverName][poolName] = calculatePoolUtil(unallocated, allocated, currentSlices)
 		}
 	}
 	return result, nil
@@ -70,10 +71,146 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 	return highestResourceName, highestUtil, nil
 }
 
-func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
-	numAllocated := float64(len(allocated))
-	numUnallocated := float64(len(unallocated))
-	return numAllocated / (numAllocated + numUnallocated)
+// calculatePoolUtil calculates the utilization of a ResourceSlice pool, accounting for both partitionable (shared counter) and atomic (non-partitionable) devices.
+// The calculation is comprised of steps:
+//
+//  1. Partitionable (Shared) Utilization:
+//     Identifies the single highest utilization ratio across all shared counters
+//     in the entire pool. This ratio represents the most constrained resource within the pool.
+//     For example, if a GPU pool has shared counters for memory and compute cycles, and the memory's shared counter is at 80% utilization, and the compute cycles' counter is at 50%,
+//     the partitionable utilization for the pool would be 80%.
+//
+//  2. Atomic (Non-partitionable) Utilization:
+//     Calculated as the simple ratio of allocated devices to total devices for all devices
+//     that do not support shared counters.
+//
+//  3. Final Weighted Average:
+//     The result is a weighted average of the two types based on their population count in the pool.
+//     This ensures that in mixed pools, the fullness of one resource type doesn't disproportionately
+//     mask or amplify the state of the other.
+//
+// Example (3 total devices: 2 atomic, 1 partitionable):
+//   - 2 atomic allocated, partitionable at 0% util:
+//     Result: (1.0 * 2/3) + (0.0 * 1/3) = 66.6%
+//   - 0 atomic allocated, partitionable at 100% util:
+//     Result: (0.0 * 2/3) + (1.0 * 1/3) = 33.3%
+//   - 1 atomic allocated, partitionable at 50% util:
+//     Result: (0.5 * 2/3) + (0.5 * 1/3) = 50%
+func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
+	totalConsumedCounters := map[string]map[string]resource.Quantity{}
+	for _, resourceSlice := range resourceSlices {
+		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
+			if _, ok := totalConsumedCounters[sharedCounter.Name]; !ok {
+				totalConsumedCounters[sharedCounter.Name] = map[string]resource.Quantity{}
+			}
+			for counter, value := range sharedCounter.Counters {
+				if _, ok := totalConsumedCounters[sharedCounter.Name][counter]; !ok {
+					totalConsumedCounters[sharedCounter.Name][counter] = resource.Quantity{}
+				}
+				v := totalConsumedCounters[sharedCounter.Name][counter]
+				v.Add(value.Value)
+				totalConsumedCounters[sharedCounter.Name][counter] = v
+			}
+		}
+	}
+	allocatedConsumedCounters := calculateConsumedCounters(allocated)
+
+	// not all devices are partitionable, so fallback to the ratio of non-partionable devices
+	allocatedDevicesWithoutCounters := 0
+	devicesWithoutCounters := 0
+
+	for _, device := range allocated {
+		if device.ConsumesCounters == nil {
+			devicesWithoutCounters++
+			allocatedDevicesWithoutCounters++
+		}
+	}
+	for _, device := range unallocated {
+		if device.ConsumesCounters == nil {
+			devicesWithoutCounters++
+		}
+	}
+
+	// we want to find the counter that is most utilized, since it is the "bottleneck" of the pool
+	var partitionableUtilization float64 = 0
+	var atomicDevicesUtilization float64 = 0
+	if devicesWithoutCounters != 0 {
+		atomicDevicesUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
+	}
+	if len(totalConsumedCounters) == 0 {
+		return atomicDevicesUtilization
+	}
+	for counterSet, counters := range totalConsumedCounters {
+		for counterName, totalValue := range counters {
+			if totalValue.IsZero() {
+				continue
+			}
+			if allocatedSet, exists := allocatedConsumedCounters[counterSet]; exists {
+				if allocatedValue, exists := allocatedSet[counterName]; exists {
+					utilization := float64(allocatedValue.Value()) / float64(totalValue.Value())
+					if utilization > partitionableUtilization {
+						partitionableUtilization = utilization
+					}
+				}
+			}
+		}
+	}
+	var uniquePartitionableDevicesCount float64 = float64(getUniquePartitionableDevicesCount(allocated))
+	var totalUniqueDevices float64 = uniquePartitionableDevicesCount + float64(devicesWithoutCounters)
+	var partitionableDevicesUtilizationWeight float64 = uniquePartitionableDevicesCount / totalUniqueDevices
+	var nonPartitionableDevicesUtilizationWeight float64 = 1 - partitionableDevicesUtilizationWeight
+	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive (a partitionable device can't be allocated as an atomic device and vice versa).
+	return partitionableUtilization*partitionableDevicesUtilizationWeight + atomicDevicesUtilization*nonPartitionableDevicesUtilizationWeight
+}
+
+// calculateConsumedCounters calculates the total counters consumed by a list of devices
+func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[string]resource.Quantity {
+	countersConsumed := map[string]map[string]resource.Quantity{}
+	for _, device := range devices {
+		if device.ConsumesCounters == nil {
+			continue
+		}
+		for _, consumedCounter := range device.ConsumesCounters {
+			if _, ok := countersConsumed[consumedCounter.CounterSet]; !ok {
+				countersConsumed[consumedCounter.CounterSet] = map[string]resource.Quantity{}
+			}
+			for counter, value := range consumedCounter.Counters {
+				if _, ok := countersConsumed[consumedCounter.CounterSet][counter]; !ok {
+					countersConsumed[consumedCounter.CounterSet][counter] = resource.Quantity{}
+				}
+				v := countersConsumed[consumedCounter.CounterSet][counter]
+				v.Add(value.Value)
+				countersConsumed[consumedCounter.CounterSet][counter] = v
+			}
+		}
+	}
+	return countersConsumed
+}
+
+// getUniquePartitionableDevicesCount returns the count of unique partitionable devices in the provided list.
+// a partitionable device can be represented by multiple devices with different names and properties, and for utilization purposes we'd like to count the hardware and not the software.
+func getUniquePartitionableDevicesCount(devices []resourceapi.Device) int {
+	var deviceCount int = 0
+	var counted bool
+	consumedCounters := map[string]bool{}
+	for _, device := range devices {
+		// the assumption here is that a partitionable device will consume the actual resources from the hardware, which will be represented by consumedCounters.
+		// if a device consumes multiple counters of the same device, we count them both at the same time in order to not "overcount" devices with multiple counters, the assumption here is that a device will always consume some of every resource in a device. (f.e. a GPU DRA request cannot use VRAM without using GPU cycles and vice versa)
+		if device.ConsumesCounters != nil {
+			counted = false
+			for _, consumedCounter := range device.ConsumesCounters {
+				if _, exists := consumedCounters[consumedCounter.CounterSet]; !exists {
+					consumedCounters[consumedCounter.CounterSet] = true
+				} else {
+					counted = true
+				}
+			}
+			if !counted {
+				deviceCount++
+			}
+		}
+	}
+	return deviceCount
 }
 
 func splitDevicesByAllocation(devices []resourceapi.Device, allocatedNames []string) (unallocated, allocated []resourceapi.Device) {
