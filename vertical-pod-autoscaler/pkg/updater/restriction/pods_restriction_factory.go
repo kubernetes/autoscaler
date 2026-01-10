@@ -64,20 +64,21 @@ type PodsRestrictionFactory interface {
 
 // PodsRestrictionFactoryImpl is the implementation of the PodsRestrictionFactory interface.
 type PodsRestrictionFactoryImpl struct {
-	client                    kube_client.Interface
-	rcInformer                cache.SharedIndexInformer // informer for Replication Controllers
-	ssInformer                cache.SharedIndexInformer // informer for Stateful Sets
-	rsInformer                cache.SharedIndexInformer // informer for Replica Sets
-	dsInformer                cache.SharedIndexInformer // informer for Daemon Sets
-	minReplicas               int
-	evictionToleranceFraction float64
-	clock                     clock.Clock
-	lastInPlaceAttemptTimeMap map[string]time.Time
-	patchCalculators          []patch.Calculator
+	client                      kube_client.Interface
+	rcInformer                  cache.SharedIndexInformer // informer for Replication Controllers
+	ssInformer                  cache.SharedIndexInformer // informer for Stateful Sets
+	rsInformer                  cache.SharedIndexInformer // informer for Replica Sets
+	dsInformer                  cache.SharedIndexInformer // informer for Daemon Sets
+	minReplicas                 int
+	evictionToleranceFraction   float64
+	clock                       clock.Clock
+	lastInPlaceAttemptTimeMap   map[string]time.Time
+	patchCalculators            []patch.Calculator
+	inPlaceSkipDisruptionBudget bool
 }
 
 // NewPodsRestrictionFactory creates a new PodsRestrictionFactory.
-func NewPodsRestrictionFactory(client kube_client.Interface, minReplicas int, evictionToleranceFraction float64, patchCalculators []patch.Calculator) (PodsRestrictionFactory, error) {
+func NewPodsRestrictionFactory(client kube_client.Interface, minReplicas int, evictionToleranceFraction float64, patchCalculators []patch.Calculator, inPlaceSkipDisruptionBudget bool) (PodsRestrictionFactory, error) {
 	rcInformer, err := setupInformer(client, replicationController)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rcInformer: %v", err)
@@ -95,16 +96,17 @@ func NewPodsRestrictionFactory(client kube_client.Interface, minReplicas int, ev
 		return nil, fmt.Errorf("failed to create dsInformer: %v", err)
 	}
 	return &PodsRestrictionFactoryImpl{
-		client:                    client,
-		rcInformer:                rcInformer, // informer for Replication Controllers
-		ssInformer:                ssInformer, // informer for Stateful Sets
-		rsInformer:                rsInformer, // informer for Replica Sets
-		dsInformer:                dsInformer, // informer for Daemon Sets
-		minReplicas:               minReplicas,
-		evictionToleranceFraction: evictionToleranceFraction,
-		clock:                     &clock.RealClock{},
-		lastInPlaceAttemptTimeMap: make(map[string]time.Time),
-		patchCalculators:          patchCalculators,
+		client:                      client,
+		rcInformer:                  rcInformer, // informer for Replication Controllers
+		ssInformer:                  ssInformer, // informer for Stateful Sets
+		rsInformer:                  rsInformer, // informer for Replica Sets
+		dsInformer:                  dsInformer, // informer for Daemon Sets
+		minReplicas:                 minReplicas,
+		evictionToleranceFraction:   evictionToleranceFraction,
+		clock:                       &clock.RealClock{},
+		lastInPlaceAttemptTimeMap:   make(map[string]time.Time),
+		patchCalculators:            patchCalculators,
+		inPlaceSkipDisruptionBudget: inPlaceSkipDisruptionBudget,
 	}, nil
 }
 
@@ -265,6 +267,7 @@ func (f *PodsRestrictionFactoryImpl) NewPodsInPlaceRestriction(creatorToSingleGr
 		clock:                        f.clock,
 		lastInPlaceAttemptTimeMap:    f.lastInPlaceAttemptTimeMap,
 		patchCalculators:             f.patchCalculators,
+		inPlaceSkipDisruptionBudget:  f.inPlaceSkipDisruptionBudget,
 	}
 }
 

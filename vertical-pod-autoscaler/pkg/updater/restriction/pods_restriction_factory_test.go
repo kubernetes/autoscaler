@@ -501,7 +501,7 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			for _, p := range testCase.pods {
 				pods = append(pods, p.pod)
 			}
-			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance, baseclocktest.NewFakeClock(time.Time{}), make(map[string]time.Time), GetFakeCalculatorsWithFakeResourceCalc())
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance, baseclocktest.NewFakeClock(time.Time{}), make(map[string]time.Time), GetFakeCalculatorsWithFakeResourceCalc(), false)
 			assert.NoError(t, err)
 			creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, testCase.vpa)
 			assert.NoError(t, err)
@@ -559,7 +559,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(nil, &rs, nil, nil, 2, 0.5, nil, nil, nil)
+	factory, err := getRestrictionFactory(nil, &rs, nil, nil, 2, 0.5, nil, nil, nil, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -602,7 +602,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(nil, nil, &ss, nil, 2, 0.5, nil, nil, nil)
+	factory, err := getRestrictionFactory(nil, nil, &ss, nil, 2, 0.5, nil, nil, nil, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -644,7 +644,7 @@ func TestEvictReplicatedByDaemonSet(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(nil, nil, nil, &ds, 2, 0.5, nil, nil, nil)
+	factory, err := getRestrictionFactory(nil, nil, nil, &ds, 2, 0.5, nil, nil, nil, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -683,7 +683,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(nil, nil, nil, nil, 2, 0.5, nil, nil, nil)
+	factory, err := getRestrictionFactory(nil, nil, nil, nil, 2, 0.5, nil, nil, nil, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -705,7 +705,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 
 func getRestrictionFactory(rc *apiv1.ReplicationController, rs *appsv1.ReplicaSet,
 	ss *appsv1.StatefulSet, ds *appsv1.DaemonSet, minReplicas int,
-	evictionToleranceFraction float64, clock clock.Clock, lipuatm map[string]time.Time, patchCalculators []patch.Calculator) (PodsRestrictionFactory, error) {
+	evictionToleranceFraction float64, clock clock.Clock, lipuatm map[string]time.Time, patchCalculators []patch.Calculator, inPlaceSkipDisruptionBudget bool) (PodsRestrictionFactory, error) {
 	kubeClient := &fake.Clientset{}
 	rcInformer := coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
 		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
@@ -741,16 +741,17 @@ func getRestrictionFactory(rc *apiv1.ReplicationController, rs *appsv1.ReplicaSe
 	}
 
 	return &PodsRestrictionFactoryImpl{
-		client:                    kubeClient,
-		rcInformer:                rcInformer,
-		ssInformer:                ssInformer,
-		rsInformer:                rsInformer,
-		dsInformer:                dsInformer,
-		minReplicas:               minReplicas,
-		evictionToleranceFraction: evictionToleranceFraction,
-		clock:                     clock,
-		lastInPlaceAttemptTimeMap: lipuatm,
-		patchCalculators:          patchCalculators,
+		client:                      kubeClient,
+		rcInformer:                  rcInformer,
+		ssInformer:                  ssInformer,
+		rsInformer:                  rsInformer,
+		dsInformer:                  dsInformer,
+		minReplicas:                 minReplicas,
+		evictionToleranceFraction:   evictionToleranceFraction,
+		clock:                       clock,
+		lastInPlaceAttemptTimeMap:   lipuatm,
+		patchCalculators:            patchCalculators,
+		inPlaceSkipDisruptionBudget: inPlaceSkipDisruptionBudget,
 	}, nil
 }
 

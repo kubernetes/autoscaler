@@ -22,11 +22,12 @@ import (
 )
 
 type containerBuilder struct {
-	name       string
-	cpuRequest *resource.Quantity
-	memRequest *resource.Quantity
-	cpuLimit   *resource.Quantity
-	memLimit   *resource.Quantity
+	name         string
+	cpuRequest   *resource.Quantity
+	memRequest   *resource.Quantity
+	cpuLimit     *resource.Quantity
+	memLimit     *resource.Quantity
+	resizePolicy []apiv1.ContainerResizePolicy
 }
 
 // Container returns object that helps build containers for tests.
@@ -64,6 +65,12 @@ func (cb *containerBuilder) WithMemLimit(memLimit resource.Quantity) *containerB
 	return &r
 }
 
+func (cb *containerBuilder) WithContainerResizePolicy(resizePolicy []apiv1.ContainerResizePolicy) *containerBuilder {
+	r := *cb
+	r.resizePolicy = resizePolicy
+	return &r
+}
+
 func (cb *containerBuilder) Get() apiv1.Container {
 	container := apiv1.Container{
 		Name: cb.name,
@@ -83,6 +90,9 @@ func (cb *containerBuilder) Get() apiv1.Container {
 	}
 	if cb.memLimit != nil {
 		container.Resources.Limits[apiv1.ResourceMemory] = *cb.memLimit
+	}
+	if cb.resizePolicy != nil {
+		container.ResizePolicy = cb.resizePolicy
 	}
 	return container
 }

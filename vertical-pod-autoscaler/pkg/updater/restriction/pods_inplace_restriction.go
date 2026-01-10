@@ -67,6 +67,7 @@ type PodsInPlaceRestrictionImpl struct {
 	patchCalculators             []patch.Calculator
 	clock                        clock.Clock
 	lastInPlaceAttemptTimeMap    map[string]time.Time
+	inPlaceSkipDisruptionBudget  bool
 }
 
 // CanInPlaceUpdate checks if pod can be safely updated
@@ -88,6 +89,13 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InP
 					return utils.InPlaceEvict
 				}
 				return utils.InPlaceDeferred
+			}
+			if ip.inPlaceSkipDisruptionBudget {
+				if utils.IsNonDisruptiveResize(pod) {
+					klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
+					return utils.InPlaceApproved
+				}
+				klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
 			}
 			if singleGroupStats.isPodDisruptable() {
 				return utils.InPlaceApproved
