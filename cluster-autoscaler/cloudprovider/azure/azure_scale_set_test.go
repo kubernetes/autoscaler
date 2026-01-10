@@ -110,7 +110,7 @@ func newTestVMSSListForEdgeZones(capacity int64, name string) *compute.VirtualMa
 
 func newTestVMSSVMList(count int) []compute.VirtualMachineScaleSetVM {
 	var vmssVMList []compute.VirtualMachineScaleSetVM
-	for i := 0; i < count; i++ {
+	for i := range count {
 		vmssVM := compute.VirtualMachineScaleSetVM{
 			ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, i)),
 			InstanceID: ptr.To(fmt.Sprintf("%d", i)),
@@ -125,7 +125,7 @@ func newTestVMSSVMList(count int) []compute.VirtualMachineScaleSetVM {
 
 func newTestVMList(count int) []compute.VirtualMachine {
 	var vmssVMList []compute.VirtualMachine
-	for i := 0; i < count; i++ {
+	for i := range count {
 		vmssVM := compute.VirtualMachine{
 			ID: ptr.To(fmt.Sprintf(fakeVirtualMachineVMID, i)),
 			VirtualMachineProperties: &compute.VirtualMachineProperties{

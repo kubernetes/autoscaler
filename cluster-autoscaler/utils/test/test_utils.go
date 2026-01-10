@@ -18,8 +18,10 @@ package test
 
 import (
 	"fmt"
+	"maps"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"time"
 
@@ -353,9 +355,7 @@ func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64) *apiv
 	}
 
 	node.Status.Allocatable = apiv1.ResourceList{}
-	for k, v := range node.Status.Capacity {
-		node.Status.Allocatable[k] = v
-	}
+	maps.Copy(node.Status.Allocatable, node.Status.Capacity)
 
 	return node
 }
@@ -552,13 +552,7 @@ func NewHttpServerMock(fields ...HttpServerMockField) *HttpServerMock {
 	if len(fields) == 0 {
 		fields = []HttpServerMockField{MockFieldResponse}
 	}
-	foundResponse := false
-	for _, field := range fields {
-		if field == MockFieldResponse {
-			foundResponse = true
-			break
-		}
-	}
+	foundResponse := slices.Contains(fields, MockFieldResponse)
 	if !foundResponse {
 		panic("Must use MockFieldResponse.")
 	}

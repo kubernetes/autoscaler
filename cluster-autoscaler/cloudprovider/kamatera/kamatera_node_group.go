@@ -290,7 +290,7 @@ func (n *NodeGroup) getResourceList() (apiv1.ResourceList, error) {
 	firstDiskSizeGb := 0
 	if len(n.serverConfig.Disks) > 0 {
 		firstDiskSpec := n.serverConfig.Disks[0]
-		for _, attr := range strings.Split(firstDiskSpec, ",") {
+		for attr := range strings.SplitSeq(firstDiskSpec, ",") {
 			if strings.HasPrefix(attr, "size=") {
 				firstDiskSizeGb, err = strconv.Atoi(strings.Split(attr, "=")[1])
 				if err != nil {

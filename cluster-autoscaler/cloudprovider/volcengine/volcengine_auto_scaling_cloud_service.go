@@ -45,7 +45,7 @@ type autoScalingService struct {
 }
 
 func (a *autoScalingService) SetAsgDesireCapacity(groupId string, desireCapacity int) error {
-	_, err := a.autoscalingClient.ModifyScalingGroupCommon(&map[string]interface{}{
+	_, err := a.autoscalingClient.ModifyScalingGroupCommon(&map[string]any{
 		"ScalingGroupId":       groupId,
 		"DesireInstanceNumber": desireCapacity,
 	})
@@ -58,7 +58,7 @@ func (a *autoScalingService) SetAsgTargetSize(groupId string, targetSize int) er
 		return err
 	}
 
-	resp, err := a.autoscalingClient.CreateScalingPolicyCommon(&map[string]interface{}{
+	resp, err := a.autoscalingClient.CreateScalingPolicyCommon(&map[string]any{
 		"AdjustmentType":             "TotalCapacity",
 		"AdjustmentValue":            targetSize,
 		"Cooldown":                   0,
@@ -72,12 +72,12 @@ func (a *autoScalingService) SetAsgTargetSize(groupId string, targetSize int) er
 		return err
 	}
 
-	scalingPolicyId := (*resp)["Result"].(map[string]interface{})["ScalingPolicyId"].(string)
+	scalingPolicyId := (*resp)["Result"].(map[string]any)["ScalingPolicyId"].(string)
 	klog.Infof("create scaling policy response: %v, scalingPolicyId: %s", resp, scalingPolicyId)
 
 	defer func() {
 		// delete scaling policy
-		_, err = a.autoscalingClient.DeleteScalingPolicyCommon(&map[string]interface{}{
+		_, err = a.autoscalingClient.DeleteScalingPolicyCommon(&map[string]any{
 			"ScalingPolicyId": scalingPolicyId,
 		})
 		if err != nil {
@@ -85,7 +85,7 @@ func (a *autoScalingService) SetAsgTargetSize(groupId string, targetSize int) er
 		}
 	}()
 
-	_, err = a.autoscalingClient.EnableScalingPolicyCommon(&map[string]interface{}{
+	_, err = a.autoscalingClient.EnableScalingPolicyCommon(&map[string]any{
 		"ScalingPolicyId": scalingPolicyId,
 	})
 

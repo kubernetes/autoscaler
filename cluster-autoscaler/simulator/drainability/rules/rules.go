@@ -17,6 +17,8 @@ limitations under the License.
 package rules
 
 import (
+	"slices"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
@@ -99,11 +101,9 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, n
 			continue
 		}
 		for _, candidate := range candidates {
-			for _, override := range candidate.status.Overrides {
-				if status.Outcome == override {
-					klog.V(5).Infof("Overriding pod %s/%s drainability rule %s with rule %s, outcome %v", pod.GetNamespace(), pod.GetName(), r.Name(), candidate.name, candidate.status.Outcome)
-					return candidate.status
-				}
+			if slices.Contains(candidate.status.Overrides, status.Outcome) {
+				klog.V(5).Infof("Overriding pod %s/%s drainability rule %s with rule %s, outcome %v", pod.GetNamespace(), pod.GetName(), r.Name(), candidate.name, candidate.status.Outcome)
+				return candidate.status
 			}
 		}
 		if status.Outcome != drainability.UndefinedOutcome {

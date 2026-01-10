@@ -306,13 +306,13 @@ func (provider *RancherCloudProvider) updateMachinePools(machinePools []provisio
 // converts machinePools into a usable form for the unstructured client.
 // unstructured.SetNestedSlice expects types produced by json.Unmarshal(),
 // so we marshal and unmarshal again before passing it on.
-func machinePoolsToUnstructured(machinePools []provisioningv1.RKEMachinePool) ([]interface{}, error) {
+func machinePoolsToUnstructured(machinePools []provisioningv1.RKEMachinePool) ([]any, error) {
 	data, err := json.Marshal(machinePools)
 	if err != nil {
 		return nil, err
 	}
 
-	var pools []interface{}
+	var pools []any
 	if err := json.Unmarshal(data, &pools); err != nil {
 		return nil, err
 	}

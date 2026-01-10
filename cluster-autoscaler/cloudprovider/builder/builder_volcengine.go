@@ -1,5 +1,4 @@
 //go:build volcengine
-// +build volcengine
 
 /*
 Copyright 2023 The Kubernetes Authors.

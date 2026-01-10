@@ -18,6 +18,7 @@ package cloudprovider
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -362,12 +363,7 @@ func IsCustomResource(resourceName string) bool {
 
 // ContainsCustomResources returns true iff given list contains any custom resource name
 func ContainsCustomResources(resources []string) bool {
-	for _, resource := range resources {
-		if IsCustomResource(resource) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(resources, IsCustomResource)
 }
 
 // NodeGroupListToMapById returns a map of node group ID to nonode group

@@ -182,7 +182,7 @@ func GetPoolType(group string) (string, error) {
 func GetAllPoolTypes(groups []string) (string, error) {
 	// set of all the ocid types
 	// we only support instance pools or node pools
-	ocidTypes := make(map[string]interface{})
+	ocidTypes := make(map[string]any)
 	for _, group := range groups {
 		ocidParts := strings.Split(group, ".")
 		if len(ocidParts) >= 2 {

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"maps"
 	"math/rand"
 	"time"
 
@@ -272,8 +273,6 @@ func (m *BaiducloudManager) buildNodeFromTemplate(asg *Asg, template *asgTemplat
 func buildGenericLabels(template *asgTemplate) map[string]string {
 	result := make(map[string]string)
 	// append custom node labels
-	for key, value := range template.Tags {
-		result[key] = value
-	}
+	maps.Copy(result, template.Tags)
 	return result
 }

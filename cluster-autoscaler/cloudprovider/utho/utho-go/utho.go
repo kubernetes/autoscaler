@@ -35,9 +35,9 @@ var defaultHTTPClient = &http.Client{Timeout: time.Second * 300}
 // Client is the interface for interacting with the Utho API client.
 type Client interface {
 	// NewRequest creates a new API request.
-	NewRequest(method, url string, body ...interface{}) (*http.Request, error)
+	NewRequest(method, url string, body ...any) (*http.Request, error)
 	// Do sends an API request and decodes the response.
-	Do(req *http.Request, v interface{}) (*http.Response, error)
+	Do(req *http.Request, v any) (*http.Response, error)
 
 	// Kubernetes returns the KubernetesService for Kubernetes-related API calls.
 	Kubernetes() *KubernetesService
@@ -104,7 +104,7 @@ func toURLWithEndingSlash(u string) (*url.URL, error) {
 // A relative URL `url` can be specified which is resolved relative to the baseURL of the client.
 // Relative URLs should be specified without a preceding slash.
 // The `body` parameter can be used to pass a body to the request. If no body is required, the parameter can be omitted.
-func (c *client) NewRequest(method, url string, body ...interface{}) (*http.Request, error) {
+func (c *client) NewRequest(method, url string, body ...any) (*http.Request, error) {
 	fullUrl, err := c.baseURL.Parse(url)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (c *client) NewRequest(method, url string, body ...interface{}) (*http.Requ
 
 // Do will send the given request using the client `c` on which it is called.
 // If the response contains a body, it will be unmarshalled in `v`.
-func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+func (c *client) Do(req *http.Request, v any) (*http.Response, error) {
 	req.Header.Set("Authorization", "Bearer "+c.token)
 
 	resp, err := c.client.Do(req)

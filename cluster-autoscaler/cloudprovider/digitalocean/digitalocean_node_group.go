@@ -367,7 +367,7 @@ func parseToQuanitity(cpu int64, pods int64, memory string) (apiv1.ResourceList,
 
 func generateWorkerName(poolName string) string {
 	var b strings.Builder
-	for i := 0; i < generatedWorkerNameSuffixLength; i++ {
+	for range generatedWorkerNameSuffixLength {
 		d := generatedWorkerNameCharset[rand.Intn(len(generatedWorkerNameCharset))]
 		b.WriteByte(d)
 	}

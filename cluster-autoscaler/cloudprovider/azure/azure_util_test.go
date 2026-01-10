@@ -296,73 +296,73 @@ func TestIsAzureRequestsThrottled(t *testing.T) {
 }
 
 func TestNormalizeMasterResourcesForScaling(t *testing.T) {
-	templateMap := map[string]interface{}{
-		resourcesFieldName: []interface{}{
-			map[string]interface{}{
+	templateMap := map[string]any{
+		resourcesFieldName: []any{
+			map[string]any{
 				nameFieldName: "variables('masterVMNamePrefix')",
 				typeFieldName: vmExtensionType,
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: 1,
 				typeFieldName: vmResourceType,
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: "foo",
 				typeFieldName: vmResourceType,
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName:       "variables('masterVMNamePrefix')",
 				typeFieldName:       vmResourceType,
 				propertiesFieldName: "foo",
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: "variables('masterVMNamePrefix')",
 				typeFieldName: vmResourceType,
-				propertiesFieldName: map[string]interface{}{
+				propertiesFieldName: map[string]any{
 					hardwareProfileFieldName: "foo",
 				},
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: "variables('masterVMNamePrefix')",
 				typeFieldName: vmResourceType,
-				propertiesFieldName: map[string]interface{}{
-					hardwareProfileFieldName: map[string]interface{}{
+				propertiesFieldName: map[string]any{
+					hardwareProfileFieldName: map[string]any{
 						vmSizeFieldName: "size",
 					},
 				},
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: "variables('masterVMNamePrefix')",
 				typeFieldName: vmResourceType,
-				propertiesFieldName: map[string]interface{}{
-					hardwareProfileFieldName: map[string]interface{}{},
+				propertiesFieldName: map[string]any{
+					hardwareProfileFieldName: map[string]any{},
 					osProfileFieldName:       "foo",
 				},
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: "variables('masterVMNamePrefix')",
 				typeFieldName: vmResourceType,
-				propertiesFieldName: map[string]interface{}{
-					hardwareProfileFieldName: map[string]interface{}{},
-					osProfileFieldName: map[string]interface{}{
+				propertiesFieldName: map[string]any{
+					hardwareProfileFieldName: map[string]any{},
+					osProfileFieldName: map[string]any{
 						customDataFieldName: "data",
 					},
 				},
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: "variables('masterVMNamePrefix')",
 				typeFieldName: vmResourceType,
-				propertiesFieldName: map[string]interface{}{
-					hardwareProfileFieldName: map[string]interface{}{},
+				propertiesFieldName: map[string]any{
+					hardwareProfileFieldName: map[string]any{},
 					storageProfileFieldName:  "foo",
 				},
 			},
-			map[string]interface{}{
+			map[string]any{
 				nameFieldName: "variables('masterVMNamePrefix')",
 				typeFieldName: vmResourceType,
-				propertiesFieldName: map[string]interface{}{
-					hardwareProfileFieldName: map[string]interface{}{},
-					storageProfileFieldName: map[string]interface{}{
+				propertiesFieldName: map[string]any{
+					hardwareProfileFieldName: map[string]any{},
+					storageProfileFieldName: map[string]any{
 						imageReferenceFieldName: "image",
 					},
 				},
@@ -370,17 +370,17 @@ func TestNormalizeMasterResourcesForScaling(t *testing.T) {
 		},
 	}
 	err := normalizeMasterResourcesForScaling(templateMap)
-	assert.Equal(t, 9, len(templateMap[resourcesFieldName].([]interface{})))
+	assert.Equal(t, 9, len(templateMap[resourcesFieldName].([]any)))
 	assert.NoError(t, err)
 }
 
 func TestNormalizeForK8sVMASScalingUp(t *testing.T) {
-	templateMap := map[string]interface{}{
-		resourcesFieldName: []interface{}{
-			map[string]interface{}{
+	templateMap := map[string]any{
+		resourcesFieldName: []any{
+			map[string]any{
 				typeFieldName: nsgResourceType,
 			},
-			map[string]interface{}{
+			map[string]any{
 				typeFieldName: nsgResourceType,
 			},
 		},
@@ -390,12 +390,12 @@ func TestNormalizeForK8sVMASScalingUp(t *testing.T) {
 		"There should only be 1", nsgResourceType)
 	assert.Equal(t, expectedErr, err)
 
-	templateMap = map[string]interface{}{
-		resourcesFieldName: []interface{}{
-			map[string]interface{}{
+	templateMap = map[string]any{
+		resourcesFieldName: []any{
+			map[string]any{
 				typeFieldName: rtResourceType,
 			},
-			map[string]interface{}{
+			map[string]any{
 				typeFieldName: rtResourceType,
 			},
 		},
@@ -405,23 +405,23 @@ func TestNormalizeForK8sVMASScalingUp(t *testing.T) {
 	err = normalizeForK8sVMASScalingUp(templateMap)
 	assert.Equal(t, expectedErr, err)
 
-	templateMap = map[string]interface{}{
-		resourcesFieldName: []interface{}{
-			map[string]interface{}{
+	templateMap = map[string]any{
+		resourcesFieldName: []any{
+			map[string]any{
 				typeFieldName: nsgResourceType,
 			},
-			map[string]interface{}{
-				dependsOnFieldName: []interface{}{nsgResourceType, "foo"},
+			map[string]any{
+				dependsOnFieldName: []any{nsgResourceType, "foo"},
 			},
 		},
 	}
 	err = normalizeForK8sVMASScalingUp(templateMap)
-	for _, resource := range templateMap[resourcesFieldName].([]interface{}) {
-		deps, ok := resource.([]interface{})
+	for _, resource := range templateMap[resourcesFieldName].([]any) {
+		deps, ok := resource.([]any)
 		if ok {
 			for _, dep := range deps {
-				if names, ok := dep.(map[string]interface{})[dependsOnFieldName]; ok {
-					assert.Equal(t, 1, len(names.([]interface{})))
+				if names, ok := dep.(map[string]any)[dependsOnFieldName]; ok {
+					assert.Equal(t, 1, len(names.([]any)))
 				}
 			}
 		}

@@ -33,7 +33,7 @@ import (
 
 func makePodEquivalenceGroup(pod *apiv1.Pod, podCount int) PodEquivalenceGroup {
 	pods := []*apiv1.Pod{}
-	for i := 0; i < podCount; i++ {
+	for range podCount {
 		pods = append(pods, pod)
 	}
 	return PodEquivalenceGroup{
@@ -278,7 +278,7 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 		),
 	}
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(b)
 		err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 		assert.NoError(b, err)

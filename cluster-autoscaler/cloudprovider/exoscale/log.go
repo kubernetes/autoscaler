@@ -20,18 +20,18 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func fatalf(format string, args ...interface{}) {
+func fatalf(format string, args ...any) {
 	klog.Fatalf("exoscale-provider: "+format, args...)
 }
 
-func errorf(format string, args ...interface{}) {
+func errorf(format string, args ...any) {
 	klog.Errorf("exoscale-provider: "+format, args...)
 }
 
-func infof(format string, args ...interface{}) {
+func infof(format string, args ...any) {
 	klog.Infof("exoscale-provider: "+format, args...)
 }
 
-func debugf(format string, args ...interface{}) {
+func debugf(format string, args ...any) {
 	klog.V(3).Infof("exoscale-provider: "+format, args...)
 }

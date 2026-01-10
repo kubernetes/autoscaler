@@ -17,6 +17,7 @@ limitations under the License.
 package deletiontracker
 
 import (
+	"maps"
 	"sync"
 	"time"
 
@@ -178,15 +179,9 @@ func (n *NodeDeletionTracker) Snapshot() *NodeDeletionTracker {
 	n.evictions.DropNotNewerThan(n.clock.Now().Add(-n.evictionsTTL))
 
 	snapshot := NewNodeDeletionTracker(n.evictionsTTL)
-	for k, val := range n.emptyNodeDeletions {
-		snapshot.emptyNodeDeletions[k] = val
-	}
-	for k, val := range n.drainedNodeDeletions {
-		snapshot.drainedNodeDeletions[k] = val
-	}
-	for k, val := range n.deletionsPerNodeGroup {
-		snapshot.deletionsPerNodeGroup[k] = val
-	}
+	maps.Copy(snapshot.emptyNodeDeletions, n.emptyNodeDeletions)
+	maps.Copy(snapshot.drainedNodeDeletions, n.drainedNodeDeletions)
+	maps.Copy(snapshot.deletionsPerNodeGroup, n.deletionsPerNodeGroup)
 	for _, eviction := range n.evictions.ToSlice() {
 		snapshot.evictions.RegisterElement(eviction)
 	}

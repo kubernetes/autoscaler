@@ -76,10 +76,7 @@ func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo
 		if backoffInfo.backoffUntil.Before(currentTime) {
 			// NodeGroup is not currently in backoff, but was recently
 			// Increase backoff duration exponentially
-			duration = 2 * backoffInfo.duration
-			if duration > b.maxBackoffDuration {
-				duration = b.maxBackoffDuration
-			}
+			duration = min(2*backoffInfo.duration, b.maxBackoffDuration)
 		}
 	}
 	backoffUntil := currentTime.Add(duration)

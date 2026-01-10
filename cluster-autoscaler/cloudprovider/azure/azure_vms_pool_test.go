@@ -62,7 +62,7 @@ func newTestVMsPool(manager *AzureManager) *VMPool {
 func newTestVMsPoolVMList(count int) []compute.VirtualMachine {
 	var vmList []compute.VirtualMachine
 
-	for i := 0; i < count; i++ {
+	for i := range count {
 		vm := compute.VirtualMachine{
 			ID: ptr.To(fmt.Sprintf(fakeVMsPoolVMID, i)),
 			VirtualMachineProperties: &compute.VirtualMachineProperties{

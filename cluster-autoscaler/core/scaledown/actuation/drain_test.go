@@ -90,7 +90,6 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 	}
 
 	for _, scenario := range testScenarios {
-		scenario := scenario
 		t.Run(scenario.name, func(t *testing.T) {
 			t.Parallel()
 			options := config.AutoscalingOptions{

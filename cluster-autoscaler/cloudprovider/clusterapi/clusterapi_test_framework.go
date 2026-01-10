@@ -234,31 +234,31 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 		}
 
 		config.machineSet = &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1beta2",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      spec.machineSetName,
 					"namespace": spec.namespace,
 					"uid":       spec.machineSetName,
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"clusterName": spec.clusterName,
 					"replicas":    int64(spec.nodeCount),
-					"template": map[string]interface{}{
-						"spec": map[string]interface{}{
-							"infrastructureRef": map[string]interface{}{
+					"template": map[string]any{
+						"spec": map[string]any{
+							"infrastructureRef": map[string]any{
 								"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
 								"kind":       machineTemplateKind,
 								"name":       "TestMachineTemplate",
 							},
-							"metadata": map[string]interface{}{
-								"labels": map[string]interface{}{},
+							"metadata": map[string]any{
+								"labels": map[string]any{},
 							},
 						},
 					},
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		}
 
@@ -281,31 +281,31 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 			}
 
 			config.machineDeployment = &unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"kind":       machineDeploymentKind,
 					"apiVersion": "cluster.x-k8s.io/v1beta2",
-					"metadata": map[string]interface{}{
+					"metadata": map[string]any{
 						"name":      spec.machineDeploymentName,
 						"namespace": spec.namespace,
 						"uid":       spec.machineDeploymentName,
 					},
-					"spec": map[string]interface{}{
+					"spec": map[string]any{
 						"clusterName": spec.clusterName,
 						"replicas":    int64(spec.nodeCount),
-						"template": map[string]interface{}{
-							"spec": map[string]interface{}{
-								"infrastructureRef": map[string]interface{}{
+						"template": map[string]any{
+							"spec": map[string]any{
+								"infrastructureRef": map[string]any{
 									"apiGroup": "infrastructure.cluster.x-k8s.io",
 									"kind":     machineTemplateKind,
 									"name":     "TestMachineTemplate",
 								},
-								"metadata": map[string]interface{}{
-									"labels": map[string]interface{}{},
+								"metadata": map[string]any{
+									"labels": map[string]any{},
 								},
 							},
 						},
 					},
-					"status": map[string]interface{}{},
+					"status": map[string]any{},
 				},
 			}
 			config.machineDeployment.SetAnnotations(spec.annotations)
@@ -343,10 +343,10 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 		if spec.capacity != nil || spec.nodeInfo != nil {
 			klog.V(4).Infof("creating machine template")
 			config.machineTemplate = &unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
 					"kind":       machineTemplateKind,
-					"metadata": map[string]interface{}{
+					"metadata": map[string]any{
 						"name":      "TestMachineTemplate",
 						"namespace": spec.namespace,
 						"uid":       "TestMachineTemplate",
@@ -411,7 +411,7 @@ func createTestSpecs(
 ) []TestSpec {
 	var specs []TestSpec
 
-	for i := 0; i < scalableResourceCount; i++ {
+	for i := range scalableResourceCount {
 		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations, capacity, nodeInfo, managedLabels))
 	}
 
@@ -479,19 +479,19 @@ func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1
 	}
 
 	machine := &unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"kind":       machineKind,
 			"apiVersion": "cluster.x-k8s.io/v1beta2",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      fmt.Sprintf("%s-%s-machine-%d", namespace, owner.Name, i),
 				"namespace": namespace,
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"clusterName": clusterName,
 				"providerID":  fmt.Sprintf("test:////%s-%s-nodeid-%d", namespace, owner.Name, i),
 			},
-			"status": map[string]interface{}{
-				"nodeRef": map[string]interface{}{
+			"status": map[string]any{
+				"nodeRef": map[string]any{
 					"kind": node.Kind,
 					"name": node.Name,
 				},

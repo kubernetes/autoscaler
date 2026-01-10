@@ -83,8 +83,8 @@ type Config struct {
 	AuthMethod string `json:"authMethod" yaml:"authMethod"`
 
 	// Configs only for standard vmType (agent pools).
-	Deployment           string                 `json:"deployment" yaml:"deployment"`
-	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
+	Deployment           string         `json:"deployment" yaml:"deployment"`
+	DeploymentParameters map[string]any `json:"deploymentParameters" yaml:"deploymentParameters"`
 
 	// Jitter in seconds subtracted from the VMSS cache TTL before the first refresh
 	VmssVmsCacheJitter int `json:"vmssVmsCacheJitter" yaml:"vmssVmsCacheJitter"`

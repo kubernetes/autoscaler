@@ -40,7 +40,7 @@ func createTestResourceSlice(nodeName string, devicesPerSlice int, slicesPerNode
 	name := fmt.Sprintf("rs-%s", sliceId)
 	uid := types.UID(fmt.Sprintf("rs-%s-uid", sliceId))
 	devices := make([]resourceapi.Device, devicesPerSlice)
-	for deviceIndex := 0; deviceIndex < devicesPerSlice; deviceIndex++ {
+	for deviceIndex := range devicesPerSlice {
 		deviceName := fmt.Sprintf("rs-dev-%s-%d", sliceId, deviceIndex)
 		devices[deviceIndex] = resourceapi.Device{Name: deviceName}
 	}
@@ -66,7 +66,7 @@ func createTestResourceClaim(requestsPerClaim int, devicesPerRequest int, driver
 	expression := fmt.Sprintf(`device.driver == "%s"`, driver)
 
 	requests := make([]resourceapi.DeviceRequest, requestsPerClaim)
-	for requestIndex := 0; requestIndex < requestsPerClaim; requestIndex++ {
+	for requestIndex := range requestsPerClaim {
 		requests[requestIndex] = resourceapi.DeviceRequest{
 			Name: fmt.Sprintf("deviceRequest-%d", requestIndex),
 			Exactly: &resourceapi.ExactDeviceRequest{
@@ -270,7 +270,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 	sharedClaims := make([]*resourceapi.ResourceClaim, maxNodesCount)
 	ownedClaims := make([][]*resourceapi.ResourceClaim, maxNodesCount)
 	owningPods := make([][]*apiv1.Pod, maxNodesCount)
-	for nodeIndex := 0; nodeIndex < maxNodesCount; nodeIndex++ {
+	for nodeIndex := range maxNodesCount {
 		nodeName := fmt.Sprintf("node-%d", nodeIndex)
 		node := BuildTestNode(nodeName, 10000, 10000)
 		nodeSlice := createTestResourceSlice(node.Name, devicesPerSlice, 1, driverName)
@@ -284,7 +284,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 
 		claimsOnNode := make([]*resourceapi.ResourceClaim, maxPodsCount)
 		podsOnNode := make([]*apiv1.Pod, maxPodsCount)
-		for podIndex := 0; podIndex < maxPodsCount; podIndex++ {
+		for podIndex := range maxPodsCount {
 			podName := fmt.Sprintf("pod-%d-%d", nodeIndex, podIndex)
 			ownedClaim := createTestResourceClaim(1, 1, driverName, deviceClassName)
 			pod := BuildTestPod(

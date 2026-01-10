@@ -744,7 +744,7 @@ func TestGetMigNodesBasic(t *testing.T) {
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1", nodes[2].Id)
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-f1hm", nodes[3].Id)
 
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		assert.Nil(t, nodes[i].Status.ErrorInfo)
 		assert.Equal(t, cloudprovider.InstanceRunning, nodes[i].Status.State)
 

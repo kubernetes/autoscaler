@@ -39,7 +39,7 @@ type AutoscalerError interface {
 	// if err := DoSomething(myObject); err != nil {
 	//	return err.AddPrefix("can't do something with %v: ", myObject)
 	// }
-	AddPrefix(msg string, args ...interface{}) AutoscalerError
+	AddPrefix(msg string, args ...any) AutoscalerError
 }
 
 type autoscalerErrorImpl struct {
@@ -79,7 +79,7 @@ func NewAutoscalerError(errorType AutoscalerErrorType, msg string) AutoscalerErr
 }
 
 // NewAutoscalerErrorf returns new autoscaler error with a message constructed from format string
-func NewAutoscalerErrorf(errorType AutoscalerErrorType, msg string, args ...interface{}) AutoscalerError {
+func NewAutoscalerErrorf(errorType AutoscalerErrorType, msg string, args ...any) AutoscalerError {
 	return autoscalerErrorImpl{
 		errorType: errorType,
 		msg:       fmt.Sprintf(msg, args...),
@@ -130,7 +130,7 @@ func (e autoscalerErrorImpl) Type() AutoscalerErrorType {
 //	return err.AddPrefix("can't do something with %v: ", myObject)
 //
 // }
-func (e autoscalerErrorImpl) AddPrefix(msg string, args ...interface{}) AutoscalerError {
+func (e autoscalerErrorImpl) AddPrefix(msg string, args ...any) AutoscalerError {
 	return autoscalerErrorImpl{errorType: e.errorType, wrappedErr: e, msg: fmt.Sprintf(msg, args...)}
 }
 

@@ -57,7 +57,7 @@ func newAsgInstanceTypeCache(awsService *awsWrapper) *instanceTypeExpirationStor
 	return newAsgInstanceTypeCacheWithClock(
 		awsService,
 		jc,
-		cache.NewExpirationStore(func(obj interface{}) (s string, e error) {
+		cache.NewExpirationStore(func(obj any) (s string, e error) {
 			return obj.(instanceTypeCachedObject).name, nil
 		}, &cache.TTLPolicy{
 			TTL:   asgInstanceTypeCacheTTL,

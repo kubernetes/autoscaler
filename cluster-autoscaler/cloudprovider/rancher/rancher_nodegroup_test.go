@@ -92,7 +92,7 @@ func TestNodeGroupNodes(t *testing.T) {
 			expectedErrContains: "could not find providerID in machine",
 			machines: func() []runtime.Object {
 				machine := newMachine(nodeGroupDev, 0)
-				_ = unstructured.SetNestedMap(machine.Object, map[string]interface{}{}, "spec")
+				_ = unstructured.SetNestedMap(machine.Object, map[string]any{}, "spec")
 				return []runtime.Object{machine}
 			},
 		},
@@ -102,7 +102,7 @@ func TestNodeGroupNodes(t *testing.T) {
 			expectedNodes: 1,
 			machines: func() []runtime.Object {
 				machineProvisioning := newMachine(nodeGroupDev, 0)
-				_ = unstructured.SetNestedMap(machineProvisioning.Object, map[string]interface{}{}, "spec")
+				_ = unstructured.SetNestedMap(machineProvisioning.Object, map[string]any{}, "spec")
 				_ = unstructured.SetNestedField(machineProvisioning.Object, machinePhaseProvisioning, "status", "phase")
 				return []runtime.Object{
 					machineProvisioning,
@@ -543,22 +543,22 @@ func setup(machines []runtime.Object) (*RancherCloudProvider, error) {
 
 func newMachine(nodeGroupName string, num int) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"kind":       "Machine",
 			"apiVersion": "cluster.x-k8s.io/v1alpha4",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      nodeName(nodeGroupName, num),
 				"namespace": testNamespace,
-				"labels": map[string]interface{}{
+				"labels": map[string]any{
 					machineDeploymentNameLabelKey:  fmt.Sprintf("%s-%s", testCluster, nodeGroupName),
 					rancherMachinePoolNameLabelKey: nodeGroupName,
 				},
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"clusterName": testCluster,
 				"providerID":  testProviderID + nodeName(nodeGroupName, num),
 			},
-			"status": map[string]interface{}{
+			"status": map[string]any{
 				"phase": "Running",
 			},
 		},

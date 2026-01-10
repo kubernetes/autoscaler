@@ -1,5 +1,4 @@
 //go:build clusterapi
-// +build clusterapi
 
 /*
 Copyright 2019 The Kubernetes Authors.

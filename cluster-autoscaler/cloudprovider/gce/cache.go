@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"maps"
 	"reflect"
 	"sync"
 	"time"
@@ -514,9 +515,7 @@ func (gc *GceCache) SetMachines(machinesCache map[MachineTypeKey]MachineType) {
 	defer gc.cacheMutex.Unlock()
 
 	gc.machinesCache = map[MachineTypeKey]MachineType{}
-	for k, v := range machinesCache {
-		gc.machinesCache[k] = v
-	}
+	maps.Copy(gc.machinesCache, machinesCache)
 }
 
 // InvalidateAllMachines invalidates the machines cache under lock.

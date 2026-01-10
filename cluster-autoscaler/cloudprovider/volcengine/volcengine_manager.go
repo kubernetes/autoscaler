@@ -18,6 +18,7 @@ package volcengine
 
 import (
 	"fmt"
+	"maps"
 	"math/rand"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -198,9 +199,7 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 	result[apiv1.LabelHostname] = nodeName
 
 	// append custom node labels
-	for key, value := range template.tags {
-		result[key] = value
-	}
+	maps.Copy(result, template.tags)
 
 	return result
 }

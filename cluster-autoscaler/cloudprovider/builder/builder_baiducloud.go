@@ -1,5 +1,4 @@
 //go:build baiducloud
-// +build baiducloud
 
 /*
 Copyright 2018 The Kubernetes Authors.

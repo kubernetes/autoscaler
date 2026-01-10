@@ -1,5 +1,4 @@
 //go:build brightbox
-// +build brightbox
 
 /*
 Copyright 2019 The Kubernetes Authors.

@@ -18,6 +18,7 @@ package cloudprovider
 
 import (
 	"fmt"
+	"maps"
 	"math/rand"
 	"time"
 
@@ -119,9 +120,7 @@ func BuildKubeProxy(name string) *apiv1.Pod {
 func JoinStringMaps(items ...map[string]string) map[string]string {
 	result := make(map[string]string)
 	for _, m := range items {
-		for k, v := range m {
-			result[k] = v
-		}
+		maps.Copy(result, m)
 	}
 	return result
 }

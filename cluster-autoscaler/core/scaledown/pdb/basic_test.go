@@ -241,7 +241,7 @@ func TestBasicRemovePods(t *testing.T) {
 
 func makePodsWithLabel(label string, amount int) []*apiv1.Pod {
 	pods := []*apiv1.Pod{}
-	for i := 0; i < amount; i++ {
+	for i := range amount {
 		pod := &apiv1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            fmt.Sprintf("pod-1-%d", i),

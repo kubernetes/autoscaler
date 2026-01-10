@@ -257,7 +257,7 @@ func (mgr *magnumManagerImpl) getNodes(nodegroup string) ([]cloudprovider.Instan
 	refsMap := make(map[string]string)
 	for _, output := range stack.Outputs {
 		if output["output_key"] == "refs_map" {
-			refsMapOutput := output["output_value"].(map[string]interface{})
+			refsMapOutput := output["output_value"].(map[string]any)
 			for index, ID := range refsMapOutput {
 				refsMap[index] = ID.(string)
 			}
@@ -471,7 +471,7 @@ func (mgr *magnumManagerImpl) nodeGroupForNode(node *apiv1.Node) (string, error)
 
 		for _, output := range minionsStack.Outputs {
 			if output["output_key"] == "refs_map" {
-				refsMapOutput, ok := output["output_value"].(map[string]interface{})
+				refsMapOutput, ok := output["output_value"].(map[string]any)
 				if !ok {
 					// Output value was nil, possibly because the node group is being deleted.
 					return "", fmt.Errorf("could not check the minions stack refs_map")

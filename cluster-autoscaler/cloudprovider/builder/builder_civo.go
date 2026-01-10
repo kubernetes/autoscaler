@@ -1,5 +1,4 @@
 //go:build civo
-// +build civo
 
 /*
 Copyright 2022 The Kubernetes Authors.

@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"path"
 	"strconv"
 	"strings"
@@ -154,7 +155,7 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 type autoscalingv1Scale struct {
 	// spec defines the behavior of the scale. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
 	// +optional
-	Spec autoscalingv1ScaleSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Spec autoscalingv1ScaleSpec `json:"spec" protobuf:"bytes,2,opt,name=spec"`
 }
 
 type autoscalingv1ScaleSpec struct {
@@ -325,12 +326,8 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	// We loop through the status block capacity first, then overwrite any values with the
 	// annotation capacities.
 	capacity := map[corev1.ResourceName]resource.Quantity{}
-	for k, v := range capacityInfraStatus {
-		capacity[k] = v
-	}
-	for k, v := range capacityAnnotations {
-		capacity[k] = v
-	}
+	maps.Copy(capacity, capacityInfraStatus)
+	maps.Copy(capacity, capacityAnnotations)
 
 	return capacity, nil
 }

@@ -1,5 +1,4 @@
 //go:build !linux
-// +build !linux
 
 /*
 Copyright 2017 The Kubernetes Authors.
@@ -49,7 +48,7 @@ type KubemarkCloudProvider struct{}
 
 // BuildKubemarkCloudProvider builds a CloudProvider for kubemark. Builds
 // node groups from passed in specs.
-func BuildKubemarkCloudProvider(kubemarkController interface{}, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*KubemarkCloudProvider, error) {
+func BuildKubemarkCloudProvider(kubemarkController any, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*KubemarkCloudProvider, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

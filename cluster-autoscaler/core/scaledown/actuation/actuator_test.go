@@ -1632,7 +1632,7 @@ func generateNode(name string) *apiv1.Node {
 
 func removablePods(count int, prefix string) []*apiv1.Pod {
 	var result []*apiv1.Pod
-	for i := 0; i < count; i++ {
+	for i := range count {
 		name := fmt.Sprintf("pod-%d", i)
 		if prefix != "" {
 			name = prefix + "-" + name
@@ -1671,7 +1671,7 @@ func removablePod(name string, node string) *apiv1.Pod {
 func generateDsPods(count int, node string) []*apiv1.Pod {
 
 	var result []*apiv1.Pod
-	for i := 0; i < count; i++ {
+	for i := range count {
 		name := fmt.Sprintf("ds-pod-%d", i)
 		result = append(result, generateDsPod(name, node))
 	}

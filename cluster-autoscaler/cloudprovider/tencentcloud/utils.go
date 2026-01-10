@@ -40,7 +40,7 @@ func getInstanceIdsFromMessage(instances []string, msg string) ([]string, []stri
 	return instances, errInstance
 }
 
-func retryDo(op func() (interface{}, error), checker func(interface{}, error) bool, timeout uint64, interval uint64) (ret interface{}, isTimeout bool, err error) {
+func retryDo(op func() (any, error), checker func(any, error) bool, timeout uint64, interval uint64) (ret any, isTimeout bool, err error) {
 	isTimeout = false
 	var tm <-chan time.Time = time.After(time.Duration(timeout) * time.Second)
 

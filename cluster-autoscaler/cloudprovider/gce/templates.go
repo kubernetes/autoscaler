@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+	"maps"
 	"math"
 	"math/rand"
 	"regexp"
@@ -93,9 +94,7 @@ func (t *GceTemplateBuilder) BuildCapacity(m MigOsInfo, cpu int64, mem int64, ac
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
 
-	for resourceName, quantity := range extendedResources {
-		capacity[resourceName] = quantity
-	}
+	maps.Copy(capacity, extendedResources)
 
 	return capacity, nil
 }
@@ -459,8 +458,8 @@ func extractExtendedResourcesFromKubeEnv(kubeEnv KubeEnv) (apiv1.ResourceList, e
 		}
 		const extendedResourcesKeyPrefix = "clusterautoscaler-nodetemplate-resources."
 		for key, value := range nodeLabelsMap {
-			if strings.HasPrefix(key, extendedResourcesKeyPrefix) {
-				key = strings.TrimPrefix(key, extendedResourcesKeyPrefix)
+			if after, ok := strings.CutPrefix(key, extendedResourcesKeyPrefix); ok {
+				key = after
 				if _, existsBefore := extendedResourcesMap[key]; existsBefore {
 					klog.Warningf("extended resource %s defined twice in template", key)
 				}
@@ -738,7 +737,7 @@ func extractAutoscalerVarFromKubeEnv(kubeEnv KubeEnv, name string) (value string
 		return "", false, nil
 	}
 
-	for _, val := range strings.Split(autoscalerVals, ";") {
+	for val := range strings.SplitSeq(autoscalerVals, ";") {
 		val = strings.Trim(val, " ")
 		items := strings.SplitN(val, "=", 2)
 		if len(items) != 2 {
@@ -757,7 +756,7 @@ func parseKeyValueListToMap(kvList string) (map[string]string, error) {
 	if len(kvList) == 0 {
 		return result, nil
 	}
-	for _, keyValue := range strings.Split(kvList, ",") {
+	for keyValue := range strings.SplitSeq(kvList, ",") {
 		kvItems := strings.SplitN(keyValue, "=", 2)
 		if len(kvItems) != 2 {
 			return nil, fmt.Errorf("error while parsing key-value list, val: %s", keyValue)

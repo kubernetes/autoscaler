@@ -736,7 +736,6 @@ func testResourceSlices(driver, poolName string, poolSliceCount, poolGen int64, 
 			Capacity:   map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{},
 		}
 		for name, val := range deviceDef.attributes {
-			val := val
 			device.Attributes[resourceapi.QualifiedName(driver+"/"+name)] = resourceapi.DeviceAttribute{StringValue: &val}
 		}
 		for name, quantity := range deviceDef.capacity {

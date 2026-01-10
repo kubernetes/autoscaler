@@ -61,7 +61,7 @@ func InitializeClusterSnapshotOrDie(
 // CreateTestNodesWithPrefix creates n test Nodes with the given name prefix.
 func CreateTestNodesWithPrefix(prefix string, n int) []*apiv1.Node {
 	nodes := make([]*apiv1.Node, n, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		nodes[i] = test.BuildTestNode(fmt.Sprintf("%s-%d", prefix, i), math.MaxInt, math.MaxInt)
 		test.SetNodeReadyState(nodes[i], true, time.Time{})
 	}
@@ -76,7 +76,7 @@ func CreateTestNodes(n int) []*apiv1.Node {
 // CreateTestPodsWithPrefix creates n test Pods with the given name prefix.
 func CreateTestPodsWithPrefix(prefix string, n int) []*apiv1.Pod {
 	pods := make([]*apiv1.Pod, n, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		pods[i] = test.BuildTestPod(fmt.Sprintf("%s-%d", prefix, i), 1, 1)
 	}
 	return pods
@@ -93,7 +93,7 @@ func AssignTestPodsToNodes(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string][]
 		return nil
 	}
 	podsByNode := map[string][]*apiv1.Pod{}
-	for i := 0; i < len(pods); i++ {
+	for i := range pods {
 		pod := pods[i]
 		nodeName := nodes[i%len(nodes)].Name
 

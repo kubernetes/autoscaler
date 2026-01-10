@@ -1,5 +1,4 @@
 //go:build azure
-// +build azure
 
 /*
 Copyright 2018 The Kubernetes Authors.

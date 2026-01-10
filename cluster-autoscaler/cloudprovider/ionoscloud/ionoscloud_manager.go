@@ -126,7 +126,7 @@ func LoadConfigFromEnv() (*Config, error) {
 
 	if rawHeaders := os.Getenv(envKeyAdditionalHeaders); rawHeaders != "" {
 		config.AdditionalHeaders = make(map[string]string)
-		for _, item := range strings.Split(rawHeaders, ";") {
+		for item := range strings.SplitSeq(rawHeaders, ";") {
 			item = strings.TrimSpace(item)
 			if item == "" {
 				// ignore empty items and trailing semicolons

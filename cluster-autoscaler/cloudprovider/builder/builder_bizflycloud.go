@@ -1,5 +1,4 @@
 //go:build bizflycloud
-// +build bizflycloud
 
 /*
 Copyright 2021 The Kubernetes Authors.

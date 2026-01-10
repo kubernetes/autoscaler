@@ -19,6 +19,7 @@ package aws
 import (
 	"context"
 	"fmt"
+	"maps"
 	"reflect"
 	"strings"
 	"sync"
@@ -395,9 +396,7 @@ func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
 func (m *asgCache) buildAsgTags() map[string]string {
 	groupTags := map[string]string{}
 	for _, spec := range m.asgAutoDiscoverySpecs {
-		for k, v := range spec.Tags {
-			groupTags[k] = v
-		}
+		maps.Copy(groupTags, spec.Tags)
 	}
 
 	return groupTags

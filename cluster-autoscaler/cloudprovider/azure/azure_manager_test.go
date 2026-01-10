@@ -476,20 +476,20 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
 		Deployment:          "cluster-autoscaler-0001",
-		DeploymentParameters: map[string]interface{}{
+		DeploymentParameters: map[string]any{
 			"Name": "cluster-autoscaler-0001",
-			"Properties": map[string]interface{}{
+			"Properties": map[string]any{
 				"ProvisioningState": "Succeeded",
-				"Parameters": map[string]interface{}{
+				"Parameters": map[string]any{
 					"PoolName01VMSize": "PoolName01",
 				},
-				"Template": map[string]interface{}{
-					"resources": []interface{}{
-						map[string]interface{}{
+				"Template": map[string]any{
+					"resources": []any{
+						map[string]any{
 							"type": "Microsoft.Compute/virtualMachines/extensions",
 							"name": "cluster-autoscaler-0001-resourceName",
-							"properties": map[string]interface{}{
-								"hardwareProfile": map[string]interface{}{
+							"properties": map[string]any{
+								"hardwareProfile": map[string]any{
 									"VMSize": "10G",
 								},
 							},
@@ -1395,7 +1395,7 @@ func TestVMSSNotFound(t *testing.T) {
 	})
 }
 
-func assertStructsMinimallyEqual(t *testing.T, struct1, struct2 interface{}) bool {
+func assertStructsMinimallyEqual(t *testing.T, struct1, struct2 any) bool {
 	return compareStructFields(t, reflect.ValueOf(struct1), reflect.ValueOf(struct2))
 }
 

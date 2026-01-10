@@ -18,6 +18,7 @@ package nodegroupset
 
 import (
 	"fmt"
+	"maps"
 	"math"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -85,9 +86,7 @@ func compareLabels(nodes []*framework.NodeInfo, ignoredLabels map[string]bool) b
 // CreateGenericNodeInfoComparator returns a generic comparator that checks for node group similarity
 func CreateGenericNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
 	genericIgnoredLabels := make(map[string]bool)
-	for k, v := range BasicIgnoredLabels {
-		genericIgnoredLabels[k] = v
-	}
+	maps.Copy(genericIgnoredLabels, BasicIgnoredLabels)
 	for _, k := range extraIgnoredLabels {
 		genericIgnoredLabels[k] = true
 	}

@@ -7,6 +7,7 @@ package nodepools
 import (
 	"context"
 	"fmt"
+	"maps"
 	"math"
 	"os"
 	"regexp"
@@ -247,7 +248,7 @@ func getIntFromMap(m map[string]string, key string, defaultValue int) int {
 	return i
 }
 
-func validateNodepoolTags(nodeGroupTags map[string]string, freeFormTags map[string]string, definedTags map[string]map[string]interface{}) bool {
+func validateNodepoolTags(nodeGroupTags map[string]string, freeFormTags map[string]string, definedTags map[string]map[string]any) bool {
 	if nodeGroupTags != nil {
 		for tagKey, tagValue := range nodeGroupTags {
 			namespacedTagKey := strings.Split(tagKey, ".")
@@ -344,9 +345,9 @@ func nodeGroupFromArg(value string) (*nodeGroupAutoDiscovery, error) {
 
 		spec.tags = make(map[string]string)
 
-		pairs := strings.Split(nodepoolTags, "&")
+		pairs := strings.SplitSeq(nodepoolTags, "&")
 
-		for _, pair := range pairs {
+		for pair := range pairs {
 			parts := strings.Split(pair, "=")
 			if len(parts) == 2 {
 				spec.tags[parts[0]] = parts[1]
@@ -414,9 +415,7 @@ func (m *ociManagerImpl) forceRefresh() error {
 	if m.nodeGroups != nil {
 		// create a copy of m.staticNodePools to use it in comparison
 		staticNodePoolsCopy := make(map[string]NodePool)
-		for k, v := range m.staticNodePools {
-			staticNodePoolsCopy[k] = v
-		}
+		maps.Copy(staticNodePoolsCopy, m.staticNodePools)
 
 		// empty previous nodepool map to do a fresh auto discovery
 		m.staticNodePools = make(map[string]NodePool)
@@ -796,7 +795,7 @@ func addTaint(node *apiv1.Node, client kubernetes.Interface, taintKey string, ef
 	freshNode := node.DeepCopy()
 	var err error
 	refresh := false
-	for i := 0; i < maxAddTaintRetries; i++ {
+	for range maxAddTaintRetries {
 		if refresh {
 			// Get the newest version of the node.
 			freshNode, err = client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})

@@ -56,7 +56,7 @@ func (ler *LogEventRecorder) Event(eventtype, reason, message string) {
 }
 
 // Eventf records an event on underlying object. This does nothing if the underlying object is not set.
-func (ler *LogEventRecorder) Eventf(eventtype, reason, message string, args ...interface{}) {
+func (ler *LogEventRecorder) Eventf(eventtype, reason, message string, args ...any) {
 	if ler.active && ler.statusObject != nil {
 		ler.recorder.Eventf(ler.statusObject, eventtype, reason, message, args...)
 	}

@@ -482,7 +482,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 }
 
 // transformNodeGroupView transforms a NodeGroupView to a structure that can be directly compared with other node bucket.
-var transformNodeGroupView = cmp.Transformer("transformNodeGroupView", func(b NodeGroupView) interface{} {
+var transformNodeGroupView = cmp.Transformer("transformNodeGroupView", func(b NodeGroupView) any {
 	return struct {
 		Group string
 		Nodes []*apiv1.Node

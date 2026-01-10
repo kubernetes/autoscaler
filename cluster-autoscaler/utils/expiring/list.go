@@ -24,7 +24,7 @@ import (
 )
 
 type elementWithTimestamp struct {
-	value interface{}
+	value any
 	added time.Time
 }
 
@@ -52,9 +52,9 @@ func newListWithClock(clock clock.PassiveClock) *List {
 }
 
 // ToSlice converts the underlying list of elements into a slice.
-func (e *List) ToSlice() []interface{} {
+func (e *List) ToSlice() []any {
 	p := e.lst.Front()
-	ps := make([]interface{}, 0, e.lst.Len())
+	ps := make([]any, 0, e.lst.Len())
 	for p != nil {
 		ps = append(ps, p.Value.(*elementWithTimestamp).value)
 		p = p.Next()
@@ -64,7 +64,7 @@ func (e *List) ToSlice() []interface{} {
 
 // ToSliceWithTimestamp is identical to ToSlice, but additionally returns the
 // timestamp of newest entry (or current time if there are no entries).
-func (e *List) ToSliceWithTimestamp() ([]interface{}, time.Time) {
+func (e *List) ToSliceWithTimestamp() ([]any, time.Time) {
 	if e.lst.Len() == 0 {
 		return nil, e.clock.Now()
 	}
@@ -72,7 +72,7 @@ func (e *List) ToSliceWithTimestamp() ([]interface{}, time.Time) {
 }
 
 // RegisterElement adds new element to the list.
-func (e *List) RegisterElement(elem interface{}) {
+func (e *List) RegisterElement(elem any) {
 	e.lst.PushBack(&elementWithTimestamp{elem, e.clock.Now()})
 }
 

@@ -201,21 +201,21 @@ func TestNodeGroupForNode(t *testing.T) {
 
 }
 
-func newCluster(name, namespace string, machinePools interface{}) *unstructured.Unstructured {
+func newCluster(name, namespace string, machinePools any) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"kind":       "Cluster",
 			"apiVersion": rancherProvisioningGroup + "/" + rancherProvisioningVersion,
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      name,
 				"namespace": namespace,
 			},
-			"spec": map[string]interface{}{
-				"rkeConfig": map[string]interface{}{
+			"spec": map[string]any{
+				"rkeConfig": map[string]any{
 					"machinePools": machinePools,
 				},
 			},
-			"status": map[string]interface{}{},
+			"status": map[string]any{},
 		},
 	}
 }

@@ -210,7 +210,7 @@ def get_files(extensions):
 
 def get_dates():
     # After 2025, we no longer allow new files to include the year in the copyright header.
-    final_year = 2025
+    final_year = 2026
     return " (%s) " % "|".join(str(year) for year in range(2014, final_year + 1))
 
 

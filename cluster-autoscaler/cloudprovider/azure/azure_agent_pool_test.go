@@ -54,8 +54,8 @@ func newTestAgentPool(manager *AzureManager, name string) *AgentPool {
 		manager:    manager,
 		minSize:    1,
 		maxSize:    5,
-		parameters: make(map[string]interface{}),
-		template:   make(map[string]interface{}),
+		parameters: make(map[string]any),
+		template:   make(map[string]any),
 	}
 }
 

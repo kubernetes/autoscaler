@@ -19,16 +19,18 @@ package alicloud
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/gcfg.v1"
 	"io"
+	"maps"
+	"math/rand"
+	"time"
+
+	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	klog "k8s.io/klog/v2"
-	"math/rand"
-	"time"
 )
 
 const (
@@ -249,9 +251,7 @@ func buildGenericLabels(template *sgTemplate, nodeName string) map[string]string
 	result[apiv1.LabelHostname] = nodeName
 
 	// append custom node labels
-	for key, value := range template.Tags {
-		result[key] = value
-	}
+	maps.Copy(result, template.Tags)
 
 	return result
 }

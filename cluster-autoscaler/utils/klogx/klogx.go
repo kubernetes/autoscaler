@@ -82,7 +82,7 @@ func (v Verbose) Over(q *Quota) Verbose {
 
 // Infof is a wrapper for klog.Infof that logs if the Quota
 // allows for it.
-func (v Verbose) Infof(format string, args ...interface{}) {
+func (v Verbose) Infof(format string, args ...any) {
 	if v.enabled {
 		v.v.Infof(format, args...)
 	}
@@ -90,7 +90,7 @@ func (v Verbose) Infof(format string, args ...interface{}) {
 
 // Info is a wrapper for klog.Info that logs if the Quota
 // allows for it.
-func (v Verbose) Info(args ...interface{}) {
+func (v Verbose) Info(args ...any) {
 	if v.enabled {
 		v.v.Info(args...)
 	}

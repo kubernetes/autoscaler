@@ -62,7 +62,7 @@ func (c *Client) SetUserAgent(userAgent string) *Client {
 	return c
 }
 
-func (c *Client) newRequest(ctx context.Context, method, uri string, body interface{}) (*http.Request, error) {
+func (c *Client) newRequest(ctx context.Context, method, uri string, body any) (*http.Request, error) {
 	resolvedURL, err := c.baseURL.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (c *Client) newRequest(ctx context.Context, method, uri string, body interf
 	return req, nil
 }
 
-func (c *Client) doWithContext(ctx context.Context, r *http.Request, data interface{}) error {
+func (c *Client) doWithContext(ctx context.Context, r *http.Request, data any) error {
 	req := r.WithContext(ctx)
 	res, err := c.httpClient.Do(req)
 

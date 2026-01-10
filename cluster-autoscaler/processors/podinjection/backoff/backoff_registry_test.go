@@ -101,7 +101,7 @@ func TestBackoffControllerOfPod(t *testing.T) {
 			registry := NewFakePodControllerRegistry()
 
 			for uid, backoffCount := range tc.backoffCounts {
-				for i := 0; i < backoffCount; i++ {
+				for range backoffCount {
 					registry.BackoffController(uid, clock.now)
 				}
 			}

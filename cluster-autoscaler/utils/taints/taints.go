@@ -19,6 +19,7 @@ package taints
 import (
 	"context"
 	"fmt"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -123,9 +124,7 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 		DeletionCandidateTaintKey: true,
 	}
 
-	for k, v := range NodeConditionTaints {
-		explicitlyReportedTaints[k] = v
-	}
+	maps.Copy(explicitlyReportedTaints, NodeConditionTaints)
 
 	return TaintConfig{
 		startupTaints:            startupTaints,
@@ -329,12 +328,9 @@ func CleanTaints(node *apiv1.Node, client kube_client.Interface, taintKeys []str
 		newTaints := make([]apiv1.Taint, 0)
 		for _, taint := range freshNode.Spec.Taints {
 			keepTaint := true
-			for _, taintKey := range taintKeys {
-				if taint.Key == taintKey {
-					klog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
-					keepTaint = false
-					break
-				}
+			if slices.Contains(taintKeys, taint.Key) {
+				klog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
+				keepTaint = false
 			}
 			if keepTaint {
 				newTaints = append(newTaints, taint)

@@ -75,7 +75,7 @@ func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if timedOut {
 		w.WriteHeader(500)
-		w.Write([]byte(fmt.Sprintf("Error: last activity more %v ago, last success more than %v ago", time.Now().Sub(lastActivity).String(), time.Now().Sub(lastSuccessfulRun).String())))
+		w.Write(fmt.Appendf(nil, "Error: last activity more %v ago, last success more than %v ago", time.Now().Sub(lastActivity).String(), time.Now().Sub(lastSuccessfulRun).String()))
 	} else {
 		w.WriteHeader(200)
 		w.Write([]byte("OK"))

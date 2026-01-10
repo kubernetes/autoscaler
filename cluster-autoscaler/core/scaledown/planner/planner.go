@@ -373,10 +373,7 @@ func (p *Planner) unneededNodesLimit() int {
 	limit := len(p.unneededNodes.AsList()) + n + extraBuffer
 	// TODO(x13n): Use moving average instead of min.
 	loopInterval := int64(p.minUpdateInterval)
-	u := int64(p.autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime)
-	if u < loopInterval {
-		u = loopInterval
-	}
+	u := max(int64(p.autoscalingCtx.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime), loopInterval)
 	upperBound := n*int(u/loopInterval) + extraBuffer
 	if upperBound < limit {
 		return upperBound

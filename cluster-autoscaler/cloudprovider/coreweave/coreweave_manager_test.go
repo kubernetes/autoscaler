@@ -92,15 +92,15 @@ func TestNewCoreWeaveManager(t *testing.T) {
 }
 func TestListNodePools_Success(t *testing.T) {
 	// Create a valid nodepool object
-	obj := map[string]interface{}{
+	obj := map[string]any{
 		"apiVersion": coreWeaveGroup + "/" + coreWeaveVersion,
 		"kind":       coreWeaveResource,
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      "np1",
 			"namespace": "default",
 			"uid":       "uid1",
 		},
-		"spec": map[string]interface{}{
+		"spec": map[string]any{
 			"minNodes":    int64(1),
 			"maxNodes":    int64(5),
 			"targetNodes": int64(3),
@@ -143,7 +143,7 @@ func TestListNodePools_ListError(t *testing.T) {
 
 func TestListNodePools_InvalidNodePool(t *testing.T) {
 	// Item missing required metadata fields
-	obj := map[string]interface{}{
+	obj := map[string]any{
 		"apiVersion": coreWeaveGroup + "/" + coreWeaveVersion,
 		"kind":       coreWeaveResource,
 	}
@@ -157,15 +157,15 @@ func TestListNodePools_InvalidNodePool(t *testing.T) {
 
 func TestListNodePools_AutoscalingDisabled(t *testing.T) {
 	// Create a nodepool with autoscaling disabled
-	obj := map[string]interface{}{
+	obj := map[string]any{
 		"apiVersion": coreWeaveGroup + "/" + coreWeaveVersion,
 		"kind":       coreWeaveResource,
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      "np1",
 			"namespace": "default",
 			"uid":       "uid1",
 		},
-		"spec": map[string]interface{}{
+		"spec": map[string]any{
 			"minNodes":    int64(1),
 			"maxNodes":    int64(5),
 			"targetNodes": int64(3),
@@ -196,15 +196,15 @@ func TestListNodePools_EmptyList(t *testing.T) {
 
 func TestUpdateNodeGroup_EmptyNodePools(t *testing.T) {
 	// Create a nodepool with autoscaling disabled - this will result in empty list after filtering
-	obj := map[string]interface{}{
+	obj := map[string]any{
 		"apiVersion": coreWeaveGroup + "/" + coreWeaveVersion,
 		"kind":       coreWeaveResource,
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      "np1",
 			"namespace": "default",
 			"uid":       "uid1",
 		},
-		"spec": map[string]interface{}{
+		"spec": map[string]any{
 			"minNodes":    int64(1),
 			"maxNodes":    int64(5),
 			"targetNodes": int64(3),

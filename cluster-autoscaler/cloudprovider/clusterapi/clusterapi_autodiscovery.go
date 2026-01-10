@@ -48,7 +48,7 @@ func parseAutoDiscoverySpec(spec string) (*clusterAPIAutoDiscoveryConfig, error)
 		return cfg, errors.NewAutoscalerError(errors.ConfigurationError, fmt.Sprintf("unsupported discoverer specified: %s", discoverer))
 	}
 
-	for _, arg := range strings.Split(tokens[1], ",") {
+	for arg := range strings.SplitSeq(tokens[1], ",") {
 		if len(arg) == 0 {
 			continue
 		}

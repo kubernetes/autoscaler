@@ -18,6 +18,7 @@ package provreqwrapper
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -149,7 +150,7 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 // BuildTestPods builds a list of pod objects for use as existing unschedulable pods in tests.
 func BuildTestPods(namespace, name string, podCount int) []*apiv1.Pod {
 	pods := make([]*apiv1.Pod, 0, podCount)
-	for i := 0; i < podCount; i++ {
+	for i := range podCount {
 		pods = append(pods, &apiv1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%d", name, i),
@@ -166,8 +167,6 @@ func (pr *ProvisioningRequest) CopyWithParameters(params map[string]v1.Parameter
 	if prCopy.Spec.Parameters == nil {
 		prCopy.Spec.Parameters = make(map[string]v1.Parameter, len(params))
 	}
-	for key, val := range params {
-		prCopy.Spec.Parameters[key] = val
-	}
+	maps.Copy(prCopy.Spec.Parameters, params)
 	return &ProvisioningRequest{prCopy, pr.PodTemplates}
 }

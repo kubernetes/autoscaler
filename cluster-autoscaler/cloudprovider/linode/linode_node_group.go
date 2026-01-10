@@ -88,7 +88,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 			currentSize, targetSize, n.MaxSize())
 	}
 
-	for i := 0; i < delta; i++ {
+	for range delta {
 		err := n.addNewLKEPool()
 		if err != nil {
 			return err

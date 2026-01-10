@@ -75,12 +75,12 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 				FakeStore: map[string]resources.DeploymentExtended{
 					"deployment": {
 						Name: ptr.To("deployment"),
-						Properties: &resources.DeploymentPropertiesExtended{Template: map[string]interface{}{
-							resourcesFieldName: []interface{}{
-								map[string]interface{}{
+						Properties: &resources.DeploymentPropertiesExtended{Template: map[string]any{
+							resourcesFieldName: []any{
+								map[string]any{
 									typeFieldName: nsgResourceType,
 								},
-								map[string]interface{}{
+								map[string]any{
 									typeFieldName: rtResourceType,
 								},
 							},

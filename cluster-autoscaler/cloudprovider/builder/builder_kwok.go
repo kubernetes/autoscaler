@@ -1,5 +1,4 @@
 //go:build kwok
-// +build kwok
 
 /*
 Copyright 2023 The Kubernetes Authors.

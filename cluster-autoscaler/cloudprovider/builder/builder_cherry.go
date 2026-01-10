@@ -1,5 +1,4 @@
 //go:build cherry
-// +build cherry
 
 /*
 Copyright 2022 The Kubernetes Authors.

@@ -21,6 +21,7 @@ package aws
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -345,17 +346,13 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 	result := make(map[string]string)
 
 	// Copy Generic Labels and Labels from ASG
-	for k, v := range extractedLabels {
-		result[k] = v
-	}
+	maps.Copy(result, extractedLabels)
 
 	// Copy Labels from EKS DescribeNodegroup API call
 	// If the there is a duplicate key, this will overwrite the ASG Tag specified values with the EKS DescribeNodegroup API values
 	// We are overwriting them because it seems like EKS isn't sending the ASG Tags to Kubernetes itself
 	//     so scale ups based on the ASG Tag aren't working
-	for k, v := range mngLabels {
-		result[k] = v
-	}
+	maps.Copy(result, mngLabels)
 
 	return result
 }

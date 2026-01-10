@@ -30,6 +30,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -157,12 +158,7 @@ func Find(a []string, x string) int {
 
 // Contains tells whether a contains x.
 func Contains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(a, x)
 }
 
 // createCherryManagerRest sets up the client and returns
@@ -458,7 +454,7 @@ func (mgr *cherryManagerRest) createNodes(nodegroup string, nodes int) error {
 	}
 
 	errList := make([]error, 0, nodes)
-	for i := 0; i < nodes; i++ {
+	for range nodes {
 		errList = append(errList, mgr.createNode(context.TODO(), string(cloudinit), nodegroup))
 	}
 
@@ -681,7 +677,7 @@ func (mgr *cherryManagerRest) getNodePoolDefinition(nodegroup string) *cherryMan
 	return NodePoolDefinition
 }
 
-func renderTemplate(str string, vars interface{}) (string, error) {
+func renderTemplate(str string, vars any) (string, error) {
 	tmpl, err := template.New("tmpl").Parse(str)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template %q, %w", str, err)

@@ -1,5 +1,4 @@
 //go:build aws
-// +build aws
 
 /*
 Copyright 2018 The Kubernetes Authors.

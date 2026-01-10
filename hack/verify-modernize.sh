@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2014 The Kubernetes Authors.
+# Copyright 2026 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,20 +47,20 @@ excluded_packages=(
 
 FIND_PACKAGES='go list ./... 2> /dev/null'
 for package in "${excluded_packages[@]}"; do
-     FIND_PACKAGES+="| grep -v ${package} "
+  FIND_PACKAGES+="| grep -v ${package} "
 done
 
 PACKAGES=()
 mapfile -t PACKAGES < <(eval ${FIND_PACKAGES})
 bad_files=()
-for package in "${PACKAGES[@]}"; do
-  out=$("${GOLINT}" -min_confidence=0.9 "${package}")
+for package in ${PACKAGES[@]+"${PACKAGES[@]}"}; do
+  out=$(go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test "${package}")
   if [[ -n "${out}" ]]; then
     bad_files+=("${out}")
   fi
 done
 if [[ "${#bad_files[@]}" -ne 0 ]]; then
-  echo "!!! '$GOLINT' problems: "
+  echo "!!! modernize problems: "
   echo "${bad_files[@]}"
   exit 1
 fi

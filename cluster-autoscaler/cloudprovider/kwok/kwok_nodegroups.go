@@ -73,7 +73,7 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("couldn't create a template node for nodegroup %s", nodeGroup.name)
 	}
 
-	for i := 0; i < delta; i++ {
+	for range delta {
 		node := schedNode.Node()
 		node.Name = fmt.Sprintf("%s-%s", nodeGroup.name, rand.String(5))
 		if node.Annotations == nil {

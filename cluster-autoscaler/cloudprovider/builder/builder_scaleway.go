@@ -1,5 +1,4 @@
 //go:build scaleway
-// +build scaleway
 
 /*
 Copyright 2022 The Kubernetes Authors.

@@ -43,15 +43,15 @@ func makeTestNodeGroup(name string, uid string, min, max, target int64, options 
 			{Group: coreWeaveGroup, Version: coreWeaveVersion, Resource: coreWeaveResource}: "kindList",
 		},
 	)
-	obj := map[string]interface{}{
+	obj := map[string]any{
 		"apiVersion": coreWeaveGroup + "/" + coreWeaveVersion,
 		"kind":       coreWeaveResource,
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      name,
 			"namespace": "default",
 			"uid":       uid,
 		},
-		"spec": map[string]interface{}{
+		"spec": map[string]any{
 			"minNodes":    min,
 			"maxNodes":    max,
 			"targetNodes": target,
@@ -86,28 +86,28 @@ func makeTestNodeGroup(name string, uid string, min, max, target int64, options 
 }
 
 // NodeGroupOption is used for makeTestNodeGroup options
-type NodeGroupOption func(obj map[string]interface{})
+type NodeGroupOption func(obj map[string]any)
 
 func withInstanceType(instanceType string) NodeGroupOption {
-	return func(obj map[string]interface{}) {
-		obj["spec"].(map[string]interface{})["instanceType"] = instanceType
+	return func(obj map[string]any) {
+		obj["spec"].(map[string]any)["instanceType"] = instanceType
 	}
 }
 
 func withNodeLabels(nodeLabels map[string]string) NodeGroupOption {
-	return func(obj map[string]interface{}) {
-		labelsInterface := make(map[string]interface{}, len(nodeLabels))
+	return func(obj map[string]any) {
+		labelsInterface := make(map[string]any, len(nodeLabels))
 		for k, v := range nodeLabels {
 			labelsInterface[k] = v
 		}
 
-		obj["spec"].(map[string]interface{})["nodeLabels"] = labelsInterface
+		obj["spec"].(map[string]any)["nodeLabels"] = labelsInterface
 	}
 }
 
 func withNodeTaints(nodeTaints []apiv1.Taint) NodeGroupOption {
-	return func(obj map[string]interface{}) {
-		taints := make([]interface{}, len(nodeTaints))
+	return func(obj map[string]any) {
+		taints := make([]any, len(nodeTaints))
 		for i, t := range nodeTaints {
 			tUnstructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&t)
 			if err != nil {
@@ -115,7 +115,7 @@ func withNodeTaints(nodeTaints []apiv1.Taint) NodeGroupOption {
 			}
 			taints[i] = tUnstructured
 		}
-		obj["spec"].(map[string]interface{})["nodeTaints"] = taints
+		obj["spec"].(map[string]any)["nodeTaints"] = taints
 	}
 }
 

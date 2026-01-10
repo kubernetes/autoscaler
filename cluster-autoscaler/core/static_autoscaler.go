@@ -97,7 +97,7 @@ type StaticAutoscaler struct {
 
 type staticAutoscalerProcessorCallbacks struct {
 	disableScaleDownForLoop bool
-	extraValues             map[string]interface{}
+	extraValues             map[string]any
 	scaleDownPlanner        scaledown.Planner
 }
 
@@ -115,18 +115,18 @@ func (callbacks *staticAutoscalerProcessorCallbacks) DisableScaleDownForLoop() {
 	callbacks.disableScaleDownForLoop = true
 }
 
-func (callbacks *staticAutoscalerProcessorCallbacks) SetExtraValue(key string, value interface{}) {
+func (callbacks *staticAutoscalerProcessorCallbacks) SetExtraValue(key string, value any) {
 	callbacks.extraValues[key] = value
 }
 
-func (callbacks *staticAutoscalerProcessorCallbacks) GetExtraValue(key string) (value interface{}, found bool) {
+func (callbacks *staticAutoscalerProcessorCallbacks) GetExtraValue(key string) (value any, found bool) {
 	value, found = callbacks.extraValues[key]
 	return
 }
 
 func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 	callbacks.disableScaleDownForLoop = false
-	callbacks.extraValues = make(map[string]interface{})
+	callbacks.extraValues = make(map[string]any)
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -1106,7 +1106,7 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*f
 		nodeTemplate.Node().Annotations[annotations.NodeUpcomingAnnotation] = "true"
 
 		var nodes []*framework.NodeInfo
-		for i := 0; i < numberOfNodes; i++ {
+		for i := range numberOfNodes {
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).

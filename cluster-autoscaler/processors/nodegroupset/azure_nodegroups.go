@@ -17,6 +17,8 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"maps"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
@@ -57,9 +59,7 @@ func nodesFromSameAzureNodePoolLegacy(n1, n2 *framework.NodeInfo) bool {
 // or match usual conditions checked by IsCloudProviderNodeInfoSimilar, even if they have different agentpool labels.
 func CreateAzureNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
 	azureIgnoredLabels := make(map[string]bool)
-	for k, v := range BasicIgnoredLabels {
-		azureIgnoredLabels[k] = v
-	}
+	maps.Copy(azureIgnoredLabels, BasicIgnoredLabels)
 	azureIgnoredLabels[AzureNodepoolLegacyLabel] = true
 	azureIgnoredLabels[AzureNodepoolLabel] = true
 	azureIgnoredLabels[AzureDiskTopologyKey] = true

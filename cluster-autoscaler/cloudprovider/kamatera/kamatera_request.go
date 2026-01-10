@@ -41,7 +41,7 @@ type ProviderConfig struct {
 	ApiSecret   string
 }
 
-func request(ctx context.Context, provider ProviderConfig, method string, path string, body interface{}, numRetries int, secondsBetweenRetries int) (interface{}, error) {
+func request(ctx context.Context, provider ProviderConfig, method string, path string, body any, numRetries int, secondsBetweenRetries int) (any, error) {
 	buf := new(bytes.Buffer)
 	if body != nil {
 		if err := json.NewEncoder(buf).Encode(body); err != nil {
@@ -50,9 +50,9 @@ func request(ctx context.Context, provider ProviderConfig, method string, path s
 	}
 	path = strings.TrimPrefix(path, "/")
 	url := fmt.Sprintf("%s/%s", provider.ApiUrl, path)
-	var result interface{}
+	var result any
 	var err error
-	for attempt := 0; attempt < numRetries; attempt++ {
+	for attempt := range numRetries {
 		klog.V(2).Infof("kamatera request: %s %s %s", method, url, buf.String())
 		if attempt > 0 {
 			klog.V(2).Infof("kamatera request retry %d", attempt)
@@ -91,7 +91,7 @@ func request(ctx context.Context, provider ProviderConfig, method string, path s
 	return result, err
 }
 
-func waitCommand(ctx context.Context, provider ProviderConfig, commandID string, numRetries int, secondsBetweenRetries int) (map[string]interface{}, error) {
+func waitCommand(ctx context.Context, provider ProviderConfig, commandID string, numRetries int, secondsBetweenRetries int) (map[string]any, error) {
 	startTime := time.Now()
 	time.Sleep(2 * time.Second)
 
@@ -107,12 +107,12 @@ func waitCommand(ctx context.Context, provider ProviderConfig, commandID string,
 			return nil, e
 		}
 
-		commands := result.([]interface{})
+		commands := result.([]any)
 		if len(commands) != 1 {
 			return nil, errors.New("invalid response from Kamatera queue API: invalid number of command responses")
 		}
 
-		command := commands[0].(map[string]interface{})
+		command := commands[0].(map[string]any)
 		status, hasStatus := command["status"]
 		if hasStatus {
 			switch status.(string) {
@@ -129,11 +129,11 @@ func waitCommand(ctx context.Context, provider ProviderConfig, commandID string,
 	}
 }
 
-func waitCommands(ctx context.Context, provider ProviderConfig, commandIds map[string]string, numRetries int, secondsBetweenRetries int) (map[string]interface{}, error) {
+func waitCommands(ctx context.Context, provider ProviderConfig, commandIds map[string]string, numRetries int, secondsBetweenRetries int) (map[string]any, error) {
 	startTime := time.Now()
 	time.Sleep(2 * time.Second)
 
-	commandIdsResults := make(map[string]interface{})
+	commandIdsResults := make(map[string]any)
 	for id := range commandIds {
 		commandIdsResults[id] = nil
 	}
@@ -152,11 +152,11 @@ func waitCommands(ctx context.Context, provider ProviderConfig, commandIds map[s
 				if e != nil {
 					return nil, e
 				}
-				commands := result.([]interface{})
+				commands := result.([]any)
 				if len(commands) != 1 {
 					return nil, errors.New("invalid response from Kamatera queue API: invalid number of command responses")
 				}
-				command := commands[0].(map[string]interface{})
+				command := commands[0].(map[string]any)
 				status, hasStatus := command["status"]
 				if hasStatus {
 					switch status.(string) {

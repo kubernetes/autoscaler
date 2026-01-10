@@ -478,10 +478,10 @@ func extractTaintsFromTags(tags map[string]*string) []apiv1.Taint {
 // "dedicated=foo:NoSchedule,group=bar:NoExecute,app=fizz:PreferNoSchedule"
 func extractTaintsFromSpecString(taintsString string) []apiv1.Taint {
 	taints := make([]apiv1.Taint, 0)
-	dedupMap := make(map[string]interface{})
+	dedupMap := make(map[string]any)
 	// First split the taints at the separator
-	splits := strings.Split(taintsString, ",")
-	for _, split := range splits {
+	splits := strings.SplitSeq(taintsString, ",")
+	for split := range splits {
 		if dedupMap[split] != nil {
 			continue
 		}

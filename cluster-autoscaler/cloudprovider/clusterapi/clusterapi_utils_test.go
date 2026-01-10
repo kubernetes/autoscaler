@@ -126,15 +126,15 @@ func TestUtilParseScalingBounds(t *testing.T) {
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
 			machineSet := unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"kind":       machineSetKind,
 					"apiVersion": "cluster.x-k8s.io/v1alpha3",
-					"metadata": map[string]interface{}{
+					"metadata": map[string]any{
 						"name":      "test",
 						"namespace": "default",
 					},
-					"spec":   map[string]interface{}{},
-					"status": map[string]interface{}{},
+					"spec":   map[string]any{},
+					"status": map[string]any{},
 				},
 			}
 			machineSet.SetAnnotations(tc.annotations)
@@ -176,15 +176,15 @@ func TestUtilGetOwnerByKindMachineSet(t *testing.T) {
 	}, {
 		description: "not owned as not the same Kind",
 		machineSet: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineSetOwnerRefs: []metav1.OwnerReference{
@@ -196,15 +196,15 @@ func TestUtilGetOwnerByKindMachineSet(t *testing.T) {
 	}, {
 		description: "not owned because no OwnerReference.Name",
 		machineSet: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineSetOwnerRefs: []metav1.OwnerReference{
@@ -217,15 +217,15 @@ func TestUtilGetOwnerByKindMachineSet(t *testing.T) {
 	}, {
 		description: "owned as UID values match and same Kind and Name not empty",
 		machineSet: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineSetOwnerRefs: []metav1.OwnerReference{
@@ -266,15 +266,15 @@ func TestUtilGetOwnerByKindMachine(t *testing.T) {
 	}, {
 		description: "not owned as not the same Kind",
 		machine: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineOwnerRefs: []metav1.OwnerReference{
@@ -288,15 +288,15 @@ func TestUtilGetOwnerByKindMachine(t *testing.T) {
 	}, {
 		description: "not owned because no OwnerReference.Name",
 		machine: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineOwnerRefs: []metav1.OwnerReference{
@@ -309,15 +309,15 @@ func TestUtilGetOwnerByKindMachine(t *testing.T) {
 	}, {
 		description: "owned as UID values match and same Kind and Name not empty",
 		machine: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineOwnerRefs: []metav1.OwnerReference{
@@ -358,15 +358,15 @@ func TestUtilMachineSetHasMachineDeploymentOwnerRef(t *testing.T) {
 	}, {
 		description: "machineset not owned as ownerref not a MachineDeployment",
 		machineSet: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineSetOwnerRefs: []metav1.OwnerReference{
@@ -378,15 +378,15 @@ func TestUtilMachineSetHasMachineDeploymentOwnerRef(t *testing.T) {
 	}, {
 		description: "machineset owned as Kind matches and Name not empty",
 		machineSet: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "test",
 					"namespace": "default",
 				},
-				"spec":   map[string]interface{}{},
-				"status": map[string]interface{}{},
+				"spec":   map[string]any{},
+				"status": map[string]any{},
 			},
 		},
 		machineSetOwnerRefs: []metav1.OwnerReference{
@@ -636,144 +636,144 @@ func Test_clusterNameFromResource(t *testing.T) {
 	}{{
 		name: "cluster name not set, v1alpha1 MachineSet",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"replicas": int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "",
 	}, {
 		name: "cluster name not set, v1alpha1 MachineDeployment",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineDeploymentKind,
 				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"replicas": int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "",
 	}, {
 		name: "cluster name not set, v1alpha2 MachineSet",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha2",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"replicas": int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "",
 	}, {
 		name: "cluster name not set, v1alpha2 MachineDeployment",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineDeploymentKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha2",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"replicas": int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "",
 	}, {
 		name: "cluster name set in MachineSet labels, v1alpha2 MachineSet",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha2",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
-					"labels": map[string]interface{}{
+					"labels": map[string]any{
 						clusterNameLabel: "bar",
 					},
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"replicas": int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "bar",
 	}, {
 		name: "cluster name set in MachineDeployment, v1alpha2 MachineDeployment",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineDeploymentKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha2",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
-					"labels": map[string]interface{}{
+					"labels": map[string]any{
 						clusterNameLabel: "bar",
 					},
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"replicas": int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "bar",
 	}, {
 		name: "cluster name set in spec, v1alpha3 MachineSet",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineSetKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"clusterName": "bar",
 					"replicas":    int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "bar",
 	}, {
 		name: "cluster name set in spec, v1alpha3 MachineDeployment",
 		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind":       machineDeploymentKind,
 				"apiVersion": "cluster.x-k8s.io/v1alpha3",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      "foo",
 					"namespace": "default",
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"clusterName": "bar",
 					"replicas":    int64(1),
 				},
-				"status": map[string]interface{}{},
+				"status": map[string]any{},
 			},
 		},
 		want: "bar",

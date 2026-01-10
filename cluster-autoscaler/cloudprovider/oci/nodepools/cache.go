@@ -6,6 +6,7 @@ package nodepools
 
 import (
 	"context"
+	"maps"
 	"net/http"
 	"sync"
 
@@ -34,9 +35,7 @@ type nodePoolCache struct {
 
 func (c *nodePoolCache) nodePools() map[string]*oke.NodePool {
 	result := map[string]*oke.NodePool{}
-	for k, v := range c.cache {
-		result[k] = v
-	}
+	maps.Copy(result, c.cache)
 	return result
 }
 

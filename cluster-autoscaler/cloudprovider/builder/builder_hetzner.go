@@ -1,5 +1,4 @@
 //go:build hetzner
-// +build hetzner
 
 /*
 Copyright 2020 The Kubernetes Authors.

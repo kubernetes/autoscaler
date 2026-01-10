@@ -553,7 +553,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 		}
 
 		ch := make(chan error)
-		checkDone := func(obj interface{}) (bool, error) {
+		checkDone := func(obj any) (bool, error) {
 			u, ok := obj.(*unstructured.Unstructured)
 			if !ok {
 				return false, nil
@@ -593,13 +593,13 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			return true, nil
 		}
 		handler := cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
+			AddFunc: func(obj any) {
 				match, err := checkDone(obj)
 				if match {
 					ch <- err
 				}
 			},
-			UpdateFunc: func(oldObj, newObj interface{}) {
+			UpdateFunc: func(oldObj, newObj any) {
 				match, err := checkDone(newObj)
 				if match {
 					ch <- err
@@ -883,7 +883,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 			return nodeNames[i].Id < nodeNames[j].Id
 		})
 
-		for i := 0; i < len(nodeNames); i++ {
+		for i := range nodeNames {
 			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 			}
@@ -1122,7 +1122,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 			return nodeNames[i].Id < nodeNames[j].Id
 		})
 
-		for i := 0; i < len(nodeNames); i++ {
+		for i := range nodeNames {
 			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 			}
@@ -1293,7 +1293,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 			return nodeNames[i].Id < nodeNames[j].Id
 		})
 
-		for i := 0; i < len(nodeNames); i++ {
+		for i := range nodeNames {
 			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 			}

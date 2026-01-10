@@ -97,7 +97,7 @@ type machineController struct {
 	stopChannel <-chan struct{}
 }
 
-func indexMachinePoolByProviderID(obj interface{}) ([]string, error) {
+func indexMachinePoolByProviderID(obj any) ([]string, error) {
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {
 		return nil, nil
@@ -120,7 +120,7 @@ func indexMachinePoolByProviderID(obj interface{}) ([]string, error) {
 	return normalizedProviderIDs, nil
 }
 
-func indexMachineByProviderID(obj interface{}) ([]string, error) {
+func indexMachineByProviderID(obj any) ([]string, error) {
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {
 		return nil, nil
@@ -137,7 +137,7 @@ func indexMachineByProviderID(obj interface{}) ([]string, error) {
 	return []string{string(normalizedProviderString(providerID))}, nil
 }
 
-func indexNodeByProviderID(obj interface{}) ([]string, error) {
+func indexNodeByProviderID(obj any) ([]string, error) {
 	if node, ok := obj.(*corev1.Node); ok {
 		if node.Spec.ProviderID != "" {
 			return []string{string(normalizedProviderString(node.Spec.ProviderID))}, nil

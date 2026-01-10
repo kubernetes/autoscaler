@@ -17,6 +17,7 @@ limitations under the License.
 package resource
 
 import (
+	"maps"
 	"math"
 	"reflect"
 	"time"
@@ -167,9 +168,7 @@ func (lf *LimitsFinder) customResourcesTotal(autoscalingCtx *ca_context.Autoscal
 // DeepCopy returns a copy of the original limits.
 func (l Limits) DeepCopy() Limits {
 	copy := Limits{}
-	for k, v := range l {
-		copy[k] = v
-	}
+	maps.Copy(copy, l)
 	return copy
 }
 

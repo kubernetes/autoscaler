@@ -129,8 +129,8 @@ func getNonBlockingVolumes(pod *apiv1.Pod) map[string]bool {
 	isNonBlocking := map[string]bool{}
 	annotationVal := pod.GetAnnotations()[SafeToEvictLocalVolumesKey]
 	if annotationVal != "" {
-		vols := strings.Split(annotationVal, ",")
-		for _, v := range vols {
+		vols := strings.SplitSeq(annotationVal, ",")
+		for v := range vols {
 			isNonBlocking[v] = true
 		}
 	}

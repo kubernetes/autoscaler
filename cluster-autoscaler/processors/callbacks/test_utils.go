@@ -21,7 +21,7 @@ type TestProcessorCallbacks struct {
 	// ScaleDownDisabledForLoop marks if scaledown should be disabled for loop
 	ScaleDownDisabledForLoop bool
 	// ExtraValues stores values set by GetExtraValue
-	ExtraValues map[string]interface{}
+	ExtraValues map[string]any
 }
 
 // ResetUnneededNodes is test implementation, which takes no action
@@ -39,7 +39,7 @@ func NewTestProcessorCallbacks() *TestProcessorCallbacks {
 // Reset resets TestProcessorCallbacks
 func (callbacks *TestProcessorCallbacks) Reset() {
 	callbacks.ScaleDownDisabledForLoop = false
-	callbacks.ExtraValues = make(map[string]interface{})
+	callbacks.ExtraValues = make(map[string]any)
 }
 
 // DisableScaleDownForLoop is implementation of ProcessorCallbacks.DisableScaleDownForLoop
@@ -48,12 +48,12 @@ func (callbacks *TestProcessorCallbacks) DisableScaleDownForLoop() {
 }
 
 // SetExtraValue is implementation of ProcessorCallbacks.SetExtraValue
-func (callbacks *TestProcessorCallbacks) SetExtraValue(key string, value interface{}) {
+func (callbacks *TestProcessorCallbacks) SetExtraValue(key string, value any) {
 	callbacks.ExtraValues[key] = value
 }
 
 // GetExtraValue is implementation of ProcessorCallbacks.GetExtraValue
-func (callbacks *TestProcessorCallbacks) GetExtraValue(key string) (value interface{}, found bool) {
+func (callbacks *TestProcessorCallbacks) GetExtraValue(key string) (value any, found bool) {
 	value, found = callbacks.ExtraValues[key]
 	return
 }

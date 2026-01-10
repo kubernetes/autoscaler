@@ -19,6 +19,7 @@ package aws
 import (
 	"context"
 	"fmt"
+	"maps"
 	"strconv"
 	"time"
 
@@ -109,16 +110,12 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 
 	if r.Nodegroup.Labels != nil && len(r.Nodegroup.Labels) > 0 {
 		labelsMap := r.Nodegroup.Labels
-		for k, v := range labelsMap {
-			labels[k] = v
-		}
+		maps.Copy(labels, labelsMap)
 	}
 
 	if r.Nodegroup.Tags != nil && len(r.Nodegroup.Tags) > 0 {
 		tagsMap := r.Nodegroup.Tags
-		for k, v := range tagsMap {
-			tags[k] = v
-		}
+		maps.Copy(tags, tagsMap)
 	}
 
 	if r.Nodegroup.Taints != nil && len(r.Nodegroup.Taints) > 0 {
@@ -145,11 +142,7 @@ func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []st
 	launchConfigurationsToInstanceType := map[string]string{}
 
 	for i := 0; i < len(launchConfigToQuery); i += 50 {
-		end := i + 50
-
-		if end > len(launchConfigToQuery) {
-			end = len(launchConfigToQuery)
-		}
+		end := min(i+50, len(launchConfigToQuery))
 		params := &autoscaling.DescribeLaunchConfigurationsInput{
 			LaunchConfigurationNames: launchConfigToQuery[i:end],
 			MaxRecords:               aws.Int32(50),
@@ -175,11 +168,7 @@ func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]autoscalingt
 
 	// AWS only accepts up to 100 ASG names as input, describe them in batches
 	for i := 0; i < len(names); i += maxAsgNamesPerDescribe {
-		end := i + maxAsgNamesPerDescribe
-
-		if end > len(names) {
-			end = len(names)
-		}
+		end := min(i+maxAsgNamesPerDescribe, len(names))
 
 		input := &autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: names[i:end],
