@@ -44,7 +44,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 	for _, c := range tls.CipherSuites() {
 		reverseCipherMap[c.Name] = c.ID
 	}
-	for _, c := range strings.Split(strings.ReplaceAll(ciphers, ",", ":"), ":") {
+	for c := range strings.SplitSeq(strings.ReplaceAll(ciphers, ",", ":"), ":") {
 		cipher, ok := reverseCipherMap[c]
 		if ok {
 			ciphersuites = append(ciphersuites, cipher)
@@ -55,9 +55,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 	}
 
 	switch minTlsVersion {
-	case "":
-		fallthrough
-	case "tls1_2":
+	case "", "tls1_2":
 		tlsVersion = tls.VersionTLS12
 	case "tls1_3":
 		tlsVersion = tls.VersionTLS13
@@ -202,8 +200,8 @@ func convertLabelsToMap(labels string) (map[string]string, error) {
 		return m, nil
 	}
 	labels = strings.Trim(labels, "\"")
-	s := strings.Split(labels, ",")
-	for _, tag := range s {
+	s := strings.SplitSeq(labels, ",")
+	for tag := range s {
 		kv := strings.SplitN(tag, ":", 2)
 		if len(kv) != 2 {
 			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)

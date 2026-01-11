@@ -311,8 +311,8 @@ func TestHistogramIsNotEmptyAfterSavingAndLoadingCheckpointsWithBoundaryValues(t
 	assert.False(t, newHistogram.IsEmpty())
 }
 
-func areUnique(values ...interface{}) bool {
-	dict := make(map[interface{}]bool)
+func areUnique(values ...any) bool {
+	dict := make(map[any]bool)
 	for i, v := range values {
 		dict[v] = true
 		if len(dict) != i+1 {

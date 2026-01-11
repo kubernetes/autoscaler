@@ -27,9 +27,9 @@ import (
 
 // PatchRecord represents a single patch for modifying a resource.
 type PatchRecord struct {
-	Op    string      `json:"op,inline"`
-	Path  string      `json:"path,inline"`
-	Value interface{} `json:"value"`
+	Op    string `json:"op,inline"`
+	Path  string `json:"path,inline"`
+	Value any    `json:"value"`
 }
 
 // Handler represents a handler for a resource in Admission Server

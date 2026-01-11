@@ -1203,16 +1203,16 @@ func runSimpleScaleUpTest(t *testing.T, testConfig *ScaleUpTestConfig) *ScaleUpT
 		}
 	}
 	// build orchestrator
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, kube_util.ScheduledPods(pods), nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, kube_util.ScheduledPods(pods), nil, nil)
 	assert.NoError(t, err)
-	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).
-		Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	processors.ScaleStateNotifier.Register(clusterState)
 	processors.NodeGroupSetProcessor = nodegroupset.NewDefaultNodeGroupSetProcessor([]string{nodeGroupLabel}, config.NodeGroupDifferenceRatios{})
 	if testConfig.EnableAutoprovisioning {
@@ -1321,16 +1321,17 @@ func TestScaleUpUnhealthy(t *testing.T) {
 		MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
 		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil, nil)
 	assert.NoError(t, err)
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
 	trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
 		QuotaProvider:            quotasProvider,
@@ -1369,20 +1370,19 @@ func TestBinpackingLimiter(t *testing.T) {
 	provider.AddNode("ng2", n2)
 	assert.NotNil(t, provider)
 
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 	assert.NoError(t, err)
-	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).
-		Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 	extraPod := BuildTestPod("p-new", 500, 0)
-
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 
 	// We should stop binpacking after finding expansion option from first node group.
 	processors.BinpackingLimiter = &MockBinpackingLimiter{}
@@ -1435,16 +1435,17 @@ func TestScaleUpNoHelp(t *testing.T) {
 		MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
 		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil, nil)
 	assert.NoError(t, err)
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 500, 0)
 
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
 	trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
 		QuotaProvider:            quotasProvider,
@@ -1595,11 +1596,13 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 			}
 
 			listers := kube_util.NewListerRegistry(nil, nil, kube_util.NewTestPodLister(nil), nil, nil, nil, nil, nil, nil)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled, MaxNodeGroupBinpackingDuration: 1 * time.Second}, &fake.Clientset{}, listers, provider, nil, nil)
+			templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false))
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled, MaxNodeGroupBinpackingDuration: 1 * time.Second}, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 			assert.NoError(t, err)
-			nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 			assert.NoError(t, clusterState.UpdateNodes(nodes, nodeInfos, time.Now()))
 
@@ -1680,11 +1683,13 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 				MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
 				MaxNodeGroupBinpackingDuration: 1 * time.Second,
 			}
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, podList, nil)
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, podList, nil, nil)
 			assert.NoError(t, err)
-			nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 			clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
@@ -1696,7 +1701,6 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			if tc.expanderStrategy != nil {
 				autoscalingCtx.ExpanderStrategy = tc.expanderStrategy
 			}
-			processors := processorstest.NewTestProcessors(&autoscalingCtx)
 			quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
 			trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
 				QuotaProvider:            quotasProvider,
@@ -1751,17 +1755,18 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 	processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 0}
 
 	nodes := []*apiv1.Node{}
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
 	quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
 	trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
@@ -1808,17 +1813,18 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 	processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 
 	nodes := []*apiv1.Node{}
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
 	quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
 	trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
@@ -1872,14 +1878,15 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 		MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
 		MaxNodeGroupBinpackingDuration: 1 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 	assert.NoError(t, err)
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
-	processors := processorstest.NewTestProcessors(&autoscalingCtx)
+	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
@@ -1968,12 +1975,12 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 		}
 		podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 		listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-		autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
+		processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+		autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
 		assert.NoError(t, err)
 
 		clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 
-		processors := processorstest.NewTestProcessors(&autoscalingCtx)
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 1}
 		processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: tc.isUpcomingMockMap}

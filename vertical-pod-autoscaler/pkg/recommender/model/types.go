@@ -153,13 +153,15 @@ func ResourceAmountMax(amount1, amount2 ResourceAmount) ResourceAmount {
 }
 
 func resourceAmountFromFloat(amount float64) ResourceAmount {
-	if amount < 0 {
-		return ResourceAmount(0)
-	} else if amount > float64(MaxResourceAmount) {
+	if amount > float64(MaxResourceAmount) {
 		return MaxResourceAmount
-	} else {
-		return ResourceAmount(amount)
 	}
+
+	if amount < 0 {
+		amount = 0
+	}
+
+	return ResourceAmount(amount)
 }
 
 // HumanizeMemoryQuantity converts raw bytes to human-readable string using binary units (KiB, MiB, GiB, TiB) with two decimal places.
