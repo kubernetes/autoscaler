@@ -251,3 +251,59 @@ default-max-size=10
 	assert.Error(t, err, "no error when cluster name is more then 15 characters")
 	assert.Contains(t, err.Error(), "cluster name must be at most 15 characters long")
 }
+
+func TestCloudConfig_buildCloudConfig_DefaultSshKeyLineContinuation(t *testing.T) {
+	baseConfig := `
+[global]
+kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
+kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
+cluster-name=aaabbb
+default-min-size=1
+default-max-size=10
+default-ssh-key=ssh-rsa AAAA111\
+ BBBB222\
+ CCCC333
+
+[nodegroup "default"]
+`
+	expectedSshKey := "ssh-rsa AAAA111 BBBB222 CCCC333"
+	tests := []struct {
+		name string
+		cfg  string
+	}{
+		{
+			name: "lf",
+			cfg:  baseConfig,
+		},
+		{
+			name: "crlf",
+			cfg:  strings.ReplaceAll(baseConfig, "\n", "\r\n"),
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			config, err := buildCloudConfig(strings.NewReader(test.cfg))
+			assert.NoError(t, err)
+			assert.Equal(t, expectedSshKey, config.nodeGroupCfg["default"].SshKey)
+		})
+	}
+}
+
+func TestCloudConfig_buildCloudConfig_DefaultSshKeyEscapedNewlines(t *testing.T) {
+	cfg := strings.NewReader(`
+[global]
+kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
+kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
+cluster-name=aaabbb
+default-min-size=1
+default-max-size=10
+default-ssh-key="ssh-rsa AAAA111\nssh-rsa BBBB222"
+
+[nodegroup "default"]
+`)
+	config, err := buildCloudConfig(cfg)
+	assert.NoError(t, err)
+	assert.Equal(t, "ssh-rsa AAAA111\nssh-rsa BBBB222", config.nodeGroupCfg["default"].SshKey)
+}
