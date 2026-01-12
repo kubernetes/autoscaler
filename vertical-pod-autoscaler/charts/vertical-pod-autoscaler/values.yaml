@@ -77,14 +77,16 @@ admissionController:
   # Affinity for pod assignment.
   affinity:
     podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/component
-            operator: In
-            values:
-            - admission-controller
-        topologyKey: kubernetes.io/hostname
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/component
+              operator: In
+              values:
+              - admission-controller
+          topologyKey: kubernetes.io/hostname
 
   # List of node taints to tolerate.
   tolerations: []
@@ -225,14 +227,16 @@ recommender:
   # Affinity rules for scheduling the Recommender.
   affinity:
     podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/component
-            operator: In
-            values:
-            - recommender
-        topologyKey: kubernetes.io/hostname
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/component
+              operator: In
+              values:
+              - recommender
+          topologyKey: kubernetes.io/hostname
 
   # Tolerations for scheduling the Recommender.
   tolerations: []
@@ -301,14 +305,16 @@ updater:
   # Affinity rules for scheduling the Updater.
   affinity:
     podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/component
-            operator: In
-            values:
-            - updater
-        topologyKey: kubernetes.io/hostname
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/component
+              operator: In
+              values:
+              - updater
+          topologyKey: kubernetes.io/hostname
 
   # Node selector labels for scheduling the Updater.
   nodeSelector: {}

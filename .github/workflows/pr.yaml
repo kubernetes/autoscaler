@@ -50,6 +50,8 @@ jobs:
       - if: steps.list-changed.outputs.changed == 'true'
         name: Create kind cluster
         uses: helm/kind-action@v1.12.0
+        with:
+          config: .github/kind-config.yaml
       - if: steps.list-changed.outputs.changed == 'true'
         name: Run chart-testing (install)
         run: ct install --chart-dirs cluster-autoscaler/charts,vertical-pod-autoscaler/charts --target-branch ${{ github.event.pull_request.base.ref }}
