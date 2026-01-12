@@ -1,0 +1,29 @@
+{{- if and .Values.updater.enabled .Values.updater.podMonitor.enabled }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PodMonitor" }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.updater.podMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.updater.podMonitor.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  podMetricsEndpoints:
+  - interval: {{ .Values.updater.podMonitor.interval }}
+    path: /metrics
+    port: prometheus
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: updater
+      {{- include "vertical-pod-autoscaler.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}

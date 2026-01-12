@@ -264,6 +264,16 @@ recommender:
     maxUnavailable:
     # maxUnavailable: 1
 
+  # PodMonitor for the Recommender.
+  podMonitor:
+    enabled: false
+    # Interval at which metrics should be scraped.
+    interval: 30s
+    # Additional annotations for the PodMonitor.
+    annotations: {}
+    # Additional labels for the PodMonitor.
+    labels: {}
+
   # name of priorityclass for scheduling
   priorityClassName:
   # priorityClassName : high-priority
@@ -341,6 +351,16 @@ updater:
     # -- (int or string) Maximum number/percentage of pods that can be unavailable after the eviction.
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
     maxUnavailable:
+
+  # PodMonitor for the Updater.
+  podMonitor:
+    enabled: false
+    # Interval at which metrics should be scraped.
+    interval: 30s
+    # Additional annotations for the PodMonitor.
+    annotations: {}
+    # Additional labels for the PodMonitor.
+    labels: {}
 
   # Resources for the updater Controller
   resources: {}

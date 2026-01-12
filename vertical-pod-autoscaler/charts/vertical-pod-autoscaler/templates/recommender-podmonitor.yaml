@@ -1,0 +1,29 @@
+{{- if and .Values.recommender.enabled .Values.recommender.podMonitor.enabled }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PodMonitor" }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.recommender.podMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.recommender.podMonitor.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  podMetricsEndpoints:
+  - interval: {{ .Values.recommender.podMonitor.interval }}
+    path: /metrics
+    port: prometheus
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: recommender
+      {{- include "vertical-pod-autoscaler.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}

@@ -169,6 +169,10 @@ helm upgrade <release-name> <chart> \
 | recommender.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podLabels | object | `{}` |  |
+| recommender.podMonitor.annotations | object | `{}` |  |
+| recommender.podMonitor.enabled | bool | `false` |  |
+| recommender.podMonitor.interval | string | `"30s"` |  |
+| recommender.podMonitor.labels | object | `{}` |  |
 | recommender.priorityClassName | string | `nil` |  |
 | recommender.replicas | int | `2` |  |
 | recommender.resources | object | `{}` |  |
@@ -197,6 +201,10 @@ helm upgrade <release-name> <chart> \
 | updater.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | updater.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | updater.podLabels | object | `{}` |  |
+| updater.podMonitor.annotations | object | `{}` |  |
+| updater.podMonitor.enabled | bool | `false` |  |
+| updater.podMonitor.interval | string | `"30s"` |  |
+| updater.podMonitor.labels | object | `{}` |  |
 | updater.priorityClassName | string | `nil` |  |
 | updater.replicas | int | `2` |  |
 | updater.resources | object | `{}` |  |
