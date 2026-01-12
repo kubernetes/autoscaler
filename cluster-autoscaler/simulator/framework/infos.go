@@ -120,7 +120,11 @@ func (n *NodeInfo) DeepCopy() *NodeInfo {
 		newSlices = append(newSlices, slice.DeepCopy())
 	}
 	// Node() can be nil, but DeepCopy() handles nil receivers gracefully.
-	return NewNodeInfo(n.Node().DeepCopy(), newSlices, newPods...)
+	ni := NewNodeInfo(n.Node().DeepCopy(), newSlices, newPods...)
+	if n.CSINode != nil {
+		ni.SetCSINode(n.CSINode.DeepCopy())
+	}
+	return ni
 }
 
 // ResourceClaims returns all ResourceClaims contained in the PodInfos in this NodeInfo. Shared claims
