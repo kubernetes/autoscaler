@@ -81,6 +81,9 @@ var RecommenderLabels = map[string]string{"app": "vpa-recommender"}
 // HamsterLabels are labels of hamster app
 var HamsterLabels = map[string]string{"app": "hamster"}
 
+// OOMLabels are labels for OOM test pods
+var OOMLabels = map[string]string{"app": "oom-test"}
+
 // SIGDescribe adds sig-autoscaling tag to test description.
 // Takes args that are passed to ginkgo.Describe.
 func SIGDescribe(scenario, name string, args ...any) bool {
