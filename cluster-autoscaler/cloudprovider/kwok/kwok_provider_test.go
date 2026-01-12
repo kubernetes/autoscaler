@@ -486,7 +486,7 @@ func TestGetNodeGpuConfig(t *testing.T) {
 	l := p.GetNodeGpuConfig(nodeWithGPU)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
-	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ResourceName))
+	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ExtendedResourceName))
 	assert.Equal(t, "nvidia-tesla-k80", l.Type)
 
 	nodeWithNoAllocatableGPU := &apiv1.Node{
@@ -499,7 +499,7 @@ func TestGetNodeGpuConfig(t *testing.T) {
 	l = p.GetNodeGpuConfig(nodeWithNoAllocatableGPU)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
-	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ResourceName))
+	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ExtendedResourceName))
 	assert.Equal(t, "nvidia-tesla-k80", l.Type)
 
 	nodeWithNoGPULabel := &apiv1.Node{
@@ -515,7 +515,7 @@ func TestGetNodeGpuConfig(t *testing.T) {
 	l = p.GetNodeGpuConfig(nodeWithNoGPULabel)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
-	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ResourceName))
+	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ExtendedResourceName))
 	assert.Equal(t, "", l.Type)
 
 }
