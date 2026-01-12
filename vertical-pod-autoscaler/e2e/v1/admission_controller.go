@@ -761,7 +761,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		podList := utils.StartDeploymentPods(f, d)
 
 		expectedRequestsLimits := map[string]string{
-			container1Name: "6m",  // ceil((4*150)/115) = ceil(5.22) = 6; , for more details check PR #8946
+			container1Name: "6m",   // ceil((4*150)/115) = ceil(5.22) = 6; for more details check PR #8946
 			container2Name: "28m",  // ceil((21*150)/115)
 			container3Name: "118m", // ceil((90*150)/115)
 		}
