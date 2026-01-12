@@ -57,7 +57,8 @@ const (
 	// will surface how many pods of a ProvReq could be scaled per the simulation.
 	// Supported values are "true" and "false" - by default, this is false, and
 	// checkCapacity will only surface whether there was capacity for all of the ProvReq Pods.
-	PartialCapacityCheckKey = "partialCapacityCheck"
+	PartialCapacityCheckKey  = "partialCapacityCheck"
+	partialCapacityCheckTrue = "true"
 )
 
 // Regex to match pod names created by PodsForProvisioningRequest.
@@ -190,7 +191,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	// Sets the simulation's breakOnFailure. If true, the simulation loop breaks upon a failed scheduling attempt.
 	simBreakOnFailure := true
 	partialCapacityCheck, ok := provReq.Spec.Parameters[PartialCapacityCheckKey]
-	if ok && partialCapacityCheck == "true" {
+	if ok && partialCapacityCheck == partialCapacityCheckTrue {
 		simBreakOnFailure = false
 	}
 
@@ -210,7 +211,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 		}
 
 		// Case 2: Capacity Partially Fits
-		if partialCapacityCheck == "true" && len(scheduled) < len(sortedUnschedulablePods) {
+		if partialCapacityCheck == partialCapacityCheckTrue && len(scheduled) < len(sortedUnschedulablePods) {
 			combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpPartialCapacityAvailable})
 			msg := fmt.Sprintf("%s Can schedule %d out of %d pods.", conditions.PartialCapacityIsFoundMsg, len(scheduled), len(sortedUnschedulablePods))
 			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.PartialCapacityIsFoundReason, msg, metav1.Now())
@@ -235,6 +236,8 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	return err
 }
 
+const podNameFormatLen = 3
+
 // Sort based on the pod names since they are created in the following format:
 // {GenerateName}{i}-{j}, where i is the index of the PodSet in the ProvReq and
 // j is the index of the pod within the PodSet.
@@ -248,7 +251,7 @@ func sortPodsFromProvReq(unschedulablePods []*apiv1.Pod) (sortedPods []*apiv1.Po
 		podB := podSetIndexPattern.FindStringSubmatch(sortedPods[j].Name)
 
 		// If both match the expected pattern, compare by indices
-		if len(podA) == 3 && len(podB) == 3 {
+		if len(podA) == podNameFormatLen && len(podB) == podNameFormatLen {
 			podSetIndexI, _ := strconv.Atoi(podA[1])
 			podIndexI, _ := strconv.Atoi(podA[2])
 			podSetIndexJ, _ := strconv.Atoi(podB[1])
