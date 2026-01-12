@@ -33,7 +33,6 @@ type VerticalPodAutoscalerBuilder interface {
 	WithContainer(containerName string) VerticalPodAutoscalerBuilder
 	WithNamespace(namespace string) VerticalPodAutoscalerBuilder
 	WithUpdateMode(updateMode vpa_types.UpdateMode) VerticalPodAutoscalerBuilder
-	WithEvictAfterOOMThreshold(*meta.Duration) VerticalPodAutoscalerBuilder
 	WithCreationTimestamp(timestamp time.Time) VerticalPodAutoscalerBuilder
 	WithMinAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
 	WithMaxAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
@@ -119,15 +118,6 @@ func (b *verticalPodAutoscalerBuilder) WithUpdateMode(updateMode vpa_types.Updat
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
 	}
 	c.updatePolicy.UpdateMode = &updateMode
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithEvictAfterOOMThreshold(threshold *meta.Duration) VerticalPodAutoscalerBuilder {
-	c := *b
-	if c.updatePolicy == nil {
-		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
-	}
-	c.updatePolicy.EvictAfterOOMThreshold = threshold
 	return &c
 }
 
