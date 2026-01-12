@@ -1,5 +1,4 @@
 {{- if and .Values.updater.enabled .Values.updater.podMonitor.enabled }}
-{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PodMonitor" }}
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
@@ -25,5 +24,4 @@ spec:
     matchLabels:
       app.kubernetes.io/component: updater
       {{- include "vertical-pod-autoscaler.selectorLabels" . | nindent 6 }}
-{{- end }}
 {{- end }}
