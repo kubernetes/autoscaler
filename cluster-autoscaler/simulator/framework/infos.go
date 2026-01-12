@@ -177,24 +177,3 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 	}
 	return result
 }
-
-// WrapSchedulerNodeInfo wraps a fwk.NodeInfo into an internal *NodeInfo.
-func WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo, slices []*resourceapi.ResourceSlice, podExtraInfos map[types.UID]PodExtraInfo) *NodeInfo {
-	if podExtraInfos == nil {
-		podExtraInfos = map[types.UID]PodExtraInfo{}
-	}
-	// Avoid multi-layer wrapping.
-	if ni, ok := schedNodeInfo.(*NodeInfo); ok {
-		schedNodeInfo = ni.NodeInfo
-	}
-	ni := &NodeInfo{
-		NodeInfo:            schedNodeInfo,
-		podsExtraInfo:       podExtraInfos,
-		LocalResourceSlices: slices,
-	}
-	for _, pod := range schedNodeInfo.GetPods() {
-		extraInfo := podExtraInfos[pod.GetPod().UID]
-		ni.pods = append(ni.pods, &PodInfo{Pod: pod.GetPod(), PodInfo: pod, PodExtraInfo: extraInfo})
-	}
-	return ni
-}

@@ -46,7 +46,6 @@ func TestNodeInfo(t *testing.T) {
 		test.BuildTestPod("regular-pod-1", 100, 16),
 		test.BuildTestPod("regular-pod-2", 100, 16),
 	}
-	extraPod := test.BuildTestPod("extra-pod", 1, 1)
 	schedulerNodeInfo := newSchedNodeInfo(node, pods)
 	slices := []*resourceapi.ResourceSlice{
 		{
@@ -109,28 +108,6 @@ func TestNodeInfo(t *testing.T) {
 			wantPods:          testPodInfos(pods, false),
 		},
 		{
-			testName: "wrapping via WrapSchedulerNodeInfo",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				return WrapSchedulerNodeInfo(info, nil, nil)
-			},
-			wantSchedNodeInfo: schedulerNodeInfo,
-			wantPods:          testPodInfos(pods, false),
-		},
-		{
-			testName: "wrapping via WrapSchedulerNodeInfo with DRA objects",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				podInfos := testPodInfos(pods, true)
-				extraInfos := make(map[types.UID]PodExtraInfo)
-				for _, podInfo := range podInfos {
-					extraInfos[podInfo.Pod.UID] = podInfo.PodExtraInfo
-				}
-				return WrapSchedulerNodeInfo(schedulerNodeInfo, slices, extraInfos)
-			},
-			wantSchedNodeInfo:       schedulerNodeInfo,
-			wantLocalResourceSlices: slices,
-			wantPods:                testPodInfos(pods, true),
-		},
-		{
 			testName: "wrapping via SetNode+AddPod",
 			modFn: func(info fwk.NodeInfo) *NodeInfo {
 				result := NewNodeInfo(nil, nil)
@@ -172,26 +149,6 @@ func TestNodeInfo(t *testing.T) {
 			wantSchedNodeInfo:       newSchedNodeInfo(node, []*apiv1.Pod{pods[1], pods[3], pods[5]}),
 			wantLocalResourceSlices: slices,
 			wantPods:                testPodInfos([]*apiv1.Pod{pods[1], pods[3], pods[5]}, true),
-		},
-		{
-			testName: "wrapping via WrapSchedulerNodeInfo and adding more pods",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				result := WrapSchedulerNodeInfo(info, nil, nil)
-				result.AddPod(testPodInfos([]*apiv1.Pod{extraPod}, false)[0])
-				return result
-			},
-			wantSchedNodeInfo: newSchedNodeInfo(node, append(pods, extraPod)),
-			wantPods:          testPodInfos(append(pods, extraPod), false),
-		},
-		{
-			testName: "wrapping via WrapSchedulerNodeInfo and adding more pods using DRA",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				result := WrapSchedulerNodeInfo(info, nil, nil)
-				result.AddPod(testPodInfos([]*apiv1.Pod{extraPod}, true)[0])
-				return result
-			},
-			wantSchedNodeInfo: newSchedNodeInfo(node, append(pods, extraPod)),
-			wantPods:          append(testPodInfos(pods, false), testPodInfos([]*apiv1.Pod{extraPod}, true)...),
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {

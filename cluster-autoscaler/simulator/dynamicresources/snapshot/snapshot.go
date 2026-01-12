@@ -22,10 +22,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
@@ -106,24 +104,6 @@ func (s *Snapshot) DeviceClasses() fwk.DeviceClassLister {
 // the scheduler framework.
 func (s *Snapshot) DeviceClassResolver() fwk.DeviceClassResolver {
 	return newSnapshotDeviceClassResolver(s)
-}
-
-// WrapSchedulerNodeInfo wraps the provided fwk.NodeInfo into an internal *framework.NodeInfo, adding
-// dra information. Node-local ResourceSlices are added to the NodeInfo, and all ResourceClaims referenced by each Pod
-// are added to each PodInfo. Returns an error if any of the Pods is missing a ResourceClaim.
-func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework.NodeInfo, error) {
-	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(schedNodeInfo.GetPods()))
-	for _, pod := range schedNodeInfo.GetPods() {
-		podClaims, err := s.PodClaims(pod.GetPod())
-		if err != nil {
-			return nil, err
-		}
-		if len(podClaims) > 0 {
-			podExtraInfos[pod.GetPod().UID] = framework.PodExtraInfo{NeededResourceClaims: podClaims}
-		}
-	}
-	nodeSlices, _ := s.NodeResourceSlices(schedNodeInfo.Node().Name)
-	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nodeSlices, podExtraInfos), nil
 }
 
 // AddClaims adds additional ResourceClaims to the Snapshot. It can be used e.g. if we need to duplicate a Pod that
