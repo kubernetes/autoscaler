@@ -175,12 +175,13 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	stopCh := make(chan struct{})
 	defer close(stopCh)
+	ctx := context.Background()
 	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(ctx, config, kubeClient, factory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(ctx, config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
