@@ -23,19 +23,13 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	appsinformer "k8s.io/client-go/informers/apps/v1"
-	coreinformer "k8s.io/client-go/informers/core/v1"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-)
-
-const (
-	resyncPeriod time.Duration = 1 * time.Minute
 )
 
 // ControllerKind is the type of controller that can manage a pod.
@@ -65,10 +59,7 @@ type PodsRestrictionFactory interface {
 // PodsRestrictionFactoryImpl is the implementation of the PodsRestrictionFactory interface.
 type PodsRestrictionFactoryImpl struct {
 	client                    kube_client.Interface
-	rcInformer                cache.SharedIndexInformer // informer for Replication Controllers
-	ssInformer                cache.SharedIndexInformer // informer for Stateful Sets
-	rsInformer                cache.SharedIndexInformer // informer for Replica Sets
-	dsInformer                cache.SharedIndexInformer // informer for Daemon Sets
+	informerFactory           informers.SharedInformerFactory
 	minReplicas               int
 	evictionToleranceFraction float64
 	clock                     clock.Clock
@@ -77,41 +68,22 @@ type PodsRestrictionFactoryImpl struct {
 }
 
 // NewPodsRestrictionFactory creates a new PodsRestrictionFactory.
-func NewPodsRestrictionFactory(client kube_client.Interface, minReplicas int, evictionToleranceFraction float64, patchCalculators []patch.Calculator) (PodsRestrictionFactory, error) {
-	rcInformer, err := setupInformer(client, replicationController)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create rcInformer: %v", err)
-	}
-	ssInformer, err := setupInformer(client, statefulSet)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create ssInformer: %v", err)
-	}
-	rsInformer, err := setupInformer(client, replicaSet)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create rsInformer: %v", err)
-	}
-	dsInformer, err := setupInformer(client, daemonSet)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create dsInformer: %v", err)
-	}
+func NewPodsRestrictionFactory(client kube_client.Interface, informerFactory informers.SharedInformerFactory, minReplicas int, evictionToleranceFraction float64, patchCalculators []patch.Calculator) PodsRestrictionFactory {
 	return &PodsRestrictionFactoryImpl{
 		client:                    client,
-		rcInformer:                rcInformer, // informer for Replication Controllers
-		ssInformer:                ssInformer, // informer for Stateful Sets
-		rsInformer:                rsInformer, // informer for Replica Sets
-		dsInformer:                dsInformer, // informer for Daemon Sets
+		informerFactory:           informerFactory,
 		minReplicas:               minReplicas,
 		evictionToleranceFraction: evictionToleranceFraction,
 		clock:                     &clock.RealClock{},
 		lastInPlaceAttemptTimeMap: make(map[string]time.Time),
 		patchCalculators:          patchCalculators,
-	}, nil
+	}
 }
 
 func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) (int, error) {
 	switch creator.Kind {
 	case replicationController:
-		rcObj, exists, err := f.rcInformer.GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
+		rcObj, exists, err := f.informerFactory.Core().V1().ReplicationControllers().Informer().GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
 		if err != nil {
 			return 0, fmt.Errorf("replication controller %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
 		}
@@ -127,7 +99,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		return int(*rc.Spec.Replicas), nil
 	case replicaSet:
-		rsObj, exists, err := f.rsInformer.GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
+		rsObj, exists, err := f.informerFactory.Apps().V1().ReplicaSets().Informer().GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
 		if err != nil {
 			return 0, fmt.Errorf("replica set %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
 		}
@@ -143,7 +115,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		return int(*rs.Spec.Replicas), nil
 	case statefulSet:
-		ssObj, exists, err := f.ssInformer.GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
+		ssObj, exists, err := f.informerFactory.Apps().V1().StatefulSets().Informer().GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
 		if err != nil {
 			return 0, fmt.Errorf("stateful set %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
 		}
@@ -159,7 +131,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		return int(*ss.Spec.Replicas), nil
 	case daemonSet:
-		dsObj, exists, err := f.dsInformer.GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
+		dsObj, exists, err := f.informerFactory.Apps().V1().DaemonSets().Informer().GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
 		if err != nil {
 			return 0, fmt.Errorf("daemon set %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
 		}
@@ -297,33 +269,6 @@ func managingControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
 		}
 	}
 	return &managingController
-}
-
-func setupInformer(kubeClient kube_client.Interface, kind controllerKind) (cache.SharedIndexInformer, error) {
-	var informer cache.SharedIndexInformer
-	switch kind {
-	case replicationController:
-		informer = coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
-			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	case replicaSet:
-		informer = appsinformer.NewReplicaSetInformer(kubeClient, apiv1.NamespaceAll,
-			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	case statefulSet:
-		informer = appsinformer.NewStatefulSetInformer(kubeClient, apiv1.NamespaceAll,
-			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	case daemonSet:
-		informer = appsinformer.NewDaemonSetInformer(kubeClient, apiv1.NamespaceAll,
-			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	default:
-		return nil, fmt.Errorf("unknown controller kind: %v", kind)
-	}
-	stopCh := make(chan struct{})
-	go informer.Run(stopCh)
-	synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
-	if !synced {
-		return nil, fmt.Errorf("failed to sync %v cache", kind)
-	}
-	return informer, nil
 }
 
 type singleGroupStats struct {
