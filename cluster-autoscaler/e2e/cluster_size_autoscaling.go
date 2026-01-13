@@ -117,7 +117,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		// cleanups happen, and they are blocking cluster restoring its initial size.
 		ginkgo.DeferCleanup(func(ctx context.Context) {
 			ginkgo.By("Restoring the state after test")
-			framework.ExpectNoError(e2enode.WaitForReadyNodes(ctx, c, nodeCount, scaleDownTimeout))
+			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount }, scaleDownTimeout))
 			nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 			framework.ExpectNoError(err)
 
@@ -248,7 +248,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		ginkgo.DeferCleanup(e2erc.DeleteRCAndWaitForGC, f.ClientSet, f.Namespace.Name, "extra-pod")
 
 		framework.ExpectNoError(waitForAllCaPodsReadyInNamespace(ctx, f, c))
-		framework.ExpectNoError(e2enode.WaitForReadyNodes(ctx, c, nodeCount+newPods, scaleUpTimeout))
+		framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount+newPods }, scaleUpTimeout))
 	})
 
 	f.It("should increase cluster size if pod requesting EmptyDir volume is pending", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
@@ -269,7 +269,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		ginkgo.DeferCleanup(e2erc.DeleteRCAndWaitForGC, f.ClientSet, f.Namespace.Name, "extra-pod")
 
 		framework.ExpectNoError(waitForAllCaPodsReadyInNamespace(ctx, f, c))
-		framework.ExpectNoError(e2enode.WaitForReadyNodes(ctx, c, nodeCount+newPods, scaleUpTimeout))
+		framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount+newPods }, scaleUpTimeout))
 	})
 
 	f.It("should correctly scale down after a node is not needed", feature.ClusterSizeAutoscalingScaleDown, func(ctx context.Context) {
@@ -454,6 +454,15 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 		"spec.unschedulable": "false",
 	}.AsSelector().String()})
 	framework.ExpectNoError(err)
+
+	// Filter out tainted nodes (e.g. master)
+	e2enode.Filter(nodes, func(node v1.Node) bool {
+		return !isNodeTainted(&node)
+	})
+
+	// There should be only increasedCount nodes after filtration.
+	gomega.Expect(nodes.Items).To(gomega.HaveLen(increasedCount))
+
 	numPods := len(nodes.Items) * podsPerNode
 	testID := string(uuid.NewUUID()) // So that we can label and find pods
 	labelMap := map[string]string{"test_id": testID}
@@ -550,6 +559,12 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 			klog.Warningf("Failed to list nodes: %v", err)
 			continue
 		}
+
+		// Filter out tainted nodes (e.g. master)
+		e2enode.Filter(nodes, func(node v1.Node) bool {
+			return !isNodeTainted(&node)
+		})
+
 		numNodes := len(nodes.Items)
 
 		// Filter out not-ready nodes.
@@ -1045,4 +1060,13 @@ func createPriorityClasses(ctx context.Context, f *framework.Framework) {
 			}
 		}
 	})
+}
+
+func isNodeTainted(node *v1.Node) bool {
+	for _, taint := range node.Spec.Taints {
+		if taint.Effect == v1.TaintEffectNoSchedule || taint.Effect == v1.TaintEffectNoExecute {
+			return true
+		}
+	}
+	return false
 }
