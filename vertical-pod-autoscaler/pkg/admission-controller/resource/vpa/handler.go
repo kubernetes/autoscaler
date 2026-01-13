@@ -173,9 +173,9 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 					return fmt.Errorf("maxAllowed: %v", err)
 				}
 			}
-			ControlledValues := policy.ControlledValues
-			if mode != nil && ControlledValues != nil {
-				if *mode == vpa_types.ContainerScalingModeOff && *ControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
+			controlledValues := policy.ControlledValues
+			if mode != nil && controlledValues != nil {
+				if *mode == vpa_types.ContainerScalingModeOff && *controlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
 					return fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off")
 				}
 			}
