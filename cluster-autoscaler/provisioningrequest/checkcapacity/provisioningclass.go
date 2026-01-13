@@ -57,8 +57,10 @@ const (
 	// will surface how many pods of a ProvReq could be scaled per the simulation.
 	// Supported values are "true" and "false" - by default, this is false, and
 	// checkCapacity will only surface whether there was capacity for all of the ProvReq Pods.
-	PartialCapacityCheckKey   = "partialCapacityCheck"
-	PartialCapacityCheckTrue  = "true"
+	PartialCapacityCheckKey = "partialCapacityCheck"
+	// True value for Partial Capacity Check parameter
+	PartialCapacityCheckTrue = "true"
+	// False value for Partial Capacity Check parameter
 	PartialCapacityCheckFalse = "false"
 )
 
