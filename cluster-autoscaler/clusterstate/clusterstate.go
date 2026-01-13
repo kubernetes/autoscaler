@@ -123,7 +123,7 @@ type ClusterStateRegistry struct {
 	sync.Mutex
 	config                             ClusterStateRegistryConfig
 	scaleUpRequests                    map[string]*ScaleUpRequest // nodeGroupName -> ScaleUpRequest
-	scaleDownRequests                  []*ScaleDownRequest
+	scaleDownRequests                  map[string]*ScaleDownRequest
 	nodes                              []*apiv1.Node
 	nodeInfosForGroups                 map[string]*framework.NodeInfo
 	cloudProvider                      cloudprovider.CloudProvider
@@ -161,7 +161,7 @@ type NodeGroupScalingSafety struct {
 func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker) *ClusterStateRegistry {
 	return &ClusterStateRegistry{
 		scaleUpRequests:                 make(map[string]*ScaleUpRequest),
-		scaleDownRequests:               make([]*ScaleDownRequest, 0),
+		scaleDownRequests:               make(map[string]*ScaleDownRequest),
 		nodes:                           make([]*apiv1.Node, 0),
 		cloudProvider:                   cloudProvider,
 		config:                          config,
@@ -268,7 +268,7 @@ func (csr *ClusterStateRegistry) RegisterScaleDown(nodeGroup cloudprovider.NodeG
 	}
 	csr.Lock()
 	defer csr.Unlock()
-	csr.scaleDownRequests = append(csr.scaleDownRequests, request)
+	csr.scaleDownRequests[nodeName] = request
 }
 
 // To be executed under a lock.
@@ -311,13 +311,11 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 		}
 	}
 
-	newScaleDownRequests := make([]*ScaleDownRequest, 0)
-	for _, scaleDownRequest := range csr.scaleDownRequests {
-		if scaleDownRequest.ExpectedDeleteTime.After(currentTime) {
-			newScaleDownRequests = append(newScaleDownRequests, scaleDownRequest)
+	for nodeName, scaleDownRequest := range csr.scaleDownRequests {
+		if !scaleDownRequest.ExpectedDeleteTime.After(currentTime) {
+			delete(csr.scaleDownRequests, nodeName)
 		}
 	}
-	csr.scaleDownRequests = newScaleDownRequests
 }
 
 // To be executed under a lock.
@@ -627,7 +625,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	total := Readiness{Time: currentTime}
 	maxNodeStartupTime := MaxNodeStartupTime
 	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness) Readiness {
-		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
+		nodeGroup, errNg := csr.nodeGroupForNode(node)
 		if errNg == nil && nodeGroup != nil {
 			if startupTime, err := csr.nodeGroupConfigProcessor.GetMaxNodeStartupTime(nodeGroup); err == nil {
 				maxNodeStartupTime = startupTime
@@ -635,7 +633,8 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		}
 		klog.V(1).Infof("Node %s: using maxNodeStartupTime = %v", node.Name, maxNodeStartupTime)
 		current.Registered = append(current.Registered, node.Name)
-		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
+		_, inScaleDown := csr.scaleDownRequests[node.Name]
+		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted || inScaleDown {
 			current.Deleted = append(current.Deleted, node.Name)
 		} else if nr.Ready {
 			current.Ready = append(current.Ready, node.Name)
@@ -651,7 +650,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	}
 
 	for _, node := range csr.nodes {
-		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
+		nodeGroup, errNg := csr.nodeGroupForNode(node)
 		nr, errReady := kube_util.GetNodeReadiness(node)
 
 		// Node is most likely not autoscaled, however check the errors.
@@ -669,7 +668,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	}
 
 	for _, unregistered := range csr.unregisteredNodes {
-		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
+		nodeGroup, errNg := csr.nodeGroupForNode(unregistered.Node)
 		if errNg != nil {
 			klog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
 			continue
@@ -773,6 +772,13 @@ func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []
 		result[deleted.Name] = struct{}{}
 	}
 	csr.deletedNodes = result
+}
+
+func (csr *ClusterStateRegistry) nodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	if sd, found := csr.scaleDownRequests[node.Name]; found {
+		return sd.NodeGroup, nil
+	}
+	return csr.cloudProvider.NodeGroupForNode(node)
 }
 
 // UpdateScaleDownCandidates updates scale down candidates

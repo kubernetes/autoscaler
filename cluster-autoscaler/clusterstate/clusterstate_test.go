@@ -587,6 +587,45 @@ func TestRegisterScaleDown(t *testing.T) {
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 }
 
+func TestNodeGroupForNodeFallBackToScaleDown(t *testing.T) {
+	now := time.Now()
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	// Do NOT add node to provider, so NodeGroupForNode returns nil
+	assert.NotNil(t, provider)
+
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{}, nil, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	clusterstate.RegisterScaleDown(provider.GetNodeGroup("ng1"), "ng1-1", now, now.Add(time.Minute))
+
+	nodeGroup, err := clusterstate.nodeGroupForNode(ng1_1)
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeGroup)
+	assert.Equal(t, "ng1", nodeGroup.Id())
+}
+
+func TestDeletedNodeFromScaleDownRequest(t *testing.T) {
+	now := time.Now()
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	// Node is NOT in cloud provider
+	assert.NotNil(t, provider)
+
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{}, nil, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	clusterstate.RegisterScaleDown(provider.GetNodeGroup("ng1"), "ng1-1", now, now.Add(time.Minute))
+
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	assert.NoError(t, err)
+
+	readiness := clusterstate.perNodeGroupReadiness["ng1"]
+	assert.Contains(t, readiness.Deleted, "ng1-1")
+	// Also check that it's NOT in Ready even if it has Ready condition, because it's Deleted
+	assert.NotContains(t, readiness.Ready, "ng1-1")
+}
+
 func TestNodeGroupScaleUpTime(t *testing.T) {
 	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	assert.NotNil(t, provider)
@@ -1279,11 +1318,13 @@ func TestUpdateAcceptableRanges(t *testing.T) {
 			for nodeGroupName, targetSize := range tc.targetSizes {
 				provider.AddNodeGroup(nodeGroupName, 0, 1000, targetSize)
 			}
-			var scaleDownRequests []*ScaleDownRequest
-			for _, nodeGroupName := range tc.scaledDownGroups {
-				scaleDownRequests = append(scaleDownRequests, &ScaleDownRequest{
+			scaleDownRequests := make(map[string]*ScaleDownRequest)
+			for i, nodeGroupName := range tc.scaledDownGroups {
+				nodeName := fmt.Sprintf("node-%d", i)
+				scaleDownRequests[nodeName] = &ScaleDownRequest{
 					NodeGroup: provider.GetNodeGroup(nodeGroupName),
-				})
+					NodeName:  nodeName,
+				}
 			}
 
 			clusterState := &ClusterStateRegistry{
