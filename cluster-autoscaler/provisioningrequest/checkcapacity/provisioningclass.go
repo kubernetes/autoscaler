@@ -57,8 +57,9 @@ const (
 	// will surface how many pods of a ProvReq could be scaled per the simulation.
 	// Supported values are "true" and "false" - by default, this is false, and
 	// checkCapacity will only surface whether there was capacity for all of the ProvReq Pods.
-	PartialCapacityCheckKey  = "partialCapacityCheck"
-	partialCapacityCheckTrue = "true"
+	PartialCapacityCheckKey   = "partialCapacityCheck"
+	PartialCapacityCheckTrue  = "true"
+	PartialCapacityCheckFalse = "false"
 )
 
 // Regex to match pod names created by PodsForProvisioningRequest.
@@ -191,8 +192,20 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	// Sets the simulation's breakOnFailure. If true, the simulation loop breaks upon a failed scheduling attempt.
 	simBreakOnFailure := true
 	partialCapacityCheck, ok := provReq.Spec.Parameters[PartialCapacityCheckKey]
-	if ok && partialCapacityCheck == partialCapacityCheckTrue {
-		simBreakOnFailure = false
+	if ok {
+		switch partialCapacityCheck {
+		case PartialCapacityCheckTrue:
+			simBreakOnFailure = false
+		case PartialCapacityCheckFalse:
+			// Maintain default behavior
+			simBreakOnFailure = true
+		default:
+			// Invalid value - use default behavior and log error
+			klog.Errorf("Ignoring Parameter %v with invalid value: %v in ProvisioningRequest: %v. Supported values are: %v, %v",
+				PartialCapacityCheckKey, partialCapacityCheck, provReq.Name,
+				PartialCapacityCheckTrue, PartialCapacityCheckFalse,
+			)
+		}
 	}
 
 	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, sortedUnschedulablePods, scheduling.ScheduleAnywhere, simBreakOnFailure)
@@ -210,8 +223,8 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 			return nil
 		}
 
-		// Case 2: Capacity Partially Fits
-		if partialCapacityCheck == partialCapacityCheckTrue && len(scheduled) < len(sortedUnschedulablePods) {
+		// Case 2: Capacity Partially Fits (at least 1 pod must be schedulable)
+		if partialCapacityCheck == PartialCapacityCheckTrue && len(scheduled) > 0 && len(scheduled) < len(sortedUnschedulablePods) {
 			combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpPartialCapacityAvailable})
 			msg := fmt.Sprintf("%s Can schedule %d out of %d pods.", conditions.PartialCapacityIsFoundMsg, len(scheduled), len(sortedUnschedulablePods))
 			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.PartialCapacityIsFoundReason, msg, metav1.Now())
@@ -220,6 +233,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	}
 
 	// Case 3: Capacity doesn't fit.
+	// If partialCapacityCheck is enabled, this case is also reached if 0 of the pods are schedulable.
 	o.autoscalingCtx.ClusterSnapshot.Revert()
 	combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable})
 	if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry == "true" {
