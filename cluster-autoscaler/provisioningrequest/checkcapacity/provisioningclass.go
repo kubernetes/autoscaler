@@ -58,9 +58,9 @@ const (
 	// Supported values are "true" and "false" - by default, this is false, and
 	// checkCapacity will only surface whether there was capacity for all of the ProvReq Pods.
 	PartialCapacityCheckKey = "partialCapacityCheck"
-	// True value for Partial Capacity Check parameter
+	// PartialCapacityCheckTrue is the true value for Partial Capacity Check parameter
 	PartialCapacityCheckTrue = "true"
-	// False value for Partial Capacity Check parameter
+	// PartialCapacityCheckFalse is the false value for Partial Capacity Check parameter
 	PartialCapacityCheckFalse = "false"
 )
 
