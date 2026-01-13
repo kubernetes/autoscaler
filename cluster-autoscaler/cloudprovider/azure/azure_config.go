@@ -117,6 +117,16 @@ type Config struct {
 	// VMSS PUTs so concurrent modifications are rejected with 412 instead of overwritten.
 	// Disabled by default; set to true to opt in.
 	EnableVMSSEtag bool `json:"enableVMSSEtag,omitempty" yaml:"enableVMSSEtag,omitempty"`
+
+	// EnableZombieCleanup defines whether to enable automatic cleanup of zombie VMSS instances
+	EnableZombieCleanup bool `json:"enableZombieCleanup,omitempty" yaml:"enableZombieCleanup,omitempty"`
+
+	// ZombieCleanupDryRun defines whether zombie cleanup should run in dry-run mode (detect but don't delete)
+	// In dry-run mode, zombies are detected and logged but NOT deleted
+	ZombieCleanupDryRun bool `json:"zombieCleanupDryRun,omitempty" yaml:"zombieCleanupDryRun,omitempty"`
+
+	// ZombieMinAgeMinutes defines the minimum age (in minutes) before an instance is considered a zombie
+	ZombieMinAgeMinutes int `json:"zombieMinAgeMinutes,omitempty" yaml:"zombieMinAgeMinutes,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -149,6 +159,10 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.StrictCacheUpdates = false
 	cfg.EnableLabelPredictionsOnTemplate = true
 	cfg.EnableVMSSEtag = false
+	// Zombie cleanup disabled by default for safety
+	cfg.EnableZombieCleanup = false
+	cfg.ZombieCleanupDryRun = true // Default to dry-run mode for extra safety
+	cfg.ZombieMinAgeMinutes = 5    // Default 5 minutes minimum age
 
 	// Config file overrides defaults
 	if configReader != nil {
