@@ -21,10 +21,11 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/client-go/kubernetes"
 	"regexp"
 	"sync"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/client-go/kubernetes"
 
 	klog "k8s.io/klog/v2"
 )
@@ -42,7 +43,7 @@ type manager struct {
 	nodeGroupsMu sync.RWMutex
 	nodeGroups   map[string]*NodeGroup // key: NodeGroup.id
 	instancesMu  sync.RWMutex
-	instances    map[string]*Instance // key: Instance.id (which is also the Kamatera server name)
+	instances    map[string]*Instance // key: Instance.id (which is the cloud provider ID)
 	kubeClient   kubernetes.Interface
 }
 
@@ -68,6 +69,7 @@ func (m *manager) refresh() error {
 		context.Background(),
 		instancesSnapshot,
 		m.config.filterNamePrefix,
+		m.config.providerIDPrefix,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to get list of Kamatera servers from Kamatera API: %v", err)
@@ -201,54 +203,54 @@ func (m *manager) getNodeGroupInstances(name string, servers []Server) (map[stri
 				hasClusterTag = true
 			}
 		}
-		if m.instances[server.Name] == nil {
-			var state cloudprovider.InstanceState
+		cloudProviderID := formatKamateraProviderID(m.config.providerIDPrefix, server.Name)
+		if m.instances[cloudProviderID] == nil {
+			var status *cloudprovider.InstanceStatus
 			if server.PowerOn {
-				state = cloudprovider.InstanceRunning
-			} else {
-				// for new servers that are stopped we assume they were deleted previously and deletion failed
-				state = cloudprovider.InstanceDeleting
+				status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
 			}
-			m.instances[server.Name] = &Instance{
-				Id:      server.Name,
-				Status:  &cloudprovider.InstanceStatus{State: state},
+			m.instances[cloudProviderID] = &Instance{
+				Id:      cloudProviderID,
+				Status:  status,
 				PowerOn: server.PowerOn,
 				Tags:    server.Tags,
 			}
 		} else {
 			if server.PowerOn {
-				m.instances[server.Name].Status.State = cloudprovider.InstanceRunning
-			} else {
-				// we can only make assumption about server state being powered on
-				// for other conditions we can't know why server is powered off, so we can't update state
+				m.instances[cloudProviderID].Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
 			}
-			m.instances[server.Name] = m.instances[server.Name]
-			m.instances[server.Name].PowerOn = server.PowerOn
-			m.instances[server.Name].Tags = server.Tags
+			m.instances[cloudProviderID].PowerOn = server.PowerOn
+			m.instances[cloudProviderID].Tags = server.Tags
 		}
 		if hasClusterTag && hasNodeGroupTag {
-			instances[server.Name] = m.instances[server.Name]
+			instances[cloudProviderID] = m.instances[cloudProviderID]
 		}
 	}
 	return instances, nil
 }
 
-func (m *manager) addInstance(server Server, state cloudprovider.InstanceState) (*Instance, error) {
+// called from node group create instances to add a newly created server
+func (m *manager) addInstance(server Server) (*Instance, error) {
 	m.instancesMu.Lock()
 	defer m.instancesMu.Unlock()
-	if m.instances[server.Name] == nil {
-		m.instances[server.Name] = &Instance{
-			Id:      server.Name,
-			Status:  &cloudprovider.InstanceStatus{State: state},
+	cloudProviderID := formatKamateraProviderID(m.config.providerIDPrefix, server.Name)
+	var status *cloudprovider.InstanceStatus
+	if server.PowerOn {
+		status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+	}
+	if m.instances[cloudProviderID] == nil {
+		m.instances[cloudProviderID] = &Instance{
+			Id:      cloudProviderID,
+			Status:  status,
 			PowerOn: server.PowerOn,
 			Tags:    server.Tags,
 		}
 	} else {
-		m.instances[server.Name].Status.State = state
-		m.instances[server.Name].PowerOn = server.PowerOn
-		m.instances[server.Name].Tags = server.Tags
+		m.instances[cloudProviderID].Status = status
+		m.instances[cloudProviderID].PowerOn = server.PowerOn
+		m.instances[cloudProviderID].Tags = server.Tags
 	}
-	return m.instances[server.Name], nil
+	return m.instances[cloudProviderID], nil
 }
 
 func (m *manager) snapshotInstances() map[string]*Instance {

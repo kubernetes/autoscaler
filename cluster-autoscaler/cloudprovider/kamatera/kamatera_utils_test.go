@@ -18,9 +18,10 @@ package kamatera
 
 import (
 	"context"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"strings"
 )
 
 func mockKamateraServerName() string {
@@ -56,8 +57,8 @@ func (c *kamateraClientMock) SetBaseURL(baseURL string) {
 	c.Called(baseURL)
 }
 
-func (c *kamateraClientMock) ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string) ([]Server, error) {
-	args := c.Called(ctx, instances, namePrefix)
+func (c *kamateraClientMock) ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string, providerIDPrefix string) ([]Server, error) {
+	args := c.Called(ctx, instances, namePrefix, providerIDPrefix)
 	return args.Get(0).([]Server), args.Error(1)
 }
 
@@ -68,5 +69,15 @@ func (c *kamateraClientMock) CreateServers(ctx context.Context, count int, confi
 
 func (c *kamateraClientMock) DeleteServer(ctx context.Context, id string) error {
 	args := c.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (c *kamateraClientMock) PoweroffServer(ctx context.Context, name string) error {
+	args := c.Called(ctx, name)
+	return args.Error(0)
+}
+
+func (c *kamateraClientMock) PoweronServer(ctx context.Context, name string) error {
+	args := c.Called(ctx, name)
 	return args.Error(0)
 }

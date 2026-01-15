@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -40,7 +41,7 @@ type NodeGroup struct {
 	manager        *manager
 	minSize        int
 	maxSize        int
-	instances      map[string]*Instance // key is the instance ID
+	instances      map[string]*Instance // key is the cloud provider ID
 	serverConfig   ServerConfig
 	templateLabels []string
 }
@@ -62,7 +63,13 @@ func (n *NodeGroup) MinSize() int {
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
 func (n *NodeGroup) TargetSize() (int, error) {
-	return len(n.instances), nil
+	numInstances := 0
+	for _, instance := range n.instances {
+		if instance.Status != nil && instance.Status.State != cloudprovider.InstanceDeleting {
+			numInstances += 1
+		}
+	}
+	return numInstances, nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
@@ -73,7 +80,10 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
 
-	currentSize := len(n.instances)
+	currentSize, err := n.TargetSize()
+	if err != nil {
+		return err
+	}
 	targetSize := currentSize + delta
 	klog.V(4).Infof("Increasing size of node group %s from %d to %d", n.id, currentSize, targetSize)
 	if targetSize > n.MaxSize() {
@@ -81,7 +91,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 			currentSize, targetSize, n.MaxSize())
 	}
 
-	err := n.createInstances(delta)
+	err = n.createInstances(delta)
 	if err != nil {
 		klog.V(4).Infof("Failed to increase size of node group %s from %d to %d: %v", n.id, currentSize, targetSize, err)
 		return err
@@ -152,15 +162,13 @@ func (n *NodeGroup) Debug() string {
 // This list should include also instances that might have not become a kubernetes node yet.
 func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	var instances []cloudprovider.Instance
-	providerIDPrefix := ""
-	if n.manager != nil && n.manager.config != nil {
-		providerIDPrefix = n.manager.config.providerIDPrefix
-	}
 	for _, instance := range n.instances {
-		instances = append(instances, cloudprovider.Instance{
-			Id:     formatKamateraProviderID(providerIDPrefix, instance.Id),
-			Status: instance.Status,
-		})
+		if instance.Status != nil {
+			instances = append(instances, cloudprovider.Instance{
+				Id:     instance.Id,
+				Status: instance.Status,
+			})
+		}
 	}
 	return instances, nil
 }
@@ -232,25 +240,18 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 }
 
 func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
-	providerIDPrefix := ""
-	if n.manager != nil && n.manager.config != nil {
-		providerIDPrefix = n.manager.config.providerIDPrefix
-	}
-	parsedProviderID := parseKamateraProviderID(providerIDPrefix, node.Spec.ProviderID)
 	for _, instance := range n.instances {
-		if instance.Id == parsedProviderID {
-			klog.V(2).Infof("findInstanceForNode(%s): found based on node ProviderID", node.Name)
+		if instance.Id == node.Spec.ProviderID {
+			klog.V(2).Infof("findInstanceForNode(%s): found based on node ProviderID", node.Spec.ProviderID)
 			return instance, nil
-		} else if parsedProviderID == "" && instance.Id == node.Name {
-			klog.V(2).Infof("findInstanceForNode(%s): found based on node Id", node.Name)
-			// Rancher does not set providerID for nodes, so we use node name as providerID
-			// We also set the ProviderID as some autoscaler code expects it to be set
-			node.Spec.ProviderID = formatKamateraProviderID(providerIDPrefix, instance.Id)
+		} else if instance.Id == formatKamateraProviderID(n.manager.config.providerIDPrefix, node.Name) {
+			klog.V(2).Infof("findInstanceForNode(%s): found based on node Name", node.Name)
+			node.Spec.ProviderID = formatKamateraProviderID(n.manager.config.providerIDPrefix, node.Name)
 			err := setNodeProviderID(n.manager.kubeClient, node.Name, node.Spec.ProviderID)
 			if err != nil {
 				// this is not a critical error, the autoscaler can continue functioning in this condition
 				// as the same node object is used in later code the ProviderID change will be picked up
-				klog.Warningf("failed to set node ProviderID for node name %s: %v", instance.Id, err)
+				klog.Warningf("failed to set node ProviderID for node name %s: %v", node.Name, err)
 			}
 			return instance, nil
 		}
@@ -259,31 +260,54 @@ func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
 }
 
 func (n *NodeGroup) deleteInstance(instance *Instance) error {
-	err := instance.delete(n.manager.client)
+	var err error
+	if n.manager.config.PoweroffOnScaleDown {
+		err = instance.poweroff(n.manager.client, n.manager.config.providerIDPrefix)
+	} else {
+		err = instance.delete(n.manager.client, n.manager.config.providerIDPrefix)
+	}
 	if err != nil {
 		return err
 	}
-	instances := make(map[string]*Instance)
-	for _, i := range n.instances {
-		if i.Id != instance.Id {
-			instances[i.Id] = i
-		}
+	instance.Status = nil
+	if !n.manager.config.PoweroffOnScaleDown {
+		delete(n.instances, instance.Id)
 	}
-	n.instances = instances
 	return nil
 }
 
 func (n *NodeGroup) createInstances(count int) error {
-	servers, err := n.manager.client.CreateServers(context.Background(), count, n.serverConfig)
-	if err != nil {
-		return err
+	if n.manager.config.PoweronOnScaleUp {
+		_ = n.manager.refresh()
+		var poweronCandidateInstances []*Instance
+		for _, instance := range n.manager.instances {
+			if sets.New(n.serverConfig.Tags...).Equal(sets.New(instance.Tags...)) && instance.PowerOn == false && instance.Status == nil {
+				poweronCandidateInstances = append(poweronCandidateInstances, instance)
+			}
+		}
+		klog.V(2).Infof("Found %d powered off instances matching node group %s", len(poweronCandidateInstances), n.id)
+		for i := 0; i < count && i < len(poweronCandidateInstances); i++ {
+			instance := poweronCandidateInstances[i]
+			err := instance.poweron(n.manager.client, n.manager.config.providerIDPrefix)
+			if err != nil {
+				return err
+			}
+			n.instances[instance.Id] = instance
+			count--
+		}
 	}
-	for _, server := range servers {
-		instance, err := n.manager.addInstance(server, cloudprovider.InstanceCreating)
+	if count > 0 {
+		servers, err := n.manager.client.CreateServers(context.Background(), count, n.serverConfig)
 		if err != nil {
 			return err
 		}
-		n.instances[server.Name] = instance
+		for _, server := range servers {
+			instance, err := n.manager.addInstance(server)
+			if err != nil {
+				return err
+			}
+			n.instances[formatKamateraProviderID(n.manager.config.providerIDPrefix, server.Name)] = instance
+		}
 	}
 	return nil
 }

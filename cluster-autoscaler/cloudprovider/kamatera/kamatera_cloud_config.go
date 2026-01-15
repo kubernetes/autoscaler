@@ -53,15 +53,17 @@ type nodeGroupConfig struct {
 
 // kamateraConfig holds the configuration for the Kamatera provider.
 type kamateraConfig struct {
-	apiClientId      string
-	apiSecret        string
-	apiUrl           string
-	clusterName      string
-	filterNamePrefix string
-	providerIDPrefix string
-	defaultMinSize   int
-	defaultMaxSize   int
-	nodeGroupCfg     map[string]*nodeGroupConfig // key is the node group name
+	apiClientId         string
+	apiSecret           string
+	apiUrl              string
+	clusterName         string
+	filterNamePrefix    string
+	providerIDPrefix    string
+	PoweroffOnScaleDown bool
+	PoweronOnScaleUp    bool
+	defaultMinSize      int
+	defaultMaxSize      int
+	nodeGroupCfg        map[string]*nodeGroupConfig // key is the node group name
 }
 
 // GcfgGlobalConfig is the gcfg representation of the global section in the cloud config file for Kamatera.
@@ -72,6 +74,8 @@ type GcfgGlobalConfig struct {
 	ClusterName           string   `gcfg:"cluster-name"`
 	FilterNamePrefix      string   `gcfg:"filter-name-prefix"`
 	ProviderIDPrefix      string   `gcfg:"provider-id-prefix"`
+	PoweroffOnScaleDown   bool     `gcfg:"poweroff-on-scale-down"`
+	PoweronOnScaleUp      bool     `gcfg:"poweron-on-scale-up"`
 	DefaultMinSize        string   `gcfg:"default-min-size"`
 	DefaultMaxSize        string   `gcfg:"default-max-size"`
 	DefaultNamePrefix     string   `gcfg:"default-name-prefix"`
@@ -256,15 +260,17 @@ func buildCloudConfig(config io.Reader) (*kamateraConfig, error) {
 	}
 
 	return &kamateraConfig{
-		clusterName:      clusterName,
-		apiClientId:      apiClientId,
-		apiSecret:        apiSecret,
-		apiUrl:           apiUrl,
-		filterNamePrefix: filterNamePrefix,
-		providerIDPrefix: providerIDPrefix,
-		defaultMinSize:   defaultMinSize,
-		defaultMaxSize:   defaultMaxSize,
-		nodeGroupCfg:     nodeGroupCfg,
+		clusterName:         clusterName,
+		apiClientId:         apiClientId,
+		apiSecret:           apiSecret,
+		apiUrl:              apiUrl,
+		filterNamePrefix:    filterNamePrefix,
+		providerIDPrefix:    providerIDPrefix,
+		PoweroffOnScaleDown: gcfgCloudConfig.Global.PoweroffOnScaleDown,
+		PoweronOnScaleUp:    gcfgCloudConfig.Global.PoweronOnScaleUp,
+		defaultMinSize:      defaultMinSize,
+		defaultMaxSize:      defaultMaxSize,
+		nodeGroupCfg:        nodeGroupCfg,
 	}, nil
 }
 

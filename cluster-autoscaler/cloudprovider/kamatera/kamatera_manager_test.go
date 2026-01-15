@@ -79,25 +79,68 @@ max-size=5
 	serverName3 := "myprefix" + mockKamateraServerName()
 	serverName4 := "myprefix" + mockKamateraServerName()
 	client.On(
-		"ListServers", ctx, m.instances, "myprefix",
+		"ListServers", ctx, m.instances, "myprefix", defaultKamateraProviderIDPrefix,
 	).Return(
 		[]Server{
-			{Name: serverName1, Tags: []string{fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"), fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1")}},
-			{Name: serverName2, Tags: []string{fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"), fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb")}},
-			{Name: serverName3, Tags: []string{fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"), fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb")}},
-			{Name: serverName4, Tags: []string{fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng2"), fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb")}},
+			{
+				Name: "myprefix" + mockKamateraServerName(),
+				Tags: []string{
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"),
+				},
+			},
+			{
+				Name: serverName1,
+				Tags: []string{
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"),
+				},
+				PowerOn: true,
+			},
+			{
+				Name: serverName2, Tags: []string{
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"),
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+				},
+				PowerOn: true,
+			},
+			{
+				Name: serverName3, Tags: []string{
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"),
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+				},
+				PowerOn: true,
+			},
+			{
+				Name: serverName4, Tags: []string{
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng2"),
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+				},
+				PowerOn: true,
+			},
+			{
+				Name: "myprefix" + mockKamateraServerName(), Tags: []string{
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng2"),
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+				},
+				PowerOn: false,
+			},
 		},
 		nil,
 	).Once()
 	err = m.refresh()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(m.nodeGroups))
-	assert.Equal(t, 3, len(m.nodeGroups["ng1"].instances))
-	assert.Equal(t, 1, len(m.nodeGroups["ng2"].instances))
+	assert.Equal(t, 4, len(m.nodeGroups["ng1"].instances))
+	targetSize, _ := m.nodeGroups["ng1"].TargetSize()
+	assert.Equal(t, 3, targetSize)
+	assert.Equal(t, 2, len(m.nodeGroups["ng2"].instances))
+	targetSize, _ = m.nodeGroups["ng2"].TargetSize()
+	assert.Equal(t, 1, targetSize)
 
 	// test api error
 	client.On(
-		"ListServers", ctx, m.instances, "myprefix",
+		"ListServers", ctx, m.instances, "myprefix", defaultKamateraProviderIDPrefix,
 	).Return(
 		[]Server{},
 		fmt.Errorf("error on API call"),
@@ -145,7 +188,7 @@ cluster-name=aaabbb
 	ctx := context.Background()
 	serverName1 := mockKamateraServerName()
 	client.On(
-		"ListServers", ctx, m.instances, "",
+		"ListServers", ctx, m.instances, "", defaultKamateraProviderIDPrefix,
 	).Return(
 		[]Server{
 			{Name: serverName1, Tags: []string{fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"), fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1")}},
@@ -166,12 +209,14 @@ func TestManager_addInstance(t *testing.T) {
 [global]
 kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
 kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
+provider-id-prefix=rke2://
 cluster-name=aaabbb
 `)
 	m, err := newManager(cfg, nil)
 	assert.NoError(t, err)
 
 	serverName1 := mockKamateraServerName()
+	serverProviderID1 := formatKamateraProviderID("rke2://", serverName1)
 	server1 := Server{
 		Name:    serverName1,
 		PowerOn: true,
@@ -179,17 +224,17 @@ cluster-name=aaabbb
 	}
 
 	// Test adding a new instance
-	instance, err := m.addInstance(server1, cloudprovider.InstanceCreating)
+	instance, err := m.addInstance(server1)
 	assert.NoError(t, err)
 	assert.NotNil(t, instance)
-	assert.Equal(t, serverName1, instance.Id)
-	assert.Equal(t, cloudprovider.InstanceCreating, instance.Status.State)
+	assert.Equal(t, instance.Id, serverProviderID1)
+	assert.Equal(t, cloudprovider.InstanceRunning, instance.Status.State)
 	assert.True(t, instance.PowerOn)
 	assert.Equal(t, []string{"tag1", "tag2"}, instance.Tags)
 
 	// Verify instance was added to manager's instances map
-	assert.NotNil(t, m.instances[serverName1])
-	assert.Equal(t, serverName1, m.instances[serverName1].Id)
+	assert.NotNil(t, m.instances[serverProviderID1])
+	assert.Equal(t, serverProviderID1, m.instances[serverProviderID1].Id)
 
 	// Test updating an existing instance
 	server1Updated := Server{
@@ -197,17 +242,17 @@ cluster-name=aaabbb
 		PowerOn: false,
 		Tags:    []string{"tag3"},
 	}
-	instanceUpdated, err := m.addInstance(server1Updated, cloudprovider.InstanceRunning)
+	instanceUpdated, err := m.addInstance(server1Updated)
 	assert.NoError(t, err)
 	assert.NotNil(t, instanceUpdated)
-	assert.Equal(t, serverName1, instanceUpdated.Id)
-	assert.Equal(t, cloudprovider.InstanceRunning, instanceUpdated.Status.State)
+	assert.Equal(t, serverProviderID1, instanceUpdated.Id)
+	assert.Nil(t, instanceUpdated.Status)
 	assert.False(t, instanceUpdated.PowerOn)
 	assert.Equal(t, []string{"tag3"}, instanceUpdated.Tags)
 
 	// Verify the updated instance in the map
-	assert.Equal(t, cloudprovider.InstanceRunning, m.instances[serverName1].Status.State)
-	assert.False(t, m.instances[serverName1].PowerOn)
+	assert.Nil(t, m.instances[serverProviderID1].Status)
+	assert.False(t, m.instances[serverProviderID1].PowerOn)
 }
 
 func TestManager_snapshotInstances(t *testing.T) {
@@ -265,7 +310,7 @@ cluster-name=aaabbb
 				PowerOn: true,
 				Tags:    []string{"tag1"},
 			}
-			_, err := m.addInstance(server, cloudprovider.InstanceRunning)
+			_, err := m.addInstance(server)
 			assert.NoError(t, err)
 			done <- true
 		}(i)
@@ -315,7 +360,7 @@ cluster-name=aaabbb
 				PowerOn: true,
 				Tags:    []string{"tag1"},
 			}
-			_, err := m.addInstance(server, cloudprovider.InstanceRunning)
+			_, err := m.addInstance(server)
 			assert.NoError(t, err)
 			done <- true
 		}(i)

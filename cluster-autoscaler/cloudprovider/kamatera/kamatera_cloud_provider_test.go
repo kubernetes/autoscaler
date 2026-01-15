@@ -27,9 +27,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestCloudProvider_newKamateraCloudProvider(t *testing.T) {
@@ -88,24 +90,33 @@ kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
 kamatera-api-secret=9ii88h7g6f55555ee4444444dd33eee2
 cluster-name=aaabbb
 `)
-	m, _ := newManager(cfg, nil)
+	m, _ := newManager(
+		cfg,
+		fake.NewSimpleClientset(),
+	)
 	kamateraServerName1 := mockKamateraServerName()
+	kamateraCloudProviderID1 := formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName1)
 	kamateraServerName2 := mockKamateraServerName()
+	kamateraCloudProviderID2 := formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName2)
 	kamateraServerName3 := mockKamateraServerName()
+	kamateraCloudProviderID3 := formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName3)
 	kamateraServerName4 := mockKamateraServerName()
+	kamateraCloudProviderID4 := formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName4)
 	ng1 := &NodeGroup{
 		id: "ng1",
 		instances: map[string]*Instance{
-			kamateraServerName1: {Id: kamateraServerName1},
-			kamateraServerName2: {Id: kamateraServerName2},
+			kamateraCloudProviderID1: {Id: kamateraCloudProviderID1},
+			kamateraCloudProviderID2: {Id: kamateraCloudProviderID2},
 		},
+		manager: m,
 	}
 	ng2 := &NodeGroup{
 		id: "ng2",
 		instances: map[string]*Instance{
-			kamateraServerName3: {Id: kamateraServerName3},
-			kamateraServerName4: {Id: kamateraServerName4},
+			kamateraCloudProviderID3: {Id: kamateraCloudProviderID3},
+			kamateraCloudProviderID4: {Id: kamateraCloudProviderID4},
 		},
+		manager: m,
 	}
 	m.nodeGroups = map[string]*NodeGroup{
 		"ng1": ng1,
@@ -113,20 +124,20 @@ cluster-name=aaabbb
 	}
 	kcp := &kamateraCloudProvider{manager: m}
 
-	// test ok on getting the right node group for an apiv1.Node
+	// test ok on getting the right node group for an apiv1.Node based on its ProviderID
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: formatKamateraProviderID("", kamateraServerName1),
+			ProviderID: formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName1),
 		},
 	}
 	ng, err := kcp.NodeGroupForNode(node)
 	assert.NoError(t, err)
 	assert.Equal(t, ng1, ng)
 
-	// test ok on getting the right node group for an apiv1.Node
+	// test ok on getting the right node group for an apiv1.Node based on name
 	node = &apiv1.Node{
-		Spec: apiv1.NodeSpec{
-			ProviderID: formatKamateraProviderID("", kamateraServerName4),
+		ObjectMeta: metav1.ObjectMeta{
+			Name: kamateraServerName4,
 		},
 	}
 	ng, err = kcp.NodeGroupForNode(node)
@@ -135,8 +146,11 @@ cluster-name=aaabbb
 
 	// test ok on getting nil when looking for a apiv1.Node we do not manage
 	node = &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "non-existing-node",
+		},
 		Spec: apiv1.NodeSpec{
-			ProviderID: mockKamateraServerName(),
+			ProviderID: "kamatera://---",
 		},
 	}
 	ng, err = kcp.NodeGroupForNode(node)
@@ -239,11 +253,27 @@ max-size=2
 	kcp := &kamateraCloudProvider{manager: m}
 
 	serverName1 := "myprefix" + mockKamateraServerName()
+	serverName2 := "myprefix" + mockKamateraServerName()
 	client.On(
-		"ListServers", mock.Anything, m.instances, "myprefix",
+		"ListServers", mock.Anything, m.instances, "myprefix", defaultKamateraProviderIDPrefix,
 	).Return(
 		[]Server{
-			{Name: serverName1, Tags: []string{fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"), fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1")}},
+			{
+				Name: serverName1,
+				Tags: []string{
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"),
+				},
+				PowerOn: true,
+			},
+			{
+				Name: serverName2,
+				Tags: []string{
+					fmt.Sprintf("%s%s", clusterServerTagPrefix, "aaabbb"),
+					fmt.Sprintf("%s%s", nodeGroupTagPrefix, "ng1"),
+				},
+				PowerOn: false,
+			},
 		},
 		nil,
 	).Once()
@@ -251,7 +281,9 @@ max-size=2
 	err = kcp.Refresh()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(m.nodeGroups))
-	assert.Equal(t, 1, len(m.nodeGroups["ng1"].instances))
+	assert.Equal(t, 2, len(m.nodeGroups["ng1"].instances))
+	targetSize, _ := m.nodeGroups["ng1"].TargetSize()
+	assert.Equal(t, 1, targetSize)
 }
 
 func TestCloudProvider_NodeGroupsConcurrent(t *testing.T) {
@@ -293,18 +325,22 @@ cluster-name=aaabbb
 `)
 	m, _ := newManager(cfg, nil)
 	kamateraServerName1 := mockKamateraServerName()
+	kamateraCloudProviderID1 := formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName1)
 	kamateraServerName2 := mockKamateraServerName()
+	kamateraCloudProviderID2 := formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName2)
 	ng1 := &NodeGroup{
 		id: "ng1",
 		instances: map[string]*Instance{
-			kamateraServerName1: {Id: kamateraServerName1},
+			kamateraCloudProviderID1: {Id: kamateraCloudProviderID1},
 		},
+		manager: m,
 	}
 	ng2 := &NodeGroup{
 		id: "ng2",
 		instances: map[string]*Instance{
-			kamateraServerName2: {Id: kamateraServerName2},
+			kamateraCloudProviderID2: {Id: kamateraCloudProviderID2},
 		},
+		manager: m,
 	}
 	m.nodeGroups = map[string]*NodeGroup{
 		"ng1": ng1,
@@ -322,7 +358,7 @@ cluster-name=aaabbb
 			defer wg.Done()
 			node := &apiv1.Node{
 				Spec: apiv1.NodeSpec{
-					ProviderID: kamateraServerName1,
+					ProviderID: kamateraCloudProviderID1,
 				},
 			}
 			ng, err := kcp.NodeGroupForNode(node)
@@ -333,7 +369,7 @@ cluster-name=aaabbb
 			defer wg.Done()
 			node := &apiv1.Node{
 				Spec: apiv1.NodeSpec{
-					ProviderID: kamateraServerName2,
+					ProviderID: kamateraCloudProviderID2,
 				},
 			}
 			ng, err := kcp.NodeGroupForNode(node)

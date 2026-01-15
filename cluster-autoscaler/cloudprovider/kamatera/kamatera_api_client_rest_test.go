@@ -19,11 +19,12 @@ package kamatera
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"testing"
 )
 
 const (
@@ -51,7 +52,7 @@ func TestApiClientRest_ListServers_NoServers(t *testing.T) {
 		"application/json",
 		`[]`,
 	).Once()
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(servers))
 	mock.AssertExpectationsForObjects(t, server)
@@ -64,8 +65,11 @@ func TestApiClientRest_ListServers(t *testing.T) {
 	client := NewMockKamateraApiClientRest(server.URL, 5, 0)
 	newServerName1 := mockKamateraServerName()
 	cachedServerName2 := mockKamateraServerName()
+	cachedServerProviderID2 := formatKamateraProviderID("rke2://", cachedServerName2)
 	cachedServerName3 := mockKamateraServerName()
+	cachedServerProviderID3 := formatKamateraProviderID("rke2://", cachedServerName3)
 	cachedServerName4 := mockKamateraServerName()
+	cachedServerProviderID4 := formatKamateraProviderID("rke2://", cachedServerName4)
 	server.On("handle", "/service/servers").Return(
 		"application/json",
 		fmt.Sprintf(`[
@@ -79,25 +83,25 @@ func TestApiClientRest_ListServers(t *testing.T) {
 		`[{"tagName": "test-tag"}, {"tagName": "other-test-tag"}]`,
 	)
 	servers, err := client.ListServers(ctx, map[string]*Instance{
-		cachedServerName2: {
-			Id:      cachedServerName2,
+		cachedServerProviderID2: {
+			Id:      cachedServerProviderID2,
 			Status:  &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			PowerOn: true,
 			Tags:    []string{"my-tag", "my-other-tag"},
 		},
-		cachedServerName3: {
-			Id:      cachedServerName3,
+		cachedServerProviderID3: {
+			Id:      cachedServerProviderID3,
 			Status:  &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			PowerOn: true,
 			Tags:    []string{"another-tag", "my-other-tag"},
 		},
-		cachedServerName4: {
-			Id:      cachedServerName4,
+		cachedServerProviderID4: {
+			Id:      cachedServerProviderID4,
 			Status:  &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			PowerOn: true,
 			Tags:    []string{},
 		},
-	}, "")
+	}, "", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(servers))
 	assert.Equal(t, servers, []Server{
@@ -142,7 +146,7 @@ func TestApiClientRest_ListServersNamePrefix(t *testing.T) {
 		"application/json",
 		`[{"tagName": "test-tag"}, {"tagName": "other-test-tag"}]`,
 	)
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "prefixb")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "prefixb", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(servers))
 	assert.Equal(t, servers, []Server{
@@ -166,7 +170,7 @@ func TestApiClientRest_ListServersNoTags(t *testing.T) {
 	).On("handle", "/server/tags").Return(
 		"application/json", `[]`,
 	)
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(servers))
 	assert.Equal(t, servers, []Server{
@@ -190,7 +194,7 @@ func TestApiClientRest_ListServersTagsError(t *testing.T) {
 	).On("handle", "/server/tags").Return(
 		"application/json", `{"message":"Failed to run command method (serverTags)"}`, 500,
 	)
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
 	assert.Error(t, err)
 	assert.Nil(t, servers)
 }

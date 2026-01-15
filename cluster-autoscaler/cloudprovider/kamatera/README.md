@@ -4,9 +4,11 @@ The cluster autoscaler for Kamatera scales nodes in a Kamatera cluster.
 
 ## Kamatera Kubernetes
 
-[Kamatera](https://www.kamatera.com/express/compute/) supports Kubernetes clusters using our Rancher app
-or by creating a self-managed cluster directly on Kamatera compute servers, the autoscaler supports 
-both methods.
+[Kamatera](https://www.kamatera.com/express/compute/) supports Kubernetes clusters using any Kubernetes distribution / provisioning tool.
+
+See the following example Terraform setup using RKE2 for a recommended production ready Kubernetes cluster:
+
+[Kamatera RKE2 Kubernetes Terraform](https://github.com/Kamatera/kamatera-rke2-kubernetes-terraform-example/blob/main/README.md)
 
 ## Cluster Autoscaler Node Groups
 
@@ -16,15 +18,11 @@ The cluster and node groups must be specified in the autoscaler cloud configurat
 
 ## Deployment
 
-Copy [examples/deployment.yaml](examples/deployment.yaml) and modify the configuration as needed, see below
-regarding the required configuration values and format. When the configuraiont is ready, deploy it to your cluster
-e.g. using `kubectl apply -f deployment.yaml`.
+See [examples/](examples/) and modify the configurations as needed.
 
 ## Configuration
 
 The cluster autoscaler only considers the cluster and node groups defined in the configuration file.
-
-You can see an example of the cloud config file at [examples/deployment.yaml](examples/deployment.yaml),
 
 **Important Note:** The cluster and node group names must be 15 characters or less.
 
@@ -36,7 +34,9 @@ it is an INI file with the following fields:
 | global/kamatera-api-secret             | Kamatera API Secret                                                                                                                                     | yes       | none                               |
 | global/cluster-name                    | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string used to set the cluster server tag                       | yes       | none                               |
 | global/filter-name-prefix              | autoscaler will only handle server names that start with this prefix                                                                                    | no        | none                               |
-| global/provider-id-prefix              | prefix used for Kubernetes node `.spec.providerID` (and for matching nodes to Kamatera instances)                                                        | no        | kamatera://                        |
+| global/provider-id-prefix              | prefix used for Kubernetes node `.spec.providerID` (and for matching nodes to Kamatera instances)                                                       | no        | kamatera://                        |
+| global/poweroff-on-scale-down          | boolean - set to true to power-off servers instead of terminating them                                                                                  | no        | false                              |
+| global/poweron-on-scale-up             | boolean - set to true to look for powered off servers to use for scale up before creating additional servers                                            | no        | false                              |
 | global/default-min-size                | default minimum size of a node group (must be > 0)                                                                                                      | no        | 1                                  |
 | global/default-max-size                | default maximum size of a node group                                                                                                                    | no        | 254                                |
 | global/default-<SERVER_CONFIG_KEY>     | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | see below | see below                          |
@@ -137,13 +137,13 @@ It's still your responsibility to make sure the actual nodes created by the auto
 
 Make sure you are inside the `cluster-autoscaler` path of the [autoscaler repository](https://github.com/kubernetes/autoscaler).
 
-Run tests:
+Run unit tests:
 
 ```
 go test -v k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kamatera
 ```
 
-Setup a Kamatera cluster, you can use [this guide](https://github.com/Kamatera/rancher-kubernetes/blob/main/README.md)
+Setup a Kamatera cluster, you can use [Kamatera RKE2 Kubernetes Terraform](https://github.com/Kamatera/kamatera-rke2-kubernetes-terraform-example/blob/main/README.md)
 
 Get the cluster kubeconfig and set in local file and set in the `KUBECONFIG` environment variable.
 Make sure you are connected to the cluster using `kubectl get nodes`.
@@ -169,6 +169,6 @@ docker tag staging-k8s.gcr.io/cluster-autoscaler-amd64:dev ghcr.io/github_userna
 docker push ghcr.io/github_username_lowercase/cluster-autoscaler-amd64
 ```
 
-Make sure relevant clsuter has access to this registry/image.
+Make sure relevant cluster has access to this registry/image.
 
 Follow the documentation for deploying the image and using the autoscaler.

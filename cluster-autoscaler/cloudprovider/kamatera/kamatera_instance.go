@@ -19,13 +19,14 @@ package kamatera
 import (
 	"context"
 	"fmt"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 // Instance implements cloudprovider.Instance interface. Instance contains
 // configuration info and functions to control a single Kamatera server instance.
 type Instance struct {
-	// Id is the Kamatera server Name.
+	// Id is the cloud provider id.
 	Id string
 	// Status represents status of the node. (Optional)
 	Status *cloudprovider.InstanceStatus
@@ -34,14 +35,33 @@ type Instance struct {
 	Tags    []string
 }
 
-func (i *Instance) delete(client kamateraAPIClient) error {
-	i.Status.State = cloudprovider.InstanceDeleting
-	return client.DeleteServer(context.Background(), i.Id)
+func (i *Instance) delete(client kamateraAPIClient, providerIDPrefix string) error {
+	i.Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}
+	return client.DeleteServer(context.Background(), parseKamateraProviderID(providerIDPrefix, i.Id))
+}
+
+func (i *Instance) poweroff(client kamateraAPIClient, providerIDPrefix string) error {
+	i.Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}
+	i.PowerOn = false
+	return client.PoweroffServer(context.Background(), parseKamateraProviderID(providerIDPrefix, i.Id))
+}
+
+func (i *Instance) poweron(client kamateraAPIClient, providerIDPrefix string) error {
+	i.Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}
+	err := client.PoweronServer(context.Background(), parseKamateraProviderID(providerIDPrefix, i.Id))
+	if err != nil {
+		return err
+	}
+	i.PowerOn = true
+	i.Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+	return nil
 }
 
 func (i *Instance) extendedDebug() string {
 	state := ""
-	if i.Status.State == cloudprovider.InstanceRunning {
+	if i.Status == nil {
+		state = "Unknown"
+	} else if i.Status.State == cloudprovider.InstanceRunning {
 		state = "Running"
 	} else if i.Status.State == cloudprovider.InstanceCreating {
 		state = "Creating"
