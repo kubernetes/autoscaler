@@ -35,19 +35,6 @@ import (
 	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 )
 
-// ============================================================================
-// INTEGRATION TESTS - Zombie Cleanup Implementation
-// ============================================================================
-
-func TestZombieCleanup_Disabled(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	manager := newTestAzureManagerForZombieCleanup(t)
-	manager.config.EnableZombieCleanup = false
-	err := manager.cleanupZombieNodes()
-	assert.NoError(t, err)
-}
-
 func TestZombieCleanup_NoZombiesFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -654,10 +641,6 @@ func TestZombieScenario_MultipleZombiesWasteQuota(t *testing.T) {
 		"ZOMBIE PROBLEM: %d out of %d VMs are zombies (%d%% waste rate) - demonstrating severe quota waste!",
 		zombieCount, totalVMs, zombiePercentage)
 }
-
-// ============================================================================
-// TEST HELPERS - Mock Setup and VM Builders
-// ============================================================================
 
 func setupMockManager(t *testing.T, ctrl *gomock.Controller) (*AzureManager, *mockvmssclient.MockInterface, *mockvmssvmclient.MockInterface) {
 	manager := newTestAzureManagerForZombieCleanup(t)

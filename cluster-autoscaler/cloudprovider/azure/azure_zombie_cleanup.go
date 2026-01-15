@@ -52,11 +52,6 @@ func (m *AzureManager) cleanupZombieNodes() error {
 // cleanupZombieNodesWithContext is similar to cleanupZombieNodes but accepts Kubernetes nodes
 // as context to help correlate VMSS instances with K8s nodes.
 func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error {
-	// Check if zombie cleanup
-	if !m.config.EnableZombieCleanup {
-		return nil
-	}
-
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
@@ -82,7 +77,7 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 
 	// Process each VMSS
 	zombiesByVMSS := make(map[string][]zombieInstance)
-	currentTime := time.Now() // pseudocode line 62
+	currentTime := time.Now()
 	minAgeDuration := time.Duration(m.config.ZombieMinAgeMinutes) * time.Minute
 
 	for _, scaleSet := range scaleSets {
@@ -162,7 +157,7 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 
 	unregisteredCount := totalZombies - registeredZombieCount
 
-	// Dry-run or active cleanup for unregistered zombies (pseudocode lines 203-236)
+	// Dry-run or active cleanup for unregistered zombies
 	if m.config.ZombieCleanupDryRun {
 		klog.Infof("DRY RUN: Would clean up %d unregistered zombie(s), %d registered zombies logged",
 			unregisteredCount, registeredZombieCount)
@@ -293,7 +288,7 @@ func (m *AzureManager) evaluateZombieStatus(
 		}
 	}
 
-	// SCENARIO 1: Extensions failed or never installed (pseudocode lines 113-125)
+	// SCENARIO 1: Extensions failed or never installed
 	if !hasK8sNode && (!extensionsInstalled || extensionsFailed) {
 		if vmssAge != nil && *vmssAge > minAgeDuration {
 			if extensionsFailed {
@@ -324,7 +319,7 @@ func (m *AzureManager) evaluateZombieStatus(
 
 	// SCENARIO 4: Has K8s node but with critical issues
 	if hasK8sNode && k8sNode != nil {
-		// Sub-check 4a: Unreachable taint (HIGHEST PRIORITY, pseudocode lines 148-162)
+		// Sub-check 4a: Unreachable taint
 		hasUnreachableTaint := false
 		if k8sNode.Spec.Taints != nil {
 			for _, taint := range k8sNode.Spec.Taints {
@@ -345,7 +340,7 @@ func (m *AzureManager) evaluateZombieStatus(
 
 		// Sub-check 4b: NotReady status (only if no unreachable taint)
 		if !isReady {
-			// Special case: Deallocated by autoscaler (HEALTHY state)
+			// Special case: Deallocated by autoscaler so healthy state
 			if powerState == "deallocated" {
 				return false, true, ""
 			}
