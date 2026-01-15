@@ -22,17 +22,23 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 )
 
+type metricObserver interface {
+	ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration)
+}
+
 // MaxNodeSkipEvalTime is a time tracker for the biggest evaluation time of a node during ScaleDown
 type MaxNodeSkipEvalTime struct {
 	// lastEvalTime is the time of previous currentlyUnneededNodeNames parsing
 	lastEvalTime time.Time
 	// nodeNamesWithTimeStamps is maps of nodeNames with their time of last successful evaluation
 	nodeNamesWithTimeStamps map[string]time.Time
+
+	metrics metricObserver
 }
 
 // NewMaxNodeSkipEvalTime returns LongestNodeScaleDownEvalTime with lastEvalTime set to currentTime
 func NewMaxNodeSkipEvalTime(currentTime time.Time) *MaxNodeSkipEvalTime {
-	return &MaxNodeSkipEvalTime{lastEvalTime: currentTime}
+	return &MaxNodeSkipEvalTime{lastEvalTime: currentTime, metrics: metrics.DefaultMetrics}
 }
 
 // Retrieves the time of the last evaluation of a node.
@@ -65,6 +71,6 @@ func (l *MaxNodeSkipEvalTime) Update(nodeNames []string, currentTime time.Time) 
 	l.lastEvalTime = currentTime
 	minimumTime := l.getMin()
 	longestDuration := currentTime.Sub(minimumTime)
-	metrics.ObserveMaxNodeSkipEvalDurationSeconds(longestDuration)
+	l.metrics.ObserveMaxNodeSkipEvalDurationSeconds(longestDuration)
 	return longestDuration
 }
