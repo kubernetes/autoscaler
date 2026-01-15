@@ -72,7 +72,6 @@ var (
 	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	namespace               = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
 	enforceNodeGroupMinSize = flag.Bool("enforce-node-group-min-size", false, "Should CA scale up the node group to the configured min size if needed.")
-	scaleDownEnabled        = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownUnreadyEnabled = flag.Bool("scale-down-unready-enabled", true, "Should CA scale down unready nodes of the cluster")
 	scaleDownDelayAfterAdd  = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
 		"How long after scale up that scale down evaluation resumes")
@@ -241,6 +240,7 @@ var (
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
+	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "[Deprecated] Should CA scale down the cluster")
 )
 
 var autoscalingOptions *config.AutoscalingOptions
@@ -299,6 +299,10 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 
 	if !ptr.Deref(enableDynamicResourceAllocation, false) {
 		klog.Fatalf("--enable-dynamic-resource-allocation flag must be true: %t", ptr.Deref(enableDynamicResourceAllocation, false))
+	}
+
+	if *scaleDownEnabled == false {
+		klog.Warningf("--scale-down-enabled flag is deprecated and will be removed in a future release")
 	}
 
 	return config.AutoscalingOptions{
