@@ -93,6 +93,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 	f := framework.NewDefaultFramework("autoscaling")
 	f.NamespacePodSecurityLevel = admissionapi.LevelPrivileged
 	var c clientset.Interface
+	var nodeCountSet bool
 	var nodeCount int
 	var memAllocatableMb int
 
@@ -107,9 +108,18 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 
 		nodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
 		framework.ExpectNoError(err)
-		nodeCount = len(nodes.Items)
+
+		if !nodeCountSet {
+			// Guard the same number of schedulable nodes in every test case.
+			nodeCount = len(nodes.Items)
+			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), "Initial cluster must have at least one schedulable node")
+			nodeCountSet = true
+			ginkgo.By(fmt.Sprintf("Captured initial cluster size: %v", nodeCount))
+		}
+
+		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), "Cluster size should match the initial baseline size (test isolation failure)")
 		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes: %v", nodeCount))
-		gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty())
+
 		mem := nodes.Items[0].Status.Allocatable[v1.ResourceMemory]
 		memAllocatableMb = int((&mem).Value() / 1024 / 1024)
 		// As the last deferred cleanup ensure that the state is restored.
