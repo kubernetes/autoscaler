@@ -23,6 +23,7 @@ import (
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -55,6 +56,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=autoscaling.x-k8s.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("capacitybuffers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().CapacityBuffers().Informer()}, nil
+
+		// Group=autoscaling.x-k8s.io, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithResource("capacitybuffers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1beta1().CapacityBuffers().Informer()}, nil
 
 	}
 
