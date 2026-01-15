@@ -19,10 +19,8 @@ package capacitybufferpodlister
 import (
 	"fmt"
 
-	"github.com/google/uuid"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/klog/v2"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -88,7 +86,7 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 
 // Process updates unschedulablePods by injecting fake pods to match replicas defined in buffers status
 func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	buffers, err := p.client.ListCapacityBuffers()
+	buffers, err := p.client.ListCapacityBuffers("")
 	if err != nil {
 		klog.Errorf("CapacityBufferPodListProcessor failed to list buffers with error: %v", err.Error())
 		return unschedulablePods, nil
@@ -130,7 +128,7 @@ func (p *CapacityBufferPodListProcessor) clearCapacityBufferRegistry() {
 }
 
 func (p *CapacityBufferPodListProcessor) provision(buffer *v1alpha1.CapacityBuffer) []*apiv1.Pod {
-	if buffer.Status.PodTemplateRef == nil || buffer.Status.Replicas == nil {
+	if buffer.Status.PodTemplateRef == nil || buffer.Status.Replicas == nil || *buffer.Status.Replicas == 0 {
 		return []*apiv1.Pod{}
 	}
 	podTemplateName := buffer.Status.PodTemplateRef.Name
@@ -172,7 +170,7 @@ func (p *CapacityBufferPodListProcessor) updateBufferStatus(buffer *v1alpha1.Cap
 // makeFakePods creates podCount number of copies of the sample pod
 func makeFakePods(buffer *v1alpha1.CapacityBuffer, samplePodTemplate *apiv1.PodTemplateSpec, podCount int, forceSafeToEvictFakePods bool) ([]*apiv1.Pod, error) {
 	var fakePods []*apiv1.Pod
-	samplePod := getPodFromTemplate(samplePodTemplate, buffer.Namespace)
+	samplePod := pod.GetPodFromTemplate(samplePodTemplate, buffer.Namespace)
 	samplePod.Spec.NodeName = ""
 	samplePod = withCapacityBufferFakePodAnnotation(samplePod)
 	if forceSafeToEvictFakePods {
@@ -209,45 +207,4 @@ func IsFakeCapacityBuffersPod(pod *apiv1.Pod) bool {
 		return false
 	}
 	return pod.Annotations[CapacityBufferFakePodAnnotationKey] == CapacityBufferFakePodAnnotationValue
-}
-
-func getPodFromTemplate(template *apiv1.PodTemplateSpec, namespace string) *apiv1.Pod {
-	desiredLabels := getPodsLabelSet(template)
-	desiredFinalizers := getPodsFinalizers(template)
-	desiredAnnotations := getPodsAnnotationSet(template)
-
-	pod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels:       desiredLabels,
-			Namespace:    namespace,
-			Annotations:  desiredAnnotations,
-			GenerateName: uuid.NewString(),
-			Finalizers:   desiredFinalizers,
-		},
-	}
-
-	pod.Spec = template.Spec
-	return pod
-}
-
-func getPodsLabelSet(template *apiv1.PodTemplateSpec) labels.Set {
-	desiredLabels := make(labels.Set)
-	for k, v := range template.Labels {
-		desiredLabels[k] = v
-	}
-	return desiredLabels
-}
-
-func getPodsFinalizers(template *apiv1.PodTemplateSpec) []string {
-	desiredFinalizers := make([]string, len(template.Finalizers))
-	copy(desiredFinalizers, template.Finalizers)
-	return desiredFinalizers
-}
-
-func getPodsAnnotationSet(template *apiv1.PodTemplateSpec) labels.Set {
-	desiredAnnotations := make(labels.Set)
-	for k, v := range template.Annotations {
-		desiredAnnotations[k] = v
-	}
-	return desiredAnnotations
 }
