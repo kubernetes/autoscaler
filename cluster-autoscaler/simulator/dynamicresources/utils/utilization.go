@@ -100,17 +100,7 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	totalAvailableCounters := map[string]map[string]resource.Quantity{}
 	for _, resourceSlice := range resourceSlices {
 		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
-			if _, ok := totalAvailableCounters[sharedCounter.Name]; !ok {
-				totalAvailableCounters[sharedCounter.Name] = map[string]resource.Quantity{}
-			}
-			for counter, value := range sharedCounter.Counters {
-				if _, ok := totalAvailableCounters[sharedCounter.Name][counter]; !ok {
-					totalAvailableCounters[sharedCounter.Name][counter] = resource.Quantity{}
-				}
-				v := totalAvailableCounters[sharedCounter.Name][counter]
-				v.Add(value.Value)
-				totalAvailableCounters[sharedCounter.Name][counter] = v
-			}
+			totalAvailableCounters = getCountersMapping(sharedCounter.Name, sharedCounter.Counters, totalAvailableCounters)
 		}
 	}
 	allocatedConsumedCounters := calculateConsumedCounters(allocated)
@@ -171,20 +161,26 @@ func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[stri
 			continue
 		}
 		for _, consumedCounter := range device.ConsumesCounters {
-			if _, ok := countersConsumed[consumedCounter.CounterSet]; !ok {
-				countersConsumed[consumedCounter.CounterSet] = map[string]resource.Quantity{}
-			}
-			for counter, value := range consumedCounter.Counters {
-				if _, ok := countersConsumed[consumedCounter.CounterSet][counter]; !ok {
-					countersConsumed[consumedCounter.CounterSet][counter] = resource.Quantity{}
-				}
-				v := countersConsumed[consumedCounter.CounterSet][counter]
-				v.Add(value.Value)
-				countersConsumed[consumedCounter.CounterSet][counter] = v
-			}
+			countersConsumed = getCountersMapping(consumedCounter.CounterSet, consumedCounter.Counters, countersConsumed)
 		}
 	}
 	return countersConsumed
+}
+
+// getCountersMapping updates existingMapping with the provided counters under the specified counterSetName.
+func getCountersMapping(counterSetName string, counters map[string]resourceapi.Counter, existingMapping map[string]map[string]resource.Quantity) map[string]map[string]resource.Quantity {
+	for counterName, counter := range counters {
+		if _, ok := existingMapping[counterSetName]; !ok {
+			existingMapping[counterSetName] = map[string]resource.Quantity{}
+		}
+		if _, ok := existingMapping[counterSetName][counterName]; !ok {
+			existingMapping[counterSetName][counterName] = resource.Quantity{}
+		}
+		v := existingMapping[counterSetName][counterName]
+		v.Add(counter.Value)
+		existingMapping[counterSetName][counterName] = v
+	}
+	return existingMapping
 }
 
 // getUniquePartitionableDevicesCount returns the count of unique partitionable devices in the provided list.
