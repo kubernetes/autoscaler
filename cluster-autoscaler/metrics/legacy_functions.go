@@ -257,3 +257,8 @@ func UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration) {
 func ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
 	DefaultMetrics.ObserveMaxNodeSkipEvalDurationSeconds(duration)
 }
+
+// UpdateNodeGroupUnfulfilledNodeCount records the number of nodes that are not yet fulfilled by the node group.
+func UpdateNodeGroupUnfulfilledNodeCount(unfulfilledNodeCount map[string]int) {
+	DefaultMetrics.UpdateNodeGroupUnfulfilledNodeCount(unfulfilledNodeCount)
+}

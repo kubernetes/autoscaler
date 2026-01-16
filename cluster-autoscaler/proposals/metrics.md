@@ -21,17 +21,18 @@ All the metrics are prefixed with `cluster_autoscaler_`.
 
 ### Cluster state
 
-| Metric name | Metric type | Labels | Description |
-| ----------- | ----------- | ------ | ----------- |
-| cluster_safe_to_autoscale | Gauge | | Whether or not cluster is healthy enough for autoscaling. 1 if it is, 0 otherwise. |
-| nodes_count | Gauge | `state`=&lt;node-state&gt; | Number of nodes in cluster. |
-| unschedulable_pods_count | Gauge | | Number of unschedulable ("Pending") pods in the cluster. |
-| node_groups_count | Gauge | `node_group_type`=&lt;node-group-type&gt; | Number of node groups managed by CA. |
-| max_nodes_count | Gauge | | Maximum number of nodes in all node groups. |
-| cluster_cpu_current_cores | Gauge | | | Current number of cores in the cluster, minus deleting nodes. |
-| cpu_limits_cores | Gauge | `direction`=&lt;`minimum` or `maximum`&gt; | Minimum and maximum number of cores in the cluster. |
-| cluster_memory_current_bytes | Gauge | | Current number of bytes of memory in the cluster, minus deleting nodes. |
-| memory_limits_bytes | Gauge | `direction`=&lt;`minimum` or `maximum`&gt; | Minimum and maximum number of bytes of memory in cluster. |
+| Metric name | Metric type | Labels                                     | Description                                                                                                                            |
+| ----------- | ----------- |--------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| cluster_safe_to_autoscale | Gauge |                                            | Whether or not cluster is healthy enough for autoscaling. 1 if it is, 0 otherwise.                                                     |
+| nodes_count | Gauge | `state`=&lt;node-state&gt;                 | Number of nodes in cluster.                                                                                                            |
+| unschedulable_pods_count | Gauge |                                            | Number of unschedulable ("Pending") pods in the cluster.                                                                               |
+| node_groups_count | Gauge | `node_group_type`=&lt;node-group-type&gt;  | Number of node groups managed by CA.                                                                                                   |
+| node_group_unfulfilled_node_count | Gauge | `node_group`=&lt;node-group&gt;                                            | Difference between node group target size and number of K8S registered nodes excluding deleted nodes(in k8s but not in cloud provider) |
+| max_nodes_count | Gauge |                                            | Maximum number of nodes in all node groups.                                                                                            |
+| cluster_cpu_current_cores | Gauge |                                            |                                                                                                                                        | Current number of cores in the cluster, minus deleting nodes. |
+| cpu_limits_cores | Gauge | `direction`=&lt;`minimum` or `maximum`&gt; | Minimum and maximum number of cores in the cluster.                                                                                    |
+| cluster_memory_current_bytes | Gauge |                                            | Current number of bytes of memory in the cluster, minus deleting nodes.                                                                |
+| memory_limits_bytes | Gauge | `direction`=&lt;`minimum` or `maximum`&gt; | Minimum and maximum number of bytes of memory in cluster.                                                                              |
 
 * `cluster_safe_to_autoscale` indicates whether cluster is healthy enough for autoscaling. CA stops all operations if significant number of nodes are unready (by default 33% as of CA 0.5.4).
 * `nodes_count` records the total number of nodes, labeled by node state. Possible
@@ -138,4 +139,3 @@ feature.
 | nap_enabled | Gauge | | Whether or not Node Autoprovisioning is enabled. 1 if it is, 0 otherwise. |
 | created_node_groups_total | Counter | | Number of node groups created by Node Autoprovisioning. |
 | deleted_node_groups_total | Counter | | Number of node groups deleted by Node Autoprovisioning. |
-
