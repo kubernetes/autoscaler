@@ -76,13 +76,12 @@ func main() {
 	common.InitLoggingFlags()
 	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
 
-	recommender_config.ValidateRecommenderConfig(config)
-	common.ValidateCommonConfig(config.CommonFlags)
-
 	leaderElection := defaultLeaderElectionConfiguration()
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	kube_flag.InitFlags()
+
+	recommender_config.ValidateRecommenderConfig(config)
 	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion(), "recommenderName", config.RecommenderName)
 
 	ctx := context.Background()

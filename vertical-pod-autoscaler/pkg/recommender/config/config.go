@@ -144,10 +144,10 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.RecommenderName, "recommender-name", config.RecommenderName, "Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster.")
 	flag.DurationVar(&config.MetricsFetcherInterval, "recommender-interval", config.MetricsFetcherInterval, `How often metrics should be fetched`)
 	flag.DurationVar(&config.CheckpointsGCInterval, "checkpoints-gc-interval", config.CheckpointsGCInterval, `How often orphaned checkpoints should be garbage collected`)
-	flag.StringVar(&config.Address, "address", ":8942", "The address to expose Prometheus metrics.")
+	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.StringVar(&config.Storage, "storage", config.Storage, `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
-	flag.BoolVar(&config.MemorySaver, "memory-saver", false, `If true, only track pods which have an associated VPA`)
-	flag.IntVar(&config.UpdateWorkerCount, "update-worker-count", 10, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
+	flag.BoolVar(&config.MemorySaver, "memory-saver", config.MemorySaver, `If true, only track pods which have an associated VPA`)
+	flag.IntVar(&config.UpdateWorkerCount, "update-worker-count", config.UpdateWorkerCount, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
 
 	// Prometheus history provider flags
 	flag.StringVar(&config.PrometheusAddress, "prometheus-address", config.PrometheusAddress, `Where to reach for Prometheus metrics`)
@@ -192,6 +192,8 @@ func InitRecommenderFlags() *RecommenderConfig {
 
 // ValidateRecommenderConfig performs validation of the recommender flags
 func ValidateRecommenderConfig(config *RecommenderConfig) {
+	common.ValidateCommonConfig(config.CommonFlags)
+
 	if *routines.MinCheckpointsPerRun != 10 { // Default value is 10
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
 	}
