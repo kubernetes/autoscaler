@@ -79,8 +79,7 @@ func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*scaledown.Unneede
 	}
 	for nodeName := range t.unneededNodes {
 		if _, exists := currentSet[nodeName]; !exists {
-			delete(t.unneededNodes, nodeName)
-			klog.V(6).Infof("Node %s is no longer unneeded (or was removed). Stopped tracking at %v.", nodeName, timestamp)
+			t.recordAndCleanup(nodeName, false)
 		}
 	}
 }
@@ -91,9 +90,6 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 		t.wrapped.Process(autoscalingCtx, status)
 	}
 
-	for _, unremovableNode := range status.UnremovableNodes {
-		t.recordAndCleanup(unremovableNode.Node.Name, false)
-	}
 	for _, node := range status.ScaledDownNodes {
 		t.recordAndCleanup(node.Node.Name, true)
 	}
