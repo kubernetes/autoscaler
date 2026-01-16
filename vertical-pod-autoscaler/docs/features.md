@@ -172,8 +172,8 @@ VPA will fall back to pod recreation in the following scenarios:
 
 VPA provides metrics to track in-place update operations:
 
-* `vpa_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
-* `vpa_in_place_updated_pods_total`: Number of pods successfully updated in-place
-* `vpa_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
-* `vpa_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
+* `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+* `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
+* `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+* `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
 * `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
