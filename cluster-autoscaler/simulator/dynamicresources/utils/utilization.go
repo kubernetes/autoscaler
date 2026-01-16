@@ -97,19 +97,19 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 //   - 1 atomic allocated, partitionable at 50% util:
 //     Result: (0.5 * 2/3) + (0.5 * 1/3) = 50%
 func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
-	totalConsumedCounters := map[string]map[string]resource.Quantity{}
+	totalAvailableCounters := map[string]map[string]resource.Quantity{}
 	for _, resourceSlice := range resourceSlices {
 		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
-			if _, ok := totalConsumedCounters[sharedCounter.Name]; !ok {
-				totalConsumedCounters[sharedCounter.Name] = map[string]resource.Quantity{}
+			if _, ok := totalAvailableCounters[sharedCounter.Name]; !ok {
+				totalAvailableCounters[sharedCounter.Name] = map[string]resource.Quantity{}
 			}
 			for counter, value := range sharedCounter.Counters {
-				if _, ok := totalConsumedCounters[sharedCounter.Name][counter]; !ok {
-					totalConsumedCounters[sharedCounter.Name][counter] = resource.Quantity{}
+				if _, ok := totalAvailableCounters[sharedCounter.Name][counter]; !ok {
+					totalAvailableCounters[sharedCounter.Name][counter] = resource.Quantity{}
 				}
-				v := totalConsumedCounters[sharedCounter.Name][counter]
+				v := totalAvailableCounters[sharedCounter.Name][counter]
 				v.Add(value.Value)
-				totalConsumedCounters[sharedCounter.Name][counter] = v
+				totalAvailableCounters[sharedCounter.Name][counter] = v
 			}
 		}
 	}
@@ -137,10 +137,10 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	if devicesWithoutCounters != 0 {
 		atomicDevicesUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
 	}
-	if len(totalConsumedCounters) == 0 {
+	if len(totalAvailableCounters) == 0 {
 		return atomicDevicesUtilization
 	}
-	for counterSet, counters := range totalConsumedCounters {
+	for counterSet, counters := range totalAvailableCounters {
 		for counterName, totalValue := range counters {
 			if totalValue.IsZero() {
 				continue
