@@ -99,6 +99,10 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
 	totalAvailableCounters := map[string]map[string]resource.Quantity{}
 	for _, resourceSlice := range resourceSlices {
+		if ptr.Deref(resourceSlice.Spec.PerDeviceNodeSelection, false) {
+			// PerDeviceNodeSelection slices do not affect utilization calculations as they do not share counters across nodes.
+			continue
+		}
 		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
 			totalAvailableCounters = getCountersMapping(sharedCounter.Name, sharedCounter.Counters, totalAvailableCounters)
 		}
