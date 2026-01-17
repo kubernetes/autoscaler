@@ -19,12 +19,10 @@ package vpa
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -328,33 +326,6 @@ func TestValidateVPA(t *testing.T) {
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &validUpdateMode,
-					},
-					ResourcePolicy: &vpa_types.PodResourcePolicy{
-						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
-							{
-								ContainerName: "loot box",
-								Mode:          &validScalingMode,
-								MinAllowed: apiv1.ResourceList{
-									cpu: resource.MustParse("10"),
-								},
-								MaxAllowed: apiv1.ResourceList{
-									cpu: resource.MustParse("100"),
-								},
-								OOMBumpUpRatio: resource.NewQuantity(2, resource.DecimalSI),
-							},
-						},
-					},
-				},
-			},
-			PerVPAConfigDisabled: false,
-		},
-		{
-			name: "per-vpa config active and used evictOOMThreshold",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode:             &validUpdateMode,
-						EvictAfterOOMThreshold: &metav1.Duration{Duration: 10 * time.Minute},
 					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{

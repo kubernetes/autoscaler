@@ -956,6 +956,32 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: oomBumpUpRatio must be greater than or equal to 1.0, got -1",
 			},
 			{
+				name: "Invalid oomBumpUpRatio (string value)",
+				vpaJSON: `{
+            "apiVersion": "autoscaling.k8s.io/v1",
+            "kind": "VerticalPodAutoscaler",
+            "metadata": {"name": "oom-test-vpa"},
+            "spec": {
+                "targetRef": {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "oom-test"
+                },
+                "updatePolicy": {
+                    "updateMode": "Auto"
+                },
+                "resourcePolicy": {
+                    "containerPolicies": [{
+                        "containerName": "*",
+                        "oomBumpUpRatio": "not-a-number",
+                        "oomMinBumpUp": 104857600
+                    }]
+                }
+            }
+        }`,
+				expectedErr: "admission webhook \"vpa\\.k8s\\.io\" denied the request: quantities must match the regular expression",
+			},
+			{
 				name: "Invalid oomBumpUpRatio (less than 1)",
 				vpaJSON: `{
             "apiVersion": "autoscaling.k8s.io/v1",
@@ -1006,32 +1032,6 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
             }
         }`,
 				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: oomMinBumpUp must be greater than or equal to 0, got -1 bytes",
-			},
-			{
-				name: "Invalid oomBumpUpRatio (string value)",
-				vpaJSON: `{
-            "apiVersion": "autoscaling.k8s.io/v1",
-            "kind": "VerticalPodAutoscaler",
-            "metadata": {"name": "oom-test-vpa"},
-            "spec": {
-                "targetRef": {
-                    "apiVersion": "apps/v1",
-                    "kind": "Deployment",
-                    "name": "oom-test"
-                },
-                "updatePolicy": {
-                    "updateMode": "Auto"
-                },
-                "resourcePolicy": {
-                    "containerPolicies": [{
-                        "containerName": "*",
-                        "oomBumpUpRatio": "not-a-number",
-                        "oomMinBumpUp": 104857600
-                    }]
-                }
-            }
-        }`,
-				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: quantities must match the regular expression",
 			},
 		}
 		for _, tc := range testCases {

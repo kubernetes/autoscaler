@@ -24,7 +24,6 @@ package v1
 import (
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -178,11 +177,6 @@ func (in *PodUpdatePolicy) DeepCopyInto(out *PodUpdatePolicy) {
 				(*in).DeepCopyInto(*out)
 			}
 		}
-	}
-	if in.EvictAfterOOMThreshold != nil {
-		in, out := &in.EvictAfterOOMThreshold, &out.EvictAfterOOMThreshold
-		*out = new(metav1.Duration)
-		**out = **in
 	}
 	return
 }
