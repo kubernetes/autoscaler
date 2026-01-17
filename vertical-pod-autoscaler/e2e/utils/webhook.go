@@ -37,6 +37,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2edeploy "k8s.io/kubernetes/test/e2e/framework/deployment"
+	e2eendpointslice "k8s.io/kubernetes/test/e2e/framework/endpointslice"
 	"k8s.io/utils/ptr"
 )
 
@@ -373,7 +374,7 @@ func DeployWebhookAndService(f *framework.Framework, image string, certContext *
 	framework.ExpectNoError(err, "creating service %s in namespace %s", WebhookServiceName, namespace)
 
 	ginkgo.By("Verifying the service has paired with the endpoint")
-	err = framework.WaitForServiceEndpointsNum(context.TODO(), client, namespace, WebhookServiceName, 1, 1*time.Second, 30*time.Second)
+	err = e2eendpointslice.WaitForEndpointCount(context.TODO(), client, namespace, WebhookServiceName, 1)
 	framework.ExpectNoError(err, "waiting for service %s/%s have %d endpoint", namespace, WebhookServiceName, 1)
 }
 

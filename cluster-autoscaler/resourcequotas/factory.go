@@ -20,13 +20,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	"k8s.io/klog/v2"
 )
 
 // TrackerFactory builds quota trackers.
 type TrackerFactory struct {
-	crp             customresources.CustomResourcesProcessor
-	quotasProvider  Provider
-	usageCalculator *usageCalculator
+	crp            customresources.CustomResourcesProcessor
+	quotasProvider Provider
+	nodeFilter     NodeFilter
 }
 
 // TrackerOptions stores configuration for quota tracking.
@@ -38,11 +39,10 @@ type TrackerOptions struct {
 
 // NewTrackerFactory creates a new TrackerFactory.
 func NewTrackerFactory(opts TrackerOptions) *TrackerFactory {
-	uc := newUsageCalculator(opts.CustomResourcesProcessor, opts.NodeFilter)
 	return &TrackerFactory{
-		crp:             opts.CustomResourcesProcessor,
-		quotasProvider:  opts.QuotaProvider,
-		usageCalculator: uc,
+		crp:            opts.CustomResourcesProcessor,
+		quotasProvider: opts.QuotaProvider,
+		nodeFilter:     opts.NodeFilter,
 	}
 }
 
@@ -56,12 +56,15 @@ func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingCon
 	if err != nil {
 		return nil, err
 	}
-	usages, err := f.usageCalculator.calculateUsages(autoscalingCtx, nodes, quotas)
+	nc := newNodeResourcesCache(f.crp)
+	uc := newUsageCalculator(f.nodeFilter, nc)
+	usages, err := uc.calculateUsages(autoscalingCtx, nodes, quotas)
 	if err != nil {
 		return nil, err
 	}
 	var quotaStatuses []*quotaStatus
 	for _, rq := range quotas {
+		klog.V(5).Infof("Quota %q status: limits: %v, usages: %v", rq.ID(), rq.Limits(), usages[rq.ID()])
 		limitsLeft := make(resourceList)
 		limits := rq.Limits()
 		for resourceType, limit := range limits {
@@ -73,6 +76,6 @@ func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingCon
 			limitsLeft: limitsLeft,
 		})
 	}
-	tracker := newTracker(f.crp, quotaStatuses)
+	tracker := newTracker(quotaStatuses, nc)
 	return tracker, nil
 }

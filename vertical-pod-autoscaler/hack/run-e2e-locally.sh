@@ -74,7 +74,7 @@ echo "Deleting KIND cluster 'kind'."
 kind delete cluster -n kind -q
 
 echo "Creating KIND cluster 'kind'"
-KIND_VERSION="kindest/node:v1.33.0@sha256:02f73d6ae3f11ad5d543f16736a2cb2a63a300ad60e81dac22099b0b04784a4e"
+KIND_VERSION="kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f"
 if ! kind create cluster --image=${KIND_VERSION}; then
     echo "Failed to create KIND cluster. Exiting. Make sure kind version is updated."
     echo "Available versions: https://github.com/kubernetes-sigs/kind/releases"

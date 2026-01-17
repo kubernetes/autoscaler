@@ -97,6 +97,9 @@ func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isO
 		usageValue = CoresFromCPUAmount(usage)
 	case corev1.ResourceMemory:
 		usageValue = BytesFromMemoryAmount(usage)
+	default:
+		klog.V(0).InfoS("Unknown resource", "resource", resource)
+		return
 	}
 	if container.aggregator.GetLastRecommendation() == nil {
 		metrics_quality.ObserveQualityMetricsRecommendationMissing(usageValue, isOOM, resource, updateMode)

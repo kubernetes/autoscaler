@@ -83,13 +83,13 @@ var HamsterLabels = map[string]string{"app": "hamster"}
 
 // SIGDescribe adds sig-autoscaling tag to test description.
 // Takes args that are passed to ginkgo.Describe.
-func SIGDescribe(scenario, name string, args ...interface{}) bool {
+func SIGDescribe(scenario, name string, args ...any) bool {
 	full := fmt.Sprintf("[sig-autoscaling] [VPA] [%s] [v1] %s", scenario, name)
 	return ginkgo.Describe(full, args...)
 }
 
 // RecommenderE2eDescribe describes a VPA recommender e2e test.
-func RecommenderE2eDescribe(name string, args ...interface{}) bool {
+func RecommenderE2eDescribe(name string, args ...any) bool {
 	return SIGDescribe(recommenderComponent, name, args...)
 }
 
@@ -138,9 +138,9 @@ func isStatusEmpty(status *vpa_types.VerticalPodAutoscalerStatus) bool {
 
 // PatchRecord used for patch action
 type PatchRecord struct {
-	Op    string      `json:"op,inline"`
-	Path  string      `json:"path,inline"`
-	Value interface{} `json:"value"`
+	Op    string `json:"op,inline"`
+	Path  string `json:"path,inline"`
+	Value any    `json:"value"`
 }
 
 // PatchVpaRecommendation installs a new recommendation for VPA object.
@@ -237,7 +237,7 @@ func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
 		DefaultHamsterReplicas,                     /*replicas*/
 		HamsterLabels,                              /*podLabels*/
 		GetHamsterContainerNameByIndex(0),          /*imageName*/
-		"registry.k8s.io/ubuntu-slim:0.14",         /*image*/
+		"ubuntu:latest",                            /*image*/
 		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name

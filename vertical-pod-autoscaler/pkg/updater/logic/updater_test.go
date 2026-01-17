@@ -453,7 +453,7 @@ func TestRunOnceIgnoreNamespaceMatching(t *testing.T) {
 }
 
 func TestNewEventRecorder(t *testing.T) {
-	fakeClient := fake.NewSimpleClientset()
+	fakeClient := fake.NewClientset()
 	er := newEventRecorder(fakeClient)
 
 	maxRetries := 5
@@ -483,7 +483,7 @@ func TestNewEventRecorder(t *testing.T) {
 			var events *apiv1.EventList
 			var err error
 			// Add delay for fake client to catch up due to be being asynchronous
-			for i := 0; i < maxRetries; i++ {
+			for range maxRetries {
 				ctx, cancel := context.WithTimeout(context.Background(), contextTimeout)
 				defer cancel()
 				events, err = fakeClient.CoreV1().Events("default").List(ctx, metav1.ListOptions{})

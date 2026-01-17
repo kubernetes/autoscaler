@@ -163,7 +163,20 @@ func main() {
 	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), commonFlags.VpaObjectNamespace, ignoredNamespaces, *webHookFailurePolicy, *webhookLabels)
+			selfRegistration(
+				kubeClient,
+				readFile(*certsConfiguration.clientCaFile),
+				webHookDelay,
+				namespace,
+				*serviceName,
+				url,
+				*registerByURL,
+				int32(*webhookTimeout),
+				commonFlags.VpaObjectNamespace,
+				ignoredNamespaces,
+				*webHookFailurePolicy,
+				*webhookLabels,
+			)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)

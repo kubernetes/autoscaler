@@ -2,16 +2,18 @@
 
 ## Contents
 
-- [Examples](#examples)
-  - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
-  - [Capping to Limit Range](#capping-to-limit-range)
-  - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
-  - [Starting multiple recommenders](#starting-multiple-recommenders)
-  - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
-  - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
-  - [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
-  - [Setting the webhook failurePolicy](#setting-the-webhook-failurepolicy)
-  - [Specifying global maximum allowed resources to prevent pods from being unschedulable](#specifying-global-maximum-allowed-resources-to-prevent-pods-from-being-unschedulable)
+<!-- toc -->
+- [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
+- [Capping to Limit Range](#capping-to-limit-range)
+- [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
+- [Starting multiple recommenders](#starting-multiple-recommenders)
+- [Custom memory bump-up after OOMKill](#custom-memory-bump-up-after-oomkill)
+- [Using CPU management with static policy](#using-cpu-management-with-static-policy)
+- [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
+- [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
+- [Setting the webhook failurePolicy](#setting-the-webhook-failurepolicy)
+- [Specifying global maximum allowed resources to prevent pods from being unschedulable](#specifying-global-maximum-allowed-resources-to-prevent-pods-from-being-unschedulable)
+<!-- /toc -->
 
 ## Keeping limit proportional to request
 

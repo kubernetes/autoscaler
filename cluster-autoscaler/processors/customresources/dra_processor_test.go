@@ -21,11 +21,14 @@ import (
 	"testing"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -35,12 +38,36 @@ import (
 	utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
+type mockTemplateNodeInfoRegistry struct {
+	nodeInfos map[string]*framework.NodeInfo
+}
+
+func newMockTemplateNodeInfoRegistry(nodeInfos map[string]*framework.NodeInfo) *mockTemplateNodeInfoRegistry {
+	return &mockTemplateNodeInfoRegistry{
+		nodeInfos: nodeInfos,
+	}
+}
+
+func (m *mockTemplateNodeInfoRegistry) GetNodeInfo(id string) (*framework.NodeInfo, bool) {
+	nodeInfo, found := m.nodeInfos[id]
+	return nodeInfo, found
+}
+
+func (m *mockTemplateNodeInfoRegistry) GetNodeInfos() map[string]*framework.NodeInfo {
+	return m.nodeInfos
+}
+
+func (m *mockTemplateNodeInfoRegistry) Recompute(_ *ca_context.AutoscalingContext, _ []*apiv1.Node, _ []*appsv1.DaemonSet, _ taints.TaintConfig, _ time.Time) errors.AutoscalerError {
+	return nil
+}
+
 func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 	testCases := map[string]struct {
 		nodeGroupsAllNodes        map[string][]*apiv1.Node
 		nodeGroupsTemplatesSlices map[string][]*resourceapi.ResourceSlice
 		nodesSlices               map[string][]*resourceapi.ResourceSlice
 		expectedNodesReadiness    map[string]bool
+		registryNodeInfos         map[string]*framework.NodeInfo
 	}{
 		"1 DRA node group all totally ready": {
 			nodeGroupsAllNodes: map[string][]*apiv1.Node{
@@ -49,8 +76,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_2_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{1, 1}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{1, 1})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": createNodeResourceSlices("node_1_Dra_Ready", []int{1, 1}),
@@ -68,8 +95,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_2_Dra_Ready", false),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{1, 1}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{1, 1})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": createNodeResourceSlices("node_1_Dra_Ready", []int{1, 1}),
@@ -87,8 +114,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_2_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{1, 1}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{1, 1})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": createNodeResourceSlices("node_1_Dra_Ready", []int{1, 1}),
@@ -106,8 +133,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_2_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{1, 1}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{1, 1})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": createNodeResourceSlices("node_1_Dra_Ready", []int{1, 1}),
@@ -125,8 +152,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_2_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{1, 1}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{1, 1})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": {},
@@ -143,8 +170,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_1_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": buildNodeResourceSlices("node_2_Dra_Ready", "driver", []int{2}),
@@ -159,8 +186,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_2_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_2_Dra_Ready": buildNodeResourceSlices("node_2_Dra_Ready", "driver", []int{2, 2, 2, 2}),
@@ -175,8 +202,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_1_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": buildNodeResourceSlices("node_1_Dra_Ready", "driver", []int{2, 2, 1, 2}),
@@ -197,8 +224,8 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_5_NonDra_Unready", false),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{2, 2}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{2, 2})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready":   createNodeResourceSlices("node_1_Dra_Ready", []int{2, 2}),
@@ -225,9 +252,9 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_5_Dra_Unready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{2, 2}),
-				"ng2": createNodeResourceSlices("ng2_template", []int{3, 3}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{2, 2})),
+				"ng2": createTemplateNodeInfo("ng2_template", createNodeResourceSlices("ng2_template", []int{3, 3})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready":   createNodeResourceSlices("node_1_Dra_Ready", []int{2, 2}),
@@ -254,9 +281,9 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_3_Dra_Ready", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2}),
-				"ng2": buildNodeResourceSlices("ng2_template", "driver", []int{1, 1}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", buildNodeResourceSlices("ng1_template", "driver", []int{2, 2, 2})),
+				"ng2": createTemplateNodeInfo("ng2_template", buildNodeResourceSlices("ng2_template", "driver", []int{1, 1})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1_Dra_Ready": buildNodeResourceSlices("node_1_Dra_Ready", "driver", []int{2, 2, 2, 2}),
@@ -285,9 +312,9 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 					buildTestNode("node_7", true),
 				},
 			},
-			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
-				"ng1": createNodeResourceSlices("ng1_template", []int{2, 2}),
-				"ng2": createNodeResourceSlices("ng2_template", []int{3, 3}),
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{2, 2})),
+				"ng2": createTemplateNodeInfo("ng2_template", createNodeResourceSlices("ng2_template", []int{3, 3})),
 			},
 			nodesSlices: map[string][]*resourceapi.ResourceSlice{
 				"node_1": createNodeResourceSlices("node_1", []int{2, 2, 2}),
@@ -304,6 +331,42 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 				"node_5": false,
 				"node_6": false,
 				"node_7": true,
+			},
+		},
+		"Fallback to NodeGroup template when registry is missing": {
+			nodeGroupsAllNodes: map[string][]*apiv1.Node{
+				"ng1": {
+					buildTestNode("node_1", true),
+				},
+			},
+			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
+				"ng1": createNodeResourceSlices("ng1_template", []int{1, 1}),
+			},
+			registryNodeInfos: map[string]*framework.NodeInfo{},
+			nodesSlices: map[string][]*resourceapi.ResourceSlice{
+				"node_1": createNodeResourceSlices("node_1", []int{1}),
+			},
+			expectedNodesReadiness: map[string]bool{
+				"node_1": false,
+			},
+		},
+		"Registry preferred over NodeGroup template": {
+			nodeGroupsAllNodes: map[string][]*apiv1.Node{
+				"ng1": {
+					buildTestNode("node_1", true),
+				},
+			},
+			nodeGroupsTemplatesSlices: map[string][]*resourceapi.ResourceSlice{
+				"ng1": createNodeResourceSlices("ng1_template", []int{1, 1}),
+			},
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": createTemplateNodeInfo("ng1_template", createNodeResourceSlices("ng1_template", []int{9, 9})),
+			},
+			nodesSlices: map[string][]*resourceapi.ResourceSlice{
+				"node_1": createNodeResourceSlices("node_1", []int{1, 1}),
+			},
+			expectedNodesReadiness: map[string]bool{
+				"node_1": false,
 			},
 		},
 	}
@@ -333,12 +396,16 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 			provider.SetMachineTemplates(machineTemplates)
 			draSnapshot := drasnapshot.NewSnapshot(nil, tc.nodesSlices, nil, nil)
 			clusterSnapshotStore := store.NewBasicSnapshotStore()
-			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot)
+			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 
-			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
+			autoscalingCtx := &ca_context.AutoscalingContext{
+				CloudProvider:            provider,
+				ClusterSnapshot:          clusterSnapshot,
+				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(tc.registryNodeInfos),
+			}
 			processor := DraCustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot, nil)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {
@@ -355,6 +422,10 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 		})
 	}
 
+}
+
+func createTemplateNodeInfo(nodeName string, slices []*resourceapi.ResourceSlice) *framework.NodeInfo {
+	return framework.NewNodeInfo(buildTestNode(nodeName, true), slices)
 }
 
 func createNodeResourceSlices(nodeName string, numberOfDevicesInSlices []int) []*resourceapi.ResourceSlice {

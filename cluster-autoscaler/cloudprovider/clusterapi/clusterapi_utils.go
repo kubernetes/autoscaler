@@ -41,6 +41,7 @@ const (
 	taintsKey                           = "capacity.cluster-autoscaler.kubernetes.io/taints"
 	labelsKey                           = "capacity.cluster-autoscaler.kubernetes.io/labels"
 	draDriverKey                        = "capacity.cluster-autoscaler.kubernetes.io/dra-driver"
+	csiDriverKey                        = "capacity.cluster-autoscaler.kubernetes.io/csi-driver"
 	machineDeploymentRevisionAnnotation = "machinedeployment.clusters.x-k8s.io/revision"
 	machineDeploymentNameLabel          = "cluster.x-k8s.io/deployment-name"
 	// UnknownArch is used if the Architecture is Unknown

@@ -2,10 +2,11 @@
 
 ## Contents
 
-- [Quick start](#quick-start)
-  - [Test your installation](#test-your-installation)
-  - [Example VPA configuration](#example-vpa-configuration)
-  - [Troubleshooting](#troubleshooting)
+<!-- toc -->
+- [Test your installation](#test-your-installation)
+- [Example VPA configuration](#example-vpa-configuration)
+- [Troubleshooting](#troubleshooting)
+<!-- /toc -->
 
 After [installation](./installation.md) the system is ready to recommend and set
 resource requests for your pods.

@@ -20,10 +20,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
 	"k8s.io/client-go/tools/cache"
 	test_clock "k8s.io/utils/clock/testing"
 )
@@ -43,25 +45,30 @@ func TestInstanceTypeCache(t *testing.T) {
 
 func TestLTVersionChange(t *testing.T) {
 	asgName, ltName := "testasg", "launcher"
-	ltVersions := []*string{aws.String("1"), aws.String("2")}
-	instanceTypes := []*string{aws.String("t2.large"), aws.String("m4.xlarge")}
+	ltVersions := []string{"1", "2"}
+	instanceTypes := []string{"t2.large", "m4.xlarge"}
 
 	a := &autoScalingMock{}
 	e := &ec2Mock{}
 
 	for i := 0; i < 2; i++ {
-		e.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
-			LaunchTemplateName: aws.String(ltName),
-			Versions:           []*string{ltVersions[i]},
-		}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
-			LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
-				{
-					LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
-						InstanceType: instanceTypes[i],
+		e.On("DescribeLaunchTemplateVersions",
+			mock.Anything,
+			&ec2.DescribeLaunchTemplateVersionsInput{
+				LaunchTemplateName: aws.String(ltName),
+				Versions:           []string{ltVersions[i]},
+			},
+		).Return(
+			&ec2.DescribeLaunchTemplateVersionsOutput{
+				LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{
+					{
+						LaunchTemplateData: &ec2types.ResponseLaunchTemplateData{
+							InstanceType: ec2types.InstanceType(instanceTypes[i]),
+						},
 					},
 				},
-			},
-		})
+			}, nil,
+		)
 	}
 
 	fakeClock := test_clock.NewFakeClock(time.Unix(0, 0))
@@ -85,7 +92,7 @@ func TestLTVersionChange(t *testing.T) {
 				AwsRef: asgRef,
 				LaunchTemplate: &launchTemplate{
 					name:    ltName,
-					version: aws.StringValue(ltVersions[i]),
+					version: ltVersions[i],
 				},
 			},
 		})
@@ -96,7 +103,7 @@ func TestLTVersionChange(t *testing.T) {
 		assert.Truef(t, found, "%s did not find asg (iteration %d)", asgName, i)
 
 		foundInstanceType := result.(instanceTypeCachedObject).instanceType
-		assert.Equalf(t, foundInstanceType, *instanceTypes[i], "%s had %s, expected %s (iteration %d)", asgName, foundInstanceType, *instanceTypes[i], i)
+		assert.Equalf(t, foundInstanceType, instanceTypes[i], "%s had %s, expected %s (iteration %d)", asgName, foundInstanceType, instanceTypes[i], i)
 
 		// Expire the first instance
 		fakeClock.SetTime(time.Now().Add(asgInstanceTypeCacheTTL + 10*time.Minute))

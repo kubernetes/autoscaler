@@ -21,7 +21,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 )
 
 // NodeFilter customizes what nodes should be included in usage calculations.
@@ -30,15 +29,36 @@ type NodeFilter interface {
 	ExcludeFromTracking(node *corev1.Node) bool
 }
 
-type usageCalculator struct {
-	crp        customresources.CustomResourcesProcessor
-	nodeFilter NodeFilter
+// CombinedNodeFilter combines multiple node filters.
+type CombinedNodeFilter struct {
+	filters []NodeFilter
 }
 
-func newUsageCalculator(crp customresources.CustomResourcesProcessor, nodeFilter NodeFilter) *usageCalculator {
+// NewCombinedNodeFilter creates a new CombinedNodeFilter.
+func NewCombinedNodeFilter(filters []NodeFilter) *CombinedNodeFilter {
+	return &CombinedNodeFilter{filters: filters}
+}
+
+// ExcludeFromTracking calls ExcludeFromTracking on all filters and returns true
+// if any of them returns true.
+func (f *CombinedNodeFilter) ExcludeFromTracking(node *corev1.Node) bool {
+	for _, filter := range f.filters {
+		if filter.ExcludeFromTracking(node) {
+			return true
+		}
+	}
+	return false
+}
+
+type usageCalculator struct {
+	nodeFilter NodeFilter
+	nodeCache  *nodeResourcesCache
+}
+
+func newUsageCalculator(nodeFilter NodeFilter, nodeCache *nodeResourcesCache) *usageCalculator {
 	return &usageCalculator{
-		crp:        crp,
 		nodeFilter: nodeFilter,
+		nodeCache:  nodeCache,
 	}
 }
 
@@ -59,7 +79,7 @@ func (u *usageCalculator) calculateUsages(autoscalingCtx *context.AutoscalingCon
 		if err != nil {
 			return nil, fmt.Errorf("failed to get node group for node %q: %w", node.Name, err)
 		}
-		delta, err := nodeResources(autoscalingCtx, u.crp, node, ng)
+		delta, err := u.nodeCache.totalNodeResources(autoscalingCtx, node, ng)
 		if err != nil {
 			return nil, err
 		}

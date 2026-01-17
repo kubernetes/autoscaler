@@ -330,6 +330,8 @@ type AutoscalingOptions struct {
 	ForceDeleteFailedNodes bool
 	// DynamicResourceAllocationEnabled configures whether logic for handling DRA objects is enabled.
 	DynamicResourceAllocationEnabled bool
+	// CSINodeAwareSchedulingEnabled configures whether logic for handling CSINode objects is enabled.
+	CSINodeAwareSchedulingEnabled bool
 	// ClusterSnapshotParallelism is the maximum parallelism of cluster snapshot creation.
 	ClusterSnapshotParallelism int
 	// PredicateParallelism is the number of goroutines to use for running scheduler predicates.
@@ -372,6 +374,8 @@ type AutoscalingOptions struct {
 	CapacitybufferPodInjectionEnabled bool
 	// MaxNodeSkipEvalTimeTrackerEnabled is used to enabled/disable the tracking of maximum evaluation time of a node being skipped during ScaleDown.
 	MaxNodeSkipEvalTimeTrackerEnabled bool
+	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
+	NodeRemovalLatencyTrackingEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
