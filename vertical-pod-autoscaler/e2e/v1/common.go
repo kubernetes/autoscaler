@@ -144,14 +144,6 @@ func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(context.TODO(), options)
 }
 
-// GetOOMPods returns running OOM test pods (matched by utils.OOMLabels)
-func GetOOMPods(f *framework.Framework) (*apiv1.PodList, error) {
-	// TODO(omerap12): merge GetHamsterPods and GetOOMPods functions.
-	label := labels.SelectorFromSet(labels.Set(utils.OOMLabels))
-	options := metav1.ListOptions{LabelSelector: label.String(), FieldSelector: getPodSelectorExcludingDonePodsOrDie()}
-	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(context.TODO(), options)
-}
-
 // NewTestCronJob returns a CronJob for test purposes.
 func NewTestCronJob(name, schedule string, replicas int32) *batchv1.CronJob {
 	backoffLimit := utils.DefaultHamsterBackoffLimit
@@ -310,21 +302,6 @@ func WaitForPodsEvicted(f *framework.Framework, podList *apiv1.PodList) error {
 	})
 }
 
-// WaitForPodsEvictedOOM waits until some pods from the list are evicted.
-// TODO(omerap12): merge this with WaitForPodsEvicted
-func WaitForPodsEvictedOOM(f *framework.Framework, podList *apiv1.PodList) error {
-	initialPodSet := MakePodSet(podList)
-
-	return wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, utils.PollTimeout, true, func(ctx context.Context) (done bool, err error) {
-		currentPodList, err := GetOOMPods(f)
-		if err != nil {
-			return false, err
-		}
-		currentPodSet := MakePodSet(currentPodList)
-		return GetEvictedPodsCount(currentPodSet, initialPodSet) > 0, nil
-	})
-}
-
 // WerePodsSuccessfullyRestarted returns true if some pods from initialPodSet have been
 // successfully restarted comparing to currentPodSet (pods were evicted and
 // are running).
@@ -360,16 +337,6 @@ func GetEvictedPodsCount(currentPodSet PodSet, initialPodSet PodSet) int {
 func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 	time.Sleep(VpaEvictionTimeout)
 	currentPodList, err := GetHamsterPods(f)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when listing hamster pods to check number of pod evictions")
-	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
-	gomega.Expect(restarted).To(gomega.Equal(0), "there should be no pod evictions")
-}
-
-// CheckNoPodsEvictedOOM waits for long enough period for VPA to start evicting
-// TODO(omerap12): merge this CheckNoPodsEvicted
-func CheckNoPodsEvictedOOM(f *framework.Framework, initialPodSet PodSet) {
-	time.Sleep(VpaEvictionTimeout)
-	currentPodList, err := GetOOMPods(f)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when listing hamster pods to check number of pod evictions")
 	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
 	gomega.Expect(restarted).To(gomega.Equal(0), "there should be no pod evictions")

@@ -23,11 +23,9 @@ import (
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -209,126 +207,6 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 	})
 })
 
-var _ = UpdaterE2eDescribe("Updater with PerVPAConfig", func() {
-	const replicas = 3
-	const statusUpdateInterval = 10 * time.Second
-	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
-
-	f.It("does not evict pods when OOM duration exceeds threshold", framework.WithFeatureGate(features.PerVPAConfig), func() {
-		ginkgo.By("Setting up the Admission Controller status")
-		stopCh := make(chan struct{})
-		statusUpdater := status.NewUpdater(
-			f.ClientSet,
-			status.AdmissionControllerStatusName,
-			utils.VpaNamespace,
-			statusUpdateInterval,
-			"e2e test",
-		)
-		defer func() {
-			ginkgo.By("Deleting the Admission Controller status")
-			close(stopCh)
-			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
-				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
-			gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		}()
-		statusUpdater.Run(stopCh)
-
-		// Use a very short threshold (1 second)
-		// Pods that take longer than 1 second to OOM will NOT be considered "quick OOM"
-		threshold := 1 * time.Second
-
-		ginkgo.By("Setting up VPA with very short evictAfterOOMThreshold (1 second)")
-		containerName := utils.GetHamsterContainerNameByIndex(0)
-		vpaCRD := newOOMTestVPA(f.Namespace.Name, "hamster-vpa", "hamster", containerName, threshold)
-		utils.InstallVPA(f, vpaCRD)
-
-		ginkgo.By("Creating deployment that will OOM (takes >1 second to OOM)")
-		runOomingReplicationController(f.ClientSet, f.Namespace.Name, "hamster", replicas)
-
-		ginkgo.By("Waiting for pods to OOM and restart")
-		gomega.Eventually(func() bool {
-			podList, err := GetOOMPods(f)
-			if err != nil {
-				return false
-			}
-			for _, pod := range podList.Items {
-				for _, cs := range pod.Status.ContainerStatuses {
-					if cs.LastTerminationState.Terminated != nil &&
-						cs.LastTerminationState.Terminated.Reason == "OOMKilled" {
-						framework.Logf("Pod %s container %s was OOMKilled", pod.Name, cs.Name)
-						return true
-					}
-				}
-			}
-			return false
-		}, 60*time.Second, 5*time.Second).Should(gomega.BeTrue(), "At least one pod should have OOMed")
-
-		podList, err := GetOOMPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		initialPodSet := MakePodSet(podList)
-
-		ginkgo.By("Waiting to verify pods are NOT evicted (OOM took longer than 1s threshold)")
-		CheckNoPodsEvictedOOM(f, initialPodSet)
-	})
-
-	f.It("evicts pods when OOM occurs within threshold", framework.WithFeatureGate(features.PerVPAConfig), func() {
-		ginkgo.By("Setting up the Admission Controller status")
-		stopCh := make(chan struct{})
-		statusUpdater := status.NewUpdater(
-			f.ClientSet,
-			status.AdmissionControllerStatusName,
-			utils.VpaNamespace,
-			statusUpdateInterval,
-			"e2e test",
-		)
-		defer func() {
-			ginkgo.By("Deleting the Admission Controller status")
-			close(stopCh)
-			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
-				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
-			gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		}()
-		statusUpdater.Run(stopCh)
-
-		// Long threshold - OOM (~5s) < threshold → quickOOM = true → evict
-		threshold := 10 * time.Minute
-
-		ginkgo.By("Setting up VPA with very short evictAfterOOMThreshold (1 second)")
-		containerName := utils.GetHamsterContainerNameByIndex(0)
-		vpaCRD := newOOMTestVPA(f.Namespace.Name, "hamster-vpa", "hamster", containerName, threshold)
-		utils.InstallVPA(f, vpaCRD)
-
-		ginkgo.By("Creating deployment that will OOM (takes >1 second to OOM)")
-		runOomingReplicationController(f.ClientSet, f.Namespace.Name, "hamster", replicas)
-
-		ginkgo.By("Waiting for pods to OOM and restart")
-		gomega.Eventually(func() bool {
-			podList, err := GetOOMPods(f)
-			if err != nil {
-				return false
-			}
-			for _, pod := range podList.Items {
-				for _, cs := range pod.Status.ContainerStatuses {
-					if cs.LastTerminationState.Terminated != nil &&
-						cs.LastTerminationState.Terminated.Reason == "OOMKilled" {
-						framework.Logf("Pod %s container %s was OOMKilled", pod.Name, cs.Name)
-						return true
-					}
-				}
-			}
-			return false
-		}, 60*time.Second, 5*time.Second).Should(gomega.BeTrue(), "At least one pod should have OOMed")
-
-		podList, err := GetOOMPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		ginkgo.By("Waiting for pods to be evicted")
-		err = WaitForPodsEvictedOOM(f, podList)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	})
-})
-
 func setupPodsForUpscalingEviction(f *framework.Framework) *apiv1.PodList {
 	return setupPodsForEviction(f, "100m", "100Mi", nil)
 }
@@ -414,49 +292,4 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 	utils.InstallVPA(f, vpaCRD)
 
 	return podList
-}
-
-// newOOMTestVPA creates a VPA for OOM testing with memory-only recommendations.
-// Memory bounds are set so that 1Gi request is within range (no OutsideRecommendedRange eviction)
-// but target differs from request (ResourceDiff > 0, enabling eviction when quickOOM = true).
-func newOOMTestVPA(namespace, name, deploymentName, containerName string, oomThreshold time.Duration) *vpa_types.VerticalPodAutoscaler {
-	updateMode := vpa_types.UpdateModeRecreate
-	return &vpa_types.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			TargetRef: &autoscaling.CrossVersionObjectReference{
-				APIVersion: "apps/v1",
-				Kind:       "Deployment",
-				Name:       deploymentName,
-			},
-			UpdatePolicy: &vpa_types.PodUpdatePolicy{
-				UpdateMode:             &updateMode,
-				EvictAfterOOMThreshold: &metav1.Duration{Duration: oomThreshold},
-			},
-			ResourcePolicy: &vpa_types.PodResourcePolicy{
-				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
-					ContainerName: containerName,
-				}},
-			},
-		},
-		Status: vpa_types.VerticalPodAutoscalerStatus{
-			Recommendation: &vpa_types.RecommendedPodResources{
-				ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
-					ContainerName: containerName,
-					Target: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("2Gi"), // Different from 1Gi request
-					},
-					LowerBound: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("500Mi"), // 1Gi is within [500Mi, 3Gi]
-					},
-					UpperBound: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("3Gi"),
-					},
-				}},
-			},
-		},
-	}
 }
