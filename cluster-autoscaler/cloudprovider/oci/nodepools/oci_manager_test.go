@@ -97,6 +97,16 @@ func TestGetNodePoolForInstance(t *testing.T) {
 	if np.Id() != "ocid2" {
 		t.Fatalf("got unexpected ocid %q ; wanted \"ocid2\"", np.Id())
 	}
+
+	// now verify node pool can be found via lookup up by instance id in cache
+	np, err = manager.GetNodePoolForInstance(ocicommon.OciRef{InstanceID: "virtualnode"})
+	if err != nil {
+		t.Fatalf("unexpected error: %+v", err)
+	}
+
+	if np != nil {
+		t.Fatalf("got unexpected ocid %q ; wanted nil", np.Id())
+	}
 }
 
 func TestGetNodePoolNodes(t *testing.T) {
