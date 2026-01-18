@@ -79,7 +79,7 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 		return &result, ""
 	}
 	if resourceName == core.ResourceCPU {
-		result, isCapped := scaleQuantityProportionallyCPU( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
+		result, isCapped := scaleQuantityProportionallyCPU( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
 		if isCapped == capped {
 			return result, fmt.Sprintf(
 				"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
