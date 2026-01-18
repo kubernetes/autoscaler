@@ -65,7 +65,7 @@ func TestRunOnce_Mode(t *testing.T) {
 	}{
 		{
 			name:                  "with Auto mode",
-			updateMode:            vpa_types.UpdateModeAuto,
+			updateMode:            vpa_types.UpdateModeAuto, //nolint:staticcheck
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
@@ -177,7 +177,7 @@ func TestRunOnce_Status(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testRunOnceBase(
 				t,
-				vpa_types.UpdateModeAuto,
+				vpa_types.UpdateModeRecreate,
 				false,
 				tc.statusValidator,
 				tc.expectFetchCalls,
@@ -514,7 +514,7 @@ func TestLogDeprecationWarnings(t *testing.T) {
 	}{
 		{
 			name:             "Auto mode should trigger deprecation warning logic",
-			updateMode:       &[]vpa_types.UpdateMode{vpa_types.UpdateModeAuto}[0],
+			updateMode:       &[]vpa_types.UpdateMode{vpa_types.UpdateModeAuto}[0], //nolint:staticcheck
 			shouldLogWarning: true,
 		},
 		{
@@ -557,7 +557,7 @@ func TestLogDeprecationWarnings(t *testing.T) {
 
 			shouldLogWarning := vpa.Spec.UpdatePolicy != nil &&
 				vpa.Spec.UpdatePolicy.UpdateMode != nil &&
-				*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto
+				*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto //nolint:staticcheck
 
 			assert.Equal(t, tc.shouldLogWarning, shouldLogWarning,
 				"Expected shouldLogWarning=%v for test case %s", tc.shouldLogWarning, tc.name)
