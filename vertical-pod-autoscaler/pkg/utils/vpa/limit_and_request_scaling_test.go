@@ -195,3 +195,31 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 		})
 	}
 }
+
+func TestScaleQuantityProportionallyCPU(t *testing.T) {
+	tests := []struct {
+		name             string
+		scaledQuantity   *resource.Quantity
+		scaleBase        *resource.Quantity
+		scaleResult      *resource.Quantity
+		rounding         roundingMode
+		expectResultType scalingResultType
+		expectResult     *resource.Quantity
+	}{
+		{
+			name:             "scaleBase is zero should return scaledQuantity",
+			scaledQuantity:   mustParseToPointer("1"),
+			scaleBase:        mustParseToPointer("0"),
+			scaleResult:      mustParseToPointer("20"),
+			expectResultType: divisionByZero,
+			expectResult:     mustParseToPointer("1"),
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, resultType := scaleQuantityProportionallyCPU(tc.scaledQuantity, tc.scaleBase, tc.scaleResult, roundUpToFullUnit)
+			assert.Equal(t, resultType, tc.expectResultType)
+			assert.Equal(t, result, tc.expectResult)
+		})
+	}
+}

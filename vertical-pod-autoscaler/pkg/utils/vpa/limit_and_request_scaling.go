@@ -79,12 +79,12 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 		return &result, ""
 	}
 	if resourceName == core.ResourceCPU {
-		result, capped := scaleQuantityProportionallyCPU( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
-		if !capped {
-			return result, ""
+		result, isCapped := scaleQuantityProportionallyCPU( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
+		if isCapped == capped {
+			return result, fmt.Sprintf(
+				"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
 		}
-		return result, fmt.Sprintf(
-			"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
+		return result, ""
 	}
 	result, capped := scaleQuantityProportionallyMem( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
 	if !capped {
@@ -127,9 +127,24 @@ const (
 	roundDownToFullUnit
 )
 
-// scaleQuantityProportionallyCPU returns a value in milliunits which has the same proportion to scaledQuantity as scaleResult has to scaleBase.
-// It also returns a bool indicating if it had to cap result to MaxInt64 milliunits.
-func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, bool) {
+type scalingResultType int
+
+const (
+	success scalingResultType = iota
+	capped
+	divisionByZero
+)
+
+// scaleQuantityProportionallyCPU returns two values:
+//  1. The first return value is in milliunits and has the same proportion to
+//     scaledQuantity as scaleResult has to scaleBase.
+//     It is calculated as (scaledQuantity * scaleResult) / scaleBase
+//  2. The second return value describes the type of the first return value.
+func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, scalingResultType) {
+	if scaleBase.IsZero() {
+		return scaledQuantity, divisionByZero
+	}
+
 	originalMilli := big.NewInt(scaledQuantity.MilliValue())
 	scaleBaseMilli := big.NewInt(scaleBase.MilliValue())
 	scaleResultMilli := big.NewInt(scaleResult.MilliValue())
@@ -138,7 +153,8 @@ func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *reso
 	result.Mul(originalMilli, scaleResultMilli)
 	// If the division produces a remainder:
 	// - with roundUpToFullUnit, we apply ceiling to the value
-	// - with noRounding or roundDownToFullUnit, we apply floor to the value
+	// - with noRounding or roundDownToFullUnit, we apply floor to the value.
+	//   Note: In other words, the remainder is discarded. This is acceptable because the difference is at most 1 millicore.
 	// TODO(iamzili) - I think we eventually want to get rid of the noRounding mode.
 	quotient := new(big.Int)
 	remainder := new(big.Int)
@@ -147,9 +163,9 @@ func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *reso
 		if remainder.Sign() != 0 && rounding == roundUpToFullUnit {
 			quotient.Add(quotient, big.NewInt(1))
 		}
-		return resource.NewMilliQuantity(quotient.Int64(), scaledQuantity.Format), false
+		return resource.NewMilliQuantity(quotient.Int64(), scaledQuantity.Format), success
 	}
-	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), true
+	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), capped
 }
 
 // scaleQuantityProportionallyMem returns a value in whole units which has the same proportion to scaledQuantity as scaleResult has to scaleBase.
