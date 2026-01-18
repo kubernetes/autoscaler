@@ -70,7 +70,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 		fakedClient[i] = apiObjectVPAs[i]
 	}
 
-	fakeClient := vpa_fake.NewSimpleClientset(fakedClient...).AutoscalingV1()
+	fakeClient := vpa_fake.NewSimpleClientset(fakedClient...).AutoscalingV1() //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
 	r := &recommender{
 		clusterState:                model.NewClusterState(time.Minute),
 		vpaClient:                   fakeClient,
@@ -103,9 +103,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 
 	// Start workers
 	for range updateWorkerCount {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for observedVpa := range vpaUpdates {
 				key := model.VpaID{
 					Namespace: observedVpa.Namespace,
@@ -122,7 +120,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 				processVPAUpdate(r, vpa, observedVpa)
 				cnt.Add(vpa)
 			}
-		}()
+		})
 	}
 
 	// Send VPA updates to the workers

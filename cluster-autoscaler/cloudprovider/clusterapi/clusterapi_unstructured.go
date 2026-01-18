@@ -30,6 +30,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -413,6 +414,27 @@ func (r unstructuredScalableResource) InstanceDRADriver() string {
 	return parseDRADriver(r.unstructured.GetAnnotations())
 }
 
+// InstanceCSINode parses CSI driver information from annotations and returns
+// a CSINode object with the list of installed drivers and their volume limits.
+// The annotation format is "driver-name=volume-limit,driver-name2=volume-limit2".
+// Returns nil if the annotation is not present or empty.
+func (r unstructuredScalableResource) InstanceCSINode() *storagev1.CSINode {
+	annotations := r.unstructured.GetAnnotations()
+	// annotation value of the form "driver1=limit1,driver2=limit2"
+	if val, found := annotations[csiDriverKey]; found && val != "" {
+		drivers := parseCSIDriverAnnotation(val)
+		if len(drivers) == 0 {
+			return nil
+		}
+		return &storagev1.CSINode{
+			Spec: storagev1.CSINodeSpec{
+				Drivers: drivers,
+			},
+		}
+	}
+	return nil
+}
+
 func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
 	// Cache w/ lazy loading of the infrastructure reference resource.
 	r.infraMutex.RLock()
@@ -531,6 +553,66 @@ func systemInfoFromInfrastructureObject(infraobj *unstructured.Unstructured) api
 	}
 
 	return nsi
+}
+
+// parseCSIDriverAnnotation parses a comma-separated list of CSI driver name and volume limit
+// key/value pairs in the format "driver-name=volume-limit,driver-name2=volume-limit2".
+// Returns a slice of CSINodeDriver objects with Name and Allocatable.Count set.
+func parseCSIDriverAnnotation(annotationValue string) []storagev1.CSINodeDriver {
+	drivers := []storagev1.CSINodeDriver{}
+	if annotationValue == "" {
+		return drivers
+	}
+
+	driverSpecs := strings.Split(annotationValue, ",")
+	for _, driverSpec := range driverSpecs {
+		driverSpec = strings.TrimSpace(driverSpec)
+		if driverSpec == "" {
+			continue
+		}
+
+		// Split on "=" to get driver name and volume limit
+		parts := strings.SplitN(driverSpec, "=", 2)
+		if len(parts) != 2 {
+			klog.V(4).Infof("Invalid CSI driver spec format (expected driver-name=volume-limit): %s", driverSpec)
+			continue
+		}
+
+		driverName := strings.TrimSpace(parts[0])
+		volumeLimitStr := strings.TrimSpace(parts[1])
+
+		if driverName == "" {
+			klog.V(4).Infof("Empty driver name in CSI driver spec: %s", driverSpec)
+			continue
+		}
+
+		// Parse volume limit as integer
+		volumeLimit, err := strconv.ParseInt(volumeLimitStr, 10, 32)
+		if err != nil {
+			klog.V(4).Infof("Invalid volume limit value (expected integer) in CSI driver spec %s: %v", driverSpec, err)
+			continue
+		}
+
+		if volumeLimit < 0 {
+			klog.V(4).Infof("Volume limit must be non-negative in CSI driver spec: %s", driverSpec)
+			continue
+		}
+
+		// Create CSINodeDriver with Name and optionally Allocatable.Count
+		// If volume limit is 0, Allocatable is not set
+		driver := storagev1.CSINodeDriver{
+			Name: driverName,
+		}
+		if volumeLimit > 0 {
+			limit := int32(volumeLimit)
+			driver.Allocatable = &storagev1.VolumeNodeResources{
+				Count: &limit,
+			}
+		}
+		drivers = append(drivers, driver)
+	}
+
+	return drivers
 }
 
 // adapted from https://github.com/kubernetes/kubernetes/blob/release-1.25/pkg/util/taints/taints.go#L39

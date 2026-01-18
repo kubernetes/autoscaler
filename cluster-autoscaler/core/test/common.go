@@ -37,6 +37,7 @@ import (
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
@@ -118,6 +119,7 @@ type ScaleUpTestConfig struct {
 	NodeTemplateConfigs     map[string]*NodeTemplateConfig
 	EnableAutoprovisioning  bool
 	AllOrNothing            bool
+	ResourceQuotas          []resourcequotas.Quota
 }
 
 // ScaleUpTestResult represents a node groups scale up result
@@ -168,6 +170,7 @@ func NewScaleTestAutoscalingContext(
 	options config.AutoscalingOptions, fakeClient kube_client.Interface,
 	listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider,
 	processorCallbacks processor_callbacks.ProcessorCallbacks, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
+	templateNodeInfoRegistry ca_context.TemplateNodeInfoRegistry,
 ) (ca_context.AutoscalingContext, error) {
 	// Not enough buffer space causes the test to hang without printing any logs.
 	// This is not useful.
@@ -192,13 +195,14 @@ func NewScaleTestAutoscalingContext(
 			LogRecorder:    fakeLogRecorder,
 			ListerRegistry: listers,
 		},
-		CloudProvider:        provider,
-		ClusterSnapshot:      clusterSnapshot,
-		FrameworkHandle:      fwHandle,
-		ExpanderStrategy:     random.NewStrategy(),
-		ProcessorCallbacks:   processorCallbacks,
-		DebuggingSnapshotter: debuggingSnapshotter,
-		RemainingPdbTracker:  remainingPdbTracker,
+		CloudProvider:            provider,
+		ClusterSnapshot:          clusterSnapshot,
+		FrameworkHandle:          fwHandle,
+		ExpanderStrategy:         random.NewStrategy(),
+		ProcessorCallbacks:       processorCallbacks,
+		DebuggingSnapshotter:     debuggingSnapshotter,
+		RemainingPdbTracker:      remainingPdbTracker,
+		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
 	}, nil
 }
 

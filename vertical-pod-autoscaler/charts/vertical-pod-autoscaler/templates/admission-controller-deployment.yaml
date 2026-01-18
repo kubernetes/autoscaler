@@ -1,3 +1,6 @@
+{{- if and .Values.admissionController.registerWebhook .Values.admissionController.certGen.enabled }}
+{{- fail "admissionController.registerWebhook and admissionController.certGen.enabled cannot both be true. Choose either application-managed webhook (registerWebhook: true) or Helm-managed webhook with certGen (certGen.enabled: true)." -}}
+{{- end -}}
 {{- if .Values.admissionController.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -48,6 +51,9 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.admissionController.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       containers:
         - name: admission-controller
           image: {{ include "vertical-pod-autoscaler.admissionController.image" . }}
@@ -61,8 +67,14 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           args:
-          - --v=4
-          - --stderrthreshold=info
+            - --v=4
+            - --stderrthreshold=info
+          {{- if .Values.admissionController.registerWebhook }}
+            - --register-webhook=true
+            {{- else }}
+            - --register-webhook=false
+          {{- end }}
+            - --webhook-service={{ .Values.admissionController.service.name }}
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -98,5 +110,5 @@ spec:
             {{ toYaml . | nindent 12 | trim }}
           {{- end }}
       volumes:
-        {{- toYaml .Values.admissionController.volumes | nindent 12 }}
+        {{- toYaml .Values.admissionController.volumes | nindent 8 }}
 {{- end -}}

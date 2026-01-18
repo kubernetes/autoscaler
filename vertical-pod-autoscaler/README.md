@@ -2,12 +2,14 @@
 
 ## Contents
 
-- [Contents](#contents)
+<!-- toc -->
 - [Intro](#intro)
-- [Getting started](#getting-started)
+- [Getting Started](#getting-started)
 - [Components and Architecture](#components-and-architecture)
 - [Features and Known limitations](#features-and-known-limitations)
+- [Development and testing](#development-and-testing)
 - [Related links](#related-links)
+<!-- /toc -->
 
 ## Intro
 
@@ -50,6 +52,10 @@ You can also read about the [features](./docs/features.md) and [known limitation
 > At the moment, VPA is not compatible with workloads that define pod-level `resources` stanzas. Work has started to add pod-level resources support for VPA, for more details see [AEP-7571](https://github.com/kubernetes/autoscaler/pull/8586). Users of VPA may encounter the following issues if they enable VPA for a workload with a pod-level resources stanza defined:
 > * When the admission-controller tries to set a container-level limit higher than the pod-level limit, the operation is prohibited, and the pod will not be created.
 > * When the admission-controller tries to set the newly recommended container-level requests, their total value cannot exceed the pod-level request or limit. For example, if the pod-level memory request is 100Mi, but the newly recommended total of container-level requests is 250Mi, the pod will fail to be created.
+
+## Development and testing
+
+Have a look at the [Development and testing](./docs/development-and-testing.md) page for more information about developing on the VPA.
 
 ## Related links
 

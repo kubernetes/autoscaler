@@ -75,6 +75,13 @@ var (
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
 
+	inPlaceSkipDisruptionBudget = flag.Bool(
+		"in-place-skip-disruption-budget",
+		false,
+		"[ALPHA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. "+
+			"Disruption budgets are still respected when any container has RestartContainer resize policy for any resource.",
+	)
+
 	namespace = os.Getenv("NAMESPACE")
 )
 
@@ -217,6 +224,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		*evictionRateBurst,
 		*evictionToleranceFraction,
 		*useAdmissionControllerStatus,
+		*inPlaceSkipDisruptionBudget,
 		admissionControllerStatusNamespace,
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		priority.NewScalingDirectionPodEvictionAdmission(),

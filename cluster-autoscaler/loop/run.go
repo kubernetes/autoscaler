@@ -37,7 +37,9 @@ func RunAutoscalerOnce(autoscaler autoscaler, healthCheck *metrics.HealthCheck, 
 	if err != nil && err.Type() != errors.TransientError {
 		metrics.RegisterError(err)
 	} else {
-		healthCheck.UpdateLastSuccessfulRun(time.Now())
+		var successTime = time.Now()
+		healthCheck.UpdateLastSuccessfulRun(successTime)
+		metrics.UpdateLastTime(metrics.MainSuccessful, successTime)
 	}
 
 	metrics.UpdateDurationFromStart(metrics.Main, loopStart)

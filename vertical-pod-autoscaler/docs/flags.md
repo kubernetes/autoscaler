@@ -5,6 +5,12 @@ To view the most recent _release_ of flags for all VPA components, consult the r
 
 > **Note:** This document is auto-generated from the default branch (master) of the VPA repository.
 
+<!-- toc -->
+- [What are the parameters to VPA admission-controller?](#what-are-the-parameters-to-vpa-admission-controller)
+- [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
+- [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
+<!-- /toc -->
+
 # What are the parameters to VPA admission-controller?
 This document is auto-generated from the flag definitions in the VPA admission-controller code.
 
@@ -146,6 +152,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `eviction-tolerance` | float |  0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted.  |
 | `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
+| `in-place-skip-disruption-budget` |  |  | [ALPHA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource. |
 | `in-recommendation-bounds-eviction-lifetime-threshold` |  |  12h0m0s | duration   Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range  |
 | `kube-api-burst` | float |  100 | QPS burst limit when making requests to Kubernetes apiserver  |
 | `kube-api-qps` | float |  50 | QPS limit when making requests to Kubernetes apiserver  |

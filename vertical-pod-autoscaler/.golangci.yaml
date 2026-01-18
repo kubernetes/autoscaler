@@ -2,12 +2,35 @@ version: "2"
 linters:
   enable:
     - forbidigo
+    - revive
   settings:
     forbidigo:
       forbid:
         # Forbid use of archived package "github.com/pkg/errors". Context: https://github.com/kubernetes/autoscaler/pull/7845
         - pkg: github.com/pkg/errors
       analyze-types: true
+    revive:
+      enable-all-rules: false # Disabling all rules for now and enabling each one later
+      rules:
+        - name: increment-decrement
+        - name: bare-return
+        - name: indent-error-flow
+        - name: useless-fallthrough
+        - name: comment-spacings
+        - name: enforce-switch-style
+        - name: unexported-naming
+
+        # Below lists the rules disabled
+        - name: argument-limit
+          disabled: true
+        - name: unsecure-url-scheme
+          disabled: true
+        - name: confusing-naming
+          disabled: true
+        - name: flag-parameter
+          disabled: true
+        - name: max-public-structs
+          disabled: true
 formatters:
   enable:
     - goimports

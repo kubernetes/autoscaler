@@ -187,42 +187,6 @@ func (np *CoreWeaveNodePool) SetSize(size int) error {
 	return nil
 }
 
-// MarkNodeForRemoval marks a node for removal from the node pool.
-func (np *CoreWeaveNodePool) MarkNodeForRemoval(node *apiv1.Node) error {
-	ctx, cancel := GetCoreWeaveContext()
-	defer cancel()
-	if node == nil {
-		return fmt.Errorf("node cannot be nil")
-	}
-	if node.Name == "" {
-		return fmt.Errorf("node name cannot be empty")
-	}
-	// Log the node being marked for removal
-	klog.V(4).Infof("Marking node %s for removal from node pool %s", node.Name, np.GetName())
-	// Fetch the current node object
-	currentNode, err := np.client.CoreV1().Nodes().Get(ctx, node.Name, metav1.GetOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to get node %s: %v", node.Name, err)
-	}
-	// Check if the node belongs to this node pool
-	if currentNode.Labels == nil || currentNode.Labels[coreWeaveNodePoolUID] != np.GetUID() {
-		return fmt.Errorf("node %s does not belong to node pool %s", node.Name, np.GetName())
-	}
-	// Check if the node is already marked for removal
-	if currentNode.Labels != nil && currentNode.Labels[coreWeaveRemoveNode] == "true" {
-		klog.V(4).Infof("Node %s is already marked for removal", currentNode.Name)
-		return nil // Node is already marked for removal, no action needed
-	}
-	// Set the label to indicate the node should be removed
-	currentNode.Labels[coreWeaveRemoveNode] = "true"
-	// Update the node using the client
-	_, err = np.client.CoreV1().Nodes().Update(ctx, currentNode, metav1.UpdateOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to mark node %s for removal: %v", node.Name, err)
-	}
-	return nil
-}
-
 // ValidateNodes checks if the provided nodes belong to the node pool.
 func (np *CoreWeaveNodePool) ValidateNodes(nodes []*apiv1.Node) error {
 	if len(nodes) == 0 {
@@ -234,4 +198,54 @@ func (np *CoreWeaveNodePool) ValidateNodes(nodes []*apiv1.Node) error {
 		}
 	}
 	return nil
+}
+
+// GetInstanceType returns the instance type of the node pool.
+func (np *CoreWeaveNodePool) GetInstanceType() string {
+	instanceType, found, _ := unstructured.NestedString(np.nodepool.Object, "spec", "instanceType")
+	if !found {
+		return ""
+	}
+	return instanceType
+}
+
+// GetNodeLabels returns the node labels defined in the node pool spec.
+func (np *CoreWeaveNodePool) GetNodeLabels() map[string]string {
+	labels, found, _ := unstructured.NestedStringMap(np.nodepool.Object, "spec", "nodeLabels")
+	if !found {
+		return map[string]string{} // Return empty map if not found
+	}
+	return labels
+}
+
+// GetNodeTaints returns the node taints defined in the node pool spec.
+func (np *CoreWeaveNodePool) GetNodeTaints() []apiv1.Taint {
+	taintsRaw, found, _ := unstructured.NestedSlice(np.nodepool.Object, "spec", "nodeTaints")
+	if !found || len(taintsRaw) == 0 {
+		return []apiv1.Taint{} // Return empty slice if not found
+	}
+
+	taints := make([]apiv1.Taint, 0, len(taintsRaw))
+	for _, t := range taintsRaw {
+		taintMap, ok := t.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		taint := apiv1.Taint{}
+
+		if key, ok := taintMap["key"].(string); ok {
+			taint.Key = key
+		}
+		if value, ok := taintMap["value"].(string); ok {
+			taint.Value = value
+		}
+		if effect, ok := taintMap["effect"].(string); ok {
+			taint.Effect = apiv1.TaintEffect(effect)
+		}
+
+		taints = append(taints, taint)
+	}
+
+	return taints
 }

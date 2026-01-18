@@ -56,22 +56,22 @@ const (
 )
 
 // UpdaterE2eDescribe describes a VPA updater e2e test.
-func UpdaterE2eDescribe(name string, args ...interface{}) bool {
+func UpdaterE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(updateComponent, name, args...)
 }
 
 // AdmissionControllerE2eDescribe describes a VPA admission controller e2e test.
-func AdmissionControllerE2eDescribe(name string, args ...interface{}) bool {
+func AdmissionControllerE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(admissionControllerComponent, name, args...)
 }
 
 // FullVpaE2eDescribe describes a VPA full stack e2e test.
-func FullVpaE2eDescribe(name string, args ...interface{}) bool {
+func FullVpaE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(fullVpaSuite, name, args...)
 }
 
 // ActuationSuiteE2eDescribe describes a VPA actuation e2e test.
-func ActuationSuiteE2eDescribe(name string, args ...interface{}) bool {
+func ActuationSuiteE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(actuationSuite, name, args...)
 }
 
@@ -229,7 +229,7 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 }
 
 // InstallRawVPA installs a VPA object passed in as raw json in the test cluster.
-func InstallRawVPA(f *framework.Framework, obj interface{}) error {
+func InstallRawVPA(f *framework.Framework, obj any) error {
 	vpaClientSet := utils.GetVpaClientSet(f)
 	err := vpaClientSet.AutoscalingV1().RESTClient().Post().
 		Namespace(f.Namespace.Name).

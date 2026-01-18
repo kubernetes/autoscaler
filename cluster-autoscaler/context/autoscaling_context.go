@@ -17,6 +17,10 @@ limitations under the License.
 package context
 
 import (
+	"time"
+
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -27,9 +31,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
@@ -61,10 +68,31 @@ type AutoscalingContext struct {
 	RemainingPdbTracker pdb.RemainingPdbTracker
 	// ClusterStateRegistry tracks the health of the node groups and pending scale-ups and scale-downs
 	ClusterStateRegistry *clusterstate.ClusterStateRegistry
-	//ProvisionRequstScaleUpMode indicates whether ClusterAutoscaler tries to accommodate ProvisioningRequest in current scale up iteration.
+	// ProvisionRequstScaleUpMode indicates whether ClusterAutoscaler tries to accommodate ProvisioningRequest in current scale up iteration.
 	ProvisioningRequestScaleUpMode bool
 	// DraProvider is the provider for dynamic resources allocation.
 	DraProvider *draprovider.Provider
+	// TemplateNodeInfoRegistry allows accessing template node infos.
+	TemplateNodeInfoRegistry TemplateNodeInfoRegistry
+	// CsiProvider is the provider for CSI node aware scheduling.
+	CsiProvider *csinodeprovider.Provider
+}
+
+// TemplateNodeInfoRegistry is the interface for getting template node infos.
+// All methods are thread-safe and can be called from separate goroutines.
+type TemplateNodeInfoRegistry interface {
+	// GetNodeInfo returns a template NodeInfo for a given NodeGroup, as computed by TemplateNodeInfoProvider.
+	// The result is read-only.
+	GetNodeInfo(nodeGroupId string) (*framework.NodeInfo, bool)
+	// GetNodeInfos returns a map of all template NodeInfos, as computed by TemplateNodeInfoProvider.
+	// The map itself can be modified, but its values are read-only.
+	GetNodeInfos() map[string]*framework.NodeInfo
+	// Recompute updates the results/cache.
+	// It happens near the beginning of the main Cluster Autoscaler loop.
+	// The results are cached until the next Recompute() call.
+	// The getters can be used by logic that happens before the Recompute() call in the main CA loop,
+	// but the caller has to handle no results during the first CA loop.
+	Recompute(autoscalingCtx *AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) errors.AutoscalerError
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -112,19 +140,23 @@ func NewAutoscalingContext(
 	remainingPdbTracker pdb.RemainingPdbTracker,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	draProvider *draprovider.Provider,
+	templateNodeInfoRegistry TemplateNodeInfoRegistry,
+	csiProvider *csinodeprovider.Provider,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
-		AutoscalingOptions:     options,
-		CloudProvider:          cloudProvider,
-		AutoscalingKubeClients: *autoscalingKubeClients,
-		FrameworkHandle:        fwHandle,
-		ClusterSnapshot:        clusterSnapshot,
-		ExpanderStrategy:       expanderStrategy,
-		ProcessorCallbacks:     processorCallbacks,
-		DebuggingSnapshotter:   debuggingSnapshotter,
-		RemainingPdbTracker:    remainingPdbTracker,
-		ClusterStateRegistry:   clusterStateRegistry,
-		DraProvider:            draProvider,
+		AutoscalingOptions:       options,
+		CloudProvider:            cloudProvider,
+		AutoscalingKubeClients:   *autoscalingKubeClients,
+		FrameworkHandle:          fwHandle,
+		ClusterSnapshot:          clusterSnapshot,
+		ExpanderStrategy:         expanderStrategy,
+		ProcessorCallbacks:       processorCallbacks,
+		DebuggingSnapshotter:     debuggingSnapshotter,
+		RemainingPdbTracker:      remainingPdbTracker,
+		ClusterStateRegistry:     clusterStateRegistry,
+		DraProvider:              draProvider,
+		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
+		CsiProvider:              csiProvider,
 	}
 }
 

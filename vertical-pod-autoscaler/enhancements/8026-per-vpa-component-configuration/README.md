@@ -14,7 +14,6 @@
     - [Parameter Level Analysis](#parameter-level-analysis)
     - [Parameter Precedence: Per-VPA vs Global Configuration](#parameter-precedence-per-vpa-vs-global-configuration)
   - [API Changes](#api-changes)
-    - [Parameter Coexistence and Global Configuration](#parameter-coexistence-and-global-configuration)
     - [Phase 1 (Current Proposal)](#phase-1-current-proposal)
     - [Future Extensions](#future-extensions)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
