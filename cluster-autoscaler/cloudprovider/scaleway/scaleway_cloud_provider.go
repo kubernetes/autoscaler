@@ -19,7 +19,6 @@ package scaleway
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"math"
 	"os"
@@ -322,10 +321,15 @@ func (scw *scalewayCloudProvider) NodePrice(node *apiv1.Node, startTime time.Tim
 		if _, ok := ng.nodes[node.Spec.ProviderID]; ok {
 			nodeGroup = ng
 		}
+		// necessary for simulated node with 0-sized pool
+		if ng.pool.ID == node.Spec.ProviderID {
+			nodeGroup = ng
+		}
 	}
 
 	if nodeGroup == nil {
-		return 0.0, fmt.Errorf("node group not found for node %s", node.Spec.ProviderID)
+		klog.Warningf("node group not found for node %s", node.Spec.ProviderID)
+		return 0.0, nil
 	}
 
 	d := endTime.Sub(startTime)

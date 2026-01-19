@@ -548,7 +548,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		endTime := startTime.Add(1 * time.Hour)
 
 		price, err := provider.NodePrice(k8sNode, startTime, endTime)
-		assert.Error(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, 0.0, price)
 	})
 }
