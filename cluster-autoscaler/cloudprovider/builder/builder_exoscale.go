@@ -1,5 +1,4 @@
 //go:build exoscale
-// +build exoscale
 
 /*
 Copyright 2021 The Kubernetes Authors.

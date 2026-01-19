@@ -64,7 +64,7 @@ type IMetaDataRequest interface {
 	Resource(resource string) IMetaDataRequest
 	SubResource(sub string) IMetaDataRequest
 	Url() (string, error)
-	Do(api interface{}) error
+	Do(api any) error
 }
 
 // MetaData wrap http client
@@ -370,7 +370,7 @@ func (vpc *MetaDataRequest) Url() (string, error) {
 }
 
 // Do try to do MetaDataRequest
-func (vpc *MetaDataRequest) Do(api interface{}) (err error) {
+func (vpc *MetaDataRequest) Do(api any) (err error) {
 	var res = ""
 	for r := retry.Start(); r.Next(); {
 		if vpc.sendRequest != nil {
@@ -389,7 +389,7 @@ func (vpc *MetaDataRequest) Do(api interface{}) (err error) {
 }
 
 // Decode returns decoded content
-func (vpc *MetaDataRequest) Decode(data string, api interface{}) error {
+func (vpc *MetaDataRequest) Decode(data string, api any) error {
 	if data == "" {
 		url, _ := vpc.Url()
 		return fmt.Errorf("metadata: alivpc decode data must not be nil. url=[%s]\n", url)

@@ -17,6 +17,8 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"maps"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
@@ -29,9 +31,7 @@ func CreateGceNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.N
 		"topology.gke.io/zone": true,
 	}
 
-	for k, v := range BasicIgnoredLabels {
-		gceIgnoredLabels[k] = v
-	}
+	maps.Copy(gceIgnoredLabels, BasicIgnoredLabels)
 
 	for _, k := range extraIgnoredLabels {
 		gceIgnoredLabels[k] = true

@@ -18,6 +18,7 @@ package capacitybufferpodlister
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/google/uuid"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -232,9 +233,7 @@ func getPodFromTemplate(template *apiv1.PodTemplateSpec, namespace string) *apiv
 
 func getPodsLabelSet(template *apiv1.PodTemplateSpec) labels.Set {
 	desiredLabels := make(labels.Set)
-	for k, v := range template.Labels {
-		desiredLabels[k] = v
-	}
+	maps.Copy(desiredLabels, template.Labels)
 	return desiredLabels
 }
 
@@ -246,8 +245,6 @@ func getPodsFinalizers(template *apiv1.PodTemplateSpec) []string {
 
 func getPodsAnnotationSet(template *apiv1.PodTemplateSpec) labels.Set {
 	desiredAnnotations := make(labels.Set)
-	for k, v := range template.Annotations {
-		desiredAnnotations[k] = v
-	}
+	maps.Copy(desiredAnnotations, template.Annotations)
 	return desiredAnnotations
 }

@@ -532,8 +532,8 @@ func parseShutdownGracePeriodsAndPriorities(priorityGracePeriodStr string) []kub
 	if priorityGracePeriodStr == "" {
 		return emptyMap
 	}
-	priorityGracePeriodStrArr := strings.Split(priorityGracePeriodStr, ",")
-	for _, item := range priorityGracePeriodStrArr {
+	priorityGracePeriodStrArr := strings.SplitSeq(priorityGracePeriodStr, ",")
+	for item := range priorityGracePeriodStrArr {
 		priorityAndPeriod := strings.Split(item, ":")
 		if len(priorityAndPeriod) != 2 {
 			klog.Errorf("Parsing shutdown grace periods failed because '%s' is not a priority and grace period couple separated by ':'", item)

@@ -646,7 +646,7 @@ func (o *ScaleUpOrchestrator) UpcomingNodes(nodeInfos map[string]*framework.Node
 		if !found {
 			return nil, errors.NewAutoscalerErrorf(errors.InternalError, "failed to find template node for node group %s", nodeGroup)
 		}
-		for i := 0; i < numberOfNodes; i++ {
+		for range numberOfNodes {
 			upcomingNodes = append(upcomingNodes, nodeTemplate)
 		}
 	}

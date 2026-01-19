@@ -79,12 +79,12 @@ type RegisteredNodeCount struct {
 	NotStarted int `json:"notStarted" yaml:"notStarted"`
 	// Number of nodes that are being currently deleted. They exist in K8S but are not included in NodeGroup.TargetSize().
 	BeingDeleted int                        `json:"beingDeleted,omitempty" yaml:"beingDeleted,omitempty"`
-	Unready      RegisteredUnreadyNodeCount `json:"unready,omitempty" yaml:"unready,omitempty"`
+	Unready      RegisteredUnreadyNodeCount `json:"unready" yaml:"unready,omitempty"`
 }
 
 // NodeCount contains number of nodes that satisfy different criteria.
 type NodeCount struct {
-	Registered       RegisteredNodeCount `json:"registered,omitempty" yaml:"registered,omitempty"`
+	Registered       RegisteredNodeCount `json:"registered" yaml:"registered,omitempty"`
 	LongUnregistered int                 `json:"longUnregistered" yaml:"longUnregistered"`
 	Unregistered     int                 `json:"unregistered" yaml:"unregistered"`
 }
@@ -94,11 +94,11 @@ type ClusterHealthCondition struct {
 	// Status of cluster health.
 	Status ClusterAutoscalerConditionStatus `json:"status,omitempty" yaml:"status,omitempty"`
 	// NodeCounts contains number of nodes that satisfy different criteria in the cluster.
-	NodeCounts NodeCount `json:"nodeCounts,omitempty" yaml:"nodeCounts,omitempty"`
+	NodeCounts NodeCount `json:"nodeCounts" yaml:"nodeCounts,omitempty"`
 	// LastProbeTime is the last time we probed the condition.
-	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty" yaml:"lastProbeTime,omitempty"`
+	LastProbeTime metav1.Time `json:"lastProbeTime" yaml:"lastProbeTime,omitempty"`
 	// LastTransitionTime is the time since when the condition was in the given state.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" yaml:"lastTransitionTime,omitempty"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime" yaml:"lastTransitionTime,omitempty"`
 }
 
 // NodeGroupHealthCondition contains information about health condition for a node group.
@@ -106,7 +106,7 @@ type NodeGroupHealthCondition struct {
 	// Status of node group health.
 	Status ClusterAutoscalerConditionStatus `json:"status,omitempty" yaml:"status,omitempty"`
 	// NodeCounts contains number of nodes that satisfy different criteria in the node group.
-	NodeCounts NodeCount `json:"nodeCounts,omitempty" yaml:"nodeCounts,omitempty"`
+	NodeCounts NodeCount `json:"nodeCounts" yaml:"nodeCounts,omitempty"`
 	// CloudProviderTarget is the target size set by cloud provider.
 	CloudProviderTarget int `json:"cloudProviderTarget" yaml:"cloudProviderTarget"`
 	// MinSize is the CA max size of a node group.
@@ -114,9 +114,9 @@ type NodeGroupHealthCondition struct {
 	// MaxSize is the CA max size of a node group.
 	MaxSize int `json:"maxSize" yaml:"maxSize"`
 	// LastProbeTime is the last time we probed the condition.
-	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty" yaml:"lastProbeTime,omitempty"`
+	LastProbeTime metav1.Time `json:"lastProbeTime" yaml:"lastProbeTime,omitempty"`
 	// LastTransitionTime is the time since when the condition was in the given state.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" yaml:"lastTransitionTime,omitempty"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime" yaml:"lastTransitionTime,omitempty"`
 }
 
 // ClusterScaleUpCondition contains information about scale up condition for the whole cluster.
@@ -124,9 +124,9 @@ type ClusterScaleUpCondition struct {
 	// Status of the scale up.
 	Status ClusterAutoscalerConditionStatus `json:"status,omitempty" yaml:"status,omitempty"`
 	// LastProbeTime is the last time we probed the condition.
-	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty" yaml:"lastProbeTime,omitempty"`
+	LastProbeTime metav1.Time `json:"lastProbeTime" yaml:"lastProbeTime,omitempty"`
 	// LastTransitionTime is the time since when the condition was in the given state.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" yaml:"lastTransitionTime,omitempty"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime" yaml:"lastTransitionTime,omitempty"`
 }
 
 // BackoffInfo contains error information that caused the backoff.
@@ -142,11 +142,11 @@ type NodeGroupScaleUpCondition struct {
 	// Status of the scale up.
 	Status ClusterAutoscalerConditionStatus `json:"status,omitempty" yaml:"status,omitempty"`
 	// LastProbeTime is the last time we probed the condition.
-	BackoffInfo BackoffInfo `json:"backoffInfo,omitempty" yaml:"backoffInfo,omitempty"`
+	BackoffInfo BackoffInfo `json:"backoffInfo" yaml:"backoffInfo,omitempty"`
 	// LastProbeTime is the last time we probed the condition.
-	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty" yaml:"lastProbeTime,omitempty"`
+	LastProbeTime metav1.Time `json:"lastProbeTime" yaml:"lastProbeTime,omitempty"`
 	// LastTransitionTime is the time since when the condition was in the given state.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" yaml:"lastTransitionTime,omitempty"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime" yaml:"lastTransitionTime,omitempty"`
 }
 
 // ScaleDownCondition contains information about scale down condition for a node group or the whole cluster.
@@ -156,19 +156,19 @@ type ScaleDownCondition struct {
 	// Candidates number for the scale down.
 	Candidates int `json:"candidates,omitempty" yaml:"candidates,omitempty"`
 	// LastProbeTime is the last time we probed the condition.
-	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty" yaml:"lastProbeTime,omitempty"`
+	LastProbeTime metav1.Time `json:"lastProbeTime" yaml:"lastProbeTime,omitempty"`
 	// LastTransitionTime is the time since when the condition was in the given state.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" yaml:"lastTransitionTime,omitempty"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime" yaml:"lastTransitionTime,omitempty"`
 }
 
 // ClusterWideStatus contains status that apply to the whole cluster.
 type ClusterWideStatus struct {
 	// Health contains information about health condition of the cluster.
-	Health ClusterHealthCondition `json:"health,omitempty" yaml:"health,omitempty"`
+	Health ClusterHealthCondition `json:"health" yaml:"health,omitempty"`
 	// ScaleUp contains information about scale up condition of the cluster.
-	ScaleUp ClusterScaleUpCondition `json:"scaleUp,omitempty" yaml:"scaleUp,omitempty"`
+	ScaleUp ClusterScaleUpCondition `json:"scaleUp" yaml:"scaleUp,omitempty"`
 	// ScaleDown contains information about scale down condition of the node group.
-	ScaleDown ScaleDownCondition `json:"scaleDown,omitempty" yaml:"scaleDown,omitempty"`
+	ScaleDown ScaleDownCondition `json:"scaleDown" yaml:"scaleDown,omitempty"`
 }
 
 // NodeGroupStatus contains status of an individual node group on which CA works..
@@ -176,11 +176,11 @@ type NodeGroupStatus struct {
 	// Name of the node group.
 	Name string `json:"name,omitempty" yaml:"name,omitempty"`
 	// Health contains information about health condition of the node group.
-	Health NodeGroupHealthCondition `json:"health,omitempty" yaml:"health,omitempty"`
+	Health NodeGroupHealthCondition `json:"health" yaml:"health,omitempty"`
 	// ScaleUp contains information about scale up condition of the node group.
-	ScaleUp NodeGroupScaleUpCondition `json:"scaleUp,omitempty" yaml:"scaleUp,omitempty"`
+	ScaleUp NodeGroupScaleUpCondition `json:"scaleUp" yaml:"scaleUp,omitempty"`
 	// ScaleDown contains information about scale down condition of the node group.
-	ScaleDown ScaleDownCondition `json:"scaleDown,omitempty" yaml:"scaleDown,omitempty"`
+	ScaleDown ScaleDownCondition `json:"scaleDown" yaml:"scaleDown,omitempty"`
 }
 
 // ClusterAutoscalerStatus contains ClusterAutoscaler status.
@@ -192,7 +192,7 @@ type ClusterAutoscalerStatus struct {
 	// Message contains extra information about the status.
 	Message string `json:"message,omitempty" yaml:"message,omitempty"`
 	// ClusterWide contains conditions that apply to the whole cluster.
-	ClusterWide ClusterWideStatus `json:"clusterWide,omitempty" yaml:"clusterWide,omitempty"`
+	ClusterWide ClusterWideStatus `json:"clusterWide" yaml:"clusterWide,omitempty"`
 	// NodeGroups contains status information of individual node groups on which CA works.
 	NodeGroups []NodeGroupStatus `json:"nodeGroups,omitempty" yaml:"nodeGroups,omitempty"`
 }

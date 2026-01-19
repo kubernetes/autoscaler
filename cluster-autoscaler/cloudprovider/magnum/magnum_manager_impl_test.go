@@ -318,7 +318,7 @@ func TestNodeGroupForNodeCaching(t *testing.T) {
 
 	manager := createTestMagnumManager(sc)
 
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		node := &apiv1.Node{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "kube-w5axvlfrz5lr-node-0",

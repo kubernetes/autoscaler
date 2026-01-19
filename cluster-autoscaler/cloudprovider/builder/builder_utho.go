@@ -1,5 +1,4 @@
 //go:build utho
-// +build utho
 
 /*
 Copyright 2022 The Kubernetes Authors.

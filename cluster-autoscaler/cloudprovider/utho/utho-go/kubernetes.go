@@ -120,7 +120,7 @@ type MasterNodeDetails struct {
 	Dcslug         string         `json:"dcslug,omitempty"`
 	Planid         int            `json:"planid,string,omitempty"`
 	Ip             string         `json:"ip,omitempty"`
-	PrivateNetwork PrivateNetwork `json:"private_network,omitempty"`
+	PrivateNetwork PrivateNetwork `json:"private_network"`
 }
 
 // VpcDetails contains information about a VPC associated with a Kubernetes cluster.
@@ -702,16 +702,16 @@ type UpdateKubernetesAutoscaleNodepool struct {
 
 // UpdateKubernetesAutoscaleNodepoolResponse represents the response after updating an autoscale node pool in a Kubernetes cluster.
 type UpdateKubernetesAutoscaleNodepoolResponse struct {
-	ID        string        `json:"id"`
-	Size      string        `json:"size"`
-	Cost      float64       `json:"cost"`
-	Planid    string        `json:"planid"`
-	Count     int           `json:"count"`
-	AutoScale int           `json:"auto_scale,string"`
-	MinNodes  int           `json:"min_nodes"`
-	MaxNodes  int           `json:"max_nodes"`
-	Policies  []interface{} `json:"policies"`
-	Workers   []WorkerNode  `json:"workers"`
+	ID        string       `json:"id"`
+	Size      string       `json:"size"`
+	Cost      float64      `json:"cost"`
+	Planid    string       `json:"planid"`
+	Count     int          `json:"count"`
+	AutoScale int          `json:"auto_scale,string"`
+	MinNodes  int          `json:"min_nodes"`
+	MaxNodes  int          `json:"max_nodes"`
+	Policies  []any        `json:"policies"`
+	Workers   []WorkerNode `json:"workers"`
 
 	Status  string `json:"status"`
 	Message string `json:"message"`

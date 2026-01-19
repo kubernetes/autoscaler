@@ -1,5 +1,4 @@
 //go:build alicloud
-// +build alicloud
 
 /*
 Copyright 2018 The Kubernetes Authors.

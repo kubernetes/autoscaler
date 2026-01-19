@@ -18,6 +18,7 @@ package coreweave
 
 import (
 	"fmt"
+	"maps"
 	"math/rand"
 	"sync"
 
@@ -224,9 +225,7 @@ func (ng *CoreWeaveNodeGroup) buildNodeLabels(nodeName, instanceTypeName string,
 	labels[coreWeaveNodePoolUID] = ng.nodepool.GetUID()
 	labels[coreWeaveNodePoolName] = ng.nodepool.GetName()
 
-	for k, v := range ng.nodepool.GetNodeLabels() {
-		labels[k] = v
-	}
+	maps.Copy(labels, ng.nodepool.GetNodeLabels())
 
 	return labels
 }

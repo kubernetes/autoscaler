@@ -1,5 +1,4 @@
 //go:build equinixmetal
-// +build equinixmetal
 
 /*
 Copyright 2019 The Kubernetes Authors.

@@ -1,5 +1,4 @@
 //go:build digitalocean
-// +build digitalocean
 
 /*
 Copyright 2019 The Kubernetes Authors.

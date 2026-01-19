@@ -241,15 +241,15 @@ func configureUserAgent(client *autorest.Client) {
 }
 
 // normalizeForK8sVMASScalingUp takes a template and removes elements that are unwanted in a K8s VMAS scale up/down case
-func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
+func normalizeForK8sVMASScalingUp(templateMap map[string]any) error {
 	if err := normalizeMasterResourcesForScaling(templateMap); err != nil {
 		return err
 	}
 	rtIndex := -1
 	nsgIndex := -1
-	resources := templateMap[resourcesFieldName].([]interface{})
+	resources := templateMap[resourcesFieldName].([]any)
 	for index, resource := range resources {
-		resourceMap, ok := resource.(map[string]interface{})
+		resourceMap, ok := resource.(map[string]any)
 		if !ok {
 			klog.Warning("Template improperly formatted for resource")
 			continue
@@ -273,7 +273,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 			rtIndex = index
 		}
 
-		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
+		dependencies, ok := resourceMap[dependsOnFieldName].([]any)
 		if !ok {
 			continue
 		}
@@ -310,7 +310,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 	return nil
 }
 
-func removeIndexesFromArray(array []interface{}, indexes []int) []interface{} {
+func removeIndexesFromArray(array []any, indexes []int) []any {
 	sort.Sort(sort.Reverse(sort.IntSlice(indexes)))
 	for _, index := range indexes {
 		array = append(array[:index], array[index+1:]...)
@@ -319,12 +319,12 @@ func removeIndexesFromArray(array []interface{}, indexes []int) []interface{} {
 }
 
 // normalizeMasterResourcesForScaling takes a template and removes elements that are unwanted in any scale up/down case
-func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) error {
-	resources := templateMap[resourcesFieldName].([]interface{})
+func normalizeMasterResourcesForScaling(templateMap map[string]any) error {
+	resources := templateMap[resourcesFieldName].([]any)
 	indexesToRemove := []int{}
 	//update master nodes resources
 	for index, resource := range resources {
-		resourceMap, ok := resource.(map[string]interface{})
+		resourceMap, ok := resource.(map[string]any)
 		if !ok {
 			klog.Warning("Template improperly formatted")
 			continue
@@ -354,13 +354,13 @@ func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) erro
 			continue
 		}
 
-		resourceProperties, ok := resourceMap[propertiesFieldName].(map[string]interface{})
+		resourceProperties, ok := resourceMap[propertiesFieldName].(map[string]any)
 		if !ok {
 			klog.Warning("Template improperly formatted")
 			continue
 		}
 
-		hardwareProfile, ok := resourceProperties[hardwareProfileFieldName].(map[string]interface{})
+		hardwareProfile, ok := resourceProperties[hardwareProfileFieldName].(map[string]any)
 		if !ok {
 			klog.Warning("Template improperly formatted")
 			continue
@@ -379,8 +379,8 @@ func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) erro
 	return nil
 }
 
-func removeCustomData(resourceProperties map[string]interface{}) bool {
-	osProfile, ok := resourceProperties[osProfileFieldName].(map[string]interface{})
+func removeCustomData(resourceProperties map[string]any) bool {
+	osProfile, ok := resourceProperties[osProfileFieldName].(map[string]any)
 	if !ok {
 		klog.Warning("Template improperly formatted")
 		return ok
@@ -392,8 +392,8 @@ func removeCustomData(resourceProperties map[string]interface{}) bool {
 	return ok
 }
 
-func removeImageReference(resourceProperties map[string]interface{}) bool {
-	storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
+func removeImageReference(resourceProperties map[string]any) bool {
+	storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]any)
 	if !ok {
 		klog.Warningf("Template improperly formatted. Could not find: %s", storageProfileFieldName)
 		return ok
@@ -508,21 +508,21 @@ func getLastSegment(ID string) (string, error) {
 }
 
 // readDeploymentParameters gets deployment parameters from paramFilePath.
-func readDeploymentParameters(paramFilePath string) (map[string]interface{}, error) {
+func readDeploymentParameters(paramFilePath string) (map[string]any, error) {
 	contents, err := ioutil.ReadFile(paramFilePath)
 	if err != nil {
 		klog.Errorf("Failed to read deployment parameters from file %q: %v", paramFilePath, err)
 		return nil, err
 	}
 
-	deploymentParameters := make(map[string]interface{})
+	deploymentParameters := make(map[string]any)
 	if err := json.Unmarshal(contents, &deploymentParameters); err != nil {
 		klog.Errorf("Failed to unmarshal deployment parameters from file %q: %v", paramFilePath, err)
 		return nil, err
 	}
 
 	if v, ok := deploymentParameters["parameters"]; ok {
-		return v.(map[string]interface{}), nil
+		return v.(map[string]any), nil
 	}
 
 	return nil, fmt.Errorf("failed to get deployment parameters from file %s", paramFilePath)

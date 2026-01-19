@@ -1,5 +1,4 @@
 //go:build kamatera
-// +build kamatera
 
 /*
 Copyright 2020 The Kubernetes Authors.

@@ -153,7 +153,7 @@ func (c *client) Region() string {
 }
 
 // do perform a single HTTP request based on the generic Request object.
-func (c *client) do(ctx context.Context, req *scalewayRequest, res interface{}) (http.Header, error) {
+func (c *client) do(ctx context.Context, req *scalewayRequest, res any) (http.Header, error) {
 	if req == nil {
 		return nil, errors.New("request must be non-nil")
 	}
@@ -480,7 +480,7 @@ func (c *client) DeleteNode(ctx context.Context, nodeID string) (Node, error) {
 func (c *client) cacheControl(header http.Header) time.Duration {
 	cacheHeader := header.Get("Cache-Control")
 
-	for _, value := range strings.Split(cacheHeader, ",") {
+	for value := range strings.SplitSeq(cacheHeader, ",") {
 		value = strings.Trim(value, " ")
 		if strings.HasPrefix(value, "max-age") {
 			duration := strings.Split(value, "max-age=")

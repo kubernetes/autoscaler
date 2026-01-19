@@ -16,6 +16,8 @@ limitations under the License.
 
 package common
 
+import "maps"
+
 // PatchSet manages a stack of patches, allowing for fork/revert/commit operations.
 // It provides a view of the data as if all patches were applied sequentially.
 //
@@ -172,9 +174,7 @@ func (p *PatchSet[K, V]) AsMap() map[K]V {
 	patchSetMap := make(map[K]V, keysCount)
 
 	for _, patch := range p.patches {
-		for key, value := range patch.modified {
-			patchSetMap[key] = value
-		}
+		maps.Copy(patchSetMap, patch.modified)
 
 		for key := range patch.deleted {
 			delete(patchSetMap, key)

@@ -497,7 +497,7 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroupThatExpires(t *testing.T) {
 
 	fakeClock := test_clock.NewFakeClock(time.Unix(0, 0))
 	fakeStore := cache.NewFakeExpirationStore(
-		func(obj interface{}) (s string, e error) {
+		func(obj any) (s string, e error) {
 			return obj.(managedNodegroupCachedObject).name, nil
 		},
 		nil,

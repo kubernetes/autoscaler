@@ -83,7 +83,6 @@ func TestCombinedStatusSet(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -115,7 +114,7 @@ func TestCombinedStatusSet(t *testing.T) {
 func generateStatuses(n int, result status.ScaleUpResult) []*status.ScaleUpStatus {
 	// generateStatuses generates n statuses with the given result.
 	statuses := make([]*status.ScaleUpStatus, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		var scaleUpErr *errors.AutoscalerError
 
 		if result == status.ScaleUpError {

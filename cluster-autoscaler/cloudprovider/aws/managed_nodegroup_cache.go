@@ -65,7 +65,7 @@ func newManagedNodeGroupCache(awsService *awsWrapper) *managedNodegroupCache {
 	return newManagedNodeGroupCacheWithClock(
 		awsService,
 		jc,
-		cache.NewExpirationStore(func(obj interface{}) (s string, e error) {
+		cache.NewExpirationStore(func(obj any) (s string, e error) {
 			return obj.(managedNodegroupCachedObject).name, nil
 		}, &cache.TTLPolicy{
 			TTL:   managedNodegroupCachedTTL,

@@ -19,6 +19,7 @@ package clusterstate
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
 	"strings"
 	"sync"
@@ -1309,9 +1310,7 @@ func (csr *ClusterStateRegistry) GetScaleUpFailures() map[string][]ScaleUpFailur
 	csr.Lock()
 	defer csr.Unlock()
 	result := make(map[string][]ScaleUpFailure)
-	for nodeGroupId, failures := range csr.scaleUpFailures {
-		result[nodeGroupId] = failures
-	}
+	maps.Copy(result, csr.scaleUpFailures)
 	return result
 }
 

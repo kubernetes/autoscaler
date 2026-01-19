@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -263,12 +264,7 @@ func Find(a []string, x string) int {
 
 // Contains tells whether a contains x.
 func Contains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(a, x)
 }
 
 // createEquinixMetalManagerRest sets up the client and returns
@@ -432,8 +428,8 @@ func (mgr *equinixMetalManagerRest) NodeGroupForNode(labels map[string]string, n
 		return "", fmt.Errorf("could not find group for node: %s %s", nodeId, err)
 	}
 	for _, t := range device.Tags {
-		if strings.HasPrefix(t, "k8s-nodepool-") {
-			return strings.TrimPrefix(t, "k8s-nodepool-"), nil
+		if after, ok := strings.CutPrefix(t, "k8s-nodepool-"); ok {
+			return after, nil
 		}
 	}
 	return "", fmt.Errorf("could not find group for node: %s", nodeId)
@@ -512,7 +508,7 @@ func (mgr *equinixMetalManagerRest) createNodes(nodegroup string, nodes int) err
 	}
 
 	errList := make([]error, 0, nodes)
-	for i := 0; i < nodes; i++ {
+	for range nodes {
 		errList = append(errList, mgr.createNode(context.TODO(), string(cloudinit), nodegroup))
 	}
 
@@ -733,7 +729,7 @@ func (mgr *equinixMetalManagerRest) getNodePoolDefinition(nodegroup string) *equ
 	return NodePoolDefinition
 }
 
-func renderTemplate(str string, vars interface{}) (string, error) {
+func renderTemplate(str string, vars any) (string, error) {
 	tmpl, err := template.New("tmpl").Parse(str)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template %q, %w", str, err)

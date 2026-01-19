@@ -51,8 +51,8 @@ type AgentPool struct {
 	minSize int
 	maxSize int
 
-	template   map[string]interface{}
-	parameters map[string]interface{}
+	template   map[string]any
+	parameters map[string]any
 
 	mutex       sync.Mutex
 	lastRefresh time.Time
@@ -88,7 +88,7 @@ func (as *AgentPool) initialize() error {
 		return err.Error()
 	}
 
-	as.template = template.Template.(map[string]interface{})
+	as.template = template.Template.(map[string]any)
 	as.parameters = as.manager.config.DeploymentParameters
 	return normalizeForK8sVMASScalingUp(as.template)
 }

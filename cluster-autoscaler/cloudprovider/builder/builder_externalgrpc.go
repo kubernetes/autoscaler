@@ -1,5 +1,4 @@
 //go:build externalgrpc
-// +build externalgrpc
 
 /*
 Copyright 2022 The Kubernetes Authors.

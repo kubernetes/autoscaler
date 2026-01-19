@@ -92,7 +92,7 @@ func setLogLevel(config *ionos.Configuration) {
 
 type klogAdapter struct{}
 
-func (klogAdapter) Printf(format string, args ...interface{}) {
+func (klogAdapter) Printf(format string, args ...any) {
 	klog.InfofDepth(1, "IONOSLOG "+format, args...)
 }
 

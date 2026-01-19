@@ -35,15 +35,15 @@ type fakeManager struct {
 
 var (
 	//define nodepoolObj
-	nodepoolObj = map[string]interface{}{
+	nodepoolObj = map[string]any{
 		"apiVersion": coreWeaveGroup + "/" + coreWeaveVersion,
 		"kind":       coreWeaveResource,
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      "np1",
 			"namespace": "default",
 			"uid":       "uid1",
 		},
-		"spec": map[string]interface{}{
+		"spec": map[string]any{
 			"minNodes":    int64(1),
 			"maxNodes":    int64(5),
 			"targetNodes": int64(3),

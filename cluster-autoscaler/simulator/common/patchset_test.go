@@ -249,10 +249,7 @@ func TestPatchSetRevert(t *testing.T) {
 				}
 
 				currentMap := ps.AsMap()
-				wantMapIndex := patchesNumber - i - 1
-				if wantMapIndex < 0 {
-					wantMapIndex = 0
-				}
+				wantMapIndex := max(patchesNumber-i-1, 0)
 				wantMapAfterRevert := tc.wantMapsAfterRevert[wantMapIndex]
 				if !maps.Equal(currentMap, wantMapAfterRevert) {
 					t.Errorf("AsMap() after revert #%d mismatch: got %v, want %v", i+1, currentMap, wantMapAfterRevert)
@@ -691,7 +688,7 @@ func buildTestPatchSet[K comparable, V any](t *testing.T, patchLayers []map[K]*V
 
 	patchesNumber := len(patchLayers)
 	patches := make([]*Patch[K, V], patchesNumber)
-	for i := 0; i < patchesNumber; i++ {
+	for i := range patchesNumber {
 		layerMap := patchLayers[i]
 		currentPatch := NewPatch[K, V]()
 		for k, vPtr := range layerMap {

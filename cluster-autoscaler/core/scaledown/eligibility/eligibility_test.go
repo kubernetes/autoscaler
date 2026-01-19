@@ -222,7 +222,6 @@ func TestFilterOutUnremovable(t *testing.T) {
 	now := time.Now()
 	for _, tc := range append(getTestCases(false, "IgnoreDaemonSetUtilization=false", now),
 		getTestCases(true, "IgnoreDaemonsetUtilization=true", now)...) {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
 			utilizationThreshold := config.DefaultScaleDownUtilizationThreshold

@@ -190,7 +190,7 @@ func TestReplicas(t *testing.T) {
 		s.Spec.Replicas = int32(updatedReplicas)
 
 		ch := make(chan error)
-		checkDone := func(obj interface{}) (bool, error) {
+		checkDone := func(obj any) (bool, error) {
 			u, ok := obj.(*unstructured.Unstructured)
 			if !ok {
 				return false, nil
@@ -209,13 +209,13 @@ func TestReplicas(t *testing.T) {
 			return true, nil
 		}
 		handler := cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
+			AddFunc: func(obj any) {
 				match, err := checkDone(obj)
 				if match {
 					ch <- err
 				}
 			},
-			UpdateFunc: func(oldObj, newObj interface{}) {
+			UpdateFunc: func(oldObj, newObj any) {
 				match, err := checkDone(newObj)
 				if match {
 					ch <- err

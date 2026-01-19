@@ -1,5 +1,4 @@
 //go:build ionoscloud
-// +build ionoscloud
 
 /*
 Copyright 2020 The Kubernetes Authors.

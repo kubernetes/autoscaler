@@ -37,13 +37,13 @@ func makeTestNodePool(uid, name string, min, max, target int64, option ...NodeGr
 			{Group: coreWeaveGroup, Version: coreWeaveVersion, Resource: coreWeaveResource}: "kindList",
 		},
 	)
-	obj := map[string]interface{}{
-		"metadata": map[string]interface{}{
+	obj := map[string]any{
+		"metadata": map[string]any{
 			"name":      name,
 			"namespace": "default",
 			"uid":       uid,
 		},
-		"spec": map[string]interface{}{
+		"spec": map[string]any{
 			"minNodes":    min,
 			"maxNodes":    max,
 			"targetNodes": target,

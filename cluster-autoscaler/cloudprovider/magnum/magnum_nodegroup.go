@@ -18,6 +18,7 @@ package magnum
 
 import (
 	"fmt"
+	"maps"
 	"math/rand"
 	"sync"
 	"time"
@@ -310,9 +311,7 @@ func buildLabels(template *MagnumNodeTemplate, nodeName string) map[string]strin
 	result := make(map[string]string)
 
 	// NodeLabels
-	for key, value := range template.Labels {
-		result[key] = value
-	}
+	maps.Copy(result, template.Labels)
 
 	return result
 }

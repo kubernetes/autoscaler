@@ -147,7 +147,7 @@ func NewUpdateLatencyTrackerForTesting(nodeLister kubernetes.NodeLister, now fun
 	return updateLatencyTracker
 }
 
-func maxLatency(latencies []interface{}) time.Duration {
+func maxLatency(latencies []any) time.Duration {
 	var currentMax time.Duration = 0
 	for _, l := range latencies {
 		latency := l.(time.Duration)

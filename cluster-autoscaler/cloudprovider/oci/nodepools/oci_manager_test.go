@@ -370,7 +370,7 @@ func (c mockOKEClient) ListNodePools(ctx context.Context, req oke.ListNodePoolsR
 			"minSize":    "4",
 			"maxSize":    "10",
 		}
-		definedTags := map[string]map[string]interface{}{
+		definedTags := map[string]map[string]any{
 			"namespace": {
 				"foo": "bar",
 			},
@@ -512,7 +512,7 @@ func TestValidateNodePoolTags(t *testing.T) {
 	testCases := map[string]struct {
 		nodeGroupTags  map[string]string
 		freeFormTags   map[string]string
-		definedTags    map[string]map[string]interface{}
+		definedTags    map[string]map[string]any
 		expectedResult bool
 	}{
 		"no-tags": {
@@ -555,7 +555,7 @@ func TestValidateNodePoolTags(t *testing.T) {
 				"ns.testTag": "testTagValue",
 			},
 			freeFormTags: nil,
-			definedTags: map[string]map[string]interface{}{
+			definedTags: map[string]map[string]any{
 				"ns": {
 					"testTag": "testTagValue",
 				},

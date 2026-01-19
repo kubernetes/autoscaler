@@ -1,5 +1,4 @@
 //go:build gce
-// +build gce
 
 /*
 Copyright 2018 The Kubernetes Authors.

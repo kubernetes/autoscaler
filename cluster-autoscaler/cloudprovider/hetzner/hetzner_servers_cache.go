@@ -71,7 +71,7 @@ func newServersCache(ctx context.Context, hcloudClient *hcloud.Client) *serversC
 		ctx,
 		hcloudClient,
 		jc,
-		cache.NewExpirationStore(func(obj interface{}) (s string, e error) {
+		cache.NewExpirationStore(func(obj any) (s string, e error) {
 			return obj.(serversCachedObject).name, nil
 		}, &cache.TTLPolicy{
 			TTL:   serversCachedTTL,

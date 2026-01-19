@@ -1,5 +1,4 @@
 //go:build huaweicloud
-// +build huaweicloud
 
 /*
 Copyright 2020 The Kubernetes Authors.
