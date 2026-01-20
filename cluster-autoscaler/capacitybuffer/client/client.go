@@ -26,10 +26,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/informers/externalversions"
-	bufferslisters "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/listers/autoscaling.x-k8s.io/v1alpha1"
+	bufferslisters "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/listers/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/client-go/discovery"
 	kubernetes "k8s.io/client-go/kubernetes"
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
@@ -137,8 +137,8 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 	stopChannel := make(chan struct{})
 
 	buffersFactory := externalversions.NewSharedInformerFactory(buffersClient, defaultResyncPeriod)
-	bufferInformer := buffersFactory.Autoscaling().V1alpha1().CapacityBuffers().Informer()
-	buffersLister := buffersFactory.Autoscaling().V1alpha1().CapacityBuffers().Lister()
+	bufferInformer := buffersFactory.Autoscaling().V1beta1().CapacityBuffers().Informer()
+	buffersLister := buffersFactory.Autoscaling().V1beta1().CapacityBuffers().Lister()
 
 	// Add indexer for PodTemplateRef
 	err := bufferInformer.AddIndexers(cache.Indexers{
@@ -276,7 +276,7 @@ func (c *CapacityBufferClient) UpdateCapacityBuffer(buffer *v1.CapacityBuffer) (
 		return nil, fmt.Errorf("Capacity buffer client is not configured for updating capacity buffer")
 	}
 
-	buffer, err := c.buffersClient.AutoscalingV1alpha1().CapacityBuffers(buffer.Namespace).UpdateStatus(context.TODO(), buffer, metav1.UpdateOptions{})
+	buffer, err := c.buffersClient.AutoscalingV1beta1().CapacityBuffers(buffer.Namespace).UpdateStatus(context.TODO(), buffer, metav1.UpdateOptions{})
 	if err == nil {
 		return buffer.DeepCopy(), nil
 	}
