@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/onsi/ginkgo/v2"
+	"k8s.io/kubernetes/test/e2e"
 	"k8s.io/kubernetes/test/utils/image"
 
 	// Never, ever remove the line with "/ginkgo". Without it,
@@ -76,16 +77,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestE2E(t *testing.T) {
-	RunE2ETests(t)
+	e2e.RunE2ETests(t)
 }
-
-var _ = ginkgo.ReportAfterEach(func(report ginkgo.SpecReport) {
-	progressReporter.ProcessSpecReport(report)
-})
-
-var _ = ginkgo.ReportBeforeSuite(func(report ginkgo.Report) {
-	progressReporter.SetTestsTotal(report.PreRunStats.SpecsThatWillRun)
-})
 
 var _ = ginkgo.ReportAfterSuite("Kubernetes e2e suite report", func(report ginkgo.Report) {
 	var err error
