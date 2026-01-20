@@ -516,6 +516,12 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		}
 
 		k8sNode := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+				Labels: map[string]string{
+					"k8s.scaleway.com/pool": "pool-1",
+				},
+			},
 			Spec: apiv1.NodeSpec{
 				ProviderID: "scaleway://fr-par-1/instance-1",
 			},
@@ -530,7 +536,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		assert.InDelta(t, 0.30, price, 0.001)
 	})
 
-	t.Run("node not found", func(t *testing.T) {
+	t.Run("node without pool label", func(t *testing.T) {
 		client := new(mockClient)
 		provider := &scalewayCloudProvider{
 			client:     client,
@@ -539,8 +545,12 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		}
 
 		k8sNode := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "node-1",
+				Labels: map[string]string{},
+			},
 			Spec: apiv1.NodeSpec{
-				ProviderID: "scaleway://fr-par-1/instance-nonexistent",
+				ProviderID: "scaleway://fr-par-1/instance-1",
 			},
 		}
 
@@ -549,6 +559,36 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 
 		price, err := provider.NodePrice(k8sNode, startTime, endTime)
 		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "does not have pool label")
+		assert.Equal(t, 0.0, price)
+	})
+
+	t.Run("pool not found", func(t *testing.T) {
+		client := new(mockClient)
+		provider := &scalewayCloudProvider{
+			client:     client,
+			clusterID:  "test-cluster",
+			nodeGroups: make(map[string]*NodeGroup),
+		}
+
+		k8sNode := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+				Labels: map[string]string{
+					"k8s.scaleway.com/pool": "pool-nonexistent",
+				},
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: "scaleway://fr-par-1/instance-1",
+			},
+		}
+
+		startTime := time.Now()
+		endTime := startTime.Add(1 * time.Hour)
+
+		price, err := provider.NodePrice(k8sNode, startTime, endTime)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not found")
 		assert.Equal(t, 0.0, price)
 	})
 }
