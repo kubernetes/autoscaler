@@ -18,10 +18,10 @@ limitations under the License.
 // +groupName=autoscaling.x-k8s.io
 // +k8s:protobuf-gen=package
 
-// Package v1alpha1 contains the v1alpha1 API for the autoscaling.x-k8s.io group.
+// Package v1beta1 contains the v1beta1 API for the autoscaling.x-k8s.io group.
 // This API group defines custom resources used by the Cluster Autoscaler
 // for managing buffer capacity.
-package v1alpha1
+package v1beta1
 
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -42,8 +42,8 @@ import (
 // +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".spec.replicas",description="The desired number of buffer chunks, if specified."
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].reason",description="The readiness status of the CapacityBuffer."
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the CapacityBuffer."
-// +versionName=v1alpha1
-// +kubebuilder:deprecatedversion
+// +versionName=v1beta1
+// +kubebuilder:storageversion
 // +k8s:openapi-gen=true
 
 // CapacityBuffer is the configuration that an autoscaler can use to provision buffer capacity within a cluster.
