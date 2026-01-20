@@ -19,6 +19,7 @@ package kamatera
 import (
 	"context"
 	"fmt"
+	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -205,19 +206,25 @@ func TestApiClientRest_DeleteServer(t *testing.T) {
 	ctx := context.Background()
 	client := NewMockKamateraApiClientRest(server.URL, 5, 0)
 	serverName := mockKamateraServerName()
-	commandId := "mock-command-id"
 	server.On("handle", "/service/server/poweroff").Return(
 		"application/json",
-		fmt.Sprintf(`["%s"]`, commandId),
+		fmt.Sprintf(`["%s"]`, "poweroff-command-id"),
 	).Once().On("handle", "/service/queue").Return(
 		"application/json",
 		`[{"status": "complete"}]`,
 	).Once().On("handle", "/service/server/terminate").Return(
 		"application/json",
-		"{}",
+		fmt.Sprintf(`["%s"]`, "terminate-command-id"),
 	).Once()
-	err := client.DeleteServer(ctx, serverName)
+	commandId, err := client.StartServerRequest(ctx, ServerRequestPoweroff, serverName)
 	assert.NoError(t, err)
+	assert.Equal(t, "poweroff-command-id", commandId)
+	commandStatus, err := client.getCommandStatus(ctx, commandId)
+	assert.NoError(t, err)
+	assert.Equal(t, CommandStatusComplete, commandStatus)
+	commandId, err = client.StartServerTerminate(ctx, serverName, false)
+	assert.NoError(t, err)
+	assert.Equal(t, "terminate-command-id", commandId)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -227,9 +234,8 @@ func TestApiClientRest_DeleteServer_TerminateError(t *testing.T) {
 	ctx := context.Background()
 	client := NewMockKamateraApiClientRest(server.URL, 5, 0)
 	serverName := mockKamateraServerName()
-	commandId := "mock-command-id"
 	server.On("handle", "/service/server/poweroff").Return(
-		"application/json", fmt.Sprintf(`["%s"]`, commandId), 200,
+		"application/json", fmt.Sprintf(`["%s"]`, "poweroff-command-id"), 200,
 	).Once().On("handle", "/service/queue").Return(
 		"application/json", `[{"status": "complete"}]`, 200,
 	).Once().On("handle", "/service/server/terminate").Return(
@@ -237,8 +243,16 @@ func TestApiClientRest_DeleteServer_TerminateError(t *testing.T) {
 		"Gateway Timeout",
 		504,
 	).Times(5)
-	err := client.DeleteServer(ctx, serverName)
+	commandId, err := client.StartServerRequest(ctx, ServerRequestPoweroff, serverName)
+	assert.NoError(t, err)
+	assert.Equal(t, "poweroff-command-id", commandId)
+	commandStatus, err := client.getCommandStatus(ctx, commandId)
+	assert.NoError(t, err)
+	assert.Equal(t, CommandStatusComplete, commandStatus)
+	commandId, err = client.StartServerTerminate(ctx, serverName, false)
 	assert.Error(t, err)
+	assert.Equal(t, "", commandId)
+	server.AssertExpectations(t)
 }
 
 func TestApiClientRest_CreateServers(t *testing.T) {
@@ -250,16 +264,16 @@ func TestApiClientRest_CreateServers(t *testing.T) {
 	server.On("handle", "/service/server").Return(
 		"application/json",
 		fmt.Sprintf(`["%s"]`, commandId),
-	).Twice().On("handle", "/service/queue").Return(
-		"application/json",
-		`[{"status": "complete"}]`,
 	).Twice()
-	servers, err := client.CreateServers(ctx, 2, mockServerConfig("test", []string{"foo", "bar"}))
+	serverCommandIds, err := client.StartCreateServers(ctx, 2, mockServerConfig("test", []string{"foo", "bar"}))
+	var serverNames []string
+	for name := range maps.Keys(serverCommandIds) {
+		serverNames = append(serverNames, name)
+	}
 	assert.NoError(t, err)
-	assert.Equal(t, 2, len(servers))
-	assert.Less(t, 10, len(servers[0].Name))
-	assert.Less(t, 10, len(servers[1].Name))
-	assert.Equal(t, servers[0].Tags, []string{"foo", "bar"})
-	assert.Equal(t, servers[1].Tags, []string{"foo", "bar"})
-	mock.AssertExpectationsForObjects(t, server)
+	assert.Equal(t, 2, len(serverCommandIds))
+	assert.Equal(t, 2, len(serverNames))
+	assert.Less(t, 10, len(serverNames[0]))
+	assert.Less(t, 10, len(serverNames[1]))
+	server.AssertExpectations(t)
 }

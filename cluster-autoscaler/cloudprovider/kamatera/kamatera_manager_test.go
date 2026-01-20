@@ -23,7 +23,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestManager_newManager(t *testing.T) {
@@ -67,7 +70,8 @@ max-size=2
 min-size=4
 max-size=5
 `))
-	m, err := newManager(cfg, nil)
+	kubeClient := fake.NewClientset()
+	m, err := newManager(cfg, kubeClient)
 	assert.NoError(t, err)
 
 	client := kamateraClientMock{}
@@ -128,6 +132,23 @@ max-size=5
 		},
 		nil,
 	).Once()
+	assert.NoError(t, kubeClient.Tracker().Add(&apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: serverName1},
+		Spec:       apiv1.NodeSpec{ProviderID: formatKamateraProviderID(m.config.providerIDPrefix, serverName1)},
+	}))
+	assert.NoError(t, kubeClient.Tracker().Add(&apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: serverName2},
+		Spec:       apiv1.NodeSpec{ProviderID: formatKamateraProviderID(m.config.providerIDPrefix, serverName2)},
+	}))
+	assert.NoError(t, kubeClient.Tracker().Add(&apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: serverName3},
+		Spec:       apiv1.NodeSpec{ProviderID: formatKamateraProviderID(m.config.providerIDPrefix, serverName3)},
+	}))
+
+	assert.NoError(t, kubeClient.Tracker().Add(&apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: serverName4},
+		Spec:       apiv1.NodeSpec{ProviderID: formatKamateraProviderID(m.config.providerIDPrefix, serverName4)},
+	}))
 	err = m.refresh()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(m.nodeGroups))
@@ -135,6 +156,16 @@ max-size=5
 	targetSize, _ := m.nodeGroups["ng1"].TargetSize()
 	assert.Equal(t, 3, targetSize)
 	assert.Equal(t, 2, len(m.nodeGroups["ng2"].instances))
+	for _, serverName := range []string{serverName4} {
+		_, _ = m.nodeGroups["ng2"].findInstanceForNode(&apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: serverName,
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: formatKamateraProviderID(m.config.providerIDPrefix, serverName),
+			},
+		})
+	}
 	targetSize, _ = m.nodeGroups["ng2"].TargetSize()
 	assert.Equal(t, 1, targetSize)
 
@@ -204,7 +235,7 @@ cluster-name=aaabbb
 	}
 }
 
-func TestManager_addInstance(t *testing.T) {
+func TestManager_addCreatingInstance(t *testing.T) {
 	cfg := strings.NewReader(`
 [global]
 kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
@@ -215,44 +246,20 @@ cluster-name=aaabbb
 	m, err := newManager(cfg, nil)
 	assert.NoError(t, err)
 
-	serverName1 := mockKamateraServerName()
-	serverProviderID1 := formatKamateraProviderID("rke2://", serverName1)
-	server1 := Server{
-		Name:    serverName1,
-		PowerOn: true,
-		Tags:    []string{"tag1", "tag2"},
-	}
+	serverName := mockKamateraServerName()
+	commandID := "mock-command-id"
+	tags := []string{"tag1", "tag2"}
 
-	// Test adding a new instance
-	instance, err := m.addInstance(server1)
-	assert.NoError(t, err)
+	instance := m.addCreatingInstance(serverName, commandID, tags)
 	assert.NotNil(t, instance)
-	assert.Equal(t, instance.Id, serverProviderID1)
-	assert.Equal(t, cloudprovider.InstanceRunning, instance.Status.State)
-	assert.True(t, instance.PowerOn)
-	assert.Equal(t, []string{"tag1", "tag2"}, instance.Tags)
+	assert.Equal(t, formatKamateraProviderID("rke2://", serverName), instance.Id)
+	assert.Equal(t, cloudprovider.InstanceCreating, instance.Status.State)
+	assert.Equal(t, commandID, instance.StatusCommandId)
+	assert.Equal(t, InstanceCommandCreating, instance.StatusCommandCode)
+	assert.Equal(t, tags, instance.Tags)
 
-	// Verify instance was added to manager's instances map
-	assert.NotNil(t, m.instances[serverProviderID1])
-	assert.Equal(t, serverProviderID1, m.instances[serverProviderID1].Id)
-
-	// Test updating an existing instance
-	server1Updated := Server{
-		Name:    serverName1,
-		PowerOn: false,
-		Tags:    []string{"tag3"},
-	}
-	instanceUpdated, err := m.addInstance(server1Updated)
-	assert.NoError(t, err)
-	assert.NotNil(t, instanceUpdated)
-	assert.Equal(t, serverProviderID1, instanceUpdated.Id)
-	assert.Nil(t, instanceUpdated.Status)
-	assert.False(t, instanceUpdated.PowerOn)
-	assert.Equal(t, []string{"tag3"}, instanceUpdated.Tags)
-
-	// Verify the updated instance in the map
-	assert.Nil(t, m.instances[serverProviderID1].Status)
-	assert.False(t, m.instances[serverProviderID1].PowerOn)
+	// Verify instance was added to manager's instances map.
+	assert.Same(t, instance, m.instances[instance.Id])
 }
 
 func TestManager_snapshotInstances(t *testing.T) {
@@ -288,7 +295,7 @@ cluster-name=aaabbb
 	assert.NotNil(t, m.instances[serverName2])
 }
 
-func TestManager_addInstanceConcurrent(t *testing.T) {
+func TestManager_addCreatingInstanceConcurrent(t *testing.T) {
 	cfg := strings.NewReader(`
 [global]
 kamatera-api-client-id=1a222bbb3ccc44d5555e6ff77g88hh9i
@@ -305,13 +312,8 @@ cluster-name=aaabbb
 	for i := 0; i < numGoroutines; i++ {
 		go func(idx int) {
 			serverName := fmt.Sprintf("server-%d", idx)
-			server := Server{
-				Name:    serverName,
-				PowerOn: true,
-				Tags:    []string{"tag1"},
-			}
-			_, err := m.addInstance(server)
-			assert.NoError(t, err)
+			instance := m.addCreatingInstance(serverName, fmt.Sprintf("cmd-%d", idx), []string{"tag1"})
+			assert.NotNil(t, instance)
 			done <- true
 		}(i)
 	}
@@ -355,13 +357,8 @@ cluster-name=aaabbb
 		// Add instance goroutine
 		go func(idx int) {
 			serverName := fmt.Sprintf("new-server-%d", idx)
-			server := Server{
-				Name:    serverName,
-				PowerOn: true,
-				Tags:    []string{"tag1"},
-			}
-			_, err := m.addInstance(server)
-			assert.NoError(t, err)
+			instance := m.addCreatingInstance(serverName, fmt.Sprintf("cmd-%d", idx), []string{"tag1"})
+			assert.NotNil(t, instance)
 			done <- true
 		}(i)
 	}

@@ -52,20 +52,20 @@ Following are the supported server configuration keys:
 
 | Key | Value | Mandatory | Default |
 |-----|-------|-----------|---------|
-| name-prefix | Prefix for all created server names | no | none |
-| password | Server root password | no | none |
-| ssh-key | Public SSH key to add to the server authorized keys | no | none |
-| datacenter | Datacenter ID | yes | none |
-| image | Image ID or name | yes | none |
-| cpu | CPU type and size identifier | yes | none |
-| ram | RAM size in MB | yes | none |
-| disk | Disk specifications - see below for details | yes | none |
-| dailybackup | boolean - set to true to enable daily backups | no | false |
-| managed | boolean - set to true to enable managed services | no | false |
-| network | Network specifications - see below for details | yes | none |
-| billingcycle | \"hourly\" or \"monthly\" | no | \"hourly\" |
-| monthlypackage | For monthly billing only - the monthly network package to use | no | none |
-| script-base64 | base64 encoded server initialization script, must be provided to connect the server to the cluster, see below for details | no | none |
+| name-prefix | Prefix for all created server names | no        | none |
+| password | Server root password | no        | none |
+| ssh-key | Public SSH key to add to the server authorized keys | no        | none |
+| datacenter | Datacenter ID | yes       | none |
+| image | Image ID or name | yes       | none |
+| cpu | CPU type and size identifier | yes       | none |
+| ram | RAM size in MB | yes       | none |
+| disk | Disk specifications - see below for details | yes       | none |
+| dailybackup | boolean - set to true to enable daily backups | no        | false |
+| managed | boolean - set to true to enable managed services | no        | false |
+| network | Network specifications - see below for details | yes       | none |
+| billingcycle | \"hourly\" or \"monthly\" | no        | \"hourly\" |
+| monthlypackage | For monthly billing only - the monthly network package to use | no        | none |
+| script-base64 | base64 encoded server initialization script, must be provided to connect the server to the cluster, see below for details | yes       | none |
 
 ### Disk specifications
 

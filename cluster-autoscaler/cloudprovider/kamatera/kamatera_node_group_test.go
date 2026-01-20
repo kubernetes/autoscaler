@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -103,45 +104,36 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			assert.Equal(t, "size increase is too large. current: 3 desired: 8 max: 7", err.Error())
 
 			// test ok to add a node
+			createdServerName1 := mockKamateraServerName()
 			client.On(
-				"CreateServers", ctx, 1, serverConfig,
+				"StartCreateServers", ctx, 1, serverConfig,
 			).Return(
-				[]Server{{Name: mockKamateraServerName(), PowerOn: true}}, nil,
-			).Once().On(
-				"ListServers", ctx, mgr.instances, "", "rke2://",
-			).Return(
-				[]Server{}, nil,
+				map[string]string{createdServerName1: "cmd-1"}, nil,
 			).Once()
 			err = ng.IncreaseSize(1)
 			assert.NoError(t, err)
 			assert.Equal(t, 4, len(ng.instances))
 
 			// test ok to add multiple nodes
+			ng.instances[formatKamateraProviderID("rke2://", createdServerName1)].Status.State = cloudprovider.InstanceRunning
+			createdServerName2 := mockKamateraServerName()
+			createdServerName3 := mockKamateraServerName()
 			client.On(
-				"CreateServers", ctx, 2, serverConfig,
+				"StartCreateServers", ctx, 2, serverConfig,
 			).Return(
-				[]Server{
-					{Name: mockKamateraServerName(), PowerOn: true},
-					{Name: mockKamateraServerName(), PowerOn: true},
-				}, nil,
-			).Once().On(
-				"ListServers", ctx, mgr.instances, "", "rke2://",
-			).Return(
-				[]Server{}, nil,
+				map[string]string{createdServerName2: "cmd-2", createdServerName3: "cmd-3"}, nil,
 			).Once()
 			err = ng.IncreaseSize(2)
 			assert.NoError(t, err)
 			assert.Equal(t, 6, len(ng.instances))
 
 			// test error on API call error
+			ng.instances[formatKamateraProviderID("rke2://", createdServerName2)].Status.State = cloudprovider.InstanceRunning
+			ng.instances[formatKamateraProviderID("rke2://", createdServerName3)].Status.State = cloudprovider.InstanceRunning
 			client.On(
-				"CreateServers", ctx, 1, serverConfig,
+				"StartCreateServers", ctx, 1, serverConfig,
 			).Return(
-				[]Server{}, fmt.Errorf("error on API call"),
-			).Once().On(
-				"ListServers", ctx, mgr.instances, "", "rke2://",
-			).Return(
-				[]Server{}, nil,
+				map[string]string{}, fmt.Errorf("error on API call"),
 			).Once()
 			err = ng.IncreaseSize(1)
 			assert.Error(t, err, "no error on injected API call error")
@@ -231,73 +223,63 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 			}
 
 			// test ok to add a node
-			client.On(
-				"ListServers", ctx, mgr.instances, "", "rke2://",
-			).Return(
-				[]Server{}, nil,
-			).Once()
 			if tt.poweronOnScaleUp {
 				client.On(
-					"PoweronServer", ctx, PoweredOffServerName1,
+					"StartServerRequest", ctx, ServerRequestPoweron, PoweredOffServerName1,
 				).Return(
-					nil,
+					"cmd-poweron-1", nil,
 				).Once()
 			} else {
+				createdServerName1 := mockKamateraServerName()
 				client.On(
-					"CreateServers", ctx, 1, serverConfig,
+					"StartCreateServers", ctx, 1, serverConfig,
 				).Return(
-					[]Server{{Name: mockKamateraServerName(), PowerOn: true}}, nil,
+					map[string]string{createdServerName1: "cmd-create-1"}, nil,
 				).Once()
 			}
 			err := ng.IncreaseSize(1)
 			assert.NoError(t, err)
 			assert.Equal(t, 4, len(ng.instances))
 
+			if tt.poweronOnScaleUp {
+				ng.instances[PoweredOffServerProviderID1].Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+			}
+
 			// test ok to add multiple nodes
 			mgr.instances[PoweredOffServerProviderID3].Tags = []string{"tag1", "tag2"}
+			createdServerName2 := mockKamateraServerName()
 			if tt.poweronOnScaleUp {
 				client.On(
-					"CreateServers", ctx, 1, serverConfig,
+					"StartCreateServers", ctx, 1, serverConfig,
 				).Return(
-					[]Server{
-						{Name: mockKamateraServerName(), PowerOn: true},
-					}, nil,
+					map[string]string{createdServerName2: "cmd-create-2"}, nil,
 				).Once().On(
-					"ListServers", ctx, mgr.instances, "", "rke2://",
+					"StartServerRequest", ctx, ServerRequestPoweron, PoweredOffServerName3,
 				).Return(
-					[]Server{}, nil,
-				).Once().On(
-					"PoweronServer", ctx, PoweredOffServerName3,
-				).Return(
-					nil,
+					"cmd-poweron-3", nil,
 				).Once()
 			} else {
+				createdServerName3 := mockKamateraServerName()
 				client.On(
-					"CreateServers", ctx, 2, serverConfig,
+					"StartCreateServers", ctx, 2, serverConfig,
 				).Return(
-					[]Server{
-						{Name: mockKamateraServerName(), PowerOn: true},
-						{Name: mockKamateraServerName(), PowerOn: true},
-					}, nil,
-				).Once().On(
-					"ListServers", ctx, mgr.instances, "", "rke2://",
-				).Return(
-					[]Server{}, nil,
+					map[string]string{createdServerName2: "cmd-create-2", createdServerName3: "cmd-create-3"}, nil,
 				).Once()
 			}
 			err = ng.IncreaseSize(2)
 			assert.NoError(t, err)
 			assert.Equal(t, 6, len(ng.instances))
 
+			if tt.poweronOnScaleUp {
+				ng.instances[formatKamateraProviderID("rke2://", createdServerName2)].Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+				ng.instances[formatKamateraProviderID("rke2://", PoweredOffServerName3)].Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+			}
+
 			// test error on API call error
 			client.On(
-				"CreateServers", ctx, 1, serverConfig,
+				"StartCreateServers", ctx, 1, serverConfig,
 			).Return(
-				[]Server{}, fmt.Errorf("error on API call"),
-			).Once().On(
-				"ListServers", ctx, mgr.instances, "", "rke2://",
-			).Return(
-				[]Server{}, nil,
+				map[string]string{}, fmt.Errorf("error on API call"),
 			).Once()
 			err = ng.IncreaseSize(1)
 			assert.Error(t, err, "no error on injected API call error")
@@ -356,31 +338,24 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 				minSize: 1,
 				maxSize: 6,
 				instances: map[string]*Instance{
-					serverProviderID1: {Id: serverProviderID1, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
-					serverProviderID2: {Id: serverProviderID2, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
-					serverProviderID3: {Id: serverProviderID3, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
-					serverProviderID4: {Id: serverProviderID4, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
-					serverProviderID5: {Id: serverProviderID5, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
-					serverProviderID6: {Id: serverProviderID6, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+					serverProviderID1: {Id: serverProviderID1, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}, PowerOn: true},
+					serverProviderID2: {Id: serverProviderID2, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}, PowerOn: true},
+					serverProviderID3: {Id: serverProviderID3, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}, PowerOn: true},
+					serverProviderID4: {Id: serverProviderID4, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}, PowerOn: true},
+					serverProviderID5: {Id: serverProviderID5, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}, PowerOn: true},
+					serverProviderID6: {Id: serverProviderID6, Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}, PowerOn: true},
 				},
 				manager: &mgr,
 			}
 
-			var expectedMethodName string
-			if tt.poweroffOnScaleDown {
-				expectedMethodName = "PoweroffServer"
-			} else {
-				expectedMethodName = "DeleteServer"
-			}
-
 			// test of deleting nodes
 			client.On(
-				expectedMethodName, ctx, serverName1,
-			).Return(nil).Once().On(
-				expectedMethodName, ctx, serverName2,
-			).Return(nil).Once().On(
-				expectedMethodName, ctx, serverName6,
-			).Return(nil).Once()
+				"StartServerRequest", ctx, ServerRequestPoweroff, serverName1,
+			).Return("cmd-poweroff-1", nil).Once().On(
+				"StartServerRequest", ctx, ServerRequestPoweroff, serverName2,
+			).Return("cmd-poweroff-2", nil).Once().On(
+				"StartServerRequest", ctx, ServerRequestPoweroff, serverName6,
+			).Return("cmd-poweroff-6", nil).Once()
 
 			err := ng.DeleteNodes([]*apiv1.Node{
 				{Spec: apiv1.NodeSpec{ProviderID: serverProviderID1}},
@@ -389,16 +364,15 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			})
 
 			assert.NoError(t, err)
-			if tt.poweroffOnScaleDown {
-				assert.Equal(t, 6, len(ng.instances))
-			} else {
-				assert.Equal(t, 3, len(ng.instances))
-			}
+			assert.Equal(t, 6, len(ng.instances))
 			targetSize, err := ng.TargetSize()
 			assert.Equal(t, 3, targetSize)
-			assert.Equal(t, serverProviderID3, ng.instances[serverProviderID3].Id)
-			assert.Equal(t, serverProviderID4, ng.instances[serverProviderID4].Id)
-			assert.Equal(t, serverProviderID5, ng.instances[serverProviderID5].Id)
+			assert.Equal(t, cloudprovider.InstanceDeleting, ng.instances[serverProviderID1].Status.State)
+			assert.Equal(t, cloudprovider.InstanceDeleting, ng.instances[serverProviderID2].Status.State)
+			assert.Equal(t, cloudprovider.InstanceDeleting, ng.instances[serverProviderID6].Status.State)
+			assert.Equal(t, cloudprovider.InstanceRunning, ng.instances[serverProviderID3].Status.State)
+			assert.Equal(t, cloudprovider.InstanceRunning, ng.instances[serverProviderID4].Status.State)
+			assert.Equal(t, cloudprovider.InstanceRunning, ng.instances[serverProviderID5].Status.State)
 
 			// test error on deleting a node we are not managing
 			err = ng.DeleteNodes([]*apiv1.Node{{Spec: apiv1.NodeSpec{ProviderID: mockKamateraServerName()}}})
@@ -407,8 +381,8 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 			// test error on deleting a node when the API call fails
 			client.On(
-				expectedMethodName, ctx, serverName4,
-			).Return(fmt.Errorf("error on API call")).Once()
+				"StartServerRequest", ctx, ServerRequestPoweroff, serverName4,
+			).Return("", fmt.Errorf("error on API call")).Once()
 			err = ng.DeleteNodes([]*apiv1.Node{
 				{Spec: apiv1.NodeSpec{ProviderID: serverProviderID4}},
 			})
@@ -571,7 +545,7 @@ func TestNodeGroup_Others(t *testing.T) {
 	assert.Equal(t, 4, len(extendedDebug))
 	assert.Contains(t, extendedDebug, "node group ID: ng1 (min:1 max:7)")
 	for _, serverName := range []string{serverName1, serverName2, serverName3} {
-		assert.Contains(t, extendedDebug, fmt.Sprintf("instance ID: %s state: Running powerOn: false", serverName))
+		assert.Contains(t, extendedDebug, fmt.Sprintf("instance ID: %s state: Running powerOn: false commandID: ", serverName))
 	}
 	assert.Equal(t, true, ng.Exist())
 	assert.Equal(t, false, ng.Autoprovisioned())
@@ -599,10 +573,24 @@ func TestNodeGroup_ForceDeleteNodes(t *testing.T) {
 
 func TestNodeGroup_GetOptions(t *testing.T) {
 	ng := &NodeGroup{}
-	opts, err := ng.GetOptions(config.NodeGroupAutoscalingOptions{})
-	assert.Nil(t, opts)
-	assert.Error(t, err)
-	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+	defaults := config.NodeGroupAutoscalingOptions{
+		ScaleDownUtilizationThreshold:    0.5,
+		ScaleDownGpuUtilizationThreshold: 0.7,
+		ScaleDownUnneededTime:            10 * time.Minute,
+		ScaleDownUnreadyTime:             20 * time.Minute,
+		ZeroOrMaxNodeScaling:             true,
+		IgnoreDaemonSetsUtilization:      true,
+	}
+	opts, err := ng.GetOptions(defaults)
+	assert.NoError(t, err)
+	assert.NotNil(t, opts)
+	assert.Equal(t, defaults.ScaleDownUtilizationThreshold, opts.ScaleDownUtilizationThreshold)
+	assert.Equal(t, defaults.ScaleDownGpuUtilizationThreshold, opts.ScaleDownGpuUtilizationThreshold)
+	assert.Equal(t, defaults.ScaleDownUnneededTime, opts.ScaleDownUnneededTime)
+	assert.Equal(t, defaults.ScaleDownUnreadyTime, opts.ScaleDownUnreadyTime)
+	assert.Equal(t, time.Hour, opts.MaxNodeProvisionTime)
+	assert.Equal(t, defaults.ZeroOrMaxNodeScaling, opts.ZeroOrMaxNodeScaling)
+	assert.Equal(t, defaults.IgnoreDaemonSetsUtilization, opts.IgnoreDaemonSetsUtilization)
 }
 
 func TestNodeGroup_findInstanceForNode_EmptyProviderID(t *testing.T) {

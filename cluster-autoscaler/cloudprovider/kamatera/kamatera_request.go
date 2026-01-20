@@ -26,8 +26,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -45,32 +45,35 @@ type ProviderConfig struct {
 }
 
 func request(ctx context.Context, provider ProviderConfig, method string, path string, body interface{}, numRetries int, secondsBetweenRetries int) (interface{}, error) {
-	buf := new(bytes.Buffer)
+	var payload []byte
 	if body != nil {
-		if err := json.NewEncoder(buf).Encode(body); err != nil {
+		b, err := json.Marshal(body)
+		if err != nil {
 			return nil, err
 		}
+		payload = b
 	}
 	path = strings.TrimPrefix(path, "/")
-	isQueueRequest := strings.HasPrefix(path, "service/queue")
 	logLevel := klog.Level(2)
-	if isQueueRequest {
+	if strings.HasPrefix(path, "service/queue") || (method == "GET" && path == "service/servers") {
 		logLevel = klog.Level(4)
 	}
 	url := fmt.Sprintf("%s/%s", provider.ApiUrl, path)
 	var result interface{}
 	var err error
 	for attempt := 0; attempt < numRetries; attempt++ {
-		if !isQueueRequest {
-			klog.V(logLevel).Infof("kamatera request: %s %s %s", method, url, buf.String())
+		result = nil
+		err = nil
+		klog.V(logLevel).Infof("kamatera request: %s %s %s", method, url, string(payload))
+		var r io.Reader
+		if payload != nil {
+			r = bytes.NewReader(payload) // NEW reader each try
 		}
 		if attempt > 0 {
-			if !isQueueRequest {
-				klog.V(logLevel).Infof("kamatera request retry %d", attempt)
-			}
+			klog.V(logLevel).Infof("kamatera request retry %d", attempt)
 			time.Sleep(time.Duration(secondsBetweenRetries<<attempt) * time.Second)
 		}
-		req, e := http.NewRequestWithContext(ctx, method, url, buf)
+		req, e := http.NewRequestWithContext(ctx, method, url, r)
 		if e != nil {
 			err = e
 			continue
@@ -84,144 +87,25 @@ func request(ctx context.Context, provider ProviderConfig, method string, path s
 			err = e
 			continue
 		}
-		defer res.Body.Close()
-		e = json.NewDecoder(res.Body).Decode(&result)
-		if e != nil {
-			if res.StatusCode != 200 {
-				err = fmt.Errorf("bad status code from Kamatera API: %d", res.StatusCode)
-			} else {
-				err = fmt.Errorf("invalid response from Kamatera API: %+v", result)
+		e = func() error {
+			defer res.Body.Close()
+			decErr := json.NewDecoder(res.Body).Decode(&result)
+			if decErr != nil {
+				if res.StatusCode != 200 {
+					return fmt.Errorf("bad status code from Kamatera API: %d", res.StatusCode)
+				}
+				return fmt.Errorf("invalid response from Kamatera API: %+v", result)
+			} else if res.StatusCode != 200 {
+				return fmt.Errorf("error response from Kamatera API (%d): %+v", res.StatusCode, result)
 			}
+			return nil
+		}()
+		if e != nil {
+			err = e
 			continue
 		}
-		if res.StatusCode != 200 {
-			err = fmt.Errorf("error response from Kamatera API (%d): %+v", res.StatusCode, result)
-			continue
-		}
+		err = nil
 		break
 	}
 	return result, err
-}
-
-func waitCommand(ctx context.Context, provider ProviderConfig, commandID string, numRetries int, secondsBetweenRetries int) (command map[string]interface{}, err error) {
-	startTime := time.Now()
-	klog.V(2).Infof("Kamatera queue: started waiting for command %s", commandID)
-	defer func() {
-		if err != nil {
-			klog.V(2).Infof("Kamatera queue: finished waiting for command %s after %s: %v", commandID, time.Since(startTime), err)
-			return
-		}
-
-		status, _ := command["status"].(string)
-		if status == "" {
-			status = "complete"
-		}
-		klog.V(2).Infof("Kamatera queue: finished waiting for command %s after %s (status=%s)", commandID, time.Since(startTime), status)
-	}()
-
-	time.Sleep(2 * time.Second)
-
-	for {
-		if startTime.Add(40*time.Minute).Sub(time.Now()) < 0 {
-			return nil, errors.New("timeout waiting for Kamatera command to complete")
-		}
-
-		time.Sleep(2 * time.Second)
-
-		result, e := request(ctx, provider, "GET", fmt.Sprintf("/service/queue?id=%s", commandID), nil, numRetries, secondsBetweenRetries)
-		if e != nil {
-			return nil, e
-		}
-
-		commands := result.([]interface{})
-		if len(commands) != 1 {
-			return nil, errors.New("invalid response from Kamatera queue API: invalid number of command responses")
-		}
-
-		command = commands[0].(map[string]interface{})
-		status, hasStatus := command["status"]
-		if hasStatus {
-			switch status.(string) {
-			case "complete":
-				return command, nil
-			case "error":
-				log, hasLog := command["log"]
-				if hasLog {
-					return nil, fmt.Errorf("kamatera command failed: %s", log)
-				}
-				return nil, fmt.Errorf("kamatera command failed: %v", command)
-			}
-		}
-	}
-}
-
-func waitCommands(ctx context.Context, provider ProviderConfig, commandIds map[string]string, numRetries int, secondsBetweenRetries int) (commandIdsResults map[string]interface{}, err error) {
-	startTime := time.Now()
-
-	commandIDs := make([]string, 0, len(commandIds))
-	for _, commandID := range commandIds {
-		commandIDs = append(commandIDs, commandID)
-	}
-	klog.V(2).Infof("Kamatera queue: started waiting for %d commands: %v", len(commandIds), commandIDs)
-	defer func() {
-		if err != nil {
-			klog.V(2).Infof("Kamatera queue: finished waiting for %d commands after %s: %v", len(commandIds), time.Since(startTime), err)
-			return
-		}
-		klog.V(2).Infof("Kamatera queue: finished waiting for %d commands after %s (status=complete)", len(commandIds), time.Since(startTime))
-	}()
-
-	time.Sleep(2 * time.Second)
-
-	commandIdsResults = make(map[string]interface{})
-	for id := range commandIds {
-		commandIdsResults[id] = nil
-	}
-
-	for {
-		if startTime.Add((40)*time.Minute).Sub(time.Now()) < 0 {
-			return nil, errors.New("timeout waiting for Kamatera commands to complete")
-		}
-
-		time.Sleep(2 * time.Second)
-
-		for id, result := range commandIdsResults {
-			if result == nil {
-				commandID := commandIds[id]
-				result, e := request(ctx, provider, "GET", fmt.Sprintf("/service/queue?id=%s", commandID), nil, numRetries, secondsBetweenRetries)
-				if e != nil {
-					return nil, e
-				}
-				commands := result.([]interface{})
-				if len(commands) != 1 {
-					return nil, errors.New("invalid response from Kamatera queue API: invalid number of command responses")
-				}
-				command := commands[0].(map[string]interface{})
-				status, hasStatus := command["status"]
-				if hasStatus {
-					switch status.(string) {
-					case "complete":
-						commandIdsResults[id] = command
-						break
-					case "error":
-						log, hasLog := command["log"]
-						if hasLog {
-							return nil, fmt.Errorf("kamatera command failed: %s", log)
-						}
-						return nil, fmt.Errorf("kamatera command failed: %v", command)
-					}
-				}
-			}
-		}
-
-		numComplete := 0
-		for _, result := range commandIdsResults {
-			if result != nil {
-				numComplete++
-			}
-		}
-		if numComplete == len(commandIds) {
-			return commandIdsResults, nil
-		}
-	}
 }

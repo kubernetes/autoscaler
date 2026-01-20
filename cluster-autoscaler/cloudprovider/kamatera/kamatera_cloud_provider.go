@@ -137,7 +137,7 @@ func (k *kamateraCloudProvider) Refresh() error {
 	klog.V(4).Infof("Refreshing Kamatera node groups")
 	err := k.manager.refresh()
 	if err != nil {
-		klog.V(4).Infof("Failed to refresh Kamatera node groups: %v", err)
+		klog.Errorf("Failed to refresh Kamatera node groups: %v", err)
 		return err
 	}
 	klog.V(4).Infof("Finished refreshing Kamatera node groups")
@@ -173,16 +173,16 @@ func newKamateraCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimite
 
 	err = m.refresh()
 	if err != nil {
-		klog.V(1).Infof("Error on first import of Kamatera node groups: %v", err)
+		klog.Errorf("Error on first import of Kamatera node groups: %v", err)
 	}
-	klog.V(1).Infof("First import of existing Kamatera node groups ended")
+	klog.V(4).Infof("First import of existing Kamatera node groups ended")
 	m.nodeGroupsMu.RLock()
 	if len(m.nodeGroups) == 0 {
-		klog.V(1).Infof("Could not import any Kamatera node groups")
+		klog.Warningf("Could not import any Kamatera node groups")
 	} else {
-		klog.V(1).Infof("imported Kamatera node groups:")
+		klog.V(0).Infof("imported Kamatera node groups:")
 		for _, ng := range m.nodeGroups {
-			klog.V(1).Infof("%s", ng.extendedDebug())
+			klog.V(0).Infof("%s", ng.extendedDebug())
 		}
 	}
 	m.nodeGroupsMu.RUnlock()
