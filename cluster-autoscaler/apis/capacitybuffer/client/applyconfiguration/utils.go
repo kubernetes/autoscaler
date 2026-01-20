@@ -23,7 +23,9 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
 	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	autoscalingxk8siov1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/applyconfiguration/autoscaling.x-k8s.io/v1alpha1"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1"
 	internal "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/applyconfiguration/internal"
 )
 
@@ -42,6 +44,18 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &autoscalingxk8siov1alpha1.LocalObjectRefApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ScalableRef"):
 		return &autoscalingxk8siov1alpha1.ScalableRefApplyConfiguration{}
+
+		// Group=autoscaling.x-k8s.io, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityBuffer"):
+		return &autoscalingxk8siov1beta1.CapacityBufferApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityBufferSpec"):
+		return &autoscalingxk8siov1beta1.CapacityBufferSpecApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityBufferStatus"):
+		return &autoscalingxk8siov1beta1.CapacityBufferStatusApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("LocalObjectRef"):
+		return &autoscalingxk8siov1beta1.LocalObjectRefApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ScalableRef"):
+		return &autoscalingxk8siov1beta1.ScalableRefApplyConfiguration{}
 
 	}
 	return nil
