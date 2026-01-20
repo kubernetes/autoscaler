@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/version"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -376,7 +377,10 @@ func TestValidateVPA(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
+			if tc.inPlaceOrRecreateFeatureGateDisabled {
+				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
+			}
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
