@@ -17,20 +17,26 @@ limitations under the License.
 package controller
 
 import (
+	"errors"
+	"fmt"
+	"sort"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
-	filter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
 )
-
-const defaultloopInterval = time.Second * 5
-const defaultIterationsToReprocessAll = 60
 
 // BufferController performs updates on Buffers and convert them to pods to be injected
 type BufferController interface {
@@ -39,55 +45,43 @@ type BufferController interface {
 }
 
 type bufferController struct {
-	client                   *cbclient.CapacityBufferClient
-	strategyFilter           filters.Filter
-	statusFilter             filters.Filter
-	translator               translators.Translator
-	updater                  updater.StatusUpdater
-	loopInterval             time.Duration
-	iterationsToReprocessAll int
-	currentIteration         int
+	client         *cbclient.CapacityBufferClient
+	strategyFilter filters.Filter
+	translator     translators.Translator
+	quotaAllocator *resourceQuotaAllocator
+	updater        updater.StatusUpdater
+	queue          workqueue.TypedRateLimitingInterface[string]
 }
 
 // NewBufferController creates new bufferController object
 func NewBufferController(
 	client *cbclient.CapacityBufferClient,
 	strategyFilter filters.Filter,
-	statusFilter filters.Filter,
 	translator translators.Translator,
 	updater updater.StatusUpdater,
-	loopInterval time.Duration,
-	iterationsToReprocessAll int,
 ) BufferController {
-	return &bufferController{
-		client:                   client,
-		strategyFilter:           strategyFilter,
-		statusFilter:             statusFilter,
-		translator:               translator,
-		updater:                  updater,
-		loopInterval:             loopInterval,
-		iterationsToReprocessAll: iterationsToReprocessAll,
+	bc := &bufferController{
+		client:         client,
+		strategyFilter: strategyFilter,
+		translator:     translator,
+		quotaAllocator: newResourceQuotaAllocator(client),
+		updater:        updater,
+		queue: workqueue.NewTypedRateLimitingQueueWithConfig(
+			workqueue.DefaultTypedControllerRateLimiter[string](), workqueue.TypedRateLimitingQueueConfig[string]{Name: "CapacityBuffers"},
+		),
 	}
+	bc.configureEventHandlers()
+	return bc
 }
 
 // NewDefaultBufferController creates bufferController with default configs
 func NewDefaultBufferController(
 	client *cbclient.CapacityBufferClient,
 ) BufferController {
-	return &bufferController{
+	bc := &bufferController{
 		client: client,
 		// Accepting empty string as it represents nil value for ProvisioningStrategy
 		strategyFilter: filters.NewStrategyFilter([]string{common.ActiveProvisioningStrategy, ""}),
-		statusFilter: filter.NewCombinedAnyFilter(
-			[]filters.Filter{
-				filters.NewStatusFilter(map[string]string{
-					common.ReadyForProvisioningCondition: common.ConditionTrue,
-					common.ProvisioningCondition:         common.ConditionTrue,
-				}),
-				filters.NewBufferGenerationChangedFilter(),
-				filters.NewPodTemplateGenerationChangedFilter(client),
-			},
-		),
 		translator: translators.NewCombinedTranslator(
 			[]translators.Translator{
 				translators.NewPodTemplateBufferTranslator(client),
@@ -95,60 +89,221 @@ func NewDefaultBufferController(
 				translators.NewResourceLimitsTranslator(client),
 			},
 		),
-		updater:                  *updater.NewStatusUpdater(client),
-		loopInterval:             defaultloopInterval,
-		iterationsToReprocessAll: defaultIterationsToReprocessAll,
+		quotaAllocator: newResourceQuotaAllocator(client),
+		updater:        *updater.NewStatusUpdater(client),
+		queue: workqueue.NewTypedRateLimitingQueueWithConfig(
+			workqueue.DefaultTypedControllerRateLimiter[string](), workqueue.TypedRateLimitingQueueConfig[string]{Name: "CapacityBuffers"},
+		),
+	}
+	bc.configureEventHandlers()
+	return bc
+}
+
+func (c *bufferController) configureEventHandlers() {
+	// CapacityBuffer Informer
+	c.client.GetBufferInformer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			c.enqueueNamespace(obj)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldBuf := oldObj.(*v1.CapacityBuffer)
+			newBuf := newObj.(*v1.CapacityBuffer)
+
+			// 1. Resync (periodic refresh): reconcile.
+			if oldBuf.ResourceVersion == newBuf.ResourceVersion {
+				c.enqueueNamespace(newObj)
+				return
+			}
+
+			// 2. Generation changes (spec changes): reconcile.
+			if oldBuf.Generation != newBuf.Generation {
+				c.enqueueNamespace(newObj)
+				return
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			c.enqueueNamespace(obj)
+		},
+	})
+
+	// ResourceQuota Informer
+	c.client.GetResourceQuotaInformer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			c.enqueueNamespace(obj)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldQuota := oldObj.(*corev1.ResourceQuota)
+			newQuota := newObj.(*corev1.ResourceQuota)
+
+			if oldQuota.ResourceVersion == newQuota.ResourceVersion {
+				c.enqueueNamespace(newObj)
+				return
+			}
+			// Reconcile only on Status changes (Status.Hard and Status.Used)
+			if equality.Semantic.DeepEqual(oldQuota.Status.Hard, newQuota.Status.Hard) &&
+				equality.Semantic.DeepEqual(oldQuota.Status.Used, newQuota.Status.Used) {
+				return
+			}
+			c.enqueueNamespace(oldObj)
+		},
+		DeleteFunc: func(obj interface{}) {
+			c.enqueueNamespace(obj)
+		},
+	})
+
+	// PodTemplate Informer
+	c.client.GetPodTemplateInformer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingPodTemplate(obj)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			c.enqueueBuffersReferencingPodTemplate(newObj)
+		},
+		DeleteFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingPodTemplate(obj)
+		},
+	})
+	// TODO: scalable objects
+}
+
+func (c *bufferController) enqueueNamespace(obj interface{}) {
+	var ns string
+	if object, ok := obj.(interface{ GetNamespace() string }); ok {
+		ns = object.GetNamespace()
+	}
+	if tombstone, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+		if object, ok := tombstone.Obj.(interface{ GetNamespace() string }); ok {
+			ns = object.GetNamespace()
+		}
+	}
+	if ns != "" {
+		c.queue.Add(ns)
+	}
+}
+
+func (c *bufferController) enqueueBuffersReferencingPodTemplate(obj interface{}) {
+	template, ok := obj.(*corev1.PodTemplate)
+	if !ok {
+		// handle tombstone
+		if tombstone, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+			if cast, ok := tombstone.Obj.(*corev1.PodTemplate); ok {
+				template = cast
+			}
+		}
+	}
+	if template == nil {
+		return
+	}
+
+	// Use indexer to find buffers referencing this template
+	buffers, err := c.client.GetBufferInformer().GetIndexer().ByIndex(cbclient.PodTemplateRefIndex, template.Name)
+	if err != nil {
+		runtime.HandleError(fmt.Errorf("error looking up buffers for pod template %s: %w", template.Name, err))
+		return
+	}
+
+	for _, obj := range buffers {
+		buffer := obj.(*v1.CapacityBuffer)
+		if buffer.Namespace == template.Namespace {
+			c.queue.Add(buffer.Namespace)
+			return // we reconcile the whole namespace, so finding one buffer is enough to trigger it.
+		}
 	}
 }
 
 // Run to run the controller reconcile loop
 func (c *bufferController) Run(stopCh <-chan struct{}) {
-	for {
-		select {
-		case <-stopCh:
-			return
-		case <-time.After(c.loopInterval):
-			c.reconcile()
-		}
+	defer runtime.HandleCrash()
+	defer c.queue.ShutDown()
+
+	klog.Info("Starting CapacityBuffer controller workers")
+
+	// Note: We assume the client passed to us has informers that are running and synced.
+	// CapacityBufferClient.NewCapacityBufferClientFromClients waits for sync before returning.
+
+	// Launch a single worker (namespace processing is serial per namespace anyway)
+	go wait.Until(c.runWorker, time.Second, stopCh)
+
+	<-stopCh
+	klog.Info("Stopping CapacityBuffer controller")
+}
+
+func (c *bufferController) runWorker() {
+	for c.processNextItem() {
 	}
 }
 
-// Reconcile represents single iteration in the main-loop of Updater
-func (c *bufferController) reconcile() {
-	c.currentIteration += 1
-
-	// List all capacity buffers objects
-	buffers, err := c.client.ListCapacityBuffers()
-	if err != nil {
-		klog.Errorf("Capacity buffer controller failed to list buffers with error: %v", err.Error())
-		return
+func (c *bufferController) processNextItem() bool {
+	key, quit := c.queue.Get()
+	if quit {
+		return false
 	}
-	klog.V(2).Infof("Capacity buffer controller listed [%v] buffers", len(buffers))
+	defer c.queue.Done(key)
+
+	err := c.reconcileNamespace(key)
+
+	if err == nil {
+		c.queue.Forget(key)
+	} else {
+		// Put the item back on the queue to handle it later
+		c.queue.AddRateLimited(key)
+		runtime.HandleError(fmt.Errorf("error syncing namespace %q", key))
+	}
+	return true
+}
+
+// reconcileNamespace reconciles all buffers in a namespace.
+//
+// We must reconcile all buffers in a namespace because of resource quota allocation.
+// If one buffer in a namespace changes, e.g. it requests more resources,
+// it may impact other buffers in the namespace.
+func (c *bufferController) reconcileNamespace(namespace string) error {
+	klog.V(5).Infof("CapacityBuffer controller: reconciling namespace: %s", namespace)
+	// List all capacity buffers in the target namespace
+	buffers, err := c.client.ListCapacityBuffers(namespace)
+	if err != nil {
+		return err
+	}
 
 	// Filter the desired provisioning strategy
+	// Note: We process ALL buffers in the namespace that match the strategy.
 	filteredBuffers, _ := c.strategyFilter.Filter(buffers)
-	klog.V(2).Infof("Capacity buffer controller filtered %v buffers with buffers strategy filter", len(filteredBuffers))
 
-	// Filter the desired status
-	if c.currentIteration < c.iterationsToReprocessAll {
-		filteredBuffers, _ = c.statusFilter.Filter(filteredBuffers)
-		klog.V(2).Infof("Capacity buffer controller filtered %v buffers with buffers status filter", len(filteredBuffers))
-	} else {
-		c.currentIteration = 0
-		klog.V(2).Infof("Capacity buffer controller skipped buffers status filter, translating all %v buffers", len(filteredBuffers))
+	if len(filteredBuffers) == 0 {
+		return nil
 	}
+
+	// Sort buffers deterministically by CreationTimestamp, then Name. Stable order
+	// is required to prevent flakiness of resource quotas allocation.
+	sort.Slice(filteredBuffers, func(i, j int) bool {
+		if filteredBuffers[i].CreationTimestamp.Time.Equal(filteredBuffers[j].CreationTimestamp.Time) {
+			return filteredBuffers[i].Name < filteredBuffers[j].Name
+		}
+		return filteredBuffers[i].CreationTimestamp.Before(&filteredBuffers[j].CreationTimestamp)
+	})
 
 	// Extract pod specs and number of replicas from filtered buffers
-	errors := c.translator.Translate(filteredBuffers)
-	logErrors(errors)
+	translationErrors := c.translator.Translate(filteredBuffers)
+	for _, err := range translationErrors {
+		runtime.HandleError(fmt.Errorf("capacity buffer controller error: %w", err))
+	}
+
+	// Allocate resource quotas
+	allocationErrors := c.quotaAllocator.Allocate(namespace, filteredBuffers)
+	for _, err := range allocationErrors {
+		runtime.HandleError(fmt.Errorf("capacity buffer controller error: %w", err))
+	}
 
 	// Update buffer status by calling API server
-	errors = c.updater.Update(filteredBuffers)
-	logErrors(errors)
-}
-
-func logErrors(errors []error) {
-	for _, error := range errors {
-		klog.Errorf("Capacity buffer controller error: %v", error.Error())
+	updateErrors := c.updater.Update(filteredBuffers)
+	for _, err := range updateErrors {
+		runtime.HandleError(fmt.Errorf("capacity buffer controller error: %w", err))
 	}
+
+	// If there were any errors, return one to trigger requeue
+	if len(translationErrors) > 0 || len(allocationErrors) > 0 || len(updateErrors) > 0 {
+		return errors.New("encountered errors during reconciliation")
+	}
+
+	return nil
 }
