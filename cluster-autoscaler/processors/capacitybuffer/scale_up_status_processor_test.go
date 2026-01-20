@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -108,13 +108,13 @@ func TestBuffersEvent(t *testing.T) {
 		NewSize:     9,
 		MaxSize:     nodeGroup1.MaxSize(),
 	}
-	buffer1 := &v1alpha1.CapacityBuffer{
+	buffer1 := &v1beta1.CapacityBuffer{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "buffer_1",
 			UID:  "buffer_1",
 		},
 	}
-	buffer2 := &v1alpha1.CapacityBuffer{
+	buffer2 := &v1beta1.CapacityBuffer{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "buffer_2",
 			UID:  "buffer_2",
@@ -134,7 +134,7 @@ func TestBuffersEvent(t *testing.T) {
 		expectedNotTriggeredScaleUp int
 	}{
 		"One fake pod, successful scale up": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{"fake-pod-1": buffer1}),
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpSuccessful,
 				ConsideredNodeGroups:    consideredNodeGroups,
@@ -147,7 +147,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"One fake pod, error scale up": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{"fake-pod-1": buffer1}),
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpError,
 				ConsideredNodeGroups:    consideredNodeGroups,
@@ -160,7 +160,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"One fake pod, empty scale up infos": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{"fake-pod-1": buffer1}),
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpError,
 				ScaleUpInfos:            []nodegroupset.ScaleUpInfo{},
@@ -172,7 +172,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"One fake pod, with no node in Registry": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{}),
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpError,
 				ConsideredNodeGroups:    consideredNodeGroups,
@@ -185,7 +185,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"One fake pod, unschedulalble": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{"fake-pod-1": buffer1}),
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:               status.ScaleUpNoOptionsAvailable,
 				ConsideredNodeGroups: consideredNodeGroups,
@@ -203,7 +203,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 1,
 		},
 		"One fake pod, unschedulalble with error": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{"fake-pod-1": buffer1}),
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:               status.ScaleUpError,
 				ConsideredNodeGroups: consideredNodeGroups,
@@ -221,7 +221,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"two fake pods for same buffer, one triggers scale up and the other doesn't": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{"fake-pod-1": buffer1, "fake-pod-2": buffer1}),
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1, "fake-pod-2": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:               status.ScaleUpNoOptionsAvailable,
 				ConsideredNodeGroups: consideredNodeGroups,
@@ -239,7 +239,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 1,
 		},
 		"multiple pods for multiple buffers with mixed conditions": {
-			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1alpha1.CapacityBuffer{
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{
 				"fake-pod-1": buffer1,
 				"fake-pod-2": buffer1,
 				"fake-pod-3": buffer2,
