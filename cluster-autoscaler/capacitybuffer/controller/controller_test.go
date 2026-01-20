@@ -30,7 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	fakebuffers "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
@@ -99,7 +99,7 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 	// Helper to wait for buffer status
 	waitForStatus := func(name string, expectedReplicas int32, checkLimited bool) {
 		err := wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 5*time.Second, true, func(ctx context.Context) (bool, error) {
-			b, err := buffersClient.AutoscalingV1alpha1().CapacityBuffers("default").Get(ctx, name, metav1.GetOptions{})
+			b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Get(ctx, name, metav1.GetOptions{})
 			if err != nil {
 				return false, nil
 			}
@@ -125,7 +125,7 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 			return true, nil
 		})
 		if err != nil {
-			b, _ := buffersClient.AutoscalingV1alpha1().CapacityBuffers("default").Get(ctx, name, metav1.GetOptions{})
+			b, _ := buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Get(ctx, name, metav1.GetOptions{})
 			var gotLimited bool
 			for _, c := range b.Status.Conditions {
 				if c.Type == common.LimitedByQuotasCondition && c.Status == common.ConditionTrue {
@@ -143,7 +143,7 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 		testutil.WithReplicas(2),
 		testutil.WithActiveProvisioningStrategy(),
 	)
-	_, err = buffersClient.AutoscalingV1alpha1().CapacityBuffers("default").Create(ctx, b1, metav1.CreateOptions{})
+	_, err = buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Create(ctx, b1, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// Wait for reconciliation: Should get 2 replicas
@@ -156,7 +156,7 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 		testutil.WithReplicas(4),
 		testutil.WithActiveProvisioningStrategy(),
 	)
-	_, err = buffersClient.AutoscalingV1alpha1().CapacityBuffers("default").Create(ctx, b2, metav1.CreateOptions{})
+	_, err = buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Create(ctx, b2, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// Wait for reconciliation: Should get 3 replicas (limited) and have condition
@@ -164,7 +164,7 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 
 	// 3. Update b1 to use more resources (2 -> 4).
 	// New usage: b1=4. Remaining=1. b2 (req 4) should shrink to 1.
-	b1, _ = buffersClient.AutoscalingV1alpha1().CapacityBuffers("default").Get(ctx, "b1", metav1.GetOptions{})
+	b1, _ = buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Get(ctx, "b1", metav1.GetOptions{})
 	b1.Spec.Replicas = ptr.To[int32](4)
 	_, err = updateBuffer(ctx, buffersClient, b1)
 	assert.NoError(t, err)
@@ -209,5 +209,5 @@ func updateBuffer(ctx context.Context, client *fakebuffers.Clientset, buffer *v1
 	// fake clients do not bump Generation when spec is changed. We need to do it manually.
 	// can be removed once we migrate to controller-runtime and envtest.
 	buffer.Generation += 1
-	return client.AutoscalingV1alpha1().CapacityBuffers("default").Update(ctx, buffer, metav1.UpdateOptions{})
+	return client.AutoscalingV1beta1().CapacityBuffers("default").Update(ctx, buffer, metav1.UpdateOptions{})
 }
