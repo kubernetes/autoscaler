@@ -646,7 +646,7 @@ func TestGetUniquePartitionableDevicesCount(t *testing.T) {
 					ConsumesCounters: []resourceapi.DeviceCounterConsumption{},
 				},
 			},
-			wantCount: 1,
+			wantCount: 0, // Should be treated as atomic, not partitionable
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
