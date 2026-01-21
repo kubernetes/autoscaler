@@ -99,12 +99,8 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
 	totalAvailableCounters := map[string]map[string]resource.Quantity{}
 	for _, resourceSlice := range resourceSlices {
-		if ptr.Deref(resourceSlice.Spec.PerDeviceNodeSelection, false) {
-			// PerDeviceNodeSelection slices do not affect utilization calculations as they do not share counters across nodes.
-			continue
-		}
 		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
-			totalAvailableCounters = getCountersMapping(sharedCounter.Name, sharedCounter.Counters, totalAvailableCounters)
+			totalAvailableCounters = addCounterSetToMapping(sharedCounter.Name, sharedCounter.Counters, totalAvailableCounters)
 		}
 	}
 	allocatedConsumedCounters := calculateConsumedCounters(allocated)
@@ -128,6 +124,8 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 	// we want to find the counter that is most utilized, since it is the "bottleneck" of the pool
 	var partitionableUtilization float64 = 0
 	var atomicDevicesUtilization float64 = 0
+	var allDevices []resourceapi.Device = append(allocated, unallocated...)
+	var uniquePartitionableDevicesCount float64 = float64(getUniquePartitionableDevicesCount(allDevices))
 	if devicesWithoutCounters != 0 {
 		atomicDevicesUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
 	}
@@ -135,6 +133,8 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 		return atomicDevicesUtilization
 	}
 	for counterSet, counters := range totalAvailableCounters {
+		// for each counter set, find the highest utilization counter
+		highestCounterUtilization := 0.0
 		for counterName, totalValue := range counters {
 			if totalValue.IsZero() {
 				continue
@@ -142,14 +142,16 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 			if allocatedSet, exists := allocatedConsumedCounters[counterSet]; exists {
 				if allocatedValue, exists := allocatedSet[counterName]; exists {
 					utilization := float64(allocatedValue.Value()) / float64(totalValue.Value())
-					if utilization > partitionableUtilization {
-						partitionableUtilization = utilization
+					if utilization > highestCounterUtilization {
+						highestCounterUtilization = utilization
 					}
 				}
 			}
 		}
+		// We assume that each counter set represents a unique partitionable device.
+		partitionableUtilization += highestCounterUtilization / uniquePartitionableDevicesCount
 	}
-	var uniquePartitionableDevicesCount float64 = float64(getUniquePartitionableDevicesCount(allocated))
+
 	var totalUniqueDevices float64 = uniquePartitionableDevicesCount + float64(devicesWithoutCounters)
 	var partitionableDevicesUtilizationWeight float64 = uniquePartitionableDevicesCount / totalUniqueDevices
 	var nonPartitionableDevicesUtilizationWeight float64 = 1 - partitionableDevicesUtilizationWeight
@@ -165,14 +167,14 @@ func calculateConsumedCounters(devices []resourceapi.Device) map[string]map[stri
 			continue
 		}
 		for _, consumedCounter := range device.ConsumesCounters {
-			countersConsumed = getCountersMapping(consumedCounter.CounterSet, consumedCounter.Counters, countersConsumed)
+			countersConsumed = addCounterSetToMapping(consumedCounter.CounterSet, consumedCounter.Counters, countersConsumed)
 		}
 	}
 	return countersConsumed
 }
 
 // getCountersMapping updates existingMapping with the provided counters under the specified counterSetName.
-func getCountersMapping(counterSetName string, counters map[string]resourceapi.Counter, existingMapping map[string]map[string]resource.Quantity) map[string]map[string]resource.Quantity {
+func addCounterSetToMapping(counterSetName string, counters map[string]resourceapi.Counter, existingMapping map[string]map[string]resource.Quantity) map[string]map[string]resource.Quantity {
 	for counterName, counter := range counters {
 		if _, ok := existingMapping[counterSetName]; !ok {
 			existingMapping[counterSetName] = map[string]resource.Quantity{}
@@ -190,27 +192,19 @@ func getCountersMapping(counterSetName string, counters map[string]resourceapi.C
 // getUniquePartitionableDevicesCount returns the count of unique partitionable devices in the provided list.
 // a partitionable device can be represented by multiple devices with different names and properties, and for utilization purposes we'd like to count the hardware and not the software.
 func getUniquePartitionableDevicesCount(devices []resourceapi.Device) int {
-	var deviceCount int = 0
-	var counted bool
 	consumedCounters := map[string]bool{}
 	for _, device := range devices {
 		// the assumption here is that a partitionable device will consume the actual resources from the hardware, which will be represented by consumedCounters.
 		// if a device consumes multiple counters of the same device, we count them both at the same time in order to not "overcount" devices with multiple counters, the assumption here is that a device will always consume some of every resource in a device. (f.e. a GPU DRA request cannot use VRAM without using GPU cycles and vice versa)
 		if device.ConsumesCounters != nil {
-			counted = false
 			for _, consumedCounter := range device.ConsumesCounters {
 				if _, exists := consumedCounters[consumedCounter.CounterSet]; !exists {
 					consumedCounters[consumedCounter.CounterSet] = true
-				} else {
-					counted = true
 				}
-			}
-			if !counted {
-				deviceCount++
 			}
 		}
 	}
-	return deviceCount
+	return len(consumedCounters)
 }
 
 func splitDevicesByAllocation(devices []resourceapi.Device, allocatedNames []string) (unallocated, allocated []resourceapi.Device) {

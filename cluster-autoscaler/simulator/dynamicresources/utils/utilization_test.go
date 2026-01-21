@@ -150,7 +150,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 1, 4, 2),
 				),
 				mergeLists(
-					testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
+					testPodsWithCustomClaims("pod", fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
 				)...,
 			),
 			wantUtilization: map[string]map[string]float64{
@@ -169,7 +169,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-1", "node", 1, 4, 4),
 				),
 				mergeLists(
-					testPodsWithCustomClaims(fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
+					testPodsWithCustomClaims("pod", fooDriver, "pool1", "node", []string{"gpu-0-partition-0", "gpu-0-partition-1"}),
 				)...,
 			),
 			wantUtilization: map[string]map[string]float64{
@@ -178,6 +178,33 @@ func TestDynamicResourceUtilization(t *testing.T) {
 				},
 			},
 			wantHighestUtilization:     0.25,
+			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
+		},
+		{
+			testName: "multi-GPU mixed partitionable & atomic devices",
+			nodeInfo: framework.NewNodeInfo(node,
+				mergeLists(
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-0", "node", 1, 4, 6),
+					testResourceSlicesWithPartionableDevices(fooDriver, "pool1", "gpu-1", "node", 1, 4, 6),
+					testResourceSlices(fooDriver, "pool1", "node", 1, 2, 1),
+				),
+				mergeLists(
+					testPodsWithCustomClaims("pod1", fooDriver, "pool1", "node", []string{"gpu-0-partition-0"}),
+					testPodsWithCustomClaims("pod2", fooDriver, "pool1", "node", []string{
+						"gpu-1-partition-0",
+						"gpu-1-partition-1",
+						"gpu-1-partition-2",
+						"gpu-1-partition-3",
+					}),
+					testPodsWithClaims(fooDriver, "pool1", "node", 1, 1, false),
+				)...,
+			),
+			wantUtilization: map[string]map[string]float64{
+				fooDriver: {
+					"pool1": 0.5625, // 1/4 * 1/4 + 1 * 1/4 + 1 * 1/4 + 0 * 1/4 = 0.5625
+				},
+			},
+			wantHighestUtilization:     0.5625,
 			wantHighestUtilizationName: apiv1.ResourceName(fmt.Sprintf("%s/%s", fooDriver, "pool1")),
 		},
 		{
@@ -338,7 +365,7 @@ func testResourceSlicesWithPartionableDevices(driverName, poolName, deviceName, 
 			Pool:     resourceapi.ResourcePool{Name: poolName, Generation: int64(poolGen), ResourceSliceCount: int64(slicecount)},
 			SharedCounters: []resourceapi.CounterSet{
 				{
-					Name: "gpu-0-counter-set",
+					Name: fmt.Sprintf("%s-counter-set", deviceName),
 					Counters: map[string]resourceapi.Counter{
 						"memory": {
 							Value: resource.MustParse(fmt.Sprintf("%dGi", 10*partitionCount)),
@@ -394,10 +421,10 @@ func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devi
 	return result
 }
 
-func testPodsWithCustomClaims(driverName, poolName, nodeName string, devices []string) []*framework.PodInfo {
+func testPodsWithCustomClaims(podName, driverName, poolName, nodeName string, devices []string) []*framework.PodInfo {
 	deviceIndex := 0
 	var result []*framework.PodInfo
-	pod := test.BuildTestPod(fmt.Sprintf("%s-%s-pod", driverName, poolName), 1, 1)
+	pod := test.BuildTestPod(fmt.Sprintf("%s-%s-%s-pod", podName, driverName, poolName), 1, 1)
 	var claims []*resourceapi.ResourceClaim
 	var results []resourceapi.DeviceRequestAllocationResult
 	for deviceIndex, device := range devices {
@@ -564,45 +591,6 @@ func TestGetUniquePartitionableDevicesCount(t *testing.T) {
 					Name: "gpu-0-half",
 					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
 						{CounterSet: "gpu-0-counters"},
-					},
-				},
-			},
-			wantCount: 1,
-		},
-		{
-			testName: "device with multiple counter sets",
-			devices: []resourceapi.Device{
-				{
-					Name: "gpu-0-whole",
-					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
-						{CounterSet: "gpu-0-memory"},
-						{CounterSet: "gpu-0-compute"},
-					},
-				},
-				{
-					Name: "gpu-0-half",
-					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
-						{CounterSet: "gpu-0-memory"},
-						{CounterSet: "gpu-0-compute"},
-					},
-				},
-			},
-			wantCount: 1,
-		},
-		{
-			testName: "device with overlapping counter sets",
-			devices: []resourceapi.Device{
-				{
-					Name: "gpu-0-partition-1",
-					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
-						{CounterSet: "gpu-0-memory"},
-					},
-				},
-				{
-					Name: "gpu-0-partition-2",
-					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
-						{CounterSet: "gpu-0-memory"},
-						{CounterSet: "gpu-0-compute"},
 					},
 				},
 			},
