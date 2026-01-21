@@ -97,41 +97,86 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 //   - 1 atomic allocated, partitionable at 50% util:
 //     Result: (0.5 * 2/3) + (0.5 * 1/3) = 50%
 func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlices []*resourceapi.ResourceSlice) float64 {
-	totalAvailableCounters := map[string]map[string]resource.Quantity{}
-	for _, resourceSlice := range resourceSlices {
-		for _, sharedCounter := range resourceSlice.Spec.SharedCounters {
-			totalAvailableCounters = addCounterSetToMapping(sharedCounter.Name, sharedCounter.Counters, totalAvailableCounters)
-		}
-	}
-	allocatedConsumedCounters := calculateConsumedCounters(allocated)
 
-	// not all devices are partitionable, so fallback to the ratio of non-partionable devices
-	allocatedDevicesWithoutCounters := 0
-	devicesWithoutCounters := 0
+	atomicDevices := []resourceapi.Device{}
+	allocatedAtomicDevices := []resourceapi.Device{}
+	partitionableDevices := []resourceapi.Device{}
+	allocatedPartitionableDevices := []resourceapi.Device{}
 
-	for _, device := range allocated {
-		if device.ConsumesCounters == nil {
-			devicesWithoutCounters++
-			allocatedDevicesWithoutCounters++
-		}
-	}
-	for _, device := range unallocated {
-		if device.ConsumesCounters == nil {
-			devicesWithoutCounters++
+	sharedCounters := []resourceapi.CounterSet{}
+	for _, slice := range resourceSlices {
+		if len(slice.Spec.SharedCounters) != 0 {
+			sharedCounters = append(sharedCounters, slice.Spec.SharedCounters...)
 		}
 	}
 
 	// we want to find the counter that is most utilized, since it is the "bottleneck" of the pool
 	var partitionableUtilization float64 = 0
 	var atomicDevicesUtilization float64 = 0
-	var allDevices []resourceapi.Device = append(allocated, unallocated...)
-	var uniquePartitionableDevicesCount float64 = float64(getUniquePartitionableDevicesCount(allDevices))
-	if devicesWithoutCounters != 0 {
-		atomicDevicesUtilization = float64(allocatedDevicesWithoutCounters) / float64(devicesWithoutCounters)
+
+	for _, device := range allocated {
+		if len(device.ConsumesCounters) == 0 {
+			atomicDevices = append(atomicDevices, device)
+			allocatedAtomicDevices = append(allocatedAtomicDevices, device)
+		} else {
+			partitionableDevices = append(partitionableDevices, device)
+			allocatedPartitionableDevices = append(allocatedPartitionableDevices, device)
+		}
 	}
-	if len(totalAvailableCounters) == 0 {
+	for _, device := range unallocated {
+		if len(device.ConsumesCounters) == 0 {
+			atomicDevices = append(atomicDevices, device)
+		} else {
+			partitionableDevices = append(partitionableDevices, device)
+		}
+	}
+
+	atomicDevicesUtilization = calculateAtomicDevicesPoolUtilization(allocatedAtomicDevices, atomicDevices)
+	if len(allocatedAtomicDevices) == len(allocated) {
 		return atomicDevicesUtilization
 	}
+
+	partitionableUtilization = calculatePartitionableDevicesPoolUtilization(allocatedPartitionableDevices, partitionableDevices, sharedCounters)
+	if len(allocatedPartitionableDevices) == len(allocated) {
+		return partitionableUtilization
+	}
+
+	var PartitionableDevicesCount = getUniquePartitionableDevicesCount(partitionableDevices)
+	var AtomicDevicesCount = len(atomicDevices)
+
+	var totalUniqueDevices float64 = float64(PartitionableDevicesCount) + float64(AtomicDevicesCount)
+	var partitionableDevicesUtilizationWeight float64 = float64(PartitionableDevicesCount) / totalUniqueDevices
+	var nonPartitionableDevicesUtilizationWeight float64 = float64(AtomicDevicesCount) / totalUniqueDevices
+
+	// final weighted average utilization calculation:
+	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive (a partitionable device can't be allocated as an atomic device and vice versa).
+	return partitionableUtilization*partitionableDevicesUtilizationWeight + atomicDevicesUtilization*nonPartitionableDevicesUtilizationWeight
+}
+
+// calculateAtomicDevicesPoolUtilization calculates the utilization of atomic (non-partitionable) devices in a pool. the input devices must be atomic devices only.
+func calculateAtomicDevicesPoolUtilization(allocated, total []resourceapi.Device) float64 {
+	if len(total) == 0 {
+		return 0
+	}
+
+	return float64(len(allocated)) / float64(len(total))
+}
+
+// calculatePartitionableDevicesPoolUtilization calculates the utilization of partitionable devices in a pool. the input devices must be partitionable devices only.
+func calculatePartitionableDevicesPoolUtilization(allocated, total []resourceapi.Device, sharedCounters []resourceapi.CounterSet) float64 {
+
+	uniquePartitionableDevicesCount := getUniquePartitionableDevicesCount(total)
+	if uniquePartitionableDevicesCount == 0 {
+		return 0
+	}
+
+	totalAvailableCounters := map[string]map[string]resource.Quantity{}
+	var partitionableUtilization float64 = 0
+	for _, sharedCounter := range sharedCounters {
+		totalAvailableCounters = addCounterSetToMapping(sharedCounter.Name, sharedCounter.Counters, totalAvailableCounters)
+	}
+	allocatedConsumedCounters := calculateConsumedCounters(allocated)
+
 	for counterSet, counters := range totalAvailableCounters {
 		// for each counter set, find the highest utilization counter
 		highestCounterUtilization := 0.0
@@ -149,14 +194,10 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 			}
 		}
 		// We assume that each counter set represents a unique partitionable device.
-		partitionableUtilization += highestCounterUtilization / uniquePartitionableDevicesCount
+		partitionableUtilization += highestCounterUtilization / float64(uniquePartitionableDevicesCount)
 	}
 
-	var totalUniqueDevices float64 = uniquePartitionableDevicesCount + float64(devicesWithoutCounters)
-	var partitionableDevicesUtilizationWeight float64 = uniquePartitionableDevicesCount / totalUniqueDevices
-	var nonPartitionableDevicesUtilizationWeight float64 = 1 - partitionableDevicesUtilizationWeight
-	// when a pool has both atomic and partitionable devices, we sum their utilizations since they are mutually exclusive (a partitionable device can't be allocated as an atomic device and vice versa).
-	return partitionableUtilization*partitionableDevicesUtilizationWeight + atomicDevicesUtilization*nonPartitionableDevicesUtilizationWeight
+	return partitionableUtilization
 }
 
 // calculateConsumedCounters calculates the total counters consumed by a list of devices

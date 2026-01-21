@@ -276,6 +276,620 @@ func TestDynamicResourceUtilization(t *testing.T) {
 	}
 }
 
+func TestCalculateAtomicDevicesPoolUtilization(t *testing.T) {
+	for _, tc := range []struct {
+		testName        string
+		allocated       []resourceapi.Device
+		total           []resourceapi.Device
+		wantUtilization float64
+	}{
+		{
+			testName:        "no devices",
+			allocated:       []resourceapi.Device{},
+			total:           []resourceapi.Device{},
+			wantUtilization: 0,
+		},
+		{
+			testName:        "no allocated devices",
+			allocated:       []resourceapi.Device{},
+			total:           []resourceapi.Device{{Name: "dev-0"}, {Name: "dev-1"}},
+			wantUtilization: 0,
+		},
+		{
+			testName:        "all devices allocated",
+			allocated:       []resourceapi.Device{{Name: "dev-0"}, {Name: "dev-1"}},
+			total:           []resourceapi.Device{{Name: "dev-0"}, {Name: "dev-1"}},
+			wantUtilization: 1,
+		},
+		{
+			testName:        "partial allocation",
+			allocated:       []resourceapi.Device{{Name: "dev-0"}},
+			total:           []resourceapi.Device{{Name: "dev-0"}, {Name: "dev-1"}, {Name: "dev-2"}},
+			wantUtilization: 1.0 / 3.0,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			utilization := calculateAtomicDevicesPoolUtilization(tc.allocated, tc.total)
+			if utilization != tc.wantUtilization {
+				t.Errorf("calculateAtomicDevicesPoolUtilization() = %v, want %v", utilization, tc.wantUtilization)
+			}
+		})
+	}
+}
+
+func TestCalculatePartitionableDevicesPoolUtilization(t *testing.T) {
+	for _, tc := range []struct {
+		testName        string
+		allocated       []resourceapi.Device
+		total           []resourceapi.Device
+		sharedCounters  []resourceapi.CounterSet
+		wantUtilization float64
+	}{
+		{
+			testName:        "no devices",
+			allocated:       []resourceapi.Device{},
+			total:           []resourceapi.Device{},
+			sharedCounters:  []resourceapi.CounterSet{},
+			wantUtilization: 0,
+		},
+		{
+			testName:  "no allocated devices",
+			allocated: []resourceapi.Device{},
+			total: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{CounterSet: "counter-set-0"},
+					},
+				},
+			},
+			sharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "counter-set-0",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("10Gi")},
+					},
+				},
+			},
+			wantUtilization: 0,
+		},
+		{
+			testName: "partial allocation",
+			allocated: []resourceapi.Device{
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+			},
+			total: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("10Gi")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+			},
+			sharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "counter-set-0",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("10Gi")},
+					},
+				},
+			},
+			wantUtilization: 0.5,
+		},
+		{
+			testName: "full allocation of one device, all partitions used",
+			allocated: []resourceapi.Device{
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+			},
+			total: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("10Gi")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+			},
+			sharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "counter-set-0",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("10Gi")},
+					},
+				},
+			},
+			wantUtilization: 1,
+		},
+		{
+			testName: "full allocation of one device, 1 device used",
+			allocated: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("10Gi")},
+							},
+						},
+					},
+				},
+			},
+			total: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("10Gi")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+							},
+						},
+					},
+				},
+			},
+			sharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "counter-set-0",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("10Gi")},
+					},
+				},
+			},
+			wantUtilization: 1,
+		},
+		{
+			testName: "full allocation of one device, multiple counters used",
+			allocated: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("10Gi")},
+								"cores":  {Value: resource.MustParse("8")},
+							},
+						},
+					},
+				},
+			},
+			total: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("10Gi")},
+								"cores":  {Value: resource.MustParse("8")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+								"cores":  {Value: resource.MustParse("6")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+								"cores":  {Value: resource.MustParse("2")},
+							},
+						},
+					},
+				},
+			},
+			sharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "counter-set-0",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("10Gi")},
+						"cores":  {Value: resource.MustParse("16")},
+					},
+				},
+			},
+			wantUtilization: 1,
+		},
+		{
+			testName: "partial allocation of one device, multiple counters used",
+			allocated: []resourceapi.Device{
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+								"cores":  {Value: resource.MustParse("6")},
+							},
+						},
+					},
+				},
+			},
+			total: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("10Gi")},
+								"cores":  {Value: resource.MustParse("8")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+								"cores":  {Value: resource.MustParse("6")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("5Gi")},
+								"cores":  {Value: resource.MustParse("2")},
+							},
+						},
+					},
+				},
+			},
+			sharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "counter-set-0",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("10Gi")},
+						"cores":  {Value: resource.MustParse("8")},
+					},
+				},
+			},
+			wantUtilization: 0.75,
+		},
+		{
+			testName: "complex allocation of multiple devices, multiple counters used",
+			allocated: []resourceapi.Device{
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("25Gi")},
+								"cores":  {Value: resource.MustParse("8")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-2",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("50Gi")},
+								"cores":  {Value: resource.MustParse("8")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-1-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-1",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("50Gi")},
+								"cores":  {Value: resource.MustParse("16")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-1-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-1",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("50Gi")},
+								"cores":  {Value: resource.MustParse("16")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-2",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-2",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("100Gi")},
+								"cores":  {Value: resource.MustParse("32")},
+							},
+						},
+					},
+				},
+			},
+			total: []resourceapi.Device{
+				{
+					Name: "dev-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("100Gi")},
+								"cores":  {Value: resource.MustParse("32")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("25Gi")},
+								"cores":  {Value: resource.MustParse("8")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("25Gi")},
+								"cores":  {Value: resource.MustParse("16")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-0-partition-2",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-0",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("50Gi")},
+								"cores":  {Value: resource.MustParse("8")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-1",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("100Gi")},
+								"cores":  {Value: resource.MustParse("32")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-1-partition-0",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-1",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("50Gi")},
+								"cores":  {Value: resource.MustParse("16")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-1-partition-1",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-1",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("50Gi")},
+								"cores":  {Value: resource.MustParse("16")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-2",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-2",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("100Gi")},
+								"cores":  {Value: resource.MustParse("32")},
+							},
+						},
+					},
+				},
+				{
+					Name: "dev-3",
+					ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+						{
+							CounterSet: "counter-set-3",
+							Counters: map[string]resourceapi.Counter{
+								"memory": {Value: resource.MustParse("100Gi")},
+								"cores":  {Value: resource.MustParse("32")},
+							},
+						},
+					},
+				},
+			},
+			sharedCounters: []resourceapi.CounterSet{
+				{
+					Name: "counter-set-0",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("100Gi")},
+						"cores":  {Value: resource.MustParse("32")},
+					},
+				},
+				{
+					Name: "counter-set-1",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("100Gi")},
+						"cores":  {Value: resource.MustParse("32")},
+					},
+				},
+				{
+					Name: "counter-set-2",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("100Gi")},
+						"cores":  {Value: resource.MustParse("32")},
+					},
+				},
+				{
+					Name: "counter-set-3",
+					Counters: map[string]resourceapi.Counter{
+						"memory": {Value: resource.MustParse("100Gi")},
+						"cores":  {Value: resource.MustParse("32")},
+					},
+				},
+			},
+			wantUtilization: 0.6875,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			utilization := calculatePartitionableDevicesPoolUtilization(tc.allocated, tc.total, tc.sharedCounters)
+			if utilization != tc.wantUtilization {
+				t.Errorf("calculatePartitionableDevicesPoolUtilization() = %v, want %v", utilization, tc.wantUtilization)
+			}
+		})
+	}
+}
+
 func testResourceSlices(driverName, poolName, nodeName string, poolGen, deviceCount, devicesPerSlice int64) []*resourceapi.ResourceSlice {
 	sliceCount := deviceCount / devicesPerSlice
 
