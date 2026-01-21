@@ -1,10 +1,33 @@
 # AEP-XXXX: Support for Heterogeneous Workloads in StatefulSets and Deployments
 
+<!-- toc -->
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [Use Cases](#use-cases)
+    - [1. Lease-Based Active/Standby (Controllers)](#1-lease-based-activestandby-controllers)
+    - [2. Consensus-Based Leaders (Databases)](#2-consensus-based-leaders-databases)
+    - [3. Data-Based Asymmetry (Hot Shards)](#3-data-based-asymmetry-hot-shards)
+- [Proposal](#proposal)
+  - [API Changes](#api-changes)
+  - [Mechanism](#mechanism)
+- [Risks and Mitigations](#risks-and-mitigations)
+  - [1. Boot-up Resource Gap](#1-boot-up-resource-gap)
+  - [2. Disruptive Updates](#2-disruptive-updates)
+  - [3. Conflicting Targets (Overlap &amp; Precedence)](#3-conflicting-targets-overlap--precedence)
+  - [4. Recommender Data Sparsity](#4-recommender-data-sparsity)
+  - [5. Unmanaged Pods](#5-unmanaged-pods)
+- [Future Possibilities: Direct Lease Integration](#future-possibilities-direct-lease-integration)
+- [Feature Enablement](#feature-enablement)
+- [Graduation Criteria](#graduation-criteria)
+- [Test Plan](#test-plan)
+- [Implementation History](#implementation-history)
+<!-- /toc -->
+
 ## Summary
 
 This proposal enhances the Vertical Pod Autoscaler to support **Heterogeneous Workloads**—specifically **StatefulSets** and **Deployments** where Pods belonging to the same Controller require distinct resource profiles (e.g., Leader vs. Follower).
 
-To achieve this, we propose extending the **`VPAScope`** API object (introduced in AEP-7942) to support **Pod Label Selectors**. By referencing a `VPAScope` in the VPA specification, users can partition a single Workload Controller into multiple VPA profiles, allowing granular scaling based on dynamic pod roles.
+To achieve this, we propose extending the **`VPAScope`** struct (introduced in AEP-7942) to support **Pod Label Selectors**. By adding a `VPAScope` struct in the VPAAutoScalerSpec definition, users can partition a single Workload Controller into multiple VPA profiles, allowing granular scaling based on dynamic pod roles.
 
 ## Motivation
 
@@ -49,65 +72,12 @@ The primary motivation for this feature is to support **Deployments** and **Stat
 
 ## Proposal
 
-You are right, I missed the Motivation and the standard Introduction boilerplate. A KEP/AEP needs to tell the full story from start to finish.
-
-Here is the complete, end-to-end AEP with all the sections we refined (Motivation, Use Cases, VPAScope Proposal, Risks, Testing).
-
-Markdown
-# AEP-XXXX: Support for Heterogeneous Workloads in StatefulSets and Deployments
-
-## Summary
-
-This proposal aims to enable Vertical Pod Autoscaler to support **Heterogeneous Workloads**—specifically **StatefulSets** and **Deployments** where Pods belonging to the same Controller perform distinct roles with different resource requirements (e.g., Leader vs. Follower).
-
-To achieve this, we propose extending the **`VPAScope`** API object (introduced in AEP-7942) to support **Pod Label Selectors**. By referencing a `VPAScope` in the VPA specification, users can partition a single Workload Controller into multiple VPA profiles, allowing granular scaling based on dynamic pod roles.
-
-## Motivation
-
-Currently, VPA enforces a "One Size Fits All" model: it aggregates metrics from *all* pods in a `TargetRef` and applies a single recommendation to the entire set.
-
-This works well for stateless web servers (uniform load), but fails for **Stateful** or **Distributed** systems where specific pods experience asymmetric load.
-* **The Problem:** In a Leader/Follower database, the Leader might need 8GB RAM while Followers need only 1GB. A standard VPA averages these needs to 4GB, which starves the Leader (Risk of OOM) and wastes resources on the Followers.
-* **The Constraint:** Users cannot split these pods into separate Deployments because they must remain in the same StatefulSet ring for data replication and service discovery.
-
-
-
-## Use Cases
-
-### 1. Consensus-Based Leaders (Databases)
-* **Examples:** Etcd, Redis, Postgres (Patroni), MongoDB.
-* **Pattern:** Pods use internal consensus (Raft/Paxos) to elect a Leader.
-* **Resource Profile:**
-    * **Leader:** High CPU/Memory (Processing all writes + coordination).
-    * **Follower:** Medium CPU/Memory (Passive replication + read queries).
-* **VPA Role:** Ensures the Leader gets "Peak" resources while Followers get "Baseline" resources to save costs.
-
-### 2. Lease-Based Active/Standby (Controllers)
-* **Examples:** Custom Operators, Kubernetes Controllers, Singleton Workers.
-* **Pattern:** Pods race to acquire a `coordination.k8s.io/Lease`. The winner becomes "Active"; others wait in "Standby."
-* **Resource Profile:**
-    * **Active:** 100% utilization (Performing reconciliation).
-    * **Standby:** ~0% utilization (Idling/Polling).
-* **VPA Role:** Allows the Active pod to scale up to full capacity, while Standby pods remain minimal, maximizing density.
-
-### 3. Data-Based Asymmetry (Hot Shards)
-* **Examples:** Elasticsearch, Kafka, Cassandra.
-* **Pattern:** No specific "Leader" role, but traffic/data is unevenly distributed across shards.
-* **Resource Profile:** Specific pods ("Hot Shards") experience sustained high load due to noisy tenants or large partitions.
-* **VPA Role:** Allows operators to target and vertically scale only the specific "Hot Nodes" (e.g., labeled `load=high`) without over-provisioning the entire cluster.
-
-## Proposal
-
 To support heterogeneous workloads, we propose modifying the VPA API to allow partitioning of a Controller's pods. We will achieve this by extending the **`VPAScope`** resource (introduced in AEP-7942) to support pod-level filtering in addition to node-level filtering.
 
 This allows users to define a "Scope" (e.g., "Leader Pods" or "Shard A") and link a VPA object to that scope.
 
 ### API Changes
-
-We propose two specific changes to the API surface:
-
-#### 1. VerticalPodAutoscalerSpec
-We add an optional `vpaScope` field to the VPA specification. This field references a `VPAScope` object in the same namespace.
+We propose modifying the VerticalPodAutoscalerSpec to include a VPAScope struct. This consolidates the partitioning logic into a single definition that supports both horizontal (Pod-based) and vertical (Node-based) filtering.
 
 ```go
 type VerticalPodAutoscalerSpec struct {
@@ -116,31 +86,15 @@ type VerticalPodAutoscalerSpec struct {
 	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef"`
 
 	// [PROPOSED]
-	// VPAScope points to a VPAScope object that defines the subset of pods 
-	// within the TargetRef to be controlled by this VPA.
-	//
-	// If provided, the VPA manages only the pods that match the criteria
-	// defined in the referenced VPAScope.
-	//
+	// VPAScope defines criteria to restrict the VPA to a subset of the target pods.
+	// If nil, the VPA controls all pods in the TargetRef.
 	// +optional
-	VPAScope *VPAScopeReference `json:"vpaScope,omitempty"`
+	VPAScope *VPAScope `json:"vpaScope,omitempty"`
 }
 
-// VPAScopeReference contains enough information to locate the referenced scope.
-type VPAScopeReference struct {
-	// Name of the VPAScope object.
-	// The Scope must exist in the same namespace as the VPA.
-	// +required
-	Name string `json:"name"`
-}
-```
-
-#### 2. VPAScopeSpec
-We extend the VPAScope definition to include a podSelector. This complements the nodeSelector field (added for DaemonSets), allowing the same Scope object to be used for Deployments and StatefulSets.
-
-```go
-type VPAScopeSpec struct {
-	// [EXISTING - AEP-7942]
+// VPAScope defines the logic for partitioning the TargetRef.
+type VPAScope struct {
+	// [Defined in AEP-7942]
 	// If specified, the VPA is restricted to pods running on nodes matching this selector.
 	// Primarily used for DaemonSet partitioning.
 	// +optional
@@ -148,14 +102,13 @@ type VPAScopeSpec struct {
 
 	// [PROPOSED]
 	// If specified, the VPA is restricted to pods matching this label selector.
-	// Primarily used for Deployment and StatefulSet partitioning (e.g., Leader/Follower).
-	//
+	// Primarily used for Deployment and StatefulSet partitioning.
 	// +optional
 	PodSelector *metav1.LabelSelector `json:"podSelector,omitempty"`
 }
 ```
 
-#### Mechanism
+### Mechanism
 When a VPA object defines a vpaScope:
 
 The VPA Recommender fetches the referenced VPAScope object.
@@ -168,21 +121,30 @@ Only the matching subset of pods are included in the recommendation model.
 
 Pods that do not match the scope are ignored by this specific VPA instance.
 
-### Risks and Mitigations
+## Risks and Mitigations
 
-#### 1. Spec Divergence
-**Risk**: A Pod's role may not be known at creation time. Therefore, every new Pod matches the Deployment pod spec and only promotes to "Leader" (and the corresponding VPA profile) after the application starts and wins an election.
+### 1. Boot-up Resource Gap
+**Risk**: A Pod's role is unknown at creation time. Consequently, every new Pod boots with the default Deployment spec resources and only becomes a "Leader" (requiring higher resources) after the application starts and wins an election.
 
-**Consequence**: There is an unavoidable window between Election and VPA Actuation where the new Leader is running with default pod spec resources.
+**Consequence**: There is an unavoidable time window between the Election (Role Change) and the VPA Actuation where the new Leader runs without leader sized resources.
 
-##### Mitigation
+**Mitigation**: Users must configure the Deployment.spec.template.resources.requests to be a "Safe Floor"—sufficient to handle the application's boot sequence and the initial election workload.
 
-**Safe Baseline Requests**: Users must configure the Deployment.spec.template.resources.requests to be a "Safe Floor"—sufficient to handle the application's boot sequence and the initial election workload without crashing.
+### 2. Disruptive Updates
+**Risk**: VPA can apply resource changes by evicting the pod. For a kubernetes lease based leader, eviction causes immediate failover.
 
-**Reactive Resizing**: The VPA Updater will detect the role=leader label transition and perform an In-Place Update to increase capacity to the "Leader Profile". This feature relies on the **[In-Place Update of Pod Resources](https://github.com/kubernetes/enhancements/issues/1287)** feature. The VPA must be configured to use `updateMode: Auto` with `minReplicas: 1` (or equivalent in-place policy) to ensure the Leader is resized **without restart**, preserving its leadership lease.
+**Failure Mode**: If VPA evicts the leader to resize it, the pod loses leadership. A new pod becomes leader, VPA detects it needs resizing, and evicts it. This creates an infinite failover loop.
 
-#### 2. Conflicting Targets (Overlap & Precedence)
-**Context:** Historically, VPA behavior was undefined if multiple VPA objects targeted the same workload. However, with AEP-8026 moving configuration parameters (e.g., Safety Margins, History Length) to the VPA Custom Resource, users will increasingly require multiple VPA objects to apply different scaling policies to different subsets of a single Deployment.
+**Mitigation**: In-Place Updates & Guardrails To support the "Leader" use case, VPA must be configured to resize without restart.
+
+Admission Warnings: The VPA Admission Webhook will validate VPAScope objects upon creation. If a user sets updateMode: Recreate while using a scope (which implies high-availability/singleton targeting), the webhook will return a warning, alerting the user to the risk of failover loops
+
+In-Place Reliance: This architecture depends on the in place updates of pod resources (Currently inPlaceOrRecreate). Once [#8818](https://github.com/kubernetes/autoscaler/pull/8818) is merged the inPlace update mode is the recommended policy for this feature.
+
+Eviction Guardrail (minReplicas): Users must configure minReplicas: 1 (or use a restrictive PodDisruptionBudget). This acts as a safety latch: if an In-Place update is not possible, the VPA is blocked from falling back to eviction, preventing the failover loop.
+
+### 3. Conflicting Targets (Overlap & Precedence)
+**Context:** Multiple VPA objects can target the same workload.
 
 **Risk:** A Pod might match multiple Active VPAs simultaneously. For example, a pod labeled `role=leader` matches both a global VPA (Selector: `nil`) and a specific VPA (Selector: `role=leader`).
 
@@ -195,14 +157,14 @@ To support granular configuration without conflict, the VPA Updater will resolve
 2.  **Resolution:** The Updater will respect the recommendations from the *Level 1* VPA and ignore the *Level 0* VPA for that specific pod.
 3.  **Tie-Breaking:** If two VPAs have equally specific selectors (e.g., VPA-A selects `role=leader` and VPA-B selects `tier=gold`), and a pod matches *both*, this is considered a misconfiguration. The Updater will deterministically break the tie by choosing the VPA with the oldest `CreationTimestamp` and emit a Warning Event.
 
-#### 3. Recommender Data Sparsity
+### 4. Recommender Data Sparsity
 **Risk**: Partitioning a set of pods reduces the sample size for the histogram (e.g., a single Leader pod).
 
 **Mitigation**: The VPA object acts as a persistent store for the *Role*, rather than the specific Pod instance.
 * **Inheritance:** When leadership rotates (e.g., `pod-0` steps down and `pod-1` becomes Leader), `pod-1` immediately inherits the historical resource profile built by `pod-0`.
 * **Result:** The VPA aggregates data at the **Scope Level**, ensuring that the "Leader Profile" is continuous and robust over time, even if the specific Pod holding the title changes frequently.
 
-#### Unmanaged Pods
+### 5. Unmanaged Pods
 **Risk**: A pod might match the TargetRef but fail to match any *VPAScope*.
 
 **Result**: The pod receives no recommendations.
