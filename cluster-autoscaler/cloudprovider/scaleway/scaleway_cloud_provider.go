@@ -39,6 +39,9 @@ const (
 	// GPULabel is the label added to GPU nodes
 	GPULabel = "k8s.scw.cloud/gpu"
 
+	// PoolLabel is the label added to nodes to identify their Pool
+	PoolLabel = "k8s.scaleway.com/pool"
+
 	// DefaultRefreshInterval is the default refresh interval for the cloud provider
 	DefaultRefreshInterval = 60 * time.Second
 )
@@ -317,21 +320,20 @@ func (scw *scalewayCloudProvider) Refresh() error {
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices returned by the structure should be in the same currency.
 func (scw *scalewayCloudProvider) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
-	var nodeGroup *NodeGroup
-	for _, ng := range scw.nodeGroups {
-		if _, ok := ng.nodes[node.Spec.ProviderID]; ok {
-			nodeGroup = ng
-		}
+	poolID, ok := node.Labels[PoolLabel]
+	if !ok {
+		return 0.0, fmt.Errorf("node %s does not have pool label %s", node.Name, PoolLabel)
 	}
 
-	if nodeGroup == nil {
-		return 0.0, fmt.Errorf("node group not found for node %s", node.Spec.ProviderID)
+	ng, ok := scw.nodeGroups[poolID]
+	if !ok {
+		return 0.0, fmt.Errorf("node group for pool %s not found", poolID)
 	}
 
 	d := endTime.Sub(startTime)
 	hours := math.Ceil(d.Hours())
 
-	return hours * float64(nodeGroup.pool.NodePricePerHour), nil
+	return hours * float64(ng.pool.NodePricePerHour), nil
 }
 
 // PodPrice returns a theoretical minimum price of running a pod for a given
