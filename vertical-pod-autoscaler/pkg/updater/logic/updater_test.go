@@ -18,7 +18,7 @@ package logic
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -235,7 +235,7 @@ func testRunOnceBase(
 
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(canInPlaceUpdate)
 		if shouldInPlaceFail {
-			inplace.On("InPlaceUpdate", pods[i], nil).Return(fmt.Errorf("in-place update failed"))
+			inplace.On("InPlaceUpdate", pods[i], nil).Return(errors.New("in-place update failed"))
 		} else {
 			inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 		}

@@ -356,7 +356,6 @@ func TestAdmitForSingleContainer(t *testing.T) {
 
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation))
 	})
-
 }
 
 func TestAdmitForMultipleContainer(t *testing.T) {

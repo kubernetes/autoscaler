@@ -19,17 +19,42 @@ linters:
         - name: comment-spacings
         - name: enforce-switch-style
         - name: unexported-naming
+        - name: empty-lines
+        - name: use-errors-new
+        - name: early-return
 
         # Below lists the rules disabled
+
+        # Limits function parameter count; disabled due to generators/tests exceeding it without clarity gains.
         - name: argument-limit
           disabled: true
+
+        # Flags non-TLS (http) URLs; disabled because internal/test endpoints intentionally use http.
         - name: unsecure-url-scheme
           disabled: true
+
+        # Detects confusing/misleading identifiers which should be fine to have both exported and unexported func with same within a pkg.
         - name: confusing-naming
           disabled: true
+
+        # Discourages boolean parameters; disabled since it is mostly been followed across to take boolean values as func params.
         - name: flag-parameter
           disabled: true
+        
+        # Limits number of exported structs; disabled because API/codegen packages expose many types by design.
         - name: max-public-structs
+          disabled: true
+
+        # Requires package-level comments; disabled until comments are added across the repo.
+        - name: package-comments
+          disabled: true
+
+        # Validates struct tag keys; disabled because pb/types use inline/casttype widely and fixing needs generator bumps and broad refactors.
+        - name: struct-tag
+          disabled: true
+
+        # Flags exported funcs returning unexported types; disabled for intentional encapsulation in internal APIs.
+        - name: unexported-return
           disabled: true
 formatters:
   enable:

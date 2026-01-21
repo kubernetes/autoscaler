@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -248,7 +249,7 @@ func (h *histogram) SaveToChekpoint() (*vpa_types.HistogramCheckpoint, error) {
 
 func (h *histogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint) error {
 	if checkpoint == nil {
-		return fmt.Errorf("cannot load from empty checkpoint")
+		return errors.New("cannot load from empty checkpoint")
 	}
 	if checkpoint.TotalWeight < 0.0 {
 		return fmt.Errorf("cannot load checkpoint with negative weight %v", checkpoint.TotalWeight)

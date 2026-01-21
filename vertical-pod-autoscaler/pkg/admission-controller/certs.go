@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -127,17 +128,17 @@ func (cr *certReloader) reloadWebhookCA() error {
 	client := cr.mutatingWebhookClient
 	if client == nil {
 		// this should never happen as we don't watch the file if mutatingWebhookClient is nil
-		return fmt.Errorf("webhook client is not set")
+		return errors.New("webhook client is not set")
 	}
 	webhook, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	if webhook == nil {
-		return fmt.Errorf("webhook not found")
+		return errors.New("webhook not found")
 	}
 	if len(webhook.Webhooks) == 0 {
-		return fmt.Errorf("webhook configuration has no webhooks")
+		return errors.New("webhook configuration has no webhooks")
 	}
 	currentBundle := webhook.Webhooks[0].ClientConfig.CABundle[:]
 	base64CurrentBundle := base64.StdEncoding.EncodeToString(currentBundle)

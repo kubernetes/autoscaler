@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
@@ -191,7 +192,7 @@ func HumanizeMemoryQuantity(bytes int64) string {
 // RoundUpToScale rounds the value to the nearest multiple of scale, rounding up
 func RoundUpToScale(value ResourceAmount, scale int) (ResourceAmount, error) {
 	if scale <= 0 {
-		return value, fmt.Errorf("scale must be greater than zero")
+		return value, errors.New("scale must be greater than zero")
 	}
 	scale64 := int64(scale)
 	roundedValue := int64(math.Ceil(float64(value)/float64(scale64))) * scale64

@@ -474,7 +474,6 @@ func (p *pod1Admission) Admit(pod *apiv1.Pod, recommendation *vpa_types.Recommen
 func (p *pod1Admission) CleanUp() {}
 
 func TestAdmission(t *testing.T) {
-
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("2")).Get()).Get()
 	pod2 := test.Pod().WithName("POD2").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
 	pod3 := test.Pod().WithName("POD3").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).Get()).Get()
@@ -552,7 +551,6 @@ func TestLessPodPriority(t *testing.T) {
 			assert.Equal(t, !tc.isLess, tc.other.Less(tc.prio))
 		})
 	}
-
 }
 
 func TestAddPodLogs(t *testing.T) {

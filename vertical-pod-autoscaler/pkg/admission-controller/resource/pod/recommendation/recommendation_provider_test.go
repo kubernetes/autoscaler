@@ -17,7 +17,7 @@ limitations under the License.
 package recommendation
 
 import (
-	"fmt"
+	"errors"
 	"math"
 	"testing"
 
@@ -269,9 +269,9 @@ func TestUpdateResourceRequests(t *testing.T) {
 			name:              "limit range calculation error",
 			pod:               initialized,
 			vpa:               vpa,
-			limitRangeCalcErr: fmt.Errorf("oh no"),
+			limitRangeCalcErr: errors.New("oh no"),
 			expectedAction:    false,
-			expectedError:     fmt.Errorf("error getting containerLimitRange: oh no"),
+			expectedError:     errors.New("error getting containerLimitRange: oh no"),
 		},
 		{
 			name:             "proportional limit from default",
@@ -354,9 +354,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 					assert.NoError(t, err)
 				}
 			}
-
 		})
-
 	}
 }
 

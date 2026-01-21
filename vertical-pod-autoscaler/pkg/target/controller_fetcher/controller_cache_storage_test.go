@@ -17,7 +17,7 @@ limitations under the License.
 package controllerfetcher
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
@@ -85,7 +85,7 @@ func TestControllerCache_InsertAndRefresh(t *testing.T) {
 	assert.Equal(t, getScale(), val)
 	assert.Nil(t, err)
 
-	c.Refresh(key.namespace, key.groupResource, key.name, nil, fmt.Errorf("err"))
+	c.Refresh(key.namespace, key.groupResource, key.name, nil, errors.New("err"))
 	present, val, err = c.Get(key.namespace, key.groupResource, key.name)
 	assert.True(t, present)
 	assert.Nil(t, val)
@@ -105,7 +105,7 @@ func TestControllerCache_InsertExistingKey(t *testing.T) {
 	assert.Nil(t, err)
 
 	// We might overwrite old values or keep them, either way should be fine.
-	c.Insert(key.namespace, key.groupResource, key.name, nil, fmt.Errorf("err"))
+	c.Insert(key.namespace, key.groupResource, key.name, nil, errors.New("err"))
 	present, _, _ = c.Get(key.namespace, key.groupResource, key.name)
 	assert.True(t, present)
 }

@@ -492,7 +492,6 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		for _, initContainer := range pod.InitContainers {
 			podInitContainers := feeder.clusterState.Pods()[pod.ID].InitContainers
 			feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
-
 		}
 	}
 }
