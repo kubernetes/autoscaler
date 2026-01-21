@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -31,7 +31,7 @@ import (
 const (
 	ActiveProvisioningStrategy    = "buffer.x-k8s.io/active-capacity"
 	CapacityBufferKind            = "CapacityBuffer"
-	CapacityBufferApiVersion      = "autoscaling.x-k8s.io/v1alpha1"
+	CapacityBufferApiVersion      = "autoscaling.x-k8s.io/v1beta1"
 	ReadyForProvisioningCondition = "ReadyForProvisioning"
 	ProvisioningCondition         = "Provisioning"
 	LimitedByQuotasCondition      = "LimitedByQuotas"

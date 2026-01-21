@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
-	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -32,7 +32,7 @@ type FakePodsScaleUpStatusProcessor struct {
 }
 
 type bufferInfo struct {
-	buffer         *v1alpha1.CapacityBuffer
+	buffer         *v1beta1.CapacityBuffer
 	numberOfPods   int
 	reasonMessages []string
 }
