@@ -21,6 +21,7 @@ import (
 	"os"
 	"testing"
 
+	"k8s.io/kubernetes/test/e2e"
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/config"
 )
@@ -43,5 +44,5 @@ func TestMain(m *testing.M) {
 }
 
 func TestIntegration(t *testing.T) {
-	RunE2ETests(t)
+	e2e.RunE2ETests(t)
 }
