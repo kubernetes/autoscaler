@@ -28,7 +28,7 @@ import (
 
 // FakePodsScaleUpStatusProcessor is a ScaleUpStatusProcessor used for filtering out fake pods from scaleup status.
 type FakePodsScaleUpStatusProcessor struct {
-	buffersRegistry *capacityBuffersFakePodsRegistry
+	buffersRegistry *CapacityBuffersFakePodsRegistry
 }
 
 type bufferInfo struct {
@@ -38,7 +38,7 @@ type bufferInfo struct {
 }
 
 // NewFakePodsScaleUpStatusProcessor return an instance of FakePodsScaleUpStatusProcessor
-func NewFakePodsScaleUpStatusProcessor(buffersRegistry *capacityBuffersFakePodsRegistry) *FakePodsScaleUpStatusProcessor {
+func NewFakePodsScaleUpStatusProcessor(buffersRegistry *CapacityBuffersFakePodsRegistry) *FakePodsScaleUpStatusProcessor {
 	return &FakePodsScaleUpStatusProcessor{buffersRegistry: buffersRegistry}
 }
 
@@ -61,7 +61,7 @@ func (p *FakePodsScaleUpStatusProcessor) createBuffersNoScaleUpEvents(context *c
 		consideredNodeGroupsMap := cloudprovider.NodeGroupListToMapById(scaleUpStatus.ConsideredNodeGroups)
 		buffersInfo := map[string]*bufferInfo{}
 		for _, noScaleUpInfo := range fakePodsRemainUnschedulable {
-			parentCapacityBuffer, found := p.buffersRegistry.fakePodsUIDToBuffer[string(noScaleUpInfo.Pod.UID)]
+			parentCapacityBuffer, found := p.buffersRegistry.FakePodsUIDToBuffer[string(noScaleUpInfo.Pod.UID)]
 			if found {
 				bufferUID := string(parentCapacityBuffer.UID)
 				if _, found := buffersInfo[bufferUID]; !found {
@@ -87,7 +87,7 @@ func (p *FakePodsScaleUpStatusProcessor) createBuffersScaleUpEvents(context *ca_
 	if len(scaleUpStatus.ScaleUpInfos) > 0 && len(fakePodsTriggeredScaleUp) > 0 {
 		buffersInfo := map[string]*bufferInfo{}
 		for _, pod := range fakePodsTriggeredScaleUp {
-			parentCapacityBuffer, found := p.buffersRegistry.fakePodsUIDToBuffer[string(pod.UID)]
+			parentCapacityBuffer, found := p.buffersRegistry.FakePodsUIDToBuffer[string(pod.UID)]
 			if found {
 				bufferUID := string(parentCapacityBuffer.UID)
 				if _, found := buffersInfo[bufferUID]; !found {
