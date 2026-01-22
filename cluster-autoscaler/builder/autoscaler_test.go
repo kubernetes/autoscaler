@@ -28,29 +28,39 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
 	"testing"
+	"testing/synctest"
+	"time"
 )
 
 func TestAutoscalerBuilderNoError(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
 
-	options := config.AutoscalingOptions{
-		CloudProviderName: "gce",
-		EstimatorName:     estimator.BinpackingEstimatorName,
-		ExpanderNames:     expander.LeastWasteExpanderName,
-	}
+		options := config.AutoscalingOptions{
+			CloudProviderName: "gce",
+			EstimatorName:     estimator.BinpackingEstimatorName,
+			ExpanderNames:     expander.LeastWasteExpanderName,
+		}
 
-	debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(false)
-	kubeClient := fake.NewClientset()
+		debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(false)
+	    kubeClient := fake.NewClientset()
 
-	autoscaler, trigger, err := New(options).
-		WithKubeClient(kubeClient).
-		WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
-		WithCloudProvider(test.NewCloudProvider()).
-		WithPodObserver(&loop.UnschedulablePodObserver{}).
-		Build(ctx, debuggingSnapshotter)
+		autoscaler, trigger, err := New(options).
+			WithKubeClient(kubeClient).
+			WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
+			WithCloudProvider(test.NewCloudProvider()).
+			WithPodObserver(&loop.UnschedulablePodObserver{}).
+			Build(ctx, debuggingSnapshotter)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, autoscaler)
-	assert.NotNil(t, trigger)
+		assert.NoError(t, err)
+		assert.NotNil(t, autoscaler)
+		assert.NotNil(t, trigger)
+
+		cancel()
+
+		// Synctest drain: Background goroutines (like MetricAsyncRecorder) often use uninterruptible time.Sleep loops.
+		// In a synctest bubble, these are "durable" sleeps. We must advance the virtual clock to allow these goroutines to wake up, observe the
+		// closed context channel, and terminate gracefully.
+		time.Sleep(1 * time.Second)
+	})
 }
