@@ -223,7 +223,7 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
 			for _, pod := range resUnschedulablePods {
 				if IsFakeCapacityBuffersPod(pod) {
-					podBufferObj, found := registry.fakePodsUIDToBuffer[string(pod.UID)]
+					podBufferObj, found := registry.FakePodsUIDToBuffer[string(pod.UID)]
 					assert.True(t, found)
 					expectedPodsNum, found := test.expectedBuffersPodsNum[podBufferObj.Name]
 					assert.True(t, found)
