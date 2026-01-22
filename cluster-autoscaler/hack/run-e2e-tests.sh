@@ -38,8 +38,6 @@ FOCUS=${1:-"\[sig-autoscaling\]"}
 # 400m allocates ~20 mins per each test case.
 TIMEOUT=${TIMEOUT:-400m}
 
-NUMPROC=1 # Cluster Autoscaler tests must be run sequentially.
-
 ABSOLUTE_PATH=$(cd "${SCRIPT_ROOT}"; pwd)
 export GOBIN="${ABSOLUTE_PATH}/e2e/_output/bin"
 export ARTIFACTS=${ARTIFACTS:-"${ABSOLUTE_PATH}/e2e/_artifacts"}
@@ -56,7 +54,7 @@ echo "Building e2e tests..."
 "${GOBIN}/ginkgo" build .
 
 echo "Running e2e tests with focus: ${FOCUS}"
-"${GOBIN}/ginkgo" -v --timeout=${TIMEOUT} --nodes=${NUMPROC} --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" --disable-log-dump ${SKIP:-}
+"${GOBIN}/ginkgo" -v --timeout=${TIMEOUT} --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" --disable-log-dump ${SKIP:-}
 RESULT=$?
 
 popd >/dev/null
