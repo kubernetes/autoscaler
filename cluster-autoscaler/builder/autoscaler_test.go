@@ -43,12 +43,12 @@ func TestAutoscalerBuilderNoError(t *testing.T) {
 		}
 
 		debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(false)
-	    kubeClient := fake.NewClientset()
+		kubeClient := fake.NewClientset()
 
 		autoscaler, trigger, err := New(options).
 			WithKubeClient(kubeClient).
 			WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
-			WithCloudProvider(test.NewCloudProvider()).
+			WithCloudProvider(test.NewCloudProvider(nil)).
 			WithPodObserver(&loop.UnschedulablePodObserver{}).
 			Build(ctx, debuggingSnapshotter)
 
