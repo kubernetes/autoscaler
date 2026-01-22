@@ -360,7 +360,13 @@ func main() {
 	}
 
 	logs.InitLogs()
-	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
+
+	opts, err := flags.ComputeLoggingOptions(pflag.CommandLine)
+	if err != nil {
+		klog.Fatalf("Failed to configure logging: %v", err)
+	}
+
+	if err := logsapi.ValidateAndApplyWithOptions(loggingConfig, opts, featureGate); err != nil {
 		klog.Fatalf("Failed to validate and apply logging configuration: %v", err)
 	}
 
