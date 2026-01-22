@@ -60,7 +60,7 @@ func TestAutoscalerBuilderNoError(t *testing.T) {
 			WithManager(mgr).
 			WithKubeClient(kubeClient).
 			WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
-			WithCloudProvider(test.NewCloudProvider()).
+			WithCloudProvider(test.NewCloudProvider(nil)).
 			WithPodObserver(&loop.UnschedulablePodObserver{}).
 			Build(ctx)
 
