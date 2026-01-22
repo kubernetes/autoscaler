@@ -27,32 +27,33 @@
 
 ## Summary
 
-Currently, when VPA is configured to set both requests and limits automatically (i.e. when `controlledValues` is set to `RequestsAndLimits` in the VerticalPodAutoscaler CRD), it adjusts the container limits proportionally based on the original request-to-limit ratio(s) specified by the user in workload API objects such as Deployments or StatefulSets, using the container-level `resources` stanzas - [Ref](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/examples.md#keeping-limit-proportional-to-request). More specifically, VPA reads the request-to-limit ratio from the managed Pods and uses that ratio to compute limits.
+Currently, when a VPA is configured to set both requests and limits automatically (i.e. when `controlledValues` is set to `RequestsAndLimits` in the VerticalPodAutoscaler CRD), it adjusts container limits proportionally based on the original request-to-limit ratio specified by the user in a higher-level controller, such as Job, Deployment, or StatefulSet, using the container-level `resources` stanzas ([Ref](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/examples.md#keeping-limit-proportional-to-request)). More specifically, VPA reads the request-to-limit ratio from the managed Pods and uses that ratio to compute limits.
 
-If the request-to-limit ratio needs to be updated (for example, because the application's resource usage has changed), users must modify the `resources.requests` or `resources.limits` fields in the workload's API object. However, applying these changes triggers the termination and recreation of existing Pods.
+If the request-to-limit ratio needs to be updated (for example, because the application's resource usage has changed), users must modify the `resources.requests` or `resources.limits` fields in the controller.
 
-This proposal introduces a new mechanism that allows VPA users to adjust the request-to-limit ratio directly at the VPA CRD level, both for already running workloads and for newly created workloads.
+This proposal introduces a new mechanism that allows users to adjust the request-to-limit ratio directly at the VPA CRD level. Users can apply this mechanism to both newly created and running workloads, with more finer-grained control. The goal of this proposal is to provide a smoother way to set and update the request-to-limit ratio than the current mechanism. For example:
+- After the VPA starts generating recommendations, users must modify the original resource specifications in the controller to change the ratio. This workflow is not user-friendly, as users may not expect to update the controller instead of adjusting a field in the VPA CRD. Furthermore this approach is more consistent with how VPA handles other fields, such as resource requests and limits, whose behavior - such as setting which resource type should VPA control - can also be configured directly through the VPA.
+- The current approach does not support fine-grained control of the ratio. For example, a user may want to increase the memory limit by a fixed amount, such as 100 MiB, on top of the recommendation. The current approach does not support this use case.
 
 The feature is gated by a new feature gate, `RequestToLimitRatio`, which is disabled by default in alpha.
 
 ## Goals
 
-* Allow VPA to update the request-to-limit ratio of a Pod's containers during Pod recreation or in-place updates.  
+* Allow VPA to update the request-to-limit ratio of a Pod's containers during Pod recreation or in-place updates based on the new `RequestToLimitRatio` stanza.
 * Introduce a new `RequestToLimitRatio` block that enables users to adjust the request-to-limit ratio in the following ways:  
   * **Factor**: Multiplies the recommended request by a specified value, and the result is set as the new limit, for example:
     * If the value for `Factor` is set to `2`, the limit will be twice the recommended request.  
     * If the value for `Factor` is set to `1.1`, the limit will be 10% higher than the recommended request.  
-  * **Quantity**: Adds a buffer on top of the resource request. This can be expressed as an **absolute value with units** (e.g. `100Mi`, `10m`).  
+  * **Quantity**: Adds a buffer on top of the resource request. This can be expressed as an **absolute value with units** (e.g. `100Mi`, `10m`).
 
 ## Non-Goals
 
-* This proposal does not change the core VPA algorithm or its decision-making process for when to apply the recommended values or set limits proportionally.
+* This proposal does not change the core VPA algorithm or its decision-making process for when to apply the recommended values.
 * This proposal does not change the default request-to-limit behavior when the feature flag is enabled. Pods managed by VPA objects that do not use the new `RequestToLimitRatio` field will continue to follow the existing behavior. For details, see the [Behavior](#behavior) section.
 
 ## Proposal
 
 * Extend [`ContainerResourcePolicy`](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.4.2/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L197) to allow updating the request-to-limit ratio for individual containers in a Pod targeted by a VPA object. Furthermore, to enable updating the ratio for all containers, a single wildcard entry with `containerName = '*'` can be used. This applies to all containers in the targeted Pod that do not have individual policies.
-
 
 Some examples of the VPA CRD using the new `RequestToLimitRatio` field are provided in a later [section](#examples).
 
@@ -85,33 +86,30 @@ VPA enforces the current request-to-limit ratio while respecting cluster-level c
 
 For example, suppose VPA calculates a new recommended CPU request of `200m`, the request-to-limit ratio is set to `1:4`, and a `LimitRange` enforces that a container cannot have more than `600m` CPU. In this case, VPA will set the CPU request to `150m` and the limit to `600m` in order to maintain the `1:4` ratio. This existing behavior is not affected by the new feature.  
 
-#### Current behavior of VPA 1.4.2
+#### Current behavior of VPA 1.5.0
 
-1. The user sets the initial resource requests and limits at the workload API level, such as in a Kubernetes Deployment.  
-2. When VPA applies new recommended resource request values, it preserves the request-to-limit ratio from the Pods' `resources` stanzas.
+1. The user sets the initial resource requests and limits at the controller level, such as in a Kubernetes Deployment.  
+2. When VPA applies new recommendations, it preserves the request-to-limit ratio defined in the Pods `resources` stanzas.
 
-For example, if the original resource request is `1` and the original limit is `2`, then after VPA calculates a new resource request of `10`, the new limit will be updated to `20`. In this version of VPA, the 1:2 ratio is preserved at all times.  
 
-If the user wants to modify the request-to-limit ratio, they must update the Deployment object directly. Since the `resources.requests` and `resources.limits` fields are immutable, this results in the termination and recreation of the existing Pods.
+For example, if the original resource request is `1` and the original limit is `2`, then after VPA calculates a new resource request of `10`, the new limit will be updated to `20`. In other words, the 1:2 ratio is preserved at all times.  
+
+If the user wants to modify the request-to-limit ratio, they must update the Deployment object directly. Since the `resources.requests` and `resources.limits` fields are immutable, this results in the termination and recreation of the existing Pods. The intent of this proposal is to preserve the existing behavior: when the ratio changes on a running workload, the new ratio applies immediately.
 
 #### Proposed feature behavior
 
-The values specified under `RequestToLimitRatio` in the VPA object will take precedence over the request-to-limit ratio used at the Pod level. For example, if the CPU ratio is initially set to `1:2` at the Pod level, but the VPA object sets the CPU request-to-limit ratio to `1:10` using the new `RequestToLimitRatio` field, VPA will use the ratio from the `RequestToLimitRatio` field (`1:10`) when applying new recommended values.
+* Values specified in `RequestToLimitRatio` in a VerticalPodAutoscaler object take precedence over the request-to-limit ratio defined at the Pod level. For example, if the CPU ratio for container A is `1:2` at the Pod level and the VerticalPodAutoscaler object sets the CPU request-to-limit ratio to `1:10` for container A using the `RequestToLimitRatio` field, VPA uses the ratio from `RequestToLimitRatio` (`1:10`).
+* This KEP proposes scaling limits when `RequestToLimitRatio` is specified, even when the user omits limits from the parent object that manages the Pods and the limits are therefore absent from the Pod `resources` stanza. For example, if the user omits a CPU limit from the controller and sets the CPU ratio to `1:2` in `RequestToLimitRatio`, VPA sets the CPU limit according to the specified ratio.
+* When a relevant VerticalPodAutoscaler object exists in the cluster before Pod creation, the admission controller reads the `RequestToLimitRatio` stanza. Even if the recommender has not yet produced recommendations, the admission controller sets the ratio from `RequestToLimitRatio` using the original resource requests.
+* Users sometimes update the ratio for a running workload in response to changes in resource usage patterns. Users expect ratio updates to take effect immediately. This behavior already exists: when a user updates the ratio (i.e. updates the `resources` stanza) for a running workload like a Deployment, the change triggers a new Pod rollout. This proposal preserves this behavior, because relying on the current recommendation-application logic would prevent new ratios from taking effect when recommendations remain stable.
 
-Furthermore, this AEP proposes scaling limits when `RequestToLimitRatio` is used, even in cases where the user omits limits from the workload API, and they are therefore not present in the Pods' `resources` stanza.
+The following section describes the behavior of the new feature for each VPA mode.
 
-The behavior after implementing this feature is as follows:
-
-1. The user defines a VPA object with the `controlledValues` field set to `RequestsAndLimits` and configures the request-to-limit ratio using the new `RequestToLimitRatio` sub-fields. Based on VPA's mode, the following occurs:
-   * **Recreate mode**: When a new request-to-limit ratio is set, the ratio is applied only on Pod creation, after the Updater evicts the running Pod. In this mode, updating the request-to-limit ratio on a running Pod will affect the limits only after the Pod is evicted (either by the Updater or manually, e.g. via `kubectl delete pod`) when the current `resources.requests` differ significantly from the new recommendation.  
-   * **InPlaceOrRecreate mode** (alpha in v1.4.0): When a new request-to-limit ratio is set, the VPA Updater will attempt in-place updates using the `/resize` subresource to modify `Pod.Spec.Containers[i].Resources.limits` or `Pod.Spec.Containers[i].Resources.requests` in certain situations. If the in-place update fails, it falls back to evicting the Pod and performing a recreation. For more details, see the [In-Place Updates documentation](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md#in-place-updates-inplaceorrecreate).  
-   * **Initial mode**: VPA updates the request-to-limit ratio only during Pod creation and does not change it later.
-2. If the `RequestToLimitRatio` feature gate is enabled and a user does not specify the sub-field `RequestToLimitRatio` on a VPA object, the request-to-limit ratio already set in the workload API (e.g. Deployment API) is used.
-3. If the `RequestToLimitRatio` feature gate is disabled, the request-to-limit ratio already set in the workload API (e.g. Deployment API) is used.
-
-### Notes/Constraints/Caveats
-
-* This proposal could act as a temporary workaround for users who need to handle requests/limits immutability in their workloads. Note that there is already work underway to relax the immutability of requests and limits at the workload level (e.g. Deployments and StatefulSets), tracked in this issue: [Relaxing immutability of Pod Templates resources/limits](https://github.com/kubernetes/kubernetes/issues/132436)
+* The updater implements a new mechanism to observe the `RequestToLimitRatio` stanza. When the user changes the ratio, the updater reacts immediately based on the configured VPA mode and ignores the existing logic that governs normal Pod eviction or in-place updates:
+  * **Recreate** and **Auto** modes: the updater evicts the Pod when it detects a change in the `RequestToLimitRatio` stanza. The updater adds the Pod to the [UpdatePriorityCalculator](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L84).
+  * **InPlaceOrRecreate** mode: the updater first attempts an in-place update and falls back to eviction if the in-place update is not possible. In other words, the updater adds the Pod to the [UpdatePriorityCalculator](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L84).
+  * When the updater evicts a Pod or applies an in-place update due to a change in the `RequestToLimitRatio` stanza in the modes described above, it applies the most up-to-date recommendations at the same time as the updated ratio.
+* **Initial** mode: in this mode, only the admission controller and the recommender act on the targeted Pods. Pods receive the updated ratio from the `RequestToLimitRatio` stanza only at creation time or when they restart, such as after user initiated deletion or eviction due to node pressure.
 
 ### Validation
 
@@ -134,7 +132,7 @@ The behavior after implementing this feature is as follows:
 
 #### Enabling or Disabling the Feature in a Live Cluster
 
-* Enable the feature by setting the `RequestToLimitRatio` feature gate.  
+* Enable the feature by setting the `RequestToLimitRatio` feature gate. After enabling the feature, users can define the `RequestToLimitRatio` stanza at the VerticalPodAutoscaler object level.
 * Components affected by this feature gate:  
   * admission-controller  
   * updater
@@ -143,17 +141,14 @@ The behavior after implementing this feature is as follows:
 
 * The admission controller will **accept** new VPA objects that include a configured `RequestToLimitRatio`.  
 * For containers targeted by a VPA object using `RequestToLimitRatio`, the admission controller and/or the updater will enforce the configured ratio. Here are some examples of how this may happen:
-  * **From default to a specific ratio**: This occurs when we have a running Pod targeted by a VPA object that does not define `RequestToLimitRatio`. In this case, VPA uses the default ratio derived from the Pod's `resources` stanza (assuming the Pod has a single container). Once we specify a custom ratio using the `RequestToLimitRatio` field, the new ratio is not applied immediately, as the updater still relies on its current behavior to decide when to evict the Pod or perform in-place update. With the `InPlaceOrRecreate` mode, the updater sends patches to the `resize` subresource [as shown here](https://github.com/kubernetes/autoscaler/blob/7b95cb06cb0843c1cd9432a3db893c001e1bc33c/vertical-pod-autoscaler/pkg/updater/restriction/pods_inplace_restriction.go#L137). This can result in two outcomes:
-    1. If the in-place update fails for any reason - for example, because the change would alter the Pod's QoS class - the updater evicts the Pod.
-    2. If the in-place update succeeds, the updater is finished for that Pod.
+  * **From default to a specific ratio**: This occurs when we have a running Pod targeted by a VPA object that does not define `RequestToLimitRatio`. In this case, VPA uses the default ratio derived from the Pod's `resources` stanza. Once a user specifies a custom ratio in the `RequestToLimitRatio` stanza, the admission controller and the updater enforce the new ratio according to the configured VPA mode.
   * **From one ratio to another**: In this case, the default ratio defined in the Pod's `resources` stanza is ignored, and the ratio specified in the `RequestToLimitRatio` field is enforced.
-
 
 #### When Disabled
 
 * The admission controller will **reject** new VPA objects that include a configured `RequestToLimitRatio`.  
-  * A descriptive error message should be returned to the user, indicating that the feature is feature-gated.  
-* The admission controller and updater will behave as before, according to the behavior described [here](#current-behavior-of-vpa-142).
+  * A descriptive error message should be returned to the user, indicating that the feature is feature-gated.
+* When a user disables the feature gate and at least one VPA object with a `RequestToLimitRatio` stanza exists (because the feature gate was previously enabled), the updater uses the ratios from the Pod specifications in its next loop, and the admission controller applies the Pod spec ratios on new Pod creation events.
 
 ### Kubernetes Version Compatibility
 
@@ -167,8 +162,8 @@ The behavior after implementing this feature is as follows:
 #### E2E
 
 * e2e tests with `InPlaceOrRecreate` VPA mode:
-  1. Add a test case where the QoS class **changes**. In this scenario, we expect the updater to evict the affected Pods, since the QoS field is immutable. The resulting limits are verified.
-  2. Add a test case where the QoS class **does not change**. In this scenario the updater should apply the new ratio using the in-place update mechanism. The resulting limits are verified.
+  1. Add a test case where the QoS class **changes**. In this scenario, the updater evicts the affected Pods immediately, ignoring the normal recommendation application logic. The resulting limits are then verified.
+  2. Add a test case where the QoS class **does not change**. In this scenario, the updater applies the new ratio immediately using the in-place update mechanism. The resulting limits are then verified.
 
 ### Examples
 
