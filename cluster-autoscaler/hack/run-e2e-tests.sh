@@ -26,6 +26,7 @@ function print_help {
   echo "    KUBECONFIG: Path to kubeconfig (default: ~/.kube/config)"
   echo "    ARTIFACTS: Directory for report artifacts (default: e2e/_artifacts)"
   echo "    SKIP: Optional ginkgo skip string"
+  echo "    TIMEOUT: Timeout for ginkgo tests (default: 400m)"
 }
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
@@ -34,6 +35,8 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 FOCUS=${1:-"\[sig-autoscaling\]"}
+# 400m allocates ~20 mins per each test case.
+TIMEOUT=${TIMEOUT:-400m}
 
 NUMPROC=1 # Cluster Autoscaler tests must be run sequentially.
 
@@ -53,7 +56,7 @@ echo "Building e2e tests..."
 "${GOBIN}/ginkgo" build .
 
 echo "Running e2e tests with focus: ${FOCUS}"
-"${GOBIN}/ginkgo" -v --nodes=${NUMPROC} --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" --disable-log-dump ${SKIP:-}
+"${GOBIN}/ginkgo" -v --timeout=${TIMEOUT} --nodes=${NUMPROC} --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" --disable-log-dump ${SKIP:-}
 RESULT=$?
 
 popd >/dev/null
