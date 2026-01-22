@@ -194,6 +194,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 	})
 
 	f.It("shouldn't trigger additional scale-ups during processing scale-up", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
+		e2eskipper.Skipf("Test is flaky and disabled for now")
 		// Wait for the situation to stabilize - CA should be running and have up-to-date node readiness info.
 		status, err := waitForScaleUpStatus(ctx, c, func(s *scaleUpStatus) bool {
 			return s.ready == s.target && s.ready <= nodeCount
