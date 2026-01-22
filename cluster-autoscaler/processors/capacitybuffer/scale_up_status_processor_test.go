@@ -129,7 +129,7 @@ func TestBuffersEvent(t *testing.T) {
 	}
 	testCases := map[string]struct {
 		state                       *status.ScaleUpStatus
-		buffersRegistry             *capacityBuffersFakePodsRegistry
+		buffersRegistry             *CapacityBuffersFakePodsRegistry
 		expectedTriggeredScaleUp    int
 		expectedNotTriggeredScaleUp int
 	}{
