@@ -121,7 +121,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context, debuggingSnapshotter debu
 		return nil, nil, fmt.Errorf("informerFactory is missing: ensure WithInformerFactory() is called")
 	}
 
-	fwHandle, err := framework.NewHandle(b.informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.CSINodeAwareSchedulingEnabled)
+	fwHandle, err := framework.NewHandle(ctx, b.informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.CSINodeAwareSchedulingEnabled)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -249,18 +249,19 @@ func (b *AutoscalerBuilder) Build(ctx context.Context, debuggingSnapshotter debu
 	// Initialize metrics.
 	metrics.InitMetrics()
 
+	autoscalingKubeClients := ca_context.NewAutoscalingKubeClients(ctx, opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
+	// Use lister registry if provided.
 	if b.listerRegistry != nil {
-		autoscalingKubeClients := ca_context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 		autoscalingKubeClients.ListerRegistry = b.listerRegistry
-		opts.AutoscalingKubeClients = autoscalingKubeClients
 	}
+	opts.AutoscalingKubeClients = autoscalingKubeClients
 
 	if b.cloudProvider != nil {
 		opts.CloudProvider = b.cloudProvider
 	}
 
 	// Create autoscaler.
-	autoscaler, err := core.NewAutoscaler(opts, b.informerFactory)
+	autoscaler, err := core.NewAutoscaler(ctx, opts, b.informerFactory)
 	if err != nil {
 		return nil, nil, err
 	}
