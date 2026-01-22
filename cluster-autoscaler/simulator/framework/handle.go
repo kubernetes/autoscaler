@@ -19,8 +19,6 @@ package framework
 import (
 	"context"
 	"fmt"
-	"sync"
-
 	"k8s.io/client-go/informers"
 	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
@@ -29,6 +27,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
+	"sync"
 )
 
 var (
@@ -42,7 +41,7 @@ type Handle struct {
 }
 
 // NewHandle builds a framework Handle based on the provided informers and scheduler config.
-func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool) (*Handle, error) {
+func NewHandle(ctx context.Context, informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool) (*Handle, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = schedulerconfiglatest.Default()
@@ -76,7 +75,7 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 		schedulermetrics.InitMetrics()
 	})
 	framework, err := schedulerframeworkruntime.NewFramework(
-		context.TODO(),
+		ctx,
 		schedulerplugins.NewInTreeRegistry(),
 		&schedConfig.Profiles[0],
 		opts...,
