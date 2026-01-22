@@ -89,7 +89,7 @@ const (
 // * scale-down-unneeded-time
 // * scale-down-delay-after-add
 
-var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
+var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.WithSerial(), func() {
 	f := framework.NewDefaultFramework("autoscaling")
 	f.NamespacePodSecurityLevel = admissionapi.LevelPrivileged
 	var c clientset.Interface
