@@ -416,29 +416,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		framework.ExpectNoError(WaitForClusterSizeFuncWithUnready(ctx, f.ClientSet, sizeFunc, scaleUpTimeout, 0))
 	})
 
-	f.It("shouldn't scale up when unprocessed pod is created and is going to be schedulable", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
-		// 50% of allocatable memory of a single node, so that no scale up would trigger in normal cases
-		replicaCount := 1
-		reservedMemory := int(float64(0.5) * float64(memAllocatableMb))
-		cleanupFunc := ReserveMemoryWithSchedulerName(ctx, f, "memory-reservation", replicaCount, reservedMemory, false, 1, nonExistingBypassedSchedulerName)
-		defer func() {
-			framework.ExpectNoError(cleanupFunc())
-		}()
-		// Verify that cluster size is the same
-		ginkgo.By(fmt.Sprintf("Waiting for scale up hoping it won't happen, polling cluster size for %s", scaleUpTimeout.String()))
-		sizeFunc := func(size int) bool {
-			return size == nodeCount
-		}
-		gomega.Consistently(ctx, func() error {
-			return WaitForClusterSizeFunc(ctx, f.ClientSet, sizeFunc, time.Second)
-		}).WithTimeout(scaleUpTimeout).WithPolling(framework.Poll).ShouldNot(gomega.HaveOccurred())
-	})
-
-	f.It("shouldn't scale up when unprocessed pod is created and scheduler is not specified to be bypassed", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
-		// 70% of allocatable memory of a single node * replica count, forcing a scale up in case of normal pods
-		replicaCount := 2 * nodeCount
-		reservedMemory := int(float64(replicaCount) * float64(0.7) * float64(memAllocatableMb))
-		schedulerName := "non-existent-scheduler-" + f.UniqueName
+	runScaleUpNotTriggeredUnprocessedPodTest := func(ctx context.Context, replicaCount int, reservedMemory int, schedulerName string) {
 		cleanupFunc := ReserveMemoryWithSchedulerName(ctx, f, "memory-reservation", replicaCount, reservedMemory, false, 1, schedulerName)
 		defer func() {
 			framework.ExpectNoError(cleanupFunc())
@@ -451,6 +429,21 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		gomega.Consistently(ctx, func() error {
 			return WaitForClusterSizeFunc(ctx, f.ClientSet, sizeFunc, time.Second)
 		}).WithTimeout(scaleUpTimeout).WithPolling(framework.Poll).ShouldNot(gomega.HaveOccurred())
+	}
+
+	f.It("shouldn't scale up when unprocessed pod is created and is going to be schedulable", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
+		// 50% of allocatable memory of a single node, so that no scale up would trigger in normal cases
+		replicaCount := 1
+		reservedMemory := int(float64(0.5) * float64(memAllocatableMb))
+		runScaleUpNotTriggeredUnprocessedPodTest(ctx, replicaCount, reservedMemory, nonExistingBypassedSchedulerName)
+	})
+
+	f.It("shouldn't scale up when unprocessed pod is created and scheduler is not specified to be bypassed", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
+		// 70% of allocatable memory of a single node * replica count, forcing a scale up in case of normal pods
+		replicaCount := 2 * nodeCount
+		reservedMemory := int(float64(replicaCount) * float64(0.7) * float64(memAllocatableMb))
+		schedulerName := "non-existent-scheduler-" + f.UniqueName
+		runScaleUpNotTriggeredUnprocessedPodTest(ctx, replicaCount, reservedMemory, schedulerName)
 	})
 
 })
