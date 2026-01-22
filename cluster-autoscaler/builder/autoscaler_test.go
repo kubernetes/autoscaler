@@ -31,38 +31,48 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"testing"
+	"testing/synctest"
+	"time"
 )
 
 func TestAutoscalerBuilderNoError(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
 
-	options := config.AutoscalingOptions{
-		CloudProviderName: "gce",
-		EstimatorName:     estimator.BinpackingEstimatorName,
-		ExpanderNames:     expander.LeastWasteExpanderName,
-	}
+		options := config.AutoscalingOptions{
+			CloudProviderName: "gce",
+			EstimatorName:     estimator.BinpackingEstimatorName,
+			ExpanderNames:     expander.LeastWasteExpanderName,
+		}
 
-	debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(false)
-	kubeClient := fake.NewClientset()
+		debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(false)
+		kubeClient := fake.NewClientset()
 
-	mgr, err := manager.New(&rest.Config{}, manager.Options{
-		Metrics: metricsserver.Options{
-			BindAddress: "0",
-		},
-		HealthProbeBindAddress: "0",
+		mgr, err := manager.New(&rest.Config{}, manager.Options{
+			Metrics: metricsserver.Options{
+				BindAddress: "0",
+			},
+			HealthProbeBindAddress: "0",
+		})
+
+		autoscaler, trigger, err := New(options).
+			WithDebuggingSnapshotter(debuggingSnapshotter).
+			WithManager(mgr).
+			WithKubeClient(kubeClient).
+			WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
+			WithCloudProvider(test.NewCloudProvider()).
+			WithPodObserver(&loop.UnschedulablePodObserver{}).
+			Build(ctx)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, autoscaler)
+		assert.NotNil(t, trigger)
+
+		cancel()
+
+		// Synctest drain: Background goroutines (like MetricAsyncRecorder) often use uninterruptible time.Sleep loops.
+		// In a synctest bubble, these are "durable" sleeps. We must advance the virtual clock to allow these goroutines to wake up, observe the
+		// closed context channel, and terminate gracefully.
+		time.Sleep(1 * time.Second)
 	})
-
-	autoscaler, trigger, err := New(options).
-		WithDebuggingSnapshotter(debuggingSnapshotter).
-		WithManager(mgr).
-		WithKubeClient(kubeClient).
-		WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
-		WithCloudProvider(test.NewCloudProvider()).
-		WithPodObserver(&loop.UnschedulablePodObserver{}).
-		Build(ctx)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, autoscaler)
-	assert.NotNil(t, trigger)
 }

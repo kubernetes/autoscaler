@@ -277,7 +277,7 @@ func main() {
 			kubeClient.CoordinationV1(),
 			resourcelock.ResourceLockConfig{
 				Identity:      id,
-				EventRecorder: kube_util.CreateEventRecorder(kubeClient, autoscalingOpts.RecordDuplicatedEvents),
+				EventRecorder: kube_util.CreateEventRecorder(context.TODO(), kubeClient, autoscalingOpts.RecordDuplicatedEvents),
 			},
 		)
 		if err != nil {
