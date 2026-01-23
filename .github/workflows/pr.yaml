@@ -17,8 +17,10 @@ jobs:
         with:
           filters: |
             charts:
-              - 'charts/**/Chart.yaml'
-              - 'charts/**/*'
+              - 'cluster-autoscaler/charts/**/Chart.yaml'
+              - 'cluster-autoscaler/charts/**/*'
+              - 'vertical-pod-autoscaler/charts/**/Chart.yaml'
+              - 'vertical-pod-autoscaler/charts/**/*'
           token: ${{ secrets.GITHUB_TOKEN }}
   helm-lint-test:
     if: ${{ needs.changes.outputs.charts == 'true' }}
@@ -32,23 +34,27 @@ jobs:
       - name: Fetch history
         run: git fetch --prune --unshallow
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.1
-      - name: Run chart-testing (lint)
-        run: ct lint
+        uses: helm/chart-testing-action@v2.7.0
+      - name: Run chart-testing for CA (lint)
+        run: ct lint --chart-dirs cluster-autoscaler/charts --target-branch ${{ github.event.pull_request.base.ref }}
+      - name: Run chart-testing for VPA (lint)
+        run: ct lint --chart-dirs vertical-pod-autoscaler/charts --target-branch ${{ github.event.pull_request.base.ref }} --check-version-increment=false
       # Only build a kind cluster if there are chart changes to test.
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
-          changed=$(ct list-changed)
+          changed=$(ct list-changed --chart-dirs cluster-autoscaler/charts,vertical-pod-autoscaler/charts --target-branch ${{ github.event.pull_request.base.ref }})
           if [[ -n "$changed" ]]; then
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
       - if: steps.list-changed.outputs.changed == 'true'
         name: Create kind cluster
         uses: helm/kind-action@v1.12.0
+        with:
+          config: .github/kind-config.yaml
       - if: steps.list-changed.outputs.changed == 'true'
         name: Run chart-testing (install)
-        run: ct install
+        run: ct install --chart-dirs cluster-autoscaler/charts,vertical-pod-autoscaler/charts --target-branch ${{ github.event.pull_request.base.ref }}
   helm-docs-validate:
     if: ${{ needs.changes.outputs.charts == 'true' }}
     name: Helm Docs
@@ -59,9 +65,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
       - name: Run helm-docs
-        uses: docker://jnorwood/helm-docs:v1.3.0
-      - name: Check for changes
-        run: git diff --quiet charts/*/README.md
+        uses: losisin/helm-docs-github-action@v1
+        with:
+          fail-on-diff: true
 
 name: Lint and Test Charts
 on: pull_request

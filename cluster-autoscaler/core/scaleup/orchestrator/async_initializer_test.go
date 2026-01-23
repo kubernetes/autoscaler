@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
@@ -95,10 +95,10 @@ func TestNodePoolAsyncInitialization(t *testing.T) {
 	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	upcomingNodeGroup := provider.BuildNodeGroup("upcoming-ng", 0, 100, 0, false, true, "T1", nil)
 	options := config.AutoscalingOptions{AsyncNodeGroupsEnabled: true}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 	option := expander.Option{NodeGroup: upcomingNodeGroup, Pods: []*apiv1.Pod{pod}}
-	processors := processorstest.NewTestProcessors(&context)
 	processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: map[string]bool{upcomingNodeGroup.Id(): true}}
 	nodeInfo := framework.NewTestNodeInfo(BuildTestNode("t1", 100, 0))
 	executor := newScaleUpExecutor(&context, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker)
@@ -123,7 +123,7 @@ type fakeScaleUpStatusProcessor struct {
 	lastStatus *status.ScaleUpStatus
 }
 
-func (f *fakeScaleUpStatusProcessor) Process(_ *context.AutoscalingContext, status *status.ScaleUpStatus) {
+func (f *fakeScaleUpStatusProcessor) Process(_ *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
 	f.lastStatus = status
 }
 

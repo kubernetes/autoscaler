@@ -196,7 +196,7 @@ func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {
 	// prepare ClusterState with 5 VPAs referencing Pods
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container-1").WithContainer("container-2").WithNamespace("test-namespace")
 
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		targetRef := &autoscalingv1.CrossVersionObjectReference{
 			Kind:       "Pod",
 			Name:       fmt.Sprintf("pod-%d", i),
@@ -209,14 +209,14 @@ func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {
 	}
 
 	// prepare ClusterState with 5 pods that have 2 containers each
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		podID := model.PodID{
 			Namespace: "test-namespace",
 			PodName:   fmt.Sprintf("pod-%d", i),
 		}
 		podLabels := map[string]string{"app": fmt.Sprintf("pod-%d", i)}
 		clusterState.AddOrUpdatePod(podID, podLabels, v1.PodRunning)
-		for j := 0; j < 2; j++ {
+		for j := range 2 {
 			containerID := model.ContainerID{
 				PodID:         podID,
 				ContainerName: fmt.Sprintf("container-%d", j),

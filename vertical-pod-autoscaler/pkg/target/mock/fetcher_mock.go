@@ -56,6 +56,6 @@ func (_m *MockVpaTargetSelectorFetcher) Fetch(_ context.Context, vpa *vpa_types.
 	return ret0, ret1
 }
 
-func (_mr *_MockVpaTargetSelectorFetcherRecorder) Fetch(arg0 interface{}) *gomock.Call {
+func (_mr *_MockVpaTargetSelectorFetcherRecorder) Fetch(arg0 any) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Fetch", arg0)
 }

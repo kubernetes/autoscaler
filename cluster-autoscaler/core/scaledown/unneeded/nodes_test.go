@@ -27,16 +27,25 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
+	nodeprocessors "k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
+)
+
+const (
+	testScaleDownTimeout    = 5 * time.Minute
+	defaultNodeCpu          = 10
+	defaultNodeMem          = 100
+	defaultNodeGroupMaxSize = 100
+	defaultUnneededTime     = 10 * time.Minute
+	defaultUnreadyTime      = 5 * time.Minute
 )
 
 func TestUpdate(t *testing.T) {
@@ -48,6 +57,7 @@ func TestUpdate(t *testing.T) {
 		finalNodes     []simulator.NodeToBeRemoved
 		wantTimestamps map[string]time.Time
 		wantVersions   map[string]string
+		wantThresholds map[string]time.Duration
 	}{
 		{
 			desc: "added then deleted",
@@ -68,6 +78,7 @@ func TestUpdate(t *testing.T) {
 			},
 			wantTimestamps: map[string]time.Time{"n1": finalTimestamp, "n2": finalTimestamp, "n3": finalTimestamp},
 			wantVersions:   map[string]string{"n1": "v1", "n2": "v1", "n3": "v1"},
+			wantThresholds: map[string]time.Duration{"n1": defaultUnreadyTime, "n2": defaultUnreadyTime, "n3": defaultUnreadyTime},
 		},
 		{
 			desc: "single one remaining",
@@ -81,6 +92,7 @@ func TestUpdate(t *testing.T) {
 			},
 			wantTimestamps: map[string]time.Time{"n2": initialTimestamp},
 			wantVersions:   map[string]string{"n2": "v2"},
+			wantThresholds: map[string]time.Duration{"n2": defaultUnreadyTime},
 		},
 		{
 			desc: "single one older",
@@ -94,24 +106,65 @@ func TestUpdate(t *testing.T) {
 			},
 			wantTimestamps: map[string]time.Time{"n1": finalTimestamp, "n2": initialTimestamp, "n3": finalTimestamp},
 			wantVersions:   map[string]string{"n1": "v2", "n2": "v2", "n3": "v2"},
+			wantThresholds: map[string]time.Duration{"n1": defaultUnreadyTime, "n2": defaultUnreadyTime, "n3": defaultUnreadyTime},
+		},
+		{
+			desc: "threshold updated on existing node (Ready -> Unready)",
+			initialNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n2", "v1", true),
+			},
+			finalNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n2", "v2", false),
+			},
+			wantTimestamps: map[string]time.Time{"n2": initialTimestamp},
+			wantVersions:   map[string]string{"n2": "v2"},
+			wantThresholds: map[string]time.Duration{"n2": defaultUnreadyTime},
+		},
+		{
+			desc: "mixed update and preservation",
+			initialNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n1", "v1", true),
+			},
+			finalNodes: []simulator.NodeToBeRemoved{
+				makeNodeWithReadyStatus("n1", "v2", true),
+				makeNodeWithReadyStatus("n2", "v2", false),
+			},
+			wantTimestamps: map[string]time.Time{"n1": initialTimestamp, "n2": finalTimestamp},
+			wantVersions:   map[string]string{"n1": "v2", "n2": "v2"},
+			wantThresholds: map[string]time.Duration{"n1": defaultUnneededTime, "n2": defaultUnreadyTime},
 		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			nodes := NewNodes(nil, nil)
-			nodes.Update(tc.initialNodes, initialTimestamp)
-			nodes.Update(tc.finalNodes, finalTimestamp)
+
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			ng := testprovider.NewTestNodeGroup("ng1", 100, 0, 10, true, false, "", nil, nil)
+			provider.InsertNodeGroup(ng)
+			for _, nn := range append(tc.initialNodes, tc.finalNodes...) {
+				provider.AddNode("ng1", nn.Node)
+			}
+			fakeTimeGetter := &fakeScaleDownTimeGetter{
+				unneededTime: defaultUnneededTime,
+				unreadyTime:  defaultUnreadyTime,
+			}
+
+			nodes := NewNodes(fakeTimeGetter, nil)
+			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
+
+			nodes.Update(ctx, tc.initialNodes, initialTimestamp)
+			nodes.Update(ctx, tc.finalNodes, finalTimestamp)
+
 			wantNodes := len(tc.wantTimestamps)
 			assert.Equal(t, wantNodes, len(nodes.AsList()))
 			assert.Equal(t, wantNodes, len(nodes.byName))
 			for _, n := range nodes.AsList() {
-				nn, found := nodes.byName[n.Name]
+				nn, found := nodes.byName[n.Node.Name]
 				assert.True(t, found)
-				assert.Equal(t, tc.wantTimestamps[n.Name], nn.since)
-				assert.Equal(t, tc.wantVersions[n.Name], version(nn.ntbr))
+				assert.Equal(t, tc.wantTimestamps[n.Node.Name], nn.since)
+				assert.Equal(t, tc.wantVersions[n.Node.Name], version(nn.ntbr))
+				assert.Equal(t, tc.wantThresholds[n.Node.Name], n.RemovalThreshold)
 			}
 		})
 	}
@@ -123,6 +176,12 @@ func makeNode(name, version string) simulator.NodeToBeRemoved {
 	n := BuildTestNode(name, 1000, 10)
 	n.Annotations = map[string]string{testVersion: version}
 	return simulator.NodeToBeRemoved{Node: n}
+}
+
+func makeNodeWithReadyStatus(name, version string, ready bool) simulator.NodeToBeRemoved {
+	nn := makeNode(name, version)
+	SetNodeReadyState(nn.Node, ready, time.Now())
+	return nn
 }
 
 func version(n simulator.NodeToBeRemoved) string {
@@ -200,12 +259,18 @@ func TestRemovableAt(t *testing.T) {
 			rsLister, err := kube_util.NewTestReplicaSetLister(nil)
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
-			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil, nil)
 			assert.NoError(t, err)
+			expectedThreshold := 5 * time.Minute
+			fakeTimeGetter := &fakeScaleDownTimeGetter{
+				unneededTime: 0,
+				unreadyTime:  expectedThreshold,
+			}
+			n := NewNodes(fakeTimeGetter, &resource.LimitsFinder{})
 
-			n := NewNodes(&fakeScaleDownTimeGetter{}, &resource.LimitsFinder{})
-			n.Update(removableNodes, time.Now())
-			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&ctx, nodes.ScaleDownContext{
+			n.Update(&autoscalingCtx, removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
+
+			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus:     as,
 				ResourcesLeft:       resource.Limits{},
 				ResourcesWithLimits: []string{},
@@ -213,12 +278,205 @@ func TestRemovableAt(t *testing.T) {
 			if len(gotDrainToRemove) != tc.numDrainToRemove || len(gotEmptyToRemove) != tc.numEmptyToRemove {
 				t.Errorf("%s: getNodesToRemove() return %d, %d, want %d, %d", tc.name, len(gotEmptyToRemove), len(gotDrainToRemove), tc.numEmptyToRemove, tc.numDrainToRemove)
 			}
+
+			candidates := n.AsList()
+			candidateMap := make(map[string]time.Duration)
+			for _, c := range candidates {
+				candidateMap[c.Node.Name] = c.RemovalThreshold
+			}
+
+			for _, node := range gotEmptyToRemove {
+				nodeName := node.Node.Name
+				got, ok := candidateMap[nodeName]
+				if !ok {
+					t.Errorf("Node %s not found in AsList", nodeName)
+				} else if got != expectedThreshold {
+					t.Errorf("Node %s has threshold %v, want %v", nodeName, got, expectedThreshold)
+				}
+			}
 		})
 	}
 }
 
-func TestNodeLoadFromExistingTaints(t *testing.T) {
+type nodeStateConfig struct {
+	isReady                        bool
+	sinceOffset                    time.Duration
+	hasScaleDownDisabledAnnotation bool
+}
 
+type thresholdConfig struct {
+	unneeded time.Duration
+	unready  time.Duration
+}
+
+type nodeGroupConfigTest struct {
+	minSize      int
+	targetSize   int
+	isConfigured bool
+}
+
+type unremovableTestCase struct {
+	name                  string
+	nodeConfig            nodeStateConfig
+	thresholds            thresholdConfig
+	groupConfig           nodeGroupConfigTest
+	shouldTimeGetterError bool
+	expectedReason        simulator.UnremovableReason
+}
+
+func TestRemovableAt_UnremovableReasons(t *testing.T) {
+	now := time.Now()
+
+	baseCase := unremovableTestCase{
+		nodeConfig: nodeStateConfig{
+			isReady:                        true,
+			sinceOffset:                    -10 * time.Minute,
+			hasScaleDownDisabledAnnotation: false,
+		},
+		thresholds: thresholdConfig{
+			unneeded: 5 * time.Minute,
+			unready:  5 * time.Minute,
+		},
+		groupConfig: nodeGroupConfigTest{
+			minSize:      0,
+			targetSize:   1,
+			isConfigured: true,
+		},
+	}
+
+	testCases := []unremovableTestCase{
+		{
+			name:                  "ThresholdRetrievalFails",
+			nodeConfig:            baseCase.nodeConfig,
+			thresholds:            baseCase.thresholds,
+			groupConfig:           baseCase.groupConfig,
+			shouldTimeGetterError: true,
+			expectedReason:        simulator.UnexpectedError,
+		},
+		{
+			name: "ScaleDownDisabledAnnotation",
+			nodeConfig: nodeStateConfig{
+				isReady:                        baseCase.nodeConfig.isReady,
+				sinceOffset:                    baseCase.nodeConfig.sinceOffset,
+				hasScaleDownDisabledAnnotation: true,
+			},
+			thresholds:     baseCase.thresholds,
+			groupConfig:    baseCase.groupConfig,
+			expectedReason: simulator.ScaleDownDisabledAnnotation,
+		},
+		{
+			name:       "NotUnneededLongEnough",
+			nodeConfig: baseCase.nodeConfig,
+			thresholds: thresholdConfig{
+				unneeded: 15 * time.Minute,
+				unready:  baseCase.thresholds.unready,
+			},
+			groupConfig:    baseCase.groupConfig,
+			expectedReason: simulator.NotUnneededLongEnough,
+		},
+		{
+			name: "NotUnreadyLongEnough",
+			nodeConfig: nodeStateConfig{
+				isReady:                        false,
+				sinceOffset:                    baseCase.nodeConfig.sinceOffset,
+				hasScaleDownDisabledAnnotation: baseCase.nodeConfig.hasScaleDownDisabledAnnotation,
+			},
+			thresholds: thresholdConfig{
+				unready:  15 * time.Minute,
+				unneeded: baseCase.thresholds.unneeded,
+			},
+			groupConfig:    baseCase.groupConfig,
+			expectedReason: simulator.NotUnreadyLongEnough,
+		},
+		{
+			name:       "NotAutoscaled",
+			nodeConfig: baseCase.nodeConfig,
+			thresholds: baseCase.thresholds,
+			groupConfig: nodeGroupConfigTest{
+				minSize:      baseCase.groupConfig.minSize,
+				isConfigured: false,
+			},
+			expectedReason: simulator.NotAutoscaled,
+		},
+		{
+			name:       "NodeGroupMinSizeReached",
+			nodeConfig: baseCase.nodeConfig,
+			thresholds: baseCase.thresholds,
+			groupConfig: nodeGroupConfigTest{
+				minSize:      1,
+				targetSize:   1,
+				isConfigured: baseCase.groupConfig.isConfigured,
+			},
+			expectedReason: simulator.NodeGroupMinSizeReached,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ng := testprovider.NewTestNodeGroup("ng", defaultNodeGroupMaxSize, tc.groupConfig.minSize, tc.groupConfig.targetSize, true, false, "", nil, nil)
+			nodeName := fmt.Sprintf("test-node-%s", tc.name)
+			node := buildTestNodeWithConfig(nodeName, tc.nodeConfig, now)
+			nodesToProcess := []simulator.NodeToBeRemoved{{Node: node}}
+
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			if tc.groupConfig.isConfigured {
+				provider.InsertNodeGroup(ng)
+				provider.AddNode("ng", node)
+			}
+
+			autoscalingCtx := ca_context.AutoscalingContext{
+				CloudProvider: provider,
+				AutoscalingOptions: config.AutoscalingOptions{
+					ScaleDownSimulationTimeout: testScaleDownTimeout,
+				},
+			}
+
+			var timeGetter scaleDownTimeGetter
+			if tc.shouldTimeGetterError {
+				timeGetter = &fakeScaleDownTimeGetter{returnError: true}
+			} else {
+				timeGetter = &fakeScaleDownTimeGetter{
+					unneededTime: tc.thresholds.unneeded,
+					unreadyTime:  tc.thresholds.unready,
+				}
+			}
+			n := NewNodes(timeGetter, &resource.LimitsFinder{})
+
+			n.Update(&autoscalingCtx, nodesToProcess, now.Add(tc.nodeConfig.sinceOffset))
+
+			sdCtx := nodeprocessors.ScaleDownContext{
+				ActuationStatus:     &fakeActuationStatus{deletionCount: map[string]int{}},
+				ResourcesLeft:       nil,
+				ResourcesWithLimits: []string{},
+			}
+
+			gotEmptyToRemove, gotDrainToRemove, gotUnremovable := n.RemovableAt(&autoscalingCtx, sdCtx, now)
+
+			assert.Empty(t, gotEmptyToRemove, "Expected no empty nodes to be removable")
+			assert.Empty(t, gotDrainToRemove, "Expected no drain nodes to be removable")
+
+			assert.Len(t, gotUnremovable, 1, "Expected number of unremovable nodes mismatch")
+			if len(gotUnremovable) > 0 {
+				assert.Equal(t, nodeName, gotUnremovable[0].Node.Name, "Unremovable node name mismatch")
+				assert.Equal(t, tc.expectedReason, gotUnremovable[0].Reason, "UnremovableReason mismatch for test case")
+			}
+		})
+	}
+}
+
+func buildTestNodeWithConfig(name string, config nodeStateConfig, now time.Time) *apiv1.Node {
+	node := BuildTestNode(name, defaultNodeCpu, defaultNodeMem)
+	SetNodeReadyState(node, config.isReady, now.Add(config.sinceOffset))
+
+	if config.hasScaleDownDisabledAnnotation {
+		if node.Annotations == nil {
+			node.Annotations = make(map[string]string)
+		}
+		node.Annotations["cluster-autoscaler.kubernetes.io/scale-down-disabled"] = "true"
+	}
+	return node
+}
+
+func TestNodeLoadFromExistingTaints(t *testing.T) {
 	deletionCandidateTaint := taints.DeletionCandidateTaint()
 	currentTime := time.Now()
 
@@ -275,20 +533,19 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			currentTime = time.Now()
-
 			nodes := NewNodes(nil, nil)
 
-			allNodeLister := kubernetes.NewTestNodeLister(nil)
+			allNodeLister := kube_util.NewTestNodeLister(nil)
 			allNodeLister.SetNodes(tc.allNodes)
 
-			readyNodeLister := kubernetes.NewTestNodeLister(nil)
+			readyNodeLister := kube_util.NewTestNodeLister(nil)
 			readyNodeLister.SetNodes(tc.allNodes)
 
-			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			ctx := &ca_context.AutoscalingContext{CloudProvider: provider, AutoscalingOptions: config.AutoscalingOptions{NodeDeletionCandidateTTL: tc.nodeDeletionCandidateTTL}}
+			ctx.ListerRegistry = kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
 				nil, nil, nil, nil, nil, nil, nil)
-
-			nodes.LoadFromExistingTaints(listerRegistry, currentTime, tc.nodeDeletionCandidateTTL)
+			nodes.LoadFromExistingTaints(ctx, currentTime)
 
 			unneededNodes := nodes.AsList()
 
@@ -299,9 +556,9 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			for _, node := range tc.expectedUnneededNodes {
 				expectedNodeNames[node.Name] = true
 			}
-			for _, node := range unneededNodes {
-				_, found := expectedNodeNames[node.Name]
-				assert.True(t, found, "Node %s was not expected to be unneeded", node.Name)
+			for _, candidate := range unneededNodes {
+				_, found := expectedNodeNames[candidate.Node.Name]
+				assert.True(t, found, "Node %s was not expected to be unneeded", candidate.Node.Name)
 			}
 			for _, expectedNode := range tc.expectedUnneededNodes {
 				assert.True(t, nodes.Contains(expectedNode.Name),
@@ -333,12 +590,22 @@ func (f *fakeActuationStatus) DeletionsCount(nodeGroup string) int {
 	return f.deletionCount[nodeGroup]
 }
 
-type fakeScaleDownTimeGetter struct{}
+type fakeScaleDownTimeGetter struct {
+	unneededTime time.Duration
+	unreadyTime  time.Duration
+	returnError  bool
+}
 
 func (f *fakeScaleDownTimeGetter) GetScaleDownUnneededTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return 0 * time.Second, nil
+	if f.returnError {
+		return 0, fmt.Errorf("simulated error getting unneeded time")
+	}
+	return f.unneededTime, nil
 }
 
 func (f *fakeScaleDownTimeGetter) GetScaleDownUnreadyTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return 0 * time.Second, nil
+	if f.returnError {
+		return 0, fmt.Errorf("simulated error getting unready time")
+	}
+	return f.unreadyTime, nil
 }

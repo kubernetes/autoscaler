@@ -19,6 +19,7 @@ package v1
 import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -133,7 +134,7 @@ type EvictionRequirement struct {
 // PodUpdatePolicy describes the rules on how changes are applied to the pods.
 type PodUpdatePolicy struct {
 	// Controls when autoscaler applies changes to the pod resources.
-	// The default is 'Auto'.
+	// The default is 'Recreate'.
 	// +optional
 	UpdateMode *UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
 
@@ -170,6 +171,7 @@ const (
 	// and additionally can update them during the lifetime of the pod,
 	// using any available update method. Currently this is equivalent to
 	// Recreate.
+	//
 	// Deprecated: This value is deprecated and will be removed in a future API version.
 	// Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.
 	// See https://github.com/kubernetes/autoscaler/issues/8424 for more details.
@@ -224,6 +226,14 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// oomBumpUpRatio is the ratio to increase memory when OOM is detected.
+	// +optional
+	OOMBumpUpRatio *resource.Quantity `json:"oomBumpUpRatio,omitempty" protobuf:"bytes,7,opt,name=oomBumpUpRatio"`
+
+	// oomMinBumpUp is the minimum increase in memory when OOM is detected.
+	// +optional
+	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
 }
 
 const (
@@ -408,7 +418,7 @@ type VerticalPodAutoscalerCheckpointStatus struct {
 	// Checkpoint of histogram for consumption of memory.
 	MemoryHistogram HistogramCheckpoint `json:"memoryHistogram,omitempty" protobuf:"bytes,4,rep,name=memoryHistogram"`
 
-	// Timestamp of the fist sample from the histograms.
+	// Timestamp of the first sample from the histograms.
 	// +nullable
 	FirstSampleStart metav1.Time `json:"firstSampleStart,omitempty" protobuf:"bytes,5,opt,name=firstSampleStart"`
 

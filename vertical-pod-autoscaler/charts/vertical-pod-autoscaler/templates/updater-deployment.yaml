@@ -1,0 +1,99 @@
+{{- if .Values.updater.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.updater.replicas }}
+  selector:
+    matchLabels:
+      {{- include "vertical-pod-autoscaler.updater.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "vertical-pod-autoscaler.updater.selectorLabels" . | nindent 8 }}
+      {{- with .Values.updater.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.updater.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{ toYaml . | nindent 8 | trim }}
+      {{- end }}
+      {{- with .Values.updater.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.updater.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.updater.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.updater.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: updater
+          image: {{ include "vertical-pod-autoscaler.updater.image" . }}
+          imagePullPolicy: {{ .Values.updater.image.pullPolicy }}
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          args:
+            - --v=4
+            - --stderrthreshold=info
+            {{- if eq (include "vertical-pod-autoscaler.updater.leaderElectionEnabled" .) "true" }}
+            - --leader-elect=true
+            - --leader-elect-resource-namespace={{ .Values.updater.leaderElection.resourceNamespace | default .Release.Namespace }}
+            - --leader-elect-resource-name={{ .Values.updater.leaderElection.resourceName }}
+            - --leader-elect-lease-duration={{ .Values.updater.leaderElection.leaseDuration }}
+            - --leader-elect-renew-deadline={{ .Values.updater.leaderElection.renewDeadline }}
+            - --leader-elect-retry-period={{ .Values.updater.leaderElection.retryPeriod }}
+            {{- end }}
+          {{- with .Values.updater.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: prometheus
+              containerPort: 8943
+          {{- with .Values.updater.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            periodSeconds: 10
+            failureThreshold: 3
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{ toYaml . | nindent 12 | trim }}
+          {{- end }}
+{{- end -}}

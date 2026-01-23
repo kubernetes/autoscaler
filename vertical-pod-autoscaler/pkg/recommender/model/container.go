@@ -97,6 +97,9 @@ func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isO
 		usageValue = CoresFromCPUAmount(usage)
 	case corev1.ResourceMemory:
 		usageValue = BytesFromMemoryAmount(usage)
+	default:
+		klog.V(0).InfoS("Unknown resource", "resource", resource)
+		return
 	}
 	if container.aggregator.GetLastRecommendation() == nil {
 		metrics_quality.ObserveQualityMetricsRecommendationMissing(usageValue, isOOM, resource, updateMode)
@@ -123,6 +126,18 @@ func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isO
 // GetMaxMemoryPeak returns maximum memory usage in the sample, possibly estimated from OOM
 func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
+}
+
+// GetOOMBumpUpRatio returns the ratio to increase resources when OOM is detected.
+// It delegates to the aggregator's implementation.
+func (container *ContainerState) GetOOMBumpUpRatio() float64 {
+	return container.aggregator.GetOOMBumpUpRatio()
+}
+
+// GetOOMMinBumpUp returns the minimum amount to bump up resources when OOM is detected.
+// It delegates to the aggregator's implementation.
+func (container *ContainerState) GetOOMMinBumpUp() float64 {
+	return container.aggregator.GetOOMMinBumpUp()
 }
 
 func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, isOOM bool) bool {
@@ -183,14 +198,16 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 // RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
 func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
 	// Discard old OOM
-	if timestamp.Before(container.WindowEnd.Add(-1 * GetAggregationsConfig().MemoryAggregationInterval)) {
+	config := GetAggregationsConfig()
+	// TODO(omerap12): remove MemoryAggregationInterval to per-container configuration as well
+	if timestamp.Before(container.WindowEnd.Add(-1 * config.MemoryAggregationInterval)) {
 		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
 	}
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(GetAggregationsConfig().OOMMinBumpUp),
-		ScaleResource(memoryUsed, GetAggregationsConfig().OOMBumpUpRatio))
+	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(container.GetOOMMinBumpUp()),
+		ScaleResource(memoryUsed, container.GetOOMBumpUpRatio()))
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,

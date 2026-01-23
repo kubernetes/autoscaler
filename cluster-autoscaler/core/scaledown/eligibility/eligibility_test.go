@@ -39,15 +39,16 @@ import (
 )
 
 type testCase struct {
-	desc                        string
-	nodes                       []*apiv1.Node
-	pods                        []*apiv1.Pod
-	draSnapshot                 *drasnapshot.Snapshot
-	draEnabled                  bool
-	wantUnneeded                []string
-	wantUnremovable             []*simulator.UnremovableNode
-	scaleDownUnready            bool
-	ignoreDaemonSetsUtilization bool
+	desc                          string
+	nodes                         []*apiv1.Node
+	pods                          []*apiv1.Pod
+	draSnapshot                   *drasnapshot.Snapshot
+	draEnabled                    bool
+	wantUnneeded                  []string
+	wantUnremovable               []*simulator.UnremovableNode
+	scaleDownUnready              bool
+	ignoreDaemonSetsUtilization   bool
+	scaleDownUtilizationThreshold *float64
 }
 
 func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time) []testCase {
@@ -180,15 +181,16 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 	}
 
 	if ignoreDaemonSetsUtilization {
-		finalTestCases = append(testCases, testCase{
-			desc:                        "high utilization daemonsets node is filtered out",
-			nodes:                       []*apiv1.Node{regularNode},
-			pods:                        []*apiv1.Pod{smallPod, dsPod},
-			wantUnneeded:                []string{},
-			wantUnremovable:             []*simulator.UnremovableNode{{Node: regularNode, Reason: simulator.NotUnderutilized}},
-			scaleDownUnready:            true,
-			ignoreDaemonSetsUtilization: false,
-		},
+		finalTestCases = append(testCases,
+			testCase{
+				desc:                        "high utilization daemonsets node is filtered out",
+				nodes:                       []*apiv1.Node{regularNode},
+				pods:                        []*apiv1.Pod{smallPod, dsPod},
+				wantUnneeded:                []string{},
+				wantUnremovable:             []*simulator.UnremovableNode{{Node: regularNode, Reason: simulator.NotUnderutilized}},
+				scaleDownUnready:            true,
+				ignoreDaemonSetsUtilization: false,
+			},
 			testCase{
 				desc:                        "high utilization daemonsets node stays",
 				nodes:                       []*apiv1.Node{regularNode},
@@ -197,6 +199,19 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 				wantUnremovable:             []*simulator.UnremovableNode{},
 				scaleDownUnready:            true,
 				ignoreDaemonSetsUtilization: true,
+			},
+			testCase{
+				desc:                        "only daemonsets pods on this nodes",
+				nodes:                       []*apiv1.Node{regularNode},
+				pods:                        []*apiv1.Pod{dsPod},
+				wantUnneeded:                []string{"regular"},
+				wantUnremovable:             []*simulator.UnremovableNode{},
+				scaleDownUnready:            true,
+				ignoreDaemonSetsUtilization: true,
+				scaleDownUtilizationThreshold: func() *float64 {
+					threshold := float64(0)
+					return &threshold
+				}(),
 			})
 	}
 
@@ -210,12 +225,16 @@ func TestFilterOutUnremovable(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
+			utilizationThreshold := config.DefaultScaleDownUtilizationThreshold
+			if tc.scaleDownUtilizationThreshold != nil {
+				utilizationThreshold = *tc.scaleDownUtilizationThreshold
+			}
 			options := config.AutoscalingOptions{
 				DynamicResourceAllocationEnabled: tc.draEnabled,
 				UnremovableNodeRecheckTimeout:    5 * time.Minute,
 				ScaleDownUnreadyEnabled:          tc.scaleDownUnready,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
-					ScaleDownUtilizationThreshold:    config.DefaultScaleDownUtilizationThreshold,
+					ScaleDownUtilizationThreshold:    utilizationThreshold,
 					ScaleDownGpuUtilizationThreshold: config.DefaultScaleDownGpuUtilizationThreshold,
 					ScaleDownUnneededTime:            config.DefaultScaleDownUnneededTime,
 					ScaleDownUnreadyTime:             config.DefaultScaleDownUnreadyTime,
@@ -229,15 +248,15 @@ func TestFilterOutUnremovable(t *testing.T) {
 			for _, n := range tc.nodes {
 				provider.AddNode("ng1", n)
 			}
-			context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil, nil)
 			if err != nil {
 				t.Fatalf("Could not create autoscaling context: %v", err)
 			}
-			if err := context.ClusterSnapshot.SetClusterState(tc.nodes, tc.pods, tc.draSnapshot); err != nil {
+			if err := autoscalingCtx.ClusterSnapshot.SetClusterState(tc.nodes, tc.pods, tc.draSnapshot, nil); err != nil {
 				t.Fatalf("Could not SetClusterState: %v", err)
 			}
 			unremovableNodes := unremovable.NewNodes()
-			gotUnneeded, _, gotUnremovable := c.FilterOutUnremovable(&context, tc.nodes, now, unremovableNodes)
+			gotUnneeded, _, gotUnremovable := c.FilterOutUnremovable(&autoscalingCtx, tc.nodes, now, unremovableNodes)
 			if diff := cmp.Diff(tc.wantUnneeded, gotUnneeded); diff != "" {
 				t.Errorf("FilterOutUnremovable(): unexpected unneeded (-want +got): %s", diff)
 			}

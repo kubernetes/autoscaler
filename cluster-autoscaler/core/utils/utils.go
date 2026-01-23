@@ -28,9 +28,25 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
-// isVirtualNode determines if the node is created by virtual kubelet
-func isVirtualNode(node *apiv1.Node) bool {
-	return node.ObjectMeta.Labels["type"] == "virtual-kubelet"
+const (
+	// VirtualKubeletNodeLabelValue is the value of the label that is set on virtual kubelet
+	VirtualKubeletNodeLabelValue = "virtual-kubelet"
+)
+
+// isVirtualKubeletNode determines if the node is created by virtual kubelet
+func isVirtualKubeletNode(node *apiv1.Node) bool {
+	if node == nil {
+		return false
+	}
+	return node.ObjectMeta.Labels["type"] == VirtualKubeletNodeLabelValue
+}
+
+// VirtualKubeletNodeFilter excludes virtual kubelet nodes from quota tracking.
+type VirtualKubeletNodeFilter struct{}
+
+// ExcludeFromTracking returns true if the node is created by virtual kubelet.
+func (f VirtualKubeletNodeFilter) ExcludeFromTracking(node *apiv1.Node) bool {
+	return isVirtualKubeletNode(node)
 }
 
 // FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
@@ -40,7 +56,7 @@ func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cl
 
 	for _, node := range nodes {
 		// Exclude the virtual node here since it may have lots of resource and exceed the total resource limit
-		if isVirtualNode(node) {
+		if isVirtualKubeletNode(node) {
 			continue
 		}
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)

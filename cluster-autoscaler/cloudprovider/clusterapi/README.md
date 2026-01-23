@@ -307,6 +307,30 @@ metadata:
 > Please see the [Cluster API Book chapter on Metadata propagation](https://cluster-api.sigs.k8s.io/reference/api/metadata-propagation)
 > for more information.
 
+
+#### Pre-defined csi driver information on nodes scaled from zero
+
+To provide CSI driver information for scale from zero, the optional
+capacity annotation may be supplied as a comma separated list of driver name
+and volume limit key/value pairs, as demonstrated in the example below:
+
+```yaml
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: MachineDeployment
+metadata:
+  annotations:
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
+    capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
+    capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
+    capacity.cluster-autoscaler.kubernetes.io/csi-driver: "ebs.csi.aws.com=25,efs.csi.aws.com=16"
+```
+
+> Note: The CSI driver information supplied through the capacity annotation
+> specifies which CSI drivers will be installed on nodes scaled from zero, along
+> with their respective volume limits. The format is `driver-name=volume-limit`
+> with multiple drivers separated by commas.
+
 #### Per-NodeGroup autoscaling options
 
 Custom autoscaling options per node group (MachineDeployment/MachinePool/MachineSet) can be specified as annoations with a common prefix:
@@ -326,16 +350,18 @@ metadata:
     cluster.x-k8s.io/autoscaling-options-scaledownunreadytime: "20m0s"
     # overrides --max-node-provision-time global value for that specific MachineDeployment
     cluster.x-k8s.io/autoscaling-options-maxnodeprovisiontime: "20m0s"
+    # overrides --max-node-startup-time global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-maxnodestartuptime: "20m0s"
 ```
 
-#### CPU Architecture awareness for single-arch clusters 
+#### CPU Architecture awareness for single-arch clusters
 
-Users of single-arch non-amd64 clusters who are using scale from zero 
+Users of single-arch non-amd64 clusters who are using scale from zero
 support should also set the `CAPI_SCALE_ZERO_DEFAULT_ARCH` environment variable
 to set the architecture of the nodes they want to default the node group templates to.
-The autoscaler will default to `amd64` if it is not set, and the node 
-group templates may not match the nodes' architecture, specifically when 
-the workload triggering the scale-up uses a node affinity predicate checking 
+The autoscaler will default to `amd64` if it is not set, and the node
+group templates may not match the nodes' architecture, specifically when
+the workload triggering the scale-up uses a node affinity predicate checking
 for the node's architecture.
 
 ## Specifying a Custom Resource Group

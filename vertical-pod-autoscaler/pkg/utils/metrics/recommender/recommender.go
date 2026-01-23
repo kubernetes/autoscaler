@@ -36,17 +36,6 @@ const (
 	metricsNamespace = metrics.TopMetricsNamespace + "recommender"
 )
 
-var (
-	// TODO: unify this list with the types defined in the VPA handler to avoid
-	// drift if one file is changed and the other one is missed.
-	modes = []string{
-		string(vpa_types.UpdateModeOff),
-		string(vpa_types.UpdateModeInitial),
-		string(vpa_types.UpdateModeRecreate),
-		string(vpa_types.UpdateModeAuto),
-	}
-)
-
 type apiVersion string
 
 const (
@@ -156,13 +145,13 @@ func NewObjectCounter() *ObjectCounter {
 	}
 
 	// initialize with empty data so we can clean stale gauge values in Observe
-	for _, m := range modes {
+	for m := range vpa_types.GetUpdateModes() {
 		for _, h := range []bool{false, true} {
 			for _, api := range []apiVersion{v1beta1, v1beta2, v1} {
 				for _, mp := range []bool{false, true} {
 					for _, uc := range []bool{false, true} {
 						obj.cnt[objectCounterKey{
-							mode:              m,
+							mode:              string(m),
 							has:               h,
 							apiVersion:        api,
 							matchesPods:       mp,
@@ -179,7 +168,7 @@ func NewObjectCounter() *ObjectCounter {
 
 // Add updates the helper state to include the given VPA object
 func (oc *ObjectCounter) Add(vpa *model.Vpa) {
-	mode := vpa_types.UpdateModeAuto
+	mode := vpa_types.UpdateModeRecreate
 	if vpa.UpdateMode != nil && string(*vpa.UpdateMode) != "" {
 		mode = *vpa.UpdateMode
 	}

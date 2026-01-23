@@ -21,6 +21,7 @@ import (
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -47,6 +48,8 @@ type VerticalPodAutoscalerBuilder interface {
 	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
 	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
 	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
+	WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
+	WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -87,6 +90,8 @@ type verticalPodAutoscalerBuilder struct {
 	targetRef               *autoscaling.CrossVersionObjectReference
 	appendedRecommendations []vpa_types.RecommendedContainerResources
 	recommender             string
+	oomBumpUpRatio          *resource.Quantity
+	oomMinBumpUp            *resource.Quantity
 }
 
 func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
@@ -195,7 +200,7 @@ func (b *verticalPodAutoscalerBuilder) WithGroupVersion(gv meta.GroupVersion) Ve
 }
 
 func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirements []*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder {
-	updateModeAuto := vpa_types.UpdateModeAuto
+	updateModeAuto := vpa_types.UpdateModeRecreate
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
@@ -205,12 +210,24 @@ func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirem
 }
 
 func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder {
-	updateModeAuto := vpa_types.UpdateModeAuto
+	updateModeAuto := vpa_types.UpdateModeRecreate
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
 	}
 	c.updatePolicy.MinReplicas = minReplicas
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.oomBumpUpRatio = ratio
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.oomMinBumpUp = minBumpUp
 	return &c
 }
 
@@ -250,6 +267,8 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			MaxAllowed:       b.maxAllowed[containerName],
 			ControlledValues: b.controlledValues[containerName],
 			Mode:             &scalingModeAuto,
+			OOMBumpUpRatio:   b.oomBumpUpRatio,
+			OOMMinBumpUp:     b.oomMinBumpUp,
 		}
 		if scalingMode, ok := b.scalingMode[containerName]; ok {
 			containerResourcePolicy.Mode = scalingMode

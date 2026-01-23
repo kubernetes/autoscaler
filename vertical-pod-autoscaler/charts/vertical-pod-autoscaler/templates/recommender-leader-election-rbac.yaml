@@ -1,0 +1,50 @@
+{{- if and (.Values.recommender.enabled) .Values.rbac.create -}}
+{{- /* Smart auto-enable: if enabled is null, auto-enable when replicas > 1 */ -}}
+{{- $leaderElectionEnabled := .Values.recommender.leaderElection.enabled }}
+{{- if eq $leaderElectionEnabled nil }}
+  {{- $leaderElectionEnabled = gt (int .Values.recommender.replicas) 1 }}
+{{- end }}
+{{- if $leaderElectionEnabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-leader-locking
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - create
+  - apiGroups:
+      - "coordination.k8s.io"
+    resourceNames:
+      - {{ .Values.recommender.leaderElection.resourceName }}
+    resources:
+      - leases
+    verbs:
+      - get
+      - watch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-leader-locking
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-leader-locking
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end -}}
+{{- end -}}

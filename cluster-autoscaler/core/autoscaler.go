@@ -20,52 +20,26 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
-	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
 )
-
-// AutoscalerOptions is the whole set of options for configuring an autoscaler
-type AutoscalerOptions struct {
-	config.AutoscalingOptions
-	KubeClient             kube_client.Interface
-	InformerFactory        informers.SharedInformerFactory
-	AutoscalingKubeClients *context.AutoscalingKubeClients
-	CloudProvider          cloudprovider.CloudProvider
-	FrameworkHandle        *framework.Handle
-	ClusterSnapshot        clustersnapshot.ClusterSnapshot
-	ExpanderStrategy       expander.Strategy
-	EstimatorBuilder       estimator.EstimatorBuilder
-	Processors             *ca_processors.AutoscalingProcessors
-	LoopStartNotifier      *loopstart.ObserversList
-	Backoff                backoff.Backoff
-	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
-	RemainingPdbTracker    pdb.RemainingPdbTracker
-	ScaleUpOrchestrator    scaleup.Orchestrator
-	DeleteOptions          options.NodeDeleteOptions
-	DrainabilityRules      rules.Rules
-	DraProvider            *draprovider.Provider
-}
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
 // The configuration can be injected at the creation of an autoscaler
@@ -83,7 +57,7 @@ type Autoscaler interface {
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInformerFactory) (Autoscaler, errors.AutoscalerError) {
+func NewAutoscaler(opts coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) (Autoscaler, errors.AutoscalerError) {
 	err := initializeDefaultOptions(&opts, informerFactory)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
@@ -105,11 +79,13 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 		opts.DeleteOptions,
 		opts.DrainabilityRules,
 		opts.DraProvider,
+		opts.QuotasTrackerOptions,
+		opts.CSIProvider,
 	), nil
 }
 
 // Initialize default options if not provided.
-func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
+func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
 	}
@@ -117,32 +93,20 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 		opts.LoopStartNotifier = loopstart.NewObserversList(nil)
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
+		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
-		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled)
+		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
 		if err != nil {
 			return err
 		}
 		opts.FrameworkHandle = fwHandle
 	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled)
+		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled, opts.PredicateParallelism, opts.CSINodeAwareSchedulingEnabled)
 	}
 	if opts.RemainingPdbTracker == nil {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
-	}
-	if opts.CloudProvider == nil {
-		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions, informerFactory)
-	}
-	if opts.ExpanderStrategy == nil {
-		expanderFactory := factory.NewFactory()
-		expanderFactory.RegisterDefaultExpanders(opts.CloudProvider, opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
-		expanderStrategy, err := expanderFactory.Build(strings.Split(opts.ExpanderNames, ","))
-		if err != nil {
-			return err
-		}
-		opts.ExpanderStrategy = expanderStrategy
 	}
 	if opts.EstimatorBuilder == nil {
 		thresholds := []estimator.Threshold{
@@ -171,6 +135,33 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 	if opts.DraProvider == nil && opts.DynamicResourceAllocationEnabled {
 		opts.DraProvider = draprovider.NewProviderFromInformers(informerFactory)
 	}
+	if opts.CloudProvider == nil {
+		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts, informerFactory)
+	}
+	if opts.ExpanderStrategy == nil {
+		expanderFactory := factory.NewFactory()
+		expanderFactory.RegisterDefaultExpanders(opts.CloudProvider, opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
+		expanderStrategy, err := expanderFactory.Build(strings.Split(opts.ExpanderNames, ","))
+		if err != nil {
+			return err
+		}
+		opts.ExpanderStrategy = expanderStrategy
+	}
+	if opts.QuotasTrackerOptions.QuotaProvider == nil {
+		cloudQuotasProvider := resourcequotas.NewCloudQuotasProvider(opts.CloudProvider)
+		opts.QuotasTrackerOptions.QuotaProvider = resourcequotas.NewCombinedQuotasProvider([]resourcequotas.Provider{cloudQuotasProvider})
+	}
+	if opts.QuotasTrackerOptions.CustomResourcesProcessor == nil {
+		opts.QuotasTrackerOptions.CustomResourcesProcessor = opts.Processors.CustomResourcesProcessor
+	}
+	if opts.QuotasTrackerOptions.NodeFilter == nil {
+		virtualKubeletNodeFilter := utils.VirtualKubeletNodeFilter{}
+		opts.QuotasTrackerOptions.NodeFilter = resourcequotas.NewCombinedNodeFilter([]resourcequotas.NodeFilter{virtualKubeletNodeFilter})
+	}
 
+	if opts.CSINodeAwareSchedulingEnabled {
+		csiProvider := csinodeprovider.NewCSINodeProviderFromInformers(informerFactory)
+		opts.CSIProvider = csiProvider
+	}
 	return nil
 }

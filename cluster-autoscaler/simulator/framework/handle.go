@@ -26,6 +26,7 @@ import (
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerplugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
@@ -41,7 +42,7 @@ type Handle struct {
 }
 
 // NewHandle builds a framework Handle based on the provided informers and scheduler config.
-func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool) (*Handle, error) {
+func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool) (*Handle, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = schedulerconfiglatest.Default()
@@ -54,14 +55,23 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 	}
 
 	sharedLister := NewDelegatingSchedulerSharedLister()
+	sharedCSIManager := nodevolumelimits.NewCSIManager(informerFactory.Storage().V1().CSINodes().Lister())
 	opts := []schedulerframeworkruntime.Option{
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
+		schedulerframeworkruntime.WithSharedCSIManager(sharedCSIManager),
 	}
 	if draEnabled {
 		opts = append(opts, schedulerframeworkruntime.WithSharedDRAManager(sharedLister))
 	}
-
+	// TODO: We should always use sharedLister once this CSINode aware changes in CAS are
+	// enabled by default.
+	if csiEnabled {
+		opts = append(opts, schedulerframeworkruntime.WithSharedCSIManager(sharedLister))
+	} else {
+		sharedCSIManager := nodevolumelimits.NewCSIManager(informerFactory.Storage().V1().CSINodes().Lister())
+		opts = append(opts, schedulerframeworkruntime.WithSharedCSIManager(sharedCSIManager))
+	}
 	initMetricsOnce.Do(func() {
 		schedulermetrics.InitMetrics()
 	})

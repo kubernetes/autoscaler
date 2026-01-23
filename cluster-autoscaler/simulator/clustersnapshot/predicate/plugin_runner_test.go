@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -318,9 +319,10 @@ func TestDebugInfo(t *testing.T) {
 
 	_, _, predicateErr := defaultPluginRunner.RunFiltersOnNode(p1, "n1")
 	assert.NotNil(t, predicateErr)
-	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
-	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
+	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint(s)")
+	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint(s)")
 	assert.Contains(t, predicateErr.Error(), "RandomTaint")
+	assert.Contains(t, predicateErr.Error(), "SomeTaint")
 
 	// with custom predicate checker
 
@@ -359,10 +361,62 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 		schedConfig = defaultConfig
 	}
 
-	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true)
+	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false)
 	if err != nil {
 		return nil, nil, err
 	}
-	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true)
-	return NewSchedulerPluginRunner(fwHandle, snapshot), snapshot, nil
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, false)
+	return NewSchedulerPluginRunner(fwHandle, snapshot, 1), snapshot, nil
+}
+
+func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
+	pod := BuildTestPod("p", 100, 1000)
+	nodes := make([]*apiv1.Node, 0, 5001)
+	podsOnNodes := make(map[string][]*apiv1.Pod)
+
+	for i := 0; i < 5000; i++ {
+		nodeName := fmt.Sprintf("n-%d", i)
+		node := BuildTestNode(nodeName, 10, 1000)
+		nodes = append(nodes, node)
+		// Add 10 small pods to each node
+		pods := make([]*apiv1.Pod, 0, 10)
+		for j := 0; j < 10; j++ {
+			pods = append(pods, BuildTestPod(fmt.Sprintf("p-%d-%d", i, j), 1, 1))
+		}
+		podsOnNodes[nodeName] = pods
+	}
+	// Last node is the only one that can fit the pod.
+	lastNodeName := fmt.Sprintf("n-%d", len(nodes))
+	lastNode := BuildTestNode(lastNodeName, 1000, 1000)
+	nodes = append(nodes, lastNode)
+
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	assert.NoError(b, err)
+
+	for _, node := range nodes {
+		err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, podsOnNodes[node.Name]...))
+		assert.NoError(b, err)
+	}
+
+	testCases := []struct {
+		parallelism int
+	}{
+		{parallelism: 1},
+		{parallelism: 2},
+		{parallelism: 4},
+		{parallelism: 8},
+		{parallelism: 16},
+	}
+
+	for _, tc := range testCases {
+		b.Run(fmt.Sprintf("parallelism-%d", tc.parallelism), func(b *testing.B) {
+			pluginRunner.parallelism = tc.parallelism
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				pluginRunner.lastIndex = 0 // Reset state for each run
+				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, func(info *framework.NodeInfo) bool { return true })
+				assert.NoError(b, err)
+			}
+		})
+	}
 }

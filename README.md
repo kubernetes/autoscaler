@@ -1,6 +1,6 @@
 # Kubernetes Autoscaler
 
-[![Release Charts](https://github.com/kubernetes/autoscaler/actions/workflows/release.yaml/badge.svg)](https://github.com/kubernetes/autoscaler/actions/workflows/release.yaml) [![Tests](https://github.com/kubernetes/autoscaler/actions/workflows/ci.yaml/badge.svg)](https://github.com/kubernetes/autoscaler/actions/workflows/ci.yaml) [![GoDoc Widget]][GoDoc]
+[![Release Charts](https://github.com/kubernetes/autoscaler/actions/workflows/chart-release.yaml/badge.svg)](https://github.com/kubernetes/autoscaler/actions/workflows/chart-release.yaml) [![CA Tests](https://github.com/kubernetes/autoscaler/actions/workflows/ca-test.yaml/badge.svg)](https://github.com/kubernetes/autoscaler/actions/workflows/ca-test.yaml) [![VPA Tests](https://github.com/kubernetes/autoscaler/actions/workflows/vpa-test.yaml/badge.svg)](https://github.com/kubernetes/autoscaler/actions/workflows/vpa-test.yaml) [![GoDoc Widget]][GoDoc]
 
 This repository contains autoscaling-related components for Kubernetes.
 
@@ -9,13 +9,15 @@ This repository contains autoscaling-related components for Kubernetes.
 [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) - a component that automatically adjusts the size of a Kubernetes
 Cluster so that all pods have a place to run and there are no unneeded nodes. Supports several public cloud providers. Version 1.0 (GA) was released with kubernetes 1.8.
 
+[Cluster Autoscaler Helm Chart](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/charts) - Supported Helm chart for Cluster Autoscaler.
+
 [Vertical Pod Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) - a set of components that automatically adjust the
 amount of CPU and memory requested by pods running in the Kubernetes Cluster. Current state - beta.
 
+[Vertical Pod Autoscaler Helm Chart](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/charts) - Supported Helm chart for Vertical Pod Autoscaler.
+
 [Addon Resizer](https://github.com/kubernetes/autoscaler/tree/master/addon-resizer) - a simplified version of vertical pod autoscaler that modifies
 resource requests of a deployment based on the number of nodes in the Kubernetes Cluster. Current state - beta.
-
-[Charts](https://github.com/kubernetes/autoscaler/tree/master/charts) - Supported Helm charts for components above.
 
 ## Contact Info
 

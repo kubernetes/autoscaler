@@ -29,14 +29,14 @@ type sngCapacityThreshold struct {
 // NodeLimit returns maximum number of new nodes that can be added to the cluster
 // based on capacity of current node group and total capacity of similar node groups. Possible return values are:
 //   - -1 when this node group AND similar node groups have no available capacity
-//   - 0 when context is not set. Return value of 0 means that there is no limit.
+//   - 0 when estimationContext is not set. Return value of 0 means that there is no limit.
 //   - Any positive number representing maximum possible number of new nodes
-func (t *sngCapacityThreshold) NodeLimit(nodeGroup cloudprovider.NodeGroup, context EstimationContext) int {
-	if context == nil {
+func (t *sngCapacityThreshold) NodeLimit(nodeGroup cloudprovider.NodeGroup, estimationContext EstimationContext) int {
+	if estimationContext == nil {
 		return 0
 	}
 	totalAvailableCapacity := t.computeNodeGroupCapacity(nodeGroup)
-	for _, sng := range context.SimilarNodeGroups() {
+	for _, sng := range estimationContext.SimilarNodeGroups() {
 		totalAvailableCapacity += t.computeNodeGroupCapacity(sng)
 	}
 	if totalAvailableCapacity <= 0 {

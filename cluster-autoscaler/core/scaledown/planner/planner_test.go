@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
@@ -493,20 +493,22 @@ func TestUpdateClusterState(t *testing.T) {
 			for _, node := range tc.nodes {
 				provider.AddNode("ng1", node)
 			}
-			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+			opts := config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: 10 * time.Minute,
 				},
 				ScaleDownSimulationTimeout: 1 * time.Second,
 				MaxScaleDownParallelism:    10,
-			}, &fake.Clientset{}, registry, provider, nil, nil)
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(opts)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, &fake.Clientset{}, registry, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
-				context.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
+				autoscalingCtx.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
 				rs := &fakeRemovalSimulator{
 					nodes: tc.nodes,
 					sleep: 2 * time.Second,
@@ -689,20 +691,22 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			for _, node := range nodes {
 				provider.AddNode("ng1", node)
 			}
-			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+			autoscalingOpts := config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: tc.maxUnneededTime,
 				},
 				ScaleDownSimulationTimeout: 1 * time.Hour,
 				MaxScaleDownParallelism:    tc.maxParallelism,
-			}, &fake.Clientset{}, nil, provider, nil, nil)
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOpts)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
-			p.unneededNodes.Update(previouslyUnneeded, time.Now())
+			p.unneededNodes.Update(&autoscalingCtx, previouslyUnneeded, time.Now())
 			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
 			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
 		})
@@ -817,7 +821,8 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 				provider.AddNode("ng1", node)
 			}
 
-			context, err := NewScaleTestAutoscalingContext(
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(
 				autoscalingOptions,
 				&fake.Clientset{},
 				kube_util.NewListerRegistry(
@@ -829,11 +834,12 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 				provider,
 				nil,
 				nil,
+				templateNodeInfoRegistry,
 			)
 			assert.NoError(t, err)
 
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 
 			p.unneededNodes.AsList()
 		})
@@ -842,20 +848,21 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 
 func TestNodesToDelete(t *testing.T) {
 	testCases := []struct {
-		name      string
-		nodes     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
-		wantEmpty []*apiv1.Node
-		wantDrain []*apiv1.Node
+		name           string
+		nodes          map[string][]*apiv1.Node
+		removableNodes map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
+		wantEmpty      []*apiv1.Node
+		wantDrain      []*apiv1.Node
 	}{
 		{
-			name:      "empty",
-			nodes:     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{},
-			wantEmpty: []*apiv1.Node{},
-			wantDrain: []*apiv1.Node{},
+			name:           "empty",
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{},
+			wantEmpty:      []*apiv1.Node{},
+			wantDrain:      []*apiv1.Node{},
 		},
 		{
 			name: "single empty",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("test-ng", 3, false): {
 					buildRemovableNode("test-node", 0),
 				},
@@ -867,7 +874,7 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "single drain",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("test-ng", 3, false): {
 					buildRemovableNode("test-node", 1),
 				},
@@ -879,7 +886,13 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "single empty atomic",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			nodes: map[string][]*apiv1.Node{
+				"atomic-ng": {
+					BuildTestNode("node-0", 1000, 10),
+					BuildTestNode("node-2", 1000, 10),
+				},
+			},
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("atomic-ng", 3, true): {
 					buildRemovableNode("node-1", 0),
 				},
@@ -889,7 +902,7 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "all empty atomic",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("atomic-ng", 3, true): {
 					buildRemovableNode("node-1", 0),
 					buildRemovableNode("node-2", 0),
@@ -905,7 +918,7 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "some drain atomic",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("atomic-ng", 3, true): {
 					buildRemovableNode("node-1", 0),
 					buildRemovableNode("node-2", 0),
@@ -922,55 +935,66 @@ func TestNodesToDelete(t *testing.T) {
 		},
 		{
 			name: "different groups",
-			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+			nodes: map[string][]*apiv1.Node{
+				"atomic-partial-ng-all-registered": {
+					BuildTestNode("atomic-partial-ng-all-registered-0", 1000, 10),
+				},
+			},
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("standard-empty-ng", 3, false): {
-					buildRemovableNode("node-1", 0),
-					buildRemovableNode("node-2", 0),
-					buildRemovableNode("node-3", 0),
+					buildRemovableNode("standard-empty-ng-0", 0),
+					buildRemovableNode("standard-empty-ng-1", 0),
+					buildRemovableNode("standard-empty-ng-2", 0),
 				},
 				sizedNodeGroup("standard-drain-ng", 3, false): {
-					buildRemovableNode("node-4", 1),
-					buildRemovableNode("node-5", 2),
-					buildRemovableNode("node-6", 3),
+					buildRemovableNode("standard-drain-ng-0", 1),
+					buildRemovableNode("standard-drain-ng-1", 2),
+					buildRemovableNode("standard-drain-ng-2", 3),
 				},
 				sizedNodeGroup("standard-mixed-ng", 3, false): {
-					buildRemovableNode("node-7", 0),
-					buildRemovableNode("node-8", 1),
-					buildRemovableNode("node-9", 2),
+					buildRemovableNode("standard-mixed-ng-0", 0),
+					buildRemovableNode("standard-mixed-ng-1", 1),
+					buildRemovableNode("standard-mixed-ng-2", 2),
 				},
 				sizedNodeGroup("atomic-empty-ng", 3, true): {
-					buildRemovableNode("node-10", 0),
-					buildRemovableNode("node-11", 0),
-					buildRemovableNode("node-12", 0),
+					buildRemovableNode("atomic-empty-ng-0", 0),
+					buildRemovableNode("atomic-empty-ng-1", 0),
+					buildRemovableNode("atomic-empty-ng-2", 0),
 				},
 				sizedNodeGroup("atomic-mixed-ng", 3, true): {
-					buildRemovableNode("node-13", 0),
-					buildRemovableNode("node-14", 1),
-					buildRemovableNode("node-15", 2),
+					buildRemovableNode("atomic-mixed-ng-0", 0),
+					buildRemovableNode("atomic-mixed-ng-1", 1),
+					buildRemovableNode("atomic-mixed-ng-2", 2),
 				},
-				sizedNodeGroup("atomic-partial-ng", 3, true): {
-					buildRemovableNode("node-16", 0),
-					buildRemovableNode("node-17", 1),
+				sizedNodeGroup("atomic-partial-ng-all-registered", 3, true): {
+					buildRemovableNode("atomic-partial-ng-all-registered-1", 0),
+					buildRemovableNode("atomic-partial-ng-all-registered-2", 1),
+				},
+				sizedNodeGroup("atomic-partial-ng-partially-registered", 3, true): {
+					buildRemovableNode("atomic-partial-ng-partially-registered-0", 0),
+					buildRemovableNode("atomic-partial-ng-partially-registered-1", 1),
 				},
 			},
 			wantEmpty: []*apiv1.Node{
-				buildRemovableNode("node-1", 0).Node,
-				buildRemovableNode("node-2", 0).Node,
-				buildRemovableNode("node-3", 0).Node,
-				buildRemovableNode("node-7", 0).Node,
-				buildRemovableNode("node-10", 0).Node,
-				buildRemovableNode("node-11", 0).Node,
-				buildRemovableNode("node-12", 0).Node,
-				buildRemovableNode("node-13", 0).Node,
+				buildRemovableNode("standard-empty-ng-0", 0).Node,
+				buildRemovableNode("standard-empty-ng-1", 0).Node,
+				buildRemovableNode("standard-empty-ng-2", 0).Node,
+				buildRemovableNode("standard-mixed-ng-0", 0).Node,
+				buildRemovableNode("atomic-empty-ng-0", 0).Node,
+				buildRemovableNode("atomic-empty-ng-1", 0).Node,
+				buildRemovableNode("atomic-empty-ng-2", 0).Node,
+				buildRemovableNode("atomic-mixed-ng-0", 0).Node,
+				buildRemovableNode("atomic-partial-ng-partially-registered-0", 0).Node,
 			},
 			wantDrain: []*apiv1.Node{
-				buildRemovableNode("node-4", 0).Node,
-				buildRemovableNode("node-5", 0).Node,
-				buildRemovableNode("node-6", 0).Node,
-				buildRemovableNode("node-8", 0).Node,
-				buildRemovableNode("node-9", 0).Node,
-				buildRemovableNode("node-14", 0).Node,
-				buildRemovableNode("node-15", 0).Node,
+				buildRemovableNode("standard-drain-ng-0", 0).Node,
+				buildRemovableNode("standard-drain-ng-1", 0).Node,
+				buildRemovableNode("standard-drain-ng-2", 0).Node,
+				buildRemovableNode("standard-mixed-ng-1", 0).Node,
+				buildRemovableNode("standard-mixed-ng-2", 0).Node,
+				buildRemovableNode("atomic-mixed-ng-1", 0).Node,
+				buildRemovableNode("atomic-mixed-ng-2", 0).Node,
+				buildRemovableNode("atomic-partial-ng-partially-registered-1", 0).Node,
 			},
 		},
 	}
@@ -981,7 +1005,8 @@ func TestNodesToDelete(t *testing.T) {
 			provider := testprovider.NewTestCloudProviderBuilder().Build()
 			allNodes := []*apiv1.Node{}
 			allRemovables := []simulator.NodeToBeRemoved{}
-			for ng, nodes := range tc.nodes {
+			for ng, nodes := range tc.removableNodes {
+				ng.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
 				provider.InsertNodeGroup(ng)
 				for _, removable := range nodes {
 					allNodes = append(allNodes, removable.Node)
@@ -989,19 +1014,27 @@ func TestNodesToDelete(t *testing.T) {
 					provider.AddNode(ng.Id(), removable.Node)
 				}
 			}
-			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+			for ng, nodes := range tc.nodes {
+				for _, node := range nodes {
+					allNodes = append(allNodes, node)
+					provider.AddNode(ng, node)
+				}
+			}
+			autoscalingOpts := config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: 10 * time.Minute,
 					ScaleDownUnreadyTime:  0 * time.Minute,
 				},
-			}, &fake.Clientset{}, nil, provider, nil, nil)
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOpts)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, nil)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&autoscalingCtx, processors, deleteOptions, nil)
 			p.latestUpdate = time.Now()
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))
+			p.unneededNodes.Update(&autoscalingCtx, allRemovables, time.Now().Add(-1*time.Hour))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
 			empty, drain := p.NodesToDelete(time.Now())
 			assert.ElementsMatch(t, tc.wantEmpty, empty)
@@ -1098,7 +1131,7 @@ type fakeEligibilityChecker struct {
 	eligible map[string]bool
 }
 
-func (f *fakeEligibilityChecker) FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
+func (f *fakeEligibilityChecker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
 	eligible := []string{}
 	utilMap := make(map[string]utilization.Info)
 	for _, n := range scaleDownCandidates {

@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/record"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	baseclocktest "k8s.io/utils/clock/testing"
 
@@ -191,7 +192,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			clock := baseclocktest.NewFakeClock(time.UnixMilli(3600001)) // 1 hour from epoch + 1 millis
 			lipatm := map[string]time.Time{getPodID(selectedPod): tc.lastInPlaceAttempt}
 
-			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tc.evictionTolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tc.evictionTolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
 			assert.NoError(t, err)
 			creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(tc.pods, getIPORVpa())
 			assert.NoError(t, err)
@@ -229,7 +230,7 @@ func TestInPlaceDisabledFeatureGate(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -269,7 +270,7 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10 /*minReplicas*/, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -314,7 +315,7 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -331,6 +332,206 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 	for _, pod := range pods[4:] {
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
+	}
+}
+
+func TestEvictionToleranceForInPlaceWithSkipDisruptionBudget(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(
+		t,
+		features.MutableFeatureGate,
+		features.InPlaceOrRecreate,
+		true,
+	)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.8
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().
+			WithName(getTestPodName(i)).
+			WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			Get()
+	}
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	basicVpa := getIPORVpa()
+	// inPlaceSkipDisruptionBudget = true
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), true /* inPlaceSkipDisruptionBudget */)
+	assert.NoError(t, err)
+
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// All in-place updates should be approved
+	for _, pod := range pods {
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
+	}
+
+	// And all updates should succeed without being blocked by eviction tolerance
+	for _, pod := range pods {
+		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
+		assert.NoError(t, err)
+	}
+}
+
+func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1 // Very low tolerance - would normally block most updates
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	testCases := []struct {
+		name                        string
+		podBuilder                  test.PodBuilder
+		inPlaceSkipDisruptionBudget bool
+		expectedUpdateSuccesses     int
+	}{
+		{
+			name: "NotRequired policy with flag enabled - should skip disruption budget",
+			podBuilder: test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(
+				test.Container().WithName("container1").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+					{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.NotRequired},
+				}).Get()),
+			inPlaceSkipDisruptionBudget: true,
+			expectedUpdateSuccesses:     5,
+		},
+		{
+			name: "RestartContainer policy with flag enabled - should respect disruption budget",
+			podBuilder: test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(
+				test.Container().WithName("container1").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+					{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.NotRequired},
+				}).Get()),
+			inPlaceSkipDisruptionBudget: false,
+			expectedUpdateSuccesses:     1, // Still respects budget because of RestartContainer
+		},
+		{
+			name: "Only RestartContainer policy with flag enabled - should respect disruption budget",
+			podBuilder: test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(
+				test.Container().WithName("container1").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.RestartContainer},
+				}).Get()),
+			inPlaceSkipDisruptionBudget: true,
+			expectedUpdateSuccesses:     1,
+		},
+		{
+			name:                        "No resize policy with flag enabled - should skip disruption budget (K8s default is NotRequired)",
+			podBuilder:                  test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(test.Container().WithName("container1").Get()),
+			inPlaceSkipDisruptionBudget: true,
+			expectedUpdateSuccesses:     5,
+		},
+		{
+			name:                        "No resize policy with flag disabled - should respect disruption budget",
+			podBuilder:                  test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(test.Container().WithName("container1").Get()),
+			inPlaceSkipDisruptionBudget: false,
+			expectedUpdateSuccesses:     1,
+		},
+		{
+			name: "Multiple containers - all NotRequired - should skip disruption budget",
+			podBuilder: test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(
+				test.Container().WithName("container1").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+					{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.NotRequired},
+				}).Get(),
+			).AddContainer(
+				test.Container().WithName("container2").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+					{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.NotRequired},
+				}).Get()),
+			inPlaceSkipDisruptionBudget: true,
+			expectedUpdateSuccesses:     5,
+		},
+		{
+			name: "Multiple containers - one NotRequired, one RestartContainer - should respect disruption budget",
+			podBuilder: test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(
+				test.Container().WithName("container1").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+					{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.NotRequired},
+				}).Get(),
+			).AddContainer(
+				test.Container().WithName("container2").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.RestartContainer},
+					{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.RestartContainer},
+				}).Get()),
+			inPlaceSkipDisruptionBudget: true,
+			expectedUpdateSuccesses:     1, // Respects budget because container2 has RestartContainer
+		},
+		{
+			name: "Multiple containers - one with policy, one without - should skip disruption budget",
+			podBuilder: test.Pod().WithCreator(&rc.ObjectMeta, &rc.TypeMeta).AddContainer(
+				test.Container().WithName("container1").WithContainerResizePolicy([]apiv1.ContainerResizePolicy{
+					{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+				}).Get(),
+			).AddContainer(
+				test.Container().WithName("container2").Get()),
+			inPlaceSkipDisruptionBudget: true,
+			expectedUpdateSuccesses:     5,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pods := make([]*apiv1.Pod, livePods)
+			for index := range livePods {
+				pods[index] = tc.podBuilder.WithName(getTestPodName(index)).Get()
+			}
+
+			clock := baseclocktest.NewFakeClock(time.Time{})
+			lipatm := map[string]time.Time{}
+
+			basicVpa := getIPORVpa()
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), tc.inPlaceSkipDisruptionBudget)
+			assert.NoError(t, err)
+
+			creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+			assert.NoError(t, err)
+
+			inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+			successCount := 0
+			for _, pod := range pods {
+				err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
+				if err == nil {
+					successCount++
+				}
+			}
+			assert.Equal(t, tc.expectedUpdateSuccesses, successCount,
+				"Expected %d successful updates but got %d", tc.expectedUpdateSuccesses, successCount)
+		})
 	}
 }
 
@@ -360,7 +561,7 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc())
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -377,5 +578,50 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	for _, pod := range pods[1:] {
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
+	}
+}
+
+func TestInPlaceUpdate_EventEmission(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	basicVpa := getBasicVpa()
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	eventRecorder := record.NewFakeRecorder(10)
+
+	err = inplace.InPlaceUpdate(pods[0], basicVpa, eventRecorder)
+	assert.NoError(t, err)
+
+	select {
+	case event := <-eventRecorder.Events:
+		assert.Contains(t, event, "InPlaceResizedByVPA")
+	case <-time.After(1 * time.Second):
+		assert.Fail(t, "timeout waiting for event")
 	}
 }

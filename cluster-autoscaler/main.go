@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	ctx "context"
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -27,6 +27,8 @@ import (
 
 	"github.com/spf13/pflag"
 
+	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -46,12 +48,15 @@ import (
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	cbprocessor "k8s.io/autoscaler/cluster-autoscaler/processors/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/podinjection"
@@ -95,7 +100,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
+func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
 	// Get AutoscalingOptions from flags.
 	autoscalingOptions := flags.AutoscalingOptions()
 
@@ -110,7 +115,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	}
 	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
 
-	fwHandle, err := framework.NewHandle(informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled)
+	fwHandle, err := framework.NewHandle(informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.CSINodeAwareSchedulingEnabled)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -118,10 +123,10 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	drainabilityRules := rules.Default(deleteOptions)
 
 	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
-	opts := core.AutoscalerOptions{
+	opts := coreoptions.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		FrameworkHandle:      fwHandle,
-		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled),
+		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,
@@ -171,6 +176,34 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
 	}
 
+	var capacitybufferClient *capacityclient.CapacityBufferClient
+	var capacitybufferClientError error
+	if autoscalingOptions.CapacitybufferControllerEnabled {
+		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+		capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
+		if capacitybufferClientError == nil && capacitybufferClient != nil {
+			nodeBufferController := capacitybuffer.NewDefaultBufferController(capacitybufferClient)
+			go nodeBufferController.Run(make(chan struct{}))
+		}
+	}
+
+	if autoscalingOptions.CapacitybufferPodInjectionEnabled {
+		if capacitybufferClient == nil {
+			restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
+		}
+		if capacitybufferClientError == nil && capacitybufferClient != nil {
+			buffersPodsRegistry := cbprocessor.NewDefaultCapacityBuffersFakePodsRegistry()
+			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(
+				capacitybufferClient,
+				[]string{common.ActiveProvisioningStrategy},
+				buffersPodsRegistry, true)
+			podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{bufferPodInjector, podListProcessor})
+			opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{
+				cbprocessor.NewFakePodsScaleUpStatusProcessor(buffersPodsRegistry), opts.Processors.ScaleUpStatusProcessor})
+		}
+	}
+
 	if autoscalingOptions.ProactiveScaleupEnabled {
 		podInjectionBackoffRegistry := podinjectionbackoff.NewFakePodControllerRegistry()
 
@@ -207,6 +240,10 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	if len(autoscalingOptions.BalancingLabels) > 0 {
 		nodeInfoComparator = nodegroupset.CreateLabelNodeInfoComparator(autoscalingOptions.BalancingLabels)
 	} else {
+		// TODO elmiko - now that we are passing the AutoscalerOptions in to the
+		// NewCloudProvider function, we should migrate these cloud provider specific
+		// configurations to the NewCloudProvider method so that we remove more provider
+		// code from the core.
 		nodeInfoComparatorBuilder := nodegroupset.CreateGenericNodeInfoComparator
 		if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
 			nodeInfoComparatorBuilder = nodegroupset.CreateAzureNodeInfoComparator
@@ -250,7 +287,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		}
 	}
 
-	podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
+	podObserver := loop.StartPodObserver(ctx, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
 
 	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
 	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
@@ -264,10 +301,10 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	autoscalingOpts := flags.AutoscalingOptions()
 
 	metrics.RegisterAll(autoscalingOpts.EmitPerNodeGroupMetrics)
-	context, cancel := ctx.WithCancel(ctx.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	autoscaler, trigger, err := buildAutoscaler(context, debuggingSnapshotter)
+	autoscaler, trigger, err := buildAutoscaler(ctx, debuggingSnapshotter)
 	if err != nil {
 		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
@@ -322,17 +359,24 @@ func main() {
 
 	autoscalingOpts := flags.AutoscalingOptions()
 
-	// If the DRA flag is passed, we need to set the DRA feature gate as well. The selection of scheduler plugins for the default
-	// scheduling profile depends on feature gates, and the DRA plugin is only included if the DRA feature gate is enabled. The DRA
-	// plugin itself also checks the DRA feature gate and doesn't do anything if it's not enabled.
-	if autoscalingOpts.DynamicResourceAllocationEnabled && !featureGate.Enabled(features.DynamicResourceAllocation) {
-		if err := featureGate.SetFromMap(map[string]bool{string(features.DynamicResourceAllocation): true}); err != nil {
-			klog.Fatalf("couldn't enable the DRA feature gate: %v", err)
+	// The DRA feature controls whether the DRA scheduler plugin is selected in scheduler framework. The local DRA flag controls whether
+	// DRA logic is enabled in Cluster Autoscaler. The 2 values should be in sync - enabling DRA logic in CA without selecting the DRA scheduler
+	// plugin doesn't actually do anything, and selecting the DRA scheduler plugin without enabling DRA logic in CA means the plugin is not set up
+	// correctly and can panic.
+	if autoscalingOpts.DynamicResourceAllocationEnabled != featureGate.Enabled(features.DynamicResourceAllocation) {
+		if err := featureGate.SetFromMap(map[string]bool{string(features.DynamicResourceAllocation): autoscalingOpts.DynamicResourceAllocationEnabled}); err != nil {
+			klog.Fatalf("couldn't set the DRA feature gate to %v: %v", autoscalingOpts.DynamicResourceAllocationEnabled, err)
 		}
 	}
 
 	logs.InitLogs()
-	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
+
+	opts, err := flags.ComputeLoggingOptions(pflag.CommandLine)
+	if err != nil {
+		klog.Fatalf("Failed to configure logging: %v", err)
+	}
+
+	if err := logsapi.ValidateAndApplyWithOptions(loggingConfig, opts, featureGate); err != nil {
 		klog.Fatalf("Failed to validate and apply logging configuration: %v", err)
 	}
 
@@ -370,7 +414,7 @@ func main() {
 		kubeClient := kube_util.CreateKubeClient(autoscalingOpts.KubeClientOpts)
 
 		// Validate that the client is ok.
-		_, err = kubeClient.CoreV1().Nodes().List(ctx.TODO(), metav1.ListOptions{})
+		_, err = kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			klog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
@@ -390,14 +434,14 @@ func main() {
 			klog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
-		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
+		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
 			Lock:            lock,
 			LeaseDuration:   leaderElection.LeaseDuration.Duration,
 			RenewDeadline:   leaderElection.RenewDeadline.Duration,
 			RetryPeriod:     leaderElection.RetryPeriod.Duration,
 			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
-				OnStartedLeading: func(_ ctx.Context) {
+				OnStartedLeading: func(_ context.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
 					run(healthCheck, debuggingSnapshotter)

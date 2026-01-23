@@ -30,50 +30,20 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
-func TestFindEmptyNodes(t *testing.T) {
-	nodes := []*apiv1.Node{}
-	nodeNames := []string{}
-	for i := 0; i < 4; i++ {
-		nodeName := fmt.Sprintf("n%d", i)
-		node := BuildTestNode(nodeName, 1000, 2000000)
-		SetNodeReadyState(node, true, time.Time{})
-		nodes = append(nodes, node)
-		nodeNames = append(nodeNames, nodeName)
-	}
-
-	pod1 := BuildTestPod("p1", 300, 500000)
-	pod1.Spec.NodeName = "n1"
-
-	pod2 := BuildTestPod("p2", 300, 500000)
-	pod2.Spec.NodeName = "n2"
-	pod2.Annotations = map[string]string{
-		types.ConfigMirrorAnnotationKey: "",
-	}
-
-	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
-	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
-	r := NewRemovalSimulator(nil, clusterSnapshot, testDeleteOptions(), nil, false)
-	emptyNodes := r.FindEmptyNodesToRemove(nodeNames, testTime)
-	assert.Equal(t, []string{nodeNames[0], nodeNames[2], nodeNames[3]}, emptyNodes)
-}
-
-type findNodesToRemoveTestConfig struct {
+type simulateNodeRemovalTestConfig struct {
 	name        string
 	pods        []*apiv1.Pod
 	allNodes    []*apiv1.Node
-	candidates  []string
-	toRemove    []NodeToBeRemoved
-	unremovable []*UnremovableNode
+	nodeName    string
+	toRemove    *NodeToBeRemoved
+	unremovable *UnremovableNode
 }
 
-func TestFindNodesToRemove(t *testing.T) {
+func TestSimulateNodeRemoval(t *testing.T) {
 	emptyNode := BuildTestNode("n1", 1000, 2000000)
 
 	// two small pods backed by ReplicaSet
@@ -88,6 +58,9 @@ func TestFindNodesToRemove(t *testing.T) {
 	fullNode := BuildTestNode("n4", 1000, 2000000)
 	fullNodeInfo := framework.NewTestNodeInfo(fullNode)
 
+	// noExistNode it doesn't have any node info in the cluster snapshot.
+	noExistNode := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n5"}}
+
 	SetNodeReadyState(emptyNode, true, time.Time{})
 	SetNodeReadyState(drainableNode, true, time.Time{})
 	SetNodeReadyState(nonDrainableNode, true, time.Time{})
@@ -99,7 +72,6 @@ func TestFindNodesToRemove(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "rs",
 				Namespace: "default",
-				SelfLink:  "api/v1/namespaces/default/replicasets/rs",
 			},
 			Spec: appsv1.ReplicaSetSpec{
 				Replicas: &replicas,
@@ -129,14 +101,6 @@ func TestFindNodesToRemove(t *testing.T) {
 	pod4 := BuildTestPod("p4", 1000, 100000)
 	pod4.Spec.NodeName = "n4"
 	fullNodeInfo.AddPod(&framework.PodInfo{Pod: pod4})
-
-	emptyNodeToRemove := NodeToBeRemoved{
-		Node: emptyNode,
-	}
-	drainableNodeToRemove := NodeToBeRemoved{
-		Node:             drainableNode,
-		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
-	}
 
 	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 
@@ -188,70 +152,77 @@ func TestFindNodesToRemove(t *testing.T) {
 	blocker2 := BuildTestPod("blocker2", 100, 100000)
 	blocker2.Spec.NodeName = "topo-n3"
 
-	topoNodeToRemove := NodeToBeRemoved{
-		Node:             topoNode1,
-		PodsToReschedule: []*apiv1.Pod{pod5},
-	}
-
-	tests := []findNodesToRemoveTestConfig{
+	tests := []simulateNodeRemovalTestConfig{
 		{
-			name:       "just an empty node, should be removed",
-			candidates: []string{emptyNode.Name},
-			allNodes:   []*apiv1.Node{emptyNode},
-			toRemove:   []NodeToBeRemoved{emptyNodeToRemove},
+			name:        "just an empty node, should be removed",
+			nodeName:    emptyNode.Name,
+			allNodes:    []*apiv1.Node{emptyNode},
+			toRemove:    &NodeToBeRemoved{Node: emptyNode},
+			unremovable: nil,
 		},
 		{
-			name:        "just a drainable node, but nowhere for pods to go to",
-			pods:        []*apiv1.Pod{pod1, pod2},
-			candidates:  []string{drainableNode.Name},
-			allNodes:    []*apiv1.Node{drainableNode},
-			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
+			name:     "just a drainable node, but nowhere for pods to go to",
+			pods:     []*apiv1.Pod{pod1, pod2},
+			nodeName: drainableNode.Name,
+			allNodes: []*apiv1.Node{drainableNode},
+			toRemove: nil,
+			unremovable: &UnremovableNode{
+				Node:   drainableNode,
+				Reason: NoPlaceToMovePods,
+			},
 		},
 		{
 			name:        "drainable node, and a mostly empty node that can take its pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3},
-			candidates:  []string{drainableNode.Name, nonDrainableNode.Name},
+			nodeName:    drainableNode.Name,
 			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
-			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
-			unremovable: []*UnremovableNode{{Node: nonDrainableNode, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: pod3, Reason: drain.NotReplicated}}},
+			toRemove:    &NodeToBeRemoved{Node: drainableNode, PodsToReschedule: []*apiv1.Pod{pod1, pod2}},
+			unremovable: nil,
 		},
 		{
 			name:        "drainable node, and a full node that cannot fit anymore pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod4},
-			candidates:  []string{drainableNode.Name},
+			nodeName:    drainableNode.Name,
 			allNodes:    []*apiv1.Node{drainableNode, fullNode},
-			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
+			toRemove:    nil,
+			unremovable: &UnremovableNode{Node: drainableNode, Reason: NoPlaceToMovePods},
 		},
 		{
-			name:       "4 nodes, 1 empty, 1 drainable",
-			pods:       []*apiv1.Pod{pod1, pod2, pod3, pod4},
-			candidates: []string{emptyNode.Name, drainableNode.Name},
-			allNodes:   []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
-			toRemove:   []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
+			name:        "4 nodes, 1 empty, 1 drainable",
+			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
+			nodeName:    emptyNode.Name,
+			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+			toRemove:    &NodeToBeRemoved{Node: emptyNode},
+			unremovable: nil,
 		},
 		{
-			name:       "topology spread constraint test - one node should be removable",
-			pods:       []*apiv1.Pod{pod5, pod6, pod7, blocker1, blocker2},
-			allNodes:   []*apiv1.Node{topoNode1, topoNode2, topoNode3},
-			candidates: []string{topoNode1.Name, topoNode2.Name, topoNode3.Name},
-			toRemove:   []NodeToBeRemoved{topoNodeToRemove},
-			unremovable: []*UnremovableNode{
-				{Node: topoNode2, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker1, Reason: drain.NotReplicated}},
-				{Node: topoNode3, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker2, Reason: drain.NotReplicated}},
-			},
+			name:        "topology spread constraint test - one node should be removable",
+			pods:        []*apiv1.Pod{pod5, pod6, pod7, blocker1, blocker2},
+			allNodes:    []*apiv1.Node{topoNode1, topoNode2, topoNode3},
+			nodeName:    topoNode1.Name,
+			toRemove:    &NodeToBeRemoved{Node: topoNode1, PodsToReschedule: []*apiv1.Pod{pod5}},
+			unremovable: nil,
+		},
+		{
+			name:        "candidate not in clusterSnapshot should be marked unremovable",
+			nodeName:    noExistNode.Name,
+			allNodes:    []*apiv1.Node{},
+			pods:        []*apiv1.Pod{},
+			toRemove:    nil,
+			unremovable: &UnremovableNode{Node: noExistNode, Reason: NoNodeInfo},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			destinations := make([]string, 0, len(test.allNodes))
+			destinations := make(map[string]bool)
 			for _, node := range test.allNodes {
-				destinations = append(destinations, node.Name)
+				destinations[node.Name] = true
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 			r := NewRemovalSimulator(registry, clusterSnapshot, testDeleteOptions(), nil, false)
-			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), nil)
-			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
+			toRemove, unremovable := r.SimulateNodeRemoval(test.nodeName, destinations, time.Now(), nil)
+			fmt.Printf("Test scenario: %s, toRemove=%v, unremovable=%v\n", test.name, toRemove, unremovable)
 			assert.Equal(t, test.toRemove, toRemove)
 			assert.Equal(t, test.unremovable, unremovable)
 		})

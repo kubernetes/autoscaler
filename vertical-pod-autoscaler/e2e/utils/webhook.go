@@ -37,7 +37,8 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2edeploy "k8s.io/kubernetes/test/e2e/framework/deployment"
-	"k8s.io/utils/pointer"
+	e2eendpointslice "k8s.io/kubernetes/test/e2e/framework/endpointslice"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -48,8 +49,6 @@ const (
 	secretName      = "sample-webhook-secret"
 	deploymentName  = "sample-webhook-deployment"
 )
-
-func strPtr(s string) *string { return &s }
 
 // LabelNamespace applies unique label to the namespace.
 func LabelNamespace(f *framework.Framework, namespace string) {
@@ -107,8 +106,8 @@ func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, ce
 					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: namespace,
 						Name:      WebhookServiceName,
-						Path:      strPtr("/mutating-pods-sidecar"),
-						Port:      pointer.Int32Ptr(servicePort),
+						Path:      ptr.To("/mutating-pods-sidecar"),
+						Port:      ptr.To(servicePort),
 					},
 					CABundle: certContext.signingCert,
 				},
@@ -167,8 +166,8 @@ func newMutatingIsReadyWebhookFixture(f *framework.Framework, certContext *certC
 			Service: &admissionregistrationv1.ServiceReference{
 				Namespace: f.Namespace.Name,
 				Name:      WebhookServiceName,
-				Path:      strPtr("/always-deny"),
-				Port:      pointer.Int32Ptr(servicePort),
+				Path:      ptr.To("/always-deny"),
+				Port:      ptr.To(servicePort),
 			},
 			CABundle: certContext.signingCert,
 		},
@@ -221,7 +220,7 @@ func waitWebhookConfigurationReady(f *framework.Framework) error {
 func CreateAuthReaderRoleBinding(f *framework.Framework, namespace string) {
 	ginkgo.By("Create role binding to let webhook read extension-apiserver-authentication")
 	client := f.ClientSet
-	_, err := client.RbacV1().RoleBindings("kube-system").Create(context.TODO(), &rbacv1.RoleBinding{
+	_, err := client.RbacV1().RoleBindings(VpaNamespace).Create(context.TODO(), &rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: roleBindingName,
 			Annotations: map[string]string{
@@ -375,7 +374,7 @@ func DeployWebhookAndService(f *framework.Framework, image string, certContext *
 	framework.ExpectNoError(err, "creating service %s in namespace %s", WebhookServiceName, namespace)
 
 	ginkgo.By("Verifying the service has paired with the endpoint")
-	err = framework.WaitForServiceEndpointsNum(context.TODO(), client, namespace, WebhookServiceName, 1, 1*time.Second, 30*time.Second)
+	err = e2eendpointslice.WaitForEndpointCount(context.TODO(), client, namespace, WebhookServiceName, 1)
 	framework.ExpectNoError(err, "waiting for service %s/%s have %d endpoint", namespace, WebhookServiceName, 1)
 }
 
@@ -384,5 +383,5 @@ func CleanWebhookTest(client clientset.Interface, namespaceName string) {
 	_ = client.CoreV1().Services(namespaceName).Delete(context.TODO(), WebhookServiceName, metav1.DeleteOptions{})
 	_ = client.AppsV1().Deployments(namespaceName).Delete(context.TODO(), deploymentName, metav1.DeleteOptions{})
 	_ = client.CoreV1().Secrets(namespaceName).Delete(context.TODO(), WebhookServiceName, metav1.DeleteOptions{})
-	_ = client.RbacV1().RoleBindings("kube-system").Delete(context.TODO(), roleBindingName, metav1.DeleteOptions{})
+	_ = client.RbacV1().RoleBindings(VpaNamespace).Delete(context.TODO(), roleBindingName, metav1.DeleteOptions{})
 }

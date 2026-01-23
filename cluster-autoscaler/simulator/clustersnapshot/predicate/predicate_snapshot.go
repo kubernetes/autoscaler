@@ -32,21 +32,23 @@ import (
 // SchedulerBasedPredicateChecker to check scheduler predicates.
 type PredicateSnapshot struct {
 	clustersnapshot.ClusterSnapshotStore
-	pluginRunner *SchedulerPluginRunner
-	draEnabled   bool
+	pluginRunner                 *SchedulerPluginRunner
+	draEnabled                   bool
+	enableCSINodeAwareScheduling bool
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
-func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool) *PredicateSnapshot {
+func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool, parallelism int, enableCSINodeAwareScheduling bool) *PredicateSnapshot {
 	snapshot := &PredicateSnapshot{
-		ClusterSnapshotStore: snapshotStore,
-		draEnabled:           draEnabled,
+		ClusterSnapshotStore:         snapshotStore,
+		draEnabled:                   draEnabled,
+		enableCSINodeAwareScheduling: enableCSINodeAwareScheduling,
 	}
 	// Plugin runner really only needs a framework.SharedLister for running the plugins, but it also needs to run the provided Node-matching functions
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
 	// dependency between PluginRunner and PredicateSnapshot.
 	// TODO: Refactor PluginRunner so that it doesn't depend on PredicateSnapshot (e.g. move retrieving NodeInfos out of PluginRunner, to PredicateSnapshot).
-	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot)
+	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot, parallelism)
 	return snapshot
 }
 
@@ -57,10 +59,21 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 		return nil, err
 	}
 
+	wrappedNodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
 	if s.draEnabled {
-		return s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
+		wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil), nil
+
+	if s.enableCSINodeAwareScheduling {
+		wrappedNodeInfo, err = s.ClusterSnapshotStore.CsiSnapshot().AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return wrappedNodeInfo, nil
 }
 
 // ListNodeInfos returns internal NodeInfos wrapping all schedulerframework.NodeInfos in the snapshot.
@@ -71,15 +84,23 @@ func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
 	}
 	var result []*framework.NodeInfo
 	for _, schedNodeInfo := range schedNodeInfos {
+		wrappedNodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
+
+		var err error
 		if s.draEnabled {
-			nodeInfo, err := s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
+			wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
 			if err != nil {
 				return nil, err
 			}
-			result = append(result, nodeInfo)
-		} else {
-			result = append(result, framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil))
 		}
+
+		if s.enableCSINodeAwareScheduling {
+			wrappedNodeInfo, err = s.ClusterSnapshotStore.CsiSnapshot().AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
+			if err != nil {
+				return nil, err
+			}
+		}
+		result = append(result, wrappedNodeInfo)
 	}
 	return result, nil
 }
@@ -106,6 +127,14 @@ func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 		}
 	}
 
+	if s.enableCSINodeAwareScheduling {
+		if nodeInfo.CSINode != nil {
+			if err := s.ClusterSnapshotStore.CsiSnapshot().AddCSINode(nodeInfo.CSINode); err != nil {
+				return err
+			}
+		}
+	}
+
 	return s.ClusterSnapshotStore.AddSchedulerNodeInfo(nodeInfo.ToScheduler())
 }
 
@@ -125,6 +154,12 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 
 		for _, pod := range nodeInfo.Pods() {
 			s.ClusterSnapshotStore.DraSnapshot().RemovePodOwnedClaims(pod.Pod)
+		}
+	}
+	if s.enableCSINodeAwareScheduling {
+		// generally a node name is same as csi node name and hence we should be safe
+		if nodeInfo.CSINode != nil {
+			s.ClusterSnapshotStore.CsiSnapshot().RemoveCSINode(nodeName)
 		}
 	}
 	return nil

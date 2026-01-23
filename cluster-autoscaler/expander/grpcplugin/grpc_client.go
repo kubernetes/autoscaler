@@ -80,13 +80,13 @@ func (g *grpcclientstrategy) BestOptions(expansionOptions []expander.Option, nod
 
 	// Transform inputs to gRPC inputs
 	grpcOptionsSlice, nodeGroupIDOptionMap := populateOptionsForGRPC(expansionOptions)
-	grpcNodeMap := populateNodeInfoForGRPC(nodeInfo)
+	grpcNodeBytesMap := populateNodeInfoForGRPC(nodeInfo)
 
 	// call gRPC server to get BestOption
 	klog.V(2).Infof("GPRC call of best options to server with %v options", len(nodeGroupIDOptionMap))
 	ctx, cancel := context.WithTimeout(context.Background(), gRPCTimeout)
 	defer cancel()
-	bestOptionsResponse, err := g.grpcClient.BestOptions(ctx, &protos.BestOptionsRequest{Options: grpcOptionsSlice, NodeMap: grpcNodeMap})
+	bestOptionsResponse, err := g.grpcClient.BestOptions(ctx, &protos.BestOptionsRequest{Options: grpcOptionsSlice, NodeBytesMap: grpcNodeBytesMap})
 	if err != nil {
 		klog.V(4).Infof("GRPC call failed, no options filtered: %v", err)
 		return expansionOptions
@@ -117,12 +117,24 @@ func populateOptionsForGRPC(expansionOptions []expander.Option) ([]*protos.Optio
 }
 
 // populateNodeInfoForGRPC looks at the corresponding v1.Node object per NodeInfo object, and populates the grpcNodeInfoMap with these to pass over grpc
-func populateNodeInfoForGRPC(nodeInfos map[string]*framework.NodeInfo) map[string]*v1.Node {
-	grpcNodeInfoMap := make(map[string]*v1.Node)
+func populateNodeInfoForGRPC(nodeInfos map[string]*framework.NodeInfo) map[string][]byte {
+	grpcNodeBytesMap := make(map[string][]byte)
 	for nodeId, nodeInfo := range nodeInfos {
-		grpcNodeInfoMap[nodeId] = nodeInfo.Node()
+		node := nodeInfo.Node()
+
+		// if we're still accumulating node bytes
+		if grpcNodeBytesMap != nil {
+			// try to serialize to proto bytes
+			nodeBytes, err := node.Marshal()
+			if err != nil {
+				// unexpected proto serialization error, avoid sending nodeBytes map at all
+				grpcNodeBytesMap = nil
+			} else {
+				grpcNodeBytesMap[nodeId] = nodeBytes
+			}
+		}
 	}
-	return grpcNodeInfoMap
+	return grpcNodeBytesMap
 }
 
 func transformAndSanitizeOptionsFromGRPC(bestOptionsResponseOptions []*protos.Option, nodeGroupIDOptionMap map[string]expander.Option) []expander.Option {
@@ -143,5 +155,17 @@ func transformAndSanitizeOptionsFromGRPC(bestOptionsResponseOptions []*protos.Op
 }
 
 func newOptionMessage(nodeGroupId string, nodeCount int32, debug string, pods []*v1.Pod) *protos.Option {
-	return &protos.Option{NodeGroupId: nodeGroupId, NodeCount: nodeCount, Debug: debug, Pod: pods}
+	var podsBytes [][]byte
+	if len(pods) > 0 {
+		podsBytes = make([][]byte, 0, len(pods))
+		for _, pod := range pods {
+			podBytes, err := pod.Marshal()
+			if err != nil {
+				podsBytes = nil
+				break
+			}
+			podsBytes = append(podsBytes, podBytes)
+		}
+	}
+	return &protos.Option{NodeGroupId: nodeGroupId, NodeCount: nodeCount, Debug: debug, PodBytes: podsBytes}
 }

@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -82,9 +83,20 @@ func (gce *GceCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
-// any GPUs, it returns nil.
+// any GPUs, it returns nil. If node has GPU attached using DRA - populates the according field in GpuConfig
 func (gce *GceCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(gce, node)
+	gpuConfig := gpu.GetNodeGPUFromCloudProvider(gce, node)
+
+	// If GPU devices are exposed using DRA - extended resource
+	// won't be present in the node alloctable or capacity
+	// so we overwrite extended resource name as it won't ever
+	// be there
+	if GpuDraDriverEnabled(node) {
+		gpuConfig.DraDriverName = DraGPUDriver
+		gpuConfig.ExtendedResourceName = ""
+	}
+
+	return gpuConfig
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -376,7 +388,7 @@ func (mig *gceMig) TemplateNodeInfo() (*framework.NodeInfo, error) {
 }
 
 // BuildGCE builds GCE cloud provider, manager etc.
-func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildGCE(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error

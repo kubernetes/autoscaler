@@ -2,17 +2,19 @@
 
 ## Contents
 
-- [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-cpu-or-memory-settings)
+<!-- toc -->
+- [VPA restarts my pods but does not modify CPU or memory settings](#vpa-restarts-my-pods-but-does-not-modify-cpu-or-memory-settings)
 - [How can I apply VPA to my Custom Resource?](#how-can-i-apply-vpa-to-my-custom-resource)
-- [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
-- [I get recommendations for my single pod replicaSet, but they are not applied. Why?](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
+- [How can I use Prometheus as a history provider for the VPA recommender](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
+- [I get recommendations for my single pod replicaset but they are not applied](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
 - [Can I run the VPA in an HA configuration?](#can-i-run-the-vpa-in-an-ha-configuration)
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
 - [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
-- [What are the parameters to VPA admission-controller?](#what-are-the-parameters-to-vpa-admission-controller)
+- [What are the parameters to VPA admission controller?](#what-are-the-parameters-to-vpa-admission-controller)
 - [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
 - [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
 - [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
+<!-- /toc -->
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
@@ -151,6 +153,55 @@ Here you should see the flags that you set for the VPA recommender and you shoul
 ```Initializing VPA from history provider```
 
 This means that the VPA recommender is now using Prometheus as the history provider.
+
+
+For authentication to Prometheus, you can provide credentials in following ways:
+
+1) Set the flags `--username=<user>` and `--password=<password>` in the `VPA recommender deployment`. The `args` for the container should look something like this:
+
+```yaml
+spec:
+  containers:
+  - args:
+    - --v=4
+    - --storage=prometheus
+    - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
+    - --username=example-user
+    - --password=example-password
+```
+
+2) Set the environment variables `PROMETHEUS_USERNAME` and `PROMETHEUS_PASSWORD` in the `VPA recommender deployment`.
+
+```yaml
+spec:
+  containers:
+  - args:
+    - --storage=prometheus
+    - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
+  env:
+  - name: PROMETHEUS_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: prometheus-auth
+        key: example-user
+  - name: PROMETHEUS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: prometheus-auth
+        key: example-password
+```
+
+3) Set the flag `prometheus-bearer-token=<token>`, to use bearer token auth.
+
+```yaml
+spec:
+  containers:
+  - args:
+    - --v=4
+    - --storage=prometheus
+    - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
+    - --prometheus-bearer-token=<example-token>
+```
 
 ### I get recommendations for my single pod replicaset but they are not applied
 

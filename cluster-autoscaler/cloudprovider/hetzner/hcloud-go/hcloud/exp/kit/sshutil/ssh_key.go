@@ -11,6 +11,8 @@ import (
 
 // GenerateKeyPair generates a new ed25519 ssh key pair, and returns the private key and
 // the public key respectively.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func GenerateKeyPair() ([]byte, []byte, error) {
 	pub, priv, err := ed25519.GenerateKey(nil)
 	if err != nil {
@@ -54,6 +56,8 @@ type privateKeyWithPublicKey interface {
 }
 
 // GeneratePublicKey generate a public key from the provided private key.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func GeneratePublicKey(privBytes []byte) ([]byte, error) {
 	priv, err := ssh.ParseRawPrivateKey(privBytes)
 	if err != nil {
@@ -74,6 +78,8 @@ func GeneratePublicKey(privBytes []byte) ([]byte, error) {
 }
 
 // GetPublicKeyFingerprint generate the finger print for the provided public key.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func GetPublicKeyFingerprint(pubBytes []byte) (string, error) {
 	pub, _, _, _, err := ssh.ParseAuthorizedKey(pubBytes)
 	if err != nil {

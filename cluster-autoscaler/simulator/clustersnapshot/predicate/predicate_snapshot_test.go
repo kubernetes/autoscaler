@@ -29,11 +29,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -49,14 +51,14 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true), nil
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true), nil
 	},
 	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
 		fwHandle, err := framework.NewTestFrameworkHandle()
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, true), nil
 	},
 }
 
@@ -72,6 +74,7 @@ type snapshotState struct {
 	nodes       []*apiv1.Node
 	podsByNode  map[string][]*apiv1.Pod
 	draSnapshot *drasnapshot.Snapshot
+	csiSnapshot *csisnapshot.Snapshot
 }
 
 func compareStates(t *testing.T, a, b snapshotState) {
@@ -125,6 +128,20 @@ func compareStates(t *testing.T, a, b snapshotState) {
 	if diff := cmp.Diff(aClasses, bClasses, cmpopts.EquateEmpty(), IgnoreObjectOrder[*resourceapi.DeviceClass]()); diff != "" {
 		t.Errorf("DeviceClasses().List(): unexpected diff (-want +got): %s", diff)
 	}
+
+	aCSINodes, err := a.csiSnapshot.CSINodes().List()
+	if err != nil {
+		t.Errorf("CSINodes().List(): unexpected error: %v", err)
+	}
+
+	bCSINodes, err := b.csiSnapshot.CSINodes().List()
+	if err != nil {
+		t.Errorf("CSINodes().List(): unexpected error: %v", err)
+	}
+
+	if diff := cmp.Diff(aCSINodes, bCSINodes, cmpopts.EquateEmpty(), IgnoreObjectOrder[*storagev1.CSINode]()); diff != "" {
+		t.Errorf("CSINodes().List(): unexpected diff (-want +got): %s", diff)
+	}
 }
 
 func getSnapshotState(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) snapshotState {
@@ -136,7 +153,7 @@ func getSnapshotState(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) sn
 			pods[nodeInfo.Node().Name] = append(pods[nodeInfo.Node().Name], podInfo.Pod)
 		}
 	}
-	return snapshotState{nodes: extractNodes(nodes), podsByNode: pods, draSnapshot: snapshot.DraSnapshot()}
+	return snapshotState{nodes: extractNodes(nodes), podsByNode: pods, draSnapshot: snapshot.DraSnapshot(), csiSnapshot: snapshot.CsiSnapshot()}
 }
 
 func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.ClusterSnapshot, error), state snapshotState) clustersnapshot.ClusterSnapshot {
@@ -150,7 +167,8 @@ func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.Cluster
 	}
 
 	draSnapshot := drasnapshot.CloneTestSnapshot(state.draSnapshot)
-	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot)
+	csiSnapshot := csisnapshot.CloneTestSnapshot(state.csiSnapshot)
+	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot, csiSnapshot)
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -174,6 +192,11 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 	node := BuildTestNode("specialNode", 10, 100)
 	otherNode := BuildTestNode("otherNode", 10, 100)
 	largeNode := BuildTestNode("largeNode", 9999, 9999)
+
+	csiNode := BuildCSINode(node)
+	otherCSINode := BuildCSINode(otherNode)
+	largeCSINode := BuildCSINode(largeNode)
+
 	nodeSelector := &apiv1.NodeSelector{
 		NodeSelectorTerms: []apiv1.NodeSelectorTerm{
 			{
@@ -316,26 +339,29 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 		{
 			name: "add empty nodeInfo",
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+				return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 			},
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
 			name: "add nodeInfo",
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod))
+				return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod))
 			},
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {pod}},
+				nodes:       []*apiv1.Node{node},
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {pod}},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
 			name: "remove nodeInfo",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				return snapshot.RemoveNodeInfo(node.Name)
@@ -344,22 +370,25 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 		{
 			name: "remove nodeInfo, then add it back",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				if err := snapshot.RemoveNodeInfo(node.Name); err != nil {
 					return err
 				}
-				return snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+				return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 			},
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
 			name: "add pod, then remove nodeInfo",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				if schedErr := snapshot.ForceAddPod(pod, node.Name); schedErr != nil {
@@ -371,20 +400,23 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 		{
 			name: "schedule pod",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				return snapshot.SchedulePod(pod, node.Name)
 			},
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {pod}},
+				nodes:       []*apiv1.Node{node},
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {pod}},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
 			name: "schedule pod on any Node (scheduling predicates only work for one)",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node, largeNode},
+				nodes:       []*apiv1.Node{node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, func(_ *framework.NodeInfo) bool { return true })
@@ -394,14 +426,16 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				return err
 			},
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node, largeNode},
-				podsByNode: map[string][]*apiv1.Pod{largeNode.Name: {largePod}},
+				nodes:       []*apiv1.Node{node, largeNode},
+				podsByNode:  map[string][]*apiv1.Pod{largeNode.Name: {largePod}},
+				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 		},
 		{
 			name: "schedule pod on any Node matching (matching only works for one)",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node, largeNode},
+				nodes:       []*apiv1.Node{node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, func(info *framework.NodeInfo) bool { return info.Node().Name == node.Name })
@@ -411,14 +445,16 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				return err
 			},
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node, largeNode},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {pod}},
+				nodes:       []*apiv1.Node{node, largeNode},
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {pod}},
+				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 		},
 		{
 			name: "scheduling pod with failing predicates is an error",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				return snapshot.SchedulePod(largePod, node.Name)
@@ -427,13 +463,15 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
 			// The state shouldn't change on error.
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
 			name: "scheduling pod on any Node with failing predicates on all Nodes is an error",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node, otherNode},
+				nodes:       []*apiv1.Node{node, otherNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, func(_ *framework.NodeInfo) bool { return true })
@@ -446,13 +484,15 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			wantErr: clustersnapshot.NewNoNodesPassingPredicatesFoundError(nil), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
 			// The state shouldn't change on error.
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{node, otherNode},
+				nodes:       []*apiv1.Node{node, otherNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 		},
 		{
 			name: "scheduling pod on any matching Node with no Nodes matching is an error",
 			state: snapshotState{
-				nodes: []*apiv1.Node{node, otherNode},
+				nodes:       []*apiv1.Node{node, otherNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, func(_ *framework.NodeInfo) bool { return false })
@@ -465,21 +505,24 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			wantErr: clustersnapshot.NewNoNodesPassingPredicatesFoundError(nil), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
 			// The state shouldn't change on error.
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{node, otherNode},
+				nodes:       []*apiv1.Node{node, otherNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 		},
 		{
 			name: "unschedule pod",
 			state: snapshotState{
-				nodes:      []*apiv1.Node{largeNode},
-				podsByNode: map[string][]*apiv1.Pod{largeNode.Name: {withNodeName(pod, largeNode.Name), withNodeName(largePod, largeNode.Name)}},
+				nodes:       []*apiv1.Node{largeNode},
+				csiSnapshot: createCSISnapshot(largeCSINode),
+				podsByNode:  map[string][]*apiv1.Pod{largeNode.Name: {withNodeName(pod, largeNode.Name), withNodeName(largePod, largeNode.Name)}},
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				return snapshot.UnschedulePod(pod.Namespace, pod.Name, largeNode.Name)
 			},
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{largeNode},
-				podsByNode: map[string][]*apiv1.Pod{largeNode.Name: {withNodeName(largePod, largeNode.Name)}},
+				nodes:       []*apiv1.Node{largeNode},
+				csiSnapshot: createCSISnapshot(largeCSINode),
+				podsByNode:  map[string][]*apiv1.Pod{largeNode.Name: {withNodeName(largePod, largeNode.Name)}},
 			},
 		},
 		{
@@ -488,12 +531,15 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				draSnapshot: drasnapshot.NewSnapshot(nil, nil, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices))
+				nodeInfo := framework.NewNodeInfo(node, resourceSlices)
+				nodeInfo.CSINode = csiNode
+				return snapshot.AddNodeInfo(nodeInfo)
 			},
 			// LocalResourceSlices from the NodeInfo should get added to the DRA snapshot.
 			modifiedState: snapshotState{
 				nodes:       []*apiv1.Node{node},
 				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
@@ -511,7 +557,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
 					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
 				})
-				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+				nodeInfo := framework.NewNodeInfo(node, resourceSlices, podInfo)
+				nodeInfo.CSINode = csiNode
+				return snapshot.AddNodeInfo(nodeInfo)
 			},
 			// The shared claim should just get a reservation for the pod added in the DRA snapshot.
 			// The pod-owned claim should get added to the DRA snapshot, with a reservation for the pod.
@@ -525,6 +573,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
 					},
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
@@ -533,7 +582,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices))
+				nodeInfo := framework.NewNodeInfo(node, resourceSlices)
+				nodeInfo.CSINode = csiNode
+				return snapshot.AddNodeInfo(nodeInfo)
 			},
 			// LocalResourceSlices for the Node already exist in the DRA snapshot, so trying to add them again should be an error.
 			wantErr: cmpopts.AnyError,
@@ -681,8 +732,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices and pods with NeededResourceClaims in the DRA snapshot.
 			// One claim is shared, one is pod-owned.
 			state: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -708,8 +760,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			name: "remove nodeInfo with LocalResourceSlices and NeededResourceClaims, then add it back",
 			// Start with a NodeInfo with LocalResourceSlices and pods with NeededResourceClaims in the DRA snapshot.
 			state: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name)}},
+				csiSnapshot: createCSISnapshot(csiNode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -727,7 +780,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
 					drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
 				})
-				return snapshot.AddNodeInfo(framework.NewNodeInfo(node, resourceSlices, podInfo))
+				nodeInfo := framework.NewNodeInfo(node, resourceSlices, podInfo)
+				nodeInfo.CSINode = csiNode
+				return snapshot.AddNodeInfo(nodeInfo)
 			},
 			// The state should be identical to the initial one after the modifications.
 			modifiedState: snapshotState{
@@ -739,6 +794,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
 					},
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+				csiSnapshot: createCSISnapshot(csiNode),
 			},
 		},
 		{
@@ -761,7 +817,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
 			// that the pod references, but they aren't allocated yet.
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
@@ -776,8 +833,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// The pod should get added to the Node.
 			// The claims referenced by the Pod should get allocated and reserved for the Pod.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -791,7 +849,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
 			// that the pod references. The shared claim is already allocated, the pod-owned one isn't yet.
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
@@ -806,8 +865,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// The pod should get added to the Node.
 			// The pod-owned claim referenced by the Pod should get allocated. Both claims referenced by the Pod should get reserved for the Pod.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -821,7 +881,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot doesn't track one of the claims
 			// referenced by the Pod we're trying to schedule.
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(sharedClaim): sharedClaim.DeepCopy(),
@@ -835,7 +896,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
 			// The state shouldn't change on error.
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(sharedClaim): sharedClaim,
@@ -848,7 +910,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices but no Pods. The DRA snapshot already tracks all the claims
 			// that the pod references. The shared claim is already allocated and at max reservations.
 			state: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
@@ -864,7 +927,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// The state shouldn't change on error.
 			// TODO(DRA): Until transaction-like clean-up is implemented in SchedulePod, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{node},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
@@ -878,7 +942,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot already tracks all the claims
 			// that the pod references, but they aren't allocated yet.
 			state: snapshotState{
-				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				nodes:       []*apiv1.Node{otherNode, node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode, largeCSINode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
@@ -897,8 +962,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// The pod should get added to the Node.
 			// The claims referenced by the Pod should get allocated and reserved for the Pod.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{otherNode, node, largeNode},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
+				nodes:       []*apiv1.Node{otherNode, node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode, largeCSINode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {podWithClaims}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -912,7 +978,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot doesn't track one of the claims
 			// referenced by the Pod we're trying to schedule.
 			state: snapshotState{
-				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				nodes:       []*apiv1.Node{otherNode, node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode, largeCSINode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(sharedClaim): sharedClaim.DeepCopy(),
@@ -930,7 +997,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
 			// The state shouldn't change on error.
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				nodes:       []*apiv1.Node{otherNode, node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode, largeCSINode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(sharedClaim): sharedClaim,
@@ -943,7 +1011,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a NodeInfo with LocalResourceSlices but no Pods, plus some other Nodes that don't have any slices. The DRA snapshot already tracks all the claims
 			// that the pod references. The shared claim is already allocated and at max reservations.
 			state: snapshotState{
-				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				nodes:       []*apiv1.Node{otherNode, node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode, largeCSINode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim.DeepCopy(),
@@ -963,7 +1032,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// The state shouldn't change on error.
 			// TODO(DRA): Until transaction-like clean-up is implemented in SchedulePodOnAnyNodeMatching, the state is not cleaned up on error. Make modifiedState identical to initial state after the clean-up is implemented.
 			modifiedState: snapshotState{
-				nodes: []*apiv1.Node{otherNode, node, largeNode},
+				nodes:       []*apiv1.Node{otherNode, node, largeNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode, largeCSINode),
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc),
@@ -976,8 +1046,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			name: "unschedule Pod with NeededResourceClaims",
 			// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim, both used only by the pod.
 			state: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -991,8 +1062,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// The unscheduled pod should be removed from the Node.
 			// The claims referenced by the pod should stay in the DRA snapshot, but the pod's reservations should get removed, and the claims should be deallocated.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
@@ -1005,8 +1077,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			name: "unschedule Pod with NeededResourceClaims and schedule it back",
 			// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim, both used only by the pod.
 			state: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -1022,8 +1095,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// The state shouldn't change.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -1036,8 +1110,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			name: "unschedule Pod with NeededResourceClaims (some are shared and still used by other pods)",
 			// Start with a Pod already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods.
 			state: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -1052,8 +1127,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// The claims referenced by the pod should stay in the DRA snapshot, but the pod's reservations should get removed.
 			// The pod-owned claim should get deallocated, but the shared one shouldn't.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): podOwnedClaim,
@@ -1066,8 +1142,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			name: "unschedule Pod with NeededResourceClaims (some are shared and still used by other pods) and schedule it back",
 			// Start with a Pod with NeededResourceClaims already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods.
 			state: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -1083,8 +1160,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// The state shouldn't change.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -1098,8 +1176,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Start with a Pod with NeededResourceClaims already scheduled on a Node. The pod references a pod-owned and a shared claim used by other pods. There are other Nodes
 			// and pods in the cluster.
 			state: snapshotState{
-				nodes:      []*apiv1.Node{node, otherNode},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node, otherNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
@@ -1130,6 +1209,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 						drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
 					}),
 				)
+				wantNodeInfo.CSINode = csiNode
+
 				if diff := cmp.Diff(wantNodeInfo, nodeInfo, nodeInfoDiffOpts...); diff != "" {
 					t.Errorf("GetNodeInfo(): unexpected output (-want +got): %s", diff)
 				}
@@ -1139,7 +1220,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				if err != nil {
 					return err
 				}
-				wantNodeInfos := []*framework.NodeInfo{wantNodeInfo, framework.NewNodeInfo(otherNode, nil)}
+				wantNodeInfos := []*framework.NodeInfo{wantNodeInfo, framework.NewTestNodeInfoWithCSI(otherNode, otherCSINode)}
 				if diff := cmp.Diff(wantNodeInfos, nodeInfos, nodeInfoDiffOpts...); diff != "" {
 					t.Errorf("ListNodeInfos(): unexpected output (-want +got): %s", diff)
 				}
@@ -1148,14 +1229,59 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// The state shouldn't change.
 			modifiedState: snapshotState{
-				nodes:      []*apiv1.Node{node, otherNode},
-				podsByNode: map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
+				nodes:       []*apiv1.Node{node, otherNode},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name), withNodeName(podWithClaims, node.Name)}},
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
 						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims),
 						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims, pod),
 					},
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
+			},
+		},
+		{
+			name: "get/list NodeInfo with CSI objects",
+			state: snapshotState{
+				nodes:       []*apiv1.Node{node, otherNode},
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				// Verify GetNodeInfo wraps CSINode correctly.
+				gotNodeInfo, err := snapshot.GetNodeInfo(node.Name)
+				if err != nil {
+					return err
+				}
+				if gotNodeInfo.CSINode == nil {
+					t.Errorf("GetNodeInfo(): expected CSINode to be set for node %q, got nil", node.Name)
+				} else {
+					if diff := cmp.Diff(csiNode, gotNodeInfo.CSINode, cmpopts.IgnoreFields(metav1.ObjectMeta{}, "ResourceVersion")); diff != "" {
+						t.Errorf("GetNodeInfo(): unexpected CSINode (-want +got): %s", diff)
+					}
+				}
+
+				// Verify ListNodeInfos wraps CSINode correctly for all nodes.
+				gotNodeInfos, err := snapshot.ListNodeInfos()
+				if err != nil {
+					return err
+				}
+				var gotCSINodes []*storagev1.CSINode
+				for _, ni := range gotNodeInfos {
+					gotCSINodes = append(gotCSINodes, ni.CSINode)
+				}
+
+				wantCSINodes := []*storagev1.CSINode{csiNode, otherCSINode}
+				ignoreCsiNodeOrderOpt := cmpopts.SortSlices(func(n1, n2 *storagev1.CSINode) bool { return n1.Name < n2.Name })
+				if diff := cmp.Diff(wantCSINodes, gotCSINodes, ignoreCsiNodeOrderOpt); diff != "" {
+					t.Errorf("ListNodeInfos(): unexpected CSInodes (-want +got): %s", diff)
+				}
+				return nil
+			},
+			modifiedState: snapshotState{
+				nodes:       []*apiv1.Node{node, otherNode},
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(pod, node.Name)}},
+				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 		},
 	}
@@ -1167,6 +1293,14 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 
 		if testCases[i].state.draSnapshot == nil {
 			testCases[i].state.draSnapshot = drasnapshot.NewEmptySnapshot()
+		}
+
+		if testCases[i].modifiedState.csiSnapshot == nil {
+			testCases[i].modifiedState.csiSnapshot = csisnapshot.NewEmptySnapshot()
+		}
+
+		if testCases[i].state.csiSnapshot == nil {
+			testCases[i].state.csiSnapshot = csisnapshot.NewEmptySnapshot()
 		}
 	}
 
@@ -1221,7 +1355,8 @@ func TestForking(t *testing.T) {
 				tc.runAndValidateOp(t, snapshot)
 				snapshot.Fork()
 
-				snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+				csiNode := BuildCSINode(node)
+				snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 
 				snapshot.Revert()
 				snapshot.Revert()
@@ -1265,7 +1400,8 @@ func TestForking(t *testing.T) {
 				snapshot.Fork()
 				tc.runAndValidateOp(t, snapshot)
 				snapshot.Fork()
-				snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+				csiNode := BuildCSINode(node)
+				snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 				snapshot.Revert()
 				err := snapshot.Commit()
 				assert.NoError(t, err)
@@ -1309,7 +1445,14 @@ func TestSetClusterState(t *testing.T) {
 	nodes := clustersnapshot.CreateTestNodes(nodeCount)
 	pods := clustersnapshot.CreateTestPods(podCount)
 	podsByNode := clustersnapshot.AssignTestPodsToNodes(pods, nodes)
-	state := snapshotState{nodes: nodes, podsByNode: podsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}
+
+	// Create CSI nodes for all nodes
+	csiNodeMap := map[string]*storagev1.CSINode{}
+	for _, node := range nodes {
+		csiNodeMap[node.Name] = BuildCSINode(node)
+	}
+
+	state := snapshotState{nodes: nodes, podsByNode: podsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(csiNodeMap)}
 
 	extraNodes := clustersnapshot.CreateTestNodesWithPrefix("extra", extraNodeCount)
 
@@ -1332,9 +1475,9 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
 
-				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
+				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
 		t.Run(fmt.Sprintf("%s: clear base %d nodes %d pods and set a new state", name, nodeCount, podCount),
 			func(t *testing.T) {
@@ -1343,9 +1486,16 @@ func TestSetClusterState(t *testing.T) {
 
 				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
 				newPodsByNode := clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil))
 
-				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
+				// Create CSI nodes for new nodes
+				newCSINodeMap := map[string]*storagev1.CSINode{}
+				for _, node := range newNodes {
+					newCSINodeMap[node.Name] = BuildCSINode(node)
+				}
+
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
+
+				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(newCSINodeMap)}, getSnapshotState(t, snapshot))
 			})
 		t.Run(fmt.Sprintf("%s: clear fork %d nodes %d pods %d extra nodes %d extra pods", name, nodeCount, podCount, extraNodeCount, extraPodCount),
 			func(t *testing.T) {
@@ -1355,7 +1505,8 @@ func TestSetClusterState(t *testing.T) {
 				snapshot.Fork()
 
 				for _, node := range extraNodes {
-					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					csiNode := BuildCSINode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 				}
 
@@ -1364,11 +1515,17 @@ func TestSetClusterState(t *testing.T) {
 					assert.NoError(t, err)
 				}
 
-				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
+				// Create CSI nodes for all nodes (original + extra)
+				allCSINodeMap := map[string]*storagev1.CSINode{}
+				for _, node := range allNodes {
+					allCSINodeMap[node.Name] = BuildCSINode(node)
+				}
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
+				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(allCSINodeMap)}, getSnapshotState(t, snapshot))
 
-				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
+
+				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 
 				// SetClusterState() should break out of forked state.
 				snapshot.Fork()
@@ -1425,7 +1582,8 @@ func TestNode404(t *testing.T) {
 					assert.NoError(t, err)
 
 					node := BuildTestNode("node", 10, 100)
-					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					csiNode := BuildCSINode(node)
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -1452,7 +1610,8 @@ func TestNode404(t *testing.T) {
 					assert.NoError(t, err)
 
 					node := BuildTestNode("node", 10, 100)
-					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					csiNode := BuildCSINode(node)
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
 					err = snapshot.RemoveNodeInfo("node")
@@ -1468,6 +1627,7 @@ func TestNode404(t *testing.T) {
 
 func TestNodeAlreadyExists(t *testing.T) {
 	node := BuildTestNode("node", 10, 100)
+	csiNode := BuildCSINode(node)
 	pod := BuildTestPod("pod", 1, 1)
 	pod.Spec.NodeName = node.Name
 
@@ -1481,7 +1641,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 			return snapshot.AddSchedulerNodeInfo(nodeInfo)
 		}},
 		{"add internal NodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			return snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod))
+			return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod))
 		}},
 	}
 
@@ -1492,7 +1652,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 					snapshot, err := snapshotFactory()
 					assert.NoError(t, err)
 
-					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
 					// Node already in base.
@@ -1505,7 +1665,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 					snapshot, err := snapshotFactory()
 					assert.NoError(t, err)
 
-					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -1523,7 +1683,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 					snapshot.Fork()
 
-					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
 					// Node already in fork.
@@ -1537,7 +1697,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 					snapshot.Fork()
 
-					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
 					err = snapshot.Commit()
@@ -1675,7 +1835,8 @@ func TestPVCUsedByPods(t *testing.T) {
 			t.Run(fmt.Sprintf("%s with snapshot (%s)", tc.desc, snapshotName), func(t *testing.T) {
 				snapshot, err := snapshotFactory()
 				assert.NoError(t, err)
-				err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(tc.node, tc.pods...))
+				csiNode := BuildCSINode(tc.node)
+				err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(tc.node, csiNode, tc.pods...))
 				assert.NoError(t, err)
 
 				volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
@@ -1746,7 +1907,8 @@ func TestPVCClearAndFork(t *testing.T) {
 		t.Run(fmt.Sprintf("fork and revert snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
 			snapshot, err := snapshotFactory()
 			assert.NoError(t, err)
-			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
+			csiNode := BuildCSINode(node)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
@@ -1772,12 +1934,13 @@ func TestPVCClearAndFork(t *testing.T) {
 		t.Run(fmt.Sprintf("clear snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
 			snapshot, err := snapshotFactory()
 			assert.NoError(t, err)
-			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
+			csiNode := BuildCSINode(node)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil))
+			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 
@@ -1830,6 +1993,14 @@ func withNodeName(pod *apiv1.Pod, nodeName string) *apiv1.Pod {
 	result := pod.DeepCopy()
 	result.Spec.NodeName = nodeName
 	return result
+}
+
+func createCSISnapshot(csiNodes ...*storagev1.CSINode) *csisnapshot.Snapshot {
+	csiNodeMap := map[string]*storagev1.CSINode{}
+	for _, csiNode := range csiNodes {
+		csiNodeMap[csiNode.Name] = csiNode
+	}
+	return csisnapshot.NewSnapshot(csiNodeMap)
 }
 
 func fullyReservedClaim(claim *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {

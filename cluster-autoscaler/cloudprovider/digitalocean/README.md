@@ -28,24 +28,24 @@ picks up the configuration from the API and adjusts the behavior accordingly.
 # Development
 
 Make sure you're inside the root path of the [autoscaler
-repository](https://github.com/kubernetes/autoscaler)
+repository](https://github.com/kubernetes/autoscaler/cluster-autoscaler)
 
 1.) Build the `cluster-autoscaler` binary:
 
 
 ```
-make build-in-docker
+GOARCH=amd64 make build-in-docker
 ```
 
 2.) Build the docker image:
 
 ```
-docker build -t digitalocean/cluster-autoscaler:dev .
+docker build --platform linux/amd64 -f Dockerfile.amd64 -t digitalocean/cluster-autoscaler:dev .
 ```
 
 
 3.) Push the docker image to Docker hub:
 
 ```
-docker push digitalocean/cluster-autoscaler:dev
+docker push --platform linux/amd64 digitalocean/cluster-autoscaler:dev
 ```

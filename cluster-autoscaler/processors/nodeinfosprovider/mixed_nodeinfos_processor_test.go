@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	caerror "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
-	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -38,297 +38,335 @@ var (
 	cacheTtl = 1 * time.Second
 )
 
-func TestGetNodeInfosForGroups(t *testing.T) {
+func TestMixedNodeInfosProvider(t *testing.T) {
 	now := time.Now()
-	ready1 := BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))
-	ready2 := BuildTestNode("n2", 2000, 2000)
-	SetNodeReadyState(ready2, true, now.Add(-2*time.Minute))
-	unready3 := BuildTestNode("n3", 3000, 3000)
-	SetNodeReadyState(unready3, false, now)
-	unready4 := BuildTestNode("n4", 4000, 4000)
-	SetNodeReadyState(unready4, false, now)
-	justReady5 := BuildTestNode("n5", 5000, 5000)
-	SetNodeReadyState(justReady5, true, now)
-	readyToBeDeleted6 := BuildTestNode("n6", 2000, 2000)
-	SetNodeReadyState(readyToBeDeleted6, true, now.Add(-2*time.Minute))
-	setToBeDeletedTaint(readyToBeDeleted6)
-	ready7 := BuildTestNode("n7", 6000, 6000)
-	SetNodeReadyState(ready7, true, now.Add(-2*time.Minute))
+	cacheTtl = time.Minute
 
-	tn := BuildTestNode("tn", 5000, 5000)
-	tni := framework.NewTestNodeInfo(tn)
+	type testNode struct {
+		name           string
+		milliCpu       int64
+		mem            int64
+		ready          bool
+		lastTransition time.Time
+		toBeDeleted    bool
+	}
 
-	// Cloud provider with TemplateNodeInfo implemented.
-	provider1 := testprovider.NewTestCloudProviderBuilder().WithMachineTemplates(
-		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni, "ng5": tni, "ng6": tni}).Build()
-	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
-	provider1.AddNode("ng1", ready1)
-	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
-	provider1.AddNode("ng2", ready2)
-	provider1.AddNode("ng2", unready3)
-	provider1.AddNodeGroup("ng3", 1, 10, 1) // Nodegroup with unready node.
-	provider1.AddNode("ng3", unready4)
-	provider1.AddNodeGroup("ng4", 0, 1000, 0) // Nodegroup without nodes.
-	provider1.AddNodeGroup("ng5", 1, 10, 1)   // Nodegroup with node that recently became ready.
-	provider1.AddNode("ng5", justReady5)
-	provider1.AddNodeGroup("ng6", 1, 10, 1) // Nodegroup with to be deleted node
-	provider1.AddNode("ng6", readyToBeDeleted6)
-	provider1.AddNode("ng6", ready7)
+	type testNodeGroup struct {
+		id       string
+		nodes    []testNode
+		template *testNode
+	}
 
-	// Cloud provider with TemplateNodeInfo not implemented.
-	provider2 := testprovider.NewTestCloudProviderBuilder().Build()
-	provider2.AddNodeGroup("ng7", 1, 10, 1) // Nodegroup without nodes.
-
-	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-
-	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1, ready7, readyToBeDeleted6}
-	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, nil)
-	assert.NoError(t, err)
-
-	ctx := context.AutoscalingContext{
-		CloudProvider:   provider1,
-		ClusterSnapshot: snapshot,
-		AutoscalingKubeClients: context.AutoscalingKubeClients{
-			ListerRegistry: registry,
+	testCases := []struct {
+		name          string
+		groups        []testNodeGroup
+		errorNodes    []testNode
+		withCache     map[string]cacheItem
+		wantNodeInfos map[string]testNode
+		wantCache     map[string]cacheItem
+		wantError     caerror.AutoscalerError
+	}{
+		{
+			name:   "Nodegroup without nodes and templates",
+			groups: []testNodeGroup{},
+		},
+		{
+			name: "Nodegroup with ready node",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "n", milliCpu: 1000, mem: 20, ready: true, lastTransition: now.Add(-2 * time.Minute)},
+					},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 1000, mem: 20},
+			},
+			wantCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 1000, 20)), added: now},
+			},
+		},
+		{
+			name: "Nodegroup with template",
+			groups: []testNodeGroup{
+				{
+					id:       "ng",
+					template: &testNode{milliCpu: 1000, mem: 20},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 1000, mem: 20},
+			},
+		},
+		{
+			name: "Nodegroup with unready node",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "n", milliCpu: 1000, mem: 20, ready: false},
+					},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 1000, mem: 20},
+			},
+		},
+		{
+			name: "Ready node is picked over unready node",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "unready", milliCpu: 1000, mem: 20, ready: false},
+						{name: "ready", milliCpu: 2000, mem: 40, ready: true, lastTransition: now.Add(-2 * time.Minute)},
+					},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+			wantCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now},
+			},
+		},
+		{
+			name: "Ready node is picked over template",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "ready", milliCpu: 2000, mem: 40, ready: true, lastTransition: now.Add(-2 * time.Minute)},
+					},
+					template: &testNode{milliCpu: 1000, mem: 20},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+			wantCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now},
+			},
+		},
+		{
+			name: "Template is picked over unready node",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "unready", milliCpu: 1000, mem: 20, ready: false},
+					},
+					template: &testNode{milliCpu: 2000, mem: 40},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+		},
+		{
+			name: "Template is picked over to be deleted node",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "to-be-deleted", milliCpu: 1000, mem: 20, ready: true, lastTransition: now.Add(-2 * time.Minute), toBeDeleted: true},
+					},
+					template: &testNode{milliCpu: 2000, mem: 40},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+		},
+		{
+			name: "Template is picked over just created node",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "just-ready", milliCpu: 1000, mem: 20, ready: true, lastTransition: now},
+					},
+					template: &testNode{milliCpu: 2000, mem: 40},
+				},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+		},
+		{
+			name: "Fresh cache used",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+				},
+			},
+			withCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now.Add(-30 * time.Second)},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+			wantCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now.Add(-30 * time.Second)},
+			},
+		},
+		{
+			name: "Old cache not used and cleared",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+				},
+			},
+			withCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now.Add(-2 * time.Minute)},
+			},
+			wantNodeInfos: map[string]testNode{},
+			wantCache:     map[string]cacheItem{},
+		},
+		{
+			name: "Ready node picked over cache, updates cache",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "ready", milliCpu: 4000, mem: 80, ready: true, lastTransition: now.Add(-2 * time.Minute)},
+					},
+				},
+			},
+			withCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now.Add(-30 * time.Second)},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 4000, mem: 80},
+			},
+			wantCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 4000, 80)), added: now},
+			},
+		},
+		{
+			name: "Cache picked over templates and unready nodes",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "unready", milliCpu: 4000, mem: 80, ready: false},
+					},
+					template: &testNode{milliCpu: 3000, mem: 60},
+				},
+			},
+			withCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now.Add(-30 * time.Second)},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+			wantCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now.Add(-30 * time.Second)},
+			},
+		},
+		{
+			name: "Nodes triggering error in CloudProvider are skipped",
+			groups: []testNodeGroup{
+				{
+					id: "ng",
+					nodes: []testNode{
+						{name: "ready", milliCpu: 2000, mem: 40, ready: true, lastTransition: now.Add(-2 * time.Minute)},
+					},
+				},
+			},
+			errorNodes: []testNode{
+				{name: "error-node-ready", milliCpu: 4000, mem: 80, ready: true, lastTransition: now.Add(-2 * time.Minute)},
+				{name: "error-node-unready", milliCpu: 4000, mem: 80, ready: false},
+			},
+			wantNodeInfos: map[string]testNode{
+				"ng": {milliCpu: 2000, mem: 40},
+			},
+			wantCache: map[string]cacheItem{
+				"ng": {NodeInfo: framework.NewTestNodeInfo(BuildTestNode("n", 2000, 40)), added: now},
+			},
 		},
 	}
-	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	assert.NoError(t, err)
-	assert.Equal(t, 6, len(res))
-	info, found := res["ng1"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready1, info.Node())
-	info, found = res["ng2"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready2, info.Node())
-	info, found = res["ng3"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, tn, info.Node())
-	info, found = res["ng4"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, tn, info.Node())
-	info, found = res["ng5"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, tn, info.Node())
-	info, found = res["ng6"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready7, info.Node())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			machineTemplates := make(map[string]*framework.NodeInfo)
+			for _, tg := range tc.groups {
+				if tg.template == nil {
+					continue
+				}
 
-	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
-	ctx = context.AutoscalingContext{
-		CloudProvider:   provider2,
-		ClusterSnapshot: testsnapshot.NewTestSnapshotOrDie(t),
-		AutoscalingKubeClients: context.AutoscalingKubeClients{
-			ListerRegistry: registry,
-		},
+				mt := *tg.template
+				nodeInfo := framework.NewTestNodeInfo(BuildTestNode(mt.name, mt.milliCpu, mt.mem))
+				machineTemplates[tg.id] = nodeInfo
+			}
+
+			var allNodes []*apiv1.Node
+			var errNodes []string
+			for _, tn := range tc.errorNodes {
+				node := BuildTestNode(tn.name, tn.milliCpu, tn.mem)
+				errNodes = append(errNodes, node.Name)
+				allNodes = append(allNodes, node)
+			}
+
+			provider := testprovider.NewTestCloudProviderBuilder().
+				WithMachineTemplates(machineTemplates).
+				WithNodeProcessingError(errNodes).Build()
+
+			for _, tg := range tc.groups {
+				provider.AddNodeGroup(tg.id, 0, 0, 0)
+				for _, tn := range tg.nodes {
+					node := BuildTestNode(tn.name, tn.milliCpu, tn.mem)
+					SetNodeReadyState(node, tn.ready, tn.lastTransition)
+					if tn.toBeDeleted {
+						setToBeDeletedTaint(node)
+					}
+					provider.AddNode(tg.id, node)
+					allNodes = append(allNodes, node)
+				}
+			}
+
+			snapshot := testsnapshot.NewTestSnapshotOrDie(t)
+			err := snapshot.SetClusterState(allNodes, nil, nil, nil)
+			assert.NoError(t, err)
+
+			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+			registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+
+			ctx := &ca_context.AutoscalingContext{
+				CloudProvider:   provider,
+				ClusterSnapshot: snapshot,
+				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
+					ListerRegistry: registry,
+				},
+			}
+
+			processor := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
+			if tc.withCache != nil {
+				processor.nodeInfoCache = tc.withCache
+			}
+			nodeInfos, err := processor.Process(ctx, allNodes, nil, taints.TaintConfig{}, now)
+
+			assert.Equal(t, tc.wantError, err)
+			if tc.wantError == nil {
+				assert.Equal(t, len(tc.wantNodeInfos), len(nodeInfos))
+				for id, tn := range tc.wantNodeInfos {
+					want := BuildTestNode(tn.name, tn.milliCpu, tn.mem)
+
+					info, found := nodeInfos[id]
+					assert.True(t, found)
+					assertEqualNodeCapacities(t, want, info.Node())
+				}
+
+				assert.Equal(t, len(tc.wantCache), len(processor.nodeInfoCache))
+				for id, want := range tc.wantCache {
+					cached, found := processor.nodeInfoCache[id]
+					assert.True(t, found)
+					assert.Equal(t, want.added, cached.added)
+					assertEqualNodeCapacities(t, want.Node(), cached.Node())
+				}
+			}
+		})
 	}
-	res, err = NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	assert.NoError(t, err)
-	assert.Equal(t, 0, len(res))
-}
-
-func TestGetNodeInfosForGroupsCache(t *testing.T) {
-	now := time.Now()
-	ready1 := BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))
-	ready2 := BuildTestNode("n2", 2000, 2000)
-	SetNodeReadyState(ready2, true, now.Add(-2*time.Minute))
-	unready3 := BuildTestNode("n3", 3000, 3000)
-	SetNodeReadyState(unready3, false, now)
-	unready4 := BuildTestNode("n4", 4000, 4000)
-	SetNodeReadyState(unready4, false, now.Add(-2*time.Minute))
-	ready5 := BuildTestNode("n5", 5000, 5000)
-	SetNodeReadyState(ready5, true, now.Add(-2*time.Minute))
-	ready6 := BuildTestNode("n6", 6000, 6000)
-	SetNodeReadyState(ready6, true, now.Add(-2*time.Minute))
-
-	tn := BuildTestNode("tn", 10000, 10000)
-	tni := framework.NewTestNodeInfo(tn)
-
-	lastDeletedGroup := ""
-	onDeleteGroup := func(id string) error {
-		lastDeletedGroup = id
-		return nil
-	}
-
-	// Cloud provider with TemplateNodeInfo implemented.
-	provider1 := testprovider.NewTestCloudProviderBuilder().WithOnNodeGroupDelete(onDeleteGroup).WithMachineTemplates(map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni}).Build()
-	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
-	provider1.AddNode("ng1", ready1)
-	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
-	provider1.AddNode("ng2", ready2)
-	provider1.AddNode("ng2", unready3)
-	provider1.AddNodeGroup("ng3", 1, 10, 1) // Nodegroup with unready node (and 1 previously ready node).
-	provider1.AddNode("ng3", unready4)
-	provider1.AddNode("ng3", ready5)
-	provider1.AddNodeGroup("ng4", 0, 1000, 0) // Nodegroup without nodes (and 1 previously ready node).
-	provider1.AddNode("ng4", ready6)
-
-	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-
-	nodes := []*apiv1.Node{unready4, unready3, ready2, ready1}
-	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, nil)
-	assert.NoError(t, err)
-
-	// Fill cache
-	ctx := context.AutoscalingContext{
-		CloudProvider:   provider1,
-		ClusterSnapshot: snapshot,
-		AutoscalingKubeClients: context.AutoscalingKubeClients{
-			ListerRegistry: registry,
-		},
-	}
-	niProcessor := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
-	res, err := niProcessor.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	assert.NoError(t, err)
-	// Check results
-	assert.Equal(t, 4, len(res))
-	info, found := res["ng1"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready1, info.Node())
-	info, found = res["ng2"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready2, info.Node())
-	info, found = res["ng3"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, tn, info.Node())
-	info, found = res["ng4"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, tn, info.Node())
-	// Check cache
-	cachedInfo, found := niProcessor.nodeInfoCache["ng1"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready1, cachedInfo.Node())
-	cachedInfo, found = niProcessor.nodeInfoCache["ng2"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
-	cachedInfo, found = niProcessor.nodeInfoCache["ng3"]
-	assert.False(t, found)
-	cachedInfo, found = niProcessor.nodeInfoCache["ng4"]
-	assert.False(t, found)
-
-	// Invalidate part of cache in two different ways
-	provider1.DeleteNodeGroup("ng1")
-	provider1.GetNodeGroup("ng3").Delete()
-	assert.Equal(t, "ng3", lastDeletedGroup)
-
-	// Check cache with all nodes removed
-	res, err = niProcessor.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	assert.NoError(t, err)
-	// Check results
-	assert.Equal(t, 2, len(res))
-	info, found = res["ng2"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready2, info.Node())
-	// Check ng4 result and cache
-	info, found = res["ng4"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, tn, info.Node())
-	// Check cache
-	cachedInfo, found = niProcessor.nodeInfoCache["ng2"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
-	cachedInfo, found = niProcessor.nodeInfoCache["ng4"]
-	assert.False(t, found)
-
-	// Fill cache manually
-	infoNg4Node6 := framework.NewTestNodeInfo(ready6.DeepCopy())
-	niProcessor.nodeInfoCache = map[string]cacheItem{"ng4": {NodeInfo: infoNg4Node6, added: now}}
-	res, err = niProcessor.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	// Check if cache was used
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(res))
-	info, found = res["ng2"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready2, info.Node())
-	info, found = res["ng4"]
-	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready6, info.Node())
-}
-
-func TestGetNodeInfosCacheExpired(t *testing.T) {
-	now := time.Now()
-	ready1 := BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))
-
-	// Cloud provider with TemplateNodeInfo not implemented.
-	provider := testprovider.NewTestCloudProviderBuilder().Build()
-	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-
-	nodes := []*apiv1.Node{ready1}
-	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err := snapshot.SetClusterState(nodes, nil, nil)
-	assert.NoError(t, err)
-
-	ctx := context.AutoscalingContext{
-		CloudProvider:   provider,
-		ClusterSnapshot: snapshot,
-		AutoscalingKubeClients: context.AutoscalingKubeClients{
-			ListerRegistry: registry,
-		},
-	}
-	tn := BuildTestNode("tn", 5000, 5000)
-	tni := framework.NewTestNodeInfo(tn)
-	// Cache expire time is set.
-	niProcessor1 := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
-	niProcessor1.nodeInfoCache = map[string]cacheItem{
-		"ng1": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
-		"ng2": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
-	}
-	provider.AddNodeGroup("ng1", 1, 10, 1)
-	provider.AddNode("ng1", ready1)
-
-	assert.Equal(t, 2, len(niProcessor1.nodeInfoCache))
-	_, err = niProcessor1.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(niProcessor1.nodeInfoCache))
-
-	// Cache expire time isn't set.
-	niProcessor2 := NewMixedTemplateNodeInfoProvider(nil, false)
-	niProcessor2.nodeInfoCache = map[string]cacheItem{
-		"ng1": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
-		"ng2": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
-	}
-	assert.Equal(t, 2, len(niProcessor2.nodeInfoCache))
-	_, err = niProcessor1.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(niProcessor2.nodeInfoCache))
-
-}
-
-func TestProcessHandlesTemplateNodeInfoErrors(t *testing.T) {
-	now := time.Now()
-
-	tn := BuildTestNode("tn", 1000, 1000)
-	tni := framework.NewTestNodeInfo(tn)
-
-	provider := testprovider.NewTestCloudProviderBuilder().WithMachineTemplates(
-		map[string]*framework.NodeInfo{"ng2": tni}).Build()
-
-	provider.AddNodeGroup("ng1", 0, 10, 0)
-	provider.AddNodeGroup("ng2", 0, 10, 0)
-
-	ctx := context.AutoscalingContext{
-		CloudProvider:   provider,
-		ClusterSnapshot: testsnapshot.NewTestSnapshotOrDie(t),
-	}
-
-	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-
-	// Should not fail despite ng1 error - continues processing
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(res))
-
-	_, found := res["ng2"]
-	assert.True(t, found)
-	_, found = res["ng1"]
-	assert.False(t, found) // ng1 skipped due to template error
 }
 
 func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {

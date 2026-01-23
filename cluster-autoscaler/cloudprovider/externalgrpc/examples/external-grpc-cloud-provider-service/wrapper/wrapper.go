@@ -20,10 +20,13 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -123,8 +126,18 @@ func (w *Wrapper) PricingNodePrice(_ context.Context, req *protos.PricingNodePri
 		return nil, err
 	}
 	reqNode := req.GetNode()
-	reqStartTime := req.GetStartTime()
-	reqEndTime := req.GetEndTime()
+
+	var reqStartTime *metav1.Time
+	if startTimestamp := req.GetStartTimestamp(); startTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqStartTime = &metav1.Time{Time: startTimestamp.AsTime()}
+	}
+	var reqEndTime *metav1.Time
+	if endTimestamp := req.GetEndTimestamp(); endTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqEndTime = &metav1.Time{Time: endTimestamp.AsTime()}
+	}
+
 	if reqNode == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
 	}
@@ -148,9 +161,29 @@ func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPrice
 		}
 		return nil, err
 	}
-	reqPod := req.GetPod()
-	reqStartTime := req.GetStartTime()
-	reqEndTime := req.GetEndTime()
+
+	var reqPod *apiv1.Pod
+	if podBytes := req.GetPodBytes(); podBytes != nil {
+		// decode from opaque bytes into pod if set
+		pod := &apiv1.Pod{}
+		if err := pod.Unmarshal(podBytes); err != nil {
+			return nil, err
+		}
+		reqPod = pod
+	}
+
+	var reqStartTime *metav1.Time
+	if startTimestamp := req.GetStartTimestamp(); startTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqStartTime = &metav1.Time{Time: startTimestamp.AsTime()}
+	}
+
+	var reqEndTime *metav1.Time
+	if endTimestamp := req.GetEndTimestamp(); endTimestamp != nil {
+		// read standard protobuf timestamp if set
+		reqEndTime = &metav1.Time{Time: endTimestamp.AsTime()}
+	}
+
 	if reqPod == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
 	}
@@ -341,8 +374,12 @@ func (w *Wrapper) NodeGroupTemplateNodeInfo(_ context.Context, req *protos.NodeG
 		}
 		return nil, err
 	}
+	infoBytes, err := info.Node().Marshal()
+	if err != nil {
+		return nil, err
+	}
 	return &protos.NodeGroupTemplateNodeInfoResponse{
-		NodeInfo: info.Node(),
+		NodeBytes: infoBytes,
 	}, nil
 }
 
@@ -359,12 +396,28 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 	if pbDefaults == nil {
 		return nil, fmt.Errorf("request fields were nil")
 	}
+
+	var scaleDownUnneededTime time.Duration
+	if d := pbDefaults.GetScaleDownUnneededDuration(); d != nil {
+		scaleDownUnneededTime = d.AsDuration()
+	}
+
+	var scaleDownUnreadyTime time.Duration
+	if d := pbDefaults.GetScaleDownUnreadyDuration(); d != nil {
+		scaleDownUnreadyTime = d.AsDuration()
+	}
+
+	var maxNodeProvisionTime time.Duration
+	if d := pbDefaults.GetMaxNodeProvisionDuration(); d != nil {
+		maxNodeProvisionTime = d.AsDuration()
+	}
+
 	defaults := config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    pbDefaults.GetScaleDownGpuUtilizationThreshold(),
 		ScaleDownGpuUtilizationThreshold: pbDefaults.GetScaleDownGpuUtilizationThreshold(),
-		ScaleDownUnneededTime:            pbDefaults.GetScaleDownUnneededTime().Duration,
-		ScaleDownUnreadyTime:             pbDefaults.GetScaleDownUnneededTime().Duration,
-		MaxNodeProvisionTime:             pbDefaults.GetMaxNodeProvisionTime().Duration,
+		ScaleDownUnneededTime:            scaleDownUnneededTime,
+		ScaleDownUnreadyTime:             scaleDownUnreadyTime,
+		MaxNodeProvisionTime:             maxNodeProvisionTime,
 		ZeroOrMaxNodeScaling:             pbDefaults.GetZeroOrMaxNodeScaling(),
 		IgnoreDaemonSetsUtilization:      pbDefaults.GetIgnoreDaemonSetsUtilization(),
 	}
@@ -382,17 +435,11 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 		NodeGroupAutoscalingOptions: &protos.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    opts.ScaleDownUtilizationThreshold,
 			ScaleDownGpuUtilizationThreshold: opts.ScaleDownGpuUtilizationThreshold,
-			ScaleDownUnneededTime: &metav1.Duration{
-				Duration: opts.ScaleDownUnneededTime,
-			},
-			ScaleDownUnreadyTime: &metav1.Duration{
-				Duration: opts.ScaleDownUnreadyTime,
-			},
-			MaxNodeProvisionTime: &metav1.Duration{
-				Duration: opts.MaxNodeProvisionTime,
-			},
-			ZeroOrMaxNodeScaling:        opts.ZeroOrMaxNodeScaling,
-			IgnoreDaemonSetsUtilization: opts.IgnoreDaemonSetsUtilization,
+			ScaleDownUnneededDuration:        durationpb.New(opts.ScaleDownUnneededTime),
+			ScaleDownUnreadyDuration:         durationpb.New(opts.ScaleDownUnreadyTime),
+			MaxNodeProvisionDuration:         durationpb.New(opts.MaxNodeProvisionTime),
+			ZeroOrMaxNodeScaling:             opts.ZeroOrMaxNodeScaling,
+			IgnoreDaemonSetsUtilization:      opts.IgnoreDaemonSetsUtilization,
 		},
 	}, nil
 }

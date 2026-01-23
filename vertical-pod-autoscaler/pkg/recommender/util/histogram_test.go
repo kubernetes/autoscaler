@@ -171,7 +171,7 @@ func TestHistogramSaveToCheckpointDropsRelativelySmallValues(t *testing.T) {
 	s, err := h.SaveToChekpoint()
 	assert.NoError(t, err)
 
-	assert.Equal(t, 100001. /*w1+w2*/, s.TotalWeight)
+	assert.Equal(t, 100001. /* w1 + w2 */, s.TotalWeight)
 	// Bucket 1 shouldn't be there
 	assert.Len(t, s.BucketWeights, 1)
 	assert.Contains(t, s.BucketWeights, bucket2)
@@ -197,7 +197,7 @@ func TestHistogramSaveToCheckpointForMultipleValues(t *testing.T) {
 
 	s, err := h.SaveToChekpoint()
 	assert.NoError(t, err)
-	assert.Equal(t, 10051. /*w1 + w2 + w3*/, s.TotalWeight)
+	assert.Equal(t, 10051. /* w1 + w2 + w3 */, s.TotalWeight)
 	assert.Len(t, s.BucketWeights, 3)
 	assert.Equal(t, uint32(1), s.BucketWeights[bucket1])
 	assert.Equal(t, uint32(10000), s.BucketWeights[bucket2])
@@ -311,8 +311,8 @@ func TestHistogramIsNotEmptyAfterSavingAndLoadingCheckpointsWithBoundaryValues(t
 	assert.False(t, newHistogram.IsEmpty())
 }
 
-func areUnique(values ...interface{}) bool {
-	dict := make(map[interface{}]bool)
+func areUnique(values ...any) bool {
+	dict := make(map[any]bool)
 	for i, v := range values {
 		dict[v] = true
 		if len(dict) != i+1 {

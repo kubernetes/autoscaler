@@ -1,0 +1,112 @@
+{{- if .Values.recommender.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.recommender.replicas }}
+  {{- with .Values.recommender.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "vertical-pod-autoscaler.recommender.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "vertical-pod-autoscaler.recommender.selectorLabels" . | nindent 8 }}
+      {{- with .Values.recommender.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.recommender.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{ toYaml . | nindent 8 | trim }}
+      {{- end }}
+      {{- with .Values.recommender.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: recommender
+          image: {{ include "vertical-pod-autoscaler.recommender.image" . }}
+          imagePullPolicy: {{ .Values.recommender.image.pullPolicy }}
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          {{- with .Values.recommender.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - --v=4
+            - --stderrthreshold=info
+            {{- /* Smart auto-enable: if enabled is null, auto-enable when replicas > 1 */ -}}
+            {{- $leaderElectionEnabled := .Values.recommender.leaderElection.enabled }}
+            {{- if eq $leaderElectionEnabled nil }}
+              {{- $leaderElectionEnabled = gt (int .Values.recommender.replicas) 1 }}
+            {{- end }}
+            {{- if $leaderElectionEnabled }}
+            - --leader-elect=true
+            - --leader-elect-resource-namespace={{ .Values.recommender.leaderElection.resourceNamespace | default .Release.Namespace }}
+            - --leader-elect-resource-name={{ .Values.recommender.leaderElection.resourceName }}
+            - --leader-elect-lease-duration={{ .Values.recommender.leaderElection.leaseDuration }}
+            - --leader-elect-renew-deadline={{ .Values.recommender.leaderElection.renewDeadline }}
+            - --leader-elect-retry-period={{ .Values.recommender.leaderElection.retryPeriod }}
+            {{- end }}
+          {{- with .Values.recommender.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: prometheus
+              containerPort: 8942
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            periodSeconds: 10
+            failureThreshold: 3
+          {{- with .Values.recommender.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{ toYaml . | nindent 12 | trim }}
+          {{- end }}
+      {{- with .Values.recommender.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.recommender.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.recommender.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end -}}

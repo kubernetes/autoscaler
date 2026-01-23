@@ -193,7 +193,7 @@ func TestChangedCAReloader(t *testing.T) {
 		t.Error(err)
 	}
 
-	testClientSet := fake.NewSimpleClientset()
+	testClientSet := fake.NewClientset()
 
 	selfRegistration(
 		testClientSet,
@@ -309,7 +309,7 @@ func TestChangedCAReloader(t *testing.T) {
 // 		t.Error(err)
 // 	}
 
-// 	testClientSet := fake.NewSimpleClientset()
+// 	testClientSet := fake.NewClientset()
 
 // 	selfRegistration(
 // 		testClientSet,
