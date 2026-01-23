@@ -1,5 +1,6 @@
 # Helm values for local E2E testing
 # Used by deploy-for-e2e-locally.sh
+fullnameOverride: vpa
 
 # Image settings - will be overridden via --set at install time
 # admissionController.image.repository, admissionController.image.tag, etc.
