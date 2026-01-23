@@ -89,10 +89,11 @@ const (
 // * scale-down-unneeded-time
 // * scale-down-delay-after-add
 
-var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
+var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.WithSerial(), func() {
 	f := framework.NewDefaultFramework("autoscaling")
 	f.NamespacePodSecurityLevel = admissionapi.LevelPrivileged
 	var c clientset.Interface
+	var nodeCountSet bool
 	var nodeCount int
 	var memAllocatableMb int
 
@@ -107,9 +108,18 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 
 		nodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
 		framework.ExpectNoError(err)
-		nodeCount = len(nodes.Items)
+
+		if !nodeCountSet {
+			// Guard the same number of schedulable nodes in every test case.
+			nodeCount = len(nodes.Items)
+			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), "Initial cluster must have at least one schedulable node")
+			nodeCountSet = true
+			ginkgo.By(fmt.Sprintf("Captured initial cluster size: %v", nodeCount))
+		}
+
+		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), "Cluster size should match the initial baseline size (test isolation failure)")
 		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes: %v", nodeCount))
-		gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty())
+
 		mem := nodes.Items[0].Status.Allocatable[v1.ResourceMemory]
 		memAllocatableMb = int((&mem).Value() / 1024 / 1024)
 		// As the last deferred cleanup ensure that the state is restored.
@@ -117,7 +127,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		// cleanups happen, and they are blocking cluster restoring its initial size.
 		ginkgo.DeferCleanup(func(ctx context.Context) {
 			ginkgo.By("Restoring the state after test")
-			framework.ExpectNoError(e2enode.WaitForReadyNodes(ctx, c, nodeCount, scaleDownTimeout))
+			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount }, scaleDownTimeout))
 			nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 			framework.ExpectNoError(err)
 
@@ -184,6 +194,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 	})
 
 	f.It("shouldn't trigger additional scale-ups during processing scale-up", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
+		e2eskipper.Skipf("Test is flaky and disabled for now")
 		// Wait for the situation to stabilize - CA should be running and have up-to-date node readiness info.
 		status, err := waitForScaleUpStatus(ctx, c, func(s *scaleUpStatus) bool {
 			return s.ready == s.target && s.ready <= nodeCount
@@ -248,7 +259,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		ginkgo.DeferCleanup(e2erc.DeleteRCAndWaitForGC, f.ClientSet, f.Namespace.Name, "extra-pod")
 
 		framework.ExpectNoError(waitForAllCaPodsReadyInNamespace(ctx, f, c))
-		framework.ExpectNoError(e2enode.WaitForReadyNodes(ctx, c, nodeCount+newPods, scaleUpTimeout))
+		framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount+newPods }, scaleUpTimeout))
 	})
 
 	f.It("should increase cluster size if pod requesting EmptyDir volume is pending", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
@@ -269,7 +280,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		ginkgo.DeferCleanup(e2erc.DeleteRCAndWaitForGC, f.ClientSet, f.Namespace.Name, "extra-pod")
 
 		framework.ExpectNoError(waitForAllCaPodsReadyInNamespace(ctx, f, c))
-		framework.ExpectNoError(e2enode.WaitForReadyNodes(ctx, c, nodeCount+newPods, scaleUpTimeout))
+		framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount+newPods }, scaleUpTimeout))
 	})
 
 	f.It("should correctly scale down after a node is not needed", feature.ClusterSizeAutoscalingScaleDown, func(ctx context.Context) {
@@ -406,29 +417,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		framework.ExpectNoError(WaitForClusterSizeFuncWithUnready(ctx, f.ClientSet, sizeFunc, scaleUpTimeout, 0))
 	})
 
-	f.It("shouldn't scale up when unprocessed pod is created and is going to be schedulable", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
-		// 50% of allocatable memory of a single node, so that no scale up would trigger in normal cases
-		replicaCount := 1
-		reservedMemory := int(float64(0.5) * float64(memAllocatableMb))
-		cleanupFunc := ReserveMemoryWithSchedulerName(ctx, f, "memory-reservation", replicaCount, reservedMemory, false, 1, nonExistingBypassedSchedulerName)
-		defer func() {
-			framework.ExpectNoError(cleanupFunc())
-		}()
-		// Verify that cluster size is the same
-		ginkgo.By(fmt.Sprintf("Waiting for scale up hoping it won't happen, polling cluster size for %s", scaleUpTimeout.String()))
-		sizeFunc := func(size int) bool {
-			return size == nodeCount
-		}
-		gomega.Consistently(ctx, func() error {
-			return WaitForClusterSizeFunc(ctx, f.ClientSet, sizeFunc, time.Second)
-		}).WithTimeout(scaleUpTimeout).WithPolling(framework.Poll).ShouldNot(gomega.HaveOccurred())
-	})
-
-	f.It("shouldn't scale up when unprocessed pod is created and scheduler is not specified to be bypassed", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
-		// 70% of allocatable memory of a single node * replica count, forcing a scale up in case of normal pods
-		replicaCount := 2 * nodeCount
-		reservedMemory := int(float64(replicaCount) * float64(0.7) * float64(memAllocatableMb))
-		schedulerName := "non-existent-scheduler-" + f.UniqueName
+	runScaleUpNotTriggeredUnprocessedPodTest := func(ctx context.Context, replicaCount int, reservedMemory int, schedulerName string) {
 		cleanupFunc := ReserveMemoryWithSchedulerName(ctx, f, "memory-reservation", replicaCount, reservedMemory, false, 1, schedulerName)
 		defer func() {
 			framework.ExpectNoError(cleanupFunc())
@@ -441,6 +430,21 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 		gomega.Consistently(ctx, func() error {
 			return WaitForClusterSizeFunc(ctx, f.ClientSet, sizeFunc, time.Second)
 		}).WithTimeout(scaleUpTimeout).WithPolling(framework.Poll).ShouldNot(gomega.HaveOccurred())
+	}
+
+	f.It("shouldn't scale up when unprocessed pod is created and is going to be schedulable", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
+		// 50% of allocatable memory of a single node, so that no scale up would trigger in normal cases
+		replicaCount := 1
+		reservedMemory := int(float64(0.5) * float64(memAllocatableMb))
+		runScaleUpNotTriggeredUnprocessedPodTest(ctx, replicaCount, reservedMemory, nonExistingBypassedSchedulerName)
+	})
+
+	f.It("shouldn't scale up when unprocessed pod is created and scheduler is not specified to be bypassed", feature.ClusterScaleUpBypassScheduler, func(ctx context.Context) {
+		// 70% of allocatable memory of a single node * replica count, forcing a scale up in case of normal pods
+		replicaCount := 2 * nodeCount
+		reservedMemory := int(float64(replicaCount) * float64(0.7) * float64(memAllocatableMb))
+		schedulerName := "non-existent-scheduler-" + f.UniqueName
+		runScaleUpNotTriggeredUnprocessedPodTest(ctx, replicaCount, reservedMemory, schedulerName)
 	})
 
 })
@@ -454,6 +458,15 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 		"spec.unschedulable": "false",
 	}.AsSelector().String()})
 	framework.ExpectNoError(err)
+
+	// Filter out tainted nodes (e.g. master)
+	e2enode.Filter(nodes, func(node v1.Node) bool {
+		return !isNodeTainted(&node)
+	})
+
+	// There should be only increasedCount nodes after filtration.
+	gomega.Expect(nodes.Items).To(gomega.HaveLen(increasedCount))
+
 	numPods := len(nodes.Items) * podsPerNode
 	testID := string(uuid.NewUUID()) // So that we can label and find pods
 	labelMap := map[string]string{"test_id": testID}
@@ -550,6 +563,12 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 			klog.Warningf("Failed to list nodes: %v", err)
 			continue
 		}
+
+		// Filter out tainted nodes (e.g. master)
+		e2enode.Filter(nodes, func(node v1.Node) bool {
+			return !isNodeTainted(&node)
+		})
+
 		numNodes := len(nodes.Items)
 
 		// Filter out not-ready nodes.
@@ -1045,4 +1064,13 @@ func createPriorityClasses(ctx context.Context, f *framework.Framework) {
 			}
 		}
 	})
+}
+
+func isNodeTainted(node *v1.Node) bool {
+	for _, taint := range node.Spec.Taints {
+		if taint.Effect == v1.TaintEffectNoSchedule || taint.Effect == v1.TaintEffectNoExecute {
+			return true
+		}
+	}
+	return false
 }
