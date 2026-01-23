@@ -75,10 +75,9 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 // The calculation is comprised of steps:
 //
 //  1. Partitionable (Shared) Utilization:
-//     Identifies the single highest utilization ratio across all shared counters
-//     in the entire pool. This ratio represents the most constrained resource within the pool.
-//     For example, if a GPU pool has shared counters for memory and compute cycles, and the memory's shared counter is at 80% utilization, and the compute cycles' counter is at 50%,
-//     the partitionable utilization for the pool would be 80%.
+//     Identifies the single highest utilization ratio across all counters in a counterSet, the utilization of each counterSet is then averaged accross all partitionable devices in the resourceSlice.
+//     For example, if a GPU pool has shared counter with counters for memory and compute cycles, and the memory's counter is at 80% utilization, and the compute cycles' counter is at 50%,
+//     the partitionable utilization for the pool would be 80% for that device. If there is another shared counter at 60%, the total partitionable utilization would be 70%.
 //
 //  2. Atomic (Non-partitionable) Utilization:
 //     Calculated as the simple ratio of allocated devices to total devices for all devices
@@ -154,6 +153,7 @@ func calculatePoolUtil(unallocated, allocated []resourceapi.Device, resourceSlic
 }
 
 // calculateAtomicDevicesPoolUtilization calculates the utilization of atomic (non-partitionable) devices in a pool. the input devices must be atomic devices only.
+// the calculation is based on the ratio of allocated devices to total devices.
 func calculateAtomicDevicesPoolUtilization(allocated, total []resourceapi.Device) float64 {
 	if len(total) == 0 {
 		return 0
@@ -163,6 +163,9 @@ func calculateAtomicDevicesPoolUtilization(allocated, total []resourceapi.Device
 }
 
 // calculatePartitionableDevicesPoolUtilization calculates the utilization of partitionable devices in a pool. the input devices must be partitionable devices only.
+// the calculation is based on shared counters defined in the resource slices, it is assumed that each shared counter represents a partitionable device,
+// for each shared counter, we find the highest utilized counter and use that as the utilization for that partitionable device.
+// the final utilization is the average of all partitionable devices' utilizations.
 func calculatePartitionableDevicesPoolUtilization(allocated, total []resourceapi.Device, sharedCounters []resourceapi.CounterSet) float64 {
 
 	uniquePartitionableDevicesCount := getUniquePartitionableDevicesCount(total)
