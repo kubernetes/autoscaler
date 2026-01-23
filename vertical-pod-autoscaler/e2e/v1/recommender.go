@@ -19,7 +19,6 @@ package autoscaling
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
