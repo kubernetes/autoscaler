@@ -24,6 +24,8 @@
 set -o errexit
 set -o pipefail
 
+IS_MACOS=$([[ "$(uname)" == "Darwin" ]] && echo true || echo false)
+
 KUBE_ROOT="$(dirname "${BASH_SOURCE[0]}")/../.."
 cd "${KUBE_ROOT}"
 
@@ -59,7 +61,7 @@ cluster_autoscaler:list_mods() {
   fi
   cluster_autoscaler:list_mods:init "${k8s_version}" > /dev/null
   mods=($(
-        cat go.mod | sed -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'
+        cat go.mod | "${SED}" -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'
   ))
   cluster_autoscaler:list_mods:cleanup > /dev/null
   echo "${mods[@]}"
@@ -98,7 +100,12 @@ cluster_autoscaler:update_deps() {
   if [ "${pkg}" = "./cluster-autoscaler" ]; then
     go get "k8s.io/kubernetes@v${k8s_version}"
     go mod tidy
-    "${SED}" -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"${k8s_version}\"|" "version/version.go"
+    if [ "${IS_MACOS}" = true ]; then
+      SED_INPLACE=(-i "")
+    else
+      SED_INPLACE=(-i)
+    fi
+    "${SED}" "${SED_INPLACE[@]}" "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"${k8s_version}\"|" "version/version.go"
   fi
 
   git rm -r --force --ignore-unmatch kubernetes
