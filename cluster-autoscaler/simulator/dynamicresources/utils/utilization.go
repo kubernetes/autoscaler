@@ -75,7 +75,7 @@ func HighestDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (v1.Resourc
 // The calculation is comprised of steps:
 //
 //  1. Partitionable (Shared) Utilization:
-//     Identifies the single highest utilization ratio across all counters in a counterSet, the utilization of each counterSet is then averaged accross all partitionable devices in the resourceSlice.
+//     Identifies the single highest utilization ratio across all counters in a counterSet, the utilization of each counterSet is then averaged across all partitionable devices in the resourceSlice.
 //     For example, if a GPU pool has shared counter with counters for memory and compute cycles, and the memory's counter is at 80% utilization, and the compute cycles' counter is at 50%,
 //     the partitionable utilization for the pool would be 80% for that device. If there is another shared counter at 60%, the total partitionable utilization would be 70%.
 //
