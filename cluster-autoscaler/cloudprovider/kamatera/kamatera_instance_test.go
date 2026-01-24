@@ -39,7 +39,7 @@ func TestInstance_refresh_PoweroffOnScaleDownClearsNodeMetadata(t *testing.T) {
 			Unschedulable: true,
 			Taints: []apiv1.Taint{
 				{Key: taints.ToBeDeletedTaint, Value: "123", Effect: apiv1.TaintEffectNoSchedule},
-				{Key: taints.DeletionCandidateTaint, Value: "123", Effect: apiv1.TaintEffectPreferNoSchedule},
+				{Key: taints.DeletionCandidateTaint().Key, Value: "123", Effect: apiv1.TaintEffectPreferNoSchedule},
 				{Key: "custom", Value: "x", Effect: apiv1.TaintEffectNoSchedule},
 			},
 		},
@@ -65,6 +65,6 @@ func TestInstance_refresh_PoweroffOnScaleDownClearsNodeMetadata(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, node.Spec.Unschedulable)
 	assert.False(t, taints.HasTaint(node, taints.ToBeDeletedTaint))
-	assert.False(t, taints.HasTaint(node, taints.DeletionCandidateTaint))
+	assert.False(t, taints.HasTaint(node, taints.DeletionCandidateTaint().Key))
 	assert.True(t, taints.HasTaint(node, "custom"))
 }

@@ -305,7 +305,7 @@ func clearAutoscalerMetadataFromNode(kubeClient kubernetes.Interface, nodeName s
 		if len(updated.Spec.Taints) > 0 {
 			newTaints := make([]apiv1.Taint, 0, len(updated.Spec.Taints))
 			for _, taint := range updated.Spec.Taints {
-				if taint.Key == taints.ToBeDeletedTaint || taint.Key == taints.DeletionCandidateTaint {
+				if taint.Key == taints.ToBeDeletedTaint || taint.Key == taints.DeletionCandidateTaint().Key {
 					changed = true
 					continue
 				}
