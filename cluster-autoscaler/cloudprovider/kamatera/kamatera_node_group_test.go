@@ -278,20 +278,14 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 			}
 
 			// test errors
-			if tt.poweronOnScaleUp {
-				client.On(
-					"StartCreateServers", ctx, 1, serverConfig,
-				).Return(
-					map[string]string{}, fmt.Errorf("error on API call"),
-				).Once()
-			}
+			client.On(
+				"StartCreateServers", ctx, 1, serverConfig,
+			).Return(
+				map[string]string{}, fmt.Errorf("error on API call"),
+			).Once()
 			err = ng.IncreaseSize(1)
 			assert.Error(t, err, "no error on injected API call error")
-			if tt.poweronOnScaleUp {
-				assert.Equal(t, "error on API call", err.Error())
-			} else {
-				assert.Equal(t, "instances are still being created", err.Error())
-			}
+			assert.Equal(t, "error on API call", err.Error())
 		})
 	}
 }

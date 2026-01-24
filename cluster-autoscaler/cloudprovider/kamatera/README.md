@@ -36,7 +36,7 @@ it is an INI file with the following fields:
 | global/filter-name-prefix              | autoscaler will only handle server names that start with this prefix                                                                                    | no        | none                               |
 | global/provider-id-prefix              | prefix used for Kubernetes node `.spec.providerID` (and for matching nodes to Kamatera instances)                                                       | no        | kamatera://                        |
 | global/poweroff-on-scale-down          | boolean - set to true to power-off servers instead of terminating them                                                                                  | no        | false                              |
-| global/poweron-on-scale-up             | boolean - set to true to look for powered off servers to use for scale up before creating additional servers                                            | no        | false                              |
+| global/poweron-on-scale-up             | boolean - set to true to look for powered off servers to use for scale up before creating additional servers, see note below regarding how to use this  | no        | false                              |
 | global/default-min-size                | default minimum size of a node group (must be > 0)                                                                                                      | no        | 1                                  |
 | global/default-max-size                | default maximum size of a node group                                                                                                                    | no        | 254                                |
 | global/default-<SERVER_CONFIG_KEY>     | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | see below | see below                          |
@@ -45,6 +45,15 @@ it is an INI file with the following fields:
 | nodegroup \"name\"/max-size            | maximum size for a specific node group                                                                                                                  | no        | global/defaut-min-size             |
 | nodegroup \"name\"/template-label      | Set labels on the node template used for scale up checks (See below for details)                                                                        | no        | none                               |
 | nodegroup \"name\"/<SERVER_CONFIG_KEY> | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | no        | global/default-<SERVER_CONFIG_KEY> |
+
+### Using power on for scale up
+
+In this mode, when scaling up, the autoscaler will first look for powered off servers to power on before creating new servers.
+
+Pay attention that if the node being powered on is already registered on Kubernetes the cluster autoscaler may not handle it correctly.
+
+To use this option it's recommended to deploy the [Kamatera RKE2 Controller](https://github.com/Kamatera/kamatera-rke2-controller) and
+use its ability to delete nodes which are powered off. This way, when the autoscaler powers on a server, the controller will re-register it to the cluster.
 
 ### Server configuration keys
 

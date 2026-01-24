@@ -240,6 +240,7 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 		MaxNodeProvisionTime:             time.Hour, // we can't cancel creation in progress so must give it enough time to complete
 		ZeroOrMaxNodeScaling:             defaults.ZeroOrMaxNodeScaling,
 		IgnoreDaemonSetsUtilization:      defaults.IgnoreDaemonSetsUtilization,
+		MaxNodeStartupTime:               defaults.MaxNodeStartupTime,
 	}, nil
 }
 
@@ -268,16 +269,6 @@ func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
 }
 
 func (n *NodeGroup) createInstances(count int) error {
-	for _, instance := range n.instances {
-		if instance.Status != nil && instance.Status.State == cloudprovider.InstanceCreating {
-			klog.V(4).Infof("createInstances: instance %s is still creating", instance.Id)
-			count--
-		}
-	}
-	if count <= 0 {
-		klog.V(4).Infof("createInstances: skipping because instance count (%d) is 0 or less due to still creaing instances", count)
-		return fmt.Errorf("instances are still being created")
-	}
 	if n.manager.config.PoweronOnScaleUp {
 		var poweronCandidateInstances []*Instance
 		for _, instance := range n.manager.snapshotInstances() {
