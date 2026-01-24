@@ -13,7 +13,6 @@
   - [Skipping Disruption Budget for Non-Disruptive Updates](#skipping-disruption-budget-for-non-disruptive-updates)
     - [When Disruption Budgets Are Still Respected](#when-disruption-budgets-are-still-respected)
   - [Requirements:](#requirements)
-  - [Configuration](#configuration)
   - [Limitations](#limitations)
   - [Fallback Behavior](#fallback-behavior)
   - [Monitoring](#monitoring)
@@ -91,9 +90,11 @@ To enable this feature, set the `--round-memory-bytes` flag when running the VPA
 
 ## In-Place Updates (`InPlaceOrRecreate`)
 
-> [!WARNING]
-> FEATURE STATE: VPA v1.4.0 [alpha]
-> FEATURE STATE: VPA v1.5.0 [beta]
+> [!NOTE]
+> FEATURE STATE:
+> - VPA v1.4.0 [alpha]
+> - VPA v1.5.0 [beta]
+> - VPA v1.6.0 [ga]
 
 VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (which is in beta as of Kubernetes 1.33) to modify container resources without requiring pod recreation.
 For more information, see [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)
@@ -142,14 +143,6 @@ Even with this flag enabled, disruption budgets are enforced when:
 
 * Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
 * VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
-
-### Configuration
-
-Enable the feature by setting the following flags in VPA components ( for both updater and admission-controller ):
-
-```bash
---feature-gates=InPlaceOrRecreate=true
-```
 
 ### Limitations
 
