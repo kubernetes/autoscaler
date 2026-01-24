@@ -223,6 +223,7 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 			}
 
 			// test ok to add a node
+			createdServerName1 := mockKamateraServerName()
 			if tt.poweronOnScaleUp {
 				client.On(
 					"StartServerRequest", ctx, ServerRequestPoweron, PoweredOffServerName1,
@@ -230,7 +231,6 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 					"cmd-poweron-1", nil,
 				).Once()
 			} else {
-				createdServerName1 := mockKamateraServerName()
 				client.On(
 					"StartCreateServers", ctx, 1, serverConfig,
 				).Return(
@@ -243,6 +243,8 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 
 			if tt.poweronOnScaleUp {
 				ng.instances[PoweredOffServerProviderID1].Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+			} else {
+				ng.instances[formatKamateraProviderID("rke2://", createdServerName1)].Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
 			}
 
 			// test ok to add multiple nodes
@@ -275,15 +277,21 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 				ng.instances[formatKamateraProviderID("rke2://", PoweredOffServerName3)].Status = &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
 			}
 
-			// test error on API call error
-			client.On(
-				"StartCreateServers", ctx, 1, serverConfig,
-			).Return(
-				map[string]string{}, fmt.Errorf("error on API call"),
-			).Once()
+			// test errors
+			if tt.poweronOnScaleUp {
+				client.On(
+					"StartCreateServers", ctx, 1, serverConfig,
+				).Return(
+					map[string]string{}, fmt.Errorf("error on API call"),
+				).Once()
+			}
 			err = ng.IncreaseSize(1)
 			assert.Error(t, err, "no error on injected API call error")
-			assert.Equal(t, "error on API call", err.Error())
+			if tt.poweronOnScaleUp {
+				assert.Equal(t, "error on API call", err.Error())
+			} else {
+				assert.Equal(t, "instances are still being created", err.Error())
+			}
 		})
 	}
 }

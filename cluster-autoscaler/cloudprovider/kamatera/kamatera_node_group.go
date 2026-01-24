@@ -268,17 +268,17 @@ func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
 }
 
 func (n *NodeGroup) createInstances(count int) error {
+	for _, instance := range n.instances {
+		if instance.Status != nil && instance.Status.State == cloudprovider.InstanceCreating {
+			klog.V(4).Infof("createInstances: instance %s is still creating", instance.Id)
+			count--
+		}
+	}
+	if count <= 0 {
+		klog.V(4).Infof("createInstances: skipping because instance count (%d) is 0 or less due to still creaing instances", count)
+		return fmt.Errorf("instances are still being created")
+	}
 	if n.manager.config.PoweronOnScaleUp {
-		for _, instance := range n.instances {
-			if instance.Status != nil && instance.Status.State == cloudprovider.InstanceCreating {
-				klog.V(4).Infof("createInstances: instance %s is still creating", instance.Id)
-				count--
-			}
-		}
-		if count <= 0 {
-			klog.V(4).Infof("createInstances: skipping because instance count (%d) is 0 or less due to still creaing instances", count)
-			return fmt.Errorf("instances are still being created")
-		}
 		var poweronCandidateInstances []*Instance
 		for _, instance := range n.manager.snapshotInstances() {
 			if sets.New(n.serverConfig.Tags...).Equal(sets.New(instance.Tags...)) && instance.PowerOn == false && instance.Status == nil {
