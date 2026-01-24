@@ -91,8 +91,7 @@ admissionController:
   # List of node taints to tolerate.
   tolerations: []
 
-  # Whether to register webhook via the application itself or via Helm
-  # Set to false when using Helm-managed webhook
+  # admissionController.registerWebhook -- Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations.
   registerWebhook: false
 
   certGen:
