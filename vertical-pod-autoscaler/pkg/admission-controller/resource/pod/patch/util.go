@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 // GetAddEmptyAnnotationsPatch returns a patch initializing empty annotations.
@@ -44,28 +45,28 @@ func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admi
 }
 
 // GetAddResourceRequirementValuePatch returns a patch record to add resource requirements to a container.
-func GetAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
+func GetAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity, containerType model.ContainerType) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
+		Path:  fmt.Sprintf("%s/%d/resources/%s/%s", containerType.GetPatchPath(), i, kind, resource),
 		Value: quantity.String()}
 }
 
 // GetPatchInitializingEmptyResources returns a patch record to initialize an empty resources object for a container.
-func GetPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
+func GetPatchInitializingEmptyResources(i int, containerType model.ContainerType) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
+		Path:  fmt.Sprintf("%s/%d/resources", containerType.GetPatchPath(), i),
 		Value: core.ResourceRequirements{},
 	}
 }
 
 // GetPatchInitializingEmptyResourcesSubfield returns a patch record to initialize an empty subfield
 // (e.g., "requests" or "limits") within a container's resources object.
-func GetPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_admission.PatchRecord {
+func GetPatchInitializingEmptyResourcesSubfield(i int, kind string, containerType model.ContainerType) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
+		Path:  fmt.Sprintf("%s/%d/resources/%s", containerType.GetPatchPath(), i, kind),
 		Value: core.ResourceList{},
 	}
 }

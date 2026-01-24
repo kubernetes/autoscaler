@@ -218,3 +218,27 @@ type VpaID struct {
 	Namespace string
 	VpaName   string
 }
+
+// ContainerType helps us differentiate regular containers and different types of init containers
+type ContainerType string
+
+// GetPatchPath is used for getting the path for patch depending on the container type.
+func (c ContainerType) GetPatchPath() string {
+	switch c {
+	case ContainerTypeInit, ContainerTypeInitSidecar:
+		return "/spec/initContainers"
+	default:
+		return "/spec/containers"
+	}
+}
+
+const (
+	// ContainerTypeStandard represents a standard container.
+	ContainerTypeStandard ContainerType = "container"
+	// ContainerTypeInit represents a "regular" init container.
+	ContainerTypeInit ContainerType = "init"
+	// ContainerTypeInitSidecar represents an init with restartPolicy set to always.
+	ContainerTypeInitSidecar ContainerType = "init-sidecar"
+	// ContainerTypeUnknown represents an unknown container type.
+	ContainerTypeUnknown ContainerType = "unknown"
+)

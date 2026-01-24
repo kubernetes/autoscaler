@@ -695,6 +695,37 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 	t0 := time.Date(2021, time.August, 30, 10, 21, 0, 0, time.UTC)
 	containerCpu := "containerCpu"
 	containerMem := "containerMem"
+	containerInit := "containerinit"
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{{
+		ID: pod1,
+		Containers: []spec.BasicContainerSpec{
+			{
+				ID: model.ContainerID{
+					PodID:         pod1,
+					ContainerName: containerCpu,
+				},
+				ContainerType: model.ContainerTypeStandard,
+			},
+		},
+		InitContainers: []spec.BasicContainerSpec{
+			{
+				ID: model.ContainerID{
+					PodID:         pod1,
+					ContainerName: containerMem,
+				},
+				ContainerType: model.ContainerTypeInitSidecar,
+			},
+			{
+				ID: model.ContainerID{
+					PodID:         pod1,
+					ContainerName: containerInit,
+				},
+				ContainerType: model.ContainerTypeInit,
+			},
+		},
+	}}}
+
 	pod1History := history.PodHistory{
 		LastLabels: map[string]string{},
 		LastSeen:   t0,
@@ -713,6 +744,13 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 					Resource:     model.ResourceMemory,
 				},
 			},
+			containerInit: {
+				{
+					MeasureStart: t0,
+					Usage:        memAmount,
+					Resource:     model.ResourceMemory,
+				},
+			},
 		},
 	}
 	provider := fakeHistoryProvider{
@@ -723,6 +761,7 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 
 	clusterState := model.NewClusterState(testGcPeriod)
 	feeder := clusterStateFeeder{
+		specClient:   client,
 		clusterState: clusterState,
 	}
 	feeder.InitFromHistoryProvider(&provider)
@@ -738,10 +777,14 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		return
 	}
 	assert.Equal(t, t0, containerState.LastCPUSampleStart)
-	if !assert.Contains(t, pod1State.Containers, containerMem) {
+	if !assert.Contains(t, pod1State.InitContainers, containerInit) {
 		return
 	}
-	containerState = pod1State.Containers[containerMem]
+	containerInitState := pod1State.InitSidecarsContainers[containerMem]
+	if !assert.NotNil(t, containerInitState) {
+		return
+	}
+	containerState = pod1State.InitSidecarsContainers[containerMem]
 	if !assert.NotNil(t, containerState) {
 		return
 	}

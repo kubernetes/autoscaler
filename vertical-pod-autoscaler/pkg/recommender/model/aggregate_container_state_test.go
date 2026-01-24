@@ -85,7 +85,7 @@ func TestAggregateStateByContainerName(t *testing.T) {
 		{testPodID2, "app-C"},
 	}
 	for _, c := range containers {
-		assert.NoError(t, cluster.AddOrUpdateContainer(c, testRequest))
+		assert.NoError(t, cluster.AddOrUpdateContainer(c, testRequest, ContainerTypeStandard))
 	}
 
 	// Add CPU usage samples to all containers.
