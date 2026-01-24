@@ -18,7 +18,6 @@ package kamatera
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -87,6 +86,23 @@ type KamateraApiClientRest struct {
 	expSecondsBetweenRetries int
 }
 
+func parseCommandId(in interface{}) string {
+	switch v := in.(type) {
+	case []interface{}:
+		if len(v) != 1 {
+			return ""
+		}
+		return parseCommandId(v[0])
+	case interface{}:
+		commandId, ok := v.(string)
+		if !ok {
+			return ""
+		}
+		return commandId
+	}
+	return ""
+}
+
 // ListServers returns a list of all servers in the relevant account and fetches their tags
 func (c *KamateraApiClientRest) ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string, providerIDPrefix string) ([]Server, error) {
 	res, err := request(
@@ -102,11 +118,25 @@ func (c *KamateraApiClientRest) ListServers(ctx context.Context, instances map[s
 		return nil, err
 	}
 	var servers []Server
-	for _, server := range res.([]interface{}) {
-		server := server.(map[string]interface{})
-		serverName := server["name"].(string)
+	resItems, ok := res.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid response from Kamatera servers API: %v", res)
+	}
+	for _, server := range resItems {
+		server, ok := server.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("invalid response from Kamatera servers API: %v", res)
+		}
+		serverName, ok := server["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("invalid response from Kamatera servers API: %v", res)
+		}
 		if len(namePrefix) == 0 || strings.HasPrefix(serverName, namePrefix) {
-			serverPowerOn := server["power"].(string) == "on"
+			serverPower, ok := server["power"].(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid response from Kamatera servers API: %v", res)
+			}
+			serverPowerOn := serverPower == "on"
 			serverTags, err := c.getServerTags(ctx, serverName, instances, providerIDPrefix)
 			if err != nil {
 				return nil, err
@@ -135,7 +165,11 @@ func (c *KamateraApiClientRest) StartServerTerminate(ctx context.Context, name s
 	if err != nil {
 		return "", err
 	}
-	return res.([]interface{})[0].(string), nil
+	commandId := parseCommandId(res)
+	if commandId == "" {
+		return "", fmt.Errorf("invalid response from Kamatera server terminate API: %v", res)
+	}
+	return commandId, nil
 }
 
 // StartServerRequest starts a server request, returning command ID
@@ -152,7 +186,11 @@ func (c *KamateraApiClientRest) StartServerRequest(ctx context.Context, requestT
 	if err != nil {
 		return "", err
 	}
-	return res.([]interface{})[0].(string), nil
+	commandId := parseCommandId(res)
+	if commandId == "" {
+		return "", fmt.Errorf("invalid response from Kamatera server %s API: %v", requestType, res)
+	}
+	return commandId, nil
 }
 
 // StartCreateServers starts creation of new servers according to the given configuration, returning server names and command IDs
@@ -211,11 +249,16 @@ func (c *KamateraApiClientRest) StartCreateServers(ctx context.Context, count in
 			klog.Errorf("Error creating server %s: %v", serverName, err)
 			serverNameCommandIds[serverName] = ""
 		} else if config.Password == "__generate__" {
-			resData := res.(map[string]interface{})
-			klog.V(4).Infof("Generated password for server %s: %s", serverName, resData["password"].(string))
-			serverNameCommandIds[serverName] = resData["commandIds"].([]interface{})[0].(string)
+			resData, ok := res.(map[string]interface{})
+			if ok {
+				klog.V(4).Infof("Generated password for server %s: %s", serverName, resData["password"].(string))
+				serverNameCommandIds[serverName] = parseCommandId(resData["commandIds"])
+			} else {
+				klog.Errorf("invalid response from Kamatera server create API for server %s: %v", serverName, res)
+				serverNameCommandIds[serverName] = ""
+			}
 		} else {
-			serverNameCommandIds[serverName] = res.([]interface{})[0].(string)
+			serverNameCommandIds[serverName] = parseCommandId(res)
 		}
 	}
 	return serverNameCommandIds, nil
@@ -237,9 +280,20 @@ func (c *KamateraApiClientRest) getServerTags(ctx context.Context, serverName st
 			return nil, err
 		}
 		tags := make([]string, 0)
-		for _, row := range res.([]interface{}) {
-			row := row.(map[string]interface{})
-			tags = append(tags, row["tagName"].(string))
+		resItems, ok := res.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("invalid response from Kamatera server tags API: %v", res)
+		}
+		for _, row := range resItems {
+			row, ok := row.(map[string]interface{})
+			if !ok {
+				return nil, fmt.Errorf("invalid response from Kamatera server tags API: %v", res)
+			}
+			tag, ok := row["tagName"].(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid response from Kamatera server tags API: %v", res)
+			}
+			tags = append(tags, tag)
 		}
 		return tags, nil
 	}
@@ -259,14 +313,21 @@ func (c *KamateraApiClientRest) getCommandStatus(ctx context.Context, commandID 
 	if e != nil {
 		return CommandStatusError, e
 	}
-	commands := result.([]interface{})
-	if len(commands) != 1 {
-		return CommandStatusError, errors.New("invalid response from Kamatera queue API: invalid number of command responses")
+	commands, ok := result.([]interface{})
+	if !ok || len(commands) != 1 {
+		return CommandStatusError, fmt.Errorf("invalid response from Kamatera command status API: %v", result)
 	}
-	command := commands[0].(map[string]interface{})
+	command, ok := commands[0].(map[string]interface{})
+	if !ok {
+		return CommandStatusError, fmt.Errorf("invalid response from Kamatera command status API: %v", result)
+	}
 	status, hasStatus := command["status"]
 	if hasStatus {
-		switch status.(string) {
+		commandStatus, ok := status.(string)
+		if !ok {
+			return CommandStatusError, fmt.Errorf("invalid response from Kamatera command status API: %v", result)
+		}
+		switch commandStatus {
 		case "complete":
 			return CommandStatusComplete, nil
 		case "error":

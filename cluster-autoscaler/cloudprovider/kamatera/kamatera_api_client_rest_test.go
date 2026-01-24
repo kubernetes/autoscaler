@@ -18,8 +18,10 @@ package kamatera
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"maps"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -276,4 +278,127 @@ func TestApiClientRest_CreateServers(t *testing.T) {
 	assert.Less(t, 10, len(serverNames[0]))
 	assert.Less(t, 10, len(serverNames[1]))
 	server.AssertExpectations(t)
+}
+
+func TestApiClientRest_InvalidResponses(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		endpoint             string
+		mockResponses        []string
+		call                 func(ctx context.Context, c *KamateraApiClientRest) (any, error)
+		assertExpectedRes    func(t *testing.T, res any)
+		expectedErrMsgPrefix string
+	}{
+		{
+			name:     "ListServers",
+			endpoint: "/service/servers",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[{"foo": "bar"}]`,
+				`[{"name": 123}]`,
+				`[{"name": "foo", "power": 123}]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Nil(t, res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera servers API: ",
+		},
+		{
+			name:     "StartServerTerminate",
+			endpoint: "/service/server/terminate",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[]`,
+				`[null]`,
+				`[1]`,
+				`[""]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.StartServerTerminate(ctx, "server-name", true)
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Equal(t, "", res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera server terminate API: ",
+		},
+		{
+			name:     "StartServerRequest",
+			endpoint: "/service/server/poweron",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[]`,
+				`[null]`,
+				`[1]`,
+				`[""]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.StartServerRequest(ctx, ServerRequestPoweron, "server-name")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Equal(t, "", res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera server poweron API: ",
+		},
+		{
+			name:     "getServerTags",
+			endpoint: "/server/tags",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[{"foo": 1}]`,
+				`[{"foo": "bar"}]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.getServerTags(ctx, "server-name", map[string]*Instance{}, "rke2://")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Nil(t, res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera server tags API: ",
+		},
+		{
+			name:     "getCommandStatus",
+			endpoint: "/service/queue",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[]`,
+				`[1,2]`,
+				`[{"status": 123}]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.getCommandStatus(ctx, "command-id")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Equal(t, CommandStatusError, res.(CommandStatus))
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera command status API: ",
+		},
+	}
+	for _, tc := range testCases {
+		for _, mockResponse := range tc.mockResponses {
+			t.Run(fmt.Sprintf("%s: %s", tc.name, mockResponse), func(t *testing.T) {
+				server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
+				defer server.Close()
+				ctx := context.Background()
+				client := NewMockKamateraApiClientRest(server.URL, 5, 0)
+				server.On("handle", tc.endpoint).Return(
+					"application/json",
+					mockResponse,
+				).Once()
+				res, err := tc.call(ctx, &client)
+				mock.AssertExpectationsForObjects(t, server)
+				assert.Error(t, err)
+				var mockServerResponse interface{}
+				assert.NoError(t, json.NewDecoder(strings.NewReader(mockResponse)).Decode(&mockServerResponse))
+				assert.Equal(t, fmt.Sprintf("%s%v", tc.expectedErrMsgPrefix, mockServerResponse), err.Error())
+				tc.assertExpectedRes(t, res)
+			})
+		}
+	}
 }
