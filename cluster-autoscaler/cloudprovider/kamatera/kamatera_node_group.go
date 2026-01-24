@@ -305,7 +305,7 @@ func (n *NodeGroup) createInstances(count int) error {
 		for serverName, commandId := range serverCommandIds {
 			instance := n.manager.addCreatingInstance(serverName, commandId, n.serverConfig.Tags)
 			n.instances[instance.Id] = instance
-			klog.V(4).Infof(n.extendedDebug())
+			klog.V(4).Infof("%v", n.extendedDebug())
 		}
 	}
 	return nil
