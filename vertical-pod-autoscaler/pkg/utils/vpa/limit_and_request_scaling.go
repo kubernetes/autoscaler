@@ -79,14 +79,14 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 		return &result, ""
 	}
 	if resourceName == core.ResourceCPU {
-		result, capped := scaleQuantityProportionallyCPU( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
+		result, capped := scaleQuantityProportionallyCPU( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
 		if !capped {
 			return result, ""
 		}
 		return result, fmt.Sprintf(
 			"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
 	}
-	result, capped := scaleQuantityProportionallyMem( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
+	result, capped := scaleQuantityProportionallyMem( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
 	if !capped {
 		return result, ""
 	}
@@ -112,10 +112,10 @@ func GetBoundaryRequest(resourceName core.ResourceName, originalRequest, origina
 	// Determine which scaling function to use based on resource type.
 	var result *resource.Quantity
 	if resourceName == core.ResourceCPU {
-		result, _ = scaleQuantityProportionallyCPU(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/, noRounding)
+		result, _ = scaleQuantityProportionallyCPU(originalRequest /* scaledQuantity */, originalLimit /* scaleBase */, boundaryLimit /* scaleResult */, noRounding)
 		return result
 	}
-	result, _ = scaleQuantityProportionallyMem(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/, noRounding)
+	result, _ = scaleQuantityProportionallyMem(originalRequest /* scaledQuantity */, originalLimit /* scaleBase */, boundaryLimit /* scaleResult */, noRounding)
 	return result
 }
 

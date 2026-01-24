@@ -168,7 +168,7 @@ func NewObjectCounter() *ObjectCounter {
 
 // Add updates the helper state to include the given VPA object
 func (oc *ObjectCounter) Add(vpa *model.Vpa) {
-	mode := vpa_types.UpdateModeAuto
+	mode := vpa_types.UpdateModeRecreate
 	if vpa.UpdateMode != nil && string(*vpa.UpdateMode) != "" {
 		mode = *vpa.UpdateMode
 	}

@@ -28,7 +28,7 @@ type InstanceType struct {
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.
-var StaticListLastUpdateTime = "2026-01-07"
+var StaticListLastUpdateTime = "2026-01-22"
 
 // InstanceTypes is a map of ec2 resources
 var InstanceTypes = map[string]*InstanceType{
@@ -2326,6 +2326,48 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:         4,
 		MemoryMb:     16384,
 		GPU:          0,
+		Architecture: "amd64",
+	},
+	"g7e.12xlarge": {
+		InstanceType: "g7e.12xlarge",
+		VCPU:         48,
+		MemoryMb:     524288,
+		GPU:          2,
+		Architecture: "amd64",
+	},
+	"g7e.24xlarge": {
+		InstanceType: "g7e.24xlarge",
+		VCPU:         96,
+		MemoryMb:     1048576,
+		GPU:          4,
+		Architecture: "amd64",
+	},
+	"g7e.2xlarge": {
+		InstanceType: "g7e.2xlarge",
+		VCPU:         8,
+		MemoryMb:     65536,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"g7e.48xlarge": {
+		InstanceType: "g7e.48xlarge",
+		VCPU:         192,
+		MemoryMb:     2097152,
+		GPU:          8,
+		Architecture: "amd64",
+	},
+	"g7e.4xlarge": {
+		InstanceType: "g7e.4xlarge",
+		VCPU:         16,
+		MemoryMb:     131072,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"g7e.8xlarge": {
+		InstanceType: "g7e.8xlarge",
+		VCPU:         32,
+		MemoryMb:     262144,
+		GPU:          1,
 		Architecture: "amd64",
 	},
 	"gr6.4xlarge": {
@@ -7598,6 +7640,104 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+	},
+	"x8i.12xlarge": {
+		InstanceType: "x8i.12xlarge",
+		VCPU:         48,
+		MemoryMb:     786432,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.16xlarge": {
+		InstanceType: "x8i.16xlarge",
+		VCPU:         64,
+		MemoryMb:     1048576,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.24xlarge": {
+		InstanceType: "x8i.24xlarge",
+		VCPU:         96,
+		MemoryMb:     1572864,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.2xlarge": {
+		InstanceType: "x8i.2xlarge",
+		VCPU:         8,
+		MemoryMb:     131072,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.32xlarge": {
+		InstanceType: "x8i.32xlarge",
+		VCPU:         128,
+		MemoryMb:     2097152,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.48xlarge": {
+		InstanceType: "x8i.48xlarge",
+		VCPU:         192,
+		MemoryMb:     3145728,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.4xlarge": {
+		InstanceType: "x8i.4xlarge",
+		VCPU:         16,
+		MemoryMb:     262144,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.64xlarge": {
+		InstanceType: "x8i.64xlarge",
+		VCPU:         256,
+		MemoryMb:     4194304,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.8xlarge": {
+		InstanceType: "x8i.8xlarge",
+		VCPU:         32,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.96xlarge": {
+		InstanceType: "x8i.96xlarge",
+		VCPU:         384,
+		MemoryMb:     6291456,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.large": {
+		InstanceType: "x8i.large",
+		VCPU:         2,
+		MemoryMb:     32768,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.metal-48xl": {
+		InstanceType: "x8i.metal-48xl",
+		VCPU:         192,
+		MemoryMb:     3145728,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.metal-96xl": {
+		InstanceType: "x8i.metal-96xl",
+		VCPU:         384,
+		MemoryMb:     6291456,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"x8i.xlarge": {
+		InstanceType: "x8i.xlarge",
+		VCPU:         4,
+		MemoryMb:     65536,
+		GPU:          0,
+		Architecture: "amd64",
 	},
 	"z1d.12xlarge": {
 		InstanceType: "z1d.12xlarge",

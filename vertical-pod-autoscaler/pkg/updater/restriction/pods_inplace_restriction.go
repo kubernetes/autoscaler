@@ -67,6 +67,7 @@ type PodsInPlaceRestrictionImpl struct {
 	patchCalculators             []patch.Calculator
 	clock                        clock.Clock
 	lastInPlaceAttemptTimeMap    map[string]time.Time
+	inPlaceSkipDisruptionBudget  bool
 }
 
 // CanInPlaceUpdate checks if pod can be safely updated
@@ -88,6 +89,13 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InP
 					return utils.InPlaceEvict
 				}
 				return utils.InPlaceDeferred
+			}
+			if ip.inPlaceSkipDisruptionBudget {
+				if utils.IsNonDisruptiveResize(pod) {
+					klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
+					return utils.InPlaceApproved
+				}
+				klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
 			}
 			if singleGroupStats.isPodDisruptable() {
 				return utils.InPlaceApproved
@@ -147,9 +155,10 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 			}
 			res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
 			if err != nil {
-				return err
+				klog.V(4).ErrorS(err, "Failed to patch pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+			} else {
+				klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
 			}
-			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
 		}
 	} else {
 		return fmt.Errorf("no resource patches were calculated to apply")

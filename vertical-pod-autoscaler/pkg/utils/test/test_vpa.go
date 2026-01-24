@@ -200,7 +200,7 @@ func (b *verticalPodAutoscalerBuilder) WithGroupVersion(gv meta.GroupVersion) Ve
 }
 
 func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirements []*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder {
-	updateModeAuto := vpa_types.UpdateModeAuto
+	updateModeAuto := vpa_types.UpdateModeRecreate
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
@@ -210,7 +210,7 @@ func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirem
 }
 
 func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder {
-	updateModeAuto := vpa_types.UpdateModeAuto
+	updateModeAuto := vpa_types.UpdateModeRecreate
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}

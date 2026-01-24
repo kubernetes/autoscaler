@@ -32,7 +32,7 @@ func TestObjectCounter(t *testing.T) {
 	updateModeOff := vpa_types.UpdateModeOff
 	updateModeInitial := vpa_types.UpdateModeInitial
 	updateModeRecreate := vpa_types.UpdateModeRecreate
-	updateModeAuto := vpa_types.UpdateModeAuto
+	updateModeAuto := vpa_types.UpdateModeAuto //nolint:staticcheck
 	updateModeInPlaceOrRecreate := vpa_types.UpdateModeInPlaceOrRecreate
 	// We verify that other update modes are handled correctly as validation
 	// may not happen if there are issues with the admission controller.
@@ -51,7 +51,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -62,7 +62,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1beta1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1beta1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -73,7 +73,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1beta2,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1beta2,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -84,7 +84,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -96,7 +96,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -180,7 +180,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -194,7 +194,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -208,7 +208,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=true,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=true,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -220,7 +220,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -236,7 +236,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=false,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=false,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -248,7 +248,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
 		{
@@ -264,7 +264,7 @@ func TestObjectCounter(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=true,update_mode=Auto,": 1,
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=true,update_mode=Recreate,": 1,
 			},
 		},
 	}
@@ -339,7 +339,7 @@ func TestObjectCounterResetsAllUpdateModes(t *testing.T) {
 	updatesModes := []vpa_types.UpdateMode{
 		vpa_types.UpdateModeOff,
 		vpa_types.UpdateModeInitial,
-		vpa_types.UpdateModeAuto,
+		vpa_types.UpdateModeAuto, //nolint:staticcheck
 		vpa_types.UpdateModeRecreate,
 		vpa_types.UpdateModeInPlaceOrRecreate,
 	}

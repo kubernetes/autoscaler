@@ -17,9 +17,12 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,9 +31,11 @@ import (
 const (
 	ActiveProvisioningStrategy    = "buffer.x-k8s.io/active-capacity"
 	CapacityBufferKind            = "CapacityBuffer"
-	CapacityBufferApiVersion      = "autoscaling.x-k8s.io/v1alpha1"
+	CapacityBufferApiVersion      = "autoscaling.x-k8s.io/v1beta1"
 	ReadyForProvisioningCondition = "ReadyForProvisioning"
 	ProvisioningCondition         = "Provisioning"
+	LimitedByQuotasCondition      = "LimitedByQuotas"
+	LimitedByQuotasReason         = "ResourceQuotasAllocated"
 	ConditionTrue                 = "True"
 	ConditionFalse                = "False"
 )
@@ -99,4 +104,36 @@ func UpdateBufferStatusToSuccessfullyProvisioing(buffer *v1.CapacityBuffer, reas
 		Reason:             reason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 	}}
+}
+
+// MarkBufferAsLimitedByQuota adds or updates the LimitedByQuotas condition with True
+// value and a human-readable message about exceeded quotas.
+func MarkBufferAsLimitedByQuota(buffer *v1.CapacityBuffer, desiredReplicas, allowedReplicas int32, exceededQuotas []string) {
+	msg := fmt.Sprintf(
+		"Buffer replicas limited from %d to %d due to quotas: %s", desiredReplicas, allowedReplicas, strings.Join(exceededQuotas, ", "),
+	)
+	buffer.Status.Replicas = &allowedReplicas
+	UpdateBufferStatusLimitedByQuotas(buffer, true, msg)
+}
+
+// UpdateBufferStatusLimitedByQuotas adds or updates the LimitedByQuotas condition
+func UpdateBufferStatusLimitedByQuotas(buffer *v1.CapacityBuffer, isLimited bool, message string) {
+	status := ConditionFalse
+	if isLimited {
+		status = ConditionTrue
+	}
+
+	newCondition := metav1.Condition{
+		Type:               LimitedByQuotasCondition,
+		Status:             metav1.ConditionStatus(status),
+		Message:            message,
+		Reason:             LimitedByQuotasReason,
+		LastTransitionTime: metav1.Time{Time: time.Now()},
+		ObservedGeneration: buffer.Generation,
+	}
+
+	if buffer.Status.Conditions == nil {
+		buffer.Status.Conditions = make([]metav1.Condition, 0)
+	}
+	meta.SetStatusCondition(&buffer.Status.Conditions, newCondition)
 }

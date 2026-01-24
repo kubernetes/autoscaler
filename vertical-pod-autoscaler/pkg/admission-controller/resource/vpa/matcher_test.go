@@ -78,37 +78,37 @@ func TestGetMatchingVpa(t *testing.T) {
 			name: "matching selector",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithName("recreate-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector:   "app = test",
 			expectedFound:   true,
-			expectedVpaName: "auto-vpa",
+			expectedVpaName: "recreate-vpa",
 		}, {
 			name: "no matching ownerRef (orphan pod)",
 			pod:  podBuilderWithoutCreator.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithName("recreate-vpa").WithTargetRef(targetRef).Get(),
 			},
 			expectedFound: false,
 		}, {
 			name: "vpa without targetRef",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithName("recreate-vpa").Get(),
 			},
 			expectedFound: false,
 		}, {
 			name: "no vpa with matching targetRef",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRefWithNoMatches).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithName("recreate-vpa").WithTargetRef(targetRefWithNoMatches).Get(),
 			},
 			expectedFound: false,
 		}, {
 			name: "not matching selector",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithName("recreate-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector: "app = differentApp",
 			expectedFound: false,
@@ -124,11 +124,11 @@ func TestGetMatchingVpa(t *testing.T) {
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
 				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).WithName("off-vpa").WithTargetRef(targetRef).Get(),
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithName("recreate-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector:   "app = test",
 			expectedFound:   true,
-			expectedVpaName: "auto-vpa",
+			expectedVpaName: "recreate-vpa",
 		}, {
 			name: "initial mode",
 			pod:  podBuilder.Get(),
