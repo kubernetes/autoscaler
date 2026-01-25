@@ -65,9 +65,6 @@ type Config struct {
 	// It can override the default public ARM endpoint for VMs pool scale operations.
 	ARMBaseURLForAPClient string `json:"armBaseURLForAPClient" yaml:"armBaseURLForAPClient"`
 
-	// TargetServiceForAPClient is the service name for agent pool requests when using a custom ARMBaseURLForAPClient.
-	TargetServiceForAPClient string `json:"targetServiceForAPClient" yaml:"targetServiceForAPClient"`
-
 	// Hosted (on-behalf-of) system pool configuration for automatic cluster.
 	// HostedSubscriptionID is the subscription ID of the hosted resources under AKS internal tenant.
 	HostedSubscriptionID string `json:"hostedSubscriptionID" yaml:"hostedSubscriptionID"`
@@ -191,9 +188,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		return nil, err
 	}
 	if _, err = assignFromEnvIfExists(&cfg.ARMBaseURLForAPClient, "ARM_BASE_URL_FOR_AP_CLIENT"); err != nil {
-		return nil, err
-	}
-	if _, err = assignFromEnvIfExists(&cfg.TargetServiceForAPClient, "TARGET_SERVICE_FOR_AP_CLIENT"); err != nil {
 		return nil, err
 	}
 	if _, err = assignFromEnvIfExists(&cfg.Cloud, "ARM_CLOUD"); err != nil {

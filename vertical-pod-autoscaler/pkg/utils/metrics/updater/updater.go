@@ -181,21 +181,25 @@ func newModeAndSizeBasedGauge(gauge *prometheus.GaugeVec) *UpdateModeAndSizeBase
 
 // NewControlledPodsCounter returns a wrapper for counting Pods controlled by Updater
 func NewControlledPodsCounter() *UpdateModeAndSizeBasedGauge {
+	controlledCount.Reset()
 	return newModeAndSizeBasedGauge(controlledCount)
 }
 
 // NewEvictablePodsCounter returns a wrapper for counting Pods which are matching eviction criteria
 func NewEvictablePodsCounter() *UpdateModeAndSizeBasedGauge {
+	evictableCount.Reset()
 	return newModeAndSizeBasedGauge(evictableCount)
 }
 
 // NewVpasWithEvictablePodsCounter returns a wrapper for counting VPA objects with Pods matching eviction criteria
 func NewVpasWithEvictablePodsCounter() *UpdateModeAndSizeBasedGauge {
+	vpasWithEvictablePodsCount.Reset()
 	return newModeAndSizeBasedGauge(vpasWithEvictablePodsCount)
 }
 
 // NewVpasWithEvictedPodsCounter returns a wrapper for counting VPA objects with evicted Pods
 func NewVpasWithEvictedPodsCounter() *UpdateModeAndSizeBasedGauge {
+	vpasWithEvictedPodsCount.Reset()
 	return newModeAndSizeBasedGauge(vpasWithEvictedPodsCount)
 }
 
@@ -213,16 +217,19 @@ func RecordFailedEviction(vpaSize int, vpaName string, vpaNamespace string, mode
 
 // NewInPlaceUpdatablePodsCounter returns a wrapper for counting Pods which are matching in-place update criteria
 func NewInPlaceUpdatablePodsCounter() *SizeBasedGauge {
+	inPlaceUpdatableCount.Reset()
 	return newSizeBasedGauge(inPlaceUpdatableCount)
 }
 
 // NewVpasWithInPlaceUpdatablePodsCounter returns a wrapper for counting VPA objects with Pods matching in-place update criteria
 func NewVpasWithInPlaceUpdatablePodsCounter() *SizeBasedGauge {
+	vpasWithInPlaceUpdatablePodsCount.Reset()
 	return newSizeBasedGauge(vpasWithInPlaceUpdatablePodsCount)
 }
 
 // NewVpasWithInPlaceUpdatedPodsCounter returns a wrapper for counting VPA objects with in-place updated Pods
 func NewVpasWithInPlaceUpdatedPodsCounter() *SizeBasedGauge {
+	vpasWithInPlaceUpdatedPodsCount.Reset()
 	return newSizeBasedGauge(vpasWithInPlaceUpdatedPodsCount)
 }
 

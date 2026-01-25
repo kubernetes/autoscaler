@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -168,7 +168,7 @@ func TestPodListProcessor(t *testing.T) {
 			assert.Equal(t, test.expectedUnschedFakePodsCount, numberOfFakePods)
 
 			for buffer, condition := range test.expectedBuffersProvCondition {
-				buffer, err := fakeBuffersClient.AutoscalingV1alpha1().CapacityBuffers(corev1.NamespaceDefault).Get(context.TODO(), buffer, metav1.GetOptions{})
+				buffer, err := fakeBuffersClient.AutoscalingV1beta1().CapacityBuffers(corev1.NamespaceDefault).Get(context.TODO(), buffer, metav1.GetOptions{})
 				assert.Equal(t, err, nil)
 				assert.Equal(t, len(buffer.Status.Conditions), 1)
 				assert.Equal(t, string(buffer.Status.Conditions[0].Type), string(condition.Type))
@@ -223,7 +223,7 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
 			for _, pod := range resUnschedulablePods {
 				if IsFakeCapacityBuffersPod(pod) {
-					podBufferObj, found := registry.fakePodsUIDToBuffer[string(pod.UID)]
+					podBufferObj, found := registry.FakePodsUIDToBuffer[string(pod.UID)]
 					assert.True(t, found)
 					expectedPodsNum, found := test.expectedBuffersPodsNum[podBufferObj.Name]
 					assert.True(t, found)

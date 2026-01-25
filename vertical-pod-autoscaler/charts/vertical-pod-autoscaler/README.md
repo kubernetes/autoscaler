@@ -111,7 +111,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.priorityClassName | string | `nil` |  |
-| admissionController.registerWebhook | bool | `false` |  |
+| admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources | object | `{}` |  |
 | admissionController.service.annotations | object | `{}` |  |

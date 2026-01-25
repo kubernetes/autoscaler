@@ -53,8 +53,9 @@ import (
 
 // logDeprecationWarnings logs deprecation warnings for VPAs using deprecated modes
 func logDeprecationWarnings(vpa *vpa_types.VerticalPodAutoscaler) {
-	if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.UpdateMode != nil &&
-		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto {
+	if vpa.Spec.UpdatePolicy != nil &&
+		vpa.Spec.UpdatePolicy.UpdateMode != nil &&
+		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto { //nolint:staticcheck
 
 		klog.InfoS("VPA uses deprecated UpdateMode 'Auto'. This mode is deprecated and will be removed in a future API version. Please use explicit update modes like 'Recreate', 'Initial', or 'InPlaceOrRecreate'",
 			"vpa", klog.KObj(vpa), "issue", "https://github.com/kubernetes/autoscaler/issues/8424")
@@ -178,7 +179,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 		logDeprecationWarnings(vpa)
 
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
-			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
+			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && //nolint:staticcheck
+			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}

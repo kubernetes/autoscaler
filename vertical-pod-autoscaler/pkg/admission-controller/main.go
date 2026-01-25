@@ -102,7 +102,7 @@ func main() {
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), commonFlags.VpaObjectNamespace)
 	kubeClient := kube_client.NewForConfigOrDie(config)
-	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlags.VpaObjectNamespace))
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podPreprocessor := pod.NewDefaultPreProcessor()

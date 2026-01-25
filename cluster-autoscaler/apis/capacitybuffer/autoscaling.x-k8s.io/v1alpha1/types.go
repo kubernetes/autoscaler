@@ -42,6 +42,8 @@ import (
 // +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".spec.replicas",description="The desired number of buffer chunks, if specified."
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].reason",description="The readiness status of the CapacityBuffer."
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the CapacityBuffer."
+// +versionName=v1alpha1
+// +kubebuilder:deprecatedversion
 // +k8s:openapi-gen=true
 
 // CapacityBuffer is the configuration that an autoscaler can use to provision buffer capacity within a cluster.

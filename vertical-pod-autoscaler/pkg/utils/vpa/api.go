@@ -234,10 +234,10 @@ func FindParentControllerForPod(ctx context.Context, pod *core.Pod, ctrlFetcher 
 }
 
 // GetUpdateMode returns the updatePolicy.updateMode for a given VPA.
-// If the mode is not specified it returns the default (UpdateModeAuto).
+// If the mode is not specified it returns the default (UpdateModeRecreate).
 func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 	if vpa.Spec.UpdatePolicy == nil || vpa.Spec.UpdatePolicy.UpdateMode == nil || *vpa.Spec.UpdatePolicy.UpdateMode == "" {
-		return vpa_types.UpdateModeAuto
+		return vpa_types.UpdateModeRecreate
 	}
 	return *vpa.Spec.UpdatePolicy.UpdateMode
 }

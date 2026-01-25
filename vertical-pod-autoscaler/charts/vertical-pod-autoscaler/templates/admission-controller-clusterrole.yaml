@@ -38,6 +38,7 @@ rules:
       - get
       - list
       - watch
+  {{- if .Values.admissionController.registerWebhook }}
   - apiGroups:
       - admissionregistration.k8s.io
     resources:
@@ -46,6 +47,8 @@ rules:
       - list
       - get
       - create
+      - delete
+  {{- end }}
   - apiGroups:
       - autoscaling.k8s.io
     resources:

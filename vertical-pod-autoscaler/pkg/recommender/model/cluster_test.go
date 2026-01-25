@@ -454,7 +454,7 @@ func TestUpdatePodSelector(t *testing.T) {
 func TestAddOrUpdateVPAPolicies(t *testing.T) {
 	testVpaBuilder := test.VerticalPodAutoscaler().WithName(testVpaID.VpaName).
 		WithNamespace(testVpaID.Namespace).WithContainer(testContainerID.ContainerName)
-	updateModeAuto := vpa_types.UpdateModeAuto
+	updateModeRecreate := vpa_types.UpdateModeRecreate
 	updateModeOff := vpa_types.UpdateModeOff
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
@@ -479,7 +479,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 		}, {
 			name:   "Default scaling mode set to Off",
 			oldVpa: nil,
-			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
+			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
 			resourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -489,12 +489,12 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 				},
 			},
 			expectedScalingMode: &scalingModeOff,
-			expectedUpdateMode:  &updateModeAuto,
+			expectedUpdateMode:  &updateModeRecreate,
 			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Explicit scaling mode set to Off",
 			oldVpa: nil,
-			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
+			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
 			resourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -504,12 +504,12 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 				},
 			},
 			expectedScalingMode: &scalingModeOff,
-			expectedUpdateMode:  &updateModeAuto,
+			expectedUpdateMode:  &updateModeRecreate,
 			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Other container has explicit scaling mode Off",
 			oldVpa: nil,
-			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
+			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
 			resourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -519,12 +519,12 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 				},
 			},
 			expectedScalingMode: &scalingModeAuto,
-			expectedUpdateMode:  &updateModeAuto,
+			expectedUpdateMode:  &updateModeRecreate,
 			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Scaling mode to default Off",
-			oldVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
-			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
+			oldVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
+			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
 			resourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -534,12 +534,12 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 				},
 			},
 			expectedScalingMode: &scalingModeOff,
-			expectedUpdateMode:  &updateModeAuto,
+			expectedUpdateMode:  &updateModeRecreate,
 			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Scaling mode to explicit Off",
-			oldVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
-			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
+			oldVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
+			newVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
 			resourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -549,20 +549,20 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 				},
 			},
 			expectedScalingMode: &scalingModeOff,
-			expectedUpdateMode:  &updateModeAuto,
+			expectedUpdateMode:  &updateModeRecreate,
 			expectedAPIVersion:  "v1",
 		},
 		// Tests checking changes to UpdateMode.
 		{
-			name:                "UpdateMode from Off to Auto",
+			name:                "UpdateMode from Off to Recreate",
 			oldVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get(),
-			newVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
+			newVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
 			expectedScalingMode: &scalingModeAuto,
-			expectedUpdateMode:  &updateModeAuto,
+			expectedUpdateMode:  &updateModeRecreate,
 			expectedAPIVersion:  "v1",
 		}, {
-			name:                "UpdateMode from Auto to Off",
-			oldVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
+			name:                "UpdateMode from Recreate to Off",
+			oldVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).Get(),
 			newVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get(),
 			expectedScalingMode: &scalingModeAuto,
 			expectedUpdateMode:  &updateModeOff,

@@ -90,7 +90,7 @@ func (s *AdmissionServer) addDeprecationWarnings(req *admissionv1.AdmissionReque
 	}
 
 	if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.UpdateMode != nil &&
-		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto {
+		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto { //nolint:staticcheck
 
 		if resp.Warnings == nil {
 			resp.Warnings = []string{}
