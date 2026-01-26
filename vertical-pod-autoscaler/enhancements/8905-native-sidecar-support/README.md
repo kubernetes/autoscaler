@@ -2,16 +2,19 @@
 
 <!-- toc -->
 - [Summary](#summary)
-   - [Goals](#goals)
-   - [Non-Goals](#non-goals)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
-   - [Recommendations](#recommendations)
-   - [Update / Admission](#update--admission)
-   - [Test Plan](#test-plan)
-   - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
+  - [Recommendations](#recommendations)
+  - [Update / Admission](#update--admission)
+  - [Test Plan](#test-plan)
+  - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
+    - [Upgrade](#upgrade)
+    - [Downgrade](#downgrade)
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
+  - [Treat as Standard Containers](#treat-as-standard-containers)
 <!-- /toc -->
 
 ## Summary
@@ -41,7 +44,7 @@ This functionality will be guarded by a new feature gate `NativeSidecar` to allo
 
 ### Recommendations
 
-The Recommender component identifies native sidecar containers by examining init containers with `restartPolicy: Always` in the `SpecClient`. These containers are assigned the `ContainerTypeInitSidecar` type.
+The Recommender component identifies native sidecar containers by examining init containers with `restartPolicy: Always` in the [`SpecClient`](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/recommender/input/spec/spec_client.go#L53-L56). These containers are assigned the `ContainerTypeInitSidecar` type.
 
 When the `NativeSidecar` feature gate is enabled, the `ClusterFeeder` processes native sidecars similarly to standard containers:
 - They are stored in a separate `InitSidecarsContainers` map in the pod state
