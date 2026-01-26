@@ -18,11 +18,12 @@ package capacitybuffer
 
 // Constants to use in Capacity Buffers objects
 const (
-	ActiveProvisioningStrategy    = "buffer.x-k8s.io/active-capacity"
-	CapacityBufferKind            = "CapacityBuffer"
-	CapacityBufferApiVersion      = "autoscaling.x-k8s.io/v1beta1"
-	ReadyForProvisioningCondition = "ReadyForProvisioning"
-	ProvisioningCondition         = "Provisioning"
-	LimitedByQuotasCondition      = "LimitedByQuotas"
-	LimitedByQuotasReason         = "ResourceQuotasAllocated"
+	ActiveProvisioningStrategy      = "buffer.x-k8s.io/active-capacity"
+	CapacityBufferKind              = "CapacityBuffer"
+	CapacityBufferApiVersion        = "autoscaling.x-k8s.io/v1beta1"
+	ReadyForProvisioningCondition   = "ReadyForProvisioning"
+	ProvisioningCondition           = "Provisioning"
+	LimitedByQuotasCondition        = "LimitedByQuotas"
+	LimitedByQuotasReason           = "ResourceQuotasAllocated"
+	AttributesSetSuccessfullyReason = "AttributesSetSuccessfully"
 )
