@@ -408,11 +408,12 @@ spec:
                                 cpu specifies the CPU startup boost policy.
                                 If this field is not set, no startup boost is applied.
                               properties:
-                                duration:
+                                durationSeconds:
                                   description: |-
-                                    duration indicates for how long to keep the pod boosted after it goes to Ready.
-                                    Defaults to 0s.
-                                  type: string
+                                    durationSeconds indicates for how long to keep the pod boosted after it goes to Ready.
+                                    Defaults to 0.
+                                  format: int32
+                                  type: integer
                                 factor:
                                   description: |-
                                     factor specifies the factor to apply to the resource request.
@@ -433,6 +434,7 @@ spec:
                                   description: |-
                                     type specifies the kind of boost to apply.
                                     Supported values are: "Factor", "Quantity".
+                                    No startupboost will be applied for unrecognized values.
                                   enum:
                                   - Factor
                                   - Quantity
@@ -440,6 +442,13 @@ spec:
                               required:
                               - type
                               type: object
+                              x-kubernetes-validations:
+                              - message: factor is required when type is Factor and
+                                  forbidden otherwise
+                                rule: (self.type == 'Factor') == has(self.factor)
+                              - message: quantity is required when type is Quantity
+                                  and forbidden otherwise
+                                rule: (self.type == 'Quantity') == has(self.quantity)
                           type: object
                       type: object
                     type: array
@@ -453,11 +462,12 @@ spec:
                       cpu specifies the CPU startup boost policy.
                       If this field is not set, no startup boost is applied.
                     properties:
-                      duration:
+                      durationSeconds:
                         description: |-
-                          duration indicates for how long to keep the pod boosted after it goes to Ready.
-                          Defaults to 0s.
-                        type: string
+                          durationSeconds indicates for how long to keep the pod boosted after it goes to Ready.
+                          Defaults to 0.
+                        format: int32
+                        type: integer
                       factor:
                         description: |-
                           factor specifies the factor to apply to the resource request.
@@ -478,6 +488,7 @@ spec:
                         description: |-
                           type specifies the kind of boost to apply.
                           Supported values are: "Factor", "Quantity".
+                          No startupboost will be applied for unrecognized values.
                         enum:
                         - Factor
                         - Quantity
@@ -485,6 +496,13 @@ spec:
                     required:
                     - type
                     type: object
+                    x-kubernetes-validations:
+                    - message: factor is required when type is Factor and forbidden
+                        otherwise
+                      rule: (self.type == 'Factor') == has(self.factor)
+                    - message: quantity is required when type is Quantity and forbidden
+                        otherwise
+                      rule: (self.type == 'Quantity') == has(self.quantity)
                 type: object
               targetRef:
                 description: |-

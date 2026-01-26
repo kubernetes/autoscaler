@@ -384,7 +384,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
+			expectError: errors.New("invalid startupBoost: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
 		},
 		{
 			name: "container startupBoost with bad factor",
@@ -406,7 +406,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			isCreate:    true,
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
+			expectError: errors.New("invalid startupBoost in container loot box: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
 		},
 		{
 			name: "top-level startupBoost with bad quantity",
@@ -722,9 +722,10 @@ func TestValidateVPA(t *testing.T) {
 			if tc.inPlaceOrRecreateFeatureGateDisabled {
 				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
 				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
+			} else {
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, !tc.cpuStartupBoostFeatureGateDisabled)
 			}
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
-			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, !tc.cpuStartupBoostFeatureGateDisabled)
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)

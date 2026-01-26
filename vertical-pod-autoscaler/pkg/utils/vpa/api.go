@@ -293,24 +293,51 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 	return nil
 }
 
-// IsPodReadyAndStartupBoostDurationPassed returns true if the pod is ready and the startup boost duration has passed.
+// IsPodReadyAndStartupBoostDurationPassed returns true if the pod is ready and all container startup boost durations have passed.
 func IsPodReadyAndStartupBoostDurationPassed(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
-	if vpa.Spec.StartupBoost == nil || vpa.Spec.StartupBoost.CPU.Duration == nil || vpa.Spec.StartupBoost.CPU.Duration.Duration == 0 {
+	if !PodHasCPUBoostInProgressAnnotation(pod) {
+		return false
+	}
+
+	var maxBoostDuration int32
+	if vpa.Spec.StartupBoost != nil && vpa.Spec.StartupBoost.CPU != nil && vpa.Spec.StartupBoost.CPU.DurationSeconds != nil {
+		maxBoostDuration = *vpa.Spec.StartupBoost.CPU.DurationSeconds // Default to pod-level
+	}
+
+	if vpa.Spec.ResourcePolicy != nil {
+		for _, container := range pod.Spec.Containers {
+			crp := GetContainerResourcePolicy(container.Name, vpa.Spec.ResourcePolicy)
+
+			if crp == nil || crp.StartupBoost == nil || crp.StartupBoost.CPU == nil || crp.StartupBoost.CPU.DurationSeconds == nil {
+				continue
+			}
+
+			if *crp.StartupBoost.CPU.DurationSeconds > maxBoostDuration {
+				maxBoostDuration = *crp.StartupBoost.CPU.DurationSeconds
+			}
+		}
+	}
+
+	if maxBoostDuration == 0 {
 		return true
 	}
+
 	if !podutil.IsPodReady(pod) {
 		return false
 	}
+
+	readyTime := time.Time{}
 	for _, cond := range pod.Status.Conditions {
-		if cond.Type == core.PodReady {
-			return time.Since(cond.LastTransitionTime.Time) > vpa.Spec.StartupBoost.CPU.Duration.Duration
+		if cond.Type == core.PodReady && cond.Status == core.ConditionTrue {
+			readyTime = cond.LastTransitionTime.Time
+			break
 		}
 	}
-	return false
+	return time.Since(readyTime) > time.Duration(maxBoostDuration)*time.Second
 }
 
-// PodHasCPUBoostInProgress returns true if the pod has the CPU boost annotation.
-func PodHasCPUBoostInProgress(pod *core.Pod) bool {
+// PodHasCPUBoostInProgressAnnotation returns true if the pod has the CPU boost annotation.
+func PodHasCPUBoostInProgressAnnotation(pod *core.Pod) bool {
 	if pod.Annotations == nil {
 		return false
 	}

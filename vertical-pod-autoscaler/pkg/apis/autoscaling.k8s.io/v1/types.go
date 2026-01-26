@@ -126,9 +126,12 @@ type StartupBoost struct {
 
 // GenericStartupBoost defines the startup boost policy for a resource.
 // +union
+// +kubebuilder:validation:XValidation:rule="(self.type == 'Factor') == has(self.factor)",message="factor is required when type is Factor and forbidden otherwise"
+// +kubebuilder:validation:XValidation:rule="(self.type == 'Quantity') == has(self.quantity)",message="quantity is required when type is Quantity and forbidden otherwise"
 type GenericStartupBoost struct {
 	// type specifies the kind of boost to apply.
 	// Supported values are: "Factor", "Quantity".
+	// No startupboost will be applied for unrecognized values.
 	// +unionDiscriminator
 	// +required
 	Type StartupBoostType `json:"type" protobuf:"bytes,1,opt,name=type"`
@@ -145,10 +148,10 @@ type GenericStartupBoost struct {
 	// +optional
 	Quantity *resource.Quantity `json:"quantity,omitempty" protobuf:"bytes,3,opt,name=quantity"`
 
-	// duration indicates for how long to keep the pod boosted after it goes to Ready.
-	// Defaults to 0s.
+	// durationSeconds indicates for how long to keep the pod boosted after it goes to Ready.
+	// Defaults to 0.
 	// +optional
-	Duration *metav1.Duration `json:"duration,omitempty" protobuf:"bytes,4,opt,name=duration"`
+	DurationSeconds *int32 `json:"durationSeconds,omitempty" protobuf:"varint,4,opt,name=durationSeconds"`
 }
 
 // StartupBoostType is the type of startup boost.

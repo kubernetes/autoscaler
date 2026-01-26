@@ -51,8 +51,8 @@ type VerticalPodAutoscalerBuilder interface {
 	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
 	WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
 	WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder
-	WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder
-	WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder
+	WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder
+	WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -264,12 +264,11 @@ func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_t
 	return &c
 }
 
-func (b *verticalPodAutoscalerBuilder) WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder {
+func (b *verticalPodAutoscalerBuilder) WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder {
 	c := *b
-	parsedDuration, _ := time.ParseDuration(duration)
 	cpuStartupBoost := &vpa_types.GenericStartupBoost{
-		Type:     boostType,
-		Duration: &meta.Duration{Duration: parsedDuration},
+		Type:            boostType,
+		DurationSeconds: &durationSeconds,
 	}
 	if factor != nil {
 		cpuStartupBoost.Factor = factor
@@ -283,12 +282,11 @@ func (b *verticalPodAutoscalerBuilder) WithCPUStartupBoost(boostType vpa_types.S
 	return &c
 }
 
-func (b *verticalPodAutoscalerBuilder) WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, duration string) VerticalPodAutoscalerBuilder {
+func (b *verticalPodAutoscalerBuilder) WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder {
 	c := *b
-	parsedDuration, _ := time.ParseDuration(duration)
 	cpuStartupBoost := &vpa_types.GenericStartupBoost{
-		Type:     boostType,
-		Duration: &meta.Duration{Duration: parsedDuration},
+		Type:            boostType,
+		DurationSeconds: &durationSeconds,
 	}
 	if factor != nil {
 		cpuStartupBoost.Factor = factor

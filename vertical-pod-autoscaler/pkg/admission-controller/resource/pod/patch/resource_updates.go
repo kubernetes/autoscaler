@@ -17,6 +17,7 @@ limitations under the License.
 package patch
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -81,7 +82,6 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *v
 	updatesAnnotation := []string{}
 	cpuStartupBoostEnabled := features.Enabled(features.CPUStartupBoost)
 	for i := range containersResources {
-
 		// Apply startup boost if configured
 		if cpuStartupBoostEnabled {
 			// Get the container resource policy to check for scaling mode.
@@ -182,18 +182,18 @@ func (c *resourcesUpdatesPatchCalculator) calculateBoostedCPUValue(baseCPU resou
 	switch boostType {
 	case vpa_types.FactorStartupBoostType:
 		if startupBoost.CPU.Factor == nil {
-			return nil, fmt.Errorf("startupBoost.CPU.Factor is required when Type is Factor or not specified")
+			return nil, errors.New("startupBoost.CPU.Factor is required when Type is Factor or not specified")
 		}
 		factor := *startupBoost.CPU.Factor
 		if factor < 1 {
-			return nil, fmt.Errorf("boost factor must be >= 1")
+			return nil, errors.New("boost factor must be >= 1")
 		}
 		boostedCPUMilli := baseCPU.MilliValue()
 		boostedCPUMilli = int64(float64(boostedCPUMilli) * float64(factor))
 		return resource.NewMilliQuantity(boostedCPUMilli, resource.DecimalSI), nil
 	case vpa_types.QuantityStartupBoostType:
 		if startupBoost.CPU.Quantity == nil {
-			return nil, fmt.Errorf("startupBoost.CPU.Quantity is required when Type is Quantity")
+			return nil, errors.New("startupBoost.CPU.Quantity is required when Type is Quantity")
 		}
 		quantity := *startupBoost.CPU.Quantity
 		boostedCPUMilli := baseCPU.MilliValue() + quantity.MilliValue()
@@ -224,6 +224,24 @@ func (c *resourcesUpdatesPatchCalculator) calculateBoostedCPU(recommendedCPU, or
 	return boostedCPU, nil
 }
 
+// capStartupBoostToContainerLimit makes sure startup boost recommendation is not above current limit for the container for CPU.
+// It attempts to keep the request 1m below the limit to maintain QoS.
+func capStartupBoostToContainerLimit(recommendation core.ResourceList, containerLimits core.ResourceList) {
+	limit, found := containerLimits[core.ResourceCPU]
+	if !found {
+		return
+	}
+
+	recommendedValue, found := recommendation[core.ResourceCPU]
+	if found && recommendedValue.MilliValue() > limit.MilliValue() {
+		newRecommended := limit.DeepCopy()
+		if limit.Cmp(resource.MustParse("1m")) > 0 {
+			newRecommended.Sub(resource.MustParse("1m"))
+		}
+		recommendation[core.ResourceCPU] = newRecommended
+	}
+}
+
 func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container *core.Container, vpa *vpa_types.VerticalPodAutoscaler, containerResources *vpa_api_util.ContainerResources, startupBoostPolicy *vpa_types.StartupBoost) error {
 	controlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpa.Spec.ResourcePolicy)
 
@@ -241,7 +259,7 @@ func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container 
 
 	switch controlledValues {
 	case vpa_types.ContainerControlledValuesRequestsOnly:
-		vpa_api_util.CapRecommendationToContainerLimit(containerResources.Requests, container.Resources.Limits)
+		capStartupBoostToContainerLimit(containerResources.Requests, container.Resources.Limits)
 	case vpa_types.ContainerControlledValuesRequestsAndLimits:
 		if containerResources.Limits == nil {
 			containerResources.Limits = core.ResourceList{}
@@ -255,6 +273,8 @@ func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container 
 		if newLimit, ok := newLimits[core.ResourceCPU]; ok {
 			containerResources.Limits[core.ResourceCPU] = newLimit
 		}
+	default:
+		// Do nothing
 	}
 	return nil
 }

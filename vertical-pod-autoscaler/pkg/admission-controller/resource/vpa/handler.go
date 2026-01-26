@@ -220,14 +220,14 @@ func validateStartupBoost(startupBoost *vpa_types.StartupBoost, isCreate bool) e
 	switch boostType {
 	case vpa_types.FactorStartupBoostType:
 		if cpuBoost.Factor == nil {
-			return fmt.Errorf("startupBoost.cpu.factor is required when type is Factor")
+			return errors.New("startupBoost.cpu.factor is required when type is Factor")
 		}
 		if *cpuBoost.Factor < 1 {
-			return fmt.Errorf("invalid startupBoost.cpu.factor: must be >= 1 for type Factor")
+			return errors.New("invalid startupBoost.cpu.factor: must be >= 1 for type Factor")
 		}
 	case vpa_types.QuantityStartupBoostType:
 		if cpuBoost.Quantity == nil {
-			return fmt.Errorf("startupBoost.cpu.quantity is required when type is Quantity")
+			return errors.New("startupBoost.cpu.quantity is required when type is Quantity")
 		}
 		if err := validateCPUResolution(*cpuBoost.Quantity); err != nil {
 			return fmt.Errorf("invalid startupBoost.cpu.quantity: %v", err)

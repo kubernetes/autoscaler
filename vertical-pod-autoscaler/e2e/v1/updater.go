@@ -332,7 +332,7 @@ var _ = UpdaterE2eDescribe("Updater with PerVPAConfig", func() {
 
 var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	f.It("Unboost pods when they become Ready", framework.WithFeatureGate(features.CPUStartupBoost), func() {
 		const statusUpdateInterval = 10 * time.Second
@@ -389,7 +389,7 @@ func setupPodsForCPUBoost(f *framework.Framework, hamsterCPU, hamsterMemory stri
 		WithTargetRef(controller).
 		WithUpdateMode(vpa_types.UpdateModeAuto).
 		WithContainer(containerName).
-		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "1s").
+		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 1).
 		AppendRecommendation(
 			test.Recommendation().
 				WithContainer(containerName).

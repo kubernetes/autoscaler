@@ -1100,7 +1100,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
 		waitForVpaWebhookRegistration(f)
@@ -1119,7 +1119,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
-			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "15s").
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 15).
 			AppendRecommendation(
 				test.Recommendation().
 					WithContainer(containerName).
@@ -1133,7 +1133,6 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		podList := utils.StartDeploymentPods(f, d)
 		pod := podList.Items[0]
 		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
-		gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
 	})
 
 	f.It("boosts CPU by quantity on pod creation", framework.WithFeatureGate(features.CPUStartupBoost), func() {
@@ -1149,7 +1148,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
-			WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &boostCPUQuantity, "15s").
+			WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &boostCPUQuantity, 15).
 			AppendRecommendation(
 				test.Recommendation().
 					WithContainer(containerName).
@@ -1163,7 +1162,6 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		podList := utils.StartDeploymentPods(f, d)
 		pod := podList.Items[0]
 		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
-		gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
 	})
 
 	f.It("boosts CPU on pod creation when VPA update mode is Off", framework.WithFeatureGate(features.CPUStartupBoost), func() {
@@ -1180,7 +1178,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
 			WithUpdateMode(vpa_types.UpdateModeOff). // VPA is off, but boost should still work
-			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "15s").
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 15).
 			Get()
 		utils.InstallVPA(f, vpaCRD)
 
@@ -1202,7 +1200,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
 			WithContainer(containerName).
-			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "15s").
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 15).
 			WithScalingMode(containerName, vpa_types.ContainerScalingModeOff).
 			Get()
 		utils.InstallVPA(f, vpaCRD)

@@ -17,6 +17,7 @@ limitations under the License.
 package patch
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -402,7 +403,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -441,7 +442,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "0s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 0).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -480,7 +481,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &quantity, "10s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &quantity, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -516,7 +517,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -547,7 +548,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &invalidFactor, nil, "10s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &invalidFactor, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -557,7 +558,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			},
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
-			expectError:        fmt.Errorf("boost factor must be >= 1"),
+			expectError:        errors.New("boost factor must be >= 1"),
 		},
 		{
 			name: "quantity less than request",
@@ -578,7 +579,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &invalidQuantity, "10s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &invalidQuantity, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -617,7 +618,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor3, nil, "1s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor3, nil, 1).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -653,7 +654,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").WithScalingMode("container1", vpa_types.ContainerScalingModeOff).Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithScalingMode("container1", vpa_types.ContainerScalingModeOff).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -684,7 +685,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa:                test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").Get(),
+			vpa:                test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
 			recommendResources: make([]vpa_api_util.ContainerResources, 1),
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
@@ -714,7 +715,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsOnly).Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsOnly).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -727,6 +728,41 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			expectPatches: []resource_admission.PatchRecord{
 				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
 				addResourceRequestPatch(0, cpu, "200m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
+			},
+		},
+		{
+			name: "startup boost with RequestsOnly - capped below limit to preserve pod Qos",
+			pod: &core.Pod{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{
+							Name: "container1",
+							Resources: core.ResourceRequirements{
+								Requests: core.ResourceList{
+									core.ResourceCPU: resource.MustParse("100m"),
+								},
+								Limits: core.ResourceList{
+									core.ResourceCPU: resource.MustParse("150m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsOnly).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: core.ResourceList{
+						core.ResourceCPU: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"150m\"}}"),
+				addResourceRequestPatch(0, cpu, "149m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
 			},
 		},
@@ -749,7 +785,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -782,7 +818,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -814,7 +850,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 					},
 				},
 			},
-			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost("Invalid", &factor2, nil, "10s").Get(),
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost("Invalid", &factor2, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{
@@ -824,7 +860,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			},
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
-			expectError:        fmt.Errorf("unsupported startup boost type: Invalid"),
+			expectError:        errors.New("unsupported startup boost type: Invalid"),
 		},
 		{
 			name: "startup boost container policy takes precedence",
@@ -846,8 +882,8 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 				},
 			},
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").
-				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, "10s").
-				WithContainerCPUStartupBoost("container1", vpa_types.FactorStartupBoostType, &factor3, nil, "10s").Get(),
+				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).
+				WithContainerCPUStartupBoost("container1", vpa_types.FactorStartupBoostType, &factor3, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: core.ResourceList{

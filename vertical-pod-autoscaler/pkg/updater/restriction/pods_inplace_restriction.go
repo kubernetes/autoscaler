@@ -116,11 +116,10 @@ func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *apiv1.Pod, vpa *vpa_types.
 		return false
 	}
 	durationPassed := vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa)
-	hasAnnotation := vpa_api_util.PodHasCPUBoostInProgress(pod)
 
-	klog.V(2).InfoS("Checking if pod can be unboosted", "pod", klog.KObj(pod), "durationPassed", durationPassed, "hasAnnotation", hasAnnotation)
+	klog.V(2).InfoS("Checking if pod can be unboosted", "pod", klog.KObj(pod), "durationPassed", durationPassed)
 
-	if !durationPassed || !hasAnnotation {
+	if !durationPassed {
 		return false
 	}
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]

@@ -367,7 +367,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 	})
 
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.Describe("have CPU startup boost recommendation applied", func() {
 		ginkgo.BeforeEach(func() {
@@ -391,7 +391,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				WithTargetRef(targetRef).
 				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 				WithContainer(containerName).
-				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "10s").
+				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 10).
 				Get()
 			utils.InstallVPA(f, vpaCRD)
 
@@ -413,7 +413,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// Pods should be scaled back down in-place after they become Ready and
-			// StartupBoost.CPU.Duration has elapsed
+			// StartupBoost.CPU.DurationSeconds has elapsed
 			err = waitForResourceRequestInRangeInPods(
 				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
@@ -438,7 +438,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				WithTargetRef(targetRef).
 				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 				WithContainer(containerName).
-				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, "10s").
+				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 10).
 				Get()
 
 			utils.InstallVPA(f, vpaCRD)
@@ -461,7 +461,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// Pods should be scaled back down in-place after they become Ready and
-			// StartupBoost.CPU.Duration has elapsed
+			// StartupBoost.CPU.DurationSeconds has elapsed
 			err = waitForResourceRequestInRangeInPods(
 				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
