@@ -367,7 +367,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 	})
 
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.Describe("have CPU startup boost recommendation applied", func() {
 		ginkgo.BeforeEach(func() {

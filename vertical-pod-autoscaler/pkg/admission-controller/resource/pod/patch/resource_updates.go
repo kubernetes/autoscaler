@@ -17,6 +17,7 @@ limitations under the License.
 package patch
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -81,7 +82,6 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *v
 	updatesAnnotation := []string{}
 	cpuStartupBoostEnabled := features.Enabled(features.CPUStartupBoost)
 	for i := range containersResources {
-
 		// Apply startup boost if configured
 		if cpuStartupBoostEnabled {
 			// Get the container resource policy to check for scaling mode.
@@ -182,18 +182,18 @@ func (c *resourcesUpdatesPatchCalculator) calculateBoostedCPUValue(baseCPU resou
 	switch boostType {
 	case vpa_types.FactorStartupBoostType:
 		if startupBoost.CPU.Factor == nil {
-			return nil, fmt.Errorf("startupBoost.CPU.Factor is required when Type is Factor or not specified")
+			return nil, errors.New("startupBoost.CPU.Factor is required when Type is Factor or not specified")
 		}
 		factor := *startupBoost.CPU.Factor
 		if factor < 1 {
-			return nil, fmt.Errorf("boost factor must be >= 1")
+			return nil, errors.New("boost factor must be >= 1")
 		}
 		boostedCPUMilli := baseCPU.MilliValue()
 		boostedCPUMilli = int64(float64(boostedCPUMilli) * float64(factor))
 		return resource.NewMilliQuantity(boostedCPUMilli, resource.DecimalSI), nil
 	case vpa_types.QuantityStartupBoostType:
 		if startupBoost.CPU.Quantity == nil {
-			return nil, fmt.Errorf("startupBoost.CPU.Quantity is required when Type is Quantity")
+			return nil, errors.New("startupBoost.CPU.Quantity is required when Type is Quantity")
 		}
 		quantity := *startupBoost.CPU.Quantity
 		boostedCPUMilli := baseCPU.MilliValue() + quantity.MilliValue()
@@ -255,6 +255,8 @@ func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container 
 		if newLimit, ok := newLimits[core.ResourceCPU]; ok {
 			containerResources.Limits[core.ResourceCPU] = newLimit
 		}
+	default:
+		// Do nothing
 	}
 	return nil
 }

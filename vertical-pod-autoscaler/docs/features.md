@@ -13,10 +13,16 @@
   - [Skipping Disruption Budget for Non-Disruptive Updates](#skipping-disruption-budget-for-non-disruptive-updates)
     - [When Disruption Budgets Are Still Respected](#when-disruption-budgets-are-still-respected)
   - [Requirements:](#requirements)
+  - [Configuration](#configuration)
   - [Limitations](#limitations)
   - [Fallback Behavior](#fallback-behavior)
   - [Monitoring](#monitoring)
 - [CPU Startup Boost](#cpu-startup-boost)
+  - [Usage](#usage-1)
+  - [Behavior](#behavior-1)
+  - [Requirements](#requirements-1)
+  - [Configuration](#configuration-1)
+<!-- /toc -->
 <!-- /toc -->
 
 ## Limits control

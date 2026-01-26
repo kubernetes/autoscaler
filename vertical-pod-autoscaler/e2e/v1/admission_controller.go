@@ -1100,7 +1100,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
 		waitForVpaWebhookRegistration(f)
