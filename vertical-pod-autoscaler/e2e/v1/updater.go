@@ -211,7 +211,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 
 var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	f.It("Unboost pods when they become Ready", framework.WithFeatureGate(features.CPUStartupBoost), func() {
 		const statusUpdateInterval = 10 * time.Second

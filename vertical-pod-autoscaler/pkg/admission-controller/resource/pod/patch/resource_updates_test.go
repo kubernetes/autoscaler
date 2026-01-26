@@ -17,6 +17,7 @@ limitations under the License.
 package patch
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -557,7 +558,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			},
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
-			expectError:        fmt.Errorf("boost factor must be >= 1"),
+			expectError:        errors.New("boost factor must be >= 1"),
 		},
 		{
 			name: "quantity less than request",
@@ -824,7 +825,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			},
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
-			expectError:        fmt.Errorf("unsupported startup boost type: Invalid"),
+			expectError:        errors.New("unsupported startup boost type: Invalid"),
 		},
 		{
 			name: "startup boost container policy takes precedence",

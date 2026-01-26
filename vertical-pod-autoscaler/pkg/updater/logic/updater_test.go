@@ -158,7 +158,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		},
 		{
 			name:                  "with Auto mode and unboost",
-			updateMode:            vpa_types.UpdateModeAuto,
+			updateMode:            vpa_types.UpdateModeAuto, //nolint:staticcheck
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
