@@ -100,7 +100,7 @@ func GetConditionReady() []metav1.Condition {
 		Type:               capacitybuffer.ReadyForProvisioningCondition,
 		Status:             metav1.ConditionTrue,
 		Message:            "",
-		Reason:             "atrtibutesSetSuccessfully",
+		Reason:             capacitybuffer.AttributesSetSuccessfullyReason,
 		LastTransitionTime: metav1.Time{},
 	}
 	return []metav1.Condition{readyCondition}
