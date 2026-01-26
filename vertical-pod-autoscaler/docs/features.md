@@ -17,6 +17,11 @@
   - [Fallback Behavior](#fallback-behavior)
   - [Monitoring](#monitoring)
 - [CPU Startup Boost](#cpu-startup-boost)
+  - [Usage](#usage-1)
+  - [Behavior](#behavior-1)
+  - [Requirements](#requirements-1)
+  - [Configuration](#configuration)
+<!-- /toc -->
 <!-- /toc -->
 
 ## Limits control
@@ -91,9 +96,11 @@ To enable this feature, set the `--round-memory-bytes` flag when running the VPA
 
 ## In-Place Updates (`InPlaceOrRecreate`)
 
-> [!WARNING]
-> FEATURE STATE: VPA v1.4.0 [alpha]
-> FEATURE STATE: VPA v1.5.0 [beta]
+> [!NOTE]
+> FEATURE STATE:
+> - VPA v1.4.0 [alpha]
+> - VPA v1.5.0 [beta]
+> - VPA v1.6.0 [ga]
 
 VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (which is in beta as of Kubernetes 1.33) to modify container resources without requiring pod recreation.
 For more information, see [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)
@@ -142,14 +149,6 @@ Even with this flag enabled, disruption budgets are enforced when:
 
 * Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
 * VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
-
-### Configuration
-
-Enable the feature by setting the following flags in VPA components ( for both updater and admission-controller ):
-
-```bash
---feature-gates=InPlaceOrRecreate=true
-```
 
 ### Limitations
 
@@ -209,13 +208,13 @@ spec:
     cpu:
       type: "Factor"
       factor: 3
-      duration: 10s
+      durationSeconds: 10
 ```
 
 ### Behavior
 
 1.  When a pod managed by the VPA is created, the VPA Admission Controller applies the CPU boost.
-2.  The VPA Updater monitors the pod. Once the pod's condition is `Ready` and the `startupBoost.cpu.duration` has elapsed, it scales the CPU resources down in-place.
+2.  The VPA Updater monitors the pod. Once the pod's condition is `Ready` and the `startupBoost.cpu.durationSeconds` has elapsed, it scales the CPU resources down in-place.
 3.  The scale-down/unboost target is either the VPA recommendation (if VPA is enabled for the container) or the original CPU resources defined in the pod spec.
 
 ### Requirements
@@ -235,4 +234,4 @@ The `startupBoost` field contains a `cpu` field with the following sub-fields:
 *   `type`: (Required) The type of boost. Can be `Factor` to multiply the CPU, or `Quantity` to add a specific CPU value.
 *   `factor`: (Optional) The multiplier to apply if `type` is `Factor` (e.g., 2 for 2x CPU). Required if `type` is `Factor`.
 *   `quantity`: (Optional) The amount of CPU to add if `type` is `Quantity` (e.g., "500m"). Required if `type` is `Quantity`.
-*   `duration`: (Optional) How long to keep the boost active *after* the pod becomes `Ready`. Defaults to `0s`.
+*   `durationSeconds`: (Optional) How long to keep the boost active *after* the pod becomes `Ready`. Defaults to `0`.

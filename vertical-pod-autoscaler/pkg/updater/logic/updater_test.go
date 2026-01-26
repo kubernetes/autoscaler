@@ -158,7 +158,7 @@ func TestRunOnce_Mode(t *testing.T) {
 		},
 		{
 			name:                  "with Auto mode and unboost",
-			updateMode:            vpa_types.UpdateModeAuto,
+			updateMode:            vpa_types.UpdateModeAuto, //nolint:staticcheck
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
@@ -331,9 +331,10 @@ func testRunOnceBase(
 
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	if isCPUBoostTest {
+		durationSeconds := int32(60)
 		cpuStartupBoost := &vpa_types.GenericStartupBoost{
-			Type:     vpa_types.FactorStartupBoostType,
-			Duration: &metav1.Duration{Duration: 1 * time.Minute},
+			Type:            vpa_types.FactorStartupBoostType,
+			DurationSeconds: &durationSeconds,
 		}
 		vpaObj.Spec.StartupBoost = &vpa_types.StartupBoost{
 			CPU: cpuStartupBoost,
@@ -666,7 +667,7 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
 		WithTargetRef(&v1.CrossVersionObjectReference{Kind: rc.Kind, Name: rc.Name, APIVersion: rc.APIVersion}).
-		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, "1m").
+		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).
 		Get()
 
 	for i := range pods {
@@ -765,7 +766,7 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
 		WithTargetRef(&v1.CrossVersionObjectReference{Kind: rc.Kind, Name: rc.Name, APIVersion: rc.APIVersion}).
-		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, "1m").
+		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).
 		Get()
 
 	for i := range pods {
