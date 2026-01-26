@@ -147,9 +147,10 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 			}
 			res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
 			if err != nil {
-				return err
+				klog.V(4).ErrorS(err, "Failed to patch pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+			} else {
+				klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
 			}
-			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
 		}
 	} else {
 		return fmt.Errorf("no resource patches were calculated to apply")
