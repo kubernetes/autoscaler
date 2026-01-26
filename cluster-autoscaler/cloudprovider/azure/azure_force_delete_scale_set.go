@@ -20,6 +20,7 @@ import (
 	"context"
 	"strings"
 
+	azerrors "github.com/Azure/azure-sdk-for-go-extensions/pkg/errors"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 
 	"k8s.io/klog/v2"
@@ -87,8 +88,8 @@ func shouldForceDelete(skuName string, scaleSet *ScaleSet) bool {
 
 // isOperationNotAllowed checks if `error` is an OperationNotAllowed error.
 func isOperationNotAllowed(err error) bool {
-	if err == nil {
-		return false
+	if azerr := azerrors.IsResponseError(err); azerr != nil {
+		return azerr.ErrorCode == azerrors.OperationNotAllowed
 	}
-	return strings.Contains(err.Error(), "OperationNotAllowed")
+	return strings.Contains(err.Error(), azerrors.OperationNotAllowed)
 }

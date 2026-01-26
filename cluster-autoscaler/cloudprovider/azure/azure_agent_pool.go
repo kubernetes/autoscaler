@@ -549,6 +549,9 @@ func (as *AgentPool) deleteBlob(accountName, vhdContainer, vhdBlob string) error
 		as.manager.env.StorageEndpointSuffix,
 		vhdContainer,
 		vhdBlob)
+	if len(keys) > 1 {
+		klog.Warningf("Multiple storage keys found for account %s, using the first one", accountName)
+	}
 	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(keys[0].Value, ""))
 	if err != nil {
 		return fmt.Errorf("failed to create shared key credential: %w", err)
