@@ -254,48 +254,48 @@ func TestConvertResourceGroupNameToLower(t *testing.T) {
 }
 
 // TestIsAzureRequestsThrottled tests isAzureRequestsThrottled function
-// NOTE: This test is disabled because isAzureRequestsThrottled was removed during SDK v2 migration
-// The throttling logic now needs different handling with SDK v2 errors
-/*
 func TestIsAzureRequestsThrottled(t *testing.T) {
-	tests := []struct {
-		desc     string
-		rerr     *retry.Error
-		expected bool
-	}{
-		{
-			desc:     "nil error should return false",
-			expected: false,
-		},
-		{
-			desc: "non http.StatusTooManyRequests error should return false",
-			rerr: &retry.Error{
-				HTTPStatusCode: http.StatusBadRequest,
-			},
-			expected: false,
-		},
-		{
-			desc: "http.StatusTooManyRequests error should return true",
-			rerr: &retry.Error{
-				HTTPStatusCode: http.StatusTooManyRequests,
-			},
-			expected: true,
-		},
-		{
-			desc: "Nul HTTP code and non-expired Retry-After should return true",
-			rerr: &retry.Error{
-				RetryAfter: time.Now().Add(time.Hour),
-			},
-			expected: true,
-		},
-	}
+	t.Skip("This test is disabled because isAzureRequestsThrottled was removed during SDK v2 migration")
+	/*
+		tests := []struct {
+			desc     string
+			rerr     *retry.Error
+			expected bool
+		}{
 
-	for _, test := range tests {
-		real := isAzureRequestsThrottled(test.rerr)
-		assert.Equal(t, test.expected, real, test.desc)
-	}
+			{
+				desc:     "nil error should return false",
+				expected: false,
+			},
+			{
+				desc: "non http.StatusTooManyRequests error should return false",
+				rerr: &retry.Error{
+					HTTPStatusCode: http.StatusBadRequest,
+				},
+				expected: false,
+			},
+			{
+				desc: "http.StatusTooManyRequests error should return true",
+				rerr: &retry.Error{
+					HTTPStatusCode: http.StatusTooManyRequests,
+				},
+				expected: true,
+			},
+			{
+				desc: "Nul HTTP code and non-expired Retry-After should return true",
+				rerr: &retry.Error{
+					RetryAfter: time.Now().Add(time.Hour),
+				},
+				expected: true,
+			},
+		}
+
+		for _, test := range tests {
+			real := isAzureRequestsThrottled(test.rerr)
+			assert.Equal(t, test.expected, real, test.desc)
+		}
+	*/
 }
-*/
 
 func TestNormalizeMasterResourcesForScaling(t *testing.T) {
 	templateMap := map[string]interface{}{
