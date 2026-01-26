@@ -20,12 +20,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 )
 
 // To use their pointers in creating testing capacity buffer objects
 var (
-	ProvisioningStrategy      = common.ActiveProvisioningStrategy
+	ProvisioningStrategy      = capacitybuffer.ActiveProvisioningStrategy
 	SomeNumberOfReplicas      = int32(3)
 	AnotherNumberOfReplicas   = int32(5)
 	SomePodTemplateRefName    = "some-pod-template"
@@ -97,8 +97,8 @@ func GetBufferStatus(podTempRef *v1.LocalObjectRef, replicas *int32, podTemplate
 // GetConditionReady returns a list of conditions with a condition ready and empty message, should be used for testing purposes only
 func GetConditionReady() []metav1.Condition {
 	readyCondition := metav1.Condition{
-		Type:               common.ReadyForProvisioningCondition,
-		Status:             common.ConditionTrue,
+		Type:               capacitybuffer.ReadyForProvisioningCondition,
+		Status:             metav1.ConditionTrue,
 		Message:            "",
 		Reason:             "atrtibutesSetSuccessfully",
 		LastTransitionTime: metav1.Time{},
@@ -109,8 +109,8 @@ func GetConditionReady() []metav1.Condition {
 // GetConditionNotReady returns a list of conditions with a condition not ready and empty message, should be used for testing purposes only
 func GetConditionNotReady() []metav1.Condition {
 	notReadyCondition := metav1.Condition{
-		Type:               common.ReadyForProvisioningCondition,
-		Status:             common.ConditionFalse,
+		Type:               capacitybuffer.ReadyForProvisioningCondition,
+		Status:             metav1.ConditionFalse,
 		Message:            "",
 		Reason:             "error",
 		LastTransitionTime: metav1.Time{},
@@ -172,7 +172,7 @@ func WithStatusReplicas(replicas int32) BufferOption {
 // WithActiveProvisioningStrategy sets the ProvisioningStrategy to ActiveProvisioningStrategy
 func WithActiveProvisioningStrategy() BufferOption {
 	return func(b *v1.CapacityBuffer) {
-		strategy := common.ActiveProvisioningStrategy
+		strategy := capacitybuffer.ActiveProvisioningStrategy
 		b.Spec.ProvisioningStrategy = &strategy
 	}
 }

@@ -31,8 +31,8 @@ import (
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
@@ -81,7 +81,7 @@ func NewDefaultBufferController(
 	bc := &bufferController{
 		client: client,
 		// Accepting empty string as it represents nil value for ProvisioningStrategy
-		strategyFilter: filters.NewStrategyFilter([]string{common.ActiveProvisioningStrategy, ""}),
+		strategyFilter: filters.NewStrategyFilter([]string{capacitybuffer.ActiveProvisioningStrategy, ""}),
 		translator: translators.NewCombinedTranslator(
 			[]translators.Translator{
 				translators.NewPodTemplateBufferTranslator(client),
