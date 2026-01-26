@@ -26,8 +26,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 	fakeClient "k8s.io/client-go/kubernetes/fake"
 )
@@ -475,7 +475,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 
 				var limitCondition *metav1.Condition
 				for _, c := range buffer.Status.Conditions {
-					if c.Type == common.LimitedByQuotasCondition {
+					if c.Type == capacitybuffer.LimitedByQuotasCondition {
 						limitCondition = c.DeepCopy()
 						break
 					}

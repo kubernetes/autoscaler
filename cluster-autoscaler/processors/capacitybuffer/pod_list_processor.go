@@ -24,8 +24,10 @@ import (
 	"k8s.io/klog/v2"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	client "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	buffersfilter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
@@ -74,8 +76,8 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 	return &CapacityBufferPodListProcessor{
 		client: client,
 		statusFilter: buffersfilter.NewStatusFilter(map[string]string{
-			common.ReadyForProvisioningCondition: common.ConditionTrue,
-			common.ProvisioningCondition:         common.ConditionTrue,
+			capacitybuffer.ReadyForProvisioningCondition: string(metav1.ConditionTrue),
+			capacitybuffer.ProvisioningCondition:         string(metav1.ConditionTrue),
 		}),
 		podTemplateGenFilter:     buffersfilter.NewPodTemplateGenerationChangedFilter(client),
 		provStrategies:           provStrategiesMap,
