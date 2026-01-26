@@ -58,7 +58,7 @@ func TestConditionUpdates(t *testing.T) {
 				{
 					Type:    capacitybuffer.ReadyForProvisioningCondition,
 					Status:  metav1.ConditionTrue,
-					Reason:  "atrtibutesSetSuccessfully",
+					Reason:  capacitybuffer.AttributesSetSuccessfullyReason,
 					Message: "ready",
 				},
 			},
@@ -82,12 +82,12 @@ func TestConditionUpdates(t *testing.T) {
 			},
 		},
 		{
-			name: "UpdateBufferStatusToFailedProvisioing preserves existing conditions",
+			name: "UpdateBufferStatusToFailedProvisioning preserves existing conditions",
 			initialBuffer: testutil.NewBuffer(func(b *v1.CapacityBuffer) {
 				b.Status.Conditions = []metav1.Condition{existingCondition}
 			}),
 			updateFunc: func(b *v1.CapacityBuffer) {
-				UpdateBufferStatusToFailedProvisioing(b, "FailedReason", "failed message")
+				UpdateBufferStatusToFailedProvisioning(b, "FailedReason", "failed message")
 			},
 			wantConditions: []metav1.Condition{
 				existingCondition,
@@ -100,12 +100,12 @@ func TestConditionUpdates(t *testing.T) {
 			},
 		},
 		{
-			name: "UpdateBufferStatusToSuccessfullyProvisioing preserves existing conditions",
+			name: "UpdateBufferStatusToSuccessfullyProvisioning preserves existing conditions",
 			initialBuffer: testutil.NewBuffer(func(b *v1.CapacityBuffer) {
 				b.Status.Conditions = []metav1.Condition{existingCondition}
 			}),
 			updateFunc: func(b *v1.CapacityBuffer) {
-				UpdateBufferStatusToSuccessfullyProvisioing(b, "SuccessReason")
+				UpdateBufferStatusToSuccessfullyProvisioning(b, "SuccessReason")
 			},
 			wantConditions: []metav1.Condition{
 				existingCondition,
