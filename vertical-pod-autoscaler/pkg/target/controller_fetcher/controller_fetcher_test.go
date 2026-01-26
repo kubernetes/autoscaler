@@ -18,6 +18,7 @@ package controllerfetcher
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -84,7 +85,6 @@ func simpleControllerFetcher() *controllerFetcher {
 
 	// resource that can scale
 	scaleNamespacer.AddReactor("get", "iCanScale", func(action core.Action) (handled bool, ret runtime.Object, err error) {
-
 		ret = &autoscalingv1.Scale{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "Scaler",
@@ -312,7 +312,7 @@ func TestControllerFetcher(t *testing.T) {
 				},
 			}},
 			expectedKey:   nil,
-			expectedError: fmt.Errorf("cycle detected in ownership chain"),
+			expectedError: errors.New("cycle detected in ownership chain"),
 		},
 		{
 			name: "deployment, parent with no scale subresource",

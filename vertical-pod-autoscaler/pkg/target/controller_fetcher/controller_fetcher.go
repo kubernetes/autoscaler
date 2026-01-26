@@ -190,7 +190,7 @@ func getParentOfWellKnownController(informer cache.SharedIndexInformer, controll
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	}
 
-	return nil, fmt.Errorf("don't know how to read owner controller")
+	return nil, errors.New("don't know how to read owner controller")
 }
 
 func (f *controllerFetcher) getParentOfController(ctx context.Context, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
@@ -335,7 +335,7 @@ func (f *controllerFetcher) FindTopMostWellKnownOrScalable(ctx context.Context, 
 
 		_, alreadyVisited := visited[*owner]
 		if alreadyVisited {
-			return nil, fmt.Errorf("cycle detected in ownership chain")
+			return nil, errors.New("cycle detected in ownership chain")
 		}
 		visited[*key] = true
 

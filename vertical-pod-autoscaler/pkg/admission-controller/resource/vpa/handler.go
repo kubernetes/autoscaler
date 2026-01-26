@@ -19,6 +19,7 @@ package vpa
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	v1 "k8s.io/api/admission/v1"
@@ -110,7 +111,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	if vpa.Spec.UpdatePolicy != nil {
 		mode := vpa.Spec.UpdatePolicy.UpdateMode
 		if mode == nil {
-			return fmt.Errorf("updateMode is required if UpdatePolicy is used")
+			return errors.New("updateMode is required if UpdatePolicy is used")
 		}
 		if _, found := vpa_types.GetUpdateModes()[*mode]; !found {
 			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
@@ -127,7 +128,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
 			if policy.ContainerName == "" {
-				return fmt.Errorf("containerPolicies.ContainerName is required")
+				return errors.New("containerPolicies.ContainerName is required")
 			}
 
 			// check that perVPA is on if being used
@@ -175,18 +176,18 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			controlledValues := policy.ControlledValues
 			if mode != nil && controlledValues != nil {
 				if *mode == vpa_types.ContainerScalingModeOff && *controlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-					return fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off")
+					return errors.New("controlledValues shouldn't be specified if container scaling mode is off")
 				}
 			}
 		}
 	}
 
 	if isCreate && vpa.Spec.TargetRef == nil {
-		return fmt.Errorf("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
+		return errors.New("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
 	}
 
 	if len(vpa.Spec.Recommenders) > 1 {
-		return fmt.Errorf("the current version of VPA object shouldn't specify more than one recommenders")
+		return errors.New("the current version of VPA object shouldn't specify more than one recommenders")
 	}
 
 	return nil

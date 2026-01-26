@@ -17,7 +17,7 @@ limitations under the License.
 package api
 
 import (
-	"fmt"
+	"errors"
 
 	v1 "k8s.io/api/core/v1"
 
@@ -37,9 +37,8 @@ type sequentialRecommendationProcessor struct {
 func (p *sequentialRecommendationProcessor) Apply(
 	vpa *vpa_types.VerticalPodAutoscaler,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
-
 	if vpa == nil {
-		return nil, nil, fmt.Errorf("cannot process nil vpa")
+		return nil, nil, errors.New("cannot process nil vpa")
 	}
 	if vpa.Status.Recommendation == nil {
 		return nil, nil, nil

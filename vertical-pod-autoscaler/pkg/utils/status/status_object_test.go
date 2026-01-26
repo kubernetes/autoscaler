@@ -18,6 +18,7 @@ package status
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"syscall"
 	"testing"
@@ -50,7 +51,7 @@ func TestUpdateStatus(t *testing.T) {
 					return true, &apicoordinationv1.Lease{}, nil
 				}
 
-				return true, nil, fmt.Errorf("unsupported action")
+				return true, nil, errors.New("unsupported action")
 			},
 			wantErr: false,
 		},
@@ -69,7 +70,7 @@ func TestUpdateStatus(t *testing.T) {
 						}
 					}
 
-					return true, nil, fmt.Errorf("unsupported action")
+					return true, nil, errors.New("unsupported action")
 				}
 			}(),
 			wantErr: false,
@@ -90,7 +91,7 @@ func TestUpdateStatus(t *testing.T) {
 						}
 					}
 
-					return true, nil, fmt.Errorf("unsupported action")
+					return true, nil, errors.New("unsupported action")
 				}
 			}(),
 			wantErr: false,
@@ -111,7 +112,7 @@ func TestUpdateStatus(t *testing.T) {
 						}
 					}
 
-					return true, nil, fmt.Errorf("unsupported action")
+					return true, nil, errors.New("unsupported action")
 				}
 			}(),
 			wantErr: false,
@@ -122,7 +123,7 @@ func TestUpdateStatus(t *testing.T) {
 				if action.GetResource().Resource == "leases" {
 					return true, nil, apierrors.NewNotFound(schema.GroupResource{}, leaseName)
 				}
-				return true, nil, fmt.Errorf("unsupported action")
+				return true, nil, errors.New("unsupported action")
 			},
 			wantErr: true,
 		},
@@ -157,7 +158,7 @@ func TestGetStatus(t *testing.T) {
 					return true, &apicoordinationv1.Lease{}, nil
 				}
 
-				return true, nil, fmt.Errorf("unsupported action")
+				return true, nil, errors.New("unsupported action")
 			},
 			wantErr: false,
 		},
@@ -176,7 +177,7 @@ func TestGetStatus(t *testing.T) {
 						}
 					}
 
-					return true, nil, fmt.Errorf("unsupported action")
+					return true, nil, errors.New("unsupported action")
 				}
 			}(),
 			wantErr: false,
@@ -190,13 +191,13 @@ func TestGetStatus(t *testing.T) {
 						i++
 						switch i {
 						case 1:
-							return true, nil, fmt.Errorf("non-retryable error")
+							return true, nil, errors.New("non-retryable error")
 						default:
 							return true, &apicoordinationv1.Lease{}, nil
 						}
 					}
 
-					return true, nil, fmt.Errorf("unsupported action")
+					return true, nil, errors.New("unsupported action")
 				}
 			}(),
 			wantErr: true,

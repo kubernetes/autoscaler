@@ -17,6 +17,7 @@ limitations under the License.
 package limitrange
 
 import (
+	"errors"
 	"fmt"
 
 	core "k8s.io/api/core/v1"
@@ -51,7 +52,7 @@ type limitsChecker struct {
 // NewLimitsRangeCalculator returns a limitsChecker or an error it encountered when attempting to create it.
 func NewLimitsRangeCalculator(f informers.SharedInformerFactory) (*limitsChecker, error) {
 	if f == nil {
-		return nil, fmt.Errorf("NewLimitsRangeCalculator requires a SharedInformerFactory but got nil")
+		return nil, errors.New("NewLimitsRangeCalculator requires a SharedInformerFactory but got nil")
 	}
 	limitRangeLister := f.Core().V1().LimitRanges().Lister()
 	return &limitsChecker{limitRangeLister}, nil

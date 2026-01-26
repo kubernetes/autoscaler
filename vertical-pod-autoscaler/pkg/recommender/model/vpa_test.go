@@ -34,7 +34,6 @@ var (
 )
 
 func TestMergeAggregateContainerState(t *testing.T) {
-
 	containersInitialAggregateState := ContainerNameToAggregateStateMap{}
 	containersInitialAggregateState["test"] = NewAggregateContainerState()
 	vpa := NewVpa(VpaID{}, nil, anyTime)

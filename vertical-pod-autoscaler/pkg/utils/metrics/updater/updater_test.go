@@ -449,7 +449,6 @@ func TestSizeBasedGauge(t *testing.T) {
 						t.Errorf("Unexpected value for metric %s with labels %v: got %v, want %v", tc.metricName, expected.labels, val, expected.value)
 					}
 				}
-
 			}
 		})
 	}

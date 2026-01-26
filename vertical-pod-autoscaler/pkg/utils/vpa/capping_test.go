@@ -193,7 +193,6 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 			}
 
 			assert.Equal(t, tc.expectedUpperBound, res.ContainerRecommendations[0].UpperBound)
-
 		})
 	}
 }
@@ -305,7 +304,6 @@ func TestApply(t *testing.T) {
 	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()
 
 	for _, testCase := range applyTestCases {
-
 		vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
 		vpa.Spec.ResourcePolicy = testCase.Policy
 		vpa.Status.Recommendation = testCase.PodRecommendation

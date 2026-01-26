@@ -106,7 +106,6 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 }
 
 func TestIsFetchingHistory(t *testing.T) {
-
 	testCases := []struct {
 		vpa               model.Vpa
 		isFetchingHistory bool
@@ -147,7 +146,6 @@ func TestIsFetchingHistory(t *testing.T) {
 }
 
 func TestGetVpasToCheckpointSorts(t *testing.T) {
-
 	time1 := time.Unix(10000, 0)
 	time2 := time.Unix(20000, 0)
 
@@ -178,7 +176,6 @@ func TestGetVpasToCheckpointSorts(t *testing.T) {
 	assert.Equal(t, genVpaID(0), result[0].ID)
 	assert.Equal(t, genVpaID(1), result[1].ID)
 	assert.Equal(t, genVpaID(2), result[2].ID)
-
 }
 
 func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {

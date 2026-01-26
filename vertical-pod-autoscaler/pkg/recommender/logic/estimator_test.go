@@ -162,7 +162,6 @@ func TestConfidenceMultiplierNoHistory(t *testing.T) {
 // Verifies that the MarginEstimator adds margin to the originally
 // estimated resources.
 func TestMarginEstimator(t *testing.T) {
-
 	// Use 10% margin on top of the recommended resources.
 	marginFraction := 0.1
 	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
@@ -190,5 +189,4 @@ func TestMinResourcesEstimator(t *testing.T) {
 	memoryEstimator := WithMemoryMinResource(minMemory, constMemoryEstimator)
 	memoryEstimation := memoryEstimator.GetMemoryEstimation(s)
 	assert.Equal(t, 4e8, model.BytesFromMemoryAmount(memoryEstimation))
-
 }

@@ -268,7 +268,6 @@ func (vpa *Vpa) UpdateConditions(podsMatched bool) {
 	} else {
 		vpa.Conditions.Set(vpa_types.RecommendationProvided, false, reason, msg)
 	}
-
 }
 
 // AsStatus returns this objects equivalent of VPA Status. UpdateConditions

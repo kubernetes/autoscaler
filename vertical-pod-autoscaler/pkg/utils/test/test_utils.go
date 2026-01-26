@@ -17,7 +17,7 @@ limitations under the License.
 package test
 
 import (
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/stretchr/testify/mock"
@@ -166,7 +166,7 @@ func (m *PodListerMock) List(selector labels.Selector) (ret []*apiv1.Pod, err er
 
 // Get is not implemented for this mock
 func (m *PodListerMock) Get(name string) (*apiv1.Pod, error) {
-	return nil, fmt.Errorf("unimplemented")
+	return nil, errors.New("unimplemented")
 }
 
 // VerticalPodAutoscalerListerMock is a mock of VerticalPodAutoscalerLister or
@@ -197,7 +197,7 @@ func (m *VerticalPodAutoscalerListerMock) VerticalPodAutoscalers(namespace strin
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalPodAutoscaler, error) {
-	return nil, fmt.Errorf("unimplemented")
+	return nil, errors.New("unimplemented")
 }
 
 // VerticalPodAutoscalerCheckPointListerMock is a mock of VerticalPodAutoscalerCheckPointLister
@@ -227,7 +227,7 @@ func (m *VerticalPodAutoscalerCheckPointListerMock) VerticalPodAutoscalerCheckpo
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerCheckPointListerMock) Get(name string) (*vpa_types.VerticalPodAutoscalerCheckpoint, error) {
-	return nil, fmt.Errorf("unimplemented")
+	return nil, errors.New("unimplemented")
 }
 
 // VerticalPodAutoscalerV1Beta1ListerMock is a mock of VerticalPodAutoscalerLister or
@@ -258,7 +258,7 @@ func (m *VerticalPodAutoscalerV1Beta1ListerMock) VerticalPodAutoscalers(namespac
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerV1Beta1ListerMock) Get(name string) (*vpa_types_v1beta1.VerticalPodAutoscaler, error) {
-	return nil, fmt.Errorf("unimplemented")
+	return nil, errors.New("unimplemented")
 }
 
 // RecommendationProcessorMock is mock implementation of RecommendationProcessor
