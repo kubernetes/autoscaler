@@ -26,6 +26,7 @@ import (
 	yaml "go.yaml.in/yaml/v2"
 	v1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	resourcev1 "k8s.io/api/resource/v1"
 	schedulingv1 "k8s.io/api/scheduling/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,6 +74,9 @@ const (
 	highPriorityClassName       = "high-priority"
 
 	nonExistingBypassedSchedulerName = "non-existing-bypassed-scheduler"
+
+	draDeviceCapacity  = 4 // Devices per node
+	draDeviceClassName = "gpu"
 )
 
 // Test assumes that the cluster has a minimum number of nodes at the start of the test.
@@ -449,6 +453,103 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			reservedMemory := int(float64(replicaCount) * float64(0.7) * float64(memAllocatableMb))
 			schedulerName := "non-existent-scheduler-" + f.UniqueName
 			runScaleUpNotTriggeredUnprocessedPodTest(ctx, replicaCount, reservedMemory, schedulerName)
+		})
+	})
+
+	f.Context("DRA Autoscaling", func() {
+		// DRA Autoscaling tests use /manifests/dra-driver.yaml manifests.
+		ginkgo.BeforeEach(func(ctx context.Context) {
+			_, err := f.ClientSet.ResourceV1().DeviceClasses().Get(ctx, draDeviceClassName, metav1.GetOptions{})
+			if err != nil {
+				e2eskipper.Skipf("test expects DRA driver to be installed (DeviceClass %q not found)", draDeviceClassName)
+			}
+			setupAutoscalingTest(ctx)
+			ginkgo.DeferCleanup(cleanupAutoscalingTest)
+		})
+
+		f.It("should scale up when pods request DRA resources", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
+			// Calculate replicas to force scale-up.
+			replicas := (nodeCount * draDeviceCapacity) + 1
+
+			ginkgo.By(fmt.Sprintf("Creating %d pods requesting DRA devices to trigger scale-up", replicas))
+
+			rcName := "dra-scale-up-rc"
+			cleanup := ReserveDRA(ctx, f, rcName, replicas, draDeviceClassName, 1, false)
+			ginkgo.DeferCleanup(cleanup)
+
+			// Wait for cluster to scale up
+			expectedNodes := nodeCount + 1
+			ginkgo.By(fmt.Sprintf("Waiting for cluster size to reach %d", expectedNodes))
+			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool {
+				return size == expectedNodes
+			}, scaleUpTimeout))
+
+			ginkgo.By("Waiting for all DRA pods to be ready")
+			framework.ExpectNoError(waitForAllCaPodsReadyInNamespace(ctx, f, c))
+		})
+
+		f.It("shouldn't scale up if pod requests more DRA devices than node capacity", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
+			devicesPerPod := draDeviceCapacity + 1
+			ginkgo.By(fmt.Sprintf("Creating pod requesting %d devices (capacity %d)", devicesPerPod, draDeviceCapacity))
+			cleanup := ReserveDRA(ctx, f, "oversized-dra-pod", 1, draDeviceClassName, devicesPerPod, false)
+			ginkgo.DeferCleanup(cleanup)
+
+			ginkgo.By("Waiting for NotTriggerScaleUp event")
+			eventFound := false
+		EventsLoop:
+			for start := time.Now(); time.Since(start) < scaleUpTimeout; time.Sleep(20 * time.Second) {
+				events, err := f.ClientSet.CoreV1().Events(f.Namespace.Name).List(ctx, metav1.ListOptions{})
+				framework.ExpectNoError(err)
+
+				for _, e := range events.Items {
+					if e.InvolvedObject.Kind == "Pod" && e.Reason == "NotTriggerScaleUp" {
+						ginkgo.By("NotTriggerScaleUp event found")
+						eventFound = true
+						break EventsLoop
+					}
+				}
+			}
+			if !eventFound {
+				framework.Failf("Expected event with kind 'Pod' and reason 'NotTriggerScaleUp' not found.")
+			}
+
+			// Verify that cluster size is not changed.
+			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, f.ClientSet,
+				func(size int) bool { return size == nodeCount }, time.Second))
+		})
+
+		f.It("should correctly scale down with DRA node draining", feature.ClusterSizeAutoscalingScaleDown, func(ctx context.Context) {
+			increasedNodeCount := nodeCount + 1
+
+			// Scale cluster up by creating antiAffinity pods that request 1 device.
+			antiAffinityRcName := "dra-antiaffinity-rc"
+			cleanupAntiAffinityDRA := ReserveDRA(ctx, f, antiAffinityRcName, increasedNodeCount, draDeviceClassName, 1, true)
+			ginkgo.By(fmt.Sprintf("Creating %d DRA pods with anti-affinity to ensure one pod per node", increasedNodeCount))
+
+			// Expect a scale up.
+			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool {
+				return size == nodeCount+1
+			}, scaleUpTimeout))
+
+			// Add increasedNodeCount pods, each one reserves 2 devices.
+			// Each node should have utilization of 75% DRA devices.
+			// They should consist of 1 antiAffinity pod and 1 pod with 2 devices.
+			rcName := "dra-rc"
+			devicesPerPod := 2
+			cleanupDRA := ReserveDRA(ctx, f, rcName, increasedNodeCount, draDeviceClassName, devicesPerPod, false)
+			ginkgo.By(fmt.Sprintf("Creating %d DRA pods with 2 devices per pod", increasedNodeCount))
+			ginkgo.DeferCleanup(cleanupDRA)
+
+			ginkgo.By("Waiting for all DRA pods to be ready")
+			framework.ExpectNoError(waitForAllCaPodsReadyInNamespace(ctx, f, c))
+
+			ginkgo.By("Removing the pods that increased the cluster size")
+			framework.ExpectNoError(cleanupAntiAffinityDRA(ctx))
+
+			ginkgo.By("The unneeded node should be removed by draining the DRA pod")
+			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool {
+				return size == nodeCount
+			}, scaleDownTimeout))
 		})
 	})
 })
@@ -1077,4 +1178,117 @@ func isNodeTainted(node *v1.Node) bool {
 		}
 	}
 	return false
+}
+
+// ReserveDRA creates a ReplicationController where pods request a DRA device.
+// It uses an Ephemeral ResourceClaimTemplate defined in the PodSpec.
+func ReserveDRA(ctx context.Context, f *framework.Framework, id string, replicas int, deviceClass string, devicesPerPod int, antiAffinity bool) func(context.Context) error {
+	ginkgo.By(fmt.Sprintf("Running RC %s with %d replicas requesting DRA device %s", id, replicas, deviceClass))
+
+	claimName := "test-claim"
+
+	rc := &v1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      id,
+			Namespace: f.Namespace.Name,
+		},
+		Spec: v1.ReplicationControllerSpec{
+			Replicas: func(i int) *int32 { x := int32(i); return &x }(replicas),
+			Selector: map[string]string{"name": id},
+			Template: &v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"name": id},
+				},
+				Spec: v1.PodSpec{
+					SecurityContext: &v1.PodSecurityContext{
+						RunAsNonRoot:   func(b bool) *bool { return &b }(true),
+						SeccompProfile: &v1.SeccompProfile{Type: v1.SeccompProfileTypeRuntimeDefault},
+						RunAsUser:      func(i int64) *int64 { return &i }(65534), // nobody
+					},
+					Containers: []v1.Container{
+						{
+							Name:  "pause",
+							Image: imageutils.GetPauseImageName(),
+							Resources: v1.ResourceRequirements{
+								Claims: []v1.ResourceClaim{
+									{Name: claimName},
+								},
+							},
+							SecurityContext: &v1.SecurityContext{
+								AllowPrivilegeEscalation: func(b bool) *bool { return &b }(false),
+								Capabilities: &v1.Capabilities{
+									Drop: []v1.Capability{"ALL"},
+								},
+							},
+						},
+					},
+					ResourceClaims: []v1.PodResourceClaim{
+						{
+							Name:                      claimName,
+							ResourceClaimTemplateName: &id, // We will create a template with the same name.
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if antiAffinity {
+		rc.Spec.Template.Spec.Affinity = &v1.Affinity{
+			PodAntiAffinity: &v1.PodAntiAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []v1.PodAffinityTerm{
+					{
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{"name": id},
+						},
+						TopologyKey: "kubernetes.io/hostname",
+					},
+				},
+			},
+		}
+	}
+
+	// Create the ResourceClaimTemplate first.
+	template := &resourcev1.ResourceClaimTemplate{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      id,
+			Namespace: f.Namespace.Name,
+		},
+		Spec: resourcev1.ResourceClaimTemplateSpec{
+			Spec: resourcev1.ResourceClaimSpec{
+				Devices: resourcev1.DeviceClaim{
+					Requests: []resourcev1.DeviceRequest{
+						{
+							Name: "req-1",
+							Exactly: &resourcev1.ExactDeviceRequest{
+								DeviceClassName: deviceClass,
+								AllocationMode:  resourcev1.DeviceAllocationModeExactCount,
+								Count:           int64(devicesPerPod),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := f.ClientSet.ResourceV1().ResourceClaimTemplates(f.Namespace.Name).Create(ctx, template, metav1.CreateOptions{})
+	framework.ExpectNoError(err, "Failed to create ResourceClaimTemplate")
+
+	_, err = f.ClientSet.CoreV1().ReplicationControllers(f.Namespace.Name).Create(ctx, rc, metav1.CreateOptions{})
+	framework.ExpectNoError(err, "Failed to create ReplicationController")
+
+	return func(cleanupCtx context.Context) error {
+		// Clean up RC.
+		err1 := e2erc.DeleteRCAndWaitForGC(cleanupCtx, f.ClientSet, f.Namespace.Name, id)
+		if err1 != nil && !apierrors.IsNotFound(err1) {
+			return err1
+		}
+		// Clean up Template.
+		err2 := f.ClientSet.ResourceV1().ResourceClaimTemplates(f.Namespace.Name).Delete(cleanupCtx, id, metav1.DeleteOptions{})
+		if err2 != nil && !apierrors.IsNotFound(err2) {
+			return err2
+		}
+		return nil
+	}
 }
