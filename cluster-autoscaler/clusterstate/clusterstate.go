@@ -317,6 +317,21 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 				ErrorCode:    "timeout",
 				ErrorMessage: fmt.Sprintf("Scale-up timed out for node group %v after %v", nodeGroupName, currentTime.Sub(scaleUpRequest.Time)),
 			}, gpuResource, gpuType, currentTime)
+
+			// Attempt to revert the failed scale-up by decreasing target size.
+			// This prevents cloud providers from indefinitely retrying failed provisioning attempts.
+			if scaleUpRequest.Increase > 0 {
+				klog.V(2).Infof("Reverting timed-out scale-up for node group %v by decreasing target size by %d",
+					nodeGroupName, scaleUpRequest.Increase)
+				err := scaleUpRequest.NodeGroup.DecreaseTargetSize(-scaleUpRequest.Increase)
+				if err != nil {
+					klog.Warningf("Failed to revert timed-out scale-up for node group %v: %v", nodeGroupName, err)
+					csr.logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToRevertScaleUp",
+						"Failed to decrease target size for group %s after scale-up timeout: %v",
+						scaleUpRequest.NodeGroup.Id(), err)
+				}
+			}
+
 			delete(csr.scaleUpRequests, nodeGroupName)
 		}
 	}
