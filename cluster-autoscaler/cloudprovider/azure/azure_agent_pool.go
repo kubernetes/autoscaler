@@ -543,16 +543,18 @@ func (as *AgentPool) deleteBlob(accountName, vhdContainer, vhdBlob string) error
 		return fmt.Errorf("no storage keys found for account %s", accountName)
 	}
 
+	key := findStorageKeyByName(keys, storageKeyName)
+	if key == nil {
+		return fmt.Errorf("storage key %q not found for account %s", storageKeyName, accountName)
+	}
+
 	// Build blob URL and create client with shared key credentials
 	blobURL := fmt.Sprintf("https://%s.blob.%s/%s/%s",
 		accountName,
 		as.manager.env.StorageEndpointSuffix,
 		vhdContainer,
 		vhdBlob)
-	if len(keys) > 1 {
-		klog.Warningf("Multiple storage keys found for account %s, using the first one", accountName)
-	}
-	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(keys[0].Value, ""))
+	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(key.Value, ""))
 	if err != nil {
 		return fmt.Errorf("failed to create shared key credential: %w", err)
 	}

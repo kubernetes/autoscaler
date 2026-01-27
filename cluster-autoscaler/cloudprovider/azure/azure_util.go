@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -85,6 +86,10 @@ const (
 	nodeResourcesTagName = "k8s.io_cluster-autoscaler_node-template_resources_"
 	nodeOptionsTagName   = "k8s.io_cluster-autoscaler_node-template_autoscaling-options_"
 
+	// storageKeyName is the preferred storage account key name to use.
+	// Azure storage accounts have two keys named "key1" and "key2".
+	storageKeyName = "key1"
+
 	// PowerStates reflect the operational state of a VM
 	// From https://learn.microsoft.com/en-us/java/api/com.microsoft.azure.management.compute.powerstate?view=azure-java-stable
 	vmPowerStateStarting     = "PowerState/starting"
@@ -110,6 +115,16 @@ type AzUtil struct {
 	manager *AzureManager
 }
 
+// findStorageKeyByName finds a storage account key by its name.
+func findStorageKeyByName(keys []*armstorage.AccountKey, name string) *armstorage.AccountKey {
+	for _, key := range keys {
+		if key != nil && ptr.Deref(key.KeyName, "") == name {
+			return key
+		}
+	}
+	return nil
+}
+
 // DeleteBlob deletes the blob using the storage client.
 func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error {
 	ctx, cancel := getContextWithCancel()
@@ -124,13 +139,18 @@ func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error 
 		return fmt.Errorf("no storage keys found for account %s", accountName)
 	}
 
+	key := findStorageKeyByName(keys, storageKeyName)
+	if key == nil {
+		return fmt.Errorf("storage key %q not found for account %s", storageKeyName, accountName)
+	}
+
 	// Build blob URL and create client with shared key credentials
 	blobURL := fmt.Sprintf("https://%s.blob.%s/%s/%s",
 		accountName,
 		util.manager.env.StorageEndpointSuffix,
 		vhdContainer,
 		vhdBlob)
-	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(keys[0].Value, ""))
+	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(key.Value, ""))
 	if err != nil {
 		return fmt.Errorf("failed to create shared key credential: %w", err)
 	}
