@@ -96,11 +96,8 @@ Currently, before this AEP, VPA computes recommendations only at the container l
 
 ### Goals
 
-- Add support for the pod-level resources stanza in VPA:
-  - Read the pod-level resources stanza.
-  - Calculate pod-level recommendations from container-level recommendations.
-  - Apply recommendations at the pod level through eviction or in-place updates.
-- Support all VPA modes available in VPA 1.6.0: `Auto` (deprecated), `Recreate`, `InPlaceOrRecreate` (for details on when this mode is supported, see [Kubernetes Version Compatibility](#kubernetes-version-compatibility)), `Initial`, and `Off`.
+- Add support for the pod-level resources stanza in VPA
+- Support all existing VPA modes
 - Document the new functionality in the [VPA documentation](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/docs) and on [kubernetes.io](https://kubernetes.io/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/).
 
 ### Non-Goals
