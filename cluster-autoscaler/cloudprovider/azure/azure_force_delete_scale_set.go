@@ -88,6 +88,9 @@ func shouldForceDelete(skuName string, scaleSet *ScaleSet) bool {
 
 // isOperationNotAllowed checks if `error` is an OperationNotAllowed error.
 func isOperationNotAllowed(err error) bool {
+	if err == nil {
+		return false
+	}
 	if azerr := azerrors.IsResponseError(err); azerr != nil {
 		return azerr.ErrorCode == azerrors.OperationNotAllowed
 	}
