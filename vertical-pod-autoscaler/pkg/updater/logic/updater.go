@@ -56,7 +56,6 @@ func logDeprecationWarnings(vpa *vpa_types.VerticalPodAutoscaler) {
 	if vpa.Spec.UpdatePolicy != nil &&
 		vpa.Spec.UpdatePolicy.UpdateMode != nil &&
 		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto { //nolint:staticcheck
-
 		klog.InfoS("VPA uses deprecated UpdateMode 'Auto'. This mode is deprecated and will be removed in a future API version. Please use explicit update modes like 'Recreate', 'Initial', or 'InPlaceOrRecreate'",
 			"vpa", klog.KObj(vpa), "issue", "https://github.com/kubernetes/autoscaler/issues/8424")
 	}

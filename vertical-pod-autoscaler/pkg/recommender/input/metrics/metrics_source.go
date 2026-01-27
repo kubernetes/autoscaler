@@ -134,13 +134,11 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 					}
 					containerMetrics[ctrName][resourceName] = val.Value
 				}
-
 			}
 			for cname, res := range containerMetrics {
 				podMets.Containers = append(podMets.Containers, v1beta1.ContainerMetrics{Name: cname, Usage: res})
 			}
 			result.Items = append(result.Items, podMets)
-
 		}
 	}
 	return &result, nil

@@ -18,6 +18,7 @@ package model
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -249,7 +250,7 @@ func (cluster *clusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 		return NewKeyError(sample.Container)
 	}
 	if !containerState.AddSample(&sample.ContainerUsageSample) {
-		return fmt.Errorf("sample discarded (invalid or out of order)")
+		return errors.New("sample discarded (invalid or out of order)")
 	}
 	return nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package api
 
 import (
+	"errors"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -59,10 +60,10 @@ func (c *cappingRecommendationProcessor) Apply(
 	// TODO: Annotate if request enforced by maintaining proportion with limit and allowed limit range is in conflict with policy.
 
 	if vpa == nil {
-		return nil, nil, fmt.Errorf("cannot process nil vpa")
+		return nil, nil, errors.New("cannot process nil vpa")
 	}
 	if pod == nil {
-		return nil, nil, fmt.Errorf("cannot process nil pod")
+		return nil, nil, errors.New("cannot process nil pod")
 	}
 
 	policy := vpa.Spec.ResourcePolicy

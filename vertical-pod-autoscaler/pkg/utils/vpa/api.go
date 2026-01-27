@@ -169,7 +169,6 @@ func Stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
 func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
-
 	parentController, err := FindParentControllerForPod(ctx, pod, ctrlFetcher)
 	if err != nil {
 		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))

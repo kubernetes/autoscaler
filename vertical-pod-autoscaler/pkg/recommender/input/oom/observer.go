@@ -151,7 +151,6 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 		if containerStatus.RestartCount > 0 &&
 			containerStatus.LastTerminationState.Terminated != nil &&
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
-
 			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
 			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
 				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)

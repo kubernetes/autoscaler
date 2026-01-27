@@ -133,7 +133,6 @@ func calculateRequestedResources(pod *v1.Pod, container v1.Container, isInitCont
 		model.ResourceCPU:    model.ResourceAmount(cpuMillicores),
 		model.ResourceMemory: model.ResourceAmount(memoryBytes),
 	}
-
 }
 
 func podID(pod *v1.Pod) model.PodID {

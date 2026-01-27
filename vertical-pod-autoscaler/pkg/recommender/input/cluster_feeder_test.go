@@ -18,6 +18,7 @@ package input
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -122,7 +123,6 @@ func (cs *fakeClusterState) StateMapSize() int {
 }
 
 func TestLoadVPAs(t *testing.T) {
-
 	type testCase struct {
 		name                                string
 		selector                            labels.Selector
@@ -142,7 +142,7 @@ func TestLoadVPAs(t *testing.T) {
 		{
 			name:                      "no selector",
 			selector:                  nil,
-			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
+			fetchSelectorError:        errors.New("targetRef not defined"),
 			expectedSelector:          labels.Nothing(),
 			expectedConfigUnsupported: &unsupportedConditionTextFromFetcher,
 			expectedConfigDeprecated:  nil,
@@ -234,7 +234,7 @@ func TestLoadVPAs(t *testing.T) {
 			},
 			expectedConfigUnsupported:           &unsupportedConditionMudaMudaMuda,
 			expectedVpaFetch:                    true,
-			findTopMostWellKnownOrScalableError: fmt.Errorf("muda muda muda"),
+			findTopMostWellKnownOrScalableError: errors.New("muda muda muda"),
 		},
 		{
 			name:               "top-level target ref",
@@ -331,7 +331,6 @@ func TestLoadVPAs(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -398,7 +397,6 @@ func TestLoadVPAs(t *testing.T) {
 			} else {
 				assert.NotContains(t, storedVpa.Conditions, vpa_types.ConfigUnsupported)
 			}
-
 		})
 	}
 }
@@ -484,7 +482,6 @@ func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].Containers), 2)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
-
 }
 
 func TestClusterStateFeeder_LoadPods_MemorySaverMode(t *testing.T) {
@@ -794,7 +791,6 @@ func TestFilterVPAs(t *testing.T) {
 }
 
 func TestFilterVPAsIgnoreNamespaces(t *testing.T) {
-
 	vpa1 := &vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "namespace1",

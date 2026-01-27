@@ -250,7 +250,6 @@ func TestEvictEmitEvent(t *testing.T) {
 
 			if p.canEvict {
 				mockRecorder.AssertNumberOfCalls(t, "Event", 2)
-
 			} else {
 				mockRecorder.AssertNumberOfCalls(t, "Event", 0)
 			}

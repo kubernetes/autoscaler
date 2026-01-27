@@ -17,6 +17,7 @@ limitations under the License.
 package restriction
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -122,7 +123,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		rc, ok := rcObj.(*apiv1.ReplicationController)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse Replication Controller")
+			return 0, errors.New("failed to parse Replication Controller")
 		}
 		if rc.Spec.Replicas == nil || *rc.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("replication controller %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -138,7 +139,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		rs, ok := rsObj.(*appsv1.ReplicaSet)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse Replicaset")
+			return 0, errors.New("failed to parse Replicaset")
 		}
 		if rs.Spec.Replicas == nil || *rs.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("replica set %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -154,7 +155,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		ss, ok := ssObj.(*appsv1.StatefulSet)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse StatefulSet")
+			return 0, errors.New("failed to parse StatefulSet")
 		}
 		if ss.Spec.Replicas == nil || *ss.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("stateful set %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -170,7 +171,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		ds, ok := dsObj.(*appsv1.DaemonSet)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse DaemonSet")
+			return 0, errors.New("failed to parse DaemonSet")
 		}
 		if ds.Status.NumberReady == 0 {
 			return 0, fmt.Errorf("daemon set %s/%s has no number ready pods", creator.Namespace, creator.Name)
@@ -242,7 +243,6 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		}
 		singleGroup.running = len(replicas) - singleGroup.pending
 		creatorToSingleGroupStatsMap[creator] = singleGroup
-
 	}
 	return creatorToSingleGroupStatsMap, podToReplicaCreatorMap, nil
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/version"
 	"k8s.io/client-go/tools/record"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	baseclocktest "k8s.io/utils/clock/testing"
@@ -205,6 +206,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 }
 
 func TestInPlaceDisabledFeatureGate(t *testing.T) {
+	featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, false)
 
 	replicas := int32(5)

@@ -30,6 +30,7 @@ var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.Versioned
 	InPlaceOrRecreate: {
 		{Version: version.MustParse("1.4"), Default: false, PreRelease: featuregate.Alpha},
 		{Version: version.MustParse("1.5"), Default: true, PreRelease: featuregate.Beta},
+		{Version: version.MustParse("1.6"), Default: true, PreRelease: featuregate.GA, LockToDefault: true},
 	},
 	PerVPAConfig: {
 		{Version: version.MustParse("1.5"), Default: false, PreRelease: featuregate.Alpha},
