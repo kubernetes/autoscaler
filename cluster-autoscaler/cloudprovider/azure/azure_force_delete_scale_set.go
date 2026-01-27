@@ -24,6 +24,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 )
 
 // When Azure Dedicated Host is enabled or using isolated vm skus, force deleting a VMSS fails with the following error:
@@ -69,16 +70,22 @@ func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *armc
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	forceDelete := shouldForceDelete(skuName, scaleSet)
 
-	_, err := scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
 		ForceDeletion: &forceDelete,
 	})
 	if forceDelete && isOperationNotAllowed(err) {
 		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIDs, scaleSet.Name)
-		forceDel := false
-		_, err = scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
-			ForceDeletion: &forceDel,
+		poller, err = scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+			ForceDeletion: ptr.To(false),
 		})
 	}
+	if err != nil {
+		return err
+	}
+	if poller == nil {
+		return nil
+	}
+	_, err = poller.PollUntilDone(ctx, nil)
 	return err
 }
 
