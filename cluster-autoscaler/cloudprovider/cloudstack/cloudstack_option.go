@@ -97,6 +97,7 @@ func createConfig(opts ...option) (*managerConfig, error) {
 			APIKey:    config.Global.APIKey,
 			SecretKey: config.Global.SecretKey,
 			Endpoint:  config.Global.APIURL,
+			ProjectID: config.Global.ProjectID,
 		}
 	}
 
