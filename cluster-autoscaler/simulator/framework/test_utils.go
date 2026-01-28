@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/client-go/informers"
@@ -56,7 +57,7 @@ func NewTestFrameworkHandle() (*Handle, error) {
 	if err != nil {
 		return nil, err
 	}
-	fwHandle, err := NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true, true)
+	fwHandle, err := NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true, true)
 	if err != nil {
 		return nil, err
 	}
