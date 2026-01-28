@@ -134,7 +134,7 @@ func (m *PodsInPlaceRestrictionMock) InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_type
 }
 
 // CanInPlaceUpdate is a mock implementation of PodsInPlaceRestriction.CanInPlaceUpdate
-func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision {
+func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
 	args := m.Called(pod)
 	return args.Get(0).(utils.InPlaceDecision)
 }
