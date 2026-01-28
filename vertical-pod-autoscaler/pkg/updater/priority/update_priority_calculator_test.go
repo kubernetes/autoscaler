@@ -53,10 +53,10 @@ func TestSortPriority(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(vpa, nil, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
-	calculator.AddPod(pod2, timestampNow)
-	calculator.AddPod(pod3, timestampNow)
-	calculator.AddPod(pod4, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod2, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod3, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod4, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{pod3, pod1, pod4, pod2}, result, "Wrong priority order")
@@ -77,9 +77,9 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(vpa, nil, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
-	calculator.AddPod(pod2, timestampNow)
-	calculator.AddPod(pod3, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod2, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod3, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 
 	// Expect the following order:
 	// 1. pod1 - wants to grow by 1 unit.
@@ -100,7 +100,7 @@ func TestUpdateNotRequired(t *testing.T) {
 		priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
@@ -122,7 +122,7 @@ func TestUseProcessor(t *testing.T) {
 		vpa, nil, recommendationProcessor, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
@@ -157,7 +157,7 @@ func TestUpdateLonglivedPods(t *testing.T) {
 	// Pretend that the test pods started 13 hours ago.
 	timestampNow := pods[0].Status.StartTime.Add(time.Hour * 13)
 	for i := range 3 {
-		calculator.AddPod(pods[i], timestampNow)
+		calculator.AddPod(pods[i], timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 	}
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{pods[1], pods[2]}, result, "Exactly POD2 and POD3 should be updated")
@@ -191,7 +191,7 @@ func TestUpdateShortlivedPods(t *testing.T) {
 	// Pretend that the test pods started 11 hours ago.
 	timestampNow := pods[0].Status.StartTime.Add(time.Hour * 11)
 	for i := range 3 {
-		calculator.AddPod(pods[i], timestampNow)
+		calculator.AddPod(pods[i], timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 	}
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{pods[2]}, result, "Only POD3 should be updated")
@@ -228,7 +228,7 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-	calculator.AddPod(pod, timestampNow)
+	calculator.AddPod(pod, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{pod}, result, "Pod should be updated")
 }
@@ -264,7 +264,7 @@ func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		vpa, &UpdateConfig{MinChangePriority: 0.1}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-	calculator.AddPod(pod, timestampNow)
+	calculator.AddPod(pod, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
 }
@@ -299,7 +299,7 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-	calculator.AddPod(pod, timestampNow)
+	calculator.AddPod(pod, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
 }
@@ -360,7 +360,7 @@ func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 			calculator := NewUpdatePriorityCalculator(
 				vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-			calculator.AddPod(pod, timestampNow)
+			calculator.AddPod(pod, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 			isUpdate := len(result) != 0
 			assert.Equal(t, tc.want, isUpdate)
@@ -450,7 +450,7 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 			calculator := NewUpdatePriorityCalculator(
 				vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-			calculator.AddPod(pod, timestampNow)
+			calculator.AddPod(pod, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 			isUpdate := len(result) != 0
 			assert.Equal(t, tc.want, isUpdate)
@@ -490,10 +490,10 @@ func TestAdmission(t *testing.T) {
 		&test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
-	calculator.AddPod(pod2, timestampNow)
-	calculator.AddPod(pod3, timestampNow)
-	calculator.AddPod(pod4, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod2, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod3, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod4, timestampNow, make(map[string]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(&pod1Admission{})
 	assert.Exactly(t, []*apiv1.Pod{pod1}, result, "Wrong priority order")
