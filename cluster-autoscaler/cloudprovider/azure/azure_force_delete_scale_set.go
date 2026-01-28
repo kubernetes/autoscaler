@@ -20,11 +20,12 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/azure"
+	azerrors "github.com/Azure/azure-sdk-for-go-extensions/pkg/errors"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 
 	"k8s.io/klog/v2"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+	"k8s.io/utils/ptr"
 )
 
 // When Azure Dedicated Host is enabled or using isolated vm skus, force deleting a VMSS fails with the following error:
@@ -62,25 +63,70 @@ var isolatedVMSizes = map[string]bool{
 	strings.ToLower("Standard_M128ms"):      true,
 }
 
-func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) (*azure.Future, *retry.Error) {
+func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) error {
 	scaleSet.instanceMutex.Lock()
 	defer scaleSet.instanceMutex.Unlock()
 
 	skuName := scaleSet.getSKU()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	forceDelete := shouldForceDelete(skuName, scaleSet)
-	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, forceDelete)
-	if forceDelete && isOperationNotAllowed(rerr) {
-		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIds, scaleSet.Name)
-		return scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, false)
+
+	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+		ForceDeletion: &forceDelete,
+	})
+	if forceDelete && isOperationNotAllowed(err) {
+		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIDs, scaleSet.Name)
+		poller, err = scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+			ForceDeletion: ptr.To(false),
+		})
 	}
-	return future, rerr
+	if err != nil {
+		return err
+	}
+	if poller == nil {
+		return nil
+	}
+
+	// Run PollUntilDone asynchronously to match SDK v1 behavior
+	go scaleSet.waitForDeleteInstances(poller, requiredIds)
+	return nil
+}
+
+// waitForDeleteInstances waits for the outcome of VMSS instance deletion initiated via BeginDeleteInstances.
+func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
+	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
+	defer cancel()
+
+	klog.V(3).Infof("Calling PollUntilDone for DeleteInstances(%v) for %s", requiredIds.InstanceIDs, scaleSet.Name)
+	_, err := poller.PollUntilDone(ctx, nil)
+	if err == nil {
+		klog.V(3).Infof("PollUntilDone for DeleteInstances(%v) for %s success", requiredIds.InstanceIDs, scaleSet.Name)
+		if scaleSet.manager.config.StrictCacheUpdates {
+			if err := scaleSet.manager.forceRefresh(); err != nil {
+				klog.Errorf("forceRefresh failed with error: %v", err)
+			}
+			scaleSet.invalidateInstanceCache()
+		}
+		return
+	}
+	if !scaleSet.manager.config.StrictCacheUpdates {
+		// On failure, invalidate the instanceCache - cannot have instances in deletingState
+		scaleSet.invalidateInstanceCache()
+	}
+	klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
 }
 
 func shouldForceDelete(skuName string, scaleSet *ScaleSet) bool {
 	return scaleSet.enableForceDelete && !isolatedVMSizes[strings.ToLower(skuName)] && !scaleSet.dedicatedHost
 }
 
-func isOperationNotAllowed(rerr *retry.Error) bool {
-	return rerr != nil && rerr.ServiceErrorCode() == retry.OperationNotAllowed
+// isOperationNotAllowed checks if `error` is an OperationNotAllowed error.
+func isOperationNotAllowed(err error) bool {
+	if err == nil {
+		return false
+	}
+	if azerr := azerrors.IsResponseError(err); azerr != nil {
+		return azerr.ErrorCode == azerrors.OperationNotAllowed
+	}
+	return strings.Contains(err.Error(), azerrors.OperationNotAllowed)
 }
