@@ -302,7 +302,7 @@ func TestGetVMsFromCache(t *testing.T) {
 			name: "should skip deleting VMs",
 			setupVMList: func() []*armcompute.VirtualMachine {
 				vmList := newTestVMsPoolVMList(3)
-				vmList[0].Properties.ProvisioningState = ptr.To("Deleting")
+				vmList[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
 				return vmList
 			},
 			agentPoolName:   vmsAgentPoolName,
@@ -313,7 +313,7 @@ func TestGetVMsFromCache(t *testing.T) {
 			name: "should not skip deleting VMs when only skipFailed is set",
 			setupVMList: func() []*armcompute.VirtualMachine {
 				vmList := newTestVMsPoolVMList(3)
-				vmList[0].Properties.ProvisioningState = ptr.To("Deleting")
+				vmList[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
 				return vmList
 			},
 			agentPoolName:   vmsAgentPoolName,

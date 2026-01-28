@@ -45,12 +45,12 @@ var (
 )
 
 const (
-	provisioningStateCreating  string = "Creating"
-	provisioningStateDeleting  string = "Deleting"
-	provisioningStateFailed    string = "Failed"
-	provisioningStateMigrating string = "Migrating"
-	provisioningStateSucceeded string = "Succeeded"
-	provisioningStateUpdating  string = "Updating"
+	VMProvisioningStateCreating string = "Creating"
+	VMProvisioningStateDeleting string = "Deleting"
+	VMProvisioningStateFailed   string = "Failed"
+	provisioningStateMigrating  string = "Migrating"
+	provisioningStateSucceeded  string = "Succeeded"
+	provisioningStateUpdating   string = "Updating"
 )
 
 // ScaleSet implements NodeGroup interface.
@@ -778,11 +778,11 @@ func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisi
 
 	status := &cloudprovider.InstanceStatus{}
 	switch *provisioningState {
-	case provisioningStateDeleting:
+	case VMProvisioningStateDeleting:
 		status.State = cloudprovider.InstanceDeleting
-	case provisioningStateCreating:
+	case VMProvisioningStateCreating:
 		status.State = cloudprovider.InstanceCreating
-	case provisioningStateFailed:
+	case VMProvisioningStateFailed:
 		status.State = cloudprovider.InstanceRunning
 
 		if enableFastDeleteOnFailedProvisioning {

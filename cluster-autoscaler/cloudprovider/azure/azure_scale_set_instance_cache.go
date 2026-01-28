@@ -228,11 +228,11 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 
 	status := &cloudprovider.InstanceStatus{}
 	switch *vm.Properties.ProvisioningState {
-	case "Deleting":
+	case VMProvisioningStateDeleting:
 		status.State = cloudprovider.InstanceDeleting
-	case "Creating":
+	case VMProvisioningStateCreating:
 		status.State = cloudprovider.InstanceCreating
-	case "Failed":
+	case VMProvisioningStateFailed:
 		status.State = cloudprovider.InstanceRunning
 
 		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", ptr.Deref(vm.ID, ""), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))

@@ -405,7 +405,7 @@ func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 			expectedVMSSVMs := newTestVMSSVMList(3)
 			// The failed state is important line of code here
 			expectedVMs := newTestVMList(3)
-			expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To(provisioningStateFailed)
+			expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To(VMProvisioningStateFailed)
 			if !testCase.isMissingInstanceView {
 				expectedVMSSVMs[2].Properties.InstanceView = &armcompute.VirtualMachineScaleSetVMInstanceView{Statuses: testCase.statuses}
 			}
@@ -493,7 +493,7 @@ func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
 			expectedVMSSVMs := newTestVMSSVMList(3)
 			// The failed state is important line of code here
 			expectedVMs := newTestVMList(3)
-			expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To(provisioningStateFailed)
+			expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To(VMProvisioningStateFailed)
 			if !testCase.isMissingInstanceView {
 				expectedVMSSVMs[2].Properties.InstanceView = &armcompute.VirtualMachineScaleSetVMInstanceView{Statuses: testCase.statuses}
 			}
@@ -747,12 +747,12 @@ func TestScaleSetDeleteNodes(t *testing.T) {
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 
 		if orchMode == armcompute.OrchestrationModeUniform {
-			expectedVMSSVMs[0].Properties.ProvisioningState = ptr.To(provisioningStateDeleting)
-			expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To(provisioningStateDeleting)
+			expectedVMSSVMs[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+			expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg").Return(expectedVMSSVMs, nil).AnyTimes()
 		} else {
-			expectedVMs[0].Properties.ProvisioningState = ptr.To(provisioningStateDeleting)
-			expectedVMs[2].Properties.ProvisioningState = ptr.To(provisioningStateDeleting)
+			expectedVMs[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+			expectedVMs[2].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
 			mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
 		}
 
@@ -990,8 +990,8 @@ func TestScaleSetDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 		},
 	}
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
-	expectedVMSSVMs[0].Properties.ProvisioningState = ptr.To("Deleting")
-	expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To("Deleting")
+	expectedVMSSVMs[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+	expectedVMSSVMs[2].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg").Return(expectedVMSSVMs, nil).AnyTimes()
 	err = manager.forceRefresh()
 	assert.NoError(t, err)
@@ -1033,7 +1033,7 @@ func TestScaleSetDeleteNoConflictRequest(t *testing.T) {
 			InstanceID: ptr.To("0"),
 			Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 				VMID:              ptr.To("123E4567-E89B-12D3-A456-426655440000"),
-				ProvisioningState: ptr.To("Deleting"),
+				ProvisioningState: ptr.To(VMProvisioningStateDeleting),
 			},
 		},
 	}
