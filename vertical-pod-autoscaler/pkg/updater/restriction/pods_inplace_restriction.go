@@ -83,6 +83,7 @@ type PodsInPlaceRestrictionImpl struct {
 
 // CanInPlaceUpdate checks if pod can be safely updated
 func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
+	// Feature gate checks based on update mode
 	switch updateMode {
 	case vpa_types.UpdateModeInPlaceOrRecreate:
 		if !features.Enabled(features.InPlaceOrRecreate) {
@@ -104,59 +105,73 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 	}
 
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
-	if present {
-		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
-		if pod.Status.Phase == apiv1.PodPending {
-			return utils.InPlaceDeferred
-		}
-		if present {
-			if isInPlaceUpdating(pod) {
-				resizeStatus := getResizeStatus(pod)
-				// For InPlace mode: wait for Deferred, retry for Infeasible (no backoff for alpha)
-				if updateMode == vpa_types.UpdateModeInPlace {
-					switch resizeStatus {
-					case utils.ResizeStatusInfeasible:
-						// Infeasible means node can't accommodate the resize.
-						// For alpha, retry with no backoff.
-						klog.V(4).InfoS("In-place update infeasible, will retry", "pod", klog.KObj(pod))
-						return utils.InPlaceInfeasible
-					case utils.ResizeStatusDeferred:
-						// Deferred means kubelet is waiting to apply the resize.
-						// Do nothing, wait for kubelet to proceed.
-						klog.V(4).InfoS("In-place update deferred by kubelet, waiting", "pod", klog.KObj(pod))
-						return utils.InPlaceDeferred
-					case utils.ResizeStatusInProgress:
-						// Resize is actively being applied, wait for completion.
-						klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
-						return utils.InPlaceDeferred
-					case utils.ResizeStatusError:
-						// Error during resize, retry
-						klog.V(4).InfoS("In-place update error, will retry", "pod", klog.KObj(pod))
-						return utils.InPlaceInfeasible
-					default:
-						klog.V(4).InfoS("In-place update status unknown, waiting", "pod", klog.KObj(pod), "status", resizeStatus)
-						return utils.InPlaceDeferred
-					}
-				}
-				// For InPlaceOrRecreate mode, check timeout
-				canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
-				if canEvict {
-					return utils.InPlaceEvict
-				}
+	if !present {
+		klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+		return utils.InPlaceDeferred
+	}
+
+	if pod.Status.Phase == apiv1.PodPending {
+		return utils.InPlaceDeferred
+	}
+
+	singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
+	if !present {
+		klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+		return utils.InPlaceDeferred
+	}
+
+	resizeStatus := getResizeStatus(pod)
+
+	if isInPlaceUpdating(pod) {
+		// For InPlace mode: wait for all non-terminal statuses, never evict.
+		// Infeasible attempts are tracked and only retried when recommendation changes.
+		if updateMode == vpa_types.UpdateModeInPlace {
+			switch resizeStatus {
+			case utils.ResizeStatusInfeasible:
+				// Infeasible means node can't accommodate the resize.
+				// Store spec.resources and wait for recommendation to change before retrying.
+				klog.V(4).InfoS("In-place update infeasible, will retry", "pod", klog.KObj(pod))
+				return utils.InPlaceInfeasible
+			case utils.ResizeStatusDeferred:
+				// Deferred means kubelet is waiting to apply the resize.
+				// Do nothing, wait for kubelet to proceed.
+				klog.V(4).InfoS("In-place update deferred by kubelet, waiting", "pod", klog.KObj(pod))
+				return utils.InPlaceDeferred
+			case utils.ResizeStatusInProgress:
+				// Resize is actively being applied, wait for completion.
+				klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
+				return utils.InPlaceDeferred
+			case utils.ResizeStatusError:
+				// Error during resize, retry
+				klog.V(4).InfoS("In-place update error, will retry", "pod", klog.KObj(pod))
+				return utils.InPlaceInfeasible
+			default:
+				klog.V(4).InfoS("In-place update status unknown, waiting", "pod", klog.KObj(pod), "status", resizeStatus)
 				return utils.InPlaceDeferred
 			}
-			if ip.inPlaceSkipDisruptionBudget {
-				if utils.IsNonDisruptiveResize(pod) {
-					klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
-					return utils.InPlaceApproved
-				}
-				klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
-			}
-			if singleGroupStats.isPodDisruptable() {
-				return utils.InPlaceApproved
-			}
 		}
+
+		// For InPlaceOrRecreate mode, check timeout
+		canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
+		if canEvict {
+			return utils.InPlaceEvict
+		}
+		return utils.InPlaceDeferred
 	}
+
+	if ip.inPlaceSkipDisruptionBudget && utils.IsNonDisruptiveResize(pod) {
+		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
+		return utils.InPlaceApproved
+	}
+
+	if ip.inPlaceSkipDisruptionBudget {
+		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
+	}
+
+	if singleGroupStats.isPodDisruptable() {
+		return utils.InPlaceApproved
+	}
+
 	klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
 	return utils.InPlaceDeferred
 }

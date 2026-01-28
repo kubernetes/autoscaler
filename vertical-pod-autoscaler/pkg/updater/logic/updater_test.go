@@ -589,8 +589,8 @@ func TestInfeasibleAttempts(t *testing.T) {
 		defer u.infeasibleMu.RUnlock()
 
 		assert.Len(t, u.infeasibleAttempts, 2)
-		assert.Contains(t, u.infeasibleAttempts, getPodKey(pod1))
-		assert.Contains(t, u.infeasibleAttempts, getPodKey(pod2))
+		assert.Contains(t, u.infeasibleAttempts, getPodID(pod1))
+		assert.Contains(t, u.infeasibleAttempts, getPodID(pod2))
 	})
 
 	t.Run("cleanupStaleInfeasibleAttempts removes old pods", func(t *testing.T) {
@@ -604,8 +604,8 @@ func TestInfeasibleAttempts(t *testing.T) {
 
 		// pod1 should stay, pod2 should be deleted
 		assert.Len(t, u.infeasibleAttempts, 1)
-		assert.Contains(t, u.infeasibleAttempts, getPodKey(pod1))
-		assert.NotContains(t, u.infeasibleAttempts, getPodKey(pod2))
+		assert.Contains(t, u.infeasibleAttempts, getPodID(pod1))
+		assert.NotContains(t, u.infeasibleAttempts, getPodID(pod2))
 	})
 
 	t.Run("cleanupStaleInfeasibleAttempts clears all if none live", func(t *testing.T) {

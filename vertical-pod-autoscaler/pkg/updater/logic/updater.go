@@ -25,6 +25,7 @@ import (
 
 	"golang.org/x/time/rate"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -297,6 +298,22 @@ func (u *updater) RunOnce(ctx context.Context) {
 			withInPlaceUpdatable = true
 			decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
 
+			// For InPlace mode with Infeasible status, check if the recommendation has changed enough to warrant a retry
+			if updateMode == vpa_types.UpdateModeInPlace && decision == utils.InPlaceInfeasible {
+				processedRecommendation, _, err := u.recommendationProcessor.Apply(vpa, pod)
+				if err != nil {
+					klog.V(2).ErrorS(err, "Cannot process recommendation for pod", "pod", klog.KObj(pod))
+					continue
+				}
+
+				// Check if recommendation differs enough from last attempt or current state
+				shouldProceed := u.compareFeasibleAttempt(pod, processedRecommendation)
+				if !shouldProceed {
+					klog.V(2).InfoS("Pod is infeasible but recommendation hasn't changed enough (less than 10%), skipping", "pod", klog.KObj(pod))
+					continue
+				}
+			}
+
 			switch decision {
 			case utils.InPlaceDeferred:
 				// Pod passed priority calculator, meaning recommendations differ from spec.
@@ -309,9 +326,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.V(2).InfoS("In-place update failed, falling back to eviction", "pod", klog.KObj(pod))
 				continue
 			case utils.InPlaceInfeasible:
-				// Status is Infeasible, but recommendation has changed
+				// Status is Infeasible, but recommendation has changed enough (>10%)
 				// Retry in-place update (no backoff for alpha)
-				klog.V(2).InfoS("In-place update infeasible, retrying", "pod", klog.KObj(pod))
+				klog.V(2).InfoS("In-place update infeasible, retrying with new recommendation", "pod", klog.KObj(pod))
 				// Fall through to attempt in-place update
 			case utils.InPlaceApproved:
 				klog.V(2).InfoS("In-place update approved", "pod", klog.KObj(pod))
@@ -330,10 +347,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
 				// For InPlace mode, don't evict pods even if we get an error
 				if updateMode == vpa_types.UpdateModeInPlace {
+					// TODO: check for an admission plugin error because of OS and node capacity checks
 					// Check if it's an infeasibility error
 					// infeasible patches are rejected at API server level (soon),
 					// so spec.resources remains unchanged. We must track the attempted
 					// recommendation to prevent infinite retry loops.
+					// This work is still in progress (https://github.com/kubernetes/kubernetes/pull/136043)
+					// Currently isInfeasibleError return false
 					if isInfeasibleError(err) {
 						u.recordInfeasibleAttempt(pod, vpa)
 					}
@@ -391,15 +411,15 @@ func (u *updater) RunOnce(ctx context.Context) {
 func (u *updater) cleanupStaleInfeasibleAttempts(livePods []*apiv1.Pod) {
 	livePodKeys := set.New[string]()
 	for _, pod := range livePods {
-		livePodKeys.Insert(getPodKey(pod))
+		livePodKeys.Insert(getPodID(pod))
 	}
 
 	u.infeasibleMu.Lock()
 	defer u.infeasibleMu.Unlock()
 
-	for podKey := range u.infeasibleAttempts {
-		if !livePodKeys.Has(podKey) {
-			delete(u.infeasibleAttempts, podKey)
+	for podID := range u.infeasibleAttempts {
+		if !livePodKeys.Has(podID) {
+			delete(u.infeasibleAttempts, podID)
 		}
 	}
 }
@@ -412,19 +432,128 @@ func (u *updater) recordInfeasibleAttempt(pod *apiv1.Pod, vpa *vpa_types.Vertica
 		return
 	}
 
-	podKey := getPodKey(pod)
+	podID := getPodID(pod)
 	u.infeasibleMu.Lock()
-	u.infeasibleAttempts[podKey] = processedRecommendation
+	u.infeasibleAttempts[podID] = processedRecommendation
 	u.infeasibleMu.Unlock()
 
 	klog.V(2).InfoS("Recorded infeasible attempt, will retry when recommendation changes", "pod", klog.KObj(pod))
 }
 
+// compareFeasibleAttempt checks if the current recommendation differs by more than 10% from either:
+// 1. The last stored infeasible attempt (if one exists), or
+// 2. The pod's current resource requests (if no stored attempt exists)
+// Returns true if the difference exceeds the 10% threshold, indicating the update should proceed.
+// TODO: do we want to have this percentage configurable?
+func (u *updater) compareFeasibleAttempt(pod *apiv1.Pod, recommendations *vpa_types.RecommendedPodResources) bool {
+	podID := getPodID(pod)
+	u.infeasibleMu.RLock()
+	lastAttempt, exists := u.infeasibleAttempts[podID]
+	u.infeasibleMu.RUnlock()
+
+	// Case 1: Compare against stored infeasible attempt if one exists
+	if exists && lastAttempt != nil {
+		return compareRecommendations(lastAttempt, recommendations)
+	}
+
+	// Case 2: No stored infeasible attempt, compare against pod's current resources
+	return comparePodResourcesWithRecommendation(pod, recommendations)
+}
+
+// compareRecommendations checks if two recommendations differ by more than 10%
+// TODO(omerap12): should be this configurable?
+// TODO(omerap12): we can merge compareRecommendations with comparePodResourcesWithRecommendation
+func compareRecommendations(lastAttempt *vpa_types.RecommendedPodResources, newRecommendations *vpa_types.RecommendedPodResources) bool {
+	// Check if any container's resources differ by more than 10%
+	for _, rec := range newRecommendations.ContainerRecommendations {
+		var lastRec *vpa_types.RecommendedContainerResources
+		for i := range lastAttempt.ContainerRecommendations {
+			if lastAttempt.ContainerRecommendations[i].ContainerName == rec.ContainerName {
+				lastRec = &lastAttempt.ContainerRecommendations[i]
+				break
+			}
+		}
+
+		if lastRec == nil {
+			// Container not in last attempt, consider it different
+			return true
+		}
+
+		// Check each resource (CPU, memory, etc.)
+		for resourceName, newValue := range rec.Target {
+			oldValue, exists := lastRec.Target[resourceName]
+			if !exists {
+				continue
+			}
+
+			if exceedsThreshold(oldValue, newValue) {
+				return true
+			}
+		}
+	}
+
+	// All resources are within 10% of last attempt
+	return false
+}
+
+// comparePodResourcesWithRecommendation checks if pod's current resources differ from recommendation by more than 10%
+func comparePodResourcesWithRecommendation(pod *apiv1.Pod, recommendations *vpa_types.RecommendedPodResources) bool {
+	for _, rec := range recommendations.ContainerRecommendations {
+		// Find the matching container in the pod
+		var container *apiv1.Container
+		for i := range pod.Spec.Containers {
+			if pod.Spec.Containers[i].Name == rec.ContainerName {
+				container = &pod.Spec.Containers[i]
+				break
+			}
+		}
+
+		if container == nil {
+			// Container not found in pod, consider it different
+			return true
+		}
+
+		// Check each resource in the recommendation
+		for resourceName, newValue := range rec.Target {
+			currentValue, exists := container.Resources.Requests[resourceName]
+			if !exists {
+				// Resource not currently set in pod
+				return true
+			}
+
+			if exceedsThreshold(currentValue, newValue) {
+				return true
+			}
+		}
+	}
+
+	// All resources are within 10% of current pod resources
+	return false
+}
+
+// exceedsThreshold checks if the difference between two resource quantities exceeds 10%
+func exceedsThreshold(oldValue, newValue resource.Quantity) bool {
+	oldQuantity := oldValue.AsApproximateFloat64()
+	newQuantity := newValue.AsApproximateFloat64()
+
+	if oldQuantity == 0 {
+		return newQuantity != 0
+	}
+
+	// Calculate absolute difference as fraction: |new - old| / old
+	diff := (newQuantity - oldQuantity) / oldQuantity
+	if diff < 0 {
+		diff = -diff
+	}
+
+	return diff > 0.1
+}
+
 // clearInfeasibleAttempt removes a stored infeasible attempt
 func (u *updater) clearInfeasibleAttempt(pod *apiv1.Pod) {
-	podKey := getPodKey(pod)
+	podID := getPodID(pod)
 	u.infeasibleMu.Lock()
-	delete(u.infeasibleAttempts, podKey)
+	delete(u.infeasibleAttempts, podID)
 	u.infeasibleMu.Unlock()
 }
 
@@ -529,9 +658,9 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
 }
 
-// getPodKey returns a unique identifier for a pod
-func getPodKey(pod *apiv1.Pod) string {
-	return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
+// getPodID returns the pod id
+func getPodID(pod *apiv1.Pod) string {
+	return string(pod.UID)
 }
 
 // isInfeasibleError checks if an error indicates the resize is infeasible.
