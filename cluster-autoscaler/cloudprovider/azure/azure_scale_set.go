@@ -45,12 +45,15 @@ var (
 )
 
 const (
+	// VMProvisioningStateCreating indicates the VM is being created.
 	VMProvisioningStateCreating string = "Creating"
+	// VMProvisioningStateDeleting indicates the VM is being deleted.
 	VMProvisioningStateDeleting string = "Deleting"
-	VMProvisioningStateFailed   string = "Failed"
-	provisioningStateMigrating  string = "Migrating"
-	provisioningStateSucceeded  string = "Succeeded"
-	provisioningStateUpdating   string = "Updating"
+	// VMProvisioningStateFailed indicates the VM provisioning has failed.
+	VMProvisioningStateFailed  string = "Failed"
+	provisioningStateMigrating string = "Migrating"
+	provisioningStateSucceeded string = "Succeeded"
+	provisioningStateUpdating  string = "Updating"
 )
 
 // ScaleSet implements NodeGroup interface.
