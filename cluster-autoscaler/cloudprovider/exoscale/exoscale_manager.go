@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -36,6 +37,18 @@ type exoscaleClient interface {
 	ListSKSClusters(context.Context, string) ([]*egoscale.SKSCluster, error)
 	ScaleInstancePool(context.Context, string, *egoscale.InstancePool, int64) error
 	ScaleSKSNodepool(context.Context, string, *egoscale.SKSCluster, *egoscale.SKSNodepool, int64) error
+}
+
+// userAgentRoundTripper is a roundtripper which updates the user-agent header.
+// This roundtripper can be deleted with egoscale v3.
+type userAgentRoundTripper struct {
+	next http.RoundTripper
+}
+
+func (rt *userAgentRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("User-Agent", "k8s.io/cluster-auto-scaler "+egoscale.UserAgent)
+
+	return rt.next.RoundTrip(req)
 }
 
 const defaultAPIEnvironment = "api"
@@ -75,7 +88,12 @@ func newManager(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*Manager
 		apiEnvironment = defaultAPIEnvironment
 	}
 
-	client, err := egoscale.NewClient(apiKey, apiSecret)
+	client, err := egoscale.NewClient(
+		apiKey, apiSecret,
+		egoscale.ClientOptWithHTTPClient(&http.Client{
+			Transport: &userAgentRoundTripper{next: http.DefaultTransport},
+		}),
+	)
 	if err != nil {
 		return nil, err
 	}
