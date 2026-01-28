@@ -18,6 +18,7 @@ package estimator
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"slices"
@@ -106,6 +107,14 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 	podsEquivalenceGroups = e.podOrderer.Order(podsEquivalenceGroups, nodeTemplate, nodeGroup)
 
+	bestFastpathPEGindex := determineBestPEGToFastpath(podsEquivalenceGroups, nodeTemplate)
+	if bestFastpathPEGindex != -1 {
+		bestFastpathPEG := podsEquivalenceGroups[bestFastpathPEGindex]
+		pegsWithoutBestForFastpath := append(podsEquivalenceGroups[:bestFastpathPEGindex], podsEquivalenceGroups[bestFastpathPEGindex+1:]...)
+		// We'll put at the end the PEG which will benefit the most from fastpath binpacking, since it runs only on the last PEG
+		podsEquivalenceGroups = append(pegsWithoutBestForFastpath, bestFastpathPEG)
+	}
+
 	e.clusterSnapshot.Fork()
 	defer func() {
 		e.clusterSnapshot.Revert()
@@ -113,7 +122,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 	estimationState := newEstimationState()
 	newNodesAvailable := true
-	for _, podsEquivalenceGroup := range podsEquivalenceGroups {
+	for i, podsEquivalenceGroup := range podsEquivalenceGroups {
 		var err error
 		var remainingPods []*apiv1.Pod
 
@@ -124,7 +133,12 @@ func (e *BinpackingNodeEstimator) Estimate(
 		}
 
 		if newNodesAvailable {
-			newNodesAvailable, err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
+			// Since fastpath binpacking adds just one node to the snapshot, it will cause unaccurate simulations on subsequent loops, therefore we only use it on the last group
+			if i == len(podsEquivalenceGroups)-1 && shouldUseFastPath(remainingPods) {
+				newNodesAvailable, err = e.tryFastPath(estimationState, nodeTemplate, remainingPods)
+			} else {
+				newNodesAvailable, err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
+			}
 			if err != nil {
 				klog.Error(err.Error())
 				return 0, nil
@@ -246,6 +260,58 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 	return true, nil
 }
 
+func (e *BinpackingNodeEstimator) tryFastPath(
+	estimationState *estimationState,
+	nodeTemplate *framework.NodeInfo,
+	pods []*apiv1.Pod,
+) (bool, error) {
+	if len(pods) == 0 {
+		return true, nil
+	}
+	if !e.limiter.PermissionToAddNode() {
+		return false, nil
+	}
+	// Add test node to snapshot.
+	if err := e.addNewNodeToSnapshot(estimationState, nodeTemplate); err != nil {
+		return false, fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
+	}
+
+	i := 0
+	for ; i < len(pods); i++ {
+		if err := e.clusterSnapshot.SchedulePod(pods[i], estimationState.lastNodeName); err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
+			// Unexpected error.
+			return false, err
+		} else if err != nil {
+			// The pod can't be scheduled on the new node because of scheduling predicates.
+			break
+		}
+		estimationState.trackScheduledPod(pods[i], estimationState.lastNodeName)
+	}
+	podsPerNode := i
+	if podsPerNode == 0 {
+		return true, nil
+	}
+	scaleUpSize := len(pods) / podsPerNode
+	if podsPerNode*scaleUpSize < len(pods) {
+		scaleUpSize++
+	}
+
+	// We already added 1 node and scheduled on it, now the rest we can only mark without the simulation
+	for j := 1; j < scaleUpSize; j++ {
+		if !e.limiter.PermissionToAddNode() {
+			return false, nil
+		}
+		fakeNodeName := fmt.Sprintf("%s-fake-%d", estimationState.lastNodeName, j)
+		podsToSchedule := min(podsPerNode, len(pods)-i)
+		for k := range podsToSchedule {
+			estimationState.trackScheduledPod(pods[i+k], fakeNodeName)
+		}
+		i += podsToSchedule
+	}
+
+	return true, nil
+}
+
 func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState *estimationState,
 	template *framework.NodeInfo,
@@ -317,4 +383,78 @@ func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup,
 		nsCountBucket = "11+"
 	}
 	metrics.ObserveBinpackingHeterogeneity(instanceType, cpuCount, nsCountBucket, len(podsEquivalenceGroups))
+}
+
+func hasNonHostnameTopologyConstraint(pod *apiv1.Pod) bool {
+	if pod.Spec.TopologySpreadConstraints == nil {
+		return false
+	}
+	for _, constraint := range pod.Spec.TopologySpreadConstraints {
+		if constraint.TopologyKey != apiv1.LabelHostname {
+			return true
+		}
+	}
+	return false
+}
+
+func hasNonHostnamePodAntiAffinity(pod *apiv1.Pod) bool {
+	if pod.Spec.Affinity == nil || pod.Spec.Affinity.PodAntiAffinity == nil || pod.Spec.Affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution == nil {
+		return false
+	}
+	for _, affinityTerm := range pod.Spec.Affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution {
+		if affinityTerm.TopologyKey != apiv1.LabelHostname {
+			return true
+		}
+	}
+	return false
+}
+
+func shouldUseFastPath(pods []*apiv1.Pod) bool {
+	if len(pods) == 0 || pods[0] == nil {
+		return false
+	}
+
+	if hasNonHostnameTopologyConstraint(pods[0]) || hasNonHostnamePodAntiAffinity(pods[0]) {
+		return false
+	}
+
+	return true
+}
+
+// determineBestPEGToFastpath returns the index of the pod equivalence group that would benefit the most from fastpath binpacking (= largest expected number of (nodes * pods))
+// returns -1 if it wasn't possible to determine such group
+func determineBestPEGToFastpath(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) int {
+	maxNodesTimesPods := 0
+	bestPEGIndex := -1
+	for i, peg := range podsEquivalenceGroups {
+		if peg.Exemplar() == nil {
+			continue
+		}
+		numNodesByAntiAffinity := 0
+		numNodesByCpu := 0
+		numNodesByMemory := 0
+
+		if peg.Exemplar().Spec.Affinity != nil && peg.Exemplar().Spec.Affinity.PodAntiAffinity != nil {
+			for _, affinityTerm := range peg.Exemplar().Spec.Affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution {
+				if affinityTerm.TopologyKey == apiv1.LabelHostname {
+					numNodesByAntiAffinity = len(peg.Pods)
+				}
+			}
+		}
+		if peg.Exemplar().Spec.Resources != nil && peg.Exemplar().Spec.Resources.Requests != nil {
+			resourcesRequests := peg.Exemplar().Spec.Resources.Requests
+			if resourcesRequests.Cpu() != nil {
+				numNodesByCpu = int(math.Ceil(float64(len(peg.Pods)) * resourcesRequests.Cpu().AsApproximateFloat64() / nodeTemplate.Node().Status.Capacity.Cpu().AsApproximateFloat64()))
+			}
+			if resourcesRequests.Memory() != nil {
+				numNodesByMemory = int(math.Ceil(float64(len(peg.Pods)) * resourcesRequests.Memory().AsApproximateFloat64() / nodeTemplate.Node().Status.Capacity.Memory().AsApproximateFloat64()))
+			}
+		}
+		nodesTimesPods := max(numNodesByAntiAffinity, numNodesByCpu, numNodesByMemory) * len(peg.Pods)
+		if nodesTimesPods > maxNodesTimesPods && shouldUseFastPath(peg.Pods) {
+			bestPEGIndex = i
+			maxNodesTimesPods = nodesTimesPods
+		}
+	}
+	return bestPEGIndex
 }
