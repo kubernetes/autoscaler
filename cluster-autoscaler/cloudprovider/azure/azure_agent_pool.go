@@ -627,6 +627,7 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 		interfaceCtx, interfaceCancel := getContextWithCancel()
 		defer interfaceCancel()
 		rerr := as.manager.azClient.interfacesClient.Delete(interfaceCtx, as.manager.config.ResourceGroup, nicName)
+		klog.Infof("waiting for nic deletion: %s/%s", as.manager.config.ResourceGroup, nicName)
 		if rerr != nil && !isNotFoundError(rerr) {
 			return rerr
 		}
