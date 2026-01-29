@@ -110,7 +110,7 @@ func initContainerStatusFor(initContainerName string, pod *v1.Pod) *v1.Container
 	return nil
 }
 
-// Helper function to compare recommendations
+// RecommendationsEqual compare recommendations
 func RecommendationsEqual(a, b *vpa_types.RecommendedPodResources) bool {
 	if a == nil || b == nil {
 		return a == b
@@ -131,6 +131,7 @@ func RecommendationsEqual(a, b *vpa_types.RecommendedPodResources) bool {
 	return true
 }
 
+// ResourcesEqual compare resources
 func ResourcesEqual(a, b v1.ResourceList) bool {
 	if len(a) != len(b) {
 		return false
