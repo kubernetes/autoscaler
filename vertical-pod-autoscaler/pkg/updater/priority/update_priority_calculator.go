@@ -18,7 +18,6 @@ package priority
 
 import (
 	"flag"
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,12 +25,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
-	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -83,24 +82,27 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
-func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time, infeasibleAttempts map[string]*vpa_types.RecommendedPodResources) {
+func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa, pod)
 	if err != nil {
 		klog.V(2).ErrorS(err, "Cannot process recommendation for pod", "pod", klog.KObj(pod))
 		return
 	}
 
-	podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	// Check if this recommendation was already tried and failed as infeasible
-	if lastAttempt, exists := infeasibleAttempts[podKey]; exists {
-		if resourcehelpers.RecommendationsEqual(lastAttempt, processedRecommendation) {
-			klog.V(4).InfoS("Skipping pod, recommendation unchanged since last infeasible attempt",
+	// only for InPlace update mode
+	if vpa_api_util.GetUpdateMode(calc.vpa) == vpa_types.UpdateModeInPlace {
+		if lastAttempt, exists := infeasibleAttempts[pod.UID]; exists {
+			// Only retry if the new recommendation has at least one resource lower than the last attempt
+			if !hasLowerResourceRecommendation(lastAttempt, processedRecommendation) {
+				klog.V(4).InfoS("Skipping pod, recommendation not lower than last infeasible attempt",
+					"pod", klog.KObj(pod))
+				return
+			}
+			// Recommendation has lower resource, will retry
+			klog.V(4).InfoS("Recommendation changed since last infeasible attempt, will retry",
 				"pod", klog.KObj(pod))
-			return
 		}
-		// Recommendation changed, clear the infeasible record and proceed
-		klog.V(4).InfoS("Recommendation changed since last infeasible attempt, will retry",
-			"pod", klog.KObj(pod))
 	}
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
@@ -225,6 +227,42 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.Set[string]) {
 		}
 	}
 	return hasObservedContainers, vpaContainerSet
+}
+
+// hasLowerResourceRecommendation checks if the new recommendation has any resource
+// (CPU or Memory) that is lower than the last recommendation. This is used to determine
+// if a previously infeasible update attempt should be retried.
+func hasLowerResourceRecommendation(lastAttempt, newRecommendation *vpa_types.RecommendedPodResources) bool {
+	if lastAttempt == nil || newRecommendation == nil {
+		return false
+	}
+
+	// Create a map of container names to their recommendations for easier lookup
+	lastAttemptMap := make(map[string]*vpa_types.RecommendedContainerResources)
+	for i := range lastAttempt.ContainerRecommendations {
+		cr := &lastAttempt.ContainerRecommendations[i]
+		lastAttemptMap[cr.ContainerName] = cr
+	}
+
+	// Check if any resource in the new recommendation is lower than the last attempt
+	for i := range newRecommendation.ContainerRecommendations {
+		newCR := &newRecommendation.ContainerRecommendations[i]
+		lastCR, exists := lastAttemptMap[newCR.ContainerName]
+		if !exists {
+			continue
+		}
+
+		// Compare target resources
+		for resourceName, newTarget := range newCR.Target {
+			if lastTarget, exists := lastCR.Target[resourceName]; exists {
+				if newTarget.Cmp(lastTarget) < 0 {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 type prioritizedPod struct {

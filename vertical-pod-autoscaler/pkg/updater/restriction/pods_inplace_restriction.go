@@ -83,7 +83,6 @@ type PodsInPlaceRestrictionImpl struct {
 
 // CanInPlaceUpdate checks if pod can be safely updated
 func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
-	// Feature gate checks based on update mode
 	switch updateMode {
 	case vpa_types.UpdateModeInPlaceOrRecreate:
 		if !features.Enabled(features.InPlaceOrRecreate) {
@@ -130,7 +129,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 			case utils.ResizeStatusInfeasible:
 				// Infeasible means node can't accommodate the resize.
 				// Store spec.resources and wait for recommendation to change before retrying.
-				klog.V(4).InfoS("In-place update infeasible, will retry", "pod", klog.KObj(pod))
+				klog.V(4).InfoS("In-place update infeasible", "pod", klog.KObj(pod))
 				return utils.InPlaceInfeasible
 			case utils.ResizeStatusDeferred:
 				// Deferred means kubelet is waiting to apply the resize.

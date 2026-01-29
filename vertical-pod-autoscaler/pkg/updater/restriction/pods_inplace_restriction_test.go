@@ -611,11 +611,11 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
-	basicVpa := getBasicVpa()
-	updateMode := vpa_api_util.GetUpdateMode(basicVpa)
+	inPlaceOrRecreateVPA := getIPORVpa()
+	updateMode := vpa_api_util.GetUpdateMode(inPlaceOrRecreateVPA)
 	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
 	assert.NoError(t, err)
-	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceOrRecreateVPA)
 	assert.NoError(t, err)
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
@@ -624,11 +624,11 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	}
 
 	for _, pod := range pods[:1] {
-		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
+		err := inplace.InPlaceUpdate(pod, inPlaceOrRecreateVPA, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should in-place update with no error")
 	}
 	for _, pod := range pods[1:] {
-		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
+		err := inplace.InPlaceUpdate(pod, inPlaceOrRecreateVPA, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -658,16 +658,16 @@ func TestInPlaceUpdate_EventEmission(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
-	basicVpa := getBasicVpa()
+	inPlaceOrRecreateVPA := getIPORVpa()
 	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
 	assert.NoError(t, err)
-	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceOrRecreateVPA)
 	assert.NoError(t, err)
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	eventRecorder := record.NewFakeRecorder(10)
 
-	err = inplace.InPlaceUpdate(pods[0], basicVpa, eventRecorder)
+	err = inplace.InPlaceUpdate(pods[0], inPlaceOrRecreateVPA, eventRecorder)
 	assert.NoError(t, err)
 
 	select {
