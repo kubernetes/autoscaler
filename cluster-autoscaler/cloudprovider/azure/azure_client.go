@@ -31,7 +31,6 @@ import (
 	azurecore_policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 	armcomputev7 "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -323,28 +322,13 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		}
 	}
 
-	// Create raw SDK VMSS client for DeleteInstances operation (not available in azclient wrapper)
-	rawVMSSClient, err := armcompute.NewVirtualMachineScaleSetsClient(subscriptionID, cred, &policy.ClientOptions{
-		ClientOptions: azurecore_policy.ClientOptions{
-			Cloud: cloud.Configuration{
-				Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
-					cloud.ResourceManager: {
-						Endpoint: armConfig.ResourceManagerEndpoint,
-						Audience: env.TokenAudience,
-					},
-				},
-			},
-			Telemetry: azextensions.DefaultTelemetryOpts(getUserAgentExtension()),
-			Transport: azextensions.DefaultHTTPClient(),
-		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to create VMSS client for delete: %w", err)
-	}
+	// Get VMSS client from ClientFactory - the azclient's Client embeds the SDK client
+	// which provides access to BeginDeleteInstances
+	vmssClient := clientFactory.GetVirtualMachineScaleSetClient()
 
 	return &azClient{
 		clientFactory:                   clientFactory,
-		virtualMachineScaleSetsClient:   clientFactory.GetVirtualMachineScaleSetClient(),
+		virtualMachineScaleSetsClient:   vmssClient,
 		virtualMachineScaleSetVMsClient: clientFactory.GetVirtualMachineScaleSetVMClient(),
 		virtualMachinesClient:           clientFactory.GetVirtualMachineClient(),
 		deploymentClient:                clientFactory.GetDeploymentClient(),
@@ -353,6 +337,6 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		storageAccountsClient:           clientFactory.GetAccountClient(),
 		skuClient:                       skuClient,
 		agentPoolClient:                 agentPoolClient,
-		vmssClientForDelete:             NewVMSSDeleteClient(rawVMSSClient),
+		vmssClientForDelete:             NewVMSSDeleteClient(vmssClient),
 	}, nil
 }

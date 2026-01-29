@@ -22,26 +22,36 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient"
 )
 
 // VMSSDeleteClient is an interface for deleting VMSS instances.
-// This interface wraps the raw SDK client to make it mockable for testing.
+// This interface wraps the azclient's VMSS client to access BeginDeleteInstances via the embedded SDK client.
 type VMSSDeleteClient interface {
 	BeginDeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error)
 }
 
-// vmssDeleteClientWrapper wraps the raw SDK client.
+// vmssDeleteClientWrapper wraps the azclient's VMSS client.
 type vmssDeleteClientWrapper struct {
-	client *armcompute.VirtualMachineScaleSetsClient
+	client *virtualmachinescalesetclient.Client
 }
 
-// NewVMSSDeleteClient creates a new wrapper around the raw SDK client.
-func NewVMSSDeleteClient(client *armcompute.VirtualMachineScaleSetsClient) VMSSDeleteClient {
+// NewVMSSDeleteClient creates a wrapper around the azclient's VMSS client.
+// The azclient's Client struct embeds *armcompute.VirtualMachineScaleSetsClient,
+// which provides access to BeginDeleteInstances.
+func NewVMSSDeleteClient(vmssClient virtualmachinescalesetclient.Interface) VMSSDeleteClient {
+	// Type assert to get the concrete Client which embeds the SDK client
+	client, ok := vmssClient.(*virtualmachinescalesetclient.Client)
+	if !ok {
+		// This should not happen in production, but handle gracefully
+		return nil
+	}
 	return &vmssDeleteClientWrapper{client: client}
 }
 
 // BeginDeleteInstances implements the VMSSDeleteClient interface.
 func (w *vmssDeleteClientWrapper) BeginDeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error) {
-	return w.client.BeginDeleteInstances(ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs, options)
+	return w.client.VirtualMachineScaleSetsClient.BeginDeleteInstances(ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs, options)
 }
