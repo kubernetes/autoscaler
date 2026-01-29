@@ -245,7 +245,7 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 					// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
 
 					// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
- // VmssCacheTTLInSeconds:                60,
+					// VmssCacheTTLInSeconds:                60,
 					// // VmssVirtualMachinesCacheTTLInSeconds: 240,
 				},
 			},
@@ -293,13 +293,13 @@ func TestCreateAzureManagerLegacyConfig(t *testing.T) {
 				},
 				SubscriptionID: "fakeId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "vmss",
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "vmss",
 			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
 
 			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
- // VmssCacheTTLInSeconds:                60,
+			// VmssCacheTTLInSeconds:                60,
 			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
 			// TODO: Moved inside AzureClientConfig
 
@@ -344,13 +344,13 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 				},
 				SubscriptionID: "fakeId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "standard",
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "standard",
 			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
 
 			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
- // VmssCacheTTLInSeconds:                60,
+			// VmssCacheTTLInSeconds:                60,
 			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
 			// TODO: Moved inside AzureClientConfig
 
@@ -429,13 +429,13 @@ func TestCreateAzureManagerValidConfigForVMsPool(t *testing.T) {
 				},
 				SubscriptionID: "fakeId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "vmss",
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "vmss",
 			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
 
 			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
- // VmssCacheTTLInSeconds:                60,
+			// VmssCacheTTLInSeconds:                60,
 			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
 			// TODO: Moved inside AzureClientConfig
 
@@ -497,8 +497,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 			// Note: VmssCacheTTLInSeconds and backoff configs have been moved to
 			// AzureClientConfig in cloud-provider-azure v1.32.0
 		},
-		ClusterName:          "mycluster",
-		ClusterResourceGroup: "myrg",
+		ClusterName:                          "mycluster",
+		ClusterResourceGroup:                 "myrg",
 		ARMBaseURLForAPClient:                "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local",
 		Deployment:                           "deployment",
 		VmssVmsCacheJitter:                   90,
