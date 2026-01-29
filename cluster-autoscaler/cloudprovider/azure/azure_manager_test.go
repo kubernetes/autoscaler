@@ -35,9 +35,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
-	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
-	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 )
 
@@ -229,8 +227,8 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfg), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -240,56 +238,20 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 					AADClientSecret: "fakeId",
 				},
 				SubscriptionID: "fakeId",
-			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
+				// TODO: Moved inside AzureClientConfig
+
+				// Rate limit config simplified
+				CloudProviderCacheConfig: providerazureconfig.CloudProviderCacheConfig{
+					// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+					// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+ // VmssCacheTTLInSeconds:                60,
+					// // VmssVirtualMachinesCacheTTLInSeconds: 240,
 				},
 			},
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "vmss",
 		},
 		VmssVmsCacheJitter:                   120,
 		MaxDeploymentsCount:                  8,
@@ -320,8 +282,8 @@ func TestCreateAzureManagerLegacyConfig(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgLegacy), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -334,52 +296,14 @@ func TestCreateAzureManagerLegacyConfig(t *testing.T) {
 			Location:                             "southeastasia",
 			ResourceGroup:                        "fakeId",
 			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+ // VmssCacheTTLInSeconds:                60,
+			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
+			// TODO: Moved inside AzureClientConfig
+
+			// Rate limit config simplified
 		},
 		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
@@ -408,8 +332,8 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForStandardVMType), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -423,52 +347,14 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 			Location:                             "southeastasia",
 			ResourceGroup:                        "fakeId",
 			VMType:                               "standard",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+ // VmssCacheTTLInSeconds:                60,
+			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
+			// TODO: Moved inside AzureClientConfig
+
+			// Rate limit config simplified
 		},
 		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
@@ -531,8 +417,8 @@ func TestCreateAzureManagerValidConfigForVMsPool(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForVMsPool), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -546,52 +432,14 @@ func TestCreateAzureManagerValidConfigForVMsPool(t *testing.T) {
 			Location:                             "southeastasia",
 			ResourceGroup:                        "fakeId",
 			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+ // VmssCacheTTLInSeconds:                60,
+			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
+			// TODO: Moved inside AzureClientConfig
+
+			// Rate limit config simplified
 		},
 		VmssVmsCacheJitter:    120,
 		MaxDeploymentsCount:   8,
@@ -627,8 +475,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	}
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "tenantId",
@@ -643,63 +491,14 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 				},
 				SubscriptionID: "subscriptionId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "resourceGroup",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                100,
-			VmssVirtualMachinesCacheTTLInSeconds: 110,
-			CloudProviderBackoff:                 true,
-			CloudProviderBackoffRetries:          1,
-			CloudProviderBackoffExponent:         1,
-			CloudProviderBackoffDuration:         1,
-			CloudProviderBackoffJitter:           1,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			Location:      "southeastasia",
+			ResourceGroup: "resourceGroup",
+			VMType:        "vmss",
+			// Note: VmssCacheTTLInSeconds and backoff configs have been moved to
+			// AzureClientConfig in cloud-provider-azure v1.32.0
 		},
-		ClusterName:                          "mycluster",
-		ClusterResourceGroup:                 "myrg",
+		ClusterName:          "mycluster",
+		ClusterResourceGroup: "myrg",
 		ARMBaseURLForAPClient:                "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local",
 		Deployment:                           "deployment",
 		VmssVmsCacheJitter:                   90,
@@ -881,8 +680,8 @@ func TestCreateAzureManagerWithEnvOverridingConfig(t *testing.T) {
 	}
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "tenantId",
@@ -897,60 +696,11 @@ func TestCreateAzureManagerWithEnvOverridingConfig(t *testing.T) {
 				},
 				SubscriptionID: "subscriptionId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "resourceGroup",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                100,
-			VmssVirtualMachinesCacheTTLInSeconds: 110,
-			CloudProviderBackoff:                 true,
-			CloudProviderBackoffRetries:          1,
-			CloudProviderBackoffExponent:         1,
-			CloudProviderBackoffDuration:         1,
-			CloudProviderBackoffJitter:           1,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			Location:      "southeastasia",
+			ResourceGroup: "resourceGroup",
+			VMType:        "vmss",
+			// Note: VmssCacheTTLInSeconds and backoff configs have been moved to
+			// AzureClientConfig in cloud-provider-azure v1.32.0
 		},
 		ClusterName:           "mycluster",
 		ClusterResourceGroup:  "myrg",

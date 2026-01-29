@@ -42,11 +42,9 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/deploymentclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/diskclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/interfaceclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/policy/ratelimit"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 )
 
 //go:generate sh -c "mockgen -source=azure_client.go -package azure -exclude_interfaces DeploymentsClient | cat ../../../hack/boilerplate/boilerplate.go.txt - > azure_mock_agentpool_client.go"
@@ -56,20 +54,6 @@ const (
 	vmsContextTimeout      = 5 * time.Minute
 	vmsAsyncContextTimeout = 30 * time.Minute
 )
-
-// convertRateLimitConfig converts old azureclients.RateLimitConfig to new ratelimit.Config
-func convertRateLimitConfig(old *azureclients.RateLimitConfig) *ratelimit.Config {
-	if old == nil {
-		return nil
-	}
-	return &ratelimit.Config{
-		CloudProviderRateLimit:            old.CloudProviderRateLimit,
-		CloudProviderRateLimitQPS:         old.CloudProviderRateLimitQPS,
-		CloudProviderRateLimitBucket:      old.CloudProviderRateLimitBucket,
-		CloudProviderRateLimitQPSWrite:    old.CloudProviderRateLimitQPSWrite,
-		CloudProviderRateLimitBucketWrite: old.CloudProviderRateLimitBucketWrite,
-	}
-}
 
 // AgentPoolsClient interface defines the methods needed for scaling vms pool.
 // it is implemented by track2 sdk armcontainerservice.AgentPoolsClient
@@ -259,34 +243,22 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	}
 
 	factoryConfig := &azclient.ClientFactoryConfig{
-		SubscriptionID:       subscriptionID,
-		CloudProviderBackoff: cfg.CloudProviderBackoff,
-		CloudProviderRateLimitConfig: ratelimit.CloudProviderRateLimitConfig{
-			Config: ratelimit.Config{
-				CloudProviderRateLimit:            cfg.CloudProviderRateLimit,
-				CloudProviderRateLimitBucket:      cfg.CloudProviderRateLimitBucket,
-				CloudProviderRateLimitBucketWrite: cfg.CloudProviderRateLimitBucketWrite,
-				CloudProviderRateLimitQPS:         cfg.CloudProviderRateLimitQPS,
-				CloudProviderRateLimitQPSWrite:    cfg.CloudProviderRateLimitQPSWrite,
-			},
-			Entries: map[string]*ratelimit.Config{
-				"InterfaceClient":              convertRateLimitConfig(cfg.InterfaceRateLimit),
-				"VirtualMachineScaleSetClient": convertRateLimitConfig(cfg.VirtualMachineScaleSetRateLimit),
-				"VirtualMachineClient":         convertRateLimitConfig(cfg.VirtualMachineRateLimit),
-				"StorageAccountClient":         convertRateLimitConfig(cfg.StorageAccountRateLimit),
-				"DiskClient":                   convertRateLimitConfig(cfg.DiskRateLimit),
-				"SnapshotClient":               convertRateLimitConfig(cfg.SnapshotRateLimit),
-				"LoadBalancerClient":           convertRateLimitConfig(cfg.LoadBalancerRateLimit),
-				"RouteTableClient":             convertRateLimitConfig(cfg.RouteTableRateLimit),
-				"PublicIPAddressClient":        convertRateLimitConfig(cfg.PublicIPAddressRateLimit),
-				"SecurityGroupClient":          convertRateLimitConfig(cfg.SecurityGroupRateLimit),
-				"RouteClient":                  convertRateLimitConfig(cfg.RouteRateLimit),
+		SubscriptionID:               subscriptionID,
+		CloudProviderRateLimitConfig: cfg.CloudProviderRateLimitConfig,
+	}
+
+	// Create cloud configuration for NewClientFactory
+	cloudConfig := cloud.Configuration{
+		Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+			cloud.ResourceManager: {
+				Endpoint: armConfig.ResourceManagerEndpoint,
+				Audience: env.TokenAudience,
 			},
 		},
 	}
 
 	// Create client factory
-	clientFactory, err := azclient.NewClientFactory(factoryConfig, armConfig, cred)
+	clientFactory, err := azclient.NewClientFactory(factoryConfig, armConfig, cloudConfig, cred)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create azclient factory: %w", err)
 	}

@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
-	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
+	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
@@ -58,7 +58,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
 		config: &Config{
-			Config: providerazure.Config{
+			Config: providerazureconfig.Config{
 				ResourceGroup: "rg",
 				VMType:        providerazureconsts.VMTypeVMSS,
 				Location:      "eastus",

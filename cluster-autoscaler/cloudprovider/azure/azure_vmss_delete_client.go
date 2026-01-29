@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//go:generate sh -c "mockgen -package=azure -source=azure_vmss_delete_client.go VMSSDeleteClient | cat ../../../hack/boilerplate/boilerplate.go.txt - > azure_mock_vmss_delete_client_test.go"
+//go:generate sh -c "mockgen -source=azure_vmss_delete_client.go -package=azure VMSSDeleteClient | cat ../../../hack/boilerplate/boilerplate.go.txt - > azure_mock_vmss_delete_client_test.go"
 
 package azure
 

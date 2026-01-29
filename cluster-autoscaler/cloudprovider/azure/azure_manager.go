@@ -33,7 +33,6 @@ import (
 	kretry "k8s.io/client-go/util/retry"
 	klog "k8s.io/klog/v2"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -43,6 +42,15 @@ const (
 	scaleToZeroSupportedVMSS     = true
 	refreshInterval              = 1 * time.Minute
 )
+
+// isErrorRetriable checks if an error is retriable.
+// This is a local implementation of the former retry.IsErrorRetriable function.
+func isErrorRetriable(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), "Retriable: true")
+}
 
 // AzureManager handles Azure communication and data caching.
 type AzureManager struct {
@@ -134,7 +142,7 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	}
 
 	// skuCache will already be created at this step by newAzureCache()
-	err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
+	err = kretry.OnError(retryBackoff, isErrorRetriable, func() (err error) {
 		return manager.forceRefresh()
 	})
 	if err != nil {

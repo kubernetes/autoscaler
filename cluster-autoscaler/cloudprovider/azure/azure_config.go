@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +28,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
@@ -47,7 +49,7 @@ const (
 // Contains both general Azure cloud provider configuration (i.e., in azure.json) and CAS configurations/options specifically for Azure provider.
 type Config struct {
 	// Azure cloud provider configuration, which is generally shared with other Azure components.
-	providerazure.Config `json:",inline" yaml:",inline"`
+	providerazureconfig.Config `json:",inline" yaml:",inline"`
 
 	// Legacy fields, which are only here for backward compatibility. To be deprecated.
 	legacyConfig `json:",inline" yaml:",inline"`
@@ -342,7 +344,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			return nil, err
 		}
 
-		metadata, err := metadataService.GetMetadata(0)
+		metadata, err := metadataService.GetMetadata(context.Background(), azcache.CacheReadTypeDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -359,7 +361,8 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 
 		cfg.DeploymentParameters = parameters
 	}
-	providerazureconfig.InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
+	// Note: InitializeCloudProviderRateLimitConfig was removed in cloud-provider-azure v1.32.0
+	// Rate limit configuration is now handled via the embedded ratelimit.CloudProviderRateLimitConfig
 
 	if err := cfg.validate(); err != nil {
 		return nil, err
