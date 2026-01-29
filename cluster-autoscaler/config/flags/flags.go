@@ -196,6 +196,7 @@ var (
 	recordDuplicatedEvents                  = flag.Bool("record-duplicated-events", false, "enable duplication of similar events within a 5 minute window.")
 	maxNodesPerScaleUp                      = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
 	maxNodeGroupBinpackingDuration          = flag.Duration("max-nodegroup-binpacking-duration", 10*time.Second, "Maximum time that will be spent in binpacking simulation for each NodeGroup.")
+	fastpathBinpackingEnabled               = flag.Bool("fastpath-binpacking-enabled", false, "Whether to use fastpath binpacking algorithm to optimize scale-ups.")
 	skipNodesWithSystemPods                 = flag.Bool("skip-nodes-with-system-pods", true, "If true cluster autoscaler will wait for --blocking-system-pod-distruption-timeout before deleting nodes with pods from kube-system (except for DaemonSet or mirror pods)")
 	skipNodesWithLocalStorage               = flag.Bool("skip-nodes-with-local-storage", true, "If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
 	skipNodesWithCustomControllerPods       = flag.Bool("skip-nodes-with-custom-controller-pods", true, "If true cluster autoscaler will never delete nodes with pods owned by custom controllers")
@@ -393,6 +394,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxNodesPerScaleUp:                 *maxNodesPerScaleUp,
 		MaxNodeGroupBinpackingDuration:     *maxNodeGroupBinpackingDuration,
 		MaxBinpackingTime:                  *maxBinpackingTimeFlag,
+		FastpathBinpackingEnabled:          *fastpathBinpackingEnabled,
 		NodeDeletionBatcherInterval:        *nodeDeletionBatcherInterval,
 		SkipNodesWithSystemPods:            *skipNodesWithSystemPods,
 		SkipNodesWithLocalStorage:          *skipNodesWithLocalStorage,

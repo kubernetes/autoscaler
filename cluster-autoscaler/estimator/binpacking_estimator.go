@@ -35,12 +35,12 @@ import (
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 type BinpackingNodeEstimator struct {
-	clusterSnapshot        clustersnapshot.ClusterSnapshot
-	limiter                EstimationLimiter
-	podOrderer             EstimationPodOrderer
-	context                EstimationContext
-	estimationAnalyserFunc EstimationAnalyserFunc // optional
-
+	clusterSnapshot           clustersnapshot.ClusterSnapshot
+	limiter                   EstimationLimiter
+	podOrderer                EstimationPodOrderer
+	context                   EstimationContext
+	estimationAnalyserFunc    EstimationAnalyserFunc // optional
+	fastpathBinpackingEnabled bool
 }
 
 // estimationState contains helper variables to avoid coping them independently in each function.
@@ -65,13 +65,15 @@ func NewBinpackingNodeEstimator(
 	podOrderer EstimationPodOrderer,
 	context EstimationContext,
 	estimationAnalyserFunc EstimationAnalyserFunc,
+	fastpathBinpackingEnabled bool,
 ) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
-		clusterSnapshot:        clusterSnapshot,
-		limiter:                limiter,
-		podOrderer:             podOrderer,
-		context:                context,
-		estimationAnalyserFunc: estimationAnalyserFunc,
+		clusterSnapshot:           clusterSnapshot,
+		limiter:                   limiter,
+		podOrderer:                podOrderer,
+		context:                   context,
+		estimationAnalyserFunc:    estimationAnalyserFunc,
+		fastpathBinpackingEnabled: fastpathBinpackingEnabled,
 	}
 }
 
@@ -107,12 +109,14 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 	podsEquivalenceGroups = e.podOrderer.Order(podsEquivalenceGroups, nodeTemplate, nodeGroup)
 
-	bestFastpathPEGindex := determineBestPEGToFastpath(podsEquivalenceGroups, nodeTemplate)
-	if bestFastpathPEGindex != -1 {
-		bestFastpathPEG := podsEquivalenceGroups[bestFastpathPEGindex]
-		pegsWithoutBestForFastpath := append(podsEquivalenceGroups[:bestFastpathPEGindex], podsEquivalenceGroups[bestFastpathPEGindex+1:]...)
-		// We'll put at the end the PEG which will benefit the most from fastpath binpacking, since it runs only on the last PEG
-		podsEquivalenceGroups = append(pegsWithoutBestForFastpath, bestFastpathPEG)
+	if e.fastpathBinpackingEnabled {
+		bestFastpathPEGindex := determineBestPEGToFastpath(podsEquivalenceGroups, nodeTemplate)
+		if bestFastpathPEGindex != -1 {
+			bestFastpathPEG := podsEquivalenceGroups[bestFastpathPEGindex]
+			pegsWithoutBestForFastpath := append(podsEquivalenceGroups[:bestFastpathPEGindex], podsEquivalenceGroups[bestFastpathPEGindex+1:]...)
+			// We'll put at the end the PEG which will benefit the most from fastpath binpacking, since it runs only on the last PEG
+			podsEquivalenceGroups = append(pegsWithoutBestForFastpath, bestFastpathPEG)
+		}
 	}
 
 	e.clusterSnapshot.Fork()
@@ -134,7 +138,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 		if newNodesAvailable {
 			// Since fastpath binpacking adds just one node to the snapshot, it will cause unaccurate simulations on subsequent loops, therefore we only use it on the last group
-			if i == len(podsEquivalenceGroups)-1 && shouldUseFastPath(remainingPods) {
+			if e.fastpathBinpackingEnabled && i == len(podsEquivalenceGroups)-1 && shouldUseFastPath(remainingPods) {
 				newNodesAvailable, err = e.tryFastPath(estimationState, nodeTemplate, remainingPods)
 			} else {
 				newNodesAvailable, err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
