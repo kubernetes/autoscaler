@@ -86,6 +86,7 @@ func TestBinpackingEstimate(t *testing.T) {
 		expectNodeCount      int
 		expectPodCount       int
 		expectProcessedPods  []*apiv1.Pod
+		fastpathBinpacking   bool
 	}{
 		{
 			name:       "simple resource-based binpacking",
@@ -222,6 +223,23 @@ func TestBinpackingEstimate(t *testing.T) {
 			expectNodeCount: 3,
 			expectPodCount:  12,
 		},
+		{
+			name:       "fastpath - simple resource-based binpacking",
+			millicores: 350*3 - 50,
+			memory:     2 * 1000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					350,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 10)},
+			expectNodeCount:    5,
+			expectPodCount:     10,
+			fastpathBinpacking: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -232,7 +250,7 @@ func TestBinpackingEstimate(t *testing.T) {
 
 			limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(tc.maxNodes, time.Duration(0))})
 			processor := NewDecreasingPodOrderer()
-			estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+			estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */, tc.fastpathBinpacking)
 			node := makeNode(tc.millicores, tc.memory, 10, "template", "zone-mars")
 			nodeInfo := framework.NewTestNodeInfo(node)
 
@@ -285,7 +303,7 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 
 		limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(maxNodes, time.Duration(0))})
 		processor := NewDecreasingPodOrderer()
-		estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+		estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */, false)
 		node := makeNode(millicores, memory, podsPerNode, "template", "zone-mars")
 		nodeInfo := framework.NewTestNodeInfo(node)
 
