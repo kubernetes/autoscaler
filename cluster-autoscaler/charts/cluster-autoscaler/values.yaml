@@ -170,6 +170,8 @@ containerSecurityContext: {}
 deployment:
   # deployment.annotations -- Annotations to add to the Deployment object.
   annotations: {}
+  # deployment.selector -- Labels for Deployment `spec.selector.matchLabels`.
+  selector: {}
 
 # dnsConfig -- [Pod's DNS Config](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config)
 dnsConfig: {}
@@ -333,6 +335,10 @@ podAnnotations: {}
 
 # podDisruptionBudget -- Pod disruption budget.
 podDisruptionBudget:
+  # podDisruptionBudget.annotations -- Annotations to add to the PodDisruptionBudget.
+  annotations: {}
+  # podDisruptionBudget.selector -- Override labels for PodDisruptionBudget `spec.selector.matchLabels`.
+  selector: {}
   maxUnavailable: 1
   # minAvailable: 2
 
@@ -370,6 +376,8 @@ rbac:
   pspEnabled: false
   # rbac.clusterScoped -- if set to false will only provision RBAC to alter resources in the current namespace. Most useful for Cluster-API
   clusterScoped: true
+  # rbac.annotations -- Additional annotations to add to RBAC resources (Role/RoleBinding/ClusterRole/ClusterRoleBinding).
+  annotations: {}
   serviceAccount:
     # rbac.serviceAccount.annotations -- Additional Service Account annotations.
     annotations: {}
@@ -423,6 +431,9 @@ service:
   labels: {}
   # service.externalIPs -- List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips.
   externalIPs: []
+
+  # service.selector -- Override labels for Service `spec.selector`.
+  selector: {}
 
   # service.clusterIP -- IP address to assign to service
   clusterIP: ""
@@ -487,7 +498,7 @@ vpa:
   enabled: false
   # vpa.updateMode -- [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124)
   updateMode: "Auto"
-  # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
+  # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always set to the deployment's container name. This value is required if VPA is enabled.
   containerPolicy: {}
   # vpa.recommender -- Name of the VPA recommender that will provide recommendations for vertical scaling.
   recommender: default

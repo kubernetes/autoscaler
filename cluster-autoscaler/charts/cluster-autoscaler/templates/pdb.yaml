@@ -4,6 +4,10 @@
 {{- end }}apiVersion: {{ template "podDisruptionBudget.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
+{{- if .Values.podDisruptionBudget.annotations }}
+  annotations:
+{{ toYaml .Values.podDisruptionBudget.annotations | indent 4 }}
+{{- end }}
   labels:
 {{ include "cluster-autoscaler.labels" . | indent 4 }}
   name: {{ template "cluster-autoscaler.fullname" . }}
@@ -11,6 +15,9 @@ metadata:
 spec:
   selector:
     matchLabels:
+{{- if .Values.podDisruptionBudget.selector }}
+{{ toYaml .Values.podDisruptionBudget.selector | indent 6 }}
+{{- else }}
 {{ include "cluster-autoscaler.instance-name" . | indent 6 }}
   {{- if and .Values.podDisruptionBudget.minAvailable (not .Values.podDisruptionBudget.maxUnavailable) }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
@@ -19,3 +26,4 @@ spec:
   maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
   {{- end }}
 {{- end -}}
+{{- end }}
