@@ -107,15 +107,15 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 
 func TestIsFetchingHistory(t *testing.T) {
 	testCases := []struct {
-		vpa               model.Vpa
+		vpa               *model.Vpa
 		isFetchingHistory bool
 	}{
 		{
-			vpa:               model.Vpa{},
+			vpa:               &model.Vpa{},
 			isFetchingHistory: false,
 		},
 		{
-			vpa: model.Vpa{
+			vpa: &model.Vpa{
 				PodSelector: nil,
 				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 					vpa_types.FetchingHistory: {
@@ -127,7 +127,7 @@ func TestIsFetchingHistory(t *testing.T) {
 			isFetchingHistory: false,
 		},
 		{
-			vpa: model.Vpa{
+			vpa: &model.Vpa{
 				PodSelector: nil,
 				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 					vpa_types.FetchingHistory: {
@@ -141,7 +141,7 @@ func TestIsFetchingHistory(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		assert.Equalf(t, tc.isFetchingHistory, isFetchingHistory(&tc.vpa), "%+v should have %v as isFetchingHistoryResult", tc.vpa, tc.isFetchingHistory)
+		assert.Equalf(t, tc.isFetchingHistory, isFetchingHistory(tc.vpa), "%+v should have %v as isFetchingHistoryResult", tc.vpa, tc.isFetchingHistory)
 	}
 }
 

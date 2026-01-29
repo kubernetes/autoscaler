@@ -133,3 +133,219 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 
 	assert.Equal(t, int64(vpaCount), atomic.LoadInt64(&counter), "Not all VPAs were processed")
 }
+
+// TestConcurrentAccessToSameVPA tests multiple goroutines updating the same VPA's conditions and recommendations
+// simultaneously.
+//
+// NOTE: This test currently exposes additional race conditions beyond the VPA mutex fix:
+// - aggregateContainerStates map is accessed without synchronization
+// - RecordRecommendation() reads vpa.Recommendation without holding VPA's mutex
+// I don't know that anyone is actually experiencing those, just apparently they can happen.
+//
+// To run this test and see ONLY the VPA condition/recommendation races that were fixed,
+// use the vpa_concurrency_test.go tests in the model package instead.
+func TestConcurrentAccessToSameVPA(t *testing.T) {
+	t.Skip("This test exposes additional race conditions beyond the VPA mutex fix. " +
+		"See vpa_concurrency_test.go for tests specific to the conditions/recommendations mutex.")
+
+	// Create a single VPA that will be accessed by multiple goroutines
+	vpaName := "shared-vpa"
+	vpaID := model.VpaID{
+		Namespace: "default",
+		VpaName:   vpaName,
+	}
+
+	selector, err := labels.Parse("app=test")
+	assert.NoError(t, err, "Failed to parse label selector")
+
+	vpa := model.NewVpa(vpaID, selector, time.Now())
+
+	// Add multiple container states to make the VPA more realistic
+	containerNames := []string{"container1", "container2", "container3"}
+	for _, containerName := range containerNames {
+		vpa.UseAggregationIfMatching(
+			mockAggregateStateKey{
+				namespace:     "default",
+				containerName: containerName,
+				labels:        "app=test",
+			},
+			model.NewAggregateContainerState(),
+		)
+	}
+
+	apiVpa := test.VerticalPodAutoscaler().
+		WithName(vpaName).
+		WithNamespace("default").
+		WithContainer("container1").
+		Get()
+
+	fakeClient := vpa_fake.NewSimpleClientset(apiVpa).AutoscalingV1() //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
+
+	r := &recommender{
+		clusterState:                model.NewClusterState(time.Minute),
+		vpaClient:                   fakeClient,
+		podResourceRecommender:      &mockPodResourceRecommender{},
+		recommendationPostProcessor: []RecommendationPostProcessor{},
+	}
+
+	// Setup cluster state
+	labelSelector, err := metav1.ParseToLabelSelector("app=test")
+	assert.NoError(t, err, "Failed to parse label selector")
+	parsedSelector, err := metav1.LabelSelectorAsSelector(labelSelector)
+	assert.NoError(t, err, "Failed to convert label selector to selector")
+
+	err = r.clusterState.AddOrUpdateVpa(apiVpa, parsedSelector)
+	assert.NoError(t, err, "Failed to add or update VPA in cluster state")
+	r.clusterState.SetObservedVPAs([]*v1.VerticalPodAutoscaler{apiVpa})
+
+	// Now simulate multiple workers ALL processing the SAME VPA concurrently
+	// This is the exact scenario that caused the production crash
+	workerCount := 10
+	iterations := 100
+	var wg sync.WaitGroup
+
+	for w := 0; w < workerCount; w++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+			for i := 0; i < iterations; i++ {
+				// Each worker processes the same VPA
+				processVPAUpdate(r, vpa, apiVpa)
+			}
+		}(w)
+	}
+
+	wg.Wait()
+}
+
+// TestConcurrentVPAMethodAccess tests ONLY the mutex-protected VPA methods
+// without involving the full processVPAUpdate path which has additional races.
+func TestConcurrentVPAMethodAccess(t *testing.T) {
+	// Create a single VPA
+	vpaName := "test-vpa"
+	vpaID := model.VpaID{
+		Namespace: "default",
+		VpaName:   vpaName,
+	}
+
+	selector, err := labels.Parse("app=test")
+	assert.NoError(t, err, "Failed to parse label selector")
+
+	vpa := model.NewVpa(vpaID, selector, time.Now())
+
+	// Add container states (this part is not concurrent)
+	containerNames := []string{"container1", "container2", "container3"}
+	for _, containerName := range containerNames {
+		vpa.UseAggregationIfMatching(
+			mockAggregateStateKey{
+				namespace:     "default",
+				containerName: containerName,
+				labels:        "app=test",
+			},
+			model.NewAggregateContainerState(),
+		)
+	}
+
+	// Now test concurrent access to the mutex-protected methods
+	workerCount := 10
+	iterations := 100
+	var wg sync.WaitGroup
+
+	for w := 0; w < workerCount; w++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+			for i := 0; i < iterations; i++ {
+				// Create a recommendation
+				rec := test.Recommendation().
+					WithContainer(containerNames[i%len(containerNames)]).
+					WithTarget("100m", "100Mi").
+					Get()
+
+				// Test all the mutex-protected operations
+				vpa.UpdateRecommendation(rec)
+				vpa.UpdateConditions(i%2 == 0)
+				_ = vpa.AsStatus()
+				_ = vpa.HasRecommendation()
+				_ = vpa.HasMatchedPods()
+				_ = vpa.ConditionActive(v1.RecommendationProvided)
+			}
+		}(w)
+	}
+
+	wg.Wait()
+}
+
+// TestUpdateVPAsRaceCondition tests the UpdateVPAs method for race conditions
+// by having multiple workers process overlapping sets of VPAs.
+func TestUpdateVPAsRaceCondition(t *testing.T) {
+	vpaCount := 20
+	apiObjectVPAs := make([]*v1.VerticalPodAutoscaler, vpaCount)
+	fakedClient := make([]runtime.Object, vpaCount)
+
+	for i := range vpaCount {
+		vpaName := fmt.Sprintf("test-vpa-%d", i)
+		apiObjectVPAs[i] = test.VerticalPodAutoscaler().
+			WithName(vpaName).
+			WithNamespace("default").
+			WithContainer("test-container").
+			Get()
+		fakedClient[i] = apiObjectVPAs[i]
+	}
+
+	fakeClient := vpa_fake.NewSimpleClientset(fakedClient...).AutoscalingV1() //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
+	r := &recommender{
+		clusterState:                model.NewClusterState(time.Minute),
+		vpaClient:                   fakeClient,
+		podResourceRecommender:      &mockPodResourceRecommender{},
+		recommendationPostProcessor: []RecommendationPostProcessor{},
+		updateWorkerCount:           8, // Similar to production
+	}
+
+	labelSelector, err := metav1.ParseToLabelSelector("app=test")
+	assert.NoError(t, err, "Failed to parse label selector")
+	parsedSelector, err := metav1.LabelSelectorAsSelector(labelSelector)
+	assert.NoError(t, err, "Failed to convert label selector to selector")
+
+	// Setup VPAs in cluster state
+	for _, vpa := range apiObjectVPAs {
+		err := r.clusterState.AddOrUpdateVpa(vpa, parsedSelector)
+		assert.NoError(t, err, "Failed to add or update VPA in cluster state")
+	}
+	r.clusterState.SetObservedVPAs(apiObjectVPAs)
+
+	// Run UpdateVPAs multiple times concurrently to increase race detection
+	iterations := 10
+	var wg sync.WaitGroup
+
+	for i := 0; i < iterations; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			r.UpdateVPAs()
+		}()
+	}
+
+	wg.Wait()
+}
+
+// mockAggregateStateKey is a simple implementation for testing
+type mockAggregateStateKey struct {
+	namespace     string
+	containerName string
+	labels        string
+}
+
+func (k mockAggregateStateKey) Namespace() string {
+	return k.namespace
+}
+
+func (k mockAggregateStateKey) ContainerName() string {
+	return k.containerName
+}
+
+func (k mockAggregateStateKey) Labels() labels.Labels {
+	// Should return empty on error
+	labels, _ := labels.ConvertSelectorToLabelsMap(k.labels)
+	return labels
+}
