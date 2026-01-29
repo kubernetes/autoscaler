@@ -115,27 +115,29 @@ func TestIsFetchingHistory(t *testing.T) {
 			isFetchingHistory: false,
 		},
 		{
-			vpa: &model.Vpa{
-				PodSelector: nil,
-				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+			vpa: func() *model.Vpa {
+				vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+				vpa.SetConditionsMap(map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 					vpa_types.FetchingHistory: {
 						Type:   vpa_types.FetchingHistory,
 						Status: v1.ConditionFalse,
 					},
-				},
-			},
+				})
+				return vpa
+			}(),
 			isFetchingHistory: false,
 		},
 		{
-			vpa: &model.Vpa{
-				PodSelector: nil,
-				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+			vpa: func() *model.Vpa {
+				vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+				vpa.SetConditionsMap(map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 					vpa_types.FetchingHistory: {
 						Type:   vpa_types.FetchingHistory,
 						Status: v1.ConditionTrue,
 					},
-				},
-			},
+				})
+				return vpa
+			}(),
 			isFetchingHistory: true,
 		},
 	}

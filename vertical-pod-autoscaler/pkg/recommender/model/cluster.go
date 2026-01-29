@@ -307,8 +307,8 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Annotations = annotationsMap
-	vpa.Conditions = conditionsMap
-	vpa.Recommendation = currentRecommendation
+	vpa.SetConditionsMap(conditionsMap)
+	vpa.SetRecommendationDirect(currentRecommendation)
 	vpa.SetUpdateMode(apiObject.Spec.UpdatePolicy)
 	vpa.SetResourcePolicy(apiObject.Spec.ResourcePolicy)
 	vpa.SetAPIVersion(apiObject.GetObjectKind().GroupVersionKind().Version)

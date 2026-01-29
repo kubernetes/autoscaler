@@ -761,7 +761,7 @@ func TestRecordRecommendation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cluster := NewClusterState(testGcPeriod)
 			vpa := addVpa(cluster, testVpaID, testAnnotations, testSelectorStr, testTargetRef)
-			cluster.vpas[testVpaID].Recommendation = tc.recommendation
+			cluster.vpas[testVpaID].SetRecommendationDirect(tc.recommendation)
 			if !tc.lastLogged.IsZero() {
 				cluster.emptyVPAs[testVpaID] = tc.lastLogged
 			}

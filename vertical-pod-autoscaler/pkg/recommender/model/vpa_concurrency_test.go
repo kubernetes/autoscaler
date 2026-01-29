@@ -73,7 +73,7 @@ func TestConcurrentUpdateRecommendationAndHasRecommendation(t *testing.T) {
 // while reading the full status. This simulates the actual production scenario.
 func TestConcurrentUpdateConditionsAndAsStatus(t *testing.T) {
 	vpa := NewVpa(VpaID{Namespace: "test", VpaName: "test-vpa"}, labels.Nothing(), time.Now())
-	vpa.Recommendation = test.Recommendation().WithContainer("test").WithTarget("100m", "100Mi").Get()
+	vpa.SetRecommendationDirect(test.Recommendation().WithContainer("test").WithTarget("100m", "100Mi").Get())
 
 	iterations := 1000
 	var wg sync.WaitGroup
