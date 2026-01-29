@@ -312,3 +312,60 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 		assert.Equal(b, expectPodCount, len(estimatedPods))
 	}
 }
+
+func TestDetermineBestPodEquivalenceGroupToFastpath(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		podsEquivalenceGroups []PodEquivalenceGroup
+		expectResult          int
+	}{
+		{
+			name: "both groups 1 node, take group with more pods",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5), 4), // 1 node * 4 pods = 4
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 5, 6), 3), // 1 node * 3 pods = 3
+			},
+			expectResult: 0,
+		},
+		{
+			name: "take group with largest pods*nodes, even if it has less pods",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5), 4),   // 1 node  * 4 pods = 4
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 80, 80), 3), // 3 nodes * 3 pods = 9
+			},
+			expectResult: 1,
+		},
+		{
+			name: "take group with largest pods*nodes, even if it has less nodes",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5), 10),  // 1 node  * 10 pods = 10
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 80, 80), 3), // 3 nodes * 3  pods = 9
+			},
+			expectResult: 0,
+		},
+		{
+			name: "no fastpath supporting pod groups",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5, WithMaxSkew(2, "kubernetes.io/hostname", 1)), 10),
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 8, 8, WithMaxSkew(2, "kubernetes.io/hostname", 1)), 3),
+			},
+			expectResult: -1,
+		},
+		{
+			name: "no resource requests defaults to last group, still valid fastpath group",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(&apiv1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "estimatee1"}, Spec: apiv1.PodSpec{Containers: []apiv1.Container{}}}, 2),
+				makePodEquivalenceGroup(&apiv1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "estimatee2"}, Spec: apiv1.PodSpec{Containers: []apiv1.Container{}}}, 4),
+			},
+			expectResult: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			nodeInfo := framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter"))
+			result := determineBestPEGToFastpath(tc.podsEquivalenceGroups, nodeInfo)
+			assert.Equal(t, tc.expectResult, result)
+		})
+	}
+}

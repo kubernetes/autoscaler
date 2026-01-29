@@ -109,6 +109,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 	podsEquivalenceGroups = e.podOrderer.Order(podsEquivalenceGroups, nodeTemplate, nodeGroup)
 
+	useFastpathOnLastPEG := false
 	if e.fastpathBinpackingEnabled {
 		bestFastpathPEGindex := determineBestPEGToFastpath(podsEquivalenceGroups, nodeTemplate)
 		if bestFastpathPEGindex != -1 {
@@ -116,6 +117,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 			pegsWithoutBestForFastpath := append(podsEquivalenceGroups[:bestFastpathPEGindex], podsEquivalenceGroups[bestFastpathPEGindex+1:]...)
 			// We'll put at the end the PEG which will benefit the most from fastpath binpacking, since it runs only on the last PEG
 			podsEquivalenceGroups = append(pegsWithoutBestForFastpath, bestFastpathPEG)
+			useFastpathOnLastPEG = true
 		}
 	}
 
@@ -137,8 +139,8 @@ func (e *BinpackingNodeEstimator) Estimate(
 		}
 
 		if newNodesAvailable {
-			// Since fastpath binpacking adds just one node to the snapshot, it will cause unaccurate simulations on subsequent loops, therefore we only use it on the last group
-			if e.fastpathBinpackingEnabled && i == len(podsEquivalenceGroups)-1 && shouldUseFastPath(remainingPods) {
+			// Since fastpath binpacking adds just one node to the snapshot, it will cause inaccurate simulations on subsequent loops, therefore we only use it on the last group
+			if i == len(podsEquivalenceGroups)-1 && useFastpathOnLastPEG {
 				newNodesAvailable, err = e.tryFastPath(estimationState, nodeTemplate, remainingPods)
 			} else {
 				newNodesAvailable, err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
@@ -264,6 +266,9 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 	return true, nil
 }
 
+// An optimized version of tryToScheduleOnNewNodes
+// It attempts to pack as much pods as possible on a single node, and then estimates the total
+// amount of nodes by simple arithmetic: EstimatedNodes = ceil(TotalPods / PodsFittingOnASingleNode)
 func (e *BinpackingNodeEstimator) tryFastPath(
 	estimationState *estimationState,
 	nodeTemplate *framework.NodeInfo,
@@ -389,18 +394,6 @@ func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup,
 	metrics.ObserveBinpackingHeterogeneity(instanceType, cpuCount, nsCountBucket, len(podsEquivalenceGroups))
 }
 
-func hasNonHostnameTopologyConstraint(pod *apiv1.Pod) bool {
-	if pod.Spec.TopologySpreadConstraints == nil {
-		return false
-	}
-	for _, constraint := range pod.Spec.TopologySpreadConstraints {
-		if constraint.TopologyKey != apiv1.LabelHostname {
-			return true
-		}
-	}
-	return false
-}
-
 func hasNonHostnamePodAntiAffinity(pod *apiv1.Pod) bool {
 	if pod.Spec.Affinity == nil || pod.Spec.Affinity.PodAntiAffinity == nil || pod.Spec.Affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution == nil {
 		return false
@@ -418,7 +411,9 @@ func shouldUseFastPath(pods []*apiv1.Pod) bool {
 		return false
 	}
 
-	if hasNonHostnameTopologyConstraint(pods[0]) || hasNonHostnamePodAntiAffinity(pods[0]) {
+	// Fastpath assumes once it cannot schedule any more pods on a node, the node is full.
+	// This assumption is not correct in cases of topology spread constraints and zonal/regional pod anti affinity.
+	if pods[0].Spec.TopologySpreadConstraints != nil || hasNonHostnamePodAntiAffinity(pods[0]) {
 		return false
 	}
 
@@ -426,7 +421,7 @@ func shouldUseFastPath(pods []*apiv1.Pod) bool {
 }
 
 // determineBestPEGToFastpath returns the index of the pod equivalence group that would benefit the most from fastpath binpacking (= largest expected number of (nodes * pods))
-// returns -1 if it wasn't possible to determine such group
+// returns -1 if none of the groups support fastpath binpacking
 func determineBestPEGToFastpath(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) int {
 	maxNodesTimesPods := 0
 	bestPEGIndex := -1
@@ -445,8 +440,8 @@ func determineBestPEGToFastpath(podsEquivalenceGroups []PodEquivalenceGroup, nod
 				}
 			}
 		}
-		if peg.Exemplar().Spec.Resources != nil && peg.Exemplar().Spec.Resources.Requests != nil {
-			resourcesRequests := peg.Exemplar().Spec.Resources.Requests
+		if len(peg.Exemplar().Spec.Containers) > 0 && peg.Exemplar().Spec.Containers[0].Resources.Requests != nil {
+			resourcesRequests := peg.Exemplar().Spec.Containers[0].Resources.Requests
 			if resourcesRequests.Cpu() != nil {
 				numNodesByCpu = int(math.Ceil(float64(len(peg.Pods)) * resourcesRequests.Cpu().AsApproximateFloat64() / nodeTemplate.Node().Status.Capacity.Cpu().AsApproximateFloat64()))
 			}
@@ -455,7 +450,8 @@ func determineBestPEGToFastpath(podsEquivalenceGroups []PodEquivalenceGroup, nod
 			}
 		}
 		nodesTimesPods := max(numNodesByAntiAffinity, numNodesByCpu, numNodesByMemory) * len(peg.Pods)
-		if nodesTimesPods > maxNodesTimesPods && shouldUseFastPath(peg.Pods) {
+		// In case the (nodes*pods) score is equal, we still want to take the latest pod group to remain as close to the original pod ordering as possible
+		if nodesTimesPods >= maxNodesTimesPods && shouldUseFastPath(peg.Pods) {
 			bestPEGIndex = i
 			maxNodesTimesPods = nodesTimesPods
 		}
