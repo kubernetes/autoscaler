@@ -373,7 +373,8 @@ spec:
             x-kubernetes-validations:
             - message: If X is set, replicas or limits must also be set
               rule: '!has(self.podTemplateRef) || has(self.replicas) || has(self.limits)'
-            - message: You must define both PodTemplateRef and ScalableRef
+            - message: You must define either PodTemplateRef or ScalableRef, but not
+                both
               rule: '!(has(self.podTemplateRef) && has(self.scalableRef))'
           status:
             description: Status represents the current state of the buffer and its
