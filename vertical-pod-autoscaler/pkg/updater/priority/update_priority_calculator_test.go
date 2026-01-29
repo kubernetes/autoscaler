@@ -763,7 +763,7 @@ func TestAddPodWithInfeasibleAttempts(t *testing.T) {
 		},
 		{
 			name:            "Auto mode: same recommendation as last infeasible attempt",
-			updateMode:      vpa_types.UpdateModeAuto,
+			updateMode:      vpa_types.UpdateModeAuto, //nolint:staticcheck
 			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
 			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
 			shouldAddPod:    true,

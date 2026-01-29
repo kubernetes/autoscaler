@@ -85,7 +85,6 @@ func (pb *podBuilderImpl) WithUID(uid types.UID) PodBuilder {
 	r := *pb
 	r.uid = uid
 	return &r
-
 }
 
 func (pb *podBuilderImpl) AddContainer(container apiv1.Container) PodBuilder {

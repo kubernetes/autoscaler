@@ -318,6 +318,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 			case utils.InPlaceApproved:
 				klog.V(2).InfoS("In-place update approved", "pod", klog.KObj(pod))
 				// Proceed with in-place update
+			default:
+				klog.ErrorS(nil, "Unexpected in-place update decision, skipping pod", "decision", decision, "pod", klog.KObj(pod))
+				continue
 			}
 
 			err = u.inPlaceRateLimiter.Wait(ctx)
