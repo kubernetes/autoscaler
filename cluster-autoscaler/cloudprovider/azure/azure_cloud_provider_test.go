@@ -378,6 +378,7 @@ func TestNodeGroupForNode(t *testing.T) {
 			} else {
 				provider.azureManager.config.EnableVmssFlexNodes = true
 				mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+				mockVMClient.EXPECT().ListVmssFlexVMsWithOutInstanceView(gomock.Any(), gomock.Any(), gomock.Any()).Return(expectedVMs, nil).AnyTimes()
 			}
 
 			registered := provider.azureManager.RegisterNodeGroup(

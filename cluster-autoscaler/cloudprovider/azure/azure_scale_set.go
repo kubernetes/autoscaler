@@ -353,15 +353,24 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]*armcompute.VirtualMachineScaleSet
 
 // GetFlexibleScaleSetVms returns list of nodes for flexible scale set.
 func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]*armcompute.VirtualMachine, error) {
-	klog.V(4).Infof("GetScaleSetVms: starts")
+	klog.V(4).Infof("GetFlexibleScaleSetVms: starts")
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
-	// For flexible scale sets, list all VMs in the resource group
-	// TODO: filter by VMSS ID if needed
-	vmList, err := scaleSet.manager.azClient.virtualMachinesClient.List(ctx, scaleSet.manager.config.ResourceGroup)
+	// Get VMSS info from cache to obtain ID - scaleSet does not store ID directly
+	vmssInfo, err := scaleSet.getVMSSFromCache()
 	if err != nil {
-		klog.Errorf("VirtualMachinesClient.List failed for %s: %v", scaleSet.Name, err)
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		return nil, err
+	}
+
+	if vmssInfo.ID == nil {
+		return nil, fmt.Errorf("VMSS %s has no ID", scaleSet.Name)
+	}
+
+	vmList, err := scaleSet.manager.azClient.virtualMachinesClient.ListVmssFlexVMsWithOutInstanceView(ctx, scaleSet.manager.config.ResourceGroup, *vmssInfo.ID)
+	if err != nil {
+		klog.Errorf("VirtualMachinesClient.ListVmssFlexVMsWithOutInstanceView failed for %s: %v", scaleSet.Name, err)
 		return nil, err
 	}
 	klog.V(4).Infof("GetFlexibleScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
