@@ -341,7 +341,7 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]*armcompute.VirtualMachineScaleSet
 	klog.V(4).Infof("GetScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
 
 	if err != nil {
-		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
+		klog.Errorf("virtualMachineScaleSetVMsClient.ListVMInstanceView failed for %s: %v", scaleSet.Name, err)
 		return nil, err
 	}
 
