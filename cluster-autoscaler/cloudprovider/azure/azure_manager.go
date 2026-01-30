@@ -19,12 +19,15 @@ limitations under the License.
 package azure
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -44,12 +47,21 @@ const (
 )
 
 // isErrorRetriable checks if an error is retriable.
-// This is a local implementation of the former retry.IsErrorRetriable function.
 func isErrorRetriable(err error) bool {
 	if err == nil {
 		return false
 	}
-	return strings.Contains(err.Error(), "Retriable: true")
+
+	var respErr *azcore.ResponseError
+	if errors.As(err, &respErr) {
+		// 429 (Too Many Requests) and 5xx errors are retriable
+		if respErr.StatusCode == http.StatusTooManyRequests ||
+			(respErr.StatusCode >= 500 && respErr.StatusCode < 600) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // AzureManager handles Azure communication and data caching.
