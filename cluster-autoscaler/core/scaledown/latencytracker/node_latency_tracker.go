@@ -113,7 +113,7 @@ func (t *NodeLatencyTracker) recordAndCleanup(nodeName string, isRemoved bool) {
 	duration := time.Since(info.unneededSince)
 	latency := duration - info.removalThreshold
 
-	if isRemoved || latency > 0 {
+	if latency > 0 {
 		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, latency)
 	} else {
 		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v",
