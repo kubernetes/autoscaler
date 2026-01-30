@@ -26,7 +26,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"k8s.io/utils/ptr"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -525,41 +524,8 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 func (as *AgentPool) deleteBlob(accountName, vhdContainer, vhdBlob string) error {
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-
-	keys, rerr := as.manager.azClient.storageAccountsClient.ListKeys(ctx, as.manager.config.ResourceGroup, accountName)
-	if rerr != nil {
-		return rerr
-	}
-
-	if len(keys) == 0 {
-		return fmt.Errorf("no storage keys found for account %s", accountName)
-	}
-
-	key := findStorageKeyByName(keys, storageKeyName)
-	if key == nil {
-		return fmt.Errorf("storage key %q not found for account %s", storageKeyName, accountName)
-	}
-
-	// Build blob URL and create client with shared key credentials
-	blobURL := fmt.Sprintf("https://%s.blob.%s/%s/%s",
-		accountName,
-		as.manager.env.StorageEndpointSuffix,
-		vhdContainer,
-		vhdBlob)
-	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(key.Value, ""))
-	if err != nil {
-		return fmt.Errorf("failed to create shared key credential: %w", err)
-	}
-
-	blobClient, err := azblob.NewClientWithSharedKeyCredential(blobURL, credential, nil)
-	if err != nil {
-		return fmt.Errorf("failed to create blob client: %w", err)
-	}
-
-	_, err = blobClient.DeleteBlob(ctx, vhdContainer, vhdBlob, nil)
-	return err
+	util := &AzUtil{manager: as.manager}
+	return util.DeleteBlob(accountName, vhdContainer, vhdBlob)
 }
 
 // deleteVirtualMachine deletes a VM and any associated OS disk

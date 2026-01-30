@@ -146,18 +146,16 @@ func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error 
 		return fmt.Errorf("storage key %q not found for account %s", storageKeyName, accountName)
 	}
 
-	// Build blob URL and create client with shared key credentials
-	blobURL := fmt.Sprintf("https://%s.blob.%s/%s/%s",
+	// Build service URL and create client with shared key credentials
+	serviceURL := fmt.Sprintf("https://%s.blob.%s",
 		accountName,
-		util.manager.env.StorageEndpointSuffix,
-		vhdContainer,
-		vhdBlob)
+		util.manager.env.StorageEndpointSuffix)
 	credential, err := azblob.NewSharedKeyCredential(accountName, ptr.Deref(key.Value, ""))
 	if err != nil {
 		return fmt.Errorf("failed to create shared key credential: %w", err)
 	}
 
-	blobClient, err := azblob.NewClientWithSharedKeyCredential(blobURL, credential, nil)
+	blobClient, err := azblob.NewClientWithSharedKeyCredential(serviceURL, credential, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create blob client: %w", err)
 	}
