@@ -28,7 +28,7 @@ set -o errexit
 # - Only one MIG, the nodes follow a pattern where stripping the last segment yields the MIG name.
 # - ProviderID format is gce://<project>/<zone>/<name>
 
-CA_ROOT=$(dirname ${BASH_SOURCE})/..
+CA_ROOT=$(dirname ${BASH_SOURCE})/../..
 export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
 # Default to a tag based on git commit. If there are local changes, add -dirty and a timestamp to avoid push collisions.
@@ -95,6 +95,6 @@ sed -e "s|{{IMAGE}}|${IMAGE}|g" \
     -e "s|{{KUBERNETES_SERVICE_PORT}}|${KUBERNETES_SERVICE_PORT}|g" \
     -e "s|{{NODES_SPEC}}|${NODES_SPEC}|g" \
     -e "s|{{EXTRA_CA_FLAGS}}|${EXTRA_CA_FLAGS}|g" \
-    ${CA_ROOT}/hack/gce-deployment-template.yaml | kubectl apply -f -
+    ${CA_ROOT}/hack/e2e/gce-deployment-template.yaml | kubectl apply -f -
 
 echo "Deployed ${IMAGE} to cluster."
