@@ -333,12 +333,12 @@ func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-// GetScaleSetVms returns list of nodes for the given scale set.
+// GetScaleSetVms returns list of nodes for the given scale set (includes InstanceView for power state).
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]*armcompute.VirtualMachineScaleSetVM, error) {
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
-	vmList, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, scaleSet.manager.config.ResourceGroup,
+	vmList, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.ListVMInstanceView(ctx, scaleSet.manager.config.ResourceGroup,
 		scaleSet.Name)
 
 	klog.V(4).Infof("GetScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
