@@ -115,12 +115,15 @@ func (t *NodeLatencyTracker) recordAndCleanup(nodeName string, isRemoved bool) {
 
 	if isRemoved || latency > 0 {
 		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, latency)
+	} else {
+		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v",
+			nodeName, duration, info.removalThreshold, latency, isRemoved)
 	}
 	if isRemoved {
 		t.logDeletion(nodeName, duration, info.removalThreshold, latency)
 	} else {
-		klog.V(4).Infof("Node %q is unremovable, became needed again (unneeded for %s).",
-			nodeName, duration)
+		klog.V(4).Infof("Node %q is unremovable, became needed again (unneeded for %s). Latency: %s",
+			nodeName, duration, latency)
 	}
 }
 
