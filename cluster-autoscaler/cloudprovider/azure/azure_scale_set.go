@@ -718,9 +718,8 @@ func (scaleSet *ScaleSet) buildScaleSetCacheForFlex() error {
 			scaleSet.lastInstanceRefresh = lastRefresh
 			return nil
 		}
-		klog.Warningf("buildScaleSetCacheForFlex: GetFlexibleScaleSetVms() failed with message %v, would return the cached instances", err)
-		scaleSet.lastInstanceRefresh = lastRefresh
-		return nil
+		klog.Errorf("buildScaleSetCacheForFlex: GetFlexibleScaleSetVms() failed with error: %v", err)
+		return err
 	}
 
 	scaleSet.instanceCache = buildInstanceCacheForFlex(vms, scaleSet.enableFastDeleteOnFailedProvisioning)
@@ -751,9 +750,8 @@ func (scaleSet *ScaleSet) buildScaleSetCacheForUniform() error {
 			scaleSet.lastInstanceRefresh = lastRefresh
 			return nil
 		}
-		klog.Warningf("updateInstanceCache: GetScaleSetVms() failed with message %v, would return the cached instances", err)
-		scaleSet.lastInstanceRefresh = lastRefresh
-		return nil
+		klog.Errorf("updateInstanceCache: GetScaleSetVms() failed with error: %v", err)
+		return err
 	}
 
 	instances := []cloudprovider.Instance{}
