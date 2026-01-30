@@ -2,6 +2,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+{{- with .Values.rbac.annotations }}
+  annotations:
+  {{- range $k, $v := . }}
+    {{- printf "%s: %s" (tpl $k $) (tpl $v $) | nindent 4 }}
+  {{- end }}
+{{- end }}
   labels:
 {{ include "cluster-autoscaler.labels" . | indent 4 }}
   name: {{ template "cluster-autoscaler.fullname" . }}
