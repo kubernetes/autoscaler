@@ -17,10 +17,13 @@ limitations under the License.
 package azure
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/stretchr/testify/assert"
 )
@@ -255,46 +258,58 @@ func TestConvertResourceGroupNameToLower(t *testing.T) {
 
 // TestIsAzureRequestsThrottled tests isAzureRequestsThrottled function
 func TestIsAzureRequestsThrottled(t *testing.T) {
-	t.Skip("This test is disabled because isAzureRequestsThrottled was removed during SDK v2 migration")
-	/*
-		tests := []struct {
-			desc     string
-			rerr     *retry.Error
-			expected bool
-		}{
+	tests := []struct {
+		desc           string
+		err            error
+		expectedThrot  bool
+		expectRetryGT0 bool
+	}{
+		{
+			desc:          "nil error should return false",
+			err:           nil,
+			expectedThrot: false,
+		},
+		{
+			desc:          "non-Azure error should return false",
+			err:           errors.New("some random error"),
+			expectedThrot: false,
+		},
+		{
+			desc: "non http.StatusTooManyRequests error should return false",
+			err: &azcore.ResponseError{
+				StatusCode: http.StatusBadRequest,
+			},
+			expectedThrot: false,
+		},
+		{
+			desc: "http.StatusTooManyRequests error should return true",
+			err: &azcore.ResponseError{
+				StatusCode: http.StatusTooManyRequests,
+			},
+			expectedThrot: true,
+		},
+		{
+			desc: "http.StatusTooManyRequests with Retry-After header",
+			err: &azcore.ResponseError{
+				StatusCode: http.StatusTooManyRequests,
+				RawResponse: &http.Response{
+					Header: http.Header{
+						"Retry-After": []string{"120"},
+					},
+				},
+			},
+			expectedThrot:  true,
+			expectRetryGT0: true,
+		},
+	}
 
-			{
-				desc:     "nil error should return false",
-				expected: false,
-			},
-			{
-				desc: "non http.StatusTooManyRequests error should return false",
-				rerr: &retry.Error{
-					HTTPStatusCode: http.StatusBadRequest,
-				},
-				expected: false,
-			},
-			{
-				desc: "http.StatusTooManyRequests error should return true",
-				rerr: &retry.Error{
-					HTTPStatusCode: http.StatusTooManyRequests,
-				},
-				expected: true,
-			},
-			{
-				desc: "Nul HTTP code and non-expired Retry-After should return true",
-				rerr: &retry.Error{
-					RetryAfter: time.Now().Add(time.Hour),
-				},
-				expected: true,
-			},
+	for _, test := range tests {
+		throttled, retryAfter := isAzureRequestsThrottled(test.err)
+		assert.Equal(t, test.expectedThrot, throttled, test.desc)
+		if test.expectRetryGT0 {
+			assert.Greater(t, retryAfter, time.Duration(0), test.desc)
 		}
-
-		for _, test := range tests {
-			real := isAzureRequestsThrottled(test.rerr)
-			assert.Equal(t, test.expected, real, test.desc)
-		}
-	*/
+	}
 }
 
 func TestNormalizeMasterResourcesForScaling(t *testing.T) {

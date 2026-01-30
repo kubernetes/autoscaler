@@ -19,6 +19,7 @@ package azure
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -30,6 +31,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
@@ -592,6 +594,48 @@ func convertResourceGroupNameToLower(resourceID string) (string, error) {
 
 	resourceGroup := matches[1]
 	return strings.Replace(resourceID, resourceGroup, strings.ToLower(resourceGroup), 1), nil
+}
+
+// isAzureRequestsThrottled checks if an error is an Azure throttling (429) error
+// and returns the retry-after duration if available.
+func isAzureRequestsThrottled(err error) (bool, time.Duration) {
+	if err == nil {
+		return false, 0
+	}
+
+	var respErr *azcore.ResponseError
+	if errors.As(err, &respErr) {
+		if respErr.StatusCode == http.StatusTooManyRequests {
+			retryAfter := parseRetryAfterHeader(respErr.RawResponse)
+			return true, retryAfter
+		}
+	}
+	return false, 0
+}
+
+// parseRetryAfterHeader parses the Retry-After header from an HTTP response.
+// It supports both seconds format (e.g., "120") and HTTP-date format.
+func parseRetryAfterHeader(resp *http.Response) time.Duration {
+	if resp == nil {
+		return 0
+	}
+
+	retryAfter := resp.Header.Get("Retry-After")
+	if retryAfter == "" {
+		return 0
+	}
+
+	// Try parsing as seconds first
+	if seconds, err := strconv.Atoi(retryAfter); err == nil {
+		return time.Duration(seconds) * time.Second
+	}
+
+	// Try parsing as HTTP-date
+	if t, err := http.ParseTime(retryAfter); err == nil {
+		return time.Until(t)
+	}
+
+	return 0
 }
 
 func isRunningVmPowerState(powerState string) bool {

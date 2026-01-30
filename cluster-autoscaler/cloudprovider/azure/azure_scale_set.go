@@ -645,8 +645,22 @@ func (scaleSet *ScaleSet) buildScaleSetCacheForFlex() error {
 
 	vms, err := scaleSet.GetFlexibleScaleSetVms()
 	if err != nil {
-		// Check if throttled - note: SDK v2 errors need different handling
-		klog.Warningf("GetFlexibleScaleSetVms() failed with message %v, would return the cached instances", err)
+		if throttled, retryAfter := isAzureRequestsThrottled(err); throttled {
+			// Log a warning and update the instance refresh time so that it would retry after cache expiration
+			// Ensure to retry no sooner than retryAfter
+			klog.Warningf("buildScaleSetCacheForFlex: GetFlexibleScaleSetVms() is throttled, would return the cached instances")
+			if retryAfter > 0 {
+				nextRefresh := lastRefresh.Add(scaleSet.instancesRefreshPeriod)
+				retryTime := time.Now().Add(retryAfter)
+				if nextRefresh.Before(retryTime) {
+					delay := retryTime.Sub(nextRefresh)
+					lastRefresh = lastRefresh.Add(delay)
+				}
+			}
+			scaleSet.lastInstanceRefresh = lastRefresh
+			return nil
+		}
+		klog.Warningf("buildScaleSetCacheForFlex: GetFlexibleScaleSetVms() failed with message %v, would return the cached instances", err)
 		scaleSet.lastInstanceRefresh = lastRefresh
 		return nil
 	}
@@ -664,7 +678,21 @@ func (scaleSet *ScaleSet) buildScaleSetCacheForUniform() error {
 	lastRefresh := time.Now().Add(-time.Second * time.Duration(splay))
 	vms, err := scaleSet.GetScaleSetVms()
 	if err != nil {
-		// Check if throttled - note: SDK v2 errors need different handling
+		if throttled, retryAfter := isAzureRequestsThrottled(err); throttled {
+			// Log a warning and update the instance refresh time so that it would retry later.
+			// Ensure to retry no sooner than retryAfter
+			klog.Warningf("updateInstanceCache: GetScaleSetVms() is throttled, would return the cached instances")
+			if retryAfter > 0 {
+				nextRefresh := lastRefresh.Add(scaleSet.instancesRefreshPeriod)
+				retryTime := time.Now().Add(retryAfter)
+				if nextRefresh.Before(retryTime) {
+					delay := retryTime.Sub(nextRefresh)
+					lastRefresh = lastRefresh.Add(delay)
+				}
+			}
+			scaleSet.lastInstanceRefresh = lastRefresh
+			return nil
+		}
 		klog.Warningf("updateInstanceCache: GetScaleSetVms() failed with message %v, would return the cached instances", err)
 		scaleSet.lastInstanceRefresh = lastRefresh
 		return nil
