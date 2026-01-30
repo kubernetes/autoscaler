@@ -58,6 +58,21 @@ func (m *MockVMSSDeleteClient) EXPECT() *MockVMSSDeleteClientMockRecorder {
 	return m.recorder
 }
 
+// BeginCreateOrUpdate mocks base method.
+func (m *MockVMSSDeleteClient) BeginCreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters armcompute.VirtualMachineScaleSet, options *armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BeginCreateOrUpdate", ctx, resourceGroupName, vmScaleSetName, parameters, options)
+	ret0, _ := ret[0].(*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse])
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BeginCreateOrUpdate indicates an expected call of BeginCreateOrUpdate.
+func (mr *MockVMSSDeleteClientMockRecorder) BeginCreateOrUpdate(ctx, resourceGroupName, vmScaleSetName, parameters, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginCreateOrUpdate", reflect.TypeOf((*MockVMSSDeleteClient)(nil).BeginCreateOrUpdate), ctx, resourceGroupName, vmScaleSetName, parameters, options)
+}
+
 // BeginDeleteInstances mocks base method.
 func (m *MockVMSSDeleteClient) BeginDeleteInstances(ctx context.Context, resourceGroupName, vmScaleSetName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error) {
 	m.ctrl.T.Helper()

@@ -71,8 +71,13 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			virtualMachineScaleSetsClient:   mockVMSSClient,
 			virtualMachineScaleSetVMsClient: mockVMSSVMClient,
 			virtualMachinesClient:           mockVMClient,
-			// Create a mock for the delete client interface
-			vmssClientForDelete: NewMockVMSSDeleteClient(ctrl),
+			// Create a mock for the delete client interface with default expectations
+			vmssClientForDelete: func() VMSSDeleteClient {
+				mock := NewMockVMSSDeleteClient(ctrl)
+				mock.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mock.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				return mock
+			}(),
 			deploymentClient: &DeploymentClientMock{
 				FakeStore: map[string]armresources.DeploymentExtended{
 					"deployment": {

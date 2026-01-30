@@ -27,10 +27,12 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient"
 )
 
-// VMSSDeleteClient is an interface for deleting VMSS instances.
-// This interface wraps the azclient's VMSS client to access BeginDeleteInstances via the embedded SDK client.
+// VMSSDeleteClient is an interface for async VMSS operations.
+// This interface wraps the azclient's VMSS client to access BeginDeleteInstances and BeginCreateOrUpdate
+// via the embedded SDK client for async polling.
 type VMSSDeleteClient interface {
 	BeginDeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error)
+	BeginCreateOrUpdate(ctx context.Context, resourceGroupName string, vmScaleSetName string, parameters armcompute.VirtualMachineScaleSet, options *armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error)
 }
 
 // vmssDeleteClientWrapper wraps the azclient's VMSS client.
@@ -54,4 +56,9 @@ func NewVMSSDeleteClient(vmssClient virtualmachinescalesetclient.Interface) VMSS
 // BeginDeleteInstances implements the VMSSDeleteClient interface.
 func (w *vmssDeleteClientWrapper) BeginDeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error) {
 	return w.client.VirtualMachineScaleSetsClient.BeginDeleteInstances(ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs, options)
+}
+
+// BeginCreateOrUpdate implements the VMSSDeleteClient interface.
+func (w *vmssDeleteClientWrapper) BeginCreateOrUpdate(ctx context.Context, resourceGroupName string, vmScaleSetName string, parameters armcompute.VirtualMachineScaleSet, options *armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+	return w.client.VirtualMachineScaleSetsClient.BeginCreateOrUpdate(ctx, resourceGroupName, vmScaleSetName, parameters, options)
 }

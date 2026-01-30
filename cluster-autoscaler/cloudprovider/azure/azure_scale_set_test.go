@@ -275,12 +275,18 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 
 		mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
-		mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG, gomock.Any()).Return(nil, nil).AnyTimes()
 		// This should be Anytimes() because the parent function of this call - updateVMSSCapacity() is a goroutine
 		// and this test doesn't wait on goroutine, hence, it is difficult to write exact expected number (which is 3 here)
 		// before we return from this this.
 		// This is a future TODO: sync.WaitGroup should be used in actual code and make code easily testable
 		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+		// Mock the vmssClientForDelete for async CreateOrUpdate calls
+		mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+		mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+		mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+		provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
 		mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
 		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
@@ -331,7 +337,7 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		assert.Equal(t, 3, targetSizeForEdgeZone)
 
 		mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), provider.azureManager.config.ResourceGroup,
-			"edgezone-vmss", gomock.Any()).Return(nil, nil)
+			"edgezone-vmss", gomock.Any()).Return(nil, nil).AnyTimes()
 		err = provider.NodeGroups()[1].IncreaseSize(2)
 		assert.NoError(t, err)
 
@@ -351,7 +357,7 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		assert.Equal(t, 0, targetSizeForEdgeZoneMinZero)
 
 		mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), provider.azureManager.config.ResourceGroup,
-			"edgezone-minzero-vmss", gomock.Any()).Return(nil, nil)
+			"edgezone-minzero-vmss", gomock.Any()).Return(nil, nil).AnyTimes()
 		err = provider.NodeGroups()[2].IncreaseSize(2)
 		assert.NoError(t, err)
 
@@ -412,8 +418,14 @@ func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 
 			mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 			mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil)
-			mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(nil, nil).AnyTimes()
 			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+			// Mock the vmssClientForDelete for async CreateOrUpdate calls
+			mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+			mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			manager.azClient.vmssClientForDelete = mockDeleteClient
+
 			mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "vmss-failed-upscale").Return(expectedVMSSVMs, nil).AnyTimes()
 			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
@@ -500,8 +512,14 @@ func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
 
 			mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 			mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil)
-			mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(nil, nil).AnyTimes()
 			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+			// Mock the vmssClientForDelete for async CreateOrUpdate calls
+			mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+			mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			manager.azClient.vmssClientForDelete = mockDeleteClient
+
 			mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "vmss-failed-upscale").Return(expectedVMSSVMs, nil).AnyTimes()
 			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
@@ -565,9 +583,14 @@ func TestScaleSetIncreaseSizeOnVMSSUpdating(t *testing.T) {
 
 	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil)
-	mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(
-		nil, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// Mock the vmssClientForDelete for async CreateOrUpdate calls
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	manager.azClient.vmssClientForDelete = mockDeleteClient
+
 	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "vmss-updating").Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient

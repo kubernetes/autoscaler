@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -435,10 +436,10 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMa
 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
-	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
-	_, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.BeginCreateOrUpdate(%s)", scaleSet.Name)
+	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, nil)
 	if err != nil {
-		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, err)
+		klog.Errorf("virtualMachineScaleSetsClient.BeginCreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, err)
 		return err
 	}
 
@@ -446,7 +447,33 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMa
 	scaleSet.curSize = newSize
 	scaleSet.lastSizeRefresh = time.Now()
 
+	// Poll for completion asynchronously to avoid blocking the autoscaler
+	if poller != nil {
+		go scaleSet.waitForCreateOrUpdateInstances(poller)
+	}
 	return nil
+}
+
+// waitForCreateOrUpdateInstances waits for the outcome of VMSS capacity update initiated via BeginCreateOrUpdate.
+func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse]) {
+	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
+	defer cancel()
+
+	klog.V(3).Infof("Calling PollUntilDone for CreateOrUpdate(%s)", scaleSet.Name)
+	_, err := poller.PollUntilDone(ctx, nil)
+
+	// Invalidate instanceCache on success and failure. Failure might have created a few instances, but it is very rare.
+	scaleSet.invalidateInstanceCache()
+
+	if err != nil {
+		klog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, err)
+		// Invalidate the VMSS size cache in order to fetch the size from the API.
+		scaleSet.invalidateLastSizeRefreshWithLock()
+		scaleSet.manager.invalidateCache()
+		return
+	}
+
+	klog.V(3).Infof("PollUntilDone for CreateOrUpdate(%s) success", scaleSet.Name)
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same nodegroup.
