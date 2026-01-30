@@ -16,8 +16,9 @@
 
 set -o nounset
 set -o pipefail
+set -o errexit
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+CA_ROOT=$(dirname ${BASH_SOURCE})/../..
 
-${SCRIPT_ROOT}/hack/deploy-ca-on-gce-for-e2e.sh
-${SCRIPT_ROOT}/hack/run-e2e-tests.sh "$@"
+${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh
+${CA_ROOT}/hack/e2e/run-e2e-tests.sh "$@"

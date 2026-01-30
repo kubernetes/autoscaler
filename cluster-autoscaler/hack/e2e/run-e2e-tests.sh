@@ -16,8 +16,9 @@
 
 set -o nounset
 set -o pipefail
+set -o errexit
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+CA_ROOT=$(dirname ${BASH_SOURCE})/../..
 
 function print_help {
   echo "Usage: run-e2e-tests.sh [FOCUS]"
@@ -38,13 +39,13 @@ FOCUS=${1:-"\[sig-autoscaling\]"}
 # 400m allocates ~20 mins per each test case.
 TIMEOUT=${TIMEOUT:-400m}
 
-ABSOLUTE_PATH=$(cd "${SCRIPT_ROOT}"; pwd)
+ABSOLUTE_PATH=$(cd "${CA_ROOT}"; pwd)
 export GOBIN="${ABSOLUTE_PATH}/e2e/_output/bin"
 export ARTIFACTS=${ARTIFACTS:-"${ABSOLUTE_PATH}/e2e/_artifacts"}
 
 export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
-pushd "${SCRIPT_ROOT}/e2e" >/dev/null
+pushd "${CA_ROOT}/e2e" >/dev/null
 
 echo "Installing ginkgo..."
 mkdir -p "${GOBIN}"
