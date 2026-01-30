@@ -542,9 +542,9 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
-	err = scaleSet.deleteInstances(ctx, requiredIds, commonAsg.Id())
+	poller, err := scaleSet.deleteInstances(ctx, requiredIds, commonAsg.Id())
 	if err != nil {
-		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstances for instances %v for %s failed: %+v", requiredIds.InstanceIDs, scaleSet.Name, err)
+		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v for %s failed: %+v", requiredIds.InstanceIDs, scaleSet.Name, err)
 		return err
 	}
 
@@ -566,7 +566,32 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 		}
 	}
 
+	if poller != nil {
+		go scaleSet.waitForDeleteInstances(poller, requiredIds)
+	}
 	return nil
+}
+
+func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
+	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
+	defer cancel()
+
+	klog.V(3).Infof("Calling PollUntilDone for DeleteInstances(%v) for %s", requiredIds.InstanceIDs, scaleSet.Name)
+	_, err := poller.PollUntilDone(ctx, nil)
+	if err == nil {
+		klog.V(3).Infof("PollUntilDone for DeleteInstances(%v) for %s success", requiredIds.InstanceIDs, scaleSet.Name)
+		if scaleSet.manager.config.StrictCacheUpdates {
+			if err := scaleSet.manager.forceRefresh(); err != nil {
+				klog.Errorf("forceRefresh failed with error: %v", err)
+			}
+			scaleSet.invalidateInstanceCache()
+		}
+		return
+	}
+	if !scaleSet.manager.config.StrictCacheUpdates {
+		scaleSet.invalidateInstanceCache()
+	}
+	klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
 }
 
 // DeleteNodes deletes the nodes from the group.

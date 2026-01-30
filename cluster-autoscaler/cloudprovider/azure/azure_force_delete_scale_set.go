@@ -63,7 +63,7 @@ var isolatedVMSizes = map[string]bool{
 	strings.ToLower("Standard_M128ms"):      true,
 }
 
-func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) error {
+func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error) {
 	scaleSet.instanceMutex.Lock()
 	defer scaleSet.instanceMutex.Unlock()
 
@@ -76,44 +76,11 @@ func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *armc
 	})
 	if forceDelete && isOperationNotAllowed(err) {
 		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIDs, scaleSet.Name)
-		poller, err = scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+		return scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
 			ForceDeletion: ptr.To(false),
 		})
 	}
-	if err != nil {
-		return err
-	}
-	if poller == nil {
-		return nil
-	}
-
-	// Run PollUntilDone asynchronously to match SDK v1 behavior
-	go scaleSet.waitForDeleteInstances(poller, requiredIds)
-	return nil
-}
-
-// waitForDeleteInstances waits for the outcome of VMSS instance deletion initiated via BeginDeleteInstances.
-func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
-	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
-	defer cancel()
-
-	klog.V(3).Infof("Calling PollUntilDone for DeleteInstances(%v) for %s", requiredIds.InstanceIDs, scaleSet.Name)
-	_, err := poller.PollUntilDone(ctx, nil)
-	if err == nil {
-		klog.V(3).Infof("PollUntilDone for DeleteInstances(%v) for %s success", requiredIds.InstanceIDs, scaleSet.Name)
-		if scaleSet.manager.config.StrictCacheUpdates {
-			if err := scaleSet.manager.forceRefresh(); err != nil {
-				klog.Errorf("forceRefresh failed with error: %v", err)
-			}
-			scaleSet.invalidateInstanceCache()
-		}
-		return
-	}
-	if !scaleSet.manager.config.StrictCacheUpdates {
-		// On failure, invalidate the instanceCache - cannot have instances in deletingState
-		scaleSet.invalidateInstanceCache()
-	}
-	klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
+	return poller, err
 }
 
 func shouldForceDelete(skuName string, scaleSet *ScaleSet) bool {
