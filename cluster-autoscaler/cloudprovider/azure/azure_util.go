@@ -638,6 +638,28 @@ func parseRetryAfterHeader(resp *http.Response) time.Duration {
 	return 0
 }
 
+// isNotFoundError checks if an error is a "not found" error
+func isNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	var respErr *azcore.ResponseError
+	if errors.As(err, &respErr) {
+		if respErr.StatusCode == http.StatusNotFound ||
+			strings.Contains(respErr.ErrorCode, "NotFound") ||
+			strings.Contains(respErr.ErrorCode, "ResourceNotFound") {
+			return true
+		}
+	}
+
+	// Fallback: check error message for compatibility
+	errMsg := err.Error()
+	return strings.Contains(errMsg, "ResourceNotFound") ||
+		strings.Contains(errMsg, "NotFound") ||
+		strings.Contains(errMsg, "404")
+}
+
 func isRunningVmPowerState(powerState string) bool {
 	return powerState == vmPowerStateRunning || powerState == vmPowerStateStarting
 }

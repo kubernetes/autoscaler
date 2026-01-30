@@ -17,15 +17,12 @@ limitations under the License.
 package azure
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
-	"net/http"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 
@@ -814,28 +811,6 @@ func vmPowerStateFromStatusesV2(statuses []*armcompute.InstanceViewStatus) strin
 		}
 	}
 	return vmPowerStateUnknown
-}
-
-// isNotFoundError checks if an error is a "not found" error
-func isNotFoundError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	var respErr *azcore.ResponseError
-	if errors.As(err, &respErr) {
-		if respErr.StatusCode == http.StatusNotFound ||
-			strings.Contains(respErr.ErrorCode, "NotFound") ||
-			strings.Contains(respErr.ErrorCode, "ResourceNotFound") {
-			return true
-		}
-	}
-
-	// Fallback: check error message for compatibility
-	errMsg := err.Error()
-	return strings.Contains(errMsg, "ResourceNotFound") ||
-		strings.Contains(errMsg, "NotFound") ||
-		strings.Contains(errMsg, "404")
 }
 
 // addVMToCache used by orchestrationMode == armcompute.OrchestrationModeFlexible
