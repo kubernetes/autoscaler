@@ -36,6 +36,8 @@ func (p *scoreProcessor) ScaleDownEarlierThan(node1, node2 *apiv1.Node) bool {
 	return p.scores[idx1] > p.scores[idx2]
 }
 
+func (p *scoreProcessor) ResetState() {}
+
 func TestSort(t *testing.T) {
 	testCases := []struct {
 		name          string
