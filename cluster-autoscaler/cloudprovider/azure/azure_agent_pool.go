@@ -597,7 +597,8 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 		if nicID == nil {
 			klog.Warningf("NIC ID is not set for VM (%s/%s)", as.manager.config.ResourceGroup, name)
 		} else {
-			nicName, err := resourceName(*nicID)
+			var err error
+			nicName, err = resourceName(*nicID)
 			if err != nil {
 				return err
 			}
