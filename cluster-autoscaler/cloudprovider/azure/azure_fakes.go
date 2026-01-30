@@ -35,8 +35,9 @@ const (
 type DeploymentClientMock struct {
 	mock.Mock
 
-	mutex     sync.Mutex
-	FakeStore map[string]armresources.DeploymentExtended
+	mutex         sync.Mutex
+	FakeStore     map[string]armresources.DeploymentExtended
+	TemplateStore map[string]map[string]interface{}
 }
 
 // Get gets the DeploymentExtended by deploymentName.
@@ -57,13 +58,18 @@ func (m *DeploymentClientMock) ExportTemplate(ctx context.Context, resourceGroup
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	deploy, ok := m.FakeStore[deploymentName]
+	_, ok := m.FakeStore[deploymentName]
 	if !ok {
 		return nil, fmt.Errorf("deployment not found")
 	}
 
+	template := m.TemplateStore[deploymentName]
+	if template == nil {
+		template = map[string]interface{}{"resources": []interface{}{}}
+	}
+
 	return &armresources.DeploymentExportResult{
-		Template: deploy.Properties.TemplateLink,
+		Template: template,
 	}, nil
 }
 

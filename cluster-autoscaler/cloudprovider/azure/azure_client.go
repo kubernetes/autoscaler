@@ -39,7 +39,6 @@ import (
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/accountclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/deploymentclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/diskclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/interfaceclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient"
@@ -188,7 +187,7 @@ type azClient struct {
 	virtualMachineScaleSetsClient   virtualmachinescalesetclient.Interface
 	virtualMachineScaleSetVMsClient virtualmachinescalesetvmclient.Interface
 	virtualMachinesClient           virtualmachineclient.Interface
-	deploymentClient                deploymentclient.Interface
+	deploymentClient                DeploymentClient
 	interfacesClient                interfaceclient.Interface
 	disksClient                     diskclient.Interface
 	storageAccountsClient           accountclient.Interface
@@ -303,7 +302,7 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		virtualMachineScaleSetsClient:   vmssClient,
 		virtualMachineScaleSetVMsClient: clientFactory.GetVirtualMachineScaleSetVMClient(),
 		virtualMachinesClient:           clientFactory.GetVirtualMachineClient(),
-		deploymentClient:                clientFactory.GetDeploymentClient(),
+		deploymentClient:                NewDeploymentClient(clientFactory.GetDeploymentClient()),
 		interfacesClient:                clientFactory.GetInterfaceClient(),
 		disksClient:                     clientFactory.GetDiskClient(),
 		storageAccountsClient:           clientFactory.GetAccountClient(),

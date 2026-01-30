@@ -82,21 +82,15 @@ func (as *AgentPool) initialize() error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	// Verify the deployment exists
-	deployment, err := as.manager.azClient.deploymentClient.Get(ctx, as.manager.config.ResourceGroup, as.manager.config.Deployment)
+	template, err := as.manager.azClient.deploymentClient.ExportTemplate(ctx, as.manager.config.ResourceGroup, as.manager.config.Deployment)
 	if err != nil {
-		klog.Errorf("deploymentClient.Get(%s, %s) failed: %v", as.manager.config.ResourceGroup, as.manager.config.Deployment, err)
+		klog.Errorf("deploymentClient.ExportTemplate(%s, %s) failed: %v", as.manager.config.ResourceGroup, as.manager.config.Deployment, err)
 		return err
 	}
 
-	if deployment.Properties == nil {
-		return fmt.Errorf("deployment properties is nil for deployment %s", as.manager.config.Deployment)
-	}
-
-	as.template = make(map[string]interface{})
+	as.template = template.Template.(map[string]interface{})
 	as.parameters = as.manager.config.DeploymentParameters
-
-	return nil
+	return normalizeForK8sVMASScalingUp(as.template)
 }
 
 // MinSize returns minimum size of the node group.

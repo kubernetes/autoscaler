@@ -89,6 +89,14 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 						},
 					},
 				},
+				TemplateStore: map[string]map[string]interface{}{
+					"deployment": {
+						resourcesFieldName: []interface{}{
+							map[string]interface{}{typeFieldName: nsgResourceType},
+							map[string]interface{}{typeFieldName: rtResourceType},
+						},
+					},
+				},
 			},
 		},
 	}
