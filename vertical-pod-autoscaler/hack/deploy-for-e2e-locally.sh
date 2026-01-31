@@ -165,3 +165,51 @@ helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
   --values "${VALUES_FILE}" \
   "${HELM_SET_ARGS[@]}" \
   --wait
+
+# Generate E2E rotation test certificates for admission-controller tests
+# This is needed for the certificate rotation E2E test
+for COMPONENT in ${COMPONENTS}; do
+  if [[ "${COMPONENT}" == "admission-controller" ]]; then
+    echo " ** Generating E2E rotation test certificates"
+    TMP_DIR=$(mktemp -d)
+    CN_BASE="vpa_webhook"
+
+    # Create server config for certificate generation
+    cat > "${TMP_DIR}/server.conf" << EOF
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth, serverAuth
+subjectAltName = DNS:vpa-webhook.kube-system.svc
+EOF
+
+    # Generate E2E CA and certificates
+    openssl genrsa -out "${TMP_DIR}/e2eCaKey.pem" 2048
+    openssl req -x509 -new -nodes -key "${TMP_DIR}/e2eCaKey.pem" -days 100000 \
+      -out "${TMP_DIR}/e2eCaCert.pem" -subj "/CN=${CN_BASE}_e2e_ca" \
+      -addext "subjectAltName = DNS:${CN_BASE}_e2e_ca"
+    openssl genrsa -out "${TMP_DIR}/e2eKey.pem" 2048
+    openssl req -new -key "${TMP_DIR}/e2eKey.pem" -out "${TMP_DIR}/e2e.csr" \
+      -subj "/CN=vpa-webhook.kube-system.svc" -config "${TMP_DIR}/server.conf"
+    openssl x509 -req -in "${TMP_DIR}/e2e.csr" -CA "${TMP_DIR}/e2eCaCert.pem" \
+      -CAkey "${TMP_DIR}/e2eCaKey.pem" -CAcreateserial -out "${TMP_DIR}/e2eCert.pem" \
+      -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
+
+    # Create the E2E certs secret
+    kubectl delete secret -n kube-system vpa-e2e-certs --ignore-not-found=true
+    kubectl create secret -n kube-system generic vpa-e2e-certs \
+      --from-file="${TMP_DIR}/e2eCaKey.pem" \
+      --from-file="${TMP_DIR}/e2eCaCert.pem" \
+      --from-file="${TMP_DIR}/e2eKey.pem" \
+      --from-file="${TMP_DIR}/e2eCert.pem"
+
+    # Clean up temp directory
+    rm -rf "${TMP_DIR}"
+    echo " ** E2E rotation test certificates created"
+    break
+  fi
+done
