@@ -70,6 +70,11 @@ esac
 export REGISTRY=${REGISTRY:-localhost:5001}
 export TAG=${TAG:-latest}
 
+# CertGen image details (must match charts/vertical-pod-autoscaler/values.yaml)
+CERTGEN_REGISTRY="registry.k8s.io"
+CERTGEN_IMAGE="ingress-nginx/kube-webhook-certgen"
+CERTGEN_TAG="v20231011-8b53cabe0"
+
 # Deploy metrics server for E2E tests
 kubectl apply -f "${SCRIPT_ROOT}/hack/e2e/k8s-metrics-server.yaml"
 
@@ -79,6 +84,13 @@ for COMPONENT in ${COMPONENTS}; do
   docker tag "${REGISTRY}/vpa-${COMPONENT}-${ARCH}:${TAG}" "${REGISTRY}/vpa-${COMPONENT}:${TAG}"
   kind load docker-image "${REGISTRY}/vpa-${COMPONENT}:${TAG}"
 done
+
+# Pre-load certGen image into Kind to prevent timeouts
+if [[ "${COMPONENTS}" == *"admission-controller"* ]]; then
+  echo " ** Loading certGen image into Kind..."
+  docker pull "${CERTGEN_REGISTRY}/${CERTGEN_IMAGE}:${CERTGEN_TAG}"
+  kind load docker-image "${CERTGEN_REGISTRY}/${CERTGEN_IMAGE}:${CERTGEN_TAG}"
+fi
 
 # Prepare Helm values
 HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
@@ -114,12 +126,14 @@ for COMPONENT in ${COMPONENTS}; do
 done
 
 # Add feature gates if specified
+RECOM_ARGS_IDX=0
 if [ -n "${FEATURE_GATES:-}" ]; then
   # Add feature gates to each enabled component
   for COMPONENT in ${COMPONENTS}; do
     case ${COMPONENT} in
       recommender)
-        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "recommender.extraArgs[${RECOM_ARGS_IDX}]=--feature-gates=${FEATURE_GATES}")
+        RECOM_ARGS_IDX=$((RECOM_ARGS_IDX + 1))
         ;;
       updater)
         HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
@@ -146,16 +160,12 @@ if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
   kubectl apply -f "${SCRIPT_ROOT}/hack/e2e/metrics-pump.yaml"
 
   # Initialize external metrics args
+  # Initialize external metrics args
   echo " ** Configuring recommender with external metrics args"
-  # Determine starting index for external metrics args (after feature gates if set)
-  EXTERNAL_METRICS_START_INDEX=0
-  if [ -n "${FEATURE_GATES:-}" ]; then
-    EXTERNAL_METRICS_START_INDEX=1
-  fi
   HELM_SET_ARGS+=("--values" "${SCRIPT_ROOT}/hack/e2e/values-external-metrics.yaml")
-  HELM_SET_ARGS+=("--set" "recommender.extraArgs[${EXTERNAL_METRICS_START_INDEX}]=--use-external-metrics=true")
-  HELM_SET_ARGS+=("--set" "recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 1))]=--external-metrics-cpu-metric=cpu")
-  HELM_SET_ARGS+=("--set" "recommender.extraArgs[$((EXTERNAL_METRICS_START_INDEX + 2))]=--external-metrics-memory-metric=mem")
+  HELM_SET_ARGS+=("--set" "recommender.extraArgs[${RECOM_ARGS_IDX}]=--use-external-metrics=true")
+  HELM_SET_ARGS+=("--set" "recommender.extraArgs[$((RECOM_ARGS_IDX + 1))]=--external-metrics-cpu-metric=cpu")
+  HELM_SET_ARGS+=("--set" "recommender.extraArgs[$((RECOM_ARGS_IDX + 2))]=--external-metrics-memory-metric=mem")
 fi
 
 # Install/Upgrade VPA using Helm chart
@@ -184,7 +194,7 @@ distinguished_name = req_distinguished_name
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth, serverAuth
-subjectAltName = DNS:vpa-webhook.kube-system.svc
+subjectAltName = DNS:vpa-webhook.${HELM_NAMESPACE}.svc
 EOF
 
     # Generate E2E CA and certificates
@@ -194,14 +204,14 @@ EOF
       -addext "subjectAltName = DNS:${CN_BASE}_e2e_ca"
     openssl genrsa -out "${TMP_DIR}/e2eKey.pem" 2048
     openssl req -new -key "${TMP_DIR}/e2eKey.pem" -out "${TMP_DIR}/e2e.csr" \
-      -subj "/CN=vpa-webhook.kube-system.svc" -config "${TMP_DIR}/server.conf"
+      -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP_DIR}/server.conf"
     openssl x509 -req -in "${TMP_DIR}/e2e.csr" -CA "${TMP_DIR}/e2eCaCert.pem" \
       -CAkey "${TMP_DIR}/e2eCaKey.pem" -CAcreateserial -out "${TMP_DIR}/e2eCert.pem" \
       -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
 
     # Create the E2E certs secret
-    kubectl delete secret -n kube-system vpa-e2e-certs --ignore-not-found=true
-    kubectl create secret -n kube-system generic vpa-e2e-certs \
+    kubectl delete secret -n ${HELM_NAMESPACE} vpa-e2e-certs --ignore-not-found=true
+    kubectl create secret -n ${HELM_NAMESPACE} generic vpa-e2e-certs \
       --from-file="${TMP_DIR}/e2eCaKey.pem" \
       --from-file="${TMP_DIR}/e2eCaCert.pem" \
       --from-file="${TMP_DIR}/e2eKey.pem" \
