@@ -124,30 +124,9 @@ func (np *nodePool) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-// DeleteNodes deletes nodes from this node group. Error is returned either on
-// failure or if the given node doesn't belong to this node group. This function
-// should wait until node group size is updated. Implementation required.
-func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
-	// Unregistered nodes come in as the provider id as node name.
-
-	// although technically we only need the mutex around the api calls, we should wrap the mutex
-	// around when we mark the node to be deleted as well. That way we don't mark a bunch of nodes
-	// to be deleted, but have the scale down calls potentially happen seconds later.
-	nodePoolDeleteMutex.Lock()
-	defer nodePoolDeleteMutex.Unlock()
-
-	klog.Infof("DeleteNodes called with %d nodes", len(nodes))
-
-	size, err := np.manager.GetNodePoolSize(np)
-	if err != nil {
-		return err
-	}
-
-	klog.Infof("Nodepool %s has size %d", np.id, size)
-	if int(size) <= np.MinSize() {
-		return fmt.Errorf("min size reached, nodes will not be deleted")
-	}
-
+// deleteNodesInternal performs the actual node deletion logic, converting nodes to OCI refs
+// and deleting them. It does not check min size constraints.
+func (np *nodePool) deleteNodesInternal(nodes []*apiv1.Node) error {
 	refs := make([]ocicommon.OciRef, 0, len(nodes))
 
 	// even though the nodes param is an array, in reality, nodes only contains a single node
@@ -172,6 +151,7 @@ func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
 	if len(refs) == 0 {
 		return nil
 	}
+
 	deleteInstancesErr := np.manager.DeleteInstances(np, refs)
 	if deleteInstancesErr == nil {
 		// this will add taints to all the nodes. For now, we have only a single node deleted in a given call, but the implementation might change in the future
@@ -182,9 +162,46 @@ func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
 	return deleteInstancesErr
 }
 
+// DeleteNodes deletes nodes from this node group. Error is returned either on
+// failure or if the given node doesn't belong to this node group. This function
+// should wait until node group size is updated. Implementation required.
+func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
+	// Unregistered nodes come in as the provider id as node name.
+
+	// although technically we only need the mutex around the api calls, we should wrap the mutex
+	// around when we mark the node to be deleted as well. That way we don't mark a bunch of nodes
+	// to be deleted, but have the scale down calls potentially happen seconds later.
+	nodePoolDeleteMutex.Lock()
+	defer nodePoolDeleteMutex.Unlock()
+
+	klog.Infof("DeleteNodes called with %d nodes", len(nodes))
+
+	size, err := np.manager.GetNodePoolSize(np)
+	if err != nil {
+		return err
+	}
+
+	klog.Infof("Nodepool %s has size %d", np.id, size)
+	if int(size) <= np.MinSize() {
+		return fmt.Errorf("min size reached, nodes will not be deleted")
+	}
+
+	return np.deleteNodesInternal(nodes)
+}
+
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
 func (np *nodePool) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return cloudprovider.ErrNotImplemented
+	// Unregistered nodes come in as the provider id as node name.
+
+	// although technically we only need the mutex around the api calls, we should wrap the mutex
+	// around when we mark the node to be deleted as well. That way we don't mark a bunch of nodes
+	// to be deleted, but have the scale down calls potentially happen seconds later.
+	nodePoolDeleteMutex.Lock()
+	defer nodePoolDeleteMutex.Unlock()
+
+	klog.Infof("ForceDeleteNodes called with %d nodes (ignoring min size constraint)", len(nodes))
+
+	return np.deleteNodesInternal(nodes)
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
