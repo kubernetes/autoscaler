@@ -79,8 +79,7 @@ func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*scaledown.Unneede
 	}
 	for nodeName := range t.unneededNodes {
 		if _, exists := currentSet[nodeName]; !exists {
-			delete(t.unneededNodes, nodeName)
-			klog.V(6).Infof("Node %s is no longer unneeded (or was removed). Stopped tracking at %v.", nodeName, timestamp)
+			t.recordAndCleanup(nodeName, false)
 		}
 	}
 }
@@ -91,9 +90,6 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 		t.wrapped.Process(autoscalingCtx, status)
 	}
 
-	for _, unremovableNode := range status.UnremovableNodes {
-		t.recordAndCleanup(unremovableNode.Node.Name, false)
-	}
 	for _, node := range status.ScaledDownNodes {
 		t.recordAndCleanup(node.Node.Name, true)
 	}
@@ -117,14 +113,17 @@ func (t *NodeLatencyTracker) recordAndCleanup(nodeName string, isRemoved bool) {
 	duration := time.Since(info.unneededSince)
 	latency := duration - info.removalThreshold
 
-	if isRemoved || latency > 0 {
+	if latency > 0 {
 		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, latency)
+	} else {
+		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v",
+			nodeName, duration, info.removalThreshold, latency, isRemoved)
 	}
 	if isRemoved {
 		t.logDeletion(nodeName, duration, info.removalThreshold, latency)
 	} else {
-		klog.V(4).Infof("Node %q is unremovable, became needed again (unneeded for %s).",
-			nodeName, duration)
+		klog.V(4).Infof("Node %q is unremovable, became needed again (unneeded for %s). Latency: %s",
+			nodeName, duration, latency)
 	}
 }
 
