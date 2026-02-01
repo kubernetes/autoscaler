@@ -19,35 +19,31 @@ limitations under the License.
 package fake
 
 import (
-	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	autoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeVerticalPodAutoscalerCheckpoints implements VerticalPodAutoscalerCheckpointInterface
 type fakeVerticalPodAutoscalerCheckpoints struct {
-	*gentype.FakeClientWithList[*vpaautoscalingv1.VerticalPodAutoscalerCheckpoint, *vpaautoscalingv1.VerticalPodAutoscalerCheckpointList]
+	*gentype.FakeClientWithList[*v1.VerticalPodAutoscalerCheckpoint, *v1.VerticalPodAutoscalerCheckpointList]
 	Fake *FakeAutoscalingV1
 }
 
 func newFakeVerticalPodAutoscalerCheckpoints(fake *FakeAutoscalingV1, namespace string) autoscalingk8siov1.VerticalPodAutoscalerCheckpointInterface {
 	return &fakeVerticalPodAutoscalerCheckpoints{
-		gentype.NewFakeClientWithList[*vpaautoscalingv1.VerticalPodAutoscalerCheckpoint, *vpaautoscalingv1.VerticalPodAutoscalerCheckpointList](
+		gentype.NewFakeClientWithList[*v1.VerticalPodAutoscalerCheckpoint, *v1.VerticalPodAutoscalerCheckpointList](
 			fake.Fake,
 			namespace,
-			vpaautoscalingv1.SchemeGroupVersion.WithResource("verticalpodautoscalercheckpoints"),
-			vpaautoscalingv1.SchemeGroupVersion.WithKind("VerticalPodAutoscalerCheckpoint"),
-			func() *vpaautoscalingv1.VerticalPodAutoscalerCheckpoint {
-				return &vpaautoscalingv1.VerticalPodAutoscalerCheckpoint{}
-			},
-			func() *vpaautoscalingv1.VerticalPodAutoscalerCheckpointList {
-				return &vpaautoscalingv1.VerticalPodAutoscalerCheckpointList{}
-			},
-			func(dst, src *vpaautoscalingv1.VerticalPodAutoscalerCheckpointList) { dst.ListMeta = src.ListMeta },
-			func(list *vpaautoscalingv1.VerticalPodAutoscalerCheckpointList) []*vpaautoscalingv1.VerticalPodAutoscalerCheckpoint {
+			v1.SchemeGroupVersion.WithResource("verticalpodautoscalercheckpoints"),
+			v1.SchemeGroupVersion.WithKind("VerticalPodAutoscalerCheckpoint"),
+			func() *v1.VerticalPodAutoscalerCheckpoint { return &v1.VerticalPodAutoscalerCheckpoint{} },
+			func() *v1.VerticalPodAutoscalerCheckpointList { return &v1.VerticalPodAutoscalerCheckpointList{} },
+			func(dst, src *v1.VerticalPodAutoscalerCheckpointList) { dst.ListMeta = src.ListMeta },
+			func(list *v1.VerticalPodAutoscalerCheckpointList) []*v1.VerticalPodAutoscalerCheckpoint {
 				return gentype.ToPointerSlice(list.Items)
 			},
-			func(list *vpaautoscalingv1.VerticalPodAutoscalerCheckpointList, items []*vpaautoscalingv1.VerticalPodAutoscalerCheckpoint) {
+			func(list *v1.VerticalPodAutoscalerCheckpointList, items []*v1.VerticalPodAutoscalerCheckpoint) {
 				list.Items = gentype.FromPointerSlice(items)
 			},
 		),

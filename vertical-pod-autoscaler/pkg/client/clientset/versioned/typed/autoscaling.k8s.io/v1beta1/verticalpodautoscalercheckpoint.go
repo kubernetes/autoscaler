@@ -21,7 +21,7 @@ package v1beta1
 import (
 	context "context"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	autoscalingk8siov1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
@@ -37,14 +37,14 @@ type VerticalPodAutoscalerCheckpointsGetter interface {
 
 // VerticalPodAutoscalerCheckpointInterface has methods to work with VerticalPodAutoscalerCheckpoint resources.
 type VerticalPodAutoscalerCheckpointInterface interface {
-	Create(ctx context.Context, verticalPodAutoscalerCheckpoint *autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, opts metav1.CreateOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, error)
-	Update(ctx context.Context, verticalPodAutoscalerCheckpoint *autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, opts metav1.UpdateOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, error)
-	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
-	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
-	Get(ctx context.Context, name string, opts metav1.GetOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, error)
-	List(ctx context.Context, opts metav1.ListOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpointList, error)
-	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, err error)
+	Create(ctx context.Context, verticalPodAutoscalerCheckpoint *autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, opts v1.CreateOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, error)
+	Update(ctx context.Context, verticalPodAutoscalerCheckpoint *autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, opts v1.UpdateOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, error)
+	List(ctx context.Context, opts v1.ListOptions) (*autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpointList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint, err error)
 	VerticalPodAutoscalerCheckpointExpansion
 }
 
