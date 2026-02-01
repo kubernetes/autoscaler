@@ -21,7 +21,7 @@ set -o nounset
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
 
 pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler
-go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
+go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v vertical-pod-autoscaler/integration)
 popd
 pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
 go test -run=None ./...
