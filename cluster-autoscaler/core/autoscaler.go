@@ -17,9 +17,11 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"strings"
 	"time"
 
+	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
@@ -30,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
@@ -148,8 +151,16 @@ func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFacto
 		opts.ExpanderStrategy = expanderStrategy
 	}
 	if opts.QuotasTrackerOptions.QuotaProvider == nil {
-		cloudQuotasProvider := resourcequotas.NewCloudQuotasProvider(opts.CloudProvider)
-		opts.QuotasTrackerOptions.QuotaProvider = resourcequotas.NewCombinedQuotasProvider([]resourcequotas.Provider{cloudQuotasProvider})
+		providers := []resourcequotas.Provider{resourcequotas.NewCloudQuotasProvider(opts.CloudProvider)}
+
+		if opts.CapacityQuotasEnabled {
+			// register informer here to disable lazy initialization
+			if _, err := opts.KubeCache.GetInformer(context.TODO(), &cqv1alpha1.CapacityQuota{}); err != nil {
+				return err
+			}
+			providers = append(providers, capacityquota.NewCapacityQuotasProvider(opts.KubeClientNew))
+		}
+		opts.QuotasTrackerOptions.QuotaProvider = resourcequotas.NewCombinedQuotasProvider(providers)
 	}
 	if opts.QuotasTrackerOptions.CustomResourcesProcessor == nil {
 		opts.QuotasTrackerOptions.CustomResourcesProcessor = opts.Processors.CustomResourcesProcessor
