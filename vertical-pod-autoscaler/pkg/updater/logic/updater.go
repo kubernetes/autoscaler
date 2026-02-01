@@ -20,12 +20,15 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	corescheme "k8s.io/client-go/kubernetes/scheme"
@@ -34,6 +37,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/set"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -82,6 +86,8 @@ type updater struct {
 	statusValidator              status.Validator
 	controllerFetcher            controllerfetcher.ControllerFetcher
 	ignoredNamespaces            []string
+	infeasibleAttempts           map[types.UID]*vpa_types.RecommendedPodResources
+	infeasibleMu                 sync.RWMutex
 }
 
 // NewUpdater creates Updater with given configuration
@@ -136,7 +142,8 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
-		ignoredNamespaces: ignoredNamespaces,
+		ignoredNamespaces:  ignoredNamespaces,
+		infeasibleAttempts: make(map[types.UID]*vpa_types.RecommendedPodResources),
 	}, nil
 }
 
@@ -166,7 +173,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
-	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
+	inPlaceOrRecreateFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
+	inPlaceFeatureEnable := features.Enabled(features.InPlace)
 
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
@@ -177,10 +185,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 		// Log deprecation warnings for VPAs using deprecated modes
 		logDeprecationWarnings(vpa)
 
-		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
+		updateMode := vpa_api_util.GetUpdateMode(vpa)
+		if updateMode != vpa_types.UpdateModeRecreate &&
 			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && //nolint:staticcheck
-			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
-			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
+			updateMode != vpa_types.UpdateModeInPlaceOrRecreate &&
+			updateMode != vpa_types.UpdateModeInPlace {
+			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"InPlace\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
@@ -210,6 +220,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 	}
 	timer.ObserveStep("ListPods")
 	allLivePods := filterDeletedPods(podsList)
+
+	// Clean up stale infeasible attempts for pods that no longer exist
+	u.cleanupStaleInfeasibleAttempts(allLivePods)
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
@@ -262,14 +275,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		podsForInPlace := make([]*apiv1.Pod, 0)
 		podsForEviction := make([]*apiv1.Pod, 0)
-
-		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceFeatureEnable {
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
+		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnable) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnable) {
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter, updateMode), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 		} else {
 			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
 			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
+			} else if updateMode == vpa_types.UpdateModeInPlace {
+				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlace, "updateMode", vpa_types.UpdateModeInPlace)
+				continue
 			}
 			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
@@ -282,15 +297,32 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		for _, pod := range podsForInPlace {
 			withInPlaceUpdatable = true
-			decision := inPlaceLimiter.CanInPlaceUpdate(pod)
+			decision := inPlaceLimiter.CanInPlaceUpdate(pod, updateMode)
 
-			if decision == utils.InPlaceDeferred {
+			switch decision {
+			case utils.InPlaceDeferred:
+				// Pod passed priority calculator, meaning recommendations differ from spec.
+				// Retry the in-place update.
 				klog.V(0).InfoS("In-place update deferred", "pod", klog.KObj(pod))
-				continue
-			} else if decision == utils.InPlaceEvict {
+				// Fall through to attempt in-place update
+			case utils.InPlaceEvict:
+				// This should only happen for InPlaceOrRecreate mode
 				podsForEviction = append(podsForEviction, pod)
 				continue
+			case utils.InPlaceInfeasible:
+				// Status is Infeasible, but recommendation has changed enough (>10%)
+				// Retry in-place update (no backoff for alpha)
+				// this status should only be returned with InPlace update mode (InPlaceOrRecreate will return InPlaceEvict in case of infeasible state)
+				klog.V(2).InfoS("In-place update infeasible, retrying with new recommendation", "pod", klog.KObj(pod))
+				// Fall through to attempt in-place update
+			case utils.InPlaceApproved:
+				klog.V(2).InfoS("In-place update approved", "pod", klog.KObj(pod))
+				// Proceed with in-place update
+			default:
+				klog.ErrorS(nil, "Unexpected in-place update decision, skipping pod", "decision", decision, "pod", klog.KObj(pod))
+				continue
 			}
+
 			err = u.inPlaceRateLimiter.Wait(ctx)
 			if err != nil {
 				klog.V(0).InfoS("In-place rate limiter wait failed for in-place resize", "error", err)
@@ -301,6 +333,21 @@ func (u *updater) RunOnce(ctx context.Context) {
 			if err != nil {
 				klog.V(0).InfoS("In-place resize failed, falling back to eviction", "error", err, "pod", klog.KObj(pod))
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateError")
+				// For InPlace mode, don't evict pods even if we get an error
+				if updateMode == vpa_types.UpdateModeInPlace {
+					// TODO: check for an admission plugin error because of OS and node capacity checks
+					// Check if it's an infeasibility error
+					// infeasible patches are rejected at API server level (soon),
+					// so spec.resources remains unchanged. We must track the attempted
+					// recommendation to prevent infinite retry loops.
+					// This work is still in progress (https://github.com/kubernetes/kubernetes/pull/136043)
+					// Currently isInfeasibleError return false
+					if isInfeasibleError(err) {
+						u.recordInfeasibleAttempt(pod, vpa)
+					}
+					continue
+				}
+				// For InPlaceOrRecreate mode, fall back to eviction
 				podsForEviction = append(podsForEviction, pod)
 				continue
 			}
@@ -346,6 +393,37 @@ func (u *updater) RunOnce(ctx context.Context) {
 	timer.ObserveStep("EvictPods")
 }
 
+func (u *updater) cleanupStaleInfeasibleAttempts(livePods []*apiv1.Pod) {
+	livePodKeys := set.New[types.UID]()
+	for _, pod := range livePods {
+		livePodKeys.Insert(pod.UID)
+	}
+
+	u.infeasibleMu.Lock()
+	defer u.infeasibleMu.Unlock()
+
+	for podID := range u.infeasibleAttempts {
+		if !livePodKeys.Has(podID) {
+			delete(u.infeasibleAttempts, podID)
+		}
+	}
+}
+
+// recordInfeasibleAttempt stores the recommendation that failed as infeasible
+func (u *updater) recordInfeasibleAttempt(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) {
+	processedRecommendation, _, err := u.recommendationProcessor.Apply(vpa, pod)
+	if err != nil {
+		klog.V(2).ErrorS(err, "Failed to get recommendation for infeasible attempt recording", "pod", klog.KObj(pod))
+		return
+	}
+
+	u.infeasibleMu.Lock()
+	u.infeasibleAttempts[pod.UID] = processedRecommendation
+	u.infeasibleMu.Unlock()
+
+	klog.V(2).InfoS("Recorded infeasible attempt, will retry when recommendation changes", "pod", klog.KObj(pod))
+}
+
 func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
 	var rateLimiter *rate.Limiter
 	if rateLimit <= 0 {
@@ -359,7 +437,7 @@ func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
 	return rateLimiter
 }
 
-// getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
+// getPodsUpdateOrder returns list of pods that should be updated ordered by update
 func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
 	priorityCalculator := priority.NewUpdatePriorityCalculator(
 		vpa,
@@ -368,7 +446,7 @@ func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalP
 		u.priorityProcessor)
 
 	for _, pod := range pods {
-		priorityCalculator.AddPod(pod, time.Now())
+		priorityCalculator.AddPod(pod, time.Now(), u.infeasibleAttempts)
 	}
 
 	return priorityCalculator.GetSortedPods(u.evictionAdmission)
@@ -384,9 +462,25 @@ func filterPods(pods []*apiv1.Pod, predicate func(*apiv1.Pod) bool) []*apiv1.Pod
 	return result
 }
 
-func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction) []*apiv1.Pod {
+func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, updateMode vpa_types.UpdateMode) []*apiv1.Pod {
 	return filterPods(pods, func(pod *apiv1.Pod) bool {
-		return inplaceRestriction.CanInPlaceUpdate(pod) != utils.InPlaceDeferred
+		decision := inplaceRestriction.CanInPlaceUpdate(pod, updateMode)
+		switch decision {
+		case utils.InPlaceApproved:
+			return true
+		case utils.InPlaceInfeasible:
+			// For InPlace mode, include infeasible pods to retry (no backoff for alpha)
+			return updateMode == vpa_types.UpdateModeInPlace
+		case utils.InPlaceEvict:
+			// For InPlaceOrRecreate, include so they can be redirected to eviction in the loop
+			return updateMode == vpa_types.UpdateModeInPlaceOrRecreate
+		case utils.InPlaceDeferred:
+			// For InPlace mode, include deferred pods so we can check if recommendation
+			// changed and apply a new patch while a previous update is in progress
+			return updateMode == vpa_types.UpdateModeInPlace
+		default:
+			return false
+		}
 	})
 }
 
@@ -429,4 +523,30 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	}
 
 	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
+}
+
+// isInfeasibleError checks if an error indicates the resize is infeasible.
+// infeasible error on admission controller level is still in progress
+// this is just a placeholer until
+func isInfeasibleError(err error) bool {
+	return false
+}
+
+func (u *updater) CleanupInfeasibleAttempts(livePods []*apiv1.Pod) {
+	u.infeasibleMu.Lock()
+	defer u.infeasibleMu.Unlock()
+
+	// Build a set of existing pod UIDs
+	seenPods := sets.New[types.UID]()
+	for _, pod := range livePods {
+		seenPods.Insert(pod.UID)
+	}
+
+	// Remove entries for pods that no longer exist
+	for podUID := range u.infeasibleAttempts {
+		if !seenPods.Has(podUID) {
+			delete(u.infeasibleAttempts, podUID)
+			klog.V(4).InfoS("Cleaned up infeasible attempt for non-existent pod", "podUID", podUID)
+		}
+	}
 }

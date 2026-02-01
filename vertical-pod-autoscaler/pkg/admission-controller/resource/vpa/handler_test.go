@@ -47,6 +47,7 @@ func TestValidateVPA(t *testing.T) {
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
+	inPlaceUpdateMode := vpa_types.UpdateModeInPlace
 	tests := []struct {
 		name                                 string
 		vpa                                  vpa_types.VerticalPodAutoscaler
@@ -54,6 +55,7 @@ func TestValidateVPA(t *testing.T) {
 		expectError                          error
 		inPlaceOrRecreateFeatureGateDisabled bool
 		PerVPAConfigDisabled                 bool
+		inPlaceFeatureGateDisabled           bool
 	}{
 		{
 			name: "empty update",
@@ -375,6 +377,48 @@ func TestValidateVPA(t *testing.T) {
 			PerVPAConfigDisabled: true,
 			expectError:          errors.New("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
 		},
+		{
+			name: "InPlace update mode with minReplicas",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode:  &inPlaceUpdateMode,
+						MinReplicas: &validMinReplicas,
+					},
+				},
+			},
+			inPlaceFeatureGateDisabled: false,
+			expectError:                nil,
+		},
+		{
+			name: "InPlace update mode with complete resource policy",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode:  &inPlaceUpdateMode,
+						MinReplicas: &validMinReplicas,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "test-container",
+								Mode:          &validScalingMode,
+								MinAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("10m"),
+									memory: resource.MustParse("100Mi"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("1000m"),
+									memory: resource.MustParse("1Gi"),
+								},
+							},
+						},
+					},
+				},
+			},
+			inPlaceFeatureGateDisabled: false,
+			expectError:                nil,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
@@ -383,6 +427,7 @@ func TestValidateVPA(t *testing.T) {
 				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
 			}
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, !tc.inPlaceFeatureGateDisabled)
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
