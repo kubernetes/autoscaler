@@ -65,7 +65,7 @@ var (
 	empty                               = ""
 	unsupportedConditionTextFromFetcher = "Cannot read targetRef. Reason: targetRef not defined"
 	unsupportedConditionNoExtraText     = "Cannot read targetRef"
-	unsupportedConditionNoTargetRef     = "Cannot read targetRef"
+	unsupportedConditionNoTargetRef     = "targetRef cannot be empty"
 	unsupportedConditionMudaMudaMuda    = "Error checking if target taxonomy.doestar/doseph-doestar is a topmost well-known or scalable controller: muda muda muda"
 	unsupportedTargetRefHasParent       = "The target stardust.dodokind/dotaro has a parent controller but it should point to a topmost well-known or scalable controller"
 )
@@ -184,7 +184,7 @@ func TestLoadVPAs(t *testing.T) {
 			selector:                  parseLabelSelector("app = test"),
 			fetchSelectorError:        nil,
 			expectedSelector:          labels.Nothing(),
-			expectedConfigUnsupported: nil,
+			expectedConfigUnsupported: &unsupportedConditionNoTargetRef,
 			expectedConfigDeprecated:  nil,
 			expectedVpaFetch:          true,
 		},
@@ -198,7 +198,7 @@ func TestLoadVPAs(t *testing.T) {
 				Name:       name1,
 				APIVersion: apiVersion,
 			},
-			expectedConfigUnsupported: &unsupportedConditionNoTargetRef,
+			expectedConfigUnsupported: &unsupportedConditionNoExtraText,
 			expectedVpaFetch:          true,
 		},
 		{
@@ -384,18 +384,24 @@ func TestLoadVPAs(t *testing.T) {
 				assert.Nil(t, storedVpa.PodSelector)
 			}
 
+			assert.Contains(t, storedVpa.Conditions, vpa_types.ConfigDeprecated)
+			// Unused code path...
 			if tc.expectedConfigDeprecated != nil {
-				assert.Contains(t, storedVpa.Conditions, vpa_types.ConfigDeprecated)
+				assert.Equal(t, v1.ConditionTrue, storedVpa.Conditions[vpa_types.ConfigDeprecated].Status)
 				assert.Equal(t, *tc.expectedConfigDeprecated, storedVpa.Conditions[vpa_types.ConfigDeprecated].Message)
 			} else {
-				assert.NotContains(t, storedVpa.Conditions, vpa_types.ConfigDeprecated)
+				assert.Equal(t, v1.ConditionFalse, storedVpa.Conditions[vpa_types.ConfigDeprecated].Status)
+				assert.NotEmpty(t, storedVpa.Conditions[vpa_types.ConfigDeprecated].Message)
 			}
 
 			if tc.expectedConfigUnsupported != nil {
 				assert.Contains(t, storedVpa.Conditions, vpa_types.ConfigUnsupported)
+				assert.Equal(t, v1.ConditionTrue, storedVpa.Conditions[vpa_types.ConfigUnsupported].Status)
 				assert.Equal(t, *tc.expectedConfigUnsupported, storedVpa.Conditions[vpa_types.ConfigUnsupported].Message)
 			} else {
-				assert.NotContains(t, storedVpa.Conditions, vpa_types.ConfigUnsupported)
+				assert.Contains(t, storedVpa.Conditions, vpa_types.ConfigUnsupported)
+				assert.Equal(t, v1.ConditionFalse, storedVpa.Conditions[vpa_types.ConfigUnsupported].Status)
+				assert.NotEmpty(t, storedVpa.Conditions[vpa_types.ConfigUnsupported].Message)
 			}
 		})
 	}
