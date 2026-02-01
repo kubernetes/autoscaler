@@ -48,6 +48,7 @@ import (
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -73,6 +74,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
@@ -188,6 +190,10 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 	}
 
 	if autoscalingOptions.CapacitybufferPodInjectionEnabled {
+		// Add CapacityBuffer types to the default scheme for event recording.
+		if err := cbv1beta1.AddToScheme(scheme.Scheme); err != nil {
+			klog.Warningf("Failed to add CapacityBuffer (v1beta1) to scheme: %v", err)
+		}
 		if capacitybufferClient == nil {
 			restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
 			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
