@@ -23,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
@@ -59,7 +59,7 @@ func isFetchingHistory(vpa *model.Vpa) bool {
 	if !found {
 		return false
 	}
-	return condition.Status == v1.ConditionTrue
+	return condition.Status == apiv1.ConditionTrue
 }
 
 func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
