@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicacount"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/safetoevict"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/skipreschedule"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/terminal"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -55,6 +56,7 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 		skip bool
 	}{
 		{rule: mirror.New()},
+		{rule: skipreschedule.New()},
 		{rule: longterminating.New()},
 		{rule: replicacount.New(deleteOptions.MinReplicaCount), skip: !deleteOptions.SkipNodesWithCustomControllerPods},
 
