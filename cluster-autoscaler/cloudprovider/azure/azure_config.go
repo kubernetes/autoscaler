@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,16 +26,12 @@ import (
 
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"k8s.io/klog/v2"
-	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
+	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -52,7 +49,7 @@ const (
 // Contains both general Azure cloud provider configuration (i.e., in azure.json) and CAS configurations/options specifically for Azure provider.
 type Config struct {
 	// Azure cloud provider configuration, which is generally shared with other Azure components.
-	providerazure.Config `json:",inline" yaml:",inline"`
+	providerazureconfig.Config `json:",inline" yaml:",inline"`
 
 	// Legacy fields, which are only here for backward compatibility. To be deprecated.
 	legacyConfig `json:",inline" yaml:",inline"`
@@ -347,7 +344,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			return nil, err
 		}
 
-		metadata, err := metadataService.GetMetadata(0)
+		metadata, err := metadataService.GetMetadata(context.Background(), azcache.CacheReadTypeDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -364,59 +361,13 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 
 		cfg.DeploymentParameters = parameters
 	}
-	providerazureconfig.InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
+	// Note: InitializeCloudProviderRateLimitConfig was removed in cloud-provider-azure v1.32.0
+	// Rate limit configuration is now handled via the embedded ratelimit.CloudProviderRateLimitConfig
 
 	if err := cfg.validate(); err != nil {
 		return nil, err
 	}
 	return cfg, nil
-}
-
-// A "fork" of az.getAzureClientConfig with BYO authorizer (e.g., for CLI auth) and custom polling delay support
-func (cfg *Config) getAzureClientConfig(authorizer autorest.Authorizer, env *azure.Environment) *azclients.ClientConfig {
-	pollingDelay := 30 * time.Second
-	azClientConfig := &azclients.ClientConfig{
-		CloudName:               cfg.Cloud,
-		Location:                cfg.Location,
-		SubscriptionID:          cfg.SubscriptionID,
-		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
-		Authorizer:              authorizer,
-		Backoff:                 &retry.Backoff{Steps: 1},
-		RestClientConfig: azclients.RestClientConfig{
-			PollingDelay: &pollingDelay,
-		},
-		DisableAzureStackCloud: cfg.DisableAzureStackCloud,
-		UserAgent:              cfg.UserAgent,
-	}
-
-	if cfg.CloudProviderBackoff {
-		azClientConfig.Backoff = &retry.Backoff{
-			Steps:    cfg.CloudProviderBackoffRetries,
-			Factor:   cfg.CloudProviderBackoffExponent,
-			Duration: time.Duration(cfg.CloudProviderBackoffDuration) * time.Second,
-			Jitter:   cfg.CloudProviderBackoffJitter,
-		}
-	}
-
-	// A proxy service is required to access resources for the Hosted (on-behalf-of) system pool within automatic clusters.
-	if cfg.HostedResourceProxyURL != "" {
-		azClientConfig.ResourceManagerEndpoint = cfg.HostedResourceProxyURL
-	}
-
-	// Hosted (on-behalf-of) system pool resources are hosted under AKS internal tenant and subscription.
-	// it is different from the customer subscription where the cluster is created.
-	if cfg.HostedSubscriptionID != "" {
-		azClientConfig.SubscriptionID = cfg.HostedSubscriptionID
-	}
-
-	if cfg.HasExtendedLocation() {
-		azClientConfig.ExtendedLocation = &azclients.ExtendedLocation{
-			Name: cfg.ExtendedLocationName,
-			Type: cfg.ExtendedLocationType,
-		}
-	}
-
-	return azClientConfig
 }
 
 func (cfg *Config) validate() error {

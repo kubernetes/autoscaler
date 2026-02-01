@@ -21,10 +21,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/stretchr/testify/mock"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -36,90 +35,100 @@ const (
 type DeploymentClientMock struct {
 	mock.Mock
 
-	mutex     sync.Mutex
-	FakeStore map[string]resources.DeploymentExtended
+	mutex         sync.Mutex
+	FakeStore     map[string]armresources.DeploymentExtended
+	TemplateStore map[string]map[string]interface{}
 }
 
 // Get gets the DeploymentExtended by deploymentName.
-func (m *DeploymentClientMock) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err *retry.Error) {
+func (m *DeploymentClientMock) Get(ctx context.Context, resourceGroupName string, deploymentName string) (*armresources.DeploymentExtended, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	deploy, ok := m.FakeStore[deploymentName]
 	if !ok {
-		return result, retry.NewError(false, fmt.Errorf("deployment not found"))
+		return nil, fmt.Errorf("deployment not found")
 	}
 
-	return deploy, nil
+	return &deploy, nil
 }
 
 // ExportTemplate exports the deployment's template.
-func (m *DeploymentClientMock) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err *retry.Error) {
+func (m *DeploymentClientMock) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (*armresources.DeploymentExportResult, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	deploy, ok := m.FakeStore[deploymentName]
+	_, ok := m.FakeStore[deploymentName]
 	if !ok {
-		return result, retry.NewError(false, fmt.Errorf("deployment not found"))
+		return nil, fmt.Errorf("deployment not found")
 	}
 
-	return resources.DeploymentExportResult{
-		Template: deploy.Properties.Template,
+	template := m.TemplateStore[deploymentName]
+	if template == nil {
+		template = map[string]interface{}{"resources": []interface{}{}}
+	}
+
+	return &armresources.DeploymentExportResult{
+		Template: template,
 	}, nil
 }
 
 // CreateOrUpdate creates or updates the Deployment.
-func (m *DeploymentClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment, etag string) (err *retry.Error) {
+func (m *DeploymentClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters armresources.Deployment) (*armresources.DeploymentExtended, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	deploy, ok := m.FakeStore[deploymentName]
 	if !ok {
-		deploy = resources.DeploymentExtended{
-			Properties: &resources.DeploymentPropertiesExtended{},
+		deploy = armresources.DeploymentExtended{
+			Properties: &armresources.DeploymentPropertiesExtended{},
 		}
-		m.FakeStore[deploymentName] = deploy
 	}
 
-	deploy.Properties.Parameters = parameters.Properties.Parameters
-	deploy.Properties.Template = parameters.Properties.Template
-	return nil
+	if parameters.Properties != nil {
+		deploy.Properties.Parameters = parameters.Properties.Parameters
+		deploy.Properties.TemplateLink = parameters.Properties.TemplateLink
+	}
+	deploy.Name = &deploymentName
+	m.FakeStore[deploymentName] = deploy
+	return &deploy, nil
 }
 
 // List gets all the deployments for a resource group.
-func (m *DeploymentClientMock) List(ctx context.Context, resourceGroupName string) (result []resources.DeploymentExtended, err *retry.Error) {
+func (m *DeploymentClientMock) List(ctx context.Context, resourceGroupName string) ([]*armresources.DeploymentExtended, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	result = make([]resources.DeploymentExtended, 0)
+	result := make([]*armresources.DeploymentExtended, 0)
 	for i := range m.FakeStore {
-		result = append(result, m.FakeStore[i])
+		deployment := m.FakeStore[i]
+		result = append(result, &deployment)
 	}
 
 	return result, nil
 }
 
 // Delete deletes the given deployment
-func (m *DeploymentClientMock) Delete(ctx context.Context, resourceGroupName, deploymentName string) (err *retry.Error) {
+func (m *DeploymentClientMock) Delete(ctx context.Context, resourceGroupName, deploymentName string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	if _, ok := m.FakeStore[deploymentName]; !ok {
-		return retry.NewError(false, fmt.Errorf("there is no such a deployment with name %s", deploymentName))
+		return fmt.Errorf("there is no such a deployment with name %s", deploymentName)
 	}
 
 	delete(m.FakeStore, deploymentName)
 
-	return
+	return nil
 }
 
-func fakeVMSSWithTags(vmssName string, tags map[string]*string) compute.VirtualMachineScaleSet {
+func fakeVMSSWithTags(vmssName string, tags map[string]*string) armcompute.VirtualMachineScaleSet {
 	skuName := "Standard_D4_v2"
 	var vmssCapacity int64 = 3
 
-	return compute.VirtualMachineScaleSet{
+	return armcompute.VirtualMachineScaleSet{
 		Name: &vmssName,
-		Sku: &compute.Sku{
+		SKU: &armcompute.SKU{
 			Capacity: &vmssCapacity,
 			Name:     &skuName,
 		},
