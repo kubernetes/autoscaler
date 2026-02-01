@@ -17,17 +17,29 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - description: The strategy used for provisioning buffer capacity.
-      jsonPath: .spec.provisioningStrategy
+    - description: The strategy used.
+      jsonPath: .status.provisioningStrategy
       name: Strategy
       type: string
-    - description: The desired number of buffer chunks, if specified.
-      jsonPath: .spec.replicas
+    - description: The actual number of buffer chunks.
+      jsonPath: .status.replicas
       name: Replicas
       type: integer
-    - description: The readiness status of the CapacityBuffer.
-      jsonPath: .status.conditions[?(@.type=='Ready')].reason
-      name: Status
+    - description: The name of the PodTemplate used.
+      jsonPath: .status.podTemplateRef.name
+      name: PodTemplate
+      type: string
+    - description: List of all condition types.
+      jsonPath: .status.conditions[*].type
+      name: Conditions
+      type: string
+    - description: List of all condition timestamps.
+      jsonPath: .status.conditions[*].lastTransitionTime
+      name: ConditionsTime
+      type: string
+    - description: List of all condition messages.
+      jsonPath: .status.conditions[*].message
+      name: ConditionsMessages
       type: string
     - description: The age of the CapacityBuffer.
       jsonPath: .metadata.creationTimestamp
