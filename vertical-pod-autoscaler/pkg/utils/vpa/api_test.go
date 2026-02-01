@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/autoscaling/v1"
+	apiv1 "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -163,7 +163,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	vpaA := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
 	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
 	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).Get()
-	vpaA.Spec.TargetRef = &v1.CrossVersionObjectReference{
+	vpaA.Spec.TargetRef = &apiv1.CrossVersionObjectReference{
 		Kind:       "StatefulSet",
 		Name:       "test-sts",
 		APIVersion: "apps/v1",
