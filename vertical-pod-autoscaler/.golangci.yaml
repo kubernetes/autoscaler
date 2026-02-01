@@ -18,6 +18,10 @@ linters:
         - name: useless-fallthrough
         - name: comment-spacings
         - name: enforce-switch-style
+        - name: exported
+          arguments:
+            # Disabling for now since it hasn't been previously enforced
+            - "disable-stuttering-check"
         - name: unexported-naming
         - name: empty-lines
         - name: use-errors-new
