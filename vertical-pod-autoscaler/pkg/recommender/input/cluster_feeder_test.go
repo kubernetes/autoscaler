@@ -384,18 +384,19 @@ func TestLoadVPAs(t *testing.T) {
 				assert.Nil(t, storedVpa.PodSelector)
 			}
 
+			conditions := storedVpa.GetConditionsMap()
 			if tc.expectedConfigDeprecated != nil {
-				assert.Contains(t, storedVpa.Conditions, vpa_types.ConfigDeprecated)
-				assert.Equal(t, *tc.expectedConfigDeprecated, storedVpa.Conditions[vpa_types.ConfigDeprecated].Message)
+				assert.Contains(t, conditions, vpa_types.ConfigDeprecated)
+				assert.Equal(t, *tc.expectedConfigDeprecated, conditions[vpa_types.ConfigDeprecated].Message)
 			} else {
-				assert.NotContains(t, storedVpa.Conditions, vpa_types.ConfigDeprecated)
+				assert.NotContains(t, conditions, vpa_types.ConfigDeprecated)
 			}
 
 			if tc.expectedConfigUnsupported != nil {
-				assert.Contains(t, storedVpa.Conditions, vpa_types.ConfigUnsupported)
-				assert.Equal(t, *tc.expectedConfigUnsupported, storedVpa.Conditions[vpa_types.ConfigUnsupported].Message)
+				assert.Contains(t, conditions, vpa_types.ConfigUnsupported)
+				assert.Equal(t, *tc.expectedConfigUnsupported, conditions[vpa_types.ConfigUnsupported].Message)
 			} else {
-				assert.NotContains(t, storedVpa.Conditions, vpa_types.ConfigUnsupported)
+				assert.NotContains(t, conditions, vpa_types.ConfigUnsupported)
 			}
 		})
 	}

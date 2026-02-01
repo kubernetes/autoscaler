@@ -19,6 +19,7 @@ package recommender
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -174,10 +175,11 @@ func TestObjectCounter(t *testing.T) {
 		{
 			name: "report has recommendation as false on missing recommendations",
 			add: []*model.Vpa{
-				{
-					APIVersion:     "v1",
-					Recommendation: nil,
-				},
+				func() *model.Vpa {
+					vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+					vpa.APIVersion = "v1"
+					return vpa
+				}(),
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
@@ -186,12 +188,14 @@ func TestObjectCounter(t *testing.T) {
 		{
 			name: "report has recommendation as false on missing container recommendations",
 			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					Recommendation: &vpa_types.RecommendedPodResources{
+				func() *model.Vpa {
+					vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+					vpa.APIVersion = "v1"
+					vpa.SetRecommendationDirect(&vpa_types.RecommendedPodResources{
 						ContainerRecommendations: nil,
-					},
-				},
+					})
+					return vpa
+				}(),
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
@@ -200,12 +204,14 @@ func TestObjectCounter(t *testing.T) {
 		{
 			name: "report has recommendation as true on existing container recommendations",
 			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					Recommendation: &vpa_types.RecommendedPodResources{
+				func() *model.Vpa {
+					vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+					vpa.APIVersion = "v1"
+					vpa.SetRecommendationDirect(&vpa_types.RecommendedPodResources{
 						ContainerRecommendations: []vpa_types.RecommendedContainerResources{{}},
-					},
-				},
+					})
+					return vpa
+				}(),
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=true,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
@@ -214,10 +220,11 @@ func TestObjectCounter(t *testing.T) {
 		{
 			name: "report has matches pods as true on missing condition",
 			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					Conditions: nil,
-				},
+				func() *model.Vpa {
+					vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+					vpa.APIVersion = "v1"
+					return vpa
+				}(),
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
@@ -226,14 +233,16 @@ func TestObjectCounter(t *testing.T) {
 		{
 			name: "report has matches pods as false on NoPodsMatched condition",
 			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+				func() *model.Vpa {
+					vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+					vpa.APIVersion = "v1"
+					vpa.SetConditionsMap(map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 						vpa_types.NoPodsMatched: {
 							Status: apiv1.ConditionTrue,
 						},
-					},
-				},
+					})
+					return vpa
+				}(),
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=false,matches_pods=false,unsupported_config=false,update_mode=Recreate,": 1,
@@ -242,10 +251,11 @@ func TestObjectCounter(t *testing.T) {
 		{
 			name: "report unsupported config as false on missing condition",
 			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					Conditions: nil,
-				},
+				func() *model.Vpa {
+					vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+					vpa.APIVersion = "v1"
+					return vpa
+				}(),
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
@@ -254,14 +264,16 @@ func TestObjectCounter(t *testing.T) {
 		{
 			name: "report unsupported config as true on ConfigUnsupported condition",
 			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+				func() *model.Vpa {
+					vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+					vpa.APIVersion = "v1"
+					vpa.SetConditionsMap(map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 						vpa_types.ConfigUnsupported: {
 							Status: apiv1.ConditionTrue,
 						},
-					},
-				},
+					})
+					return vpa
+				}(),
 			},
 			wantMetrics: map[string]float64{
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=true,update_mode=Recreate,": 1,
