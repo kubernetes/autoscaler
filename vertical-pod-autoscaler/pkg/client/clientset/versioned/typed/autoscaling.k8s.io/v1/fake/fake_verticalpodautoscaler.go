@@ -20,7 +20,6 @@ package fake
 
 import (
 	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	autoscalingk8siov1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	gentype "k8s.io/client-go/gentype"
 )
@@ -33,20 +32,18 @@ type fakeVerticalPodAutoscalers struct {
 
 func newFakeVerticalPodAutoscalers(fake *FakeAutoscalingV1, namespace string) autoscalingk8siov1.VerticalPodAutoscalerInterface {
 	return &fakeVerticalPodAutoscalers{
-		gentype.NewFakeClientWithList[*vpaautoscalingv1.VerticalPodAutoscaler, *vpaautoscalingv1.VerticalPodAutoscalerList](
+		gentype.NewFakeClientWithList[*v1.VerticalPodAutoscaler, *v1.VerticalPodAutoscalerList](
 			fake.Fake,
 			namespace,
-			vpaautoscalingv1.SchemeGroupVersion.WithResource("verticalpodautoscalers"),
-			vpaautoscalingv1.SchemeGroupVersion.WithKind("VerticalPodAutoscaler"),
-			func() *vpaautoscalingv1.VerticalPodAutoscaler { return &vpaautoscalingv1.VerticalPodAutoscaler{} },
-			func() *vpaautoscalingv1.VerticalPodAutoscalerList {
-				return &vpaautoscalingv1.VerticalPodAutoscalerList{}
-			},
-			func(dst, src *vpaautoscalingv1.VerticalPodAutoscalerList) { dst.ListMeta = src.ListMeta },
-			func(list *vpaautoscalingv1.VerticalPodAutoscalerList) []*vpaautoscalingv1.VerticalPodAutoscaler {
+			v1.SchemeGroupVersion.WithResource("verticalpodautoscalers"),
+			v1.SchemeGroupVersion.WithKind("VerticalPodAutoscaler"),
+			func() *v1.VerticalPodAutoscaler { return &v1.VerticalPodAutoscaler{} },
+			func() *v1.VerticalPodAutoscalerList { return &v1.VerticalPodAutoscalerList{} },
+			func(dst, src *v1.VerticalPodAutoscalerList) { dst.ListMeta = src.ListMeta },
+			func(list *v1.VerticalPodAutoscalerList) []*v1.VerticalPodAutoscaler {
 				return gentype.ToPointerSlice(list.Items)
 			},
-			func(list *vpaautoscalingv1.VerticalPodAutoscalerList, items []*vpaautoscalingv1.VerticalPodAutoscaler) {
+			func(list *v1.VerticalPodAutoscalerList, items []*v1.VerticalPodAutoscaler) {
 				list.Items = gentype.FromPointerSlice(items)
 			},
 		),
