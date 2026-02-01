@@ -620,14 +620,24 @@ Currently, ClusterAutoscaler supports following ProvisioningClasses:
 When using this class, Cluster Autoscaler performs following actions:
 
   * __Capacity Check__: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
+  By default, this checks whether there is capacity for the entire set of pods. However, you can configure
+  it to check for partial capacity by setting the `partialCapacityCheck` parameter to `"true"` in the
+  ProvisioningRequest's `Parameters` field.
 
   * __Reservation from other ProvReqs__ (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes,
   preventing other ProvReqs from using it.
 
   * __Condition Updates__:
-  Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler and ClusterAutoscaler will check capacity for this ProvReq.
-  Adds a Provisioned=True condition to the ProvReq if capacity is available.
-  Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+    * Adds a `Accepted=True` condition when ProvReq is accepted by ClusterAutoscaler and ClusterAutoscaler will check capacity for this ProvReq.
+    * Adds a `Provisioned=True` condition to the ProvReq if capacity is available:
+      * With `Reason=CapacityIsFound` when capacity exists for all pods
+      * With `Reason=PartialCapacityIsFound` when `partialCapacityCheck` is enabled and only some pods can be scheduled
+      (the message will indicate how many pods can fit, e.g., "Can schedule 5 out of 10 pods")
+
+    * If capacity is not available, one of the following conditions will be added, depending on the `noRetry` Parameter:
+      * Adds a `Provisioned=False` condition with `Reason=CapacityIsNotFound` if capacity is not found and the `noRetry` parameter is not set to "true" (CA will retry by default).
+      * Adds a `Failed=True` condition with `Reason=CapacityIsNotFound` if capacity is not found and the `noRetry` parameter is set to "true" (signals that the request is terminal and will not be retried).
+    * Adds a `BookingExpired=True` condition when the 10-minute reservation period expires.
 
   Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler 
   to process only subset of check capacity ProvisioningRequests and ignore the rest.
@@ -722,6 +732,66 @@ spec:
             memory: 600Mi
         args: ["sleep"]
 ```
+
+#### How to use the Check Capacity Parameters
+##### Using Check Capacity Partial Capacity Check
+
+To check if there is capacity for at least some of your pods (rather than all or nothing):
+
+1. Add the `partialCapacityCheck` parameter to your ProvisioningRequest:
+   ```yaml
+   apiVersion: autoscaling.x-k8s.io/v1
+   kind: ProvisioningRequest
+   metadata:
+     name: my-provreq
+   spec:
+     provisioningClassName: "check-capacity.autoscaling.x-k8s.io"
+     parameters:
+       partialCapacityCheck: "true"
+     podSets:
+       - podTemplateRef:
+           name: my-template
+         count: 10
+   ```
+
+2. The Cluster Autoscaler will simulate scheduling pods in the order they appear in the `PodSets` array
+   and report back how many can fit.
+
+3. Check the condition for results:
+   - If `Provisioned=True` with `Reason=PartialCapacityIsFound`, the message will tell you
+     how many pods can be scheduled (e.g., "Can schedule 5 out of 10 pods")
+   - If `Provisioned=True` with `Reason=CapacityIsFound`, all pods can be scheduled
+
+**Note**: The scheduling simulation is deterministic and processes pods in order, so the first N pods
+from your PodSets will be the ones that can be scheduled if partial capacity is found.
+
+##### Preventing Retries with noRetry Parameter
+
+By default, when capacity is not found, Cluster Autoscaler will retry checking capacity in subsequent iterations.
+To make a ProvisioningRequest fail immediately without retries:
+
+1. Add the `noRetry` parameter to your ProvisioningRequest:
+   ```yaml
+   apiVersion: autoscaling.x-k8s.io/v1
+   kind: ProvisioningRequest
+   metadata:
+     name: my-provreq
+   spec:
+     provisioningClassName: "check-capacity.autoscaling.x-k8s.io"
+     parameters:
+       noRetry: "true"
+     podSets:
+       - podTemplateRef:
+           name: my-template
+         count: 10
+   ```
+
+2. When capacity is not found, CA will set `Failed=True` with `Reason=CapacityIsNotFound` instead of
+   `Provisioned=False`. This signals that the request is terminal and will not be retried.
+
+**Note**: The `noRetry` and `partialCapacityCheck` parameters can be used together. When both are enabled
+and partial capacity is found, CA will still set `Provisioned=True` with `Reason=PartialCapacityIsFound`.
+
 
 ### How can I tune Cluster Autoscaler's performance for processing ProvisioningRequests?
 
