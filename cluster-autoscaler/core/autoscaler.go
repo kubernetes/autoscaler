@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -57,8 +58,8 @@ type Autoscaler interface {
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) (Autoscaler, errors.AutoscalerError) {
-	err := initializeDefaultOptions(&opts, informerFactory)
+func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) (Autoscaler, errors.AutoscalerError) {
+	err := initializeDefaultOptions(ctx, &opts, informerFactory)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
@@ -85,7 +86,7 @@ func NewAutoscaler(opts coreoptions.AutoscalerOptions, informerFactory informers
 }
 
 // Initialize default options if not provided.
-func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
+func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
 	}
@@ -93,10 +94,10 @@ func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFacto
 		opts.LoopStartNotifier = loopstart.NewObserversList(nil)
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
+		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(ctx, opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
-		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
+		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
 		if err != nil {
 			return err
 		}
