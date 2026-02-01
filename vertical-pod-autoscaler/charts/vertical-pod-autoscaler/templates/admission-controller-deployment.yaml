@@ -54,6 +54,9 @@ spec:
       {{- with .Values.admissionController.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
+      {{- with .Values.admissionController.hostNetwork }}
+      hostNetwork: {{ . }}
+      {{- end }}
       containers:
         - name: admission-controller
           image: {{ include "vertical-pod-autoscaler.admissionController.image" . }}
