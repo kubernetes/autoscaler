@@ -31,6 +31,8 @@ linters:
         - name: empty-lines
         - name: use-errors-new
         - name: early-return
+        - name: redefines-builtin-id
+        - name: redundant-import-alias
 
         # Below lists the rules disabled
 

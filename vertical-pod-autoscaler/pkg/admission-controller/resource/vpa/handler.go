@@ -22,8 +22,8 @@ import (
 	"errors"
 	"fmt"
 
-	v1 "k8s.io/api/admission/v1"
-	corev1 "k8s.io/api/core/v1"
+	admissionv1 "k8s.io/api/admission/v1"
+	apiv1 "k8s.io/api/core/v1"
 	apires "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
@@ -67,8 +67,8 @@ func (h *resourceHandler) DisallowIncorrectObjects() bool {
 }
 
 // GetPatches builds patches for VPA in given admission request.
-func (h *resourceHandler) GetPatches(_ context.Context, ar *v1.AdmissionRequest) ([]resource.PatchRecord, error) {
-	raw, isCreate := ar.Object.Raw, ar.Operation == v1.Create
+func (h *resourceHandler) GetPatches(_ context.Context, ar *admissionv1.AdmissionRequest) ([]resource.PatchRecord, error) {
+	raw, isCreate := ar.Object.Raw, ar.Operation == admissionv1.Create
 	vpa, err := parseVPA(raw)
 	if err != nil {
 		return nil, err
@@ -157,12 +157,12 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 					return fmt.Errorf("unexpected Mode value %s", *mode)
 				}
 			}
-			for resource, min := range policy.MinAllowed {
-				if err := validateResourceResolution(resource, min); err != nil {
+			for resource, minAllowed := range policy.MinAllowed {
+				if err := validateResourceResolution(resource, minAllowed); err != nil {
 					return fmt.Errorf("minAllowed: %v", err)
 				}
-				max, found := policy.MaxAllowed[resource]
-				if found && max.Cmp(min) < 0 {
+				maxAllowed, found := policy.MaxAllowed[resource]
+				if found && maxAllowed.Cmp(minAllowed) < 0 {
 					return fmt.Errorf("max resource for %v is lower than min", resource)
 				}
 			}
@@ -239,11 +239,11 @@ func validateStartupBoost(startupBoost *vpa_types.StartupBoost, isCreate bool) e
 	return nil
 }
 
-func validateResourceResolution(name corev1.ResourceName, val apires.Quantity) error {
+func validateResourceResolution(name apiv1.ResourceName, val apires.Quantity) error {
 	switch name {
-	case corev1.ResourceCPU:
+	case apiv1.ResourceCPU:
 		return validateCPUResolution(val)
-	case corev1.ResourceMemory:
+	case apiv1.ResourceMemory:
 		return validateMemoryResolution(val)
 	}
 	return nil

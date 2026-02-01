@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
+	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
@@ -28,11 +28,11 @@ type FakeAutoscalingV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeAutoscalingV1) VerticalPodAutoscalers(namespace string) v1.VerticalPodAutoscalerInterface {
+func (c *FakeAutoscalingV1) VerticalPodAutoscalers(namespace string) vpaautoscalingv1.VerticalPodAutoscalerInterface {
 	return newFakeVerticalPodAutoscalers(c, namespace)
 }
 
-func (c *FakeAutoscalingV1) VerticalPodAutoscalerCheckpoints(namespace string) v1.VerticalPodAutoscalerCheckpointInterface {
+func (c *FakeAutoscalingV1) VerticalPodAutoscalerCheckpoints(namespace string) vpaautoscalingv1.VerticalPodAutoscalerCheckpointInterface {
 	return newFakeVerticalPodAutoscalerCheckpoints(c, namespace)
 }
 

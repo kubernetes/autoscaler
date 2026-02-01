@@ -26,14 +26,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	v1 "k8s.io/client-go/listers/core/v1"
+	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 )
 
 var (
@@ -151,11 +151,11 @@ type PodListerMock struct {
 }
 
 // Pods is a mock implementation of PodLister.Pods
-func (m *PodListerMock) Pods(namespace string) v1.PodNamespaceLister {
+func (m *PodListerMock) Pods(namespace string) listersv1.PodNamespaceLister {
 	args := m.Called(namespace)
-	var returnArg v1.PodNamespaceLister
+	var returnArg listersv1.PodNamespaceLister
 	if args.Get(0) != nil {
-		returnArg = args.Get(0).(v1.PodNamespaceLister)
+		returnArg = args.Get(0).(listersv1.PodNamespaceLister)
 	}
 	return returnArg
 }

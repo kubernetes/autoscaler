@@ -228,14 +228,14 @@ func (h *histogram) SaveToChekpoint() (*vpa_types.HistogramCheckpoint, error) {
 	}
 	result.TotalWeight = h.totalWeight
 	// Find max
-	max := 0.
+	maxWeight := 0.
 	for bucket := h.minBucket; bucket <= h.maxBucket; bucket++ {
-		if h.bucketWeight[bucket] > max {
-			max = h.bucketWeight[bucket]
+		if h.bucketWeight[bucket] > maxWeight {
+			maxWeight = h.bucketWeight[bucket]
 		}
 	}
 	// Compute ratio
-	ratio := float64(MaxCheckpointWeight) / max
+	ratio := float64(MaxCheckpointWeight) / maxWeight
 	// Convert weights and drop near-zero weights
 	for bucket := h.minBucket; bucket <= h.maxBucket; bucket++ {
 		newWeight := uint32(round(h.bucketWeight[bucket] * ratio))

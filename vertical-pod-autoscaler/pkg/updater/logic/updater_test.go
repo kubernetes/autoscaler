@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -40,8 +41,8 @@ import (
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
-	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -466,7 +467,7 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
-	targetRef := &v1.CrossVersionObjectReference{
+	targetRef := &autoscalingv1.CrossVersionObjectReference{
 		Kind:       rc.Kind,
 		Name:       rc.Name,
 		APIVersion: rc.APIVersion,

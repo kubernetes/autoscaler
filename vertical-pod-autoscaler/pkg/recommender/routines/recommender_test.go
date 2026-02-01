@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -48,7 +48,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 
 	vpaCount := 1000
 	vpas := make(map[model.VpaID]*model.Vpa, vpaCount)
-	apiObjectVPAs := make([]*v1.VerticalPodAutoscaler, vpaCount)
+	apiObjectVPAs := make([]*vpaautoscalingv1.VerticalPodAutoscaler, vpaCount)
 	fakedClient := make([]runtime.Object, vpaCount)
 
 	for i := range vpaCount {
@@ -97,7 +97,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 	defer cnt.Observe()
 
 	// Create a channel to send VPA updates to workers
-	vpaUpdates := make(chan *v1.VerticalPodAutoscaler, len(apiObjectVPAs))
+	vpaUpdates := make(chan *vpaautoscalingv1.VerticalPodAutoscaler, len(apiObjectVPAs))
 
 	var counter int64
 

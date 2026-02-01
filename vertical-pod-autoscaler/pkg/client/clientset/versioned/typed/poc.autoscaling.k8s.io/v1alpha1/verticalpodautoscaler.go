@@ -21,7 +21,7 @@ package v1alpha1
 import (
 	context "context"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	pocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -37,16 +37,16 @@ type VerticalPodAutoscalersGetter interface {
 
 // VerticalPodAutoscalerInterface has methods to work with VerticalPodAutoscaler resources.
 type VerticalPodAutoscalerInterface interface {
-	Create(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts v1.CreateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
-	Update(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
+	Create(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts metav1.CreateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
+	Update(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts metav1.UpdateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts v1.UpdateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
-	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
-	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
-	List(ctx context.Context, opts v1.ListOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerList, error)
-	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, err error)
+	UpdateStatus(ctx context.Context, verticalPodAutoscaler *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, opts metav1.UpdateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *pocautoscalingk8siov1alpha1.VerticalPodAutoscaler, err error)
 	VerticalPodAutoscalerExpansion
 }
 

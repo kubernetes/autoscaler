@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	admissionv1 "k8s.io/api/admission/v1"
 	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -184,7 +184,7 @@ func TestGetPatches(t *testing.T) {
 			fvm := &fakeVpaMatcher{vpa: tc.vpa}
 			h := NewResourceHandler(fppp, fvm, tc.calculators)
 			patches, err := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
-				Resource: v1.GroupVersionResource{
+				Resource: metav1.GroupVersionResource{
 					Version: "v1",
 				},
 				Namespace: tc.namespace,

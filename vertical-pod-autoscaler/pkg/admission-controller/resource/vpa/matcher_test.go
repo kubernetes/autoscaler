@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -51,12 +51,12 @@ func TestGetMatchingVpa(t *testing.T) {
 			Namespace: "default",
 		},
 	}
-	targetRef := &v1.CrossVersionObjectReference{
+	targetRef := &autoscalingv1.CrossVersionObjectReference{
 		Kind:       sts.Kind,
 		Name:       sts.Name,
 		APIVersion: sts.APIVersion,
 	}
-	targetRefWithNoMatches := &v1.CrossVersionObjectReference{
+	targetRefWithNoMatches := &autoscalingv1.CrossVersionObjectReference{
 		Kind:       "ReplicaSet",
 		Name:       "rs",
 		APIVersion: "apps/v1",

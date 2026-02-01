@@ -30,7 +30,7 @@ import (
 	baseclocktest "k8s.io/utils/clock/testing"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
