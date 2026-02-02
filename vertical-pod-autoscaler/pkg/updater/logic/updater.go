@@ -527,7 +527,7 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 
 // isInfeasibleError checks if an error indicates the resize is infeasible.
 // infeasible error on admission controller level is still in progress
-// this is just a placeholer until
+// this is just a placeholder until
 func isInfeasibleError(err error) bool {
 	return false
 }
