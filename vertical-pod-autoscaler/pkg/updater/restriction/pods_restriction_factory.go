@@ -208,9 +208,9 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 
 	for creator, replicas := range livePods {
 		actual := len(replicas)
-		if actual < required {
-			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
-			continue
+		belowMinReplicas := actual < required
+		if belowMinReplicas {
+			klog.V(2).InfoS("Replica group below minReplicas; eviction will be blocked, in-place still allowed", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
 		}
 
 		var configured int
@@ -229,6 +229,7 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		singleGroup := singleGroupStats{}
 		singleGroup.configured = configured
 		singleGroup.evictionTolerance = int(float64(configured) * f.evictionToleranceFraction) // truncated
+		singleGroup.belowMinReplicas = belowMinReplicas
 		for _, pod := range replicas {
 			podToReplicaCreatorMap[getPodID(pod)] = creator
 			if pod.Status.Phase == apiv1.PodPending {
@@ -332,18 +333,21 @@ type singleGroupStats struct {
 	running                int
 	evictionTolerance      int
 	evicted                int
-	inPlaceUpdateOngoing   int // number of pods from last loop that are still in-place updating
-	inPlaceUpdateInitiated int // number of pods from the current loop that have newly requested in-place resize
+	inPlaceUpdateOngoing   int  // number of pods from last loop that are still in-place updating
+	inPlaceUpdateInitiated int  // number of pods from the current loop that have newly requested in-place resize
+	belowMinReplicas       bool // true when livePods < minReplicas; eviction is blocked, in-place is still allowed (e.g. InPlaceOrRecreate)
 }
 
-// isPodDisruptable checks if all pods are running and eviction tolerance is small, we can
-// disrupt the current pod.
+// isPodDisruptable decides whether one more pod in this replica group can be "disrupted"
+// (evicted or in-place updated) without breaking availability. It ensures we don't remove
+// or resize too many pods at once: actuallyAlive (running minus already evicted/updated this loop)
+// must stay above shouldBeAlive (configured minus evictionTolerance). Used by both eviction
+// (CanEvict) and in-place (CanInPlaceUpdate) to limit how many pods are touched per updater loop.
 func (s *singleGroupStats) isPodDisruptable() bool {
 	shouldBeAlive := s.configured - s.evictionTolerance
 	actuallyAlive := s.running - (s.evicted + s.inPlaceUpdateInitiated)
 	return actuallyAlive > shouldBeAlive ||
 		(s.configured == s.running && s.evictionTolerance == 0 && s.evicted == 0 && s.inPlaceUpdateInitiated == 0)
-	// we don't want to block pods from being considered for eviction if tolerance is small and some pods are potentially stuck resizing
 }
 
 // isInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update

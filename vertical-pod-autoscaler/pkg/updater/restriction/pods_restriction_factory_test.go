@@ -368,15 +368,15 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			},
 		},
 		{
-			name:              "Cannot in-place a single Pod under default settings.",
+			name:              "Can in-place a single Pod under default settings (belowMinReplicas allows in-place, blocks eviction).",
 			replicas:          1,
 			evictionTolerance: 0.5,
 			vpa:               getIPORVpa(),
 			pods: []podWithExpectations{
 				{
 					pod:                  generatePod().Get(),
-					canInPlaceUpdate:     utils.InPlaceDeferred,
-					inPlaceUpdateSuccess: false,
+					canInPlaceUpdate:     utils.InPlaceApproved,
+					inPlaceUpdateSuccess: true,
 				},
 			},
 		},

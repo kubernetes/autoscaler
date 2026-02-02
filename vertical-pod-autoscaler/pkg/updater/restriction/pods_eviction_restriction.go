@@ -57,6 +57,10 @@ func (e *PodsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+		if present && singleGroupStats.belowMinReplicas {
+			klog.V(2).InfoS("Skipping eviction: replica group below minReplicas (in-place update may still be used)", "pod", klog.KObj(pod), "creator", cr.Name)
+			return false
+		}
 		if pod.Status.Phase == apiv1.PodPending {
 			return true
 		}

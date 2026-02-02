@@ -240,6 +240,10 @@ func TestInPlaceDisabledFeatureGate(t *testing.T) {
 	}
 }
 
+// TestInPlaceTooFewReplicas: with minReplicas=10 and only 5 live pods the group is belowMinReplicas.
+// Eviction is blocked; in-place is still allowed. All pods get InPlaceApproved initially.
+// In one "loop" we can only do as many in-place updates as evictionTolerance allows
+// (isPodDisruptable() becomes false after that). With tolerance 0.5, evictionTolerance=2 → first 2 succeed, rest fail.
 func TestInPlaceTooFewReplicas(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 
@@ -275,13 +279,22 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 	assert.NoError(t, err)
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
+	// belowMinReplicas does not block in-place: all pods are initially InPlaceApproved.
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
 	}
 
-	for _, pod := range pods {
+	// In one loop, inPlaceUpdateInitiated is incremented after each successful update.
+	// isPodDisruptable() requires actuallyAlive > shouldBeAlive; with tolerance 0.5, configured=5,
+	// evictionTolerance=2 → after 2 updates actuallyAlive=3, shouldBeAlive=3 → no more allowed.
+	allowedInOneLoop := 2
+	for i, pod := range pods {
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
-		assert.Error(t, err, "Error expected")
+		if i < allowedInOneLoop {
+			assert.NoError(t, err)
+		} else {
+			assert.Error(t, err, "Expected error after %d in-place updates in one loop (tolerance limit)", allowedInOneLoop)
+		}
 	}
 }
 
@@ -377,5 +390,66 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	for _, pod := range pods[1:] {
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
+	}
+}
+
+func TestMinReplicasAllowsInPlaceForSingletonButBlocksEviction(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
+
+	// replica controller reports replicas = 1
+	replicas := int32(1)
+	livePods := 1
+	tolerance := 0.5
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc-minrep-singleton",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	// create exactly one pod (livePods = 1)
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	// fake clock / no prior in-place attempts
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	// VPA configured with InPlaceOrRecreate (helper provides this)
+	iporVpa := getIPORVpa()
+
+	// minReplicas = 2: group is below minReplicas, but we still include it with belowMinReplicas=true.
+	// In-place is allowed; eviction is blocked.
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc())
+	assert.NoError(t, err)
+
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, iporVpa)
+	assert.NoError(t, err)
+
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// In-place is allowed even when livePods < minReplicas (belowMinReplicas only blocks eviction).
+	for _, pod := range pods {
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
+	}
+	// Eviction is blocked when below minReplicas (fallback to Recreate would do nothing).
+	for _, pod := range pods {
+		assert.False(t, eviction.CanEvict(pod))
+	}
+
+	// In-place update succeeds.
+	for _, pod := range pods {
+		err := inplace.InPlaceUpdate(pod, iporVpa, test.FakeEventRecorder())
+		assert.NoError(t, err)
 	}
 }
