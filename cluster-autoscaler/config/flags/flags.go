@@ -209,6 +209,7 @@ var (
 	forceDaemonSets                         = flag.Bool("force-ds", false, "Blocks scale-up of node groups too small for all suitable Daemon Sets pods.")
 	dynamicNodeDeleteDelayAfterTaintEnabled = flag.Bool("dynamic-node-delete-delay-after-taint-enabled", false, "Enables dynamic adjustment of NodeDeleteDelayAfterTaint based of the latency between CA and api-server")
 	bypassedSchedulers                      = pflag.StringSlice("bypassed-scheduler-names", []string{}, "Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up.")
+	allowedSchedulers                       = pflag.StringSlice("allowed-scheduler-names", []string{}, "If set to non-empty value, CA will proceed only with pods targeting schedulers in the list, from the list of unschedulable and scheduler unprocessed pods")
 	drainPriorityConfig                     = flag.String("drain-priority-config", "",
 		"List of ',' separated pairs (priority:terminationGracePeriodSeconds) of integers separated by ':' enables priority evictor. Priority evictor groups pods into priority groups based on pod priority and evict pods in the ascending order of group priorities"+
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
@@ -407,7 +408,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			MaxFreeDifferenceRatio:           *maxFreeDifferenceRatio,
 		},
 		DynamicNodeDeleteDelayAfterTaintEnabled:      *dynamicNodeDeleteDelayAfterTaintEnabled,
-		BypassedSchedulers:                           scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
+		BypassedSchedulers:                           scheduler_util.SchedulersMap(*bypassedSchedulers),
+		AllowedSchedulers:                            parseAllowedSchedulers(*allowedSchedulers, *bypassedSchedulers),
 		ProvisioningRequestEnabled:                   *provisioningRequestsEnabled,
 		AsyncNodeGroupsEnabled:                       *asyncNodeGroupsEnabled,
 		ProvisioningRequestInitialBackoffTime:        *provisioningRequestInitialBackoffTime,
@@ -555,4 +557,19 @@ func parseShutdownGracePeriodsAndPriorities(priorityGracePeriodStr string) []kub
 		})
 	}
 	return priorityGracePeriodMap
+}
+
+func parseAllowedSchedulers(allowedSchedulers, bypassedSchedulers []string) map[string]bool {
+	allowedSchedulersMap := scheduler_util.SchedulersMap(allowedSchedulers)
+	if len(allowedSchedulers) == 0 {
+		return allowedSchedulersMap
+	}
+	bypassedSchedulersMap := scheduler_util.SchedulersMap(bypassedSchedulers)
+
+	for scheduler := range bypassedSchedulersMap {
+		if found := allowedSchedulersMap[scheduler]; !found {
+			klog.Fatalf("Invalid configuration. --bypassed-scheduler-names should be a subset of --allowed-scheduler-names. %s not included in --allowed-scheduler-names", scheduler)
+		}
+	}
+	return allowedSchedulersMap
 }
