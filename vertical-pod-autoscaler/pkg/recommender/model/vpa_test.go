@@ -64,8 +64,13 @@ func TestUpdateConditions(t *testing.T) {
 					Reason:  "",
 					Message: "",
 				},
+				{
+					Type:    vpa_types.NoPodsMatched,
+					Status:  corev1.ConditionFalse,
+					Reason:  "Cleared",
+					Message: "Matching pods detected",
+				},
 			},
-			expectedAbsent: []vpa_types.VerticalPodAutoscalerConditionType{vpa_types.NoPodsMatched},
 		}, {
 			name:              "Has recommendation but no pods matched",
 			podsMatched:       false,
@@ -94,8 +99,13 @@ func TestUpdateConditions(t *testing.T) {
 					Reason:  "",
 					Message: "",
 				},
+				{
+					Type:    vpa_types.NoPodsMatched,
+					Status:  corev1.ConditionFalse,
+					Reason:  "Cleared",
+					Message: "Matching pods detected",
+				},
 			},
-			expectedAbsent: []vpa_types.VerticalPodAutoscalerConditionType{vpa_types.NoPodsMatched},
 		}, {
 			name:              "No recommendation no pods matched",
 			podsMatched:       false,
