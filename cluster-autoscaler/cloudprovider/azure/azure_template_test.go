@@ -21,9 +21,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -172,13 +171,11 @@ func TestExtractAllocatableResourcesFromScaleSet(t *testing.T) {
 func TestTopologyFromScaleSet(t *testing.T) {
 	testNodeName := "test-node"
 	testSkuName := "test-sku"
-	testVmss := compute.VirtualMachineScaleSet{
-		Response: autorest.Response{},
-		Sku:      &compute.Sku{Name: &testSkuName},
-		Plan:     nil,
-		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{OsProfile: nil}},
-		Zones:    &[]string{"1", "2", "3"},
+	testVmss := &armcompute.VirtualMachineScaleSet{
+		SKU: &armcompute.SKU{Name: &testSkuName},
+		Properties: &armcompute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &armcompute.VirtualMachineScaleSetVMProfile{OSProfile: nil}},
+		Zones:    []*string{ptr.To("1"), ptr.To("2"), ptr.To("3")},
 		Location: ptr.To("westus"),
 	}
 	expectedZoneValues := []string{"westus-1", "westus-2", "westus-3"}
@@ -200,12 +197,10 @@ func TestTopologyFromScaleSet(t *testing.T) {
 func TestEmptyTopologyFromScaleSet(t *testing.T) {
 	testNodeName := "test-node"
 	testSkuName := "test-sku"
-	testVmss := compute.VirtualMachineScaleSet{
-		Response: autorest.Response{},
-		Sku:      &compute.Sku{Name: &testSkuName},
-		Plan:     nil,
-		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{OsProfile: nil}},
+	testVmss := &armcompute.VirtualMachineScaleSet{
+		SKU: &armcompute.SKU{Name: &testSkuName},
+		Properties: &armcompute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &armcompute.VirtualMachineScaleSetVMProfile{OSProfile: nil}},
 		Location: ptr.To("westus"),
 	}
 
@@ -297,17 +292,15 @@ func TestBuildNodeFromTemplateWithLabelPrediction(t *testing.T) {
 	testSkuName := "Standard_DS2_v2"
 	testNodeName := "test-node"
 
-	vmss := compute.VirtualMachineScaleSet{
-		Response: autorest.Response{},
-		Sku:      &compute.Sku{Name: &testSkuName},
-		Plan:     nil,
-		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
-				StorageProfile: &compute.VirtualMachineScaleSetStorageProfile{
-					OsDisk: &compute.VirtualMachineScaleSetOSDisk{
+	vmss := &armcompute.VirtualMachineScaleSet{
+		SKU: &armcompute.SKU{Name: &testSkuName},
+		Properties: &armcompute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &armcompute.VirtualMachineScaleSetVMProfile{
+				StorageProfile: &armcompute.VirtualMachineScaleSetStorageProfile{
+					OSDisk: &armcompute.VirtualMachineScaleSetOSDisk{
 						DiffDiskSettings: nil, // This makes it managed
-						ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
-							StorageAccountType: compute.StorageAccountTypesPremiumLRS,
+						ManagedDisk: &armcompute.VirtualMachineScaleSetManagedDiskParameters{
+							StorageAccountType: ptr.To(armcompute.StorageAccountTypesPremiumLRS),
 						},
 					},
 				},
@@ -316,7 +309,7 @@ func TestBuildNodeFromTemplateWithLabelPrediction(t *testing.T) {
 		Tags: map[string]*string{
 			"poolName": &poolName,
 		},
-		Zones:    &[]string{"1", "2"},
+		Zones:    []*string{ptr.To("1"), ptr.To("2")},
 		Location: ptr.To("westus"),
 	}
 
@@ -341,18 +334,16 @@ func TestBuildNodeFromTemplateWithEphemeralStorage(t *testing.T) {
 	testNodeName := "test-node"
 	diskSizeGB := int32(128)
 
-	vmss := compute.VirtualMachineScaleSet{
-		Response: autorest.Response{},
-		Sku:      &compute.Sku{Name: &testSkuName},
-		Plan:     nil,
-		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
-				StorageProfile: &compute.VirtualMachineScaleSetStorageProfile{
-					OsDisk: &compute.VirtualMachineScaleSetOSDisk{
+	vmss := &armcompute.VirtualMachineScaleSet{
+		SKU: &armcompute.SKU{Name: &testSkuName},
+		Properties: &armcompute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &armcompute.VirtualMachineScaleSetVMProfile{
+				StorageProfile: &armcompute.VirtualMachineScaleSetStorageProfile{
+					OSDisk: &armcompute.VirtualMachineScaleSetOSDisk{
 						DiskSizeGB:       &diskSizeGB,
 						DiffDiskSettings: nil, // This makes it managed
-						ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
-							StorageAccountType: compute.StorageAccountTypesPremiumLRS,
+						ManagedDisk: &armcompute.VirtualMachineScaleSetManagedDiskParameters{
+							StorageAccountType: ptr.To(armcompute.StorageAccountTypesPremiumLRS),
 						},
 					},
 				},
@@ -361,7 +352,7 @@ func TestBuildNodeFromTemplateWithEphemeralStorage(t *testing.T) {
 		Tags: map[string]*string{
 			"poolName": &poolName,
 		},
-		Zones:    &[]string{"1", "2"},
+		Zones:    []*string{ptr.To("1"), ptr.To("2")},
 		Location: ptr.To("westus"),
 	}
 

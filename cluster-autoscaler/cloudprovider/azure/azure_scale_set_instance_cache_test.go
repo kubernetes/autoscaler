@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/stretchr/testify/assert"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-func testGetInstanceCacheWithStates(t *testing.T, vms []compute.VirtualMachineScaleSetVM,
+func testGetInstanceCacheWithStates(t *testing.T, vms []*armcompute.VirtualMachineScaleSetVM,
 	states []cloudprovider.InstanceState) []cloudprovider.Instance {
 	assert.Equal(t, len(vms), len(states))
 	var instanceCacheTest []cloudprovider.Instance
@@ -46,7 +46,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		scaleSet := newTestScaleSet(provider.azureManager, "testScaleSet")
 
 		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStarting)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStarting)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -55,7 +55,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = running", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateRunning)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateRunning)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -64,7 +64,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = stopping", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopping)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStopping)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -73,7 +73,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = stopped", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopped)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStopped)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -82,7 +82,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = deallocated", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateDeallocated)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateDeallocated)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -91,7 +91,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = unknown", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -105,7 +105,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		scaleSet := newTestScaleSetWithFastDelete(provider.azureManager, "testScaleSet")
 
 		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStarting)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStarting)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -114,7 +114,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = running", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateRunning)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateRunning)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -123,7 +123,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = stopping", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopping)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStopping)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -133,7 +133,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = stopped", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateStopped)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStopped)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -143,7 +143,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = deallocated", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateDeallocated)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateDeallocated)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 
@@ -153,7 +153,7 @@ func TestInstanceStatusFromVM(t *testing.T) {
 		})
 
 		t.Run("provisioning state = failed, power state = unknown", func(t *testing.T) {
-			vm := newVMObjectWithState(string(compute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
 
 			status := scaleSet.instanceStatusFromVM(vm)
 

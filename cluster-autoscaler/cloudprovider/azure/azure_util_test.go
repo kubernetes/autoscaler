@@ -17,15 +17,15 @@ limitations under the License.
 package azure
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/stretchr/testify/assert"
-
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 func GetTestAzureUtil(t *testing.T) *AzUtil {
@@ -113,7 +113,7 @@ func TestWindowsVMNameParts(t *testing.T) {
 func TestGetVMNameIndexLinux(t *testing.T) {
 	expectedAgentIndex := 65
 
-	agentIndex, err := GetVMNameIndex(compute.OperatingSystemTypesLinux, "k8s-agentpool1-38988164-65")
+	agentIndex, err := GetVMNameIndex(armcompute.OperatingSystemTypesLinux, "k8s-agentpool1-38988164-65")
 	if agentIndex != expectedAgentIndex {
 		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
 	}
@@ -125,7 +125,7 @@ func TestGetVMNameIndexLinux(t *testing.T) {
 func TestGetVMNameIndexWindows(t *testing.T) {
 	expectedAgentIndex := 20
 
-	agentIndex, err := GetVMNameIndex(compute.OperatingSystemTypesWindows, "38988k8s90320")
+	agentIndex, err := GetVMNameIndex(armcompute.OperatingSystemTypesWindows, "38988k8s90320")
 	if agentIndex != expectedAgentIndex {
 		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
 	}
@@ -256,42 +256,59 @@ func TestConvertResourceGroupNameToLower(t *testing.T) {
 	}
 }
 
+// TestIsAzureRequestsThrottled tests isAzureRequestsThrottled function
 func TestIsAzureRequestsThrottled(t *testing.T) {
 	tests := []struct {
-		desc     string
-		rerr     *retry.Error
-		expected bool
+		desc           string
+		err            error
+		expectedThrot  bool
+		expectRetryGT0 bool
 	}{
 		{
-			desc:     "nil error should return false",
-			expected: false,
+			desc:          "nil error should return false",
+			err:           nil,
+			expectedThrot: false,
+		},
+		{
+			desc:          "non-Azure error should return false",
+			err:           errors.New("some random error"),
+			expectedThrot: false,
 		},
 		{
 			desc: "non http.StatusTooManyRequests error should return false",
-			rerr: &retry.Error{
-				HTTPStatusCode: http.StatusBadRequest,
+			err: &azcore.ResponseError{
+				StatusCode: http.StatusBadRequest,
 			},
-			expected: false,
+			expectedThrot: false,
 		},
 		{
 			desc: "http.StatusTooManyRequests error should return true",
-			rerr: &retry.Error{
-				HTTPStatusCode: http.StatusTooManyRequests,
+			err: &azcore.ResponseError{
+				StatusCode: http.StatusTooManyRequests,
 			},
-			expected: true,
+			expectedThrot: true,
 		},
 		{
-			desc: "Nul HTTP code and non-expired Retry-After should return true",
-			rerr: &retry.Error{
-				RetryAfter: time.Now().Add(time.Hour),
+			desc: "http.StatusTooManyRequests with Retry-After header",
+			err: &azcore.ResponseError{
+				StatusCode: http.StatusTooManyRequests,
+				RawResponse: &http.Response{
+					Header: http.Header{
+						"Retry-After": []string{"120"},
+					},
+				},
 			},
-			expected: true,
+			expectedThrot:  true,
+			expectRetryGT0: true,
 		},
 	}
 
 	for _, test := range tests {
-		real := isAzureRequestsThrottled(test.rerr)
-		assert.Equal(t, test.expected, real, test.desc)
+		throttled, retryAfter := isAzureRequestsThrottled(test.err)
+		assert.Equal(t, test.expectedThrot, throttled, test.desc)
+		if test.expectRetryGT0 {
+			assert.Greater(t, retryAfter, time.Duration(0), test.desc)
+		}
 	}
 }
 

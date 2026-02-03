@@ -25,9 +25,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/skewer"
+	skewer "github.com/Azure/skewer/v2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 
@@ -82,10 +82,10 @@ type azureCache struct {
 
 	// scaleSets keeps the set of all known scalesets in the resource group, populated/refreshed via VMSS.List() call.
 	// It is only used/populated if vmType is vmTypeVMSS (default).
-	scaleSets map[string]compute.VirtualMachineScaleSet
+	scaleSets map[string]*armcompute.VirtualMachineScaleSet
 	// virtualMachines keeps the set of all VMs in the resource group.
 	// It is only used/populated if vmType is vmTypeStandard.
-	virtualMachines map[string][]compute.VirtualMachine
+	virtualMachines map[string][]*armcompute.VirtualMachine
 
 	// registeredNodeGroups represents all known NodeGroups.
 	registeredNodeGroups []cloudprovider.NodeGroup
@@ -122,8 +122,8 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		enableVMsAgentPool:   config.EnableVMsAgentPool,
 		vmType:               config.VMType,
 		vmsPoolMap:           make(map[string]armcontainerservice.AgentPool),
-		scaleSets:            make(map[string]compute.VirtualMachineScaleSet),
-		virtualMachines:      make(map[string][]compute.VirtualMachine),
+		scaleSets:            make(map[string]*armcompute.VirtualMachineScaleSet),
+		virtualMachines:      make(map[string][]*armcompute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
 		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
 		unownedInstances:     make(map[azureRef]bool),
@@ -151,14 +151,14 @@ func (m *azureCache) getVMsPoolMap() map[string]armcontainerservice.AgentPool {
 	return m.vmsPoolMap
 }
 
-func (m *azureCache) getVirtualMachines() map[string][]compute.VirtualMachine {
+func (m *azureCache) getVirtualMachines() map[string][]*armcompute.VirtualMachine {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.virtualMachines
 }
 
-func (m *azureCache) getScaleSets() map[string]compute.VirtualMachineScaleSet {
+func (m *azureCache) getScaleSets() map[string]*armcompute.VirtualMachineScaleSet {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -272,17 +272,17 @@ const (
 )
 
 // fetchVirtualMachines returns the updated list of virtual machines in the config resource group using the Azure API.
-func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine, error) {
+func (m *azureCache) fetchVirtualMachines() (map[string][]*armcompute.VirtualMachine, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	result, err := m.azClient.virtualMachinesClient.List(ctx, m.resourceGroup)
 	if err != nil {
 		klog.Errorf("VirtualMachinesClient.List in resource group %q failed: %v", m.resourceGroup, err)
-		return nil, err.Error()
+		return nil, err
 	}
 
-	instances := make(map[string][]compute.VirtualMachine)
+	instances := make(map[string][]*armcompute.VirtualMachine)
 	for _, instance := range result {
 		if instance.Tags == nil {
 			continue
@@ -337,17 +337,17 @@ func (m *azureCache) fetchVMsPools() (map[string]armcontainerservice.AgentPool, 
 }
 
 // fetchScaleSets returns the updated list of scale sets in the config resource group using the Azure API.
-func (m *azureCache) fetchScaleSets() (map[string]compute.VirtualMachineScaleSet, error) {
+func (m *azureCache) fetchScaleSets() (map[string]*armcompute.VirtualMachineScaleSet, error) {
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
 	result, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.resourceGroup)
 	if err != nil {
 		klog.Errorf("VirtualMachineScaleSetsClient.List in resource group %q failed: %v", m.resourceGroup, err)
-		return nil, err.Error()
+		return nil, err
 	}
 
-	sets := make(map[string]compute.VirtualMachineScaleSet)
+	sets := make(map[string]*armcompute.VirtualMachineScaleSet)
 	for _, vmss := range result {
 		sets[*vmss.Name] = vmss
 	}
@@ -514,7 +514,8 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 // isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
 func (m *azureCache) areAllScaleSetsUniform() bool {
 	for _, scaleSet := range m.scaleSets {
-		if scaleSet.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
+		if scaleSet.Properties != nil && scaleSet.Properties.OrchestrationMode != nil &&
+			*scaleSet.Properties.OrchestrationMode == armcompute.OrchestrationModeFlexible {
 			return false
 		}
 	}
