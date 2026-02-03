@@ -1485,7 +1485,7 @@ func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 		MaxNodesTotal:    10,
 		MaxCoresTotal:    10,
 		MaxMemoryTotal:   100000,
-		BypassedSchedulers: scheduler.GetBypassedSchedulersMap([]string{
+		BypassedSchedulers: scheduler.SchedulersMap([]string{
 			apiv1.DefaultSchedulerName,
 			bypassedScheduler,
 		}),
