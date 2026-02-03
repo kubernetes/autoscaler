@@ -18,7 +18,8 @@ set -o nounset
 set -o pipefail
 set -o errexit
 
-CA_ROOT=$(dirname ${BASH_SOURCE})/../..
+SCRIPT_DIR=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+CA_ROOT="$(readlink -f "${SCRIPT_DIR}/../..")"
 
 ${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh
 ${CA_ROOT}/hack/e2e/run-e2e-tests.sh "$@"
