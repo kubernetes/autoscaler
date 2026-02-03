@@ -24,7 +24,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
@@ -108,7 +108,7 @@ func getTestVMsAgentPool(isSystemPool bool) armcontainerservice.AgentPool {
 					Manual: []*armcontainerservice.ManualScaleProfile{
 						{
 							Count: ptr.To[int32](3),
-							Sizes: []*string{ptr.To(vmSku)},
+							Size:  ptr.To(vmSku),
 						},
 					},
 				},
