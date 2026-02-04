@@ -196,7 +196,7 @@ func TestConcurrentAccessToSameVPA(t *testing.T) {
 
 	err = r.clusterState.AddOrUpdateVpa(apiVpa, parsedSelector)
 	assert.NoError(t, err, "Failed to add or update VPA in cluster state")
-	r.clusterState.SetObservedVPAs([]*v1.VerticalPodAutoscaler{apiVpa})
+	r.clusterState.SetObservedVPAs([]*vpaautoscalingv1.VerticalPodAutoscaler{apiVpa})
 
 	// Now simulate multiple workers ALL processing the SAME VPA concurrently
 	// This is the exact scenario that caused the production crash
@@ -268,7 +268,7 @@ func TestConcurrentVPAMethodAccess(t *testing.T) {
 				_ = vpa.AsStatus()
 				_ = vpa.HasRecommendation()
 				_ = vpa.HasMatchedPods()
-				_ = vpa.ConditionActive(v1.RecommendationProvided)
+				_ = vpa.ConditionActive(vpaautoscalingv1.RecommendationProvided)
 			}
 		}(w)
 	}
@@ -280,7 +280,7 @@ func TestConcurrentVPAMethodAccess(t *testing.T) {
 // by having multiple workers process overlapping sets of VPAs.
 func TestUpdateVPAsRaceCondition(t *testing.T) {
 	vpaCount := 20
-	apiObjectVPAs := make([]*v1.VerticalPodAutoscaler, vpaCount)
+	apiObjectVPAs := make([]*vpaautoscalingv1.VerticalPodAutoscaler, vpaCount)
 	fakedClient := make([]runtime.Object, vpaCount)
 
 	for i := range vpaCount {
