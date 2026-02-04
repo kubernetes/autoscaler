@@ -54,8 +54,8 @@ spec:
       {{- with .Values.admissionController.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
-      {{- with .Values.admissionController.hostNetwork }}
-      hostNetwork: {{ . }}
+      {{- if .Values.admissionController.hostNetwork }}
+      hostNetwork: true
       {{- end }}
       containers:
         - name: admission-controller
