@@ -61,6 +61,10 @@ func (e *PodsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 			return true
 		}
 		if present {
+			if singleGroupStats.belowMinReplicas {
+				klog.V(2).InfoS("Cannot evict pod, group is below minReplicas", "pod", klog.KObj(pod))
+				return false
+			}
 			if isInPlaceUpdating(pod) {
 				return CanEvictInPlacingPod(pod, singleGroupStats, e.lastInPlaceAttemptTimeMap, e.clock)
 			}

@@ -33,6 +33,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 const (
@@ -209,11 +210,22 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		klog.V(3).InfoS("Overriding minReplicas from global to per-VPA value", "globalMinReplicas", f.minReplicas, "vpaMinReplicas", required, "vpa", klog.KObj(vpa))
 	}
 
+	// if the VPA is using InPlaceOrRecreate update mode and user has opted into skipping disruption, we can skip the replica count check
+	// TODO: Add InPlace mode here when it's implemented
+	usingInPlaceOrRecreate := vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlaceOrRecreate
+	skipReplicaCheck := usingInPlaceOrRecreate && f.inPlaceSkipDisruptionBudget
+
 	for creator, replicas := range livePods {
 		actual := len(replicas)
+
+		isBelowMinReplicas := false
 		if actual < required {
-			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
-			continue
+			if !skipReplicaCheck {
+				klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+				continue
+			}
+			klog.V(2).InfoS("in-place-skip-disruption-budget enabled, skipping minReplicas check for in-place update", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+			isBelowMinReplicas = true
 		}
 
 		var configured int
@@ -232,6 +244,7 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		singleGroup := singleGroupStats{}
 		singleGroup.configured = configured
 		singleGroup.evictionTolerance = int(float64(configured) * f.evictionToleranceFraction) // truncated
+		singleGroup.belowMinReplicas = isBelowMinReplicas
 		for _, pod := range replicas {
 			podToReplicaCreatorMap[getPodID(pod)] = creator
 			if pod.Status.Phase == apiv1.PodPending {
@@ -335,8 +348,9 @@ type singleGroupStats struct {
 	running                int
 	evictionTolerance      int
 	evicted                int
-	inPlaceUpdateOngoing   int // number of pods from last loop that are still in-place updating
-	inPlaceUpdateInitiated int // number of pods from the current loop that have newly requested in-place resize
+	inPlaceUpdateOngoing   int  // number of pods from last loop that are still in-place updating
+	inPlaceUpdateInitiated int  // number of pods from the current loop that have newly requested in-place resize
+	belowMinReplicas       bool // true if this group was allowed through despite being below minReplicas (for in-place only)
 }
 
 // isPodDisruptable checks if all pods are running and eviction tolerance is small, we can
