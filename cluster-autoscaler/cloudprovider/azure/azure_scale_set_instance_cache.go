@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
@@ -106,12 +106,12 @@ func (scaleSet *ScaleSet) updateInstanceCache() error {
 		return err
 	}
 
-	if orchestrationMode == compute.Flexible {
+	if orchestrationMode != nil && *orchestrationMode == armcompute.OrchestrationModeFlexible {
 		if scaleSet.manager.config.EnableVmssFlexNodes {
 			return scaleSet.buildScaleSetCacheForFlex()
 		}
 		return fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enableVmssFlexNodes' feature flag is turned off", scaleSet.Name)
-	} else if orchestrationMode == compute.Uniform {
+	} else if orchestrationMode != nil && *orchestrationMode == armcompute.OrchestrationModeUniform {
 		return scaleSet.buildScaleSetCacheForUniform()
 	}
 
@@ -199,11 +199,11 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 
 // instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus.
 // Suggestion: reunify this with instanceStatusFromProvisioningStateAndPowerState() in azure_scale_set.go
-func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSetVM) *cloudprovider.InstanceStatus {
+func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScaleSetVM) *cloudprovider.InstanceStatus {
 	// Prefer the proactive cache view of the instance state if we aren't in a terminal state
 	// This is because the power state may be taking longer to update and we don't want
 	// an unfortunate VM update (TTL 5 min) to reset that state to running.
-	if vm.ProvisioningState == nil || *vm.ProvisioningState == string(compute.GalleryProvisioningStateUpdating) {
+	if vm.Properties == nil || vm.Properties.ProvisioningState == nil || *vm.Properties.ProvisioningState == "Updating" {
 		resourceID, _ := convertResourceGroupNameToLower(*vm.ID)
 		providerID := azurePrefix + resourceID
 		for _, instance := range scaleSet.instanceCache {
@@ -213,18 +213,26 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 		}
 		return nil
 	}
+	// Default power state handling:
+	// - If InstanceView is missing entirely (nil), assume running to be conservative
+	// - If InstanceView exists but has no statuses, treat as unknown (may trigger fast delete)
 	powerState := vmPowerStateRunning
-	if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
-		powerState = vmPowerStateFromStatuses(*vm.InstanceView.Statuses)
+	if vm.Properties.InstanceView != nil {
+		if len(vm.Properties.InstanceView.Statuses) > 0 {
+			powerState = vmPowerStateFromStatuses(vm.Properties.InstanceView.Statuses)
+		} else {
+			// InstanceView exists but no statuses - we know there's no power state
+			powerState = vmPowerStateUnknown
+		}
 	}
 
 	status := &cloudprovider.InstanceStatus{}
-	switch *vm.ProvisioningState {
-	case string(compute.GalleryProvisioningStateDeleting):
+	switch *vm.Properties.ProvisioningState {
+	case VMProvisioningStateDeleting:
 		status.State = cloudprovider.InstanceDeleting
-	case string(compute.GalleryProvisioningStateCreating):
+	case VMProvisioningStateCreating:
 		status.State = cloudprovider.InstanceCreating
-	case string(compute.GalleryProvisioningStateFailed):
+	case VMProvisioningStateFailed:
 		status.State = cloudprovider.InstanceRunning
 
 		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", ptr.Deref(vm.ID, ""), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
@@ -251,9 +259,9 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *compute.VirtualMachineScaleSe
 	}
 
 	// Add vmssCSE Provisioning Failed Message in error info body for vmssCSE Extensions if enableDetailedCSEMessage is true
-	if scaleSet.enableDetailedCSEMessage && vm.InstanceView != nil {
-		if err, failed := scaleSet.cseErrors(vm.InstanceView.Extensions); failed {
-			klog.V(3).Infof("VM %s reports CSE failure: %v, with provisioning state %s, power state %s", ptr.Deref(vm.ID, ""), err, ptr.Deref(vm.ProvisioningState, ""), powerState)
+	if scaleSet.enableDetailedCSEMessage && vm.Properties.InstanceView != nil {
+		if err, failed := scaleSet.cseErrors(vm.Properties.InstanceView.Extensions); failed {
+			klog.V(3).Infof("VM %s reports CSE failure: %v, with provisioning state %s, power state %s", ptr.Deref(vm.ID, ""), err, ptr.Deref(vm.Properties.ProvisioningState, ""), powerState)
 			status.State = cloudprovider.InstanceCreating
 			errorInfo := &cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OtherErrorClass,
