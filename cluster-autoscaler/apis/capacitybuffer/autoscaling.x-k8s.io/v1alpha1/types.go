@@ -38,9 +38,12 @@ import (
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=capacitybuffers,scope=Namespaced,shortName=cb
-// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy used for provisioning buffer capacity."
-// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".spec.replicas",description="The desired number of buffer chunks, if specified."
-// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].reason",description="The readiness status of the CapacityBuffer."
+// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".status.provisioningStrategy",description="The strategy used."
+// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".status.replicas",description="The actual number of buffer chunks."
+// +kubebuilder:printcolumn:name="PodTemplate",type="string",JSONPath=".status.podTemplateRef.name",description="The name of the PodTemplate used."
+// +kubebuilder:printcolumn:name="Conditions",type="string",JSONPath=".status.conditions[*].type",description="List of all condition types."
+// +kubebuilder:printcolumn:name="ConditionsTime",type="string",JSONPath=".status.conditions[*].lastTransitionTime",description="List of all condition timestamps."
+// +kubebuilder:printcolumn:name="ConditionsMessages",type="string",JSONPath=".status.conditions[*].message",description="List of all condition messages."
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the CapacityBuffer."
 // +versionName=v1alpha1
 // +kubebuilder:deprecatedversion
