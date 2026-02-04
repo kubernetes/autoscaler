@@ -143,6 +143,47 @@ func TestPodListProcessor(t *testing.T) {
 			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer2": {Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionTrue}},
 			expectError:                  false,
 		},
+		{
+			name:                      "Buffer not ready for provisioning and provisioning set to true",
+			objectsInKubernetesClient: []runtime.Object{getTestingPodTemplate("ref", 1)},
+			objectsInBuffersClient: []runtime.Object{testutil.NewBuffer(
+				testutil.WithName("buffer"),
+				testutil.WithStatusPodTemplateRef("ref"),
+				testutil.WithStatusReplicas(1),
+				func(cb *apiv1.CapacityBuffer) {
+					cb.Status.Conditions = []metav1.Condition{
+						{
+							Type:   capacitybuffer.ReadyForProvisioningCondition,
+							Status: metav1.ConditionFalse,
+						},
+						{
+							Type:   capacitybuffer.ProvisioningCondition,
+							Status: metav1.ConditionTrue,
+						},
+					}
+					cb.Status.ProvisioningStrategy = &testProvStrategyAllowed
+				},
+			)},
+			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod")},
+			expectedUnschedPodsCount:     1,
+			expectedUnschedFakePodsCount: 0,
+			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {
+				Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionFalse, Reason: NotReadyForProvisioningReason,
+			}},
+			expectError: false,
+		},
+		{
+			name:                         "Buffer with zero replicas",
+			objectsInKubernetesClient:    []runtime.Object{getTestingPodTemplate("ref", 1)},
+			objectsInBuffersClient:       []runtime.Object{getTestingBuffer("buffer", "ref", 0, 1, true, 1, testProvStrategyAllowed)},
+			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod")},
+			forceSafeToEvict:             true,
+			expectedUnschedPodsCount:     1,
+			expectedUnschedFakePodsCount: 0,
+			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {
+				Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionFalse, Reason: BufferIsEmptyReason,
+			}},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
