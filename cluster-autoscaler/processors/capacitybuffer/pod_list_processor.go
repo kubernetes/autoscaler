@@ -19,6 +19,7 @@ package capacitybufferpodlister
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/klog/v2"
@@ -38,6 +39,17 @@ import (
 const (
 	CapacityBufferFakePodAnnotationKey   = "podType"
 	CapacityBufferFakePodAnnotationValue = "capacityBufferFakePod"
+
+	// NotReadyForProvisioningReason is the reason used when the buffer is not ready for provisioning.
+	NotReadyForProvisioningReason = "NotReadyForProvisioning"
+	// BufferIsEmptyReason is the reason used when the buffer has 0 replicas.
+	BufferIsEmptyReason = "BufferIsEmpty"
+	// FailedToGetPodTemplateReason is the reason used when the pod template cannot be retrieved.
+	FailedToGetPodTemplateReason = "FailedToGetPodTemplate"
+	// FailedToMakeFakePodsReason is the reason used when creating fake pods fails.
+	FailedToMakeFakePodsReason = "FailedToMakeFakePods"
+	// FakePodsInjectedReason is the reason used when fake pods are successfully injected.
+	FakePodsInjectedReason = "FakePodsInjected"
 )
 
 // CapacityBufferPodListProcessor processes the pod lists before scale up
@@ -130,24 +142,39 @@ func (p *CapacityBufferPodListProcessor) clearCapacityBufferRegistry() {
 }
 
 func (p *CapacityBufferPodListProcessor) provision(buffer *v1beta1.CapacityBuffer) []*apiv1.Pod {
-	if buffer.Status.PodTemplateRef == nil || buffer.Status.Replicas == nil || *buffer.Status.Replicas == 0 {
+	if buffer.Status.PodTemplateRef == nil || buffer.Status.Replicas == nil || meta.IsStatusConditionFalse(buffer.Status.Conditions, capacitybuffer.ReadyForProvisioningCondition) {
+		changed := common.UpdateBufferStatusToFailedProvisioning(buffer, NotReadyForProvisioningReason, "CapacityBuffer is not ready for provisioning")
+		if changed {
+			p.updateBufferStatus(buffer)
+		}
+		return []*apiv1.Pod{}
+	}
+	if *buffer.Status.Replicas == 0 {
+		changed := common.UpdateBufferStatusToFailedProvisioning(buffer, BufferIsEmptyReason, "CapacityBuffer has zero replicas")
+		if changed {
+			p.updateBufferStatus(buffer)
+		}
 		return []*apiv1.Pod{}
 	}
 	podTemplateName := buffer.Status.PodTemplateRef.Name
 	replicas := buffer.Status.Replicas
 	podTemplate, err := p.client.GetPodTemplate(buffer.Namespace, podTemplateName)
 	if err != nil {
-		common.UpdateBufferStatusToFailedProvisioning(buffer, "FailedToGetPodTemplate", fmt.Sprintf("failed to get pod template with error: %v", err.Error()))
-		p.updateBufferStatus(buffer)
+		changed := common.UpdateBufferStatusToFailedProvisioning(buffer, FailedToGetPodTemplateReason, fmt.Sprintf("failed to get pod template with error: %v", err.Error()))
+		if changed {
+			p.updateBufferStatus(buffer)
+		}
 		return []*apiv1.Pod{}
 	}
 	fakePods, err := makeFakePods(buffer, &podTemplate.Template, int(*replicas), p.forceSafeToEvictFakePods)
 	if err != nil {
-		common.UpdateBufferStatusToFailedProvisioning(buffer, "FailedToMakeFakePods", fmt.Sprintf("failed to create fake pods with error: %v", err.Error()))
-		p.updateBufferStatus(buffer)
+		changed := common.UpdateBufferStatusToFailedProvisioning(buffer, FailedToMakeFakePodsReason, fmt.Sprintf("failed to create fake pods with error: %v", err.Error()))
+		if changed {
+			p.updateBufferStatus(buffer)
+		}
 		return []*apiv1.Pod{}
 	}
-	common.UpdateBufferStatusToSuccessfullyProvisioning(buffer, "FakePodsInjected")
+	common.UpdateBufferStatusToSuccessfullyProvisioning(buffer, FakePodsInjectedReason)
 	p.updateBufferStatus(buffer)
 	return fakePods
 }

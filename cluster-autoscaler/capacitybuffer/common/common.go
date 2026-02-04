@@ -80,7 +80,7 @@ func mapEmptyProvStrategyToDefault(ps *string) *string {
 }
 
 // UpdateBufferStatusToFailedProvisioning updates the status of the passed buffer and set Provisioning to false with the passes reason and message
-func UpdateBufferStatusToFailedProvisioning(buffer *v1.CapacityBuffer, reason, errorMessage string) {
+func UpdateBufferStatusToFailedProvisioning(buffer *v1.CapacityBuffer, reason, errorMessage string) bool {
 	newCondition := metav1.Condition{
 		Type:               capacitybuffer.ProvisioningCondition,
 		Status:             metav1.ConditionFalse,
@@ -91,7 +91,7 @@ func UpdateBufferStatusToFailedProvisioning(buffer *v1.CapacityBuffer, reason, e
 	if buffer.Status.Conditions == nil {
 		buffer.Status.Conditions = make([]metav1.Condition, 0)
 	}
-	meta.SetStatusCondition(&buffer.Status.Conditions, newCondition)
+	return meta.SetStatusCondition(&buffer.Status.Conditions, newCondition)
 }
 
 // UpdateBufferStatusToSuccessfullyProvisioning updates the status of the passed buffer and set Provisioning to true with the passes reason
