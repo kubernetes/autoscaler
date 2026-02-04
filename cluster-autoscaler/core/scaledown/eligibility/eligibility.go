@@ -37,6 +37,10 @@ import (
 const (
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
+	// TopologyZoneLabel is the standard Kubernetes zone label
+	TopologyZoneLabel = "topology.kubernetes.io/zone"
+	// AppLabel is used to identify node pools for topology checks
+	AppLabel = "app"
 )
 
 // Checker is responsible for deciding which nodes pass the criteria for scale down.
@@ -93,6 +97,15 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 		}
 		if reason != simulator.NoReason {
 			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: reason})
+			continue
+		}
+
+		// Check if removing this node would leave a zone empty for topology-constrained pods
+		// This prevents scale-down oscillation with topologySpreadConstraints
+		viable, topologyReason := c.checkTopologyZoneViability(context, node, nodeInfo)
+		if !viable {
+			klog.V(1).Infof("Node %s blocked from scale-down: %s", node.Name, topologyReason)
+			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: simulator.NoPlaceToMovePods})
 			continue
 		}
 
@@ -194,4 +207,71 @@ func (c *Checker) isNodeBelowUtilizationThreshold(context *context.AutoscalingCo
 // HasNoScaleDownAnnotation checks whether the node has an annotation blocking it from being scaled down.
 func HasNoScaleDownAnnotation(node *apiv1.Node) bool {
 	return node.Annotations[ScaleDownDisabledKey] == "true"
+}
+
+// checkTopologyZoneViability checks if removing a node would leave a zone empty
+// for pods that have hard topology spread constraints requiring that zone.
+// This prevents the oscillation where CA removes the last node in a zone,
+// pods become unschedulable due to topology constraints, then CA scales up again.
+func (c *Checker) checkTopologyZoneViability(context *context.AutoscalingContext, node *apiv1.Node, nodeInfo *framework.NodeInfo) (bool, string) {
+	nodeZone := node.Labels[TopologyZoneLabel]
+	if nodeZone == "" {
+		return true, "" // No zone label, can't check
+	}
+
+	// Get app label for this node pool
+	appLabel := node.Labels[AppLabel]
+	if appLabel == "" {
+		return true, "" // Generic node pool, skip check
+	}
+
+	// Get all nodes from snapshot
+	allNodeInfos, err := context.ClusterSnapshot.ListNodeInfos()
+	if err != nil {
+		klog.V(4).Infof("Failed to list nodes for topology check: %v", err)
+		return true, "" // Can't check, allow scale-down
+	}
+
+	// Count other nodes in this zone with the same app label
+	nodesInZoneWithSameApp := 0
+	for _, ni := range allNodeInfos {
+		otherNode := ni.Node()
+		if otherNode.Name == node.Name {
+			continue // Skip the node we're considering for removal
+		}
+		if otherNode.Labels[TopologyZoneLabel] == nodeZone &&
+			otherNode.Labels[AppLabel] == appLabel {
+			nodesInZoneWithSameApp++
+		}
+	}
+
+	// If this is NOT the last node in the zone with this app label, it's safe
+	if nodesInZoneWithSameApp > 0 {
+		return true, ""
+	}
+
+	// This is the last node in the zone with this app label.
+	// Check if any pods on this node have hard topology spread constraints.
+	for _, podInfo := range nodeInfo.Pods() {
+		pod := podInfo.Pod
+		if hasHardZoneTopologySpread(pod) {
+			reason := "last node in zone " + nodeZone + " with app=" + appLabel + " and topology-constrained pods"
+			klog.V(4).Infof("Node %s is %s, blocking scale-down", node.Name, reason)
+			return false, reason
+		}
+	}
+
+	return true, ""
+}
+
+// hasHardZoneTopologySpread checks if a pod has a hard (DoNotSchedule) topology
+// spread constraint for zone distribution.
+func hasHardZoneTopologySpread(pod *apiv1.Pod) bool {
+	for _, constraint := range pod.Spec.TopologySpreadConstraints {
+		if constraint.WhenUnsatisfiable == apiv1.DoNotSchedule &&
+			constraint.TopologyKey == TopologyZoneLabel {
+			return true
+		}
+	}
+	return false
 }
