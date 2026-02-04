@@ -153,6 +153,27 @@ func WithNode(node *apiv1.Node) NodeGroupOption {
 	}
 }
 
+// WithMinSize sets the minimum size of the node group.
+func WithMinSize(min int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.minSize = min
+	}
+}
+
+// WithMaxSize sets the maximum size of the node group.
+func WithMaxSize(max int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.maxSize = max
+	}
+}
+
+// WithTemplate sets the node template for the node group.
+func WithTemplate(template *framework.NodeInfo) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.template = template
+	}
+}
+
 // AddNodeGroup is a helper for tests to add a group with its template.
 func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) {
 	c.Lock()
@@ -185,6 +206,12 @@ func (c *CloudProvider) AddNode(groupId string, node *apiv1.Node) {
 	c.Lock()
 	defer c.Unlock()
 	c.nodeToGroup[node.Name] = groupId
+	if g, ok := c.groups[groupId].(*NodeGroup); ok {
+		g.Lock()
+		defer g.Unlock()
+		g.instances[node.Name] = cloudprovider.InstanceRunning
+		g.targetSize++
+	}
 }
 
 // SetResourceLimit allows the test to reach in and change the limits.
@@ -342,6 +369,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		}
 		newNode := n.template.Node().DeepCopy()
 		newNode.Name = instanceId
+		newNode.Spec.ProviderID = instanceId
 
 		n.instances[instanceId] = cloudprovider.InstanceRunning
 		n.provider.nodeToGroup[instanceId] = n.id
