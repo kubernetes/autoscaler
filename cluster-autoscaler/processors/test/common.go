@@ -55,7 +55,7 @@ func NewTestProcessors(options config.AutoscalingOptions) (*processors.Autoscali
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
 		TemplateNodeInfoProvider:    templateNodeInfoProvider,
 		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults),
-		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(true, false),
+		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(options.DynamicResourceAllocationEnabled, options.CSINodeAwareSchedulingEnabled),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 		ScaleStateNotifier:          nodegroupchange.NewNodeGroupChangeObserversList(),
