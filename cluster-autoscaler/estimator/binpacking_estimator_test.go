@@ -337,28 +337,37 @@ func TestDetermineBestPodEquivalenceGroupToFastpath(t *testing.T) {
 		expectResult          int
 	}{
 		{
-			name: "both groups 1 node, take group with more pods",
+			name: "both groups 2 nodes, take group with more pods",
 			podsEquivalenceGroups: []PodEquivalenceGroup{
-				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5), 4), // 1 node * 4 pods = 4
-				makePodEquivalenceGroup(BuildTestPod("estimatee2", 5, 6), 3), // 1 node * 3 pods = 3
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 30, 5), 5), // 2 nodes, 5 pods, p - p/n = 3
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 50, 6), 3), // 2 nodes, 3 pods, p - p/n = 2
 			},
 			expectResult: 0,
 		},
 		{
-			name: "take group with largest pods*nodes, even if it has less pods",
+			name: "take group with largest score, even if it has less pods",
 			podsEquivalenceGroups: []PodEquivalenceGroup{
-				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5), 4),   // 1 node  * 4 pods = 4
-				makePodEquivalenceGroup(BuildTestPod("estimatee2", 80, 80), 3), // 3 nodes * 3 pods = 9
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 30, 5), 6),  // 2 nodes, 6 pods, p - p/n = 3
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 90, 90), 5), // 5 nodes, 5 pods, p - p/n = 4
 			},
 			expectResult: 1,
 		},
 		{
-			name: "take group with largest pods*nodes, even if it has less nodes",
+			name: "take group with largest score, even if it has less nodes",
 			podsEquivalenceGroups: []PodEquivalenceGroup{
-				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5), 10),  // 1 node  * 10 pods = 10
-				makePodEquivalenceGroup(BuildTestPod("estimatee2", 80, 80), 3), // 3 nodes * 3  pods = 9
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 15, 5), 10), // 2 nodes, 10 pods, p - p/n = 5
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 90, 90), 5), // 5 nodes, 5  pods, p - p/n = 4
 			},
 			expectResult: 0,
+		},
+		{
+			name: "equal score default to last group",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 80, 80), 3), // 3 nodes, 3 pods, p - p/n = 2
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 70, 70), 3), // 3 nodes, 3 pods, p - p/n = 2
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 50, 5), 4),  // 2 nodes, 4 pods, p - p/n = 2
+			},
+			expectResult: 2,
 		},
 		{
 			name: "no fastpath supporting pod groups",
@@ -375,6 +384,14 @@ func TestDetermineBestPodEquivalenceGroupToFastpath(t *testing.T) {
 				makePodEquivalenceGroup(&apiv1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "estimatee2"}, Spec: apiv1.PodSpec{Containers: []apiv1.Container{}}}, 4),
 			},
 			expectResult: 1,
+		},
+		{
+			name: "groups with only 1 node have the lowest score",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 60, 60), 2), // 2 nodes, 2  pods, p - p/n = 1
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 1, 5), 100), // 1 node, 100 pods, p - p/n = 0
+			},
+			expectResult: 0,
 		},
 	}
 

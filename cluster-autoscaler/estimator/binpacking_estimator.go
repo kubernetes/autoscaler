@@ -425,10 +425,13 @@ func shouldUseFastPath(podEquivalenceGroup PodEquivalenceGroup) bool {
 	return true
 }
 
-// determineBestPEGToFastpath returns the index of the pod equivalence group that would benefit the most from fastpath binpacking (= largest expected number of (nodes * pods))
+// determineBestPEGToFastpath returns the index of the pod equivalence group that would benefit the most from fastpath binpacking (= largest expected number of (pods - (pods/nodes))
+// Simulation complexity is generally O(nodes * pods), and fastpath fully simulates the
+// first node, therefore the number of simulations saved would be approximately:
+// PodsPerNode * (nodes - 1) = (pods/nodes) * (nodes - 1) = pods - (pods/nodes)
 // returns -1 if none of the groups support fastpath binpacking
 func determineBestPEGToFastpath(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) int {
-	maxNodesTimesPods := 0
+	maxSimulationsSaved := 0
 	bestPEGIndex := -1
 	for i, peg := range podsEquivalenceGroups {
 		if peg.Exemplar() == nil {
@@ -454,11 +457,16 @@ func determineBestPEGToFastpath(podsEquivalenceGroups []PodEquivalenceGroup, nod
 				numNodesByMemory = int(math.Ceil(float64(len(peg.Pods)) * resourcesRequests.Memory().AsApproximateFloat64() / nodeTemplate.Node().Status.Capacity.Memory().AsApproximateFloat64()))
 			}
 		}
-		nodesTimesPods := max(numNodesByAntiAffinity, numNodesByCpu, numNodesByMemory) * len(peg.Pods)
-		// In case the (nodes*pods) score is equal, we still want to take the latest pod group to remain as close to the original pod ordering as possible
-		if nodesTimesPods >= maxNodesTimesPods && shouldUseFastPath(peg) {
+		numNodes := max(numNodesByAntiAffinity, numNodesByCpu, numNodesByMemory)
+
+		simulationsSaved := 0
+		if numNodes > 0 {
+			simulationsSaved = len(peg.Pods) - (len(peg.Pods) / numNodes)
+		}
+		// In case the score is equal, we still want to take the latest pod group to remain as close to the original pod ordering as possible
+		if simulationsSaved >= maxSimulationsSaved && shouldUseFastPath(peg) {
 			bestPEGIndex = i
-			maxNodesTimesPods = nodesTimesPods
+			maxSimulationsSaved = simulationsSaved
 		}
 	}
 	return bestPEGIndex
