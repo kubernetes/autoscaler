@@ -20,6 +20,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/client-go/informers"
 
 	klog "k8s.io/klog/v2"
@@ -44,6 +45,11 @@ func NewCloudProvider(opts *coreoptions.AutoscalerOptions, informerFactory infor
 	}
 
 	provider := buildCloudProvider(opts, do, rl, informerFactory)
+
+	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+		Comparator: buildNodeInfoComparator(opts),
+	}
+
 	if provider != nil {
 		return provider
 	}
