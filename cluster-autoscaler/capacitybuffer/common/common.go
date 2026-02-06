@@ -23,21 +23,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-// Constants to use in Capacity Buffers objects
-const (
-	ActiveProvisioningStrategy    = "buffer.x-k8s.io/active-capacity"
-	CapacityBufferKind            = "CapacityBuffer"
-	CapacityBufferApiVersion      = "autoscaling.x-k8s.io/v1beta1"
-	ReadyForProvisioningCondition = "ReadyForProvisioning"
-	ProvisioningCondition         = "Provisioning"
-	LimitedByQuotasCondition      = "LimitedByQuotas"
-	LimitedByQuotasReason         = "ResourceQuotasAllocated"
-	ConditionTrue                 = "True"
-	ConditionFalse                = "False"
 )
 
 // SetBufferAsReadyForProvisioning updates the passed buffer object with the rest of the attributes and sets its condition to ready
@@ -47,18 +35,21 @@ func SetBufferAsReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *
 	buffer.Status.PodTemplateGeneration = podTemplateGeneration
 	buffer.Status.ProvisioningStrategy = mapEmptyProvStrategyToDefault(provStrategy)
 	readyCondition := metav1.Condition{
-		Type:               ReadyForProvisioningCondition,
-		Status:             ConditionTrue,
+		Type:               capacitybuffer.ReadyForProvisioningCondition,
+		Status:             metav1.ConditionTrue,
 		Message:            "ready",
-		Reason:             "atrtibutesSetSuccessfully",
+		Reason:             capacitybuffer.AttributesSetSuccessfullyReason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 	}
-	buffer.Status.Conditions = []metav1.Condition{readyCondition}
+	if buffer.Status.Conditions == nil {
+		buffer.Status.Conditions = make([]metav1.Condition, 0)
+	}
+	meta.SetStatusCondition(&buffer.Status.Conditions, readyCondition)
 }
 
 // SetBufferAsNotReadyForProvisioning updates the passed buffer object with the rest of the attributes and sets its condition to not ready with the passed error
 func SetBufferAsNotReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *v1.LocalObjectRef, podTemplateGeneration *int64, replicas *int32, provStrategy *string, err error) {
-	errorMessage := "Buffer not ready for provisioing"
+	errorMessage := "Buffer not ready for provisioning"
 	if err != nil {
 		errorMessage = err.Error()
 	}
@@ -68,42 +59,53 @@ func SetBufferAsNotReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRe
 	buffer.Status.PodTemplateGeneration = podTemplateGeneration
 	buffer.Status.ProvisioningStrategy = mapEmptyProvStrategyToDefault(provStrategy)
 	notReadyCondition := metav1.Condition{
-		Type:               ReadyForProvisioningCondition,
-		Status:             ConditionFalse,
+		Type:               capacitybuffer.ReadyForProvisioningCondition,
+		Status:             metav1.ConditionFalse,
 		Message:            errorMessage,
 		Reason:             "error",
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 	}
-	buffer.Status.Conditions = []metav1.Condition{notReadyCondition}
+	if buffer.Status.Conditions == nil {
+		buffer.Status.Conditions = make([]metav1.Condition, 0)
+	}
+	meta.SetStatusCondition(&buffer.Status.Conditions, notReadyCondition)
 }
 
 func mapEmptyProvStrategyToDefault(ps *string) *string {
 	if ps != nil && *ps == "" {
-		defaultProvStrategy := ActiveProvisioningStrategy
+		defaultProvStrategy := capacitybuffer.ActiveProvisioningStrategy
 		ps = &defaultProvStrategy
 	}
 	return ps
 }
 
-// UpdateBufferStatusToFailedProvisioing updates the status of the passed buffer and set Provisioning to false with the passes reason and message
-func UpdateBufferStatusToFailedProvisioing(buffer *v1.CapacityBuffer, reason, errorMessage string) {
-	buffer.Status.Conditions = []metav1.Condition{{
-		Type:               ProvisioningCondition,
-		Status:             ConditionFalse,
+// UpdateBufferStatusToFailedProvisioning updates the status of the passed buffer and set Provisioning to false with the passes reason and message
+func UpdateBufferStatusToFailedProvisioning(buffer *v1.CapacityBuffer, reason, errorMessage string) bool {
+	newCondition := metav1.Condition{
+		Type:               capacitybuffer.ProvisioningCondition,
+		Status:             metav1.ConditionFalse,
 		Message:            errorMessage,
 		Reason:             reason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
-	}}
+	}
+	if buffer.Status.Conditions == nil {
+		buffer.Status.Conditions = make([]metav1.Condition, 0)
+	}
+	return meta.SetStatusCondition(&buffer.Status.Conditions, newCondition)
 }
 
-// UpdateBufferStatusToSuccessfullyProvisioing updates the status of the passed buffer and set Provisioning to true with the passes reason
-func UpdateBufferStatusToSuccessfullyProvisioing(buffer *v1.CapacityBuffer, reason string) {
-	buffer.Status.Conditions = []metav1.Condition{{
-		Type:               ProvisioningCondition,
-		Status:             ConditionTrue,
+// UpdateBufferStatusToSuccessfullyProvisioning updates the status of the passed buffer and set Provisioning to true with the passes reason
+func UpdateBufferStatusToSuccessfullyProvisioning(buffer *v1.CapacityBuffer, reason string) {
+	newCondition := metav1.Condition{
+		Type:               capacitybuffer.ProvisioningCondition,
+		Status:             metav1.ConditionTrue,
 		Reason:             reason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
-	}}
+	}
+	if buffer.Status.Conditions == nil {
+		buffer.Status.Conditions = make([]metav1.Condition, 0)
+	}
+	meta.SetStatusCondition(&buffer.Status.Conditions, newCondition)
 }
 
 // MarkBufferAsLimitedByQuota adds or updates the LimitedByQuotas condition with True
@@ -118,16 +120,16 @@ func MarkBufferAsLimitedByQuota(buffer *v1.CapacityBuffer, desiredReplicas, allo
 
 // UpdateBufferStatusLimitedByQuotas adds or updates the LimitedByQuotas condition
 func UpdateBufferStatusLimitedByQuotas(buffer *v1.CapacityBuffer, isLimited bool, message string) {
-	status := ConditionFalse
+	status := metav1.ConditionFalse
 	if isLimited {
-		status = ConditionTrue
+		status = metav1.ConditionTrue
 	}
 
 	newCondition := metav1.Condition{
-		Type:               LimitedByQuotasCondition,
-		Status:             metav1.ConditionStatus(status),
+		Type:               capacitybuffer.LimitedByQuotasCondition,
+		Status:             status,
 		Message:            message,
-		Reason:             LimitedByQuotasReason,
+		Reason:             capacitybuffer.LimitedByQuotasReason,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
 		ObservedGeneration: buffer.Generation,
 	}
