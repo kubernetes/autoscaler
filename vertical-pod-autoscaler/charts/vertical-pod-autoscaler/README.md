@@ -96,6 +96,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.enabled | bool | `true` |  |
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
+| admissionController.hostNetwork | bool | `false` | Enable host network for the admission controller pod. Set to true when the pod needs direct access to the host's network namespace. Note: this bypasses Kubernetes network isolation and may cause port conflicts if multiple replicas run on the same node. |
 | admissionController.image.pullPolicy | string | `"IfNotPresent"` |  |
 | admissionController.image.repository | string | `"registry.k8s.io/autoscaling/vpa-admission-controller"` |  |
 | admissionController.image.tag | string | `nil` |  |
