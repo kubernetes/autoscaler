@@ -49,7 +49,7 @@ func TestConcurrentUpdateRecommendationAndHasRecommendation(t *testing.T) {
 	// Goroutine 1: Continuously update recommendation
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			rec := test.Recommendation().
 				WithContainer(containerName).
 				WithTarget("100m", "100Mi").
@@ -61,7 +61,7 @@ func TestConcurrentUpdateRecommendationAndHasRecommendation(t *testing.T) {
 	// Goroutine 2: Continuously check if recommendation exists
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			_ = vpa.HasRecommendation()
 		}
 	}()
@@ -82,7 +82,7 @@ func TestConcurrentUpdateConditionsAndAsStatus(t *testing.T) {
 	// Goroutine 1: Continuously update conditions
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for i := range iterations {
 			podsMatched := i%2 == 0
 			vpa.UpdateConditions(podsMatched)
 		}
@@ -91,7 +91,7 @@ func TestConcurrentUpdateConditionsAndAsStatus(t *testing.T) {
 	// Goroutine 2: Continuously read status
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			_ = vpa.AsStatus()
 		}
 	}()
@@ -111,7 +111,7 @@ func TestConcurrentSetConditionAndConditionActive(t *testing.T) {
 	// Goroutine 1: Set NoPodsMatched condition
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			vpa.SetCondition(vpa_types.NoPodsMatched, true, "test", "test message")
 		}
 	}()
@@ -119,7 +119,7 @@ func TestConcurrentSetConditionAndConditionActive(t *testing.T) {
 	// Goroutine 2: Set RecommendationProvided condition
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for i := range iterations {
 			vpa.SetCondition(vpa_types.RecommendationProvided, i%2 == 0, "test", "test message")
 		}
 	}()
@@ -127,7 +127,7 @@ func TestConcurrentSetConditionAndConditionActive(t *testing.T) {
 	// Goroutine 3: Check if conditions are active
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			_ = vpa.ConditionActive(vpa_types.NoPodsMatched)
 			_ = vpa.ConditionActive(vpa_types.RecommendationProvided)
 		}
@@ -148,7 +148,7 @@ func TestConcurrentDeleteConditionAndConditionActive(t *testing.T) {
 	// Goroutine 1: Set and delete NoPodsMatched condition
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for i := range iterations {
 			if i%2 == 0 {
 				vpa.SetCondition(vpa_types.NoPodsMatched, true, "test", "test")
 			} else {
@@ -160,7 +160,7 @@ func TestConcurrentDeleteConditionAndConditionActive(t *testing.T) {
 	// Goroutine 2: Set and delete RecommendationProvided condition
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for i := range iterations {
 			if i%3 == 0 {
 				vpa.SetCondition(vpa_types.RecommendationProvided, true, "test", "test")
 			} else {
@@ -172,7 +172,7 @@ func TestConcurrentDeleteConditionAndConditionActive(t *testing.T) {
 	// Goroutine 3: Check if conditions are active
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			_ = vpa.ConditionActive(vpa_types.NoPodsMatched)
 			_ = vpa.ConditionActive(vpa_types.RecommendationProvided)
 		}
@@ -201,11 +201,11 @@ func TestConcurrentRecommendationAndConditionUpdates(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Simulate multiple workers updating VPA (like in UpdateVPAs)
-	for w := 0; w < workerCount; w++ {
+	for w := range workerCount {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+			for i := range iterations {
 				// Update recommendation
 				cpu := resource.NewMilliQuantity(int64(100+workerID*10+i), resource.DecimalSI)
 				mem := resource.NewQuantity(int64(100+workerID*10+i)*1024*1024, resource.BinarySI)
@@ -241,16 +241,14 @@ func TestConcurrentRecommendationAndConditionUpdates(t *testing.T) {
 	}
 
 	// Additional goroutines that just read (simulating other parts of the system)
-	for r := 0; r < 5; r++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range 5 {
+		wg.Go(func() {
 			for i := 0; i < iterations*workerCount; i++ {
 				_ = vpa.AsStatus()
 				_ = vpa.HasRecommendation()
 				_ = vpa.HasMatchedPods()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -273,11 +271,11 @@ func TestConcurrentUpdateRecommendationAndAsStatus(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Multiple workers updating recommendation and reading status
-	for w := 0; w < workerCount; w++ {
+	for w := range workerCount {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+			for range iterations {
 				rec := test.Recommendation().
 					WithContainer(containerName).
 					WithTarget("100m", "100Mi").
@@ -316,34 +314,30 @@ func TestConcurrentConditionMapAccess(t *testing.T) {
 		wg.Add(1)
 		go func(ct vpa_types.VerticalPodAutoscalerConditionType) {
 			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+			for i := range iterations {
 				vpa.SetCondition(ct, i%2 == 0, "test", "test message")
 			}
 		}(condType)
 	}
 
 	// Goroutines reading conditions
-	for i := 0; i < 4; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+	for range 4 {
+		wg.Go(func() {
+			for range iterations {
 				for _, ct := range conditionTypes {
 					_ = vpa.ConditionActive(ct)
 				}
 			}
-		}()
+		})
 	}
 
 	// Goroutines calling AsStatus (which reads all conditions)
-	for i := 0; i < 4; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+	for range 4 {
+		wg.Go(func() {
+			for range iterations {
 				_ = vpa.AsStatus()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -355,7 +349,7 @@ func TestHighContentionScenario(t *testing.T) {
 	vpa := NewVpa(VpaID{Namespace: "test", VpaName: "test-vpa"}, labels.Nothing(), time.Now())
 
 	// Setup multiple containers
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		containerName := "container" + string(rune('0'+i))
 		vpa.aggregateContainerStates[aggregateStateKey{
 			namespace:     "test",
@@ -372,11 +366,11 @@ func TestHighContentionScenario(t *testing.T) {
 	iterations := 100
 	var wg sync.WaitGroup
 
-	for g := 0; g < goroutineCount; g++ {
+	for g := range goroutineCount {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+			for i := range iterations {
 				switch id % 7 {
 				case 0:
 					// Update recommendation

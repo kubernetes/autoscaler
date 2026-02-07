@@ -2,6 +2,7 @@ version: "2"
 linters:
   enable:
     - forbidigo
+    - modernize
     - revive
   settings:
     forbidigo:
@@ -9,6 +10,10 @@ linters:
         # Forbid use of archived package "github.com/pkg/errors". Context: https://github.com/kubernetes/autoscaler/pull/7845
         - pkg: github.com/pkg/errors
       analyze-types: true
+    modernize:
+      disable:
+        # Disabling omitzero linter as it catches isssues with API types, which would be best if kube-api-lint can handle
+        - omitzero
     revive:
       enable-all-rules: false # Disabling all rules for now and enabling each one later
       rules:
@@ -76,3 +81,6 @@ formatters:
         - dot
         - blank
       custom-order: true
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

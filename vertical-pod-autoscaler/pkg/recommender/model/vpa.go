@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"maps"
 	"sort"
 	"sync"
 	"time"
@@ -117,9 +118,7 @@ func (vpa *Vpa) GetConditionsMap() vpaConditionsMap {
 	defer vpa.mutex.RUnlock()
 	// Return a copy to prevent external mutations
 	conditionsCopy := make(vpaConditionsMap, len(vpa.conditions))
-	for k, v := range vpa.conditions {
-		conditionsCopy[k] = v
-	}
+	maps.Copy(conditionsCopy, vpa.conditions)
 	return conditionsCopy
 }
 
