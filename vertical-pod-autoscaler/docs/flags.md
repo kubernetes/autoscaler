@@ -149,7 +149,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `alsologtostderr` |  |  | log to standard error as well as files (no effect when -logtostderr=true) |
 | `evict-after-oom-threshold` |  |  10m0s | duration                              The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.  |
 | `eviction-rate-burst` | int |  1 | Burst of pods that can be evicted.  |
-| `eviction-rate-limit` | float |  | Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable<br>the rate limiter. (default -1) |
+| `eviction-rate-limit` | float |  -1 | Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable the rate limiter.  |
 | `eviction-tolerance` | float |  0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted.  |
 | `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
