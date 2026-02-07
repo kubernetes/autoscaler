@@ -204,11 +204,11 @@ func TestConcurrentAccessToSameVPA(t *testing.T) {
 	iterations := 100
 	var wg sync.WaitGroup
 
-	for w := 0; w < workerCount; w++ {
+	for w := range workerCount {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+			for range iterations {
 				// Each worker processes the same VPA
 				processVPAUpdate(r, vpa, apiVpa)
 			}
@@ -251,11 +251,11 @@ func TestConcurrentVPAMethodAccess(t *testing.T) {
 	iterations := 100
 	var wg sync.WaitGroup
 
-	for w := 0; w < workerCount; w++ {
+	for w := range workerCount {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
-			for i := 0; i < iterations; i++ {
+			for i := range iterations {
 				// Create a recommendation
 				rec := test.Recommendation().
 					WithContainer(containerNames[i%len(containerNames)]).
@@ -318,12 +318,10 @@ func TestUpdateVPAsRaceCondition(t *testing.T) {
 	iterations := 10
 	var wg sync.WaitGroup
 
-	for i := 0; i < iterations; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range iterations {
+		wg.Go(func() {
 			r.UpdateVPAs()
-		}()
+		})
 	}
 
 	wg.Wait()
