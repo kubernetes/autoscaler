@@ -795,6 +795,14 @@ func TestGetMigTargetSize(t *testing.T) {
 		TargetSize: targetSize,
 		SelfLink:   fmt.Sprintf("projects/%s/zones/%s/instanceGroups/%s", mig1.GceRef().Project, mig1.GceRef().Zone, mig1.GceRef().Name),
 	}
+	targetSuspendedSize := int64(3)
+	instanceGroupManagerWithSuspendedNodes := &gce.InstanceGroupManager{
+		Zone:                mig.GceRef().Zone,
+		Name:                mig.GceRef().Name,
+		TargetSize:          targetSize,
+		TargetSuspendedSize: targetSuspendedSize,
+		SelfLink:            fmt.Sprintf("projects/%s/zones/%s/instanceGroups/%s", mig.GceRef().Project, mig.GceRef().Zone, mig.GceRef().Name),
+	}
 
 	testCases := []struct {
 		name               string
@@ -819,6 +827,13 @@ func TestGetMigTargetSize(t *testing.T) {
 			cache:              emptyCache(),
 			fetchMigs:          fetchMigsConst([]*gce.InstanceGroupManager{instanceGroupManager}),
 			expectedTargetSize: targetSize,
+			migQuery:           mig,
+		},
+		{
+			name:               "target size from cache fill with suspended nodes",
+			cache:              emptyCache(),
+			fetchMigs:          fetchMigsConst([]*gce.InstanceGroupManager{instanceGroupManagerWithSuspendedNodes}),
+			expectedTargetSize: targetSize + targetSuspendedSize,
 			migQuery:           mig,
 		},
 		{
