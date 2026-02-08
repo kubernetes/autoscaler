@@ -43,13 +43,13 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerName` _string_ | Name of the container or DefaultContainerResourcePolicy, in which<br />case the policy is used by the containers that don't have their own<br />policy specified. |  |  |
-| `mode` _[ContainerScalingMode](#containerscalingmode)_ | Whether autoscaler is enabled for the container. The default is "Auto". |  | Enum: [Auto Off] <br /> |
-| `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the minimal amount of resources that will be recommended<br />for the container. The default is no minimum. |  |  |
-| `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  |  |
+| `mode` _[ContainerScalingMode](#containerscalingmode)_ | Whether autoscaler is enabled for the container. The default is "Auto". |  | Enum: [Auto Off] <br />Optional: \{\} <br /> |
+| `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the minimal amount of resources that will be recommended<br />for the container. The default is no minimum. |  | Optional: \{\} <br /> |
+| `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  | Optional: \{\} <br /> |
 | `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
-| `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br /> |
-| `oomBumpUpRatio` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#quantity-resource-api)_ | oomBumpUpRatio is the ratio to increase memory when OOM is detected. |  |  |
-| `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  |  |
+| `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br />Optional: \{\} <br /> |
+| `oomBumpUpRatio` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#quantity-resource-api)_ | oomBumpUpRatio is the ratio to increase memory when OOM is detected. |  | Optional: \{\} <br /> |
+| `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  | Optional: \{\} <br /> |
 
 
 #### ContainerScalingMode
@@ -141,7 +141,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `containerPolicies` _[ContainerResourcePolicy](#containerresourcepolicy) array_ | Per-container resource policies. |  |  |
+| `containerPolicies` _[ContainerResourcePolicy](#containerresourcepolicy) array_ | Per-container resource policies. |  | Optional: \{\} <br /> |
 
 
 #### PodUpdatePolicy
@@ -157,9 +157,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `updateMode` _[UpdateMode](#updatemode)_ | Controls when autoscaler applies changes to the pod resources.<br />The default is 'Recreate'. |  | Enum: [Off Initial Recreate InPlaceOrRecreate Auto] <br /> |
-| `minReplicas` _integer_ | Minimal number of replicas which need to be alive for Updater to attempt<br />pod eviction (pending other checks like PDB). Only positive values are<br />allowed. Overrides global '--min-replicas' flag. |  |  |
-| `evictionRequirements` _[EvictionRequirement](#evictionrequirement) array_ | EvictionRequirements is a list of EvictionRequirements that need to<br />evaluate to true in order for a Pod to be evicted. If more than one<br />EvictionRequirement is specified, all of them need to be fulfilled to allow eviction. |  |  |
+| `updateMode` _[UpdateMode](#updatemode)_ | Controls when autoscaler applies changes to the pod resources.<br />The default is 'Recreate'. |  | Enum: [Off Initial Recreate InPlaceOrRecreate Auto] <br />Optional: \{\} <br /> |
+| `minReplicas` _integer_ | Minimal number of replicas which need to be alive for Updater to attempt<br />pod eviction (pending other checks like PDB). Only positive values are<br />allowed. Overrides global '--min-replicas' flag. |  | Optional: \{\} <br /> |
+| `evictionRequirements` _[EvictionRequirement](#evictionrequirement) array_ | EvictionRequirements is a list of EvictionRequirements that need to<br />evaluate to true in order for a Pod to be evicted. If more than one<br />EvictionRequirement is specified, all of them need to be fulfilled to allow eviction. |  | Optional: \{\} <br /> |
 
 
 #### RecommendedContainerResources
@@ -180,9 +180,9 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `containerName` _string_ | Name of the container. |  |  |
 | `target` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Recommended amount of resources. Observes ContainerResourcePolicy. |  |  |
-| `lowerBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Minimum recommended amount of resources. Observes ContainerResourcePolicy.<br />This amount is not guaranteed to be sufficient for the application to operate in a stable way, however<br />running with less resources is likely to have significant impact on performance/availability. |  |  |
-| `upperBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Maximum recommended amount of resources. Observes ContainerResourcePolicy.<br />Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum<br />amount of application is actually capable of consuming. |  |  |
-| `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | The most recent recommended resources target computed by the autoscaler<br />for the controlled pods, based only on actual resource usage, not taking<br />into account the ContainerResourcePolicy.<br />May differ from the Recommendation if the actual resource usage causes<br />the target to violate the ContainerResourcePolicy (lower than MinAllowed<br />or higher that MaxAllowed).<br />Used only as status indication, will not affect actual resource assignment. |  |  |
+| `lowerBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Minimum recommended amount of resources. Observes ContainerResourcePolicy.<br />This amount is not guaranteed to be sufficient for the application to operate in a stable way, however<br />running with less resources is likely to have significant impact on performance/availability. |  | Optional: \{\} <br /> |
+| `upperBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Maximum recommended amount of resources. Observes ContainerResourcePolicy.<br />Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum<br />amount of application is actually capable of consuming. |  | Optional: \{\} <br /> |
+| `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | The most recent recommended resources target computed by the autoscaler<br />for the controlled pods, based only on actual resource usage, not taking<br />into account the ContainerResourcePolicy.<br />May differ from the Recommendation if the actual resource usage causes<br />the target to violate the ContainerResourcePolicy (lower than MinAllowed<br />or higher that MaxAllowed).<br />Used only as status indication, will not affect actual resource assignment. |  | Optional: \{\} <br /> |
 
 
 #### RecommendedPodResources
@@ -200,7 +200,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  |  |
+| `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  | Optional: \{\} <br /> |
 
 
 #### UpdateMode
@@ -239,11 +239,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)_ | Specification of the behavior of the autoscaler.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status. |  |  |
-| `status` _[VerticalPodAutoscalerStatus](#verticalpodautoscalerstatus)_ | Current information about the autoscaler. |  |  |
+| `status` _[VerticalPodAutoscalerStatus](#verticalpodautoscalerstatus)_ | Current information about the autoscaler. |  | Optional: \{\} <br /> |
 
 
 #### VerticalPodAutoscalerCheckpoint
@@ -260,11 +260,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
-| `spec` _[VerticalPodAutoscalerCheckpointSpec](#verticalpodautoscalercheckpointspec)_ | Specification of the checkpoint.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status. |  |  |
-| `status` _[VerticalPodAutoscalerCheckpointStatus](#verticalpodautoscalercheckpointstatus)_ | Data of the checkpoint. |  |  |
+| `spec` _[VerticalPodAutoscalerCheckpointSpec](#verticalpodautoscalercheckpointspec)_ | Specification of the checkpoint.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status. |  | Optional: \{\} <br /> |
+| `status` _[VerticalPodAutoscalerCheckpointStatus](#verticalpodautoscalercheckpointstatus)_ | Data of the checkpoint. |  | Optional: \{\} <br /> |
 
 
 
@@ -324,9 +324,9 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `type` _[VerticalPodAutoscalerConditionType](#verticalpodautoscalerconditiontype)_ | type describes the current condition |  |  |
 | `status` _[ConditionStatus](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#conditionstatus-v1-core)_ | status is the status of the condition (True, False, Unknown) |  |  |
-| `lastTransitionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#time-v1-meta)_ | lastTransitionTime is the last time the condition transitioned from<br />one status to another |  |  |
-| `reason` _string_ | reason is the reason for the condition's last transition. |  |  |
-| `message` _string_ | message is a human-readable explanation containing details about<br />the transition |  |  |
+| `lastTransitionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#time-v1-meta)_ | lastTransitionTime is the last time the condition transitioned from<br />one status to another |  | Optional: \{\} <br /> |
+| `reason` _string_ | reason is the reason for the condition's last transition. |  | Optional: \{\} <br /> |
+| `message` _string_ | message is a human-readable explanation containing details about<br />the transition |  | Optional: \{\} <br /> |
 
 
 #### VerticalPodAutoscalerConditionType
@@ -376,9 +376,9 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `targetRef` _[CrossVersionObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#crossversionobjectreference-v1-autoscaling)_ | TargetRef points to the controller managing the set of pods for the<br />autoscaler to control - e.g. Deployment, StatefulSet. VerticalPodAutoscaler<br />can be targeted at controller implementing scale subresource (the pod set is<br />retrieved from the controller's ScaleStatus) or some well known controllers<br />(e.g. for DaemonSet the pod set is read from the controller's spec).<br />If VerticalPodAutoscaler cannot use specified target it will report<br />ConfigUnsupported condition.<br />Note that VerticalPodAutoscaler does not require full implementation<br />of scale subresource - it will not use it to modify the replica count.<br />The only thing retrieved is a label selector matching pods grouped by<br />the target resource. |  |  |
-| `updatePolicy` _[PodUpdatePolicy](#podupdatepolicy)_ | Describes the rules on how changes are applied to the pods.<br />If not specified, all fields in the `PodUpdatePolicy` are set to their<br />default values. |  |  |
-| `resourcePolicy` _[PodResourcePolicy](#podresourcepolicy)_ | Controls how the autoscaler computes recommended resources.<br />The resource policy may be used to set constraints on the recommendations<br />for individual containers.<br />If any individual containers need to be excluded from getting the VPA recommendations, then<br />it must be disabled explicitly by setting mode to "Off" under containerPolicies.<br />If not specified, the autoscaler computes recommended resources for all containers in the pod,<br />without additional constraints. |  |  |
-| `recommenders` _[VerticalPodAutoscalerRecommenderSelector](#verticalpodautoscalerrecommenderselector) array_ | Recommender responsible for generating recommendation for this object.<br />List should be empty (then the default recommender will generate the<br />recommendation) or contain exactly one recommender. |  |  |
+| `updatePolicy` _[PodUpdatePolicy](#podupdatepolicy)_ | Describes the rules on how changes are applied to the pods.<br />If not specified, all fields in the `PodUpdatePolicy` are set to their<br />default values. |  | Optional: \{\} <br /> |
+| `resourcePolicy` _[PodResourcePolicy](#podresourcepolicy)_ | Controls how the autoscaler computes recommended resources.<br />The resource policy may be used to set constraints on the recommendations<br />for individual containers.<br />If any individual containers need to be excluded from getting the VPA recommendations, then<br />it must be disabled explicitly by setting mode to "Off" under containerPolicies.<br />If not specified, the autoscaler computes recommended resources for all containers in the pod,<br />without additional constraints. |  | Optional: \{\} <br /> |
+| `recommenders` _[VerticalPodAutoscalerRecommenderSelector](#verticalpodautoscalerrecommenderselector) array_ | Recommender responsible for generating recommendation for this object.<br />List should be empty (then the default recommender will generate the<br />recommendation) or contain exactly one recommender. |  | Optional: \{\} <br /> |
 
 
 #### VerticalPodAutoscalerStatus
@@ -394,7 +394,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `recommendation` _[RecommendedPodResources](#recommendedpodresources)_ | The most recently computed amount of resources recommended by the<br />autoscaler for the controlled pods. |  |  |
-| `conditions` _[VerticalPodAutoscalerCondition](#verticalpodautoscalercondition) array_ | Conditions is the set of conditions required for this autoscaler to scale its target,<br />and indicates whether or not those conditions are met. |  |  |
+| `recommendation` _[RecommendedPodResources](#recommendedpodresources)_ | The most recently computed amount of resources recommended by the<br />autoscaler for the controlled pods. |  | Optional: \{\} <br /> |
+| `conditions` _[VerticalPodAutoscalerCondition](#verticalpodautoscalercondition) array_ | Conditions is the set of conditions required for this autoscaler to scale its target,<br />and indicates whether or not those conditions are met. |  | Optional: \{\} <br /> |
 
 
