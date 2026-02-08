@@ -32,9 +32,10 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type certsConfig struct {
-	clientCaFile, tlsCertFile, tlsPrivateKey *string
-	reload                                   *bool
+// CertsConfig holds configuration related to TLS certificates
+type CertsConfig struct {
+	ClientCaFile, TlsCertFile, TlsPrivateKey *string
+	Reload                                   *bool
 }
 
 func readFile(filePath string) []byte {
