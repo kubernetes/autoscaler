@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/version"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
+	"k8s.io/utils/ptr"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
@@ -328,6 +329,33 @@ func TestValidateVPA(t *testing.T) {
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								OOMBumpUpRatio: resource.NewQuantity(2, resource.DecimalSI),
+							},
+						},
+					},
+				},
+			},
+			PerVPAConfigDisabled: false,
+		},
+		{
+			name: "per-vpa config active and used evictOOMThreshold",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode:           &validUpdateMode,
+						EvictAfterOOMSeconds: ptr.To(int32(600)),
 					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{

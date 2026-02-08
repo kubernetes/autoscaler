@@ -160,6 +160,7 @@ _Appears in:_
 | `updateMode` _[UpdateMode](#updatemode)_ | Controls when autoscaler applies changes to the pod resources.<br />The default is 'Recreate'. |  | Enum: [Off Initial Recreate InPlaceOrRecreate Auto] <br />Optional: \{\} <br /> |
 | `minReplicas` _integer_ | Minimal number of replicas which need to be alive for Updater to attempt<br />pod eviction (pending other checks like PDB). Only positive values are<br />allowed. Overrides global '--min-replicas' flag. |  | Optional: \{\} <br /> |
 | `evictionRequirements` _[EvictionRequirement](#evictionrequirement) array_ | EvictionRequirements is a list of EvictionRequirements that need to<br />evaluate to true in order for a Pod to be evicted. If more than one<br />EvictionRequirement is specified, all of them need to be fulfilled to allow eviction. |  | Optional: \{\} <br /> |
+| `evictAfterOOMSeconds` _integer_ | evictAfterOOMSeconds specifies the time in seconds to wait after an OOM event before<br />considering the pod for eviction. Pods that have OOMed in less than this time<br />since start will be evicted. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### RecommendedContainerResources
