@@ -50,7 +50,7 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 		if _, ok := nodeNameToNodeInfo[nodeName]; !ok {
 			nodeNameToNodeInfo[nodeName] = framework.NewNodeInfo(nil, nil)
 		}
-		nodeNameToNodeInfo[nodeName].AddPod(&framework.PodInfo{Pod: pod})
+		nodeNameToNodeInfo[nodeName].AddPod(framework.NewPodInfo(pod, nil))
 	}
 
 	for _, node := range nodes {
