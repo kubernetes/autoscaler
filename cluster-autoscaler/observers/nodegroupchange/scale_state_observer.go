@@ -21,6 +21,9 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/klog/v2"
 )
 
 // NodeGroupChangeObserver is an observer of:
@@ -34,9 +37,8 @@ type NodeGroupChangeObserver interface {
 	// RegisterScaleDowns records scale down for a nodegroup.
 	RegisterScaleDown(nodeGroup cloudprovider.NodeGroup, nodeName string, currentTime time.Time, expectedDeleteTime time.Time)
 	// RegisterFailedScaleUp records failed scale-up for a nodegroup.
-	// reason denotes optional reason for failed scale-up
-	// errMsg denotes the actual error message
-	RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason string, errMsg string, gpuResourceName, gpuType string, currentTime time.Time)
+	// errorInfo is a wrapper containing the reason for failed scale-up and the actual error message
+	RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time)
 	// RegisterFailedScaleDown records failed scale-down for a nodegroup.
 	RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup, reason string, currentTime time.Time)
 }
@@ -76,11 +78,11 @@ func (l *NodeGroupChangeObserversList) RegisterScaleDown(nodeGroup cloudprovider
 
 // RegisterFailedScaleUp calls RegisterFailedScaleUp for each observer.
 func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup,
-	reason string, errMsg, gpuResourceName, gpuType string, currentTime time.Time) {
+	errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	for _, observer := range l.observers {
-		observer.RegisterFailedScaleUp(nodeGroup, reason, errMsg, gpuResourceName, gpuType, currentTime)
+		observer.RegisterFailedScaleUp(nodeGroup, errorInfo, currentTime)
 	}
 }
 
@@ -97,4 +99,49 @@ func (l *NodeGroupChangeObserversList) RegisterFailedScaleDown(nodeGroup cloudpr
 // NewNodeGroupChangeObserversList return empty list of scale state observers.
 func NewNodeGroupChangeObserversList() *NodeGroupChangeObserversList {
 	return &NodeGroupChangeObserversList{}
+}
+
+type metricObserver interface {
+	RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string)
+}
+
+// NodeGroupChangeMetricsProducer is an implementation of NodeGroupChangeObserver for reporting the scale up/down metrics
+type NodeGroupChangeMetricsProducer struct {
+	cloudProvider cloudprovider.CloudProvider
+	// metrics is an instance of metricObserver interface which allows to mock and test the nodegroupchange metrics
+	metrics metricObserver
+}
+
+// RegisterScaleUp calls RegisterScaleUp for each observer.
+func (p *NodeGroupChangeMetricsProducer) RegisterScaleUp(nodeGroup cloudprovider.NodeGroup,
+	delta int, currentTime time.Time) {
+}
+
+// RegisterScaleDown calls RegisterScaleDown for each observer.
+func (p *NodeGroupChangeMetricsProducer) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
+	nodeName string, currentTime time.Time, expectedDeleteTime time.Time) {
+}
+
+// RegisterFailedScaleUp emits the failed scale up metric.
+func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup,
+	errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
+	availableGPUTypes := p.cloudProvider.GetAvailableGPUTypes()
+	gpuResourceName, gpuType := "", ""
+	nodeInfo, err := nodeGroup.TemplateNodeInfo()
+	if err != nil {
+		klog.Warningf("Failed to get template node info for a node group: %s", err)
+	} else {
+		gpuResourceName, gpuType = gpu.GetGpuInfoForMetrics(p.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
+	}
+	p.metrics.RegisterFailedScaleUp(metrics.FailedScaleUpReason(errorInfo.ErrorCode), gpuResourceName, gpuType)
+}
+
+// RegisterFailedScaleDown records failed scale-down for a nodegroup.
+func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup,
+	reason string, currentTime time.Time) {
+}
+
+// NewNodeGroupChangeMetricsProducer returns a new NodeGroupChangeMetricsProducer.
+func NewNodeGroupChangeMetricsProducer(cloudProvider cloudprovider.CloudProvider, metrics metricObserver) *NodeGroupChangeMetricsProducer {
+	return &NodeGroupChangeMetricsProducer{cloudProvider: cloudProvider, metrics: metrics}
 }
