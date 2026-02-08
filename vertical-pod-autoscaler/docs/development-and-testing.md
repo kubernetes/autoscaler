@@ -4,6 +4,7 @@
 
 <!-- toc -->
 - [Introduction](#introduction)
+- [Running integration tests](#running-integration-tests)
 - [Running e2e tests](#running-e2e-tests)
   - [Feature gates](#feature-gates)
   - [Parallelism](#parallelism)
@@ -13,6 +14,34 @@
 ## Introduction
 
 This project contains various scripts and tools to aid in the development of the three VPA components.
+
+## Running integration tests
+
+The VPA contains integration tests that test individual components in isolation using [controller-runtime's envtest](https://github.com/kubernetes-sigs/controller-runtime/tree/main/tools/setup-envtest) environment.
+
+They can be run using the `./hack/run-integration-tests.sh` helper script. This script automatically downloads and manages the required Kubernetes API server and etcd binaries for testing.
+
+Integration tests are faster than e2e tests and do not require a full Kubernetes cluster. They are suitable for testing:
+
+- Component-specific behavior and logic
+- Configuration handling
+- API object validation
+- Resource filtering and selection logic
+
+**Example usage:**
+
+```bash
+# Run all integration tests
+./hack/run-integration-tests.sh
+
+# Run a specific test
+./hack/run-integration-tests.sh -run TestRecommenderWithNamespaceFiltering
+
+# Run tests with custom parallelism
+./hack/run-integration-tests.sh -parallel 8
+```
+
+By default, integration tests run with 4 parallel workers.
 
 ## Running e2e tests
 

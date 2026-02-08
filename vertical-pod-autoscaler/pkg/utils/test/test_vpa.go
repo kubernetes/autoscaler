@@ -27,6 +27,13 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
+// HamsterTargetRef is CrossVersionObjectReference of hamster app
+var HamsterTargetRef = &autoscaling.CrossVersionObjectReference{
+	APIVersion: "apps/v1",
+	Kind:       "Deployment",
+	Name:       "hamster-deployment",
+}
+
 // VerticalPodAutoscalerBuilder helps building test instances of VerticalPodAutoscaler.
 type VerticalPodAutoscalerBuilder interface {
 	WithName(vpaName string) VerticalPodAutoscalerBuilder

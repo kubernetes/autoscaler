@@ -23,6 +23,7 @@ import (
 
 type containerBuilder struct {
 	name         string
+	image        string
 	cpuRequest   *resource.Quantity
 	memRequest   *resource.Quantity
 	cpuLimit     *resource.Quantity
@@ -38,6 +39,12 @@ func Container() *containerBuilder {
 func (cb *containerBuilder) WithName(name string) *containerBuilder {
 	r := *cb
 	r.name = name
+	return &r
+}
+
+func (cb *containerBuilder) WithImage(image string) *containerBuilder {
+	r := *cb
+	r.image = image
 	return &r
 }
 
@@ -73,7 +80,8 @@ func (cb *containerBuilder) WithContainerResizePolicy(resizePolicy []apiv1.Conta
 
 func (cb *containerBuilder) Get() apiv1.Container {
 	container := apiv1.Container{
-		Name: cb.name,
+		Name:  cb.name,
+		Image: cb.image,
 		Resources: apiv1.ResourceRequirements{
 			Requests: apiv1.ResourceList{},
 			Limits:   apiv1.ResourceList{},

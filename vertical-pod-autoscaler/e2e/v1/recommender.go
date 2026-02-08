@@ -228,7 +228,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		vpaCRD = test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			Get()
 
@@ -311,7 +311,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		vpaCRD2 := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			WithMinAllowed(containerName, "10000", "").
 			Get()
@@ -338,7 +338,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			WithMaxAllowed(containerName, "1m", "").
 			Get()
@@ -382,7 +382,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			WithContainer(container2Name).
 			Get()
@@ -406,7 +406,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			WithScalingMode(container1Name, vpa_types.ContainerScalingModeOff).
 			WithContainer(container2Name).
