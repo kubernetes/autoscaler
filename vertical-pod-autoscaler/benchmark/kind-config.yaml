@@ -1,0 +1,14 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+kubeadmConfigPatches:
+- |
+  kind: ClusterConfiguration
+  apiServer:
+    extraArgs:
+      max-requests-inflight: "2000"
+      max-mutating-requests-inflight: "1000"
+  controllerManager:
+    extraArgs:
+      concurrent-replicaset-syncs: "500"
+      kube-api-qps: "500"
+      kube-api-burst: "1000"
