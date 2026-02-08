@@ -252,6 +252,15 @@ func (m *AzureManager) forceRefresh() error {
 	}
 	m.lastRefresh = time.Now()
 	klog.V(2).Infof("Refreshed Azure VM and VMSS list, next refresh after %v", m.lastRefresh.Add(m.azureCache.refreshInterval))
+
+	// Cleanup zombie nodes if enabled
+	if m.config.EnableZombieCleanup {
+		if err := m.cleanupZombieNodes(); err != nil {
+			klog.Errorf("Failed to cleanup zombie nodes: %v", err)
+			// Don't fail the refresh if zombie cleanup fails
+		}
+	}
+
 	return nil
 }
 
