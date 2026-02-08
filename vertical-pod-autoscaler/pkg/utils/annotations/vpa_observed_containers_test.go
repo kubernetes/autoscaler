@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/core/v1"
+	apiv1 "k8s.io/api/core/v1"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -29,7 +29,7 @@ import (
 func TestGetVpaObservedContainersValue(t *testing.T) {
 	tests := []struct {
 		name string
-		pod  *v1.Pod
+		pod  *apiv1.Pod
 		want string
 	}{
 		{

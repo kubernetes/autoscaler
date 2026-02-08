@@ -21,7 +21,7 @@ import (
 	"time"
 
 	k8sapiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/rest"
@@ -35,7 +35,7 @@ import (
 
 // PodMetricsLister wraps both metrics-client and External Metrics
 type PodMetricsLister interface {
-	List(ctx context.Context, namespace string, opts v1.ListOptions) (*v1beta1.PodMetricsList, error)
+	List(ctx context.Context, namespace string, opts metav1.ListOptions) (*v1beta1.PodMetricsList, error)
 }
 
 // podMetricsSource is the metrics-client source of metrics.
@@ -48,7 +48,7 @@ func NewPodMetricsesSource(source resourceclient.PodMetricsesGetter) PodMetricsL
 	return podMetricsSource{metricsGetter: source}
 }
 
-func (s podMetricsSource) List(ctx context.Context, namespace string, opts v1.ListOptions) (*v1beta1.PodMetricsList, error) {
+func (s podMetricsSource) List(ctx context.Context, namespace string, opts metav1.ListOptions) (*v1beta1.PodMetricsList, error) {
 	podMetricsInterface := s.metricsGetter.PodMetricses(namespace)
 	return podMetricsInterface.List(ctx, opts)
 }
@@ -81,7 +81,7 @@ func NewExternalClient(c *rest.Config, clusterState model.ClusterState, options 
 	}
 }
 
-func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts v1.ListOptions) (*v1beta1.PodMetricsList, error) {
+func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts metav1.ListOptions) (*v1beta1.PodMetricsList, error) {
 	result := v1beta1.PodMetricsList{}
 
 	for _, vpa := range s.clusterState.VPAs() {
@@ -103,9 +103,9 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 			}
 			selector := vpa.PodSelector.Add(*podNameReq)
 			podMets := v1beta1.PodMetrics{
-				TypeMeta:   v1.TypeMeta{},
-				ObjectMeta: v1.ObjectMeta{Namespace: vpa.ID.Namespace, Name: pod.PodName},
-				Window:     v1.Duration{},
+				TypeMeta:   metav1.TypeMeta{},
+				ObjectMeta: metav1.ObjectMeta{Namespace: vpa.ID.Namespace, Name: pod.PodName},
+				Window:     metav1.Duration{},
 				Containers: make([]v1beta1.ContainerMetrics, 0),
 			}
 			// Query each resource in turn, then assemble back to a single []ContainerMetrics.
@@ -122,7 +122,7 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 				klog.V(4).InfoS("External Metrics Query for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "resource", resourceName, "metric", metricName, "itemCount", len(m.Items), "firstItem", m.Items[0])
 				podMets.Timestamp = m.Items[0].Timestamp
 				if m.Items[0].WindowSeconds != nil {
-					podMets.Window = v1.Duration{Duration: time.Duration(*m.Items[0].WindowSeconds) * time.Second}
+					podMets.Window = metav1.Duration{Duration: time.Duration(*m.Items[0].WindowSeconds) * time.Second}
 				}
 				for _, val := range m.Items {
 					ctrName, hasCtrName := val.MetricLabels[s.options.ContainerNameLabel]

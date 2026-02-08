@@ -250,8 +250,8 @@ func maybeCapToPolicyMax(recommended resource.Quantity, resourceName apiv1.Resou
 }
 
 func maybeCapToMax(recommended resource.Quantity, resourceName apiv1.ResourceName,
-	max apiv1.ResourceList) (resource.Quantity, bool) {
-	maxResource, found := max[resourceName]
+	maxAllowed apiv1.ResourceList) (resource.Quantity, bool) {
+	maxResource, found := maxAllowed[resourceName]
 	if found && !maxResource.IsZero() && recommended.Cmp(maxResource) > 0 {
 		return maxResource, true
 	}
@@ -259,8 +259,8 @@ func maybeCapToMax(recommended resource.Quantity, resourceName apiv1.ResourceNam
 }
 
 func maybeCapToMin(recommended resource.Quantity, resourceName apiv1.ResourceName,
-	min apiv1.ResourceList) (resource.Quantity, bool) {
-	minResource, found := min[resourceName]
+	minAllowed apiv1.ResourceList) (resource.Quantity, bool) {
+	minResource, found := minAllowed[resourceName]
 	if found && !minResource.IsZero() && recommended.Cmp(minResource) < 0 {
 		return minResource, true
 	}

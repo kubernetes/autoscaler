@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	v1 "k8s.io/api/core/v1"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
@@ -31,7 +31,7 @@ const (
 )
 
 // GetVpaObservedContainersValue creates an annotation value for a given pod.
-func GetVpaObservedContainersValue(pod *v1.Pod) string {
+func GetVpaObservedContainersValue(pod *apiv1.Pod) string {
 	containerNames := make([]string, len(pod.Spec.Containers))
 	for i := range pod.Spec.Containers {
 		containerNames[i] = pod.Spec.Containers[i].Name

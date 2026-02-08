@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
-	v1 "k8s.io/api/core/v1"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -106,7 +106,7 @@ func (cs *fakeClusterState) AddSample(sample *model.ContainerUsageSampleWithKey)
 	return nil
 }
 
-func (cs *fakeClusterState) AddOrUpdatePod(podID model.PodID, _ labels.Set, _ v1.PodPhase) {
+func (cs *fakeClusterState) AddOrUpdatePod(podID model.PodID, _ labels.Set, _ apiv1.PodPhase) {
 	cs.addedPods = append(cs.addedPods, podID)
 }
 
@@ -858,7 +858,7 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 	client := fake.NewClientset()
 	namespace := "testNamespace"
 
-	_, err := client.CoreV1().Namespaces().Create(tctx, &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
+	_, err := client.CoreV1().Namespaces().Create(tctx, &apiv1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container").WithNamespace(namespace).WithTargetRef(&autoscalingv1.CrossVersionObjectReference{

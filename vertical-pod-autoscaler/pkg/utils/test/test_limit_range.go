@@ -59,15 +59,15 @@ func (lrb *limitRangeBuilder) WithDefault(defaultValues core.ResourceList) *limi
 	return &result
 }
 
-func (lrb *limitRangeBuilder) WithMax(max core.ResourceList) *limitRangeBuilder {
+func (lrb *limitRangeBuilder) WithMax(maxValues core.ResourceList) *limitRangeBuilder {
 	result := *lrb
-	result.maxValues = append(result.maxValues, &max)
+	result.maxValues = append(result.maxValues, &maxValues)
 	return &result
 }
 
-func (lrb *limitRangeBuilder) WithMin(min core.ResourceList) *limitRangeBuilder {
+func (lrb *limitRangeBuilder) WithMin(minValues core.ResourceList) *limitRangeBuilder {
 	result := *lrb
-	result.minValues = append(result.minValues, &min)
+	result.minValues = append(result.minValues, &minValues)
 	return &result
 }
 
