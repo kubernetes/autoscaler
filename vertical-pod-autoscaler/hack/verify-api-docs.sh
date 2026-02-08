@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2024 The Kubernetes Authors.
+# Copyright The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,4 +38,14 @@ $CONTROLLER_GEN \
     --renderer=markdown \
     --output-path=${WORKSPACE}
 
-mv ${WORKSPACE}/out.md ${OUTPUT}
+
+ret=0
+
+diff -Naupr ${WORKSPACE}/out.md ${OUTPUT} || ret=$?
+if [ $ret -eq 0 ]
+then
+  echo "api-docs are up to date."
+else
+  echo "api-docs are out of date. Please run hack/generate-api-docs.sh"
+  exit 1
+fi
