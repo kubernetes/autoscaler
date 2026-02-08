@@ -14,9 +14,9 @@
 
 FROM golang:1.24.0
 
-ENV GOPATH /gopath/
-ENV PATH $GOPATH/bin:$PATH
-ENV GO111MODULE auto
+ENV GOPATH=/gopath/
+ENV PATH=$GOPATH/bin:$PATH
+ENV GO111MODULE=auto
 
 RUN apt-get update && apt-get --yes install libseccomp-dev
 RUN go version
