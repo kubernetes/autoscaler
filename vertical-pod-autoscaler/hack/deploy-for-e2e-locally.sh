@@ -25,7 +25,10 @@ source "${SCRIPT_ROOT}/hack/lib/util.sh"
 ARCH=$(kube::util::host_arch)
 
 function print_help {
-  echo "ERROR! Usage: $BASE_NAME [suite]*"
+  echo "Usage: $BASE_NAME [options] <suite>"
+  echo "Options:"
+  echo "  -f, --values <file>  Path to a custom Helm values file"
+  echo ""
   echo "<suite> should be one of:"
   echo " - recommender"
   echo " - recommender-externalmetrics"
@@ -40,12 +43,42 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-if [ $# -gt 1 ]; then
+VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e-local.yaml"
+SUITE=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -f|--values)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --values requires a file path argument."
+        exit 1
+      fi
+      VALUES_FILE="$2"
+      shift
+      shift
+      ;;
+    -*)
+      echo "Unknown option: $1"
+      print_help
+      exit 1
+      ;;
+    *)
+      if [[ -n "$SUITE" ]]; then
+        echo "Error: Multiple suites specified. Please specify only one suite."
+        print_help
+        exit 1
+      fi
+      SUITE="$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$SUITE" ]]; then
+  echo "Error: No suite specified."
   print_help
   exit 1
 fi
-
-SUITE=$1
 
 case ${SUITE} in
   recommender)
@@ -86,7 +119,7 @@ done
 
 # Prepare Helm values
 HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
-VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e-local.yaml"
+# VALUES_FILE is set during argument parsing
 HELM_RELEASE_NAME="vpa"
 HELM_NAMESPACE="kube-system"
 
