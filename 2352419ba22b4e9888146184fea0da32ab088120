@@ -1,0 +1,23 @@
+vertical-pod-autoscaler/hack/tools/kube-api-linter/.golangci-kal.yml
+  5546ae059bd46419 66-514
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "2352419ba22b4e9888146184fea0da32ab088120",
+  "prompts": {
+    "5546ae059bd46419": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "623ef174-b502-47b8-a0d8-c197700641ee",
+        "model": "unknown"
+      },
+      "human_author": "Adrian Moisey <adrian@changeover.za.net>",
+      "messages": [],
+      "total_additions": 451,
+      "total_deletions": 4,
+      "accepted_lines": 450,
+      "overriden_lines": 0
+    }
+  }
+}
