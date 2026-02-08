@@ -86,6 +86,7 @@ func TestBinpackingEstimate(t *testing.T) {
 		expectNodeCount      int
 		expectPodCount       int
 		expectProcessedPods  []*apiv1.Pod
+		fastpathBinpacking   bool
 	}{
 		{
 			name:       "simple resource-based binpacking",
@@ -222,6 +223,40 @@ func TestBinpackingEstimate(t *testing.T) {
 			expectNodeCount: 3,
 			expectPodCount:  12,
 		},
+		{
+			name:       "fastpath - simple resource-based binpacking",
+			millicores: 350*3 - 50,
+			memory:     2 * 1000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					350,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 10)},
+			expectNodeCount:    5,
+			expectPodCount:     10,
+			fastpathBinpacking: true,
+		},
+		{
+			name:       "fastpath - multiple pod equivalence groups",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: append([]PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					50,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 10)}, highResourcePodGroup),
+			expectNodeCount:    6,
+			expectPodCount:     20,
+			fastpathBinpacking: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -232,7 +267,7 @@ func TestBinpackingEstimate(t *testing.T) {
 
 			limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(tc.maxNodes, time.Duration(0))})
 			processor := NewDecreasingPodOrderer()
-			estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+			estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */, tc.fastpathBinpacking)
 			node := makeNode(tc.millicores, tc.memory, 10, "template", "zone-mars")
 			nodeInfo := framework.NewTestNodeInfo(node)
 
@@ -285,12 +320,176 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 
 		limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(maxNodes, time.Duration(0))})
 		processor := NewDecreasingPodOrderer()
-		estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+		estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */, false)
 		node := makeNode(millicores, memory, podsPerNode, "template", "zone-mars")
 		nodeInfo := framework.NewTestNodeInfo(node)
 
 		estimatedNodes, estimatedPods := estimator.Estimate(podsEquivalenceGroup, nodeInfo, nil)
 		assert.Equal(b, expectNodeCount, estimatedNodes)
 		assert.Equal(b, expectPodCount, len(estimatedPods))
+	}
+}
+
+func TestDetermineBestPodEquivalenceGroupToFastpath(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		podsEquivalenceGroups []PodEquivalenceGroup
+		expectResult          int
+	}{
+		{
+			name: "both groups 2 nodes, take group with more pods",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 30, 5), 5), // 2 nodes, 5 pods, p - p/n = 3
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 50, 6), 3), // 2 nodes, 3 pods, p - p/n = 2
+			},
+			expectResult: 0,
+		},
+		{
+			name: "take group with largest score, even if it has less pods",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 30, 5), 6),  // 2 nodes, 6 pods, p - p/n = 3
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 90, 90), 5), // 5 nodes, 5 pods, p - p/n = 4
+			},
+			expectResult: 1,
+		},
+		{
+			name: "take group with largest score, even if it has less nodes",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 15, 5), 10), // 2 nodes, 10 pods, p - p/n = 5
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 90, 90), 5), // 5 nodes, 5  pods, p - p/n = 4
+			},
+			expectResult: 0,
+		},
+		{
+			name: "equal score default to last group",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 80, 80), 3), // 3 nodes, 3 pods, p - p/n = 2
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 70, 70), 3), // 3 nodes, 3 pods, p - p/n = 2
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 50, 5), 4),  // 2 nodes, 4 pods, p - p/n = 2
+			},
+			expectResult: 2,
+		},
+		{
+			name: "no fastpath supporting pod groups",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 5, 5, WithMaxSkew(2, "kubernetes.io/hostname", 1)), 10),
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 8, 8, WithMaxSkew(2, "kubernetes.io/hostname", 1)), 3),
+			},
+			expectResult: -1,
+		},
+		{
+			name: "no resource requests defaults to last group, still valid fastpath group",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(&apiv1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "estimatee1"}, Spec: apiv1.PodSpec{Containers: []apiv1.Container{}}}, 2),
+				makePodEquivalenceGroup(&apiv1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "estimatee2"}, Spec: apiv1.PodSpec{Containers: []apiv1.Container{}}}, 4),
+			},
+			expectResult: 1,
+		},
+		{
+			name: "groups with only 1 node have the lowest score",
+			podsEquivalenceGroups: []PodEquivalenceGroup{
+				makePodEquivalenceGroup(BuildTestPod("estimatee2", 60, 60), 2), // 2 nodes, 2  pods, p - p/n = 1
+				makePodEquivalenceGroup(BuildTestPod("estimatee1", 1, 5), 100), // 1 node, 100 pods, p - p/n = 0
+			},
+			expectResult: 0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			nodeInfo := framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter"))
+			result := determineBestPEGToFastpath(tc.podsEquivalenceGroups, nodeInfo)
+			assert.Equal(t, tc.expectResult, result)
+		})
+	}
+}
+
+func TestFastpathSinglePodEquivalenceGroupConsistency(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		millicores           int64
+		memory               int64
+		maxNodes             int
+		podsEquivalenceGroup PodEquivalenceGroup
+	}{
+		{
+			name:       "simple resource-based binpacking",
+			millicores: 350*3 - 50,
+			memory:     2 * 1000,
+			podsEquivalenceGroup: makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					350,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 10),
+		},
+		{
+			name:       "pods-per-node bound binpacking",
+			millicores: 10000,
+			memory:     20000,
+			podsEquivalenceGroup: makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					10,
+					100,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 20),
+		},
+		{
+			name:       "hostport conflict forces pod-per-node",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					200,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					}),
+					WithHostPort(5555)), 8),
+		},
+		{
+			name:       "limiter cuts binpacking",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					500,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 20),
+			maxNodes: 5,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
+			// Add one node in different zone to trigger topology spread constraints
+			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
+			assert.NoError(t, err)
+
+			limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(tc.maxNodes, time.Duration(0))})
+			processor := NewDecreasingPodOrderer()
+			estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */, false)
+			fastPathEstimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */, true)
+			node := makeNode(tc.millicores, tc.memory, 10, "template", "zone-mars")
+			nodeInfo := framework.NewTestNodeInfo(node)
+
+			estimatedNodes, estimatedPods := estimator.Estimate([]PodEquivalenceGroup{tc.podsEquivalenceGroup}, nodeInfo, nil)
+			fastPathEstimatedNodes, fastPathEstimatedPods := fastPathEstimator.Estimate([]PodEquivalenceGroup{tc.podsEquivalenceGroup}, nodeInfo, nil)
+
+			assert.Equal(t, fastPathEstimatedNodes, estimatedNodes)
+			assert.Equal(t, fastPathEstimatedPods, estimatedPods)
+		})
 	}
 }
