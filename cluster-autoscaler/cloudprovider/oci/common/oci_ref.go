@@ -5,9 +5,11 @@ Copyright 2021-2023 Oracle and/or its affiliates.
 package common
 
 import (
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 	"strings"
+
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 )
 
 // OciRef contains s reference to some entity in OCI world.
@@ -87,9 +89,9 @@ func getNodeExternalAddress(node *apiv1.Node) string {
 func getNodeInstancePoolID(node *apiv1.Node) string {
 
 	// Handle unfilled instance placeholder (instances that have yet to be created)
-	if strings.Contains(node.Name, consts.InstanceIDUnfulfilled) {
+	if strings.Contains(node.Name, InstanceIDUnfulfilled) {
 		instIndex := strings.LastIndex(node.Name, "-")
-		return strings.Replace(node.Name[:instIndex], consts.InstanceIDUnfulfilled, "", 1)
+		return strings.Replace(node.Name[:instIndex], InstanceIDUnfulfilled, "", 1)
 	}
 
 	poolIDPrefixLabel, _ := node.Labels[consts.InstancePoolIDLabelPrefix]
@@ -111,8 +113,14 @@ func getNodeInstanceID(node *apiv1.Node) string {
 	}
 
 	// Handle unfilled instance placeholder (instances that have yet to be created)
-	if strings.Contains(node.Name, consts.InstanceIDUnfulfilled) {
+	if strings.Contains(node.Name, InstanceIDUnfulfilled) {
 		return node.Name
+	} else if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
+		// Placeholder node created by CA for a node that has not registered itself yet.
+		return InstanceIDUnfulfilled
+	} else if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeCreateError {
+		// Placeholder node created by CA for a node cannot be created because of an error.
+		return InstanceIDUnfulfilled
 	}
 
 	instancePrefixLabel, _ := node.Labels[consts.InstanceIDLabelPrefix]
