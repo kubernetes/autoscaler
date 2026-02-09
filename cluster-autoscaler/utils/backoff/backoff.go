@@ -29,7 +29,8 @@ type Status struct {
 	ErrorInfo   cloudprovider.InstanceErrorInfo
 }
 
-// Backoff allows time-based backing off of node groups considered in scale up algorithm
+// Backoff allows time-based backing off of node groups
+// considered in scale up algorithm
 type Backoff interface {
 	// Backoff execution for the given node group. Returns time till execution is backed off.
 	Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) time.Time
