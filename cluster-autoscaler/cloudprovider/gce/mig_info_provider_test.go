@@ -112,6 +112,7 @@ type mockAutoscalingGceClient struct {
 	fetchMigs                        func(string) ([]*gce.InstanceGroupManager, error)
 	fetchAllInstances                func(project, zone string, filter string) ([]GceInstance, error)
 	fetchMigTargetSize               func(GceRef) (int64, error)
+	fetchMigActualSize               func(GceRef) (int64, error)
 	fetchMigBasename                 func(GceRef) (string, error)
 	fetchMigInstances                func(GceRef) ([]GceInstance, error)
 	fetchMigTemplateName             func(GceRef) (InstanceTemplateName, error)
@@ -138,6 +139,9 @@ func (client *mockAutoscalingGceClient) FetchAllInstances(project, zone string, 
 
 func (client *mockAutoscalingGceClient) FetchMigTargetSize(migRef GceRef) (int64, error) {
 	return client.fetchMigTargetSize(migRef)
+}
+func (client *mockAutoscalingGceClient) FetchMigActualSize(migRef GceRef) (int64, error) {
+	return client.fetchMigActualSize(migRef)
 }
 
 func (client *mockAutoscalingGceClient) FetchMigBasename(migRef GceRef) (string, error) {

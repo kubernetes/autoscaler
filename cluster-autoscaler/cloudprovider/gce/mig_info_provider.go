@@ -43,6 +43,8 @@ type MigInfoProvider interface {
 	RegenerateMigInstancesCache() error
 	// GetMigTargetSize returns target size for given MIG ref
 	GetMigTargetSize(migRef GceRef) (int64, error)
+	// GetMigActualSize returns current number of instances in a given MIG
+	GetMigActualSize(migRef GceRef) (int64, error)
 	// GetMigBasename returns basename for given MIG ref
 	GetMigBasename(migRef GceRef) (string, error)
 	// GetMigInstanceTemplateName returns instance template name for given MIG ref
@@ -354,6 +356,10 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) 
 	}
 	c.cache.SetMigTargetSize(migRef, targetSize)
 	return targetSize, nil
+}
+
+func (c *cachingMigInfoProvider) GetMigActualSize(migRef GceRef) (int64, error) {
+	return c.gceClient.FetchMigActualSize(migRef)
 }
 
 func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {

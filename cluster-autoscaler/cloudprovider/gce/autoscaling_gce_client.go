@@ -124,6 +124,7 @@ type AutoscalingGceClient interface {
 	FetchAllInstances(project, zone string, filter string) ([]GceInstance, error)
 	FetchMigTargetSize(GceRef) (int64, error)
 	FetchMigBasename(GceRef) (string, error)
+	FetchMigActualSize(GceRef) (int64, error)
 	FetchMigInstances(GceRef) ([]GceInstance, error)
 	FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error)
 	FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error)
@@ -253,6 +254,23 @@ func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, 
 		return 0, err
 	}
 	return igm.TargetSize + igm.TargetSuspendedSize, nil
+}
+
+func (client *autoscalingGceClientV1) FetchMigActualSize(migRef GceRef) (int64, error) {
+	registerRequest("instance_groups", "get")
+	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	defer cancel()
+	ig, err := client.gceService.InstanceGroups.Get(migRef.Project, migRef.Zone, migRef.Name).Context(ctx).Do()
+	if err != nil {
+		if err, ok := err.(*googleapi.Error); ok {
+			klog.Warningf("Failed to fetch actual mig size for %v: %v", migRef, err)
+			if err.Code == http.StatusNotFound {
+				return 0, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
+			}
+		}
+		return 0, err
+	}
+	return ig.Size, nil
 }
 
 func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, error) {

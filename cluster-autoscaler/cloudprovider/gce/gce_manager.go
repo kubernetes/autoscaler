@@ -92,6 +92,8 @@ type GceManager interface {
 	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 	// GetMigSize gets MIG size.
 	GetMigSize(mig Mig) (int64, error)
+	// GetMigActualSize returns actual size for given MIG ref
+	GetMigActualSize(migRef GceRef) (int64, error)
 	// GetMigOptions returns MIG's NodeGroupAutoscalingOptions
 	GetMigOptions(mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions
 
@@ -241,9 +243,13 @@ func (m *gceManagerImpl) registerMig(mig Mig) bool {
 	return changed
 }
 
-// GetMigSize gets MIG size.
+// GetMigSize gets MIG target size.
 func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
 	return m.migInfoProvider.GetMigTargetSize(mig.GceRef())
+}
+
+func (m *gceManagerImpl) GetMigActualSize(migRef GceRef) (int64, error) {
+	return m.GceService.FetchMigActualSize(migRef)
 }
 
 // SetMigSize sets MIG size.

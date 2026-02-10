@@ -1314,3 +1314,27 @@ func TestFetchMigTargetSize(t *testing.T) {
 		})
 	}
 }
+
+func TestGetActualMigSize(t *testing.T) {
+
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	gceInternalService := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+
+	instance := &gce_api.InstanceGroup{
+		Id:       10,
+		SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instanceGroups/test-instance-group-1",
+		Size:     42,
+	}
+	response, err := json.Marshal(instance)
+	assert.NoError(t, err)
+
+	server.On("handle", "/projects/myprojid/zones/myzone/instanceGroups/test-instance-group-1").Return(string(response)).Times(1)
+
+	got, err := gceInternalService.FetchMigActualSize(GceRef{"myprojid", "myzone", "test-instance-group-1"})
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), got)
+
+	mock.AssertExpectationsForObjects(t, server)
+
+}
