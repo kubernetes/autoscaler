@@ -395,6 +395,73 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudget(t *testing.T) {
 	}
 }
 
+func TestEvictionToleranceForInPlaceWithSkipDisruptionBudgetWithLessThanMinimumPods(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(
+		t,
+		features.MutableFeatureGate,
+		features.InPlaceOrRecreate,
+		true,
+	)
+
+	replicas := int32(5)
+	livePods := 1
+	tolerance := 0.8
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().
+			WithName(getTestPodName(i)).
+			WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			Get()
+	}
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+
+	basicVpa := getIPORVpa()
+	// inPlaceSkipDisruptionBudget = true
+	// minReplicas needs to be greater than the number of live pods
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), true /* inPlaceSkipDisruptionBudget */)
+	assert.NoError(t, err)
+
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+	evict := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// All in-place updates should be approved
+	for _, pod := range pods {
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
+	}
+
+	// And all in-place updates should succeed without being blocked by eviction tolerance, but eviction
+	// should not be allowed since we are below minimum replicas, even with inPlaceSkipDisruptionBudget=true
+	for _, pod := range pods {
+		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
+		assert.NoError(t, err)
+
+		eviction := evict.CanEvict(pod)
+		assert.False(t, eviction, "Pod should not be evictable when below minimum replicas, even with inPlaceSkipDisruptionBudget=true")
+
+		err = evict.Evict(pod, basicVpa, test.FakeEventRecorder())
+		assert.Error(t, err)
+	}
+}
+
 func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 
