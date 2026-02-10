@@ -43,11 +43,11 @@ func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapsh
 	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshot: snapshot, parallelism: parallelism}
 }
 
-// RunFiltersUntilPassingNode runs the scheduler framework PreFilter phase once, and then keeps running the Filter phase for all nodes in the cluster that match the provided
-// function - until a Node where the Filters pass is found. Filters are only run for matching Nodes. If no matching Node with passing Filters is found, an error is returned.
+// RunFiltersUntilPassingNode runs the scheduler framework PreFilter phase once, and then keeps running the Filter phase for all nodes in the cluster that match the
+// opts.IsNodeAcceptable function - until a Node where the Filters pass is found. Filters are only run for matching Nodes. If no matching Node with passing Filters is found, an error is returned.
 //
-// The node iteration always starts from the next Node from the last Node that was found by this method. TODO: Extract the iteration strategy out of SchedulerPluginRunner.
-func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (*apiv1.Node, *schedulerframework.CycleState, clustersnapshot.SchedulingError) {
+// If opts.NodeOrdering is unspecified, the node iteration will start from the next Node from the last Node that was found by this method.
+func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts clustersnapshot.SchedulingOptions) (*apiv1.Node, *schedulerframework.CycleState, clustersnapshot.SchedulingError) {
 	nodeInfosList, err := p.snapshot.ListNodeInfos()
 	if err != nil {
 		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error listing NodeInfos: %v", err))
@@ -73,11 +73,24 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 		mu         sync.Mutex
 	)
 
+	nodeOrdering := opts.NodeOrdering
+	if nodeOrdering == nil {
+		nodeOrdering = clustersnapshot.NewLastIndexOrderMapping(1)
+	}
+
+	nodeOrdering.Init(nodeInfosList, p.lastIndex)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	earliestMatch := len(nodeInfosList)
 
 	checkNode := func(i int) {
-		nodeIndex := (p.lastIndex + i) % len(nodeInfosList)
+		nodeIndex := nodeOrdering.At(i)
+		if nodeIndex < 0 {
+			cancel()
+			return
+		}
+
 		nodeInfo := nodeInfosList[nodeIndex]
 
 		// Plugins can filter some Nodes out during the PreFilter phase, if they're sure the Nodes won't work for the Pod at that stage.
@@ -94,7 +107,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 
 		// Check if the NodeInfo matches the provided filtering condition. This should be less expensive than running the Filter phase below, so
 		// check this first.
-		if !nodeMatches(nodeInfo) {
+		if opts.IsNodeAcceptable != nil && !opts.IsNodeAcceptable(nodeInfo) {
 			return
 		}
 
@@ -105,7 +118,8 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 			// Filter passed for all plugins, so this pod can be scheduled on this Node.
 			mu.Lock()
 			defer mu.Unlock()
-			if foundNode == nil {
+			if i < earliestMatch {
+				earliestMatch = i
 				foundNode = nodeInfo.Node()
 				foundIndex = nodeIndex
 				cancel()
@@ -117,7 +131,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode)
 
 	if foundNode != nil {
-		p.lastIndex = (foundIndex + 1) % len(nodeInfosList)
+		p.lastIndex = foundIndex
 		return foundNode, state, nil
 	}
 
