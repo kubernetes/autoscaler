@@ -119,7 +119,7 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 	instanceID := node.Spec.ProviderID
 	if len(instanceID) == 0 {
 		klog.Warningf("Node %v has no providerId", node.Name)
-		return nil, fmt.Errorf("provider id missing from node: %s", node.Name)
+		return nil, nil
 	}
 
 	return hcp.cloudServiceManager.GetAsgForInstance(instanceID)
