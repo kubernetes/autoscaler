@@ -1562,7 +1562,7 @@ func TestGetMigMachineType(t *testing.T) {
 	}
 }
 
-func TestMultipleGetMigInstanceCallsLimited(t *testing.T) {
+func TestMultipleFillMigInstancesCallsLimited(t *testing.T) {
 	mig := &gceMig{
 		gceRef: GceRef{
 			Project: "project",
@@ -1570,16 +1570,6 @@ func TestMultipleGetMigInstanceCallsLimited(t *testing.T) {
 			Name:    "base-instance-name",
 		},
 	}
-	instance := GceInstance{
-		Instance: cloudprovider.Instance{Id: "gce://project/zone/base-instance-name-abcd"}, NumericId: 1111,
-	}
-	instanceRef, err := GceRefFromProviderId(instance.Id)
-	assert.Nil(t, err)
-	instance2 := GceInstance{
-		Instance: cloudprovider.Instance{Id: "gce://project/zone/base-instance-name-abcd2"}, NumericId: 222,
-	}
-	instanceRef2, err := GceRefFromProviderId(instance2.Id)
-	assert.Nil(t, err)
 	now := time.Now()
 	for name, tc := range map[string]struct {
 		refreshRateDuration              time.Duration
@@ -1628,10 +1618,10 @@ func TestMultipleGetMigInstanceCallsLimited(t *testing.T) {
 				timeProvider:                   ft,
 			}
 			ft.now = tc.firstCallTime
-			_, err = provider.GetMigForInstance(instanceRef)
+			err := provider.fillMigInstances(mig.GceRef())
 			assert.NoError(t, err)
 			ft.now = tc.secondCallTime
-			_, err = provider.GetMigForInstance(instanceRef2)
+			err = provider.fillMigInstances(mig.GceRef())
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedCallsToFetchMigInstances, callCounter[mig.GceRef()])
 		})

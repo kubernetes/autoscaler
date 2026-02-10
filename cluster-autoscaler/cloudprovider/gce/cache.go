@@ -181,6 +181,15 @@ func (gc *GceCache) GetMigInstancesUpdateTime(migRef GceRef) (time.Time, bool) {
 	return timestamp, found
 }
 
+// IsMigInstancesCacheEmpty returns true if instances cache for the given MIG is empty.
+func (gc *GceCache) IsMigInstancesCacheEmpty(migRef GceRef) bool {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	_, found := gc.instances[migRef]
+	return !found
+}
+
 // GetMigForInstance returns the cached MIG for instance GceRef
 func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (GceRef, bool) {
 	gc.cacheMutex.Lock()
