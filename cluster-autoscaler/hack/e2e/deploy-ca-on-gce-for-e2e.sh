@@ -95,7 +95,14 @@ sed -e "s|{{IMAGE}}|${IMAGE}|g" \
     -e "s|{{KUBERNETES_SERVICE_HOST}}|${KUBERNETES_SERVICE_HOST}|g" \
     -e "s|{{KUBERNETES_SERVICE_PORT}}|${KUBERNETES_SERVICE_PORT}|g" \
     -e "s|{{NODES_SPEC}}|${NODES_SPEC}|g" \
-    -e "s|{{EXTRA_CA_FLAGS}}|${EXTRA_CA_FLAGS}|g" \
-    ${CA_ROOT}/hack/e2e/gce-deployment-template.yaml | kubectl apply -f -
+    ${CA_ROOT}/hack/e2e/gce-deployment-template.yaml | while IFS= read -r line; do
+    if [[ "${line}" == *"{{EXTRA_CA_FLAGS}}"* ]]; then
+        for flag in ${EXTRA_CA_FLAGS}; do
+            echo "            - ${flag}"
+        done
+    else
+        printf "%s\n" "${line}"
+    fi
+done | kubectl apply -f -
 
 echo "Deployed ${IMAGE} to cluster."
