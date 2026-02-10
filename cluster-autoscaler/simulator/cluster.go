@@ -205,7 +205,7 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 		newpods = append(newpods, &newpod)
 	}
 
-	statuses, _, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, isCandidateNode, true)
+	statuses, _, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, true, clustersnapshot.SchedulingOptions{IsNodeAcceptable: isCandidateNode})
 	if err != nil {
 		return err
 	}

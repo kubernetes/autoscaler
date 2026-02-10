@@ -32,7 +32,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 )
 
@@ -232,7 +231,7 @@ type fakeInjector struct {
 	pods []*apiv1.Pod
 }
 
-func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]scheduling.Status, int, error) {
+func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]scheduling.Status, int, error) {
 	f.pods = pods
 	return nil, 0, nil
 }
