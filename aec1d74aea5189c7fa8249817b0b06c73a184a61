@@ -1,0 +1,31 @@
+vertical-pod-autoscaler/pkg/recommender/config/config.go
+  0a2e652569c7042b 49-63,119-133,189-204
+vertical-pod-autoscaler/pkg/recommender/logic/recommender.go
+  0a2e652569c7042b 27-47,75-76,86-87,131-134,137-139,142-144,146-148,162-163,177-178,186-187,193,207-210
+vertical-pod-autoscaler/pkg/recommender/routines/recommender.go
+  0a2e652569c7042b 63,82,204,228
+vertical-pod-autoscaler/pkg/recommender/logic/recommender_test.go
+  0a2e652569c7042b 28-29,40-41,49-50,54-55,66-67,76-79,179
+vertical-pod-autoscaler/pkg/recommender/main.go
+  0a2e652569c7042b 235-252
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.1",
+  "base_commit_sha": "aec1d74aea5189c7fa8249817b0b06c73a184a61",
+  "prompts": {
+    "0a2e652569c7042b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "aa3616d1-50d0-44a5-b0e6-fe5da3ba0c4e",
+        "model": "unknown"
+      },
+      "human_author": "Adrian Moisey <adrian@changeover.za.net>",
+      "messages": [],
+      "total_additions": 134,
+      "total_deletions": 50,
+      "accepted_lines": 134,
+      "overriden_lines": 0
+    }
+  }
+}
