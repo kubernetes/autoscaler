@@ -66,7 +66,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			AppendRecommendation(
@@ -99,7 +99,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -132,7 +132,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(removedContainerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -172,7 +172,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(removedContainerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -212,7 +212,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -248,7 +248,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -291,7 +291,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -341,7 +341,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -377,7 +377,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -426,7 +426,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -462,7 +462,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -498,7 +498,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			WithControlledValues(containerName, vpa_types.ContainerControlledValuesRequestsOnly).
 			AppendRecommendation(
@@ -539,7 +539,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -597,7 +597,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -646,7 +646,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -702,7 +702,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -754,7 +754,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -788,7 +788,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -822,7 +822,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			Get()
 
@@ -846,7 +846,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			Get()
 

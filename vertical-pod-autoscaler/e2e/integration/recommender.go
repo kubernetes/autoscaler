@@ -96,7 +96,7 @@ func testIncludedAndIgnoredNamespaces(f *framework.Framework, vpaClientSet vpa_c
 	ignoredVpaCRD := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(ignoredNamespace).
-		WithTargetRef(utils.HamsterTargetRef).
+		WithTargetRef(test.HamsterTargetRef).
 		WithContainer(container1Name).
 		WithScalingMode(container1Name, vpa_types.ContainerScalingModeOff).
 		WithContainer(container2Name).
@@ -113,7 +113,7 @@ func testIncludedAndIgnoredNamespaces(f *framework.Framework, vpaClientSet vpa_c
 	vpaCRD := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(includedNamespace).
-		WithTargetRef(utils.HamsterTargetRef).
+		WithTargetRef(test.HamsterTargetRef).
 		WithContainer(container1Name).
 		WithScalingMode(container1Name, vpa_types.ContainerScalingModeOff).
 		WithContainer(container2Name).

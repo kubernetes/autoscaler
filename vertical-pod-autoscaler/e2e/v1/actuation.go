@@ -69,7 +69,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			WithContainer(containerName).
 			AppendRecommendation(
@@ -126,7 +126,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			WithContainer(container2Name).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
@@ -189,7 +189,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			AppendRecommendation(
@@ -231,7 +231,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			AppendRecommendation(
@@ -293,7 +293,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -325,7 +325,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithUpdateMode(vpa_types.UpdateModeOff).
 			WithContainer(containerName).
 			AppendRecommendation(
@@ -363,7 +363,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithUpdateMode(vpa_types.UpdateModeInitial).
 			WithContainer(containerName).
 			AppendRecommendation(
@@ -475,7 +475,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -534,7 +534,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -568,7 +568,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -605,7 +605,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -650,7 +650,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().
@@ -715,7 +715,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
+			WithTargetRef(test.HamsterTargetRef).
 			WithContainer(container1Name).
 			AppendRecommendation(
 				test.Recommendation().

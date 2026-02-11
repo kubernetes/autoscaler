@@ -115,7 +115,19 @@ type ObjectCounter struct {
 
 // Register initializes all metrics for VPA Recommender
 func Register() {
-	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount, metricServerResponses, prometheusClientRequestsCount, prometheusClientRequestsDuration)
+	collectors := []prometheus.Collector{
+		vpaObjectCount,
+		recommendationLatency,
+		functionLatency,
+		aggregateContainerStatesCount,
+		metricServerResponses,
+		prometheusClientRequestsCount,
+		prometheusClientRequestsDuration,
+	}
+	for _, c := range collectors {
+		// Ignore AlreadyRegisteredError
+		_ = prometheus.Register(c)
+	}
 }
 
 // NewExecutionTimer provides a timer for Recommender's RunOnce execution
