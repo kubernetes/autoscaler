@@ -1269,3 +1269,48 @@ func TestExternalToInternalInstance(t *testing.T) {
 		})
 	}
 }
+
+func TestFetchMigTargetSize(t *testing.T) {
+	mig := GceRef{
+		Project: "project1",
+		Zone:    "us-central1-b",
+		Name:    "mig-1",
+	}
+
+	testCases := []struct {
+		name     string
+		response gce_api.InstanceGroupManager
+		wantSize int64
+	}{
+		{
+			name: "MIG returns correct target size",
+			response: gce_api.InstanceGroupManager{
+				Name:       "mig-1",
+				TargetSize: 42,
+			},
+			wantSize: 42,
+		},
+		{
+			name: "MIG returns correct target size with suspended instances",
+			response: gce_api.InstanceGroupManager{
+				Name:                "mig-1",
+				TargetSize:          42,
+				TargetSuspendedSize: 3,
+			},
+			wantSize: 45,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			server := test_util.NewHttpServerMock()
+			defer server.Close()
+			gceClient := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+			b, _ := json.Marshal(tc.response)
+			server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/mig-1").Return(string(b)).Once()
+			size, err := gceClient.FetchMigTargetSize(mig)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantSize, size)
+			mock.AssertExpectationsForObjects(t, server)
+		})
+	}
+}
