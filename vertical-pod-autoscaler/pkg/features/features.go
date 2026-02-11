@@ -42,6 +42,7 @@ const (
 
 	// alpha: v1.4.0
 	// beta: v1.5.0
+	// ga: v1.6.0
 
 	// components: admission-controller, updater
 
