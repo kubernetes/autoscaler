@@ -122,6 +122,7 @@ func initializeDefaultOptions(opts *coreoptions.AutoscalerOptions, informerFacto
 			estimator.NewThresholdBasedEstimationLimiter(thresholds),
 			estimator.NewDecreasingPodOrderer(),
 			/* EstimationAnalyserFunc */ nil,
+			opts.FastpathBinpackingEnabled,
 		)
 		if err != nil {
 			return err
