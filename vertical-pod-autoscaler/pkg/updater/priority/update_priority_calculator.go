@@ -17,7 +17,6 @@ limitations under the License.
 package priority
 
 import (
-	"flag"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,15 +33,6 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
-var (
-	defaultUpdateThreshold = flag.Float64("pod-update-threshold", 0.1, "Ignore updates that have priority lower than the value of this flag")
-
-	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Hour*12, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
-
-	evictAfterOOMThreshold = flag.Duration("evict-after-oom-threshold", 10*time.Minute,
-		`The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.`)
-)
-
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.
 // It can returns a sorted list of pods in order of update priority.
 // Update priority is proportional to fraction by which resources should be increased / decreased.
@@ -51,7 +41,7 @@ var (
 type UpdatePriorityCalculator struct {
 	vpa                     *vpa_types.VerticalPodAutoscaler
 	pods                    []prioritizedPod
-	config                  *UpdateConfig
+	config                  UpdateConfig
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 	priorityProcessor       PriorityProcessor
 }
@@ -60,7 +50,9 @@ type UpdatePriorityCalculator struct {
 type UpdateConfig struct {
 	// MinChangePriority is the minimum change priority that will trigger a update.
 	// TODO: should have separate for Mem and CPU?
-	MinChangePriority float64
+	MinChangePriority          float64
+	PodLifetimeUpdateThreshold time.Duration
+	EvictAfterOOMThreshold     time.Duration
 }
 
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given VPA object
@@ -68,12 +60,9 @@ type UpdateConfig struct {
 // If the vpa resource policy is nil, there will be no policy restriction on update.
 // If the given update config is nil, default values are used.
 func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
-	config *UpdateConfig,
+	config UpdateConfig,
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	priorityProcessor PriorityProcessor) UpdatePriorityCalculator {
-	if config == nil {
-		config = &UpdateConfig{MinChangePriority: *defaultUpdateThreshold}
-	}
 	return UpdatePriorityCalculator{
 		vpa:                     vpa,
 		config:                  config,
@@ -129,7 +118,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
 			klog.V(4).InfoS("Not updating pod, missing field pod.Status.StartTime", "pod", klog.KObj(pod))
 			return
 		}
-		if now.Before(pod.Status.StartTime.Add(*podLifetimeUpdateThreshold)) {
+		if now.Before(pod.Status.StartTime.Add(calc.config.PodLifetimeUpdateThreshold)) {
 			klog.V(4).InfoS("Not updating a short-lived pod, request within recommended range", "pod", klog.KObj(pod))
 			return
 		}
@@ -205,7 +194,7 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 // if the PerVPAConfig feature flag is enabled and the value is set, otherwise
 // falls back to the global evictAfterOOMThreshold flag.
 func (calc *UpdatePriorityCalculator) getEvictOOMThreshold() time.Duration {
-	evictOOMThreshold := *evictAfterOOMThreshold
+	evictOOMThreshold := calc.config.EvictAfterOOMThreshold
 
 	if calc.vpa.Spec.UpdatePolicy == nil || calc.vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds == nil {
 		return evictOOMThreshold

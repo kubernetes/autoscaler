@@ -227,14 +227,32 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	controllerFetcher.Start(ctx, scaleCacheLoopPeriod)
 
 	recommender := routines.RecommenderFactory{
-		ClusterState:                 clusterState,
-		ClusterStateFeeder:           clusterStateFeeder,
-		ControllerFetcher:            controllerFetcher,
-		CheckpointWriter:             checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(kubeConfig).AutoscalingV1()),
-		VpaClient:                    vpa_clientset.NewForConfigOrDie(kubeConfig).AutoscalingV1(),
-		PodResourceRecommender:       logic.CreatePodResourceRecommender(),
+		ClusterState:       clusterState,
+		ClusterStateFeeder: clusterStateFeeder,
+		ControllerFetcher:  controllerFetcher,
+		CheckpointWriter:   checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(kubeConfig).AutoscalingV1()),
+		VpaClient:          vpa_clientset.NewForConfigOrDie(kubeConfig).AutoscalingV1(),
+		PodResourceRecommender: logic.CreatePodResourceRecommender(logic.RecommendationConfig{
+			SafetyMarginFraction:       config.SafetyMarginFraction,
+			PodMinCPUMillicores:        config.PodMinCPUMillicores,
+			PodMinMemoryMb:             config.PodMinMemoryMb,
+			TargetCPUPercentile:        config.TargetCPUPercentile,
+			LowerBoundCPUPercentile:    config.LowerBoundCPUPercentile,
+			UpperBoundCPUPercentile:    config.UpperBoundCPUPercentile,
+			ConfidenceIntervalCPU:      config.ConfidenceIntervalCPU,
+			TargetMemoryPercentile:     config.TargetMemoryPercentile,
+			LowerBoundMemoryPercentile: config.LowerBoundMemoryPercentile,
+			UpperBoundMemoryPercentile: config.UpperBoundMemoryPercentile,
+			ConfidenceIntervalMemory:   config.ConfidenceIntervalMemory,
+		}),
+		RecommendationFormat: logic.RecommendationFormat{
+			HumanizeMemory:     config.HumanizeMemory,
+			RoundCPUMillicores: config.RoundCPUMillicores,
+			RoundMemoryBytes:   config.RoundMemoryBytes,
+		},
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        config.CheckpointsGCInterval,
+		CheckpointsWriteTimeout:      config.CheckpointsWriteTimeout,
 		UseCheckpoints:               useCheckpoints,
 		UpdateWorkerCount:            config.UpdateWorkerCount,
 	}.Make()

@@ -38,6 +38,10 @@ type UpdaterConfig struct {
 	Address                      string
 	UseAdmissionControllerStatus bool
 	InPlaceSkipDisruptionBudget  bool
+
+	DefaultUpdateThreshold     float64
+	PodLifetimeUpdateThreshold time.Duration
+	EvictAfterOOMThreshold     time.Duration
 }
 
 // DefaultUpdaterConfig returns a UpdaterConfig with default values
@@ -53,6 +57,10 @@ func DefaultUpdaterConfig() *UpdaterConfig {
 		Address:                      ":8943",
 		UseAdmissionControllerStatus: true,
 		InPlaceSkipDisruptionBudget:  false,
+
+		DefaultUpdateThreshold:     0.1,
+		PodLifetimeUpdateThreshold: time.Hour * 12,
+		EvictAfterOOMThreshold:     10 * time.Minute,
 	}
 }
 
@@ -69,6 +77,10 @@ func InitUpdaterFlags() *UpdaterConfig {
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.BoolVar(&config.UseAdmissionControllerStatus, "use-admission-controller-status", config.UseAdmissionControllerStatus, "If true, updater will only evict pods when admission controller status is valid.")
 	flag.BoolVar(&config.InPlaceSkipDisruptionBudget, "in-place-skip-disruption-budget", config.InPlaceSkipDisruptionBudget, "[ALPHA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource.")
+
+	flag.Float64Var(&config.DefaultUpdateThreshold, "pod-update-threshold", config.DefaultUpdateThreshold, "Ignore updates that have priority lower than the value of this flag")
+	flag.DurationVar(&config.PodLifetimeUpdateThreshold, "in-recommendation-bounds-eviction-lifetime-threshold", config.PodLifetimeUpdateThreshold, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
+	flag.DurationVar(&config.EvictAfterOOMThreshold, "evict-after-oom-threshold", config.EvictAfterOOMThreshold, `The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.`)
 
 	return config
 }

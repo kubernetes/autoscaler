@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
 )
 
 // RecommenderConfig holds all configuration for the recommender component
@@ -37,13 +36,31 @@ type RecommenderConfig struct {
 	CommonFlags *common.CommonFlags
 
 	// Recommender-specific flags
-	RecommenderName        string
-	MetricsFetcherInterval time.Duration
-	CheckpointsGCInterval  time.Duration
-	Address                string
-	Storage                string
-	MemorySaver            bool
-	UpdateWorkerCount      int
+	RecommenderName         string
+	MetricsFetcherInterval  time.Duration
+	CheckpointsGCInterval   time.Duration
+	CheckpointsWriteTimeout time.Duration
+	Address                 string
+	Storage                 string
+	MemorySaver             bool
+	UpdateWorkerCount       int
+	MinCheckpointsPerRun    int
+
+	// Recommendation configuration
+	SafetyMarginFraction       float64
+	PodMinCPUMillicores        float64
+	PodMinMemoryMb             float64
+	TargetCPUPercentile        float64
+	LowerBoundCPUPercentile    float64
+	UpperBoundCPUPercentile    float64
+	ConfidenceIntervalCPU      time.Duration
+	TargetMemoryPercentile     float64
+	LowerBoundMemoryPercentile float64
+	UpperBoundMemoryPercentile float64
+	ConfidenceIntervalMemory   time.Duration
+	HumanizeMemory             bool
+	RoundCPUMillicores         int
+	RoundMemoryBytes           int
 
 	// Prometheus history provider configuration
 	PrometheusAddress         string
@@ -89,13 +106,31 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 		CommonFlags: common.DefaultCommonConfig(),
 
 		// Recommender-specific flags
-		RecommenderName:        input.DefaultRecommenderName,
-		MetricsFetcherInterval: 1 * time.Minute,
-		CheckpointsGCInterval:  10 * time.Minute,
-		Address:                ":8942",
-		Storage:                "",
-		MemorySaver:            false,
-		UpdateWorkerCount:      10,
+		RecommenderName:         input.DefaultRecommenderName,
+		MetricsFetcherInterval:  1 * time.Minute,
+		CheckpointsGCInterval:   10 * time.Minute,
+		CheckpointsWriteTimeout: time.Minute,
+		Address:                 ":8942",
+		Storage:                 "",
+		MemorySaver:             false,
+		UpdateWorkerCount:       10,
+		MinCheckpointsPerRun:    10,
+
+		// Recommendation configuration
+		SafetyMarginFraction:       0.15,
+		PodMinCPUMillicores:        25,
+		PodMinMemoryMb:             250,
+		TargetCPUPercentile:        0.9,
+		LowerBoundCPUPercentile:    0.5,
+		UpperBoundCPUPercentile:    0.95,
+		ConfidenceIntervalCPU:      24 * time.Hour,
+		TargetMemoryPercentile:     0.9,
+		LowerBoundMemoryPercentile: 0.5,
+		UpperBoundMemoryPercentile: 0.95,
+		ConfidenceIntervalMemory:   24 * time.Hour,
+		HumanizeMemory:             false,
+		RoundCPUMillicores:         1,
+		RoundMemoryBytes:           1,
 
 		// Prometheus history provider flags
 		PrometheusAddress:         "http://prometheus.monitoring.svc",
@@ -144,10 +179,29 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.RecommenderName, "recommender-name", config.RecommenderName, "Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster.")
 	flag.DurationVar(&config.MetricsFetcherInterval, "recommender-interval", config.MetricsFetcherInterval, `How often metrics should be fetched`)
 	flag.DurationVar(&config.CheckpointsGCInterval, "checkpoints-gc-interval", config.CheckpointsGCInterval, `How often orphaned checkpoints should be garbage collected`)
+	flag.DurationVar(&config.CheckpointsWriteTimeout, "checkpoints-timeout", config.CheckpointsWriteTimeout, `Timeout for writing checkpoints since the start of the recommender's main loop`)
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.StringVar(&config.Storage, "storage", config.Storage, `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	flag.BoolVar(&config.MemorySaver, "memory-saver", config.MemorySaver, `If true, only track pods which have an associated VPA`)
 	flag.IntVar(&config.UpdateWorkerCount, "update-worker-count", config.UpdateWorkerCount, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
+	// MinCheckpointsPerRun is deprecated but kept for warning/compatibility.
+	flag.IntVar(&config.MinCheckpointsPerRun, "min-checkpoints", config.MinCheckpointsPerRun, "Minimum number of checkpoints to write per recommender's main loop. WARNING: this flag is deprecated and doesn't have any effect. It will be removed in a future release. Refer to update-worker-count to influence the minimum number of checkpoints written per loop.")
+
+	// Recommendation configuration flags
+	flag.Float64Var(&config.SafetyMarginFraction, "recommendation-margin-fraction", config.SafetyMarginFraction, `Fraction of usage added as the safety margin to the recommended request`)
+	flag.Float64Var(&config.PodMinCPUMillicores, "pod-recommendation-min-cpu-millicores", config.PodMinCPUMillicores, `Minimum CPU recommendation for a pod`)
+	flag.Float64Var(&config.PodMinMemoryMb, "pod-recommendation-min-memory-mb", config.PodMinMemoryMb, `Minimum memory recommendation for a pod`)
+	flag.Float64Var(&config.TargetCPUPercentile, "target-cpu-percentile", config.TargetCPUPercentile, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
+	flag.Float64Var(&config.LowerBoundCPUPercentile, "recommendation-lower-bound-cpu-percentile", config.LowerBoundCPUPercentile, `CPU usage percentile that will be used for the lower bound on CPU recommendation.`)
+	flag.Float64Var(&config.UpperBoundCPUPercentile, "recommendation-upper-bound-cpu-percentile", config.UpperBoundCPUPercentile, `CPU usage percentile that will be used for the upper bound on CPU recommendation.`)
+	flag.DurationVar(&config.ConfidenceIntervalCPU, "confidence-interval-cpu", config.ConfidenceIntervalCPU, "The time interval used for computing the confidence multiplier for the CPU lower and upper bound. Default: 24h")
+	flag.Float64Var(&config.TargetMemoryPercentile, "target-memory-percentile", config.TargetMemoryPercentile, "Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.")
+	flag.Float64Var(&config.LowerBoundMemoryPercentile, "recommendation-lower-bound-memory-percentile", config.LowerBoundMemoryPercentile, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
+	flag.Float64Var(&config.UpperBoundMemoryPercentile, "recommendation-upper-bound-memory-percentile", config.UpperBoundMemoryPercentile, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
+	flag.DurationVar(&config.ConfidenceIntervalMemory, "confidence-interval-memory", config.ConfidenceIntervalMemory, "The time interval used for computing the confidence multiplier for the memory lower and upper bound. Default: 24h")
+	flag.BoolVar(&config.HumanizeMemory, "humanize-memory", config.HumanizeMemory, "DEPRECATED: Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. This flag is deprecated and will be removed in a future version. Use --round-memory-bytes instead.")
+	flag.IntVar(&config.RoundCPUMillicores, "round-cpu-millicores", config.RoundCPUMillicores, `CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor.`)
+	flag.IntVar(&config.RoundMemoryBytes, "round-memory-bytes", config.RoundMemoryBytes, `Memory recommendation rounding factor in bytes. The Memory value will always be rounded up to the nearest multiple of this factor.`)
 
 	// Prometheus history provider flags
 	flag.StringVar(&config.PrometheusAddress, "prometheus-address", config.PrometheusAddress, `Where to reach for Prometheus metrics`)
@@ -194,7 +248,7 @@ func InitRecommenderFlags() *RecommenderConfig {
 func ValidateRecommenderConfig(config *RecommenderConfig) {
 	common.ValidateCommonConfig(config.CommonFlags)
 
-	if *routines.MinCheckpointsPerRun != 10 { // Default value is 10
+	if config.MinCheckpointsPerRun != 10 { // Default value is 10
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
 	}
 
