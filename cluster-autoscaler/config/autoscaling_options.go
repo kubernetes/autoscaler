@@ -272,6 +272,8 @@ type AutoscalingOptions struct {
 	// MaxBinpackingTime is the maximum time spend on binpacking for a single scale-up.
 	// If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.
 	MaxBinpackingTime time.Duration
+	// FastpathBinpackingEnabled tells if to use fastpath binpacking algorithm to optimize scale-ups.
+	FastpathBinpackingEnabled bool
 	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
 	NodeDeletionBatcherInterval time.Duration
 	// SkipNodesWithSystemPods tells if nodes with pods from kube-system should be deleted (except for DaemonSet or mirror pods)
