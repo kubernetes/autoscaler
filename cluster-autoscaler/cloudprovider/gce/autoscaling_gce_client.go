@@ -252,7 +252,7 @@ func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, 
 		}
 		return 0, err
 	}
-	return igm.TargetSize, nil
+	return igm.TargetSize + igm.TargetSuspendedSize, nil
 }
 
 func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, error) {

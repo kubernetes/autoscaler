@@ -505,10 +505,11 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 			}
 
 			if registeredMigRefs[zoneMigRef] {
-				c.cache.SetMigTargetSize(zoneMigRef, zoneMig.TargetSize)
+				targetSize := zoneMig.TargetSize + zoneMig.TargetSuspendedSize
+				c.cache.SetMigTargetSize(zoneMigRef, targetSize)
 				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
 				c.cache.SetListManagedInstancesResults(zoneMigRef, zoneMig.ListManagedInstancesResults)
-				c.cache.SetMigInstancesStateCount(zoneMigRef, createInstancesStateCount(zoneMig.TargetSize, zoneMig.CurrentActions))
+				c.cache.SetMigInstancesStateCount(zoneMigRef, createInstancesStateCount(targetSize, zoneMig.CurrentActions))
 
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
