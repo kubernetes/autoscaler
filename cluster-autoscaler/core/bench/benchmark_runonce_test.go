@@ -18,7 +18,10 @@ package bench
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"os"
+	"runtime/pprof"
 	"testing"
 	"time"
 
@@ -66,6 +69,8 @@ const (
 	ngName = "ng1"
 )
 
+var runOnceCpuProfile = flag.String("profile-cpu", "", "If set, the benchmark writes a CPU profile to this file, covering the RunOnce execution during the first iteration.")
+
 type scenario struct {
 	// setup initializes the cluster state before the benchmarked RunOnce call.
 	setup func(*integration.FakeSet) error
@@ -80,6 +85,20 @@ type scenario struct {
 func run(b *testing.B, s scenario) {
 	b.StopTimer()
 
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+
+	var f *os.File
+	if *runOnceCpuProfile != "" {
+		var err error
+		f, err = os.Create(*runOnceCpuProfile)
+		if err != nil {
+			b.Fatalf("Failed to create cpu profile file: %v", err)
+		}
+		defer f.Close()
+	}
+
 	for i := 0; i < b.N; i++ {
 		cluster := newCluster()
 		if err := s.setup(cluster); err != nil {
@@ -87,9 +106,19 @@ func run(b *testing.B, s scenario) {
 		}
 		autoscaler := newAutoscaler(b, s, cluster)
 
+		if f != nil && i == 0 {
+			if err := pprof.StartCPUProfile(f); err != nil {
+				b.Fatalf("Failed to start cpu profile: %v", err)
+			}
+		}
+
 		b.StartTimer()
 		err := autoscaler.RunOnce(time.Now().Add(10 * time.Second))
 		b.StopTimer()
+
+		if f != nil && i == 0 {
+			pprof.StopCPUProfile()
+		}
 
 		if err != nil {
 			b.Fatalf("RunOnce failed: %v", err)
