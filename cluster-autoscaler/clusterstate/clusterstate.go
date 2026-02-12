@@ -321,7 +321,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			// Attempt to revert the failed scale-up by decreasing target size.
 			// This prevents cloud providers from indefinitely retrying failed provisioning attempts.
 			if scaleUpRequest.Increase > 0 {
-				klog.V(2).Infof("Reverting timed-out scale-up for node group %v by decreasing target size by %d",
+				klog.Warningf("Reverting timed-out scale-up for node group %v by decreasing target size by %d",
 					nodeGroupName, scaleUpRequest.Increase)
 				err := scaleUpRequest.NodeGroup.DecreaseTargetSize(-scaleUpRequest.Increase)
 				if err != nil {
