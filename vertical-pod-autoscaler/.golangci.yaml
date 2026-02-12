@@ -13,7 +13,7 @@ linters:
       analyze-types: true
     modernize:
       disable:
-        # Disabling omitzero linter as it catches isssues with API types, which would be best if kube-api-lint can handle
+        # Disabling omitzero linter as it catches issues with API types, which would be best if kube-api-lint can handle
         - omitzero
 
     importas:
