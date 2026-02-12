@@ -22,8 +22,8 @@ import (
 	"sync"
 	"time"
 
-	autoscaling "k8s.io/api/autoscaling/v1"
-	apiv1 "k8s.io/api/core/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -48,9 +48,9 @@ func (conditionsMap *vpaConditionsMap) Set(
 		Message: message,
 	}
 	if status {
-		condition.Status = apiv1.ConditionTrue
+		condition.Status = corev1.ConditionTrue
 	} else {
-		condition.Status = apiv1.ConditionFalse
+		condition.Status = corev1.ConditionFalse
 	}
 	if alreadyPresent && oldCondition.Status == condition.Status {
 		condition.LastTransitionTime = oldCondition.LastTransitionTime
@@ -77,7 +77,7 @@ func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscale
 
 func (conditionsMap *vpaConditionsMap) ConditionActive(conditionType vpa_types.VerticalPodAutoscalerConditionType) bool {
 	condition, found := (*conditionsMap)[conditionType]
-	return found && condition.Status == apiv1.ConditionTrue
+	return found && condition.Status == corev1.ConditionTrue
 }
 
 // ConditionActive returns true if the condition is present and active.
@@ -202,7 +202,7 @@ type Vpa struct {
 	// APIVersion of the VPA object.
 	APIVersion string
 	// TargetRef points to the controller managing the set of pods.
-	TargetRef *autoscaling.CrossVersionObjectReference
+	TargetRef *autoscalingv1.CrossVersionObjectReference
 	// PodCount contains number of live Pods matching a given VPA object.
 	PodCount int
 
@@ -388,7 +388,7 @@ func (vpa *Vpa) HasMatchedPods() bool {
 	vpa.mutex.RLock()
 	defer vpa.mutex.RUnlock()
 	noPodsMatched, found := vpa.conditions[vpa_types.NoPodsMatched]
-	if found && noPodsMatched.Status == apiv1.ConditionTrue {
+	if found && noPodsMatched.Status == corev1.ConditionTrue {
 		return false
 	}
 	return true

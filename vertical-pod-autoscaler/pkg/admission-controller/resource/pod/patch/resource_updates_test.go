@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
@@ -48,7 +48,7 @@ type fakeRecommendationProvider struct {
 	e                      error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
 	return frp.resources, frp.containerToAnnotations, frp.e
 }
 
@@ -56,7 +56,7 @@ func addResourcesPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources", idx),
-		Value: core.ResourceRequirements{},
+		Value: corev1.ResourceRequirements{},
 	}
 }
 
@@ -64,7 +64,7 @@ func addRequestsPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests", idx),
-		Value: core.ResourceList{},
+		Value: corev1.ResourceList{},
 	}
 }
 
@@ -72,7 +72,7 @@ func addLimitsPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits", idx),
-		Value: core.ResourceList{},
+		Value: corev1.ResourceList{},
 	}
 }
 
@@ -109,7 +109,7 @@ func addAnnotationRequest(updateResources [][]string, kind string) resource_admi
 func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	tests := []struct {
 		name                 string
-		pod                  *core.Pod
+		pod                  *corev1.Pod
 		namespace            string
 		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
@@ -119,15 +119,15 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	}{
 		{
 			name: "new cpu recommendation",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{}},
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{}},
 				},
 			},
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -142,11 +142,11 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "replacement cpu recommendation",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{
-						Resources: core.ResourceRequirements{
-							Requests: core.ResourceList{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
 								cpu: resource.MustParse("0"),
 							},
 						},
@@ -156,7 +156,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -170,13 +170,13 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		{
 			name: "replacement cpu request recommendation from container status",
 			pod: test.Pod().
-				AddContainer(core.Container{}).
+				AddContainer(corev1.Container{}).
 				AddContainerStatus(test.ContainerStatus().
 					WithCPURequest(resource.MustParse("0")).Get()).Get(),
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -189,12 +189,12 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "two containers",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
 						Name: "container-1",
-						Resources: core.ResourceRequirements{
-							Requests: core.ResourceList{
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
 								cpu: resource.MustParse("0"),
 							},
 						},
@@ -204,12 +204,12 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("2"),
 					},
 				},
@@ -225,15 +225,15 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "new cpu limit",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{}},
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{}},
 				},
 			},
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -248,11 +248,11 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "replacement cpu limit",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{
-						Resources: core.ResourceRequirements{
-							Limits: core.ResourceList{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Resources: corev1.ResourceRequirements{
+							Limits: corev1.ResourceList{
 								cpu: resource.MustParse("0"),
 							},
 						},
@@ -262,7 +262,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -276,13 +276,13 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		{
 			name: "replacement cpu limit from container status",
 			pod: test.Pod().
-				AddContainer(core.Container{}).
+				AddContainer(corev1.Container{}).
 				AddContainerStatus(test.ContainerStatus().
 					WithCPULimit(resource.MustParse("0")).Get()).Get(),
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -296,7 +296,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		{
 			name: "no recommendation present",
 			pod: test.Pod().
-				AddContainer(core.Container{}).
+				AddContainer(corev1.Container{}).
 				AddContainerStatus(test.ContainerStatus().
 					WithCPULimit(resource.MustParse("0")).Get()).Get(),
 			namespace:            "default",
@@ -331,17 +331,17 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	recommendResources := []vpa_api_util.ContainerResources{
 		{
-			Requests: core.ResourceList{
+			Requests: corev1.ResourceList{
 				cpu:        resource.MustParse("1"),
 				unobtanium: resource.MustParse("2"),
 			},
 		},
 	}
-	pod := &core.Pod{
-		Spec: core.PodSpec{
-			Containers: []core.Container{{
-				Resources: core.ResourceRequirements{
-					Requests: core.ResourceList{
+	pod := &corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{{
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("0"),
 					},
 				},
@@ -374,7 +374,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 	invalidQuantity := resource.MustParse("200m")
 	tests := []struct {
 		name                 string
-		pod                  *core.Pod
+		pod                  *corev1.Pod
 		vpa                  *vpa_types.VerticalPodAutoscaler
 		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
@@ -386,16 +386,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 	}{
 		{
 			name: "startup boost factor",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
 							},
@@ -406,10 +406,10 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},
@@ -425,16 +425,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost factor with 0s duration",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
 							},
@@ -445,10 +445,10 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 0).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},
@@ -464,16 +464,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost quantity",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
 							},
@@ -484,10 +484,10 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &quantity, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},
@@ -503,13 +503,13 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "feature gate disabled",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("100m"),
 								},
 							},
@@ -520,7 +520,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},
@@ -534,13 +534,13 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "invalid factor",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
 							},
@@ -551,7 +551,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &invalidFactor, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},
@@ -562,16 +562,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "quantity less than request",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("400m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("400m"),
 								},
 							},
@@ -582,10 +582,10 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &invalidQuantity, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("500m"),
 					},
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("500m"),
 					},
 				},
@@ -601,16 +601,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost capped",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
 							},
@@ -621,10 +621,10 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor3, nil, 1).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("20m"),
 					},
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("20m"),
 					},
 				},
@@ -640,13 +640,13 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost with scaling mode off",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("100m"),
 								},
 							},
@@ -657,7 +657,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithScalingMode("container1", vpa_types.ContainerScalingModeOff).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -668,16 +668,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost no recommendation",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("100m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("100m"),
 								},
 							},
@@ -698,16 +698,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost with ControlledValues=RequestsOnly",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("100m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("300m"),
 								},
 							},
@@ -718,7 +718,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsOnly).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},
@@ -733,17 +733,17 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost with RequestsOnly - capped below limit to preserve pod Qos",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
-									core.ResourceCPU: resource.MustParse("100m"),
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("100m"),
 								},
-								Limits: core.ResourceList{
-									core.ResourceCPU: resource.MustParse("150m"),
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("150m"),
 								},
 							},
 						},
@@ -753,8 +753,8 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsOnly).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
-						core.ResourceCPU: resource.MustParse("100m"),
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("100m"),
 					},
 				},
 			},
@@ -768,16 +768,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost with ControlledValues=RequestsandLimits and limits set",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("100m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("300m"),
 								},
 							},
@@ -788,7 +788,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("150m"),
 					},
 				},
@@ -804,13 +804,13 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost with ControlledValues=RequestsandLimits and limits not set",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("100m"),
 								},
 							},
@@ -821,7 +821,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("150m"),
 					},
 				},
@@ -836,13 +836,13 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost invalid type",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
 							},
@@ -853,7 +853,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost("Invalid", &factor2, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},
@@ -864,16 +864,16 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		},
 		{
 			name: "startup boost container policy takes precedence",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							Resources: core.ResourceRequirements{
-								Requests: core.ResourceList{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
-								Limits: core.ResourceList{
+								Limits: corev1.ResourceList{
 									cpu: resource.MustParse("1m"),
 								},
 							},
@@ -886,10 +886,10 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 				WithContainerCPUStartupBoost("container1", vpa_types.FactorStartupBoostType, &factor3, nil, 10).Get(),
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("100m"),
 					},
 				},

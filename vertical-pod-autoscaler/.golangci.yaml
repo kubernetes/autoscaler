@@ -3,6 +3,7 @@ linters:
   enable:
     - forbidigo
     - modernize
+    - importas
     - revive
   settings:
     forbidigo:
@@ -14,6 +15,28 @@ linters:
       disable:
         # Disabling omitzero linter as it catches isssues with API types, which would be best if kube-api-lint can handle
         - omitzero
+
+    importas:
+      alias:
+        - pkg: "k8s.io/api/admission/v1"
+          alias: admissionv1
+        - pkg: k8s.io/api/apps/v1
+          alias: appsv1
+        - pkg: "k8s.io/api/autoscaling/v1"
+          alias: autoscalingv1
+        - pkg: k8s.io/api/batch/v1
+          alias: batchv1
+        - pkg: "k8s.io/api/core/v1"
+          alias: corev1
+        - pkg: k8s.io/client-go/listers/core/v1
+          alias: listersv1
+        - pkg: "k8s.io/apimachinery/pkg/apis/meta/v1"
+          alias: metav1
+        - pkg: k8s.io/api/policy/v1
+          alias: policyv1
+        - pkg: k8s.io/client-go/kubernetes/typed/core/v1
+          alias: typedcorev1
+
     revive:
       enable-all-rules: false # Disabling all rules for now and enabling each one later
       rules:
@@ -67,6 +90,7 @@ linters:
         # Flags exported funcs returning unexported types; disabled for intentional encapsulation in internal APIs.
         - name: unexported-return
           disabled: true
+
 formatters:
   enable:
     - goimports

@@ -20,33 +20,33 @@ import (
 	"errors"
 	"fmt"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
-	listers "k8s.io/client-go/listers/core/v1"
+	listersv1 "k8s.io/client-go/listers/core/v1"
 )
 
 // LimitRangeCalculator calculates limit range items that has the same effect as all limit range items present in the cluster.
 type LimitRangeCalculator interface {
 	// GetContainerLimitRangeItem returns LimitRangeItem that describes limitation on container limits in the given namespace.
-	GetContainerLimitRangeItem(namespace string) (*core.LimitRangeItem, error)
+	GetContainerLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error)
 	// GetPodLimitRangeItem returns LimitRangeItem that describes limitation on pod limits in the given namespace.
-	GetPodLimitRangeItem(namespace string) (*core.LimitRangeItem, error)
+	GetPodLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error)
 }
 
 type noopLimitsRangeCalculator struct{}
 
-func (lc *noopLimitsRangeCalculator) GetContainerLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
+func (lc *noopLimitsRangeCalculator) GetContainerLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
 	return nil, nil
 }
 
-func (lc *noopLimitsRangeCalculator) GetPodLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
+func (lc *noopLimitsRangeCalculator) GetPodLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
 	return nil, nil
 }
 
 type limitsChecker struct {
-	limitRangeLister listers.LimitRangeLister
+	limitRangeLister listersv1.LimitRangeLister
 }
 
 // NewLimitsRangeCalculator returns a limitsChecker or an error it encountered when attempting to create it.
@@ -63,22 +63,22 @@ func NewNoopLimitsCalculator() *noopLimitsRangeCalculator {
 	return &noopLimitsRangeCalculator{}
 }
 
-func (lc *limitsChecker) GetContainerLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
-	return lc.getLimitRangeItem(namespace, core.LimitTypeContainer)
+func (lc *limitsChecker) GetContainerLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
+	return lc.getLimitRangeItem(namespace, corev1.LimitTypeContainer)
 }
 
-func (lc *limitsChecker) GetPodLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
-	return lc.getLimitRangeItem(namespace, core.LimitTypePod)
+func (lc *limitsChecker) GetPodLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
+	return lc.getLimitRangeItem(namespace, corev1.LimitTypePod)
 }
 
-func (lc *limitsChecker) getLimitRangeItem(namespace string, limitType core.LimitType) (*core.LimitRangeItem, error) {
+func (lc *limitsChecker) getLimitRangeItem(namespace string, limitType corev1.LimitType) (*corev1.LimitRangeItem, error) {
 	limitRanges, err := lc.limitRangeLister.LimitRanges(namespace).List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("error loading limit ranges: %s", err)
 	}
 
-	updatedResult := func(result core.ResourceList, lrItem core.ResourceList,
-		resourceName core.ResourceName, picker func(q1, q2 resource.Quantity) resource.Quantity) core.ResourceList {
+	updatedResult := func(result corev1.ResourceList, lrItem corev1.ResourceList,
+		resourceName corev1.ResourceName, picker func(q1, q2 resource.Quantity) resource.Quantity) corev1.ResourceList {
 		if lrItem == nil {
 			return result
 		}
@@ -108,17 +108,17 @@ func (lc *limitsChecker) getLimitRangeItem(namespace string, limitType core.Limi
 		return q2
 	}
 
-	result := &core.LimitRangeItem{Type: limitType}
+	result := &corev1.LimitRangeItem{Type: limitType}
 	for _, lr := range limitRanges {
 		for _, lri := range lr.Spec.Limits {
 			if lri.Type == limitType && (lri.Max != nil || lri.Default != nil || lri.Min != nil) {
 				if lri.Default != nil {
 					result.Default = lri.Default
 				}
-				result.Max = updatedResult(result.Max, lri.Max, core.ResourceCPU, pickLowerMax)
-				result.Max = updatedResult(result.Max, lri.Max, core.ResourceMemory, pickLowerMax)
-				result.Min = updatedResult(result.Min, lri.Min, core.ResourceCPU, chooseHigherMin)
-				result.Min = updatedResult(result.Min, lri.Min, core.ResourceMemory, chooseHigherMin)
+				result.Max = updatedResult(result.Max, lri.Max, corev1.ResourceCPU, pickLowerMax)
+				result.Max = updatedResult(result.Max, lri.Max, corev1.ResourceMemory, pickLowerMax)
+				result.Min = updatedResult(result.Min, lri.Min, corev1.ResourceCPU, chooseHigherMin)
+				result.Min = updatedResult(result.Min, lri.Min, corev1.ResourceMemory, chooseHigherMin)
 			}
 		}
 	}

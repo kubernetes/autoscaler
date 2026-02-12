@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -34,7 +34,7 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
 func init() {
-	utilruntime.Must(apiv1.AddToScheme(scheme))
+	utilruntime.Must(corev1.AddToScheme(scheme))
 }
 
 const pod1Yaml = `
@@ -77,22 +77,22 @@ status:
         reason: OOMKilled
 `
 
-func newPod(yaml string) (*apiv1.Pod, error) {
+func newPod(yaml string) (*corev1.Pod, error) {
 	decode := codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(yaml), nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return obj.(*apiv1.Pod), nil
+	return obj.(*corev1.Pod), nil
 }
 
-func newEvent(yaml string) (*apiv1.Event, error) {
+func newEvent(yaml string) (*corev1.Event, error) {
 	decode := codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(yaml), nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return obj.(*apiv1.Event), nil
+	return obj.(*corev1.Event), nil
 }
 
 func TestOOMReceived(t *testing.T) {
@@ -105,8 +105,8 @@ func TestOOMReceived(t *testing.T) {
 
 	testCases := []struct {
 		desc        string
-		oldPod      *apiv1.Pod
-		newPod      *apiv1.Pod
+		oldPod      *corev1.Pod
+		newPod      *corev1.Pod
 		wantOOMInfo OomInfo
 	}{
 		{
@@ -127,7 +127,7 @@ func TestOOMReceived(t *testing.T) {
 		},
 		{
 			desc: "Old pod does not set memory requests",
-			oldPod: func() *apiv1.Pod {
+			oldPod: func() *corev1.Pod {
 				oldPod := p1.DeepCopy()
 				oldPod.Spec.Containers[0].Resources.Requests = nil
 				oldPod.Status.ContainerStatuses[0].Resources = nil
@@ -148,11 +148,11 @@ func TestOOMReceived(t *testing.T) {
 		},
 		{
 			desc: "Old pod also set memory request in containerStatus, prefer info from containerStatus",
-			oldPod: func() *apiv1.Pod {
+			oldPod: func() *corev1.Pod {
 				oldPod := p1.DeepCopy()
-				oldPod.Status.ContainerStatuses[0].Resources = &apiv1.ResourceRequirements{
-					Requests: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("2048"),
+				oldPod.Status.ContainerStatuses[0].Resources = &corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("2048"),
 					},
 				}
 				return oldPod

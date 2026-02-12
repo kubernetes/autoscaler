@@ -23,10 +23,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/autoscaling/v1"
-	core "k8s.io/api/core/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/utils/ptr"
 
@@ -50,14 +50,14 @@ func init() {
 }
 
 func parseLabelSelector(selector string) labels.Selector {
-	labelSelector, _ := meta.ParseToLabelSelector(selector)
-	parsedSelector, _ := meta.LabelSelectorAsSelector(labelSelector)
+	labelSelector, _ := metav1.ParseToLabelSelector(selector)
+	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	return parsedSelector
 }
 
 func TestUpdateVpaIfNeeded(t *testing.T) {
 	updatedVpa := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").WithContainer(containerName).
-		AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get()
+		AppendCondition(vpa_types.RecommendationProvided, corev1.ConditionTrue, "reason", "msg", anytime).Get()
 	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("5", "200").Get()
 	updatedVpa.Status.Recommendation = recommendation
 	observedVpaBuilder := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").WithContainer(containerName)
@@ -72,26 +72,26 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 			caseName:   "Doesn't update if no changes.",
 			updatedVpa: updatedVpa,
 			observedVpa: observedVpaBuilder.WithTarget("5", "200").
-				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get(),
+				AppendCondition(vpa_types.RecommendationProvided, corev1.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: false,
 		}, {
 			caseName:   "Updates on recommendation change.",
 			updatedVpa: updatedVpa,
 			observedVpa: observedVpaBuilder.WithTarget("10", "200").
-				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get(),
+				AppendCondition(vpa_types.RecommendationProvided, corev1.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		}, {
 			caseName:   "Updates on condition change.",
 			updatedVpa: updatedVpa,
 			observedVpa: observedVpaBuilder.WithTarget("5", "200").
-				AppendCondition(vpa_types.RecommendationProvided, core.ConditionFalse, "reason", "msg", anytime).Get(),
+				AppendCondition(vpa_types.RecommendationProvided, corev1.ConditionFalse, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		}, {
 			caseName:   "Updates on condition added.",
 			updatedVpa: updatedVpa,
 			observedVpa: observedVpaBuilder.WithTarget("5", "200").
-				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).
-				AppendCondition(vpa_types.LowConfidence, core.ConditionTrue, "reason", "msg", anytime).Get(),
+				AppendCondition(vpa_types.RecommendationProvided, corev1.ConditionTrue, "reason", "msg", anytime).
+				AppendCondition(vpa_types.LowConfidence, corev1.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		},
 	}
@@ -113,7 +113,7 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 
 func TestPodMatchesVPA(t *testing.T) {
 	type testCase struct {
-		pod             *core.Pod
+		pod             *corev1.Pod
 		vpaWithSelector VpaWithSelector
 		result          bool
 	}
@@ -146,7 +146,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 
 	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
-	pod.OwnerReferences = []meta.OwnerReference{
+	pod.OwnerReferences = []metav1.OwnerReference{
 		{
 			APIVersion: "apps/v1",
 			Kind:       "StatefulSet",
@@ -163,7 +163,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	vpaA := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
 	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
 	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).Get()
-	vpaA.Spec.TargetRef = &apiv1.CrossVersionObjectReference{
+	vpaA.Spec.TargetRef = &autoscalingv1.CrossVersionObjectReference{
 		Kind:       "StatefulSet",
 		Name:       "test-sts",
 		APIVersion: "apps/v1",
@@ -185,14 +185,14 @@ func TestGetControllingVPAForPod(t *testing.T) {
 func TestGetContainerResourcePolicy(t *testing.T) {
 	containerPolicy1 := vpa_types.ContainerResourcePolicy{
 		ContainerName: "container1",
-		MinAllowed: core.ResourceList{
-			core.ResourceCPU: *resource.NewScaledQuantity(10, 1),
+		MinAllowed: corev1.ResourceList{
+			corev1.ResourceCPU: *resource.NewScaledQuantity(10, 1),
 		},
 	}
 	containerPolicy2 := vpa_types.ContainerResourcePolicy{
 		ContainerName: "container2",
-		MaxAllowed: core.ResourceList{
-			core.ResourceMemory: *resource.NewScaledQuantity(100, 1),
+		MaxAllowed: corev1.ResourceList{
+			corev1.ResourceMemory: *resource.NewScaledQuantity(100, 1),
 		},
 	}
 	policy := vpa_types.PodResourcePolicy{
@@ -207,8 +207,8 @@ func TestGetContainerResourcePolicy(t *testing.T) {
 	// Add the wildcard ("*") policy.
 	defaultPolicy := vpa_types.ContainerResourcePolicy{
 		ContainerName: "*",
-		MinAllowed: core.ResourceList{
-			core.ResourceCPU: *resource.NewScaledQuantity(20, 1),
+		MinAllowed: corev1.ResourceList{
+			corev1.ResourceCPU: *resource.NewScaledQuantity(20, 1),
 		},
 	}
 	policy = vpa_types.PodResourcePolicy{
@@ -300,14 +300,14 @@ func TestGetContainerControlledResources(t *testing.T) {
 func TestFindParentControllerForPod(t *testing.T) {
 	for _, tc := range []struct {
 		name        string
-		pod         *core.Pod
+		pod         *corev1.Pod
 		ctrlFetcher controllerfetcher.ControllerFetcher
 		expected    *controllerfetcher.ControllerKeyWithAPIVersion
 	}{
 		{
 			name: "should return nil for Pod without ownerReferences",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					OwnerReferences: nil,
 				},
 			},
@@ -316,9 +316,9 @@ func TestFindParentControllerForPod(t *testing.T) {
 		},
 		{
 			name: "should return nil for Pod with ownerReference with controller=nil",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
-					OwnerReferences: []meta.OwnerReference{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					OwnerReferences: []metav1.OwnerReference{
 						{
 							APIVersion: "apps/v1",
 							Controller: nil,
@@ -333,9 +333,9 @@ func TestFindParentControllerForPod(t *testing.T) {
 		},
 		{
 			name: "should return nil for Pod with ownerReference with controller=false",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
-					OwnerReferences: []meta.OwnerReference{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					OwnerReferences: []metav1.OwnerReference{
 						{
 							APIVersion: "apps/v1",
 							Controller: ptr.To(false),
@@ -350,10 +350,10 @@ func TestFindParentControllerForPod(t *testing.T) {
 		},
 		{
 			name: "should pass the Pod ownerReference to the fake ControllerFetcher",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "bar",
-					OwnerReferences: []meta.OwnerReference{
+					OwnerReferences: []metav1.OwnerReference{
 						{
 							APIVersion: "apps/v1",
 							Controller: ptr.To(true),
@@ -375,10 +375,10 @@ func TestFindParentControllerForPod(t *testing.T) {
 		},
 		{
 			name: "should not return an error for Node owner reference",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "bar",
-					OwnerReferences: []meta.OwnerReference{
+					OwnerReferences: []metav1.OwnerReference{
 						{
 							APIVersion: "v1",
 							Controller: ptr.To(true),
@@ -401,33 +401,33 @@ func TestFindParentControllerForPod(t *testing.T) {
 }
 
 func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
-	now := meta.Now()
-	past := meta.Time{Time: now.Add(-2 * time.Minute)}
+	now := metav1.Now()
+	past := metav1.Time{Time: now.Add(-2 * time.Minute)}
 	duration60 := int32(60)
 	duration180 := int32(180)
 	duration300 := int32(300)
 	testCases := []struct {
 		name     string
-		pod      *core.Pod
+		pod      *corev1.Pod
 		vpa      *vpa_types.VerticalPodAutoscaler
 		expected bool
 	}{
 		{
 			name:     "No StartupBoost config",
-			pod:      &core.Pod{},
+			pod:      &corev1.Pod{},
 			vpa:      &vpa_types.VerticalPodAutoscaler{},
 			expected: false,
 		},
 		{
 			name:     "No duration in StartupBoost, no annotation",
-			pod:      &core.Pod{},
+			pod:      &corev1.Pod{},
 			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 0).Get(),
 			expected: false,
 		},
 		{
 			name: "No duration in StartupBoost, with annotation",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
@@ -438,17 +438,17 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 		},
 		{
 			name: "Pod not ready",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
 				},
-				Status: core.PodStatus{
-					Conditions: []core.PodCondition{
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
 						{
-							Type:   core.PodReady,
-							Status: core.ConditionFalse,
+							Type:   corev1.PodReady,
+							Status: corev1.ConditionFalse,
 						},
 					},
 				},
@@ -458,17 +458,17 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 		},
 		{
 			name: "Duration passed",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
 				},
-				Status: core.PodStatus{
-					Conditions: []core.PodCondition{
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
 						{
-							Type:               core.PodReady,
-							Status:             core.ConditionTrue,
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
 							LastTransitionTime: past,
 						},
 					},
@@ -479,17 +479,17 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 		},
 		{
 			name: "Duration not passed",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
 				},
-				Status: core.PodStatus{
-					Conditions: []core.PodCondition{
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
 						{
-							Type:               core.PodReady,
-							Status:             core.ConditionTrue,
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
 							LastTransitionTime: now,
 						},
 					},
@@ -500,23 +500,23 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 		},
 		{
 			name: "Container-level boost duration",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
 				},
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{Name: "c1"},
 						{Name: "c2"},
 					},
 				},
-				Status: core.PodStatus{
-					Conditions: []core.PodCondition{
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
 						{
-							Type:               core.PodReady,
-							Status:             core.ConditionTrue,
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
 							LastTransitionTime: past,
 						},
 					},
@@ -550,24 +550,24 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 		},
 		{
 			name: "Container-level boost duration passed",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
 				},
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{Name: "c1"},
 						{Name: "c2"},
 					},
 				},
-				Status: core.PodStatus{
-					Conditions: []core.PodCondition{
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
 						{
-							Type:               core.PodReady,
-							Status:             core.ConditionTrue,
-							LastTransitionTime: meta.Time{Time: now.Add(-4 * time.Minute)},
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.Time{Time: now.Add(-4 * time.Minute)},
 						},
 					},
 				},
@@ -600,24 +600,24 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 		},
 		{
 			name: "Pod-level boost duration is higher",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
 				},
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{Name: "c1"},
 						{Name: "c2"},
 					},
 				},
-				Status: core.PodStatus{
-					Conditions: []core.PodCondition{
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
 						{
-							Type:               core.PodReady,
-							Status:             core.ConditionTrue,
-							LastTransitionTime: meta.Time{Time: now.Add(-4 * time.Minute)},
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.Time{Time: now.Add(-4 * time.Minute)},
 						},
 					},
 				},
@@ -664,18 +664,18 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 func TestPodHasCPUBoostInProgressAnnotation(t *testing.T) {
 	testCases := []struct {
 		name     string
-		pod      *core.Pod
+		pod      *corev1.Pod
 		expected bool
 	}{
 		{
 			name:     "No annotations",
-			pod:      &core.Pod{},
+			pod:      &corev1.Pod{},
 			expected: false,
 		},
 		{
 			name: "Annotation present",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
 					},
@@ -685,8 +685,8 @@ func TestPodHasCPUBoostInProgressAnnotation(t *testing.T) {
 		},
 		{
 			name: "Annotation not present",
-			pod: &core.Pod{
-				ObjectMeta: meta.ObjectMeta{
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"another-annotation": "true",
 					},

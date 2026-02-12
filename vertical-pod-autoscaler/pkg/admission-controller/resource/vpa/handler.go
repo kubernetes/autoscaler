@@ -23,7 +23,7 @@ import (
 	"fmt"
 
 	admissionv1 "k8s.io/api/admission/v1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apires "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
@@ -239,11 +239,11 @@ func validateStartupBoost(startupBoost *vpa_types.StartupBoost, isCreate bool) e
 	return nil
 }
 
-func validateResourceResolution(name apiv1.ResourceName, val apires.Quantity) error {
+func validateResourceResolution(name corev1.ResourceName, val apires.Quantity) error {
 	switch name {
-	case apiv1.ResourceCPU:
+	case corev1.ResourceCPU:
 		return validateCPUResolution(val)
-	case apiv1.ResourceMemory:
+	case corev1.ResourceMemory:
 		return validateMemoryResolution(val)
 	}
 	return nil

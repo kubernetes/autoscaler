@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	k8sapiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
@@ -62,7 +62,7 @@ type externalMetricsClient struct {
 
 // ExternalClientOptions specifies parameters for using an External Metrics Client.
 type ExternalClientOptions struct {
-	ResourceMetrics map[k8sapiv1.ResourceName]string
+	ResourceMetrics map[corev1.ResourceName]string
 	// Label to use for the container name.
 	ContainerNameLabel string
 }
@@ -109,7 +109,7 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 				Containers: make([]v1beta1.ContainerMetrics, 0),
 			}
 			// Query each resource in turn, then assemble back to a single []ContainerMetrics.
-			containerMetrics := make(map[string]k8sapiv1.ResourceList)
+			containerMetrics := make(map[string]corev1.ResourceList)
 			for resourceName, metricName := range s.options.ResourceMetrics {
 				m, err := nsClient.List(metricName, selector)
 				if err != nil {
@@ -130,7 +130,7 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 						continue
 					}
 					if containerMetrics[ctrName] == nil {
-						containerMetrics[ctrName] = make(k8sapiv1.ResourceList)
+						containerMetrics[ctrName] = make(corev1.ResourceList)
 					}
 					containerMetrics[ctrName][resourceName] = val.Value
 				}

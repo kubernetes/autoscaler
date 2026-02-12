@@ -27,8 +27,7 @@ import (
 	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
-	v1 "k8s.io/api/autoscaling/v1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -258,7 +257,7 @@ func testRunOnceBase(
 	labels := map[string]string{"app": "testingApp"}
 	selector := parseLabelSelector("app = testingApp")
 	containerName := "container1"
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ReplicationController",
 			APIVersion: "apps/v1",
@@ -267,11 +266,11 @@ func testRunOnceBase(
 			Name:      "rc",
 			Namespace: "default",
 		},
-		Spec: apiv1.ReplicationControllerSpec{
+		Spec: corev1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
 	}
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	eviction := &test.PodsEvictionRestrictionMock{}
 	inplace := &test.PodsInPlaceRestrictionMock{}
 
@@ -280,7 +279,7 @@ func testRunOnceBase(
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		WithTargetRef(&v1.CrossVersionObjectReference{
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
 			Kind:       rc.Kind,
 			Name:       rc.Name,
 			APIVersion: rc.APIVersion,
@@ -298,10 +297,10 @@ func testRunOnceBase(
 			pods[i].Annotations = map[string]string{
 				"startup-cpu-boost": "",
 			}
-			pods[i].Status.Conditions = []apiv1.PodCondition{
+			pods[i].Status.Conditions = []corev1.PodCondition{
 				{
-					Type:   apiv1.PodReady,
-					Status: apiv1.ConditionTrue,
+					Type:   corev1.PodReady,
+					Status: corev1.ConditionTrue,
 				},
 			}
 		}
@@ -432,7 +431,7 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 	selector := parseLabelSelector("app = testingApp")
 
 	containerName := "container1"
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ReplicationController",
 			APIVersion: "apps/v1",
@@ -441,11 +440,11 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 			Name:      "rc",
 			Namespace: "default",
 		},
-		Spec: apiv1.ReplicationControllerSpec{
+		Spec: corev1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
 	}
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	eviction := &test.PodsEvictionRestrictionMock{}
 	inplace := &test.PodsInPlaceRestrictionMock{}
 	for i := range pods {
@@ -541,7 +540,7 @@ func TestNewEventRecorder(t *testing.T) {
 	}{
 		{
 			reason:  "EvictedPod",
-			object:  &apiv1.Pod{},
+			object:  &corev1.Pod{},
 			message: "Evicted pod",
 		},
 		{
@@ -552,9 +551,9 @@ func TestNewEventRecorder(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.reason, func(t *testing.T) {
-			er.Event(tc.object, apiv1.EventTypeNormal, tc.reason, tc.message)
+			er.Event(tc.object, corev1.EventTypeNormal, tc.reason, tc.message)
 
-			var events *apiv1.EventList
+			var events *corev1.EventList
 			var err error
 			// Add delay for fake client to catch up due to be being asynchronous
 			for range maxRetries {
@@ -573,7 +572,7 @@ func TestNewEventRecorder(t *testing.T) {
 			event := events.Items[0]
 			assert.Equal(t, tc.reason, event.Reason)
 			assert.Equal(t, tc.message, event.Message)
-			assert.Equal(t, apiv1.EventTypeNormal, event.Type)
+			assert.Equal(t, corev1.EventTypeNormal, event.Type)
 			assert.Equal(t, "vpa-updater", event.Source.Component)
 		})
 	}
@@ -653,21 +652,21 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 	labels := map[string]string{"app": "testingApp"}
 	selector := parseLabelSelector("app = testingApp")
 	containerName := "container1"
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ReplicationController",
 			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{Name: "rc", Namespace: "default"},
-		Spec:       apiv1.ReplicationControllerSpec{Replicas: &replicas},
+		Spec:       corev1.ReplicationControllerSpec{Replicas: &replicas},
 	}
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	vpaObj := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		WithTargetRef(&v1.CrossVersionObjectReference{Kind: rc.Kind, Name: rc.Name, APIVersion: rc.APIVersion}).
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{Kind: rc.Kind, Name: rc.Name, APIVersion: rc.APIVersion}).
 		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).
 		Get()
 
@@ -704,10 +703,10 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 	// Cycle 1: Unboost the cpu
 	for i := range pods {
 		pods[i].Annotations = map[string]string{"startup-cpu-boost": ""}
-		pods[i].Status.Conditions = []apiv1.PodCondition{
+		pods[i].Status.Conditions = []corev1.PodCondition{
 			{
-				Type:   apiv1.PodReady,
-				Status: apiv1.ConditionTrue,
+				Type:   corev1.PodReady,
+				Status: corev1.ConditionTrue,
 			},
 		}
 		inplace.On("CanUnboost", pods[i], vpaObj).Return(true).Once()
@@ -751,22 +750,22 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	labels := map[string]string{"app": "testingApp"}
 	selector := parseLabelSelector("app = testingApp")
 	containerName := "container1"
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ReplicationController",
 			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{Name: "rc", Namespace: "default"},
-		Spec:       apiv1.ReplicationControllerSpec{Replicas: &replicas},
+		Spec:       corev1.ReplicationControllerSpec{Replicas: &replicas},
 	}
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	vpaObj := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		WithTargetRef(&v1.CrossVersionObjectReference{Kind: rc.Kind, Name: rc.Name, APIVersion: rc.APIVersion}).
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{Kind: rc.Kind, Name: rc.Name, APIVersion: rc.APIVersion}).
 		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).
 		Get()
 
@@ -803,10 +802,10 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	// Cycle 1: Unboost the cpu
 	for i := range pods {
 		pods[i].Annotations = map[string]string{"startup-cpu-boost": ""}
-		pods[i].Status.Conditions = []apiv1.PodCondition{
+		pods[i].Status.Conditions = []corev1.PodCondition{
 			{
-				Type:   apiv1.PodReady,
-				Status: apiv1.ConditionTrue,
+				Type:   corev1.PodReady,
+				Status: corev1.ConditionTrue,
 			},
 		}
 		inplace.On("CanUnboost", pods[i], vpaObj).Return(true).Once()
@@ -824,6 +823,7 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	// Cycle 2: Regular patch which will lead to eviction
 	for i := range pods {
 		pods[i].Annotations = nil
+		inplace.On("CanUnboost", pods[i], vpaObj).Return(false).Once()
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(utils.InPlaceApproved)
 		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}

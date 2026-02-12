@@ -20,12 +20,12 @@ import (
 	"fmt"
 
 	"github.com/stretchr/testify/mock"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	v1lister "k8s.io/client-go/listers/core/v1"
+	listersv1 "k8s.io/client-go/listers/core/v1"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
@@ -34,7 +34,7 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
 func init() {
-	utilruntime.Must(apiv1.AddToScheme(scheme))
+	utilruntime.Must(corev1.AddToScheme(scheme))
 }
 
 const pod1Yaml = `
@@ -123,14 +123,14 @@ type podListerMock struct {
 	mock.Mock
 }
 
-func (m *podListerMock) List(selector labels.Selector) (ret []*apiv1.Pod, err error) {
+func (m *podListerMock) List(selector labels.Selector) (ret []*corev1.Pod, err error) {
 	args := m.Called()
-	return args.Get(0).([]*apiv1.Pod), args.Error(1)
+	return args.Get(0).([]*corev1.Pod), args.Error(1)
 }
 
-func (m *podListerMock) Pods(namespace string) v1lister.PodNamespaceLister {
+func (m *podListerMock) Pods(namespace string) listersv1.PodNamespaceLister {
 	args := m.Called()
-	return args.Get(0).(v1lister.PodNamespaceLister)
+	return args.Get(0).(listersv1.PodNamespaceLister)
 }
 
 type specClientTestCase struct {
@@ -196,19 +196,19 @@ func (tc *specClientTestCase) createFakeSpecClient() SpecClient {
 	return NewSpecClient(podListerMock)
 }
 
-func (tc *specClientTestCase) getFakePods() []*apiv1.Pod {
-	pods := []*apiv1.Pod{}
+func (tc *specClientTestCase) getFakePods() []*corev1.Pod {
+	pods := []*corev1.Pod{}
 	for _, yaml := range tc.podYamls {
 		pods = append(pods, newPod(yaml))
 	}
 	return pods
 }
 
-func newPod(yaml string) *apiv1.Pod {
+func newPod(yaml string) *corev1.Pod {
 	decode := codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(yaml), nil, nil)
 	if err != nil {
 		fmt.Printf("%#v", err)
 	}
-	return obj.(*apiv1.Pod)
+	return obj.(*corev1.Pod)
 }
