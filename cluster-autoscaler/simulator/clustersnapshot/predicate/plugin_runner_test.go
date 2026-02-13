@@ -25,6 +25,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
@@ -36,8 +37,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-
-	apiv1 "k8s.io/api/core/v1"
 )
 
 func TestRunFiltersOnNode(t *testing.T) {
@@ -370,7 +369,7 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 }
 
 func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
-	pod := BuildTestPod("p", 100, 1000)
+	pod := BuildTestPod("p", 100, 1000, WithPodHostnameAntiAffinity(map[string]string{"app": "p"}), WithLabels(map[string]string{"app": "p"}))
 	nodes := make([]*apiv1.Node, 0, 5001)
 	podsOnNodes := make(map[string][]*apiv1.Pod)
 
@@ -381,7 +380,7 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 		// Add 10 small pods to each node
 		pods := make([]*apiv1.Pod, 0, 10)
 		for j := 0; j < 10; j++ {
-			pods = append(pods, BuildTestPod(fmt.Sprintf("p-%d-%d", i, j), 1, 1))
+			pods = append(pods, BuildTestPod(fmt.Sprintf("p-%d-%d", i, j), 1, 1, WithLabels(map[string]string{"app": "p"})))
 		}
 		podsOnNodes[nodeName] = pods
 	}
