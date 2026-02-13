@@ -21,6 +21,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
+	"runtime/debug"
 	"runtime/pprof"
 	"testing"
 	"time"
@@ -52,6 +54,8 @@ import (
 // -   Fake Client & Provider: API latency, network conditions, and rate limits are completely absent.
 // -   Synthetic Workloads: Pods and Nodes are homogeneous or algorithmically generated, which
 //     may not fully represent the complexity of real-world cluster states.
+// -   Garbage Collection is DISABLED during the timed RunOnce execution. This eliminates
+//     memory management noise but means results do not reflect GC overhead or pause times.
 //
 // Because of these simplifications, absolute timing numbers from this benchmark should NOT
 // be interpreted as expected production latency. They are strictly relative metrics for
@@ -67,7 +71,10 @@ const (
 	ngName = "ng1"
 )
 
-var runOnceCpuProfile = flag.String("profile-cpu", "", "If set, the benchmark writes a CPU profile to this file, covering the RunOnce execution during the first iteration.")
+var (
+	runOnceCpuProfile = flag.String("profile-cpu", "", "If set, the benchmark writes a CPU profile to this file, covering the RunOnce execution during the first iteration.")
+	withGC            = flag.Bool("gc", false, "If set to false, the benchmark disables garbage collection to stabilize the runtime.")
+)
 
 type scenario struct {
 	// setup initializes the cluster state before the benchmarked RunOnce call.
@@ -87,6 +94,15 @@ func (s scenario) run(b *testing.B) {
 		flag.Parse()
 	}
 
+	if !*withGC {
+		// Disable automatic Garbage Collection during the timed portion of the benchmark
+		// to minimize variance and ensure that CPU profiles focus on the RunOnce logic.
+		// This approach prioritizes identifying performance regressions in the core
+		// logic over measuring absolute throughput in a production-like GC environment.
+		oldGC := debug.SetGCPercent(-1)
+		defer debug.SetGCPercent(oldGC)
+	}
+
 	var f *os.File
 	if *runOnceCpuProfile != "" {
 		var err error
@@ -103,6 +119,10 @@ func (s scenario) run(b *testing.B) {
 			b.Fatalf("setup failed: %v", err)
 		}
 		autoscaler := newAutoscaler(b, s, clusterFakes)
+
+		// Manually trigger GC before the timed section to ensure a clean state
+		// for each iteration.
+		runtime.GC()
 
 		if f != nil && i == 0 {
 			if err := pprof.StartCPUProfile(f); err != nil {
