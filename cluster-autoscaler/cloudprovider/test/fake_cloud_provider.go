@@ -375,6 +375,21 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// NoOpIncreaseSize is a special function to simulate scale up
+// without doing any operation on nodes.
+// This is for benchmarks that will only evaluate target size and
+// want to avoid the overhead (and CPU profile noise) of adding
+// nodes to the internal state of the fake cloud provider.
+func (n *NodeGroup) NoOpIncreaseSize(delta int) error {
+	n.Lock()
+	defer n.Unlock()
+	if n.targetSize+delta > n.maxSize {
+		return fmt.Errorf("size too large")
+	}
+	n.targetSize += delta
+	return nil
+}
+
 // TemplateNodeInfo returns the template node information for this node group.
 func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if n.template == nil {
