@@ -21,6 +21,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
+	"runtime/debug"
 	"runtime/pprof"
 	"testing"
 	"time"
@@ -54,6 +56,8 @@ import (
 // -   Fake Client & Provider: API latency, network conditions, and rate limits are completely absent.
 // -   Synthetic Workloads: Pods and Nodes are homogeneous or algorithmically generated, which
 //     may not fully represent the complexity of real-world cluster states.
+// -   Garbage Collection is DISABLED during the timed RunOnce execution. This eliminates
+//     memory management noise but means results do not reflect GC overhead or pause times.
 //
 // Because of these simplifications, absolute timing numbers from this benchmark should NOT
 // be interpreted as expected production latency. They are strictly relative metrics for
@@ -89,6 +93,13 @@ func run(b *testing.B, s scenario) {
 		flag.Parse()
 	}
 
+	// Disable automatic Garbage Collection during the timed portion of the benchmark
+	// to minimize variance and ensure that CPU profiles focus on the RunOnce logic.
+	// This approach prioritizes identifying performance regressions in the core
+	// logic over measuring absolute throughput in a production-like GC environment.
+	oldGC := debug.SetGCPercent(-1)
+	defer debug.SetGCPercent(oldGC)
+
 	var f *os.File
 	if *runOnceCpuProfile != "" {
 		var err error
@@ -105,6 +116,10 @@ func run(b *testing.B, s scenario) {
 			b.Fatalf("setup failed: %v", err)
 		}
 		autoscaler := newAutoscaler(b, s, cluster)
+
+		// Manually trigger GC before the timed section to ensure a clean state
+		// for each iteration.
+		runtime.GC()
 
 		if f != nil && i == 0 {
 			if err := pprof.StartCPUProfile(f); err != nil {
