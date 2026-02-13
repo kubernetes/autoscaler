@@ -230,7 +230,7 @@ func (ng *magnumNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		return nil, fmt.Errorf("failed to build node from template")
 	}
 	klog.V(5).Infof("TemplateNodeInfo: built template for nodegroup: %s", ng.Id())
-	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
+	nodeInfo := framework.NewNodeInfo(node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.Id()), nil))
 
 	return nodeInfo, nil
 }

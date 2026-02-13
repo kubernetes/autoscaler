@@ -22,6 +22,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -45,7 +46,6 @@ func TestNodeInfo(t *testing.T) {
 		test.BuildTestPod("regular-pod-1", 100, 16),
 		test.BuildTestPod("regular-pod-2", 100, 16),
 	}
-	extraPod := test.BuildTestPod("extra-pod", 1, 1)
 	schedulerNodeInfo := newSchedNodeInfo(node, pods)
 	slices := []*resourceapi.ResourceSlice{
 		{
@@ -108,34 +108,12 @@ func TestNodeInfo(t *testing.T) {
 			wantPods:          testPodInfos(pods, false),
 		},
 		{
-			testName: "wrapping via WrapSchedulerNodeInfo",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				return WrapSchedulerNodeInfo(info, nil, nil)
-			},
-			wantSchedNodeInfo: schedulerNodeInfo,
-			wantPods:          testPodInfos(pods, false),
-		},
-		{
-			testName: "wrapping via WrapSchedulerNodeInfo with DRA objects",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				podInfos := testPodInfos(pods, true)
-				extraInfos := make(map[types.UID]PodExtraInfo)
-				for _, podInfo := range podInfos {
-					extraInfos[podInfo.Pod.UID] = podInfo.PodExtraInfo
-				}
-				return WrapSchedulerNodeInfo(schedulerNodeInfo, slices, extraInfos)
-			},
-			wantSchedNodeInfo:       schedulerNodeInfo,
-			wantLocalResourceSlices: slices,
-			wantPods:                testPodInfos(pods, true),
-		},
-		{
 			testName: "wrapping via SetNode+AddPod",
 			modFn: func(info fwk.NodeInfo) *NodeInfo {
 				result := NewNodeInfo(nil, nil)
 				result.SetNode(info.Node())
 				for _, pod := range info.GetPods() {
-					result.AddPod(&PodInfo{Pod: pod.GetPod()})
+					result.AddPod(NewPodInfo(pod.GetPod(), nil))
 				}
 				return result
 			},
@@ -162,7 +140,7 @@ func TestNodeInfo(t *testing.T) {
 			modFn: func(info fwk.NodeInfo) *NodeInfo {
 				result := NewNodeInfo(info.Node(), slices, testPodInfos(pods, true)...)
 				for _, pod := range []*apiv1.Pod{pods[0], pods[2], pods[4]} {
-					if err := result.RemovePod(pod); err != nil {
+					if err := result.RemovePod(klog.Background(), pod); err != nil {
 						t.Errorf("RemovePod unexpected error: %v", err)
 					}
 				}
@@ -171,26 +149,6 @@ func TestNodeInfo(t *testing.T) {
 			wantSchedNodeInfo:       newSchedNodeInfo(node, []*apiv1.Pod{pods[1], pods[3], pods[5]}),
 			wantLocalResourceSlices: slices,
 			wantPods:                testPodInfos([]*apiv1.Pod{pods[1], pods[3], pods[5]}, true),
-		},
-		{
-			testName: "wrapping via WrapSchedulerNodeInfo and adding more pods",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				result := WrapSchedulerNodeInfo(info, nil, nil)
-				result.AddPod(testPodInfos([]*apiv1.Pod{extraPod}, false)[0])
-				return result
-			},
-			wantSchedNodeInfo: newSchedNodeInfo(node, append(pods, extraPod)),
-			wantPods:          testPodInfos(append(pods, extraPod), false),
-		},
-		{
-			testName: "wrapping via WrapSchedulerNodeInfo and adding more pods using DRA",
-			modFn: func(info fwk.NodeInfo) *NodeInfo {
-				result := WrapSchedulerNodeInfo(info, nil, nil)
-				result.AddPod(testPodInfos([]*apiv1.Pod{extraPod}, true)[0])
-				return result
-			},
-			wantSchedNodeInfo: newSchedNodeInfo(node, append(pods, extraPod)),
-			wantPods:          append(testPodInfos(pods, false), testPodInfos([]*apiv1.Pod{extraPod}, true)...),
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
@@ -206,10 +164,13 @@ func TestNodeInfo(t *testing.T) {
 				cmpopts.SortSlices(func(p1, p2 fwk.PodInfo) bool {
 					return p1.GetPod().Name < p2.GetPod().Name
 				}),
-				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
+				// Allow unexported fields in PodInfo to enable full comparison.
+				cmp.AllowUnexported(schedulerframework.PodInfo{}),
+				// Ignore cachedResource as it is lazily initialized and may differ between fresh and processed PodInfo objects.
+				cmpopts.IgnoreFields(schedulerframework.PodInfo{}, "cachedResource"),
 			}
-			if diff := cmp.Diff(tc.wantSchedNodeInfo, wrappedNodeInfo.ToScheduler(), nodeInfoCmpOpts...); diff != "" {
-				t.Errorf("ToScheduler() output differs from expected, diff (-want +got): %s", diff)
+			if diff := cmp.Diff(tc.wantSchedNodeInfo, wrappedNodeInfo.NodeInfo, nodeInfoCmpOpts...); diff != "" {
+				t.Errorf("NodeInfo output differs from expected, diff (-want +got): %s", diff)
 			}
 
 			// Assert that the Node() method matches the scheduler object.
@@ -222,13 +183,16 @@ func TestNodeInfo(t *testing.T) {
 				t.Errorf("LocalResourceSlices differ from expected, diff  (-want +got): %s", diff)
 			}
 
-			// Assert that the pods list in the wrapper is as expected.
-			// The pod order changes in a particular way whenever schedulerframework.RemovePod() is called. Instead of
-			// relying on that schedulerframework implementation detail in assertions, just ignore the order.
-			podsInfosIgnoreOrderOpt := cmpopts.SortSlices(func(p1, p2 *PodInfo) bool {
-				return p1.Name < p2.Name
-			})
-			if diff := cmp.Diff(tc.wantPods, wrappedNodeInfo.Pods(), podsInfosIgnoreOrderOpt); diff != "" {
+			podsInfosCmpOpts := []cmp.Option{
+				// Assert that the pods list in the wrapper is as expected.
+				// The pod order changes in a particular way whenever schedulerframework.RemovePod() is called. Instead of
+				// relying on that schedulerframework implementation detail in assertions, just ignore the order.
+				cmpopts.SortSlices(func(p1, p2 *PodInfo) bool { return p1.Name < p2.Name }),
+				cmp.AllowUnexported(schedulerframework.PodInfo{}),
+				// Ignore cachedResource as it is lazily initialized and may differ between fresh and processed PodInfo objects.
+				cmpopts.IgnoreFields(schedulerframework.PodInfo{}, "cachedResource"),
+			}
+			if diff := cmp.Diff(tc.wantPods, wrappedNodeInfo.Pods(), podsInfosCmpOpts...); diff != "" {
 				t.Errorf("Pods() output differs from expected, diff (-want +got): %s", diff)
 			}
 
@@ -251,16 +215,11 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 	nodeName := "node"
 	node := test.BuildTestNode(nodeName, 1000, 1000)
 	pods := []*PodInfo{
-		{Pod: test.BuildTestPod("p1", 80, 0, test.WithNodeName(node.Name))},
-		{
-			Pod: test.BuildTestPod("p2", 80, 0, test.WithNodeName(node.Name)),
-			PodExtraInfo: PodExtraInfo{
-				NeededResourceClaims: []*resourceapi.ResourceClaim{
-					{ObjectMeta: v1.ObjectMeta{Name: "claim1"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req1"}}}}},
-					{ObjectMeta: v1.ObjectMeta{Name: "claim2"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req2"}}}}},
-				},
-			},
-		},
+		NewPodInfo(test.BuildTestPod("p1", 80, 0, test.WithNodeName(node.Name)), nil),
+		NewPodInfo(test.BuildTestPod("p2", 80, 0, test.WithNodeName(node.Name)), []*resourceapi.ResourceClaim{
+			{ObjectMeta: v1.ObjectMeta{Name: "claim1"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req1"}}}}},
+			{ObjectMeta: v1.ObjectMeta{Name: "claim2"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req2"}}}}},
+		}),
 	}
 	slices := []*resourceapi.ResourceSlice{
 		{ObjectMeta: v1.ObjectMeta{Name: "slice1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &nodeName}},
@@ -300,7 +259,9 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 				// We don't care about this field staying the same, and it differs because it's a global counter bumped
 				// on every AddPod.
 				cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
-				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
+				cmp.AllowUnexported(schedulerframework.PodInfo{}),
+				// Ignore cachedResource as it is lazily initialized and may differ between fresh and processed PodInfo objects.
+				cmpopts.IgnoreFields(schedulerframework.PodInfo{}, "cachedResource"),
 			); diff != "" {
 				t.Errorf("nodeInfo differs after DeepCopyNodeInfo, diff (-want +got): %s", diff)
 			}
@@ -309,7 +270,7 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 			if tc.nodeInfo == nodeInfoCopy {
 				t.Error("nodeInfo address identical after DeepCopyNodeInfo")
 			}
-			if tc.nodeInfo.ToScheduler() == nodeInfoCopy.ToScheduler() {
+			if tc.nodeInfo.NodeInfo == nodeInfoCopy.NodeInfo {
 				t.Error("schedulerframework.NodeInfo address identical after DeepCopyNodeInfo")
 			}
 			for i := range len(tc.nodeInfo.LocalResourceSlices) {
@@ -391,7 +352,7 @@ func TestNodeInfoResourceClaims(t *testing.T) {
 func testPodInfos(pods []*apiv1.Pod, addClaims bool) []*PodInfo {
 	var result []*PodInfo
 	for _, pod := range pods {
-		podInfo := &PodInfo{Pod: pod}
+		podInfo := NewPodInfo(pod, nil)
 		if addClaims {
 			for i := range 3 {
 				podInfo.NeededResourceClaims = append(podInfo.NeededResourceClaims, testClaim(fmt.Sprintf("%s-claim-%d", pod.Name, i)))

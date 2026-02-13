@@ -716,7 +716,7 @@ func (mgr *equinixMetalManagerRest) templateNodeInfo(nodegroup string) (*framewo
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, BuildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan))
 
-	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(nodegroup)})
+	nodeInfo := framework.NewNodeInfo(&node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(nodegroup), nil))
 	return nodeInfo, nil
 }
 

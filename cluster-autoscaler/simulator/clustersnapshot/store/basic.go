@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -37,12 +38,12 @@ type BasicSnapshotStore struct {
 }
 
 type internalBasicSnapshotData struct {
-	nodeInfoMap        map[string]fwk.NodeInfo
+	nodeInfoMap        map[string]*framework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
 }
 
-func (data *internalBasicSnapshotData) listNodeInfos() []fwk.NodeInfo {
-	nodeInfoList := make([]fwk.NodeInfo, 0, len(data.nodeInfoMap))
+func (data *internalBasicSnapshotData) listNodeInfos() []*framework.NodeInfo {
+	nodeInfoList := make([]*framework.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		nodeInfoList = append(nodeInfoList, v)
 	}
@@ -71,7 +72,7 @@ func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredAnti
 	return havePodsWithRequiredAntiAffinityList, nil
 }
 
-func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (fwk.NodeInfo, error) {
+func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*framework.NodeInfo, error) {
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
 	}
@@ -125,15 +126,15 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 
 func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
-		nodeInfoMap:        make(map[string]fwk.NodeInfo),
+		nodeInfoMap:        make(map[string]*framework.NodeInfo),
 		pvcNamespacePodMap: make(map[string]map[string]bool),
 	}
 }
 
 func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
-	clonedNodeInfoMap := make(map[string]fwk.NodeInfo)
+	clonedNodeInfoMap := make(map[string]*framework.NodeInfo)
 	for k, v := range data.nodeInfoMap {
-		clonedNodeInfoMap[k] = v.Snapshot()
+		clonedNodeInfoMap[k] = v.DeepCopy()
 	}
 	clonedPvcNamespaceNodeMap := make(map[string]map[string]bool)
 	for k, v := range data.pvcNamespacePodMap {
@@ -148,13 +149,11 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	}
 }
 
-func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
-	if _, found := data.nodeInfoMap[node.Name]; found {
-		return fmt.Errorf("node %s already in snapshot", node.Name)
+func (data *internalBasicSnapshotData) addNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if _, found := data.nodeInfoMap[nodeInfo.Node().Name]; found {
+		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
 	}
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	data.nodeInfoMap[node.Name] = nodeInfo
+	data.nodeInfoMap[nodeInfo.Node().Name] = nodeInfo
 	return nil
 }
 
@@ -169,13 +168,12 @@ func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
 	return nil
 }
 
-func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalBasicSnapshotData) addPodInfo(podInfo fwk.PodInfo, nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
-	podInfo, _ := schedulerframework.NewPodInfo(pod)
 	data.nodeInfoMap[nodeName].AddPodInfo(podInfo)
-	data.addPvcUsedByPod(pod)
+	data.addPvcUsedByPod(podInfo.GetPod())
 	return nil
 }
 
@@ -220,15 +218,13 @@ func (snapshot *BasicSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 	return snapshot.csiSnapshot
 }
 
-// AddSchedulerNodeInfo adds a NodeInfo.
-func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
-	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
+// StoreNodeInfo adds a NodeInfo.
+func (snapshot *BasicSnapshotStore) StoreNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if err := snapshot.getInternalData().addNodeInfo(nodeInfo); err != nil {
 		return err
 	}
-	for _, podInfo := range nodeInfo.GetPods() {
-		if err := snapshot.getInternalData().addPod(podInfo.GetPod(), nodeInfo.Node().Name); err != nil {
-			return err
-		}
+	for _, pod := range nodeInfo.Pods() {
+		snapshot.getInternalData().addPvcUsedByPod(pod.Pod)
 	}
 	return nil
 }
@@ -236,21 +232,6 @@ func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) 
 // SetClusterState sets the cluster state.
 func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
 	snapshot.clear()
-
-	knownNodes := make(map[string]bool)
-	for _, node := range nodes {
-		if err := snapshot.getInternalData().addNode(node); err != nil {
-			return err
-		}
-		knownNodes[node.Name] = true
-	}
-	for _, pod := range scheduledPods {
-		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.getInternalData().addPod(pod, pod.Spec.NodeName); err != nil {
-				return err
-			}
-		}
-	}
 
 	if draSnapshot == nil {
 		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
@@ -264,21 +245,47 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 		snapshot.csiSnapshot = csiSnapshot
 	}
 
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		slices, _ := snapshot.draSnapshot.NodeResourceSlices(node.Name)
+		nodeInfo := framework.NewNodeInfo(node, slices)
+		csiNode, err := snapshot.csiSnapshot.Get(node.Name)
+		if err == nil {
+			nodeInfo.SetCSINode(csiNode)
+		}
+		if err := snapshot.getInternalData().addNodeInfo(nodeInfo); err != nil {
+			return err
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			claims, err := snapshot.draSnapshot.PodClaims(pod)
+			if err != nil {
+				return err
+			}
+			podInfo := framework.NewPodInfo(pod, claims)
+			if err := snapshot.getInternalData().addPodInfo(podInfo, pod.Spec.NodeName); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
-// RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *BasicSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *BasicSnapshotStore) RemoveNodeInfo(nodeName string) error {
 	return snapshot.getInternalData().removeNodeInfo(nodeName)
 }
 
-// ForceAddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *BasicSnapshotStore) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.getInternalData().addPod(pod, nodeName)
+// StorePodInfo adds pod to the snapshot and schedules it to given node.
+func (snapshot *BasicSnapshotStore) StorePodInfo(podInfo *framework.PodInfo, nodeName string) error {
+	return snapshot.getInternalData().addPodInfo(podInfo, nodeName)
 }
 
-// ForceRemovePod removes pod from the snapshot.
-func (snapshot *BasicSnapshotStore) ForceRemovePod(namespace, podName, nodeName string) error {
+// RemovePodInfo removes pod from the snapshot.
+func (snapshot *BasicSnapshotStore) RemovePodInfo(namespace, podName, nodeName string) error {
 	return snapshot.getInternalData().removePod(namespace, podName, nodeName)
 }
 
@@ -365,9 +372,24 @@ func (snapshot *BasicSnapshotStore) CSINodes() fwk.CSINodeLister {
 	return snapshot.csiSnapshot.CSINodes()
 }
 
+// GetNodeInfo returns the internal NodeInfo of the given node name.
+func (snapshot *BasicSnapshotStore) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	return snapshot.getInternalData().getNodeInfo(nodeName)
+}
+
+// ListNodeInfos returns the list of internal NodeInfos in the snapshot.
+func (snapshot *BasicSnapshotStore) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	return snapshot.getInternalData().listNodeInfos(), nil
+}
+
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicSnapshotStoreNodeLister) List() ([]fwk.NodeInfo, error) {
-	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos(), nil
+	nodeInfos := (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos()
+	result := make([]fwk.NodeInfo, len(nodeInfos))
+	for i, v := range nodeInfos {
+		result[i] = v
+	}
+	return result, nil
 }
 
 // HavePodsWithAffinityList returns the list of nodes with at least one pods with inter-pod affinity

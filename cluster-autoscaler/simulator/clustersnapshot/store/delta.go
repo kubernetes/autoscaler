@@ -19,15 +19,16 @@ package store
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DeltaSnapshotStore is an implementation of ClusterSnapshotStore optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
@@ -65,11 +66,11 @@ type deltaSnapshotStoreStorageLister DeltaSnapshotStore
 type internalDeltaSnapshotData struct {
 	baseData *internalDeltaSnapshotData
 
-	addedNodeInfoMap    map[string]fwk.NodeInfo
-	modifiedNodeInfoMap map[string]fwk.NodeInfo
+	addedNodeInfoMap    map[string]*framework.NodeInfo
+	modifiedNodeInfoMap map[string]*framework.NodeInfo
 	deletedNodeInfos    map[string]bool
 
-	nodeInfoList                     []fwk.NodeInfo
+	nodeInfoList                     []*framework.NodeInfo
 	havePodsWithAffinity             []fwk.NodeInfo
 	havePodsWithRequiredAntiAffinity []fwk.NodeInfo
 	pvcNamespaceMap                  map[string]int
@@ -77,13 +78,13 @@ type internalDeltaSnapshotData struct {
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
 	return &internalDeltaSnapshotData{
-		addedNodeInfoMap:    make(map[string]fwk.NodeInfo),
-		modifiedNodeInfoMap: make(map[string]fwk.NodeInfo),
+		addedNodeInfoMap:    make(map[string]*framework.NodeInfo),
+		modifiedNodeInfoMap: make(map[string]*framework.NodeInfo),
 		deletedNodeInfos:    make(map[string]bool),
 	}
 }
 
-func (data *internalDeltaSnapshotData) getNodeInfo(name string) (fwk.NodeInfo, bool) {
+func (data *internalDeltaSnapshotData) getNodeInfo(name string) (*framework.NodeInfo, bool) {
 	if data == nil {
 		return nil, false
 	}
@@ -96,7 +97,7 @@ func (data *internalDeltaSnapshotData) getNodeInfo(name string) (fwk.NodeInfo, b
 	return data.baseData.getNodeInfo(name)
 }
 
-func (data *internalDeltaSnapshotData) getNodeInfoLocal(name string) (fwk.NodeInfo, bool) {
+func (data *internalDeltaSnapshotData) getNodeInfoLocal(name string) (*framework.NodeInfo, bool) {
 	if data == nil {
 		return nil, false
 	}
@@ -109,7 +110,7 @@ func (data *internalDeltaSnapshotData) getNodeInfoLocal(name string) (fwk.NodeIn
 	return nil, false
 }
 
-func (data *internalDeltaSnapshotData) getNodeInfoList() []fwk.NodeInfo {
+func (data *internalDeltaSnapshotData) getNodeInfoList() []*framework.NodeInfo {
 	if data == nil {
 		return nil
 	}
@@ -120,13 +121,13 @@ func (data *internalDeltaSnapshotData) getNodeInfoList() []fwk.NodeInfo {
 }
 
 // Contains costly copying throughout the struct chain. Use wisely.
-func (data *internalDeltaSnapshotData) buildNodeInfoList() []fwk.NodeInfo {
+func (data *internalDeltaSnapshotData) buildNodeInfoList() []*framework.NodeInfo {
 	baseList := data.baseData.getNodeInfoList()
 	totalLen := len(baseList) + len(data.addedNodeInfoMap)
-	var nodeInfoList []fwk.NodeInfo
+	var nodeInfoList []*framework.NodeInfo
 
 	if len(data.deletedNodeInfos) > 0 || len(data.modifiedNodeInfoMap) > 0 {
-		nodeInfoList = make([]fwk.NodeInfo, 0, totalLen)
+		nodeInfoList = make([]*framework.NodeInfo, 0, totalLen)
 		for _, bni := range baseList {
 			if data.deletedNodeInfos[bni.Node().Name] {
 				continue
@@ -138,7 +139,7 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []fwk.NodeInfo {
 			nodeInfoList = append(nodeInfoList, bni)
 		}
 	} else {
-		nodeInfoList = make([]fwk.NodeInfo, len(baseList), totalLen)
+		nodeInfoList = make([]*framework.NodeInfo, len(baseList), totalLen)
 		copy(nodeInfoList, baseList)
 	}
 
@@ -149,17 +150,7 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []fwk.NodeInfo {
 	return nodeInfoList
 }
 
-func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) (fwk.NodeInfo, error) {
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	err := data.addNodeInfo(nodeInfo)
-	if err != nil {
-		return nil, err
-	}
-	return nodeInfo, nil
-}
-
-func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo fwk.NodeInfo) error {
+func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo *framework.NodeInfo) error {
 	if _, found := data.getNodeInfo(nodeInfo.Node().Name); found {
 		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
 	}
@@ -227,30 +218,30 @@ func (data *internalDeltaSnapshotData) removeNodeInfo(nodeName string) error {
 	return nil
 }
 
-func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (fwk.NodeInfo, bool) {
+func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (*framework.NodeInfo, bool) {
 	dni, found := data.getNodeInfoLocal(nodeName)
-	if !found {
-		if _, found := data.deletedNodeInfos[nodeName]; found {
-			return nil, false
-		}
-		bni, found := data.baseData.getNodeInfo(nodeName)
-		if !found {
-			return nil, false
-		}
-		dni = bni.Snapshot()
-		data.modifiedNodeInfoMap[nodeName] = dni
-		data.clearCaches()
+	if found {
+		return dni, true
 	}
-	return dni, true
+	if _, found := data.deletedNodeInfos[nodeName]; found {
+		return nil, false
+	}
+	bni, found := data.baseData.getNodeInfo(nodeName)
+	if !found {
+		return nil, false
+	}
+	newDni := bni.DeepCopy()
+	data.modifiedNodeInfoMap[nodeName] = newDni
+	data.clearCaches()
+	return newDni, true
 }
 
-func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalDeltaSnapshotData) addPodInfo(podInfo fwk.PodInfo, nodeName string) error {
 	ni, found := data.nodeInfoToModify(nodeName)
 	if !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
 
-	podInfo, _ := schedulerframework.NewPodInfo(pod)
 	ni.AddPodInfo(podInfo)
 
 	// Maybe consider deleting from the list in the future. Maybe not.
@@ -335,9 +326,24 @@ func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, err
 	return data.baseData, nil
 }
 
+// GetNodeInfo returns the internal NodeInfo of the given node name.
+func (snapshot *DeltaSnapshotStore) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	return snapshot.getNodeInfo(nodeName)
+}
+
+// ListNodeInfos returns the list of internal NodeInfos in the snapshot.
+func (snapshot *DeltaSnapshotStore) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	return snapshot.data.getNodeInfoList(), nil
+}
+
 // List returns list of all node infos.
 func (snapshot *deltaSnapshotStoreNodeLister) List() ([]fwk.NodeInfo, error) {
-	return snapshot.data.getNodeInfoList(), nil
+	nodeInfos := snapshot.data.getNodeInfoList()
+	result := make([]fwk.NodeInfo, len(nodeInfos))
+	for i, v := range nodeInfos {
+		result[i] = v
+	}
+	return result, nil
 }
 
 // HavePodsWithAffinityList returns list of all node infos with pods that have affinity constrints.
@@ -386,7 +392,7 @@ func (snapshot *deltaSnapshotStoreStorageLister) IsPVCUsedByPods(key string) boo
 	return (*DeltaSnapshotStore)(snapshot).IsPVCUsedByPods(key)
 }
 
-func (snapshot *DeltaSnapshotStore) getNodeInfo(nodeName string) (fwk.NodeInfo, error) {
+func (snapshot *DeltaSnapshotStore) getNodeInfo(nodeName string) (*framework.NodeInfo, error) {
 	data := snapshot.data
 	node, found := data.getNodeInfo(nodeName)
 	if !found {
@@ -449,32 +455,32 @@ func (snapshot *DeltaSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 	return snapshot.csiSnapshot
 }
 
-// AddSchedulerNodeInfo adds a NodeInfo.
-func (snapshot *DeltaSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
-	if _, err := snapshot.data.addNode(nodeInfo.Node()); err != nil {
+// StoreNodeInfo adds a NodeInfo.
+func (snapshot *DeltaSnapshotStore) StoreNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if err := snapshot.data.addNodeInfo(nodeInfo); err != nil {
 		return err
-	}
-	for _, podInfo := range nodeInfo.GetPods() {
-		if err := snapshot.data.addPod(podInfo.GetPod(), nodeInfo.Node().Name); err != nil {
-			return err
-		}
 	}
 	return nil
 }
 
 // setClusterStatePodsSequential sets the pods in cluster state in a sequential way.
-func (snapshot *DeltaSnapshotStore) setClusterStatePodsSequential(nodeInfos []fwk.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
+func (snapshot *DeltaSnapshotStore) setClusterStatePodsSequential(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
 	for _, pod := range scheduledPods {
 		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
+			claims, err := snapshot.draSnapshot.PodClaims(pod)
+			if err != nil {
+				return err
+			}
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerframework.NewPodInfo(pod)
-			nodeInfos[nodeIdx].AddPodInfo(podInfo)
+			podInfo := framework.NewPodInfo(pod, claims)
+			nodeInfos[nodeIdx].AddPod(podInfo)
 		}
 	}
+	return nil
 }
 
 // setClusterStatePodsParallelized sets the pods in cluster state in parallel based on snapshot.parallelism value.
-func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []fwk.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
+func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
 	podsForNode := make([][]*apiv1.Pod, len(nodeInfos))
 	for _, pod := range scheduledPods {
 		nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]
@@ -485,41 +491,33 @@ func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []
 	}
 
 	ctx := context.Background()
+	var (
+		mu  sync.Mutex
+		err error
+	)
 	workqueue.ParallelizeUntil(ctx, snapshot.parallelism, len(nodeInfos), func(nodeIdx int) {
 		nodeInfo := nodeInfos[nodeIdx]
 		for _, pod := range podsForNode[nodeIdx] {
+			claims, podErr := snapshot.draSnapshot.PodClaims(pod)
+			if podErr != nil {
+				mu.Lock()
+				if err == nil {
+					err = podErr
+				}
+				mu.Unlock()
+				return
+			}
 			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerframework.NewPodInfo(pod)
-			nodeInfo.AddPodInfo(podInfo)
+			podInfo := framework.NewPodInfo(pod, claims)
+			nodeInfo.AddPod(podInfo)
 		}
 	})
+	return err
 }
 
 // SetClusterState sets the cluster state.
 func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
 	snapshot.clear()
-
-	nodeNameToIdx := make(map[string]int, len(nodes))
-	nodeInfos := make([]fwk.NodeInfo, len(nodes))
-	for i, node := range nodes {
-		nodeInfo, err := snapshot.data.addNode(node)
-		if err != nil {
-			return err
-		}
-		nodeNameToIdx[node.Name] = i
-		nodeInfos[i] = nodeInfo
-	}
-
-	if snapshot.parallelism > 1 {
-		snapshot.setClusterStatePodsParallelized(nodeInfos, nodeNameToIdx, scheduledPods)
-	} else {
-		// TODO(macsko): Migrate to setClusterStatePodsParallelized for parallelism == 1
-		// after making sure the implementation is always correct in CA 1.33.
-		snapshot.setClusterStatePodsSequential(nodeInfos, nodeNameToIdx, scheduledPods)
-	}
-
-	// Clear caches after adding pods.
-	snapshot.data.clearCaches()
 
 	if draSnapshot == nil {
 		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
@@ -533,21 +531,52 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 		snapshot.csiSnapshot = csiSnapshot
 	}
 
+	nodeNameToIdx := make(map[string]int, len(nodes))
+	nodeInfos := make([]*framework.NodeInfo, len(nodes))
+	for i, node := range nodes {
+		slices, _ := snapshot.draSnapshot.NodeResourceSlices(node.Name)
+		nodeInfo := framework.NewNodeInfo(node, slices)
+		csiNode, err := snapshot.csiSnapshot.Get(node.Name)
+		if err == nil {
+			nodeInfo.SetCSINode(csiNode)
+		}
+		if err := snapshot.data.addNodeInfo(nodeInfo); err != nil {
+			return err
+		}
+		nodeNameToIdx[node.Name] = i
+		nodeInfos[i] = nodeInfo
+	}
+
+	if snapshot.parallelism > 1 {
+		if err := snapshot.setClusterStatePodsParallelized(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
+			return err
+		}
+	} else {
+		// TODO(macsko): Migrate to setClusterStatePodsParallelized for parallelism == 1
+		// after making sure the implementation is always correct in CA 1.33.
+		if err := snapshot.setClusterStatePodsSequential(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
+			return err
+		}
+	}
+
+	// Clear caches after adding pods.
+	snapshot.data.clearCaches()
+
 	return nil
 }
 
-// RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *DeltaSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *DeltaSnapshotStore) RemoveNodeInfo(nodeName string) error {
 	return snapshot.data.removeNodeInfo(nodeName)
 }
 
-// ForceAddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *DeltaSnapshotStore) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.data.addPod(pod, nodeName)
+// StorePodInfo adds pod to the snapshot and schedules it to given node.
+func (snapshot *DeltaSnapshotStore) StorePodInfo(podInfo *framework.PodInfo, nodeName string) error {
+	return snapshot.data.addPodInfo(podInfo, nodeName)
 }
 
-// ForceRemovePod removes pod from the snapshot.
-func (snapshot *DeltaSnapshotStore) ForceRemovePod(namespace, podName, nodeName string) error {
+// RemovePodInfo removes pod from the snapshot.
+func (snapshot *DeltaSnapshotStore) RemovePodInfo(namespace, podName, nodeName string) error {
 	return snapshot.data.removePod(namespace, podName, nodeName)
 }
 

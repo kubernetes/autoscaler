@@ -26,11 +26,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 var (
@@ -495,96 +492,6 @@ func TestSnapshotResourceSlices(t *testing.T) {
 				if diff := cmp.Diff(tc.wantAllSlices, allSlices, cmpopts.EquateEmpty(), test.IgnoreObjectOrder[*resourceapi.ResourceSlice]()); diff != "" {
 					t.Errorf("Snapshot: unexpected ResourceSlice state (-want +got): %s", diff)
 				}
-			}
-		})
-	}
-}
-
-func TestSnapshotWrapSchedulerNodeInfo(t *testing.T) {
-	noClaimsPod1 := test.BuildTestPod("noClaimsPod1", 1, 1)
-	noClaimsPod2 := test.BuildTestPod("noClaimsPod2", 1, 1)
-	missingClaimPod := test.BuildTestPod("missingClaimPod", 1, 1, test.WithResourceClaim("ref1", "missing-claim-abc", "missing-claim"))
-	noSlicesNode := test.BuildTestNode("noSlicesNode", 1000, 1000)
-
-	noDraNodeInfo := schedulerframework.NewNodeInfo(noClaimsPod1, noClaimsPod2)
-	noDraNodeInfo.SetNode(noSlicesNode)
-
-	resourceSlicesNodeInfo := schedulerframework.NewNodeInfo(noClaimsPod1, noClaimsPod2)
-	resourceSlicesNodeInfo.SetNode(node1)
-
-	resourceClaimsNodeInfo := schedulerframework.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2)
-	resourceClaimsNodeInfo.SetNode(noSlicesNode)
-
-	fullDraNodeInfo := schedulerframework.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2)
-	fullDraNodeInfo.SetNode(node1)
-
-	missingClaimNodeInfo := schedulerframework.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2, missingClaimPod)
-	missingClaimNodeInfo.SetNode(node1)
-
-	for _, tc := range []struct {
-		testName      string
-		schedNodeInfo *schedulerframework.NodeInfo
-		wantNodeInfo  *framework.NodeInfo
-		wantErr       error
-	}{
-		{
-			testName:      "no data to add to the wrapper",
-			schedNodeInfo: noDraNodeInfo,
-			wantNodeInfo:  framework.WrapSchedulerNodeInfo(noDraNodeInfo, nil, nil),
-		},
-		{
-			testName:      "ResourceSlices added to the wrapper",
-			schedNodeInfo: resourceSlicesNodeInfo,
-			wantNodeInfo:  framework.WrapSchedulerNodeInfo(resourceSlicesNodeInfo, []*resourceapi.ResourceSlice{node1Slice1, node1Slice2}, nil),
-		},
-		{
-			testName:      "ResourceClaims added to the wrapper",
-			schedNodeInfo: resourceClaimsNodeInfo,
-			wantNodeInfo: framework.WrapSchedulerNodeInfo(resourceClaimsNodeInfo, nil, map[types.UID]framework.PodExtraInfo{
-				"pod1": {NeededResourceClaims: []*resourceapi.ResourceClaim{pod1OwnClaim1, pod1OwnClaim2, sharedClaim1, sharedClaim2}},
-				"pod2": {NeededResourceClaims: []*resourceapi.ResourceClaim{pod2OwnClaim1, sharedClaim1, sharedClaim3}},
-			}),
-		},
-		{
-			testName:      "ResourceSlices and ResourceClaims added to the wrapper",
-			schedNodeInfo: fullDraNodeInfo,
-			wantNodeInfo: framework.WrapSchedulerNodeInfo(fullDraNodeInfo, []*resourceapi.ResourceSlice{node1Slice1, node1Slice2}, map[types.UID]framework.PodExtraInfo{
-				"pod1": {NeededResourceClaims: []*resourceapi.ResourceClaim{pod1OwnClaim1, pod1OwnClaim2, sharedClaim1, sharedClaim2}},
-				"pod2": {NeededResourceClaims: []*resourceapi.ResourceClaim{pod2OwnClaim1, sharedClaim1, sharedClaim3}},
-			}),
-		},
-		{
-			testName:      "pod in NodeInfo with a missing claim is an error",
-			schedNodeInfo: missingClaimNodeInfo,
-			wantNodeInfo:  nil,
-			wantErr:       cmpopts.AnyError,
-		},
-	} {
-		t.Run(tc.testName, func(t *testing.T) {
-			claims := map[ResourceClaimId]*resourceapi.ResourceClaim{
-				GetClaimId(sharedClaim1):  sharedClaim1,
-				GetClaimId(sharedClaim2):  sharedClaim2,
-				GetClaimId(sharedClaim3):  sharedClaim3,
-				GetClaimId(pod2OwnClaim1): pod2OwnClaim1,
-				GetClaimId(pod1OwnClaim1): pod1OwnClaim1,
-				GetClaimId(pod1OwnClaim2): pod1OwnClaim2,
-			}
-			localSlices := map[string][]*resourceapi.ResourceSlice{
-				"node1": {node1Slice1, node1Slice2},
-				"node2": {node2Slice1, node2Slice2},
-			}
-			globalSlices := []*resourceapi.ResourceSlice{globalSlice1, globalSlice2}
-			snapshot := NewSnapshot(claims, localSlices, globalSlices, nil)
-			nodeInfo, err := snapshot.WrapSchedulerNodeInfo(tc.schedNodeInfo)
-			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
-				t.Fatalf("Snapshot.WrapSchedulerNodeInfo(): unexpected error (-want +got): %s", diff)
-			}
-			cmpOpts := []cmp.Option{cmpopts.EquateEmpty(), cmp.AllowUnexported(framework.NodeInfo{}, schedulerframework.NodeInfo{}),
-				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
-				test.IgnoreObjectOrder[*resourceapi.ResourceClaim](), test.IgnoreObjectOrder[*resourceapi.ResourceSlice]()}
-
-			if diff := cmp.Diff(tc.wantNodeInfo, nodeInfo, cmpOpts...); diff != "" {
-				t.Errorf("Snapshot.WrapSchedulerNodeInfo(): unexpected output (-want +got): %s", diff)
 			}
 		})
 	}

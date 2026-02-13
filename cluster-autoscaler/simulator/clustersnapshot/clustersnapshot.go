@@ -24,7 +24,6 @@ import (
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	fwk "k8s.io/kube-scheduler/framework"
 )
 
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
@@ -38,12 +37,13 @@ type ClusterSnapshot interface {
 	// RemoveNodeInfo removes the given NodeInfo from the snapshot The Node and the Pods are removed, as well as
 	// any DRA objects owned by them.
 	RemoveNodeInfo(nodeName string) error
-	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
-	// This means the Node itself, its scheduled Pods, as well as all relevant DRA objects. The internal NodeInfos
-	// obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
-	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
-	// ListNodeInfos returns internal NodeInfos for all Nodes tracked in the snapshot. See the comment on GetNodeInfo.
-	ListNodeInfos() ([]*framework.NodeInfo, error)
+
+	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
+	// This method will allocate internal PodInfo and include all the DRA-related information (taken from the DRA snapshot).
+	// It will store it to NodeInfo via StorePodInfo.
+	ForceAddPod(pod *apiv1.Pod, nodeName string) error
+	// ForceRemovePod removes the given Pod (and all DRA objects it owns) from the snapshot.
+	ForceRemovePod(namespace string, podName string, nodeName string) error
 
 	// SchedulePod tries to schedule the given Pod on the Node with the given name inside the snapshot,
 	// checking scheduling predicates. The pod is only scheduled if the predicates pass. If the pod is scheduled,
@@ -80,18 +80,23 @@ type ClusterSnapshotStore interface {
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
 	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
 
-	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
-	ForceAddPod(pod *apiv1.Pod, nodeName string) error
-	// ForceRemovePod removes the given Pod (and all DRA objects it owns) from the snapshot.
-	ForceRemovePod(namespace string, podName string, nodeName string) error
+	// StorePodInfo adds the given PodInfo to the Node with the given nodeName inside the snapshot.
+	StorePodInfo(podInfo *framework.PodInfo, nodeName string) error
+	// RemovePodInfo removes the given Pod from the snapshot.
+	RemovePodInfo(namespace string, podName string, nodeName string) error
 
-	// AddSchedulerNodeInfo adds the given schedulerframework.NodeInfo to the snapshot without checking scheduler predicates, and
-	// without taking DRA objects into account. This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.AddNodeInfo()
-	// instead.
-	AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error
-	// RemoveSchedulerNodeInfo removes the given schedulerframework.NodeInfo from the snapshot without taking DRA objects into account. This shouldn't
-	// be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
-	RemoveSchedulerNodeInfo(nodeName string) error
+	// StoreNodeInfo adds the given NodeInfo to the snapshot without checking scheduler predicates, and
+	// without taking DRA objects into account. It expects the DRA objects are already configured for the given NodeInfo.
+	// This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.AddNodeInfo() instead.
+	StoreNodeInfo(nodeInfo *framework.NodeInfo) error
+	// RemoveNodeInfo removes the given NodeInfo from the snapshot without deallocating DRA objects from the DraSnapshot.
+	// This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
+	RemoveNodeInfo(nodeName string) error
+
+	// GetNodeInfo returns an internal NodeInfo for a given Node.
+	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
+	// ListNodeInfos returns internal NodeInfos for all Nodes.
+	ListNodeInfos() ([]*framework.NodeInfo, error)
 
 	// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
 	DraSnapshot() *drasnapshot.Snapshot
