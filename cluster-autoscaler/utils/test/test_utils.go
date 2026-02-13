@@ -219,6 +219,25 @@ func WithNodeNamesAffinity(nodeNames ...string) func(*apiv1.Pod) {
 	}
 }
 
+// WithPodHostnameAntiAffinity sets pod's anti-affinity for pods matching the given labels at hostname topology level.
+func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if pod.Spec.Affinity == nil {
+			pod.Spec.Affinity = &apiv1.Affinity{}
+		}
+		pod.Spec.Affinity.PodAntiAffinity = &apiv1.PodAntiAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+				{
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: labels,
+					},
+					TopologyKey: "kubernetes.io/hostname",
+				},
+			},
+		}
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)

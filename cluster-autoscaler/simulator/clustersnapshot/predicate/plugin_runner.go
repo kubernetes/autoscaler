@@ -68,10 +68,9 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 	}
 
 	var (
-		foundNode       *apiv1.Node
-		foundCycleState *schedulerframework.CycleState
-		foundIndex      int
-		mu              sync.Mutex
+		foundNode  *apiv1.Node
+		foundIndex int
+		mu         sync.Mutex
 	)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -101,15 +100,13 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 
 		// Run the Filter phase of the framework. Plugins retrieve the state they saved during PreFilter from CycleState, and answer whether the
 		// given Pod can be scheduled on the given Node.
-		clonedState := state.Clone()
-		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), clonedState, pod, nodeInfo.ToScheduler())
+		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
 		if filterStatus.IsSuccess() {
 			// Filter passed for all plugins, so this pod can be scheduled on this Node.
 			mu.Lock()
 			defer mu.Unlock()
 			if foundNode == nil {
 				foundNode = nodeInfo.Node()
-				foundCycleState = clonedState.(*schedulerframework.CycleState)
 				foundIndex = nodeIndex
 				cancel()
 			}
@@ -121,7 +118,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 
 	if foundNode != nil {
 		p.lastIndex = (foundIndex + 1) % len(nodeInfosList)
-		return foundNode, foundCycleState, nil
+		return foundNode, state, nil
 	}
 
 	return nil, nil, clustersnapshot.NewNoNodesPassingPredicatesFoundError(pod)
