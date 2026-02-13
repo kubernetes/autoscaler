@@ -182,13 +182,17 @@ func newAutoscaler(b *testing.B, s scenario, cluster *integration.FakeSet) core.
 	kubeClients := ca_context.NewAutoscalingKubeClients(context.Background(), opts, cluster.KubeClient, cluster.InformerFactory)
 	kubeClients.Recorder = &noOpRecorder{}
 
+	wrappedCloudProvider := &fastScaleUpCloudProvider{
+		CloudProvider: cluster.CloudProvider,
+	}
+
 	a, _, err := builder.New(opts).
 		WithDebuggingSnapshotter(ds).
 		WithManager(mgr).
 		WithKubeClient(cluster.KubeClient).
 		WithAutoscalingKubeClients(kubeClients).
 		WithInformerFactory(cluster.InformerFactory).
-		WithCloudProvider(cluster.CloudProvider).
+		WithCloudProvider(wrappedCloudProvider).
 		WithPodObserver(cluster.PodObserver).Build(context.Background())
 	if err != nil {
 		b.Fatalf("Failed to build: %v", err)
@@ -226,6 +230,46 @@ func defaultCAOptions() config.AutoscalingOptions {
 		// We set it to 1 to make the benchmark results more stable and reproducible.
 		PredicateParallelism: 1,
 	}
+}
+
+// fastScaleUpNodeGroup does not simulate a real scale up by creating new Node objects.
+// Instead, it only increases the artificial targetSize counter in the fake cloud provider.
+// This is used in benchmarks to eliminate the noise introduced by node object creation
+// and management in the fake cloud provider, which is not relevant for evaluating
+// the autoscaler's scale-up logic and target size calculations.
+type fastScaleUpNodeGroup struct {
+	*testprovider.NodeGroup
+}
+
+func (f *fastScaleUpNodeGroup) IncreaseSize(delta int) error {
+	return f.NoOpIncreaseSize(delta)
+}
+
+// fastScaleUpCloudProvider is a wrapper around the fake cloud provider that uses
+// fastScaleUpNodeGroup to bypass node creation during scale-up, reducing CPU profile noise.
+type fastScaleUpCloudProvider struct {
+	*testprovider.CloudProvider
+}
+
+func (f *fastScaleUpCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+	groups := f.CloudProvider.NodeGroups()
+	result := make([]cloudprovider.NodeGroup, len(groups))
+	for i, g := range groups {
+		ng := g.(*testprovider.NodeGroup)
+		fg := &fastScaleUpNodeGroup{NodeGroup: ng}
+		result[i] = fg
+	}
+	return result
+}
+
+func (f *fastScaleUpCloudProvider) GetNodeGroup(id string) *fastScaleUpNodeGroup {
+	g := f.CloudProvider.GetNodeGroup(id)
+	if g == nil {
+		return nil
+	}
+	ng := g.(*testprovider.NodeGroup)
+	fg := &fastScaleUpNodeGroup{NodeGroup: ng}
+	return fg
 }
 
 // setupScaleUp prepares a scenario that triggers a scale-up for the specified number of nodes
