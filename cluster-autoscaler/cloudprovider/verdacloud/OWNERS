@@ -1,0 +1,7 @@
+approvers:
+# - nusmql 
+reviewers:
+# - nusmql
+
+labels:
+- area/provider/verdacloud
