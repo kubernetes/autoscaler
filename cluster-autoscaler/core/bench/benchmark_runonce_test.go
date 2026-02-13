@@ -176,7 +176,13 @@ func defaultCAOptions() config.AutoscalingOptions {
 		MaxCoresTotal:                  maxCores,
 		MaxMemoryTotal:                 maxMem,
 		MaxNodesTotal:                  maxNGSize,
-		PredicateParallelism:           10,
+		// In a homogeneous benchmark environment, any node is a valid fit.
+		// Higher parallelism causes a race condition where multiple workers perform
+		// redundant Filter checks before the first success can trigger cancellation.
+		// This introduces lock contention on CycleState and massive variance (±20%)
+		// depending on Go scheduler non-determinism. We set it to 1 to ensure
+		// deterministic, sequential evaluation and stable profiling results.
+		PredicateParallelism: 1,
 	}
 }
 
