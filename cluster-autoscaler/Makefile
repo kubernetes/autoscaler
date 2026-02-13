@@ -68,7 +68,8 @@ dev-release-arch-%: build-arch-% make-image-arch-% push-image-arch-%
 make-image: make-image-arch-$(GOARCH)
 
 make-image-arch-%:
-	GOOS=$(GOOS) GOARCH=$* docker buildx build --pull --platform linux/$* \
+	GOOS=$(GOOS) docker buildx build --pull --platform linux/$* \
+		--build-arg "GOARCH=$*" \
 		-t ${IMAGE}-$*:${TAG} \
 		-f Dockerfile .
 	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
@@ -78,12 +79,15 @@ push-image: push-image-arch-$(GOARCH)
 push-image-arch-%:
 	./push_image.sh ${IMAGE}-$*:${TAG}
 
+push-release-image-arch-%:
+	docker push ${IMAGE}-$*:${TAG}
+
 push-manifest:
 	docker manifest create ${IMAGE}:${TAG} \
 	    $(addprefix $(REGISTRY)/cluster-autoscaler$(PROVIDER)-, $(addsuffix :$(TAG), $(ALL_ARCH)))
 	docker manifest push --purge ${IMAGE}:${TAG}
 
-execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-image-arch-,$(ALL_ARCH)) push-manifest
+execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-release-image-arch-,$(ALL_ARCH)) push-manifest
 	@echo "Release ${TAG}${FOR_PROVIDER} completed"
 
 clean: clean-arch-$(GOARCH)
