@@ -178,7 +178,9 @@ func defaultCAOptions() config.AutoscalingOptions {
 		MaxCoresTotal:                  maxCores,
 		MaxMemoryTotal:                 maxMem,
 		MaxNodesTotal:                  maxNGSize,
-		PredicateParallelism:           10,
+		// In the benchmark we do not care about parallelism.
+		// We set it to 1 to make the benchmark results more stable and reproducible.
+		PredicateParallelism: 1,
 	}
 }
 
