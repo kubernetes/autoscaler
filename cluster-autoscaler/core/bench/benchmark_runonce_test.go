@@ -28,10 +28,12 @@ import (
 	"testing"
 	"time"
 
+	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/autoscaler/cluster-autoscaler/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -60,6 +62,7 @@ import (
 // -   Garbage Collection is DISABLED during the timed RunOnce execution. This eliminates
 //     memory management noise but means results do not reflect GC overhead or pause times.
 // -   klog is SILENCED to remove I/O and locking overhead. Real-world logging costs are ignored.
+// -   Event Recording is a NO-OP. The cost of generating and sending events is excluded.
 //
 // Because of these simplifications, absolute timing numbers from this benchmark should NOT
 // be interpreted as expected production latency. They are strictly relative metrics for
@@ -178,10 +181,15 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 
 	ds := debuggingsnapshot.NewDebuggingSnapshotter(false)
 	mgr := integration.MustCreateControllerRuntimeMgr(b)
+
+	kubeClients := ca_context.NewAutoscalingKubeClients(context.Background(), opts, clusterFakes.KubeClient, clusterFakes.InformerFactory)
+	kubeClients.Recorder = &noOpRecorder{}
+
 	a, _, err := builder.New(opts).
 		WithDebuggingSnapshotter(ds).
 		WithManager(mgr).
 		WithKubeClient(clusterFakes.KubeClient).
+		WithAutoscalingKubeClients(kubeClients).
 		WithInformerFactory(clusterFakes.InformerFactory).
 		WithCloudProvider(clusterFakes.CloudProvider).
 		WithPodObserver(clusterFakes.PodObserver).Build(context.Background())
@@ -189,6 +197,16 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 		b.Fatalf("Failed to build: %v", err)
 	}
 	return a
+}
+
+// noOpRecorder is a dummy implementation of record.EventRecorder that discards all events.
+// Benchmark workloads generate a lot of events in a short period
+// which results in events drops and noise in the logs.
+type noOpRecorder struct{}
+
+func (n *noOpRecorder) Event(_ apimachineryruntime.Object, _, _, _ string)                    {}
+func (n *noOpRecorder) Eventf(_ apimachineryruntime.Object, _, _, _ string, _ ...interface{}) {}
+func (n *noOpRecorder) AnnotatedEventf(_ apimachineryruntime.Object, _ map[string]string, _, _, _ string, _ ...interface{}) {
 }
 
 // defaultCAOptions returns the standard autoscaling configuration used as a baseline for benchmarks.
