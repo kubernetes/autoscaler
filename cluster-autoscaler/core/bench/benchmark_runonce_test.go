@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"runtime/debug"
@@ -39,6 +40,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/klog/v2"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // Benchmark evaluates the performance of the Cluster Autoscaler's primary control loop (RunOnce).
@@ -56,6 +59,7 @@ import (
 //     may not fully represent the complexity of real-world cluster states.
 // -   Garbage Collection is DISABLED during the timed RunOnce execution. This eliminates
 //     memory management noise but means results do not reflect GC overhead or pause times.
+// -   klog is SILENCED to remove I/O and locking overhead. Real-world logging costs are ignored.
 //
 // Because of these simplifications, absolute timing numbers from this benchmark should NOT
 // be interpreted as expected production latency. They are strictly relative metrics for
@@ -93,6 +97,13 @@ func (s scenario) run(b *testing.B) {
 	if !flag.Parsed() {
 		flag.Parse()
 	}
+
+	// Silence klog during benchmark to avoid output noise and focus on performance.
+	// It is recommended to occasionally re-enable logging during development to verify that
+	// the benchmarked code isn't producing unexpected log messages.
+	klog.LogToStderr(false)
+	klog.SetOutput(io.Discard)
+	ctrl.SetLogger(klog.Background())
 
 	if !*withGC {
 		// Disable automatic Garbage Collection during the timed portion of the benchmark
