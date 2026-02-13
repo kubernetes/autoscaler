@@ -25,12 +25,14 @@ import (
 	"runtime"
 	"runtime/debug"
 	"runtime/pprof"
+	"sync"
 	"testing"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/autoscaler/cluster-autoscaler/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -44,6 +46,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/client-go/kubernetes/fake"
+	k8s_testing "k8s.io/client-go/testing"
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -179,6 +183,9 @@ func newAutoscaler(b *testing.B, s scenario, cluster *integration.FakeSet) core.
 	ds := debuggingsnapshot.NewDebuggingSnapshotter(false)
 	mgr := integration.MustCreateControllerRuntimeMgr(b)
 
+	ftkc := &fastTaintingKubeClient{taintedNodes: make(map[string]bool)}
+	ftkc.registerReactors(cluster.KubeClient)
+
 	kubeClients := ca_context.NewAutoscalingKubeClients(context.Background(), opts, cluster.KubeClient, cluster.InformerFactory)
 	kubeClients.Recorder = &noOpRecorder{}
 
@@ -270,6 +277,77 @@ func (f *fastScaleUpCloudProvider) GetNodeGroup(id string) *fastScaleUpNodeGroup
 	ng := g.(*testprovider.NodeGroup)
 	fg := &fastScaleUpNodeGroup{NodeGroup: ng}
 	return fg
+}
+
+// fastTaintingKubeClient tracks nodes that were artificially tainted in-memory to bypass
+// the overhead of full API server round-trips and complex object tracking in the fake client.
+type fastTaintingKubeClient struct {
+	mu           sync.Mutex
+	taintedNodes map[string]bool
+}
+
+func (c *fastTaintingKubeClient) registerReactors(client *fake.Clientset) {
+	fake := &client.Fake
+	fake.PrependReactor("update", "nodes", func(action k8s_testing.Action) (handled bool, ret apimachineryruntime.Object, err error) {
+		node := action.(k8s_testing.UpdateAction).GetObject().(*corev1.Node)
+		if taints.HasToBeDeletedTaint(node) {
+			c.mu.Lock()
+			c.taintedNodes[node.Name] = true
+			c.mu.Unlock()
+		}
+		return true, node, nil
+	})
+
+	fake.PrependReactor("get", "nodes", func(action k8s_testing.Action) (handled bool, ret apimachineryruntime.Object, err error) {
+		name := action.(k8s_testing.GetAction).GetName()
+		c.mu.Lock()
+		isTainted := c.taintedNodes[name]
+		c.mu.Unlock()
+
+		if !isTainted {
+			return false, nil, nil
+		}
+
+		obj, err := client.Tracker().Get(action.GetResource(), action.GetNamespace(), name)
+		if err != nil {
+			return true, nil, err
+		}
+		node := obj.(*corev1.Node).DeepCopy()
+		if !taints.HasToBeDeletedTaint(node) {
+			node.Spec.Taints = append(node.Spec.Taints, corev1.Taint{
+				Key:    taints.ToBeDeletedTaint,
+				Value:  fmt.Sprint(time.Now().Unix()),
+				Effect: corev1.TaintEffectNoSchedule,
+			})
+		}
+		return true, node, nil
+	})
+
+	fake.PrependReactor("list", "nodes", func(action k8s_testing.Action) (handled bool, ret apimachineryruntime.Object, err error) {
+		gvr := action.GetResource()
+		ns := action.GetNamespace()
+		gvk := schema.GroupVersionKind{Group: "", Version: "v1", Kind: "Node"}
+		obj, err := client.Tracker().List(gvr, gvk, ns)
+		if err != nil {
+			return true, nil, err
+		}
+		list := obj.(*corev1.NodeList).DeepCopy()
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		for i := range list.Items {
+			node := &list.Items[i]
+			if c.taintedNodes[node.Name] {
+				if !taints.HasToBeDeletedTaint(node) {
+					node.Spec.Taints = append(node.Spec.Taints, corev1.Taint{
+						Key:    taints.ToBeDeletedTaint,
+						Value:  fmt.Sprint(time.Now().Unix()),
+						Effect: corev1.TaintEffectNoSchedule,
+					})
+				}
+			}
+		}
+		return true, list, nil
+	})
 }
 
 // setupScaleUp prepares a scenario that triggers a scale-up for the specified number of nodes
