@@ -20,8 +20,13 @@ import (
 	"flag"
 	"os"
 
+	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/api/resource"
+	kube_flag "k8s.io/component-base/cli/flag"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 )
 
 // CertsConfig holds configuration related to TLS certificates
@@ -108,6 +113,16 @@ func InitAdmissionControllerFlags() *AdmissionControllerConfig {
 	flag.BoolVar(&config.RegisterByURL, "register-by-url", config.RegisterByURL, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
 
 	flag.Var(&config.MaxAllowedCPUBoost, "max-allowed-cpu-boost", "Maximum amount of CPU that will be applied for a container with boost.")
+
+	// These need to happen last. kube_flag.InitFlags() synchronizes and parses
+	// flags from the flag package to pflag, so feature gates must be added to
+	// pflag before InitFlags() is called.
+	klog.InitFlags(nil)
+	common.InitLoggingFlags()
+	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
+	kube_flag.InitFlags()
+
+	ValidateAdmissionControllerConfig(config)
 
 	return config
 }

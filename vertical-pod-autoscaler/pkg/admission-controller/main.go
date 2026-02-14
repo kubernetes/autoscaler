@@ -23,11 +23,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/pflag"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
-	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
@@ -38,7 +36,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
@@ -60,12 +57,7 @@ const (
 
 func main() {
 	config := admissioncontroller_config.InitAdmissionControllerFlags()
-	klog.InitFlags(nil)
-	common.InitLoggingFlags()
-	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
-	kube_flag.InitFlags()
 
-	admissioncontroller_config.ValidateAdmissionControllerConfig(config)
 	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion())
 
 	healthCheck := metrics.NewHealthCheck(time.Minute)

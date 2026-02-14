@@ -30,7 +30,6 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	kube_flag "k8s.io/component-base/cli/flag"
 	componentbaseconfig "k8s.io/component-base/config"
 	componentbaseoptions "k8s.io/component-base/config/options"
 	"k8s.io/klog/v2"
@@ -39,7 +38,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	updater_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/config"
@@ -64,18 +62,12 @@ const (
 var config *updater_config.UpdaterConfig
 
 func main() {
-	config = updater_config.InitUpdaterFlags()
-	klog.InitFlags(nil)
-	common.InitLoggingFlags()
-
+	// Leader election needs to be initialized before any other flag, because it may be used in other flag's validation.
 	leaderElection := defaultLeaderElectionConfiguration()
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
-	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
+	config = updater_config.InitUpdaterFlags()
 
-	kube_flag.InitFlags()
-
-	updater_config.ValidateUpdaterConfig(config)
 	klog.V(1).InfoS("Vertical Pod Autoscaler Updater", "version", common.VerticalPodAutoscalerVersion())
 
 	healthCheck := metrics.NewHealthCheck(config.UpdaterInterval * 5)

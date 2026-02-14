@@ -22,10 +22,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/api/resource"
+	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
@@ -240,6 +243,16 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.BoolVar(&config.PostProcessorCPUasInteger, "cpu-integer-post-processor-enabled", config.PostProcessorCPUasInteger, "Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental)")
 	flag.Var(&config.MaxAllowedCPU, "container-recommendation-max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
 	flag.Var(&config.MaxAllowedMemory, "container-recommendation-max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+
+	// These need to happen last. kube_flag.InitFlags() synchronizes and parses
+	// flags from the flag package to pflag, so feature gates must be added to
+	// pflag before InitFlags() is called.
+	klog.InitFlags(nil)
+	common.InitLoggingFlags()
+	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
+	kube_flag.InitFlags()
+
+	ValidateRecommenderConfig(config)
 
 	return config
 }
