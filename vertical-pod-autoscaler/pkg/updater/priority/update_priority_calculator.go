@@ -29,6 +29,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -39,7 +40,7 @@ var (
 	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Hour*12, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 
 	evictAfterOOMThreshold = flag.Duration("evict-after-oom-threshold", 10*time.Minute,
-		`Evict pod that has OOMed in less than evict-after-oom-threshold since start.`)
+		`The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.`)
 )
 
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.
@@ -108,10 +109,11 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			klog.V(4).InfoS("Container with ContainerScalingModeOff. Skipping container quick OOM calculations", "containerName", cs.Name)
 			continue
 		}
+		evictOOMThreshold := calc.getEvictOOMThreshold()
 		terminationState := &cs.LastTerminationState
 		if terminationState.Terminated != nil &&
 			terminationState.Terminated.Reason == "OOMKilled" &&
-			terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
+			terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < evictOOMThreshold {
 			quickOOM = true
 			klog.V(2).InfoS("Quick OOM detected in pod", "pod", klog.KObj(pod), "containerName", cs.Name)
 		}
@@ -196,6 +198,26 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 		}
 	}
 	return sb.String()
+}
+
+// getEvictOOMThreshold returns the duration to wait after an OOM event before
+// considering the pod for eviction. It uses the VPA-specific EvictAfterOOMSeconds
+// if the PerVPAConfig feature flag is enabled and the value is set, otherwise
+// falls back to the global evictAfterOOMThreshold flag.
+func (calc *UpdatePriorityCalculator) getEvictOOMThreshold() time.Duration {
+	evictOOMThreshold := *evictAfterOOMThreshold
+
+	if calc.vpa.Spec.UpdatePolicy == nil || calc.vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds == nil {
+		return evictOOMThreshold
+	}
+
+	if !features.Enabled(features.PerVPAConfig) {
+		klog.V(4).InfoS("feature flag is off, falling back to default EvictAfterOOMThreshold", "flagName", features.PerVPAConfig)
+		return evictOOMThreshold
+	}
+	seconds := calc.vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds
+	duration := time.Duration(*seconds) * time.Second
+	return duration
 }
 
 func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.Set[string]) {

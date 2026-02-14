@@ -178,6 +178,11 @@ func (in *PodUpdatePolicy) DeepCopyInto(out *PodUpdatePolicy) {
 			}
 		}
 	}
+	if in.EvictAfterOOMSeconds != nil {
+		in, out := &in.EvictAfterOOMSeconds, &out.EvictAfterOOMSeconds
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 

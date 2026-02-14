@@ -46,6 +46,8 @@ type VerticalPodAutoscalerList struct {
 // +kubebuilder:printcolumn:name="Mem",type="string",JSONPath=".status.recommendation.containerRecommendations[0].target.memory"
 // +kubebuilder:printcolumn:name="Provided",type="string",JSONPath=".status.conditions[?(@.type=='RecommendationProvided')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="MinReplicas",type="integer",JSONPath=".spec.updatePolicy.minReplicas",priority=1
+// +kubebuilder:printcolumn:name="OOMSeconds",type="integer",JSONPath=".spec.updatePolicy.evictAfterOOMSeconds",priority=1
 // +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
@@ -149,6 +151,13 @@ type PodUpdatePolicy struct {
 	// EvictionRequirement is specified, all of them need to be fulfilled to allow eviction.
 	// +optional
 	EvictionRequirements []*EvictionRequirement `json:"evictionRequirements,omitempty" protobuf:"bytes,3,opt,name=evictionRequirements"`
+
+	// evictAfterOOMSeconds specifies the time in seconds to wait after an OOM event before
+	// considering the pod for eviction. Pods that have OOMed in less than this time
+	// since start will be evicted.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	EvictAfterOOMSeconds *int32 `json:"evictAfterOOMSeconds,omitempty" protobuf:"varint,4,opt,name=evictAfterOOMSeconds"`
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resources.
