@@ -399,3 +399,305 @@ func TestFindParentControllerForPod(t *testing.T) {
 		})
 	}
 }
+
+func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
+	now := meta.Now()
+	past := meta.Time{Time: now.Add(-2 * time.Minute)}
+	duration60 := int32(60)
+	duration180 := int32(180)
+	duration300 := int32(300)
+	testCases := []struct {
+		name     string
+		pod      *core.Pod
+		vpa      *vpa_types.VerticalPodAutoscaler
+		expected bool
+	}{
+		{
+			name:     "No StartupBoost config",
+			pod:      &core.Pod{},
+			vpa:      &vpa_types.VerticalPodAutoscaler{},
+			expected: false,
+		},
+		{
+			name:     "No duration in StartupBoost, no annotation",
+			pod:      &core.Pod{},
+			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 0).Get(),
+			expected: false,
+		},
+		{
+			name: "No duration in StartupBoost, with annotation",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+			},
+			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 0).Get(),
+			expected: true,
+		},
+		{
+			name: "Pod not ready",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:   core.PodReady,
+							Status: core.ConditionFalse,
+						},
+					},
+				},
+			},
+			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).Get(),
+			expected: false,
+		},
+		{
+			name: "Duration passed",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:               core.PodReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: past,
+						},
+					},
+				},
+			},
+			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).Get(),
+			expected: true,
+		},
+		{
+			name: "Duration not passed",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:               core.PodReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: now,
+						},
+					},
+				},
+			},
+			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).Get(),
+			expected: false,
+		},
+		{
+			name: "Container-level boost duration",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{Name: "c1"},
+						{Name: "c2"},
+					},
+				},
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:               core.PodReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: past,
+						},
+					},
+				},
+			},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										DurationSeconds: &duration180,
+									},
+								},
+							},
+							{
+								ContainerName: "c2",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										DurationSeconds: &duration60,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Container-level boost duration passed",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{Name: "c1"},
+						{Name: "c2"},
+					},
+				},
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:               core.PodReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: meta.Time{Time: now.Add(-4 * time.Minute)},
+						},
+					},
+				},
+			},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										DurationSeconds: &duration180,
+									},
+								},
+							},
+							{
+								ContainerName: "c2",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										DurationSeconds: &duration60,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Pod-level boost duration is higher",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{Name: "c1"},
+						{Name: "c2"},
+					},
+				},
+				Status: core.PodStatus{
+					Conditions: []core.PodCondition{
+						{
+							Type:               core.PodReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: meta.Time{Time: now.Add(-4 * time.Minute)},
+						},
+					},
+				},
+			},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							DurationSeconds: &duration300,
+						},
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										DurationSeconds: &duration180,
+									},
+								},
+							},
+							{
+								ContainerName: "c2",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										DurationSeconds: &duration60,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, IsPodReadyAndStartupBoostDurationPassed(tc.pod, tc.vpa))
+		})
+	}
+}
+
+func TestPodHasCPUBoostInProgressAnnotation(t *testing.T) {
+	testCases := []struct {
+		name     string
+		pod      *core.Pod
+		expected bool
+	}{
+		{
+			name:     "No annotations",
+			pod:      &core.Pod{},
+			expected: false,
+		},
+		{
+			name: "Annotation present",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"startup-cpu-boost": "",
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Annotation not present",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Annotations: map[string]string{
+						"another-annotation": "true",
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, PodHasCPUBoostInProgressAnnotation(tc.pod))
+		})
+	}
+}

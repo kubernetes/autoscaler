@@ -19,6 +19,7 @@ package restriction
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -220,12 +221,18 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 
 		isBelowMinReplicas := false
 		if actual < required {
-			if !skipReplicaCheck {
+			// If checking for unboost, we want to process even if we have fewer replicas than required.
+			hasBoostedPod := slices.ContainsFunc(replicas, func(pod *apiv1.Pod) bool {
+				return vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod)
+			})
+			if !hasBoostedPod && !skipReplicaCheck {
 				klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
 				continue
 			}
-			klog.V(2).InfoS("in-place-skip-disruption-budget enabled, skipping minReplicas check for in-place update", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
-			isBelowMinReplicas = true
+			if skipReplicaCheck {
+				klog.V(2).InfoS("in-place-skip-disruption-budget enabled, skipping minReplicas check for in-place update", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+				isBelowMinReplicas = true
+			}
 		}
 
 		var configured int

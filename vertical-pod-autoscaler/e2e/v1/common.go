@@ -249,14 +249,30 @@ func InstallRawVPA(f *framework.Framework, obj any) error {
 
 // AnnotatePod adds annotation for an existing pod.
 func AnnotatePod(f *framework.Framework, podName, annotationName, annotationValue string) {
-	bytes, err := json.Marshal([]utils.PatchRecord{{
+	pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Get(context.TODO(), podName, metav1.GetOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to get pod.")
+
+	patches := []utils.PatchRecord{}
+	if pod.Annotations == nil {
+		patches = append(patches, utils.PatchRecord{
+			Op:    "add",
+			Path:  "/metadata/annotations",
+			Value: make(map[string]string),
+		})
+	}
+
+	patches = append(patches, utils.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%v", annotationName),
+		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
 		Value: annotationValue,
-	}})
-	pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Patch(context.TODO(), podName, types.JSONPatchType, bytes, metav1.PatchOptions{})
+	})
+
+	bytes, err := json.Marshal(patches)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	patchedPod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Patch(context.TODO(), podName, types.JSONPatchType, bytes, metav1.PatchOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch pod.")
-	gomega.Expect(pod.Annotations[annotationName]).To(gomega.Equal(annotationValue))
+	gomega.Expect(patchedPod.Annotations[annotationName]).To(gomega.Equal(annotationValue))
 }
 
 // ParseQuantityOrDie parses quantity from string and dies with an error if

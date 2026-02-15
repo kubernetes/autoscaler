@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -49,9 +50,26 @@ func (*resourcesInplaceUpdatesPatchCalculator) PatchResourceTarget() patch.Patch
 func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
-	containersResources, _, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
-	if err != nil {
-		return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+	var containersResources []vpa_api_util.ContainerResources
+	if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff {
+		// If update mode is "Off", we don't want to apply any recommendations,
+		// but we still want to unboost.
+		original, err := annotations.GetOriginalResourcesFromAnnotation(pod)
+		if err != nil {
+			return nil, err
+		}
+		containersResources = []vpa_api_util.ContainerResources{
+			{
+				Requests: original.Requests,
+				Limits:   original.Limits,
+			},
+		}
+	} else {
+		var err error
+		containersResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
+		if err != nil {
+			return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+		}
 	}
 
 	for i, containerResources := range containersResources {

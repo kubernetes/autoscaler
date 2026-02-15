@@ -396,8 +396,113 @@ spec:
                             when OOM is detected.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                        startupBoost:
+                          description: |-
+                            startupBoost specifies the startup boost policy for the container.
+                            This overrides any pod-level startup boost policy.
+                            The startup boost policy takes precedence over the rest of the fields in
+                            this struct, except for ContainerName and ControlledValues.
+                          properties:
+                            cpu:
+                              description: |-
+                                cpu specifies the CPU startup boost policy.
+                                If this field is not set, no startup boost is applied.
+                              properties:
+                                durationSeconds:
+                                  description: |-
+                                    durationSeconds indicates for how long to keep the pod boosted after it goes to Ready.
+                                    Defaults to 0.
+                                  format: int32
+                                  type: integer
+                                factor:
+                                  description: |-
+                                    factor specifies the factor to apply to the resource request.
+                                    This field is required when Type is "Factor".
+                                  format: int32
+                                  type: integer
+                                quantity:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  description: |-
+                                    quantity specifies the absolute resource quantity to be used as the
+                                    resource request and limit during the boost phase.
+                                    This field is required when Type is "Quantity".
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                type:
+                                  description: |-
+                                    type specifies the kind of boost to apply.
+                                    Supported values are: "Factor", "Quantity".
+                                    No startupboost will be applied for unrecognized values.
+                                  enum:
+                                  - Factor
+                                  - Quantity
+                                  type: string
+                              required:
+                              - type
+                              type: object
+                              x-kubernetes-validations:
+                              - message: factor is required when type is Factor and
+                                  forbidden otherwise
+                                rule: (self.type == 'Factor') == has(self.factor)
+                              - message: quantity is required when type is Quantity
+                                  and forbidden otherwise
+                                rule: (self.type == 'Quantity') == has(self.quantity)
+                          type: object
                       type: object
                     type: array
+                type: object
+              startupBoost:
+                description: startupBoost specifies the startup boost policy for the
+                  pod.
+                properties:
+                  cpu:
+                    description: |-
+                      cpu specifies the CPU startup boost policy.
+                      If this field is not set, no startup boost is applied.
+                    properties:
+                      durationSeconds:
+                        description: |-
+                          durationSeconds indicates for how long to keep the pod boosted after it goes to Ready.
+                          Defaults to 0.
+                        format: int32
+                        type: integer
+                      factor:
+                        description: |-
+                          factor specifies the factor to apply to the resource request.
+                          This field is required when Type is "Factor".
+                        format: int32
+                        type: integer
+                      quantity:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: |-
+                          quantity specifies the absolute resource quantity to be used as the
+                          resource request and limit during the boost phase.
+                          This field is required when Type is "Quantity".
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      type:
+                        description: |-
+                          type specifies the kind of boost to apply.
+                          Supported values are: "Factor", "Quantity".
+                          No startupboost will be applied for unrecognized values.
+                        enum:
+                        - Factor
+                        - Quantity
+                        type: string
+                    required:
+                    - type
+                    type: object
+                    x-kubernetes-validations:
+                    - message: factor is required when type is Factor and forbidden
+                        otherwise
+                      rule: (self.type == 'Factor') == has(self.factor)
+                    - message: quantity is required when type is Quantity and forbidden
+                        otherwise
+                      rule: (self.type == 'Quantity') == has(self.quantity)
                 type: object
               targetRef:
                 description: |-
