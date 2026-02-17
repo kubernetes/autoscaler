@@ -32,4 +32,5 @@ git ls-files --full-name \
     | grep -v cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go \
     | grep -v cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk \
     | grep -v cluster-autoscaler/cloudprovider/civo \
+    | grep -v vertical-pod-autoscaler/.golangci.yaml \
     | xargs misspell -error -o stderr
