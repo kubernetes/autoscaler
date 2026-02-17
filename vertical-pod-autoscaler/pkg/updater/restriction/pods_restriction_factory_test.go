@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
 	coreinformer "k8s.io/client-go/informers/core/v1"
@@ -46,7 +46,7 @@ import (
 )
 
 type podWithExpectations struct {
-	pod                  *apiv1.Pod
+	pod                  *corev1.Pod
 	canEvict             bool
 	evictionSuccess      bool
 	canInPlaceUpdate     utils.InPlaceDecision
@@ -68,7 +68,7 @@ func getIPORVpa() *vpa_types.VerticalPodAutoscaler {
 func TestDisruptReplicatedByController(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
@@ -223,7 +223,7 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					pod:             generatePod().WithPhase(corev1.PodPending).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
@@ -246,17 +246,17 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					pod:             generatePod().WithPhase(corev1.PodPending).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					pod:             generatePod().WithPhase(corev1.PodPending).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					pod:             generatePod().WithPhase(corev1.PodPending).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
@@ -356,21 +356,21 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			vpa:               getIPORVpa(),
 			pods: []podWithExpectations{
 				{
-					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+					pod: generatePod().WithPodConditions([]corev1.PodCondition{
 						{
-							Type:   apiv1.PodResizePending,
-							Status: apiv1.ConditionTrue,
-							Reason: apiv1.PodReasonInfeasible,
+							Type:   corev1.PodResizePending,
+							Status: corev1.ConditionTrue,
+							Reason: corev1.PodReasonInfeasible,
 						},
 					}).Get(),
 					canInPlaceUpdate:     utils.InPlaceEvict,
 					inPlaceUpdateSuccess: false,
 				},
 				{
-					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+					pod: generatePod().WithPodConditions([]corev1.PodCondition{
 						{
-							Type:   apiv1.PodResizeInProgress,
-							Status: apiv1.ConditionTrue,
+							Type:   corev1.PodResizeInProgress,
+							Status: corev1.ConditionTrue,
 						},
 					}).Get(),
 					canInPlaceUpdate:     utils.InPlaceDeferred,
@@ -425,22 +425,22 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: true,
 				},
 				{
-					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+					pod: generatePod().WithPodConditions([]corev1.PodCondition{
 						{
-							Type:   apiv1.PodResizePending,
-							Status: apiv1.ConditionTrue,
-							Reason: apiv1.PodReasonInfeasible,
+							Type:   corev1.PodResizePending,
+							Status: corev1.ConditionTrue,
+							Reason: corev1.PodReasonInfeasible,
 						},
 					}).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
 				{
-					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+					pod: generatePod().WithPodConditions([]corev1.PodCondition{
 						{
-							Type:   apiv1.PodResizePending,
-							Status: apiv1.ConditionTrue,
-							Reason: apiv1.PodReasonInfeasible,
+							Type:   corev1.PodResizePending,
+							Status: corev1.ConditionTrue,
+							Reason: corev1.PodReasonInfeasible,
 						},
 					}).Get(),
 					canEvict:        true,
@@ -460,11 +460,11 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: false,
 				},
 				{
-					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+					pod: generatePod().WithPodConditions([]corev1.PodCondition{
 						{
-							Type:   apiv1.PodResizePending,
-							Status: apiv1.ConditionTrue,
-							Reason: apiv1.PodReasonInfeasible,
+							Type:   corev1.PodResizePending,
+							Status: corev1.ConditionTrue,
+							Reason: corev1.PodReasonInfeasible,
 						},
 					}).Get(),
 					canEvict:        false,
@@ -489,11 +489,11 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					evictionSuccess: true,
 				},
 				{
-					pod: generatePod().WithPodConditions([]apiv1.PodCondition{
+					pod: generatePod().WithPodConditions([]corev1.PodCondition{
 						{
-							Type:   apiv1.PodResizePending,
-							Status: apiv1.ConditionTrue,
-							Reason: apiv1.PodReasonInfeasible,
+							Type:   corev1.PodResizePending,
+							Status: corev1.ConditionTrue,
+							Reason: corev1.PodReasonInfeasible,
 						},
 					}).Get(),
 					canEvict:        true,
@@ -510,10 +510,10 @@ func TestDisruptReplicatedByController(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			rc.Spec = apiv1.ReplicationControllerSpec{
+			rc.Spec = corev1.ReplicationControllerSpec{
 				Replicas: &testCase.replicas,
 			}
-			pods := make([]*apiv1.Pod, 0, len(testCase.pods))
+			pods := make([]*corev1.Pod, 0, len(testCase.pods))
 			for _, p := range testCase.pods {
 				pods = append(pods, p.pod)
 			}
@@ -569,7 +569,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).Get()
 	}
@@ -612,7 +612,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ss.ObjectMeta, &ss.TypeMeta).Get()
 	}
@@ -654,7 +654,7 @@ func TestEvictReplicatedByDaemonSet(t *testing.T) {
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ds.ObjectMeta, &ds.TypeMeta).Get()
 	}
@@ -693,7 +693,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 
 	livePods := 5
 
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&job.ObjectMeta, &job.TypeMeta).Get()
 	}
@@ -719,17 +719,17 @@ func TestEvictReplicatedByJob(t *testing.T) {
 	}
 }
 
-func getRestrictionFactory(rc *apiv1.ReplicationController, rs *appsv1.ReplicaSet,
+func getRestrictionFactory(rc *corev1.ReplicationController, rs *appsv1.ReplicaSet,
 	ss *appsv1.StatefulSet, ds *appsv1.DaemonSet, minReplicas int,
 	evictionToleranceFraction float64, clock clock.Clock, lipuatm map[string]time.Time, patchCalculators []patch.Calculator, inPlaceSkipDisruptionBudget bool) (PodsRestrictionFactory, error) {
 	kubeClient := &fake.Clientset{}
-	rcInformer := coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
+	rcInformer := coreinformer.NewReplicationControllerInformer(kubeClient, corev1.NamespaceAll,
 		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	rsInformer := appsinformer.NewReplicaSetInformer(kubeClient, apiv1.NamespaceAll,
+	rsInformer := appsinformer.NewReplicaSetInformer(kubeClient, corev1.NamespaceAll,
 		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	ssInformer := appsinformer.NewStatefulSetInformer(kubeClient, apiv1.NamespaceAll,
+	ssInformer := appsinformer.NewStatefulSetInformer(kubeClient, corev1.NamespaceAll,
 		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	dsInformer := appsinformer.NewDaemonSetInformer(kubeClient, apiv1.NamespaceAll,
+	dsInformer := appsinformer.NewDaemonSetInformer(kubeClient, corev1.NamespaceAll,
 		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	if rc != nil {
 		err := rcInformer.GetIndexer().Add(rc)
@@ -780,7 +780,7 @@ type fakeResizePatchCalculator struct {
 	err     error
 }
 
-func (c *fakeResizePatchCalculator) CalculatePatches(_ *apiv1.Pod, _ *vpa_types.VerticalPodAutoscaler) (
+func (c *fakeResizePatchCalculator) CalculatePatches(_ *corev1.Pod, _ *vpa_types.VerticalPodAutoscaler) (
 	[]resource_admission.PatchRecord, error) {
 	return c.patches, c.err
 }
@@ -795,7 +795,7 @@ func NewFakeCalculatorWithInPlacePatches() patch.Calculator {
 			{
 				Op:    "fakeop",
 				Path:  "fakepath",
-				Value: apiv1.ResourceList{},
+				Value: corev1.ResourceList{},
 			},
 		},
 	}

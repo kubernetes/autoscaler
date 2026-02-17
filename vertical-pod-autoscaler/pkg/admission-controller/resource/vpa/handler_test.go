@@ -22,8 +22,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	autoscaling "k8s.io/api/autoscaling/v1"
-	apiv1 "k8s.io/api/core/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/version"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
@@ -34,8 +34,8 @@ import (
 )
 
 const (
-	cpu    = apiv1.ResourceCPU
-	memory = apiv1.ResourceMemory
+	cpu    = corev1.ResourceCPU
+	memory = corev1.ResourceMemory
 )
 
 func TestValidateVPA(t *testing.T) {
@@ -194,10 +194,10 @@ func TestValidateVPA(t *testing.T) {
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
 								ContainerName: "loot box",
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("100"),
 								},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("10"),
 								},
 							},
@@ -215,10 +215,10 @@ func TestValidateVPA(t *testing.T) {
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
 								ContainerName: "loot box",
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("187500u"),
 								},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("275m"),
 								},
 							},
@@ -236,11 +236,11 @@ func TestValidateVPA(t *testing.T) {
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
 								ContainerName: "loot box",
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu:    resource.MustParse("1m"),
 									memory: resource.MustParse("100m"),
 								},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu:    resource.MustParse("275m"),
 									memory: resource.MustParse("500M"),
 								},
@@ -259,8 +259,8 @@ func TestValidateVPA(t *testing.T) {
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
 								ContainerName: "loot box",
-								MinAllowed:    apiv1.ResourceList{},
-								MaxAllowed: apiv1.ResourceList{
+								MinAllowed:    corev1.ResourceList{},
+								MaxAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("187500u"),
 								},
 							},
@@ -278,9 +278,9 @@ func TestValidateVPA(t *testing.T) {
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
 								ContainerName: "loot box",
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("1m")},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu:    resource.MustParse("275m"),
 									memory: resource.MustParse("500m"),
 								},
@@ -317,10 +317,10 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName: "loot box",
 								Mode:          &validScalingMode,
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("10"),
 								},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("100"),
 								},
 							},
@@ -412,7 +412,7 @@ func TestValidateVPA(t *testing.T) {
 			name: "top-level startupBoost with bad quantity",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
 						Kind: "Deployment",
 						Name: "my-app",
 					},
@@ -431,7 +431,7 @@ func TestValidateVPA(t *testing.T) {
 			name: "container startupBoost with bad quantity",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
 						Kind: "Deployment",
 						Name: "my-app",
 					},
@@ -523,7 +523,7 @@ func TestValidateVPA(t *testing.T) {
 			name: "top-level startupBoost with valid factor",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
 						Kind: "Deployment",
 						Name: "my-app",
 					},
@@ -541,7 +541,7 @@ func TestValidateVPA(t *testing.T) {
 			name: "container startupBoost with valid factor",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
 						Kind: "Deployment",
 						Name: "my-app",
 					},
@@ -566,7 +566,7 @@ func TestValidateVPA(t *testing.T) {
 			name: "top-level startupBoost with valid quantity",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
 						Kind: "Deployment",
 						Name: "my-app",
 					},
@@ -584,7 +584,7 @@ func TestValidateVPA(t *testing.T) {
 			name: "container startupBoost with valid quantity",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
 						Kind: "Deployment",
 						Name: "my-app",
 					},
@@ -609,7 +609,7 @@ func TestValidateVPA(t *testing.T) {
 			name: "top-level and container startupBoost",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
 						Kind: "Deployment",
 						Name: "my-app",
 					},
@@ -648,10 +648,10 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName: "loot box",
 								Mode:          &validScalingMode,
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("10"),
 								},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("100"),
 								},
 								OOMBumpUpRatio: resource.NewQuantity(2, resource.DecimalSI),
@@ -675,10 +675,10 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName: "loot box",
 								Mode:          &validScalingMode,
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("10"),
 								},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("100"),
 								},
 								OOMBumpUpRatio: resource.NewQuantity(2, resource.DecimalSI),
@@ -701,10 +701,10 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName: "loot box",
 								Mode:          &validScalingMode,
-								MinAllowed: apiv1.ResourceList{
+								MinAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("10"),
 								},
-								MaxAllowed: apiv1.ResourceList{
+								MaxAllowed: corev1.ResourceList{
 									cpu: resource.MustParse("100"),
 								},
 								OOMMinBumpUp: resource.NewQuantity(2, resource.DecimalSI),

@@ -18,7 +18,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -131,11 +131,11 @@ type ContainerResourcePolicy struct {
 	// Specifies the minimal amount of resources that will be recommended
 	// for the container. The default is no minimum.
 	// +optional
-	MinAllowed v1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
+	MinAllowed corev1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
 	// Specifies the maximum amount of resources that will be recommended
 	// for the container. The default is no maximum.
 	// +optional
-	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+	MaxAllowed corev1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
 }
 
 const (
@@ -187,17 +187,17 @@ type RecommendedContainerResources struct {
 	// Name of the container.
 	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
 	// Recommended amount of resources. Observes ContainerResourcePolicy.
-	Target v1.ResourceList `json:"target" protobuf:"bytes,2,rep,name=target,casttype=ResourceList,castkey=ResourceName"`
+	Target corev1.ResourceList `json:"target" protobuf:"bytes,2,rep,name=target,casttype=ResourceList,castkey=ResourceName"`
 	// Minimum recommended amount of resources. Observes ContainerResourcePolicy.
 	// This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
 	// running with less resources is likely to have significant impact on performance/availability.
 	// +optional
-	LowerBound v1.ResourceList `json:"lowerBound,omitempty" protobuf:"bytes,3,rep,name=lowerBound,casttype=ResourceList,castkey=ResourceName"`
+	LowerBound corev1.ResourceList `json:"lowerBound,omitempty" protobuf:"bytes,3,rep,name=lowerBound,casttype=ResourceList,castkey=ResourceName"`
 	// Maximum recommended amount of resources. Observes ContainerResourcePolicy.
 	// Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
 	// amount of application is actually capable of consuming.
 	// +optional
-	UpperBound v1.ResourceList `json:"upperBound,omitempty" protobuf:"bytes,4,rep,name=upperBound,casttype=ResourceList,castkey=ResourceName"`
+	UpperBound corev1.ResourceList `json:"upperBound,omitempty" protobuf:"bytes,4,rep,name=upperBound,casttype=ResourceList,castkey=ResourceName"`
 	// The most recent recommended resources target computed by the autoscaler
 	// for the controlled pods, based only on actual resource usage, not taking
 	// into account the ContainerResourcePolicy.
@@ -206,7 +206,7 @@ type RecommendedContainerResources struct {
 	// or higher that MaxAllowed).
 	// Used only as status indication, will not affect actual resource assignment.
 	// +optional
-	UncappedTarget v1.ResourceList `json:"uncappedTarget,omitempty" protobuf:"bytes,5,opt,name=uncappedTarget"`
+	UncappedTarget corev1.ResourceList `json:"uncappedTarget,omitempty" protobuf:"bytes,5,opt,name=uncappedTarget"`
 }
 
 // VerticalPodAutoscalerConditionType are the valid conditions of
@@ -231,7 +231,7 @@ type VerticalPodAutoscalerCondition struct {
 	// type describes the current condition
 	Type VerticalPodAutoscalerConditionType `json:"type" protobuf:"bytes,1,name=type"`
 	// status is the status of the condition (True, False, Unknown)
-	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,name=status"`
+	Status corev1.ConditionStatus `json:"status" protobuf:"bytes,2,name=status"`
 	// lastTransitionTime is the last time the condition transitioned from
 	// one status to another
 	// +optional

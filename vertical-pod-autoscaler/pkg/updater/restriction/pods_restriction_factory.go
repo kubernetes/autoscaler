@@ -23,7 +23,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
 	coreinformer "k8s.io/client-go/informers/core/v1"
@@ -60,7 +60,7 @@ type podReplicaCreator struct {
 
 // PodsRestrictionFactory is a factory for creating PodsEvictionRestriction and PodsInPlaceRestriction.
 type PodsRestrictionFactory interface {
-	GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error)
+	GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error)
 	NewPodsEvictionRestriction(creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats, podToReplicaCreatorMap map[string]podReplicaCreator) PodsEvictionRestriction
 	NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats, podToReplicaCreatorMap map[string]podReplicaCreator) PodsInPlaceRestriction
 }
@@ -123,7 +123,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		if !exists {
 			return 0, fmt.Errorf("replication controller %s/%s does not exist", creator.Namespace, creator.Name)
 		}
-		rc, ok := rcObj.(*apiv1.ReplicationController)
+		rc, ok := rcObj.(*corev1.ReplicationController)
 		if !ok {
 			return 0, errors.New("failed to parse Replication Controller")
 		}
@@ -185,8 +185,8 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 
 // GetCreatorMaps is a helper function that returns a map of pod replica creators to their single group stats
 // and a map of pod ids to pod replica creator from a list of pods and it's corresponding VPA.
-func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
-	livePods := make(map[podReplicaCreator][]*apiv1.Pod)
+func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
+	livePods := make(map[podReplicaCreator][]*corev1.Pod)
 
 	for _, pod := range pods {
 		creator, err := getPodReplicaCreator(pod)
@@ -222,7 +222,7 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		isBelowMinReplicas := false
 		if actual < required {
 			// If checking for unboost, we want to process even if we have fewer replicas than required.
-			hasBoostedPod := slices.ContainsFunc(replicas, func(pod *apiv1.Pod) bool {
+			hasBoostedPod := slices.ContainsFunc(replicas, func(pod *corev1.Pod) bool {
 				return vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod)
 			})
 			if !hasBoostedPod && !skipReplicaCheck {
@@ -254,7 +254,7 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		singleGroup.belowMinReplicas = isBelowMinReplicas
 		for _, pod := range replicas {
 			podToReplicaCreatorMap[getPodID(pod)] = creator
-			if pod.Status.Phase == apiv1.PodPending {
+			if pod.Status.Phase == corev1.PodPending {
 				singleGroup.pending = singleGroup.pending + 1
 			}
 			if isInPlaceUpdating(pod) {
@@ -291,14 +291,14 @@ func (f *PodsRestrictionFactoryImpl) NewPodsInPlaceRestriction(creatorToSingleGr
 	}
 }
 
-func getPodID(pod *apiv1.Pod) string {
+func getPodID(pod *corev1.Pod) string {
 	if pod == nil {
 		return ""
 	}
 	return pod.Namespace + "/" + pod.Name
 }
 
-func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
+func getPodReplicaCreator(pod *corev1.Pod) (*podReplicaCreator, error) {
 	creator := managingControllerRef(pod)
 	if creator == nil {
 		return nil, nil
@@ -311,7 +311,7 @@ func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
 	return podReplicaCreator, nil
 }
 
-func managingControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
+func managingControllerRef(pod *corev1.Pod) *metav1.OwnerReference {
 	var managingController metav1.OwnerReference
 	for _, ownerReference := range pod.GetOwnerReferences() {
 		if *ownerReference.Controller {
@@ -326,16 +326,16 @@ func setupInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 	var informer cache.SharedIndexInformer
 	switch kind {
 	case replicationController:
-		informer = coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
+		informer = coreinformer.NewReplicationControllerInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case replicaSet:
-		informer = appsinformer.NewReplicaSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewReplicaSetInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case statefulSet:
-		informer = appsinformer.NewStatefulSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewStatefulSetInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case daemonSet:
-		informer = appsinformer.NewDaemonSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewDaemonSetInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	default:
 		return nil, fmt.Errorf("unknown controller kind: %v", kind)
@@ -371,10 +371,10 @@ func (s *singleGroupStats) isPodDisruptable() bool {
 }
 
 // isInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update
-func isInPlaceUpdating(podToCheck *apiv1.Pod) bool {
+func isInPlaceUpdating(podToCheck *corev1.Pod) bool {
 	for _, c := range podToCheck.Status.Conditions {
-		if c.Type == apiv1.PodResizePending || c.Type == apiv1.PodResizeInProgress {
-			return c.Status == apiv1.ConditionTrue
+		if c.Type == corev1.PodResizePending || c.Type == corev1.PodResizeInProgress {
+			return c.Status == corev1.ConditionTrue
 		}
 	}
 	return false

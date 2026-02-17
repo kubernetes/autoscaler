@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
@@ -82,7 +82,7 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
-func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
+func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa, pod)
 	if err != nil {
 		klog.V(2).ErrorS(err, "Cannot process recommendation for pod", "pod", klog.KObj(pod))
@@ -152,10 +152,10 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
-func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*apiv1.Pod {
+func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*corev1.Pod {
 	sort.Sort(byPriorityDesc(calc.pods))
 
-	result := []*apiv1.Pod{}
+	result := []*corev1.Pod{}
 	for _, podPrio := range calc.pods {
 		if admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, podPrio.pod)
@@ -220,7 +220,7 @@ func (calc *UpdatePriorityCalculator) getEvictOOMThreshold() time.Duration {
 	return duration
 }
 
-func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.Set[string]) {
+func parseVpaObservedContainers(pod *corev1.Pod) (bool, sets.Set[string]) {
 	observedContainers, hasObservedContainers := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
 	vpaContainerSet := sets.New[string]()
 	if hasObservedContainers {
@@ -235,7 +235,7 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.Set[string]) {
 }
 
 type prioritizedPod struct {
-	pod            *apiv1.Pod
+	pod            *corev1.Pod
 	priority       PodPriority
 	recommendation *vpa_types.RecommendedPodResources
 }

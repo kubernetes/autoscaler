@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/labels"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
@@ -73,9 +73,9 @@ func addTestMemorySample(cluster ClusterState, container ContainerID, memoryByte
 // with the same name ('app-A') together.
 func TestAggregateStateByContainerName(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
-	cluster.AddOrUpdatePod(testPodID1, testLabels, apiv1.PodRunning)
+	cluster.AddOrUpdatePod(testPodID1, testLabels, corev1.PodRunning)
 	otherLabels := labels.Set{"label-2": "value-2"}
-	cluster.AddOrUpdatePod(testPodID2, otherLabels, apiv1.PodRunning)
+	cluster.AddOrUpdatePod(testPodID2, otherLabels, corev1.PodRunning)
 
 	// Create 4 containers: 2 with the same name and 2 with different names.
 	containers := []ContainerID{
@@ -260,19 +260,19 @@ func TestUpdateFromPolicyControlledResources(t *testing.T) {
 		{
 			name: "Explicit ControlledResources",
 			policy: &vpa_types.ContainerResourcePolicy{
-				ControlledResources: &[]apiv1.ResourceName{apiv1.ResourceCPU, apiv1.ResourceMemory},
+				ControlledResources: &[]corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
 			},
 			expected: []ResourceName{ResourceCPU, ResourceMemory},
 		}, {
 			name: "Empty ControlledResources",
 			policy: &vpa_types.ContainerResourcePolicy{
-				ControlledResources: &[]apiv1.ResourceName{},
+				ControlledResources: &[]corev1.ResourceName{},
 			},
 			expected: []ResourceName{},
 		}, {
 			name: "ControlledResources with one resource",
 			policy: &vpa_types.ContainerResourcePolicy{
-				ControlledResources: &[]apiv1.ResourceName{apiv1.ResourceMemory},
+				ControlledResources: &[]corev1.ResourceName{corev1.ResourceMemory},
 			},
 			expected: []ResourceName{ResourceMemory},
 		}, {

@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	autoscalingapi "k8s.io/api/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -37,8 +37,8 @@ func getKey(key string) scaleCacheKey {
 	}
 }
 
-func getScale() *autoscalingapi.Scale {
-	return &autoscalingapi.Scale{}
+func getScale() *autoscalingv1.Scale {
+	return &autoscalingv1.Scale{}
 }
 
 func TestControllerCache_InitiallyNotPresent(t *testing.T) {

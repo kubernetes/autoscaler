@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
@@ -273,12 +273,12 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	postProcessors = append(postProcessors, routines.NewCappingRecommendationProcessor(globalMaxAllowed))
 	var source input_metrics.PodMetricsLister
 	if *useExternalMetrics {
-		resourceMetrics := map[apiv1.ResourceName]string{}
+		resourceMetrics := map[corev1.ResourceName]string{}
 		if externalCpuMetric != nil && *externalCpuMetric != "" {
-			resourceMetrics[apiv1.ResourceCPU] = *externalCpuMetric
+			resourceMetrics[corev1.ResourceCPU] = *externalCpuMetric
 		}
 		if externalMemoryMetric != nil && *externalMemoryMetric != "" {
-			resourceMetrics[apiv1.ResourceMemory] = *externalMemoryMetric
+			resourceMetrics[corev1.ResourceMemory] = *externalMemoryMetric
 		}
 		externalClientOptions := &input_metrics.ExternalClientOptions{ResourceMetrics: resourceMetrics, ContainerNameLabel: *ctrNameLabel}
 		klog.V(1).InfoS("Using External Metrics", "options", externalClientOptions)
@@ -369,13 +369,13 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	}
 }
 
-func initGlobalMaxAllowed() apiv1.ResourceList {
-	result := make(apiv1.ResourceList)
+func initGlobalMaxAllowed() corev1.ResourceList {
+	result := make(corev1.ResourceList)
 	if !maxAllowedCPU.IsZero() {
-		result[apiv1.ResourceCPU] = maxAllowedCPU.Quantity
+		result[corev1.ResourceCPU] = maxAllowedCPU.Quantity
 	}
 	if !maxAllowedMemory.IsZero() {
-		result[apiv1.ResourceMemory] = maxAllowedMemory.Quantity
+		result[corev1.ResourceMemory] = maxAllowedMemory.Quantity
 	}
 
 	return result

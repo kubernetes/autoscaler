@@ -79,8 +79,8 @@ func simpleControllerFetcher() *controllerFetcher {
 	// return not found if if tries to find the scale subresource on bah
 	scaleNamespacer.AddReactor("get", "bah", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		groupResource := schema.GroupResource{}
-		error := apierrors.NewNotFound(groupResource, "Foo")
-		return true, nil, error
+		err = apierrors.NewNotFound(groupResource, "Foo")
+		return true, nil, err
 	})
 
 	// resource that can scale

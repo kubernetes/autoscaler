@@ -19,7 +19,7 @@ package api
 import (
 	"errors"
 
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -36,7 +36,7 @@ type sequentialRecommendationProcessor struct {
 // Apply chains calls to underlying RecommendationProcessors in order provided on object construction
 func (p *sequentialRecommendationProcessor) Apply(
 	vpa *vpa_types.VerticalPodAutoscaler,
-	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
+	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	if vpa == nil {
 		return nil, nil, errors.New("cannot process nil vpa")
 	}

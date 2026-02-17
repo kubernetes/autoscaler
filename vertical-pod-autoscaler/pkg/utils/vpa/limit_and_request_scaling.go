@@ -21,41 +21,41 @@ import (
 	"math"
 	"math/big"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // ContainerResources holds resources request for container
 type ContainerResources struct {
-	Limits   core.ResourceList
-	Requests core.ResourceList
+	Limits   corev1.ResourceList
+	Requests corev1.ResourceList
 }
 
 // GetProportionalLimit returns limit that will be in the same proportion to recommended request as original limit had to original request.
-func GetProportionalLimit(originalLimit, originalRequest, recommendation, defaultLimit core.ResourceList) (core.ResourceList, []string) {
+func GetProportionalLimit(originalLimit, originalRequest, recommendation, defaultLimit corev1.ResourceList) (corev1.ResourceList, []string) {
 	annotations := []string{}
-	cpuLimit, annotation := getProportionalResourceLimit(core.ResourceCPU, originalLimit.Cpu(), originalRequest.Cpu(), recommendation.Cpu(), defaultLimit.Cpu())
+	cpuLimit, annotation := getProportionalResourceLimit(corev1.ResourceCPU, originalLimit.Cpu(), originalRequest.Cpu(), recommendation.Cpu(), defaultLimit.Cpu())
 	if annotation != "" {
 		annotations = append(annotations, annotation)
 	}
-	memLimit, annotation := getProportionalResourceLimit(core.ResourceMemory, originalLimit.Memory(), originalRequest.Memory(), recommendation.Memory(), defaultLimit.Memory())
+	memLimit, annotation := getProportionalResourceLimit(corev1.ResourceMemory, originalLimit.Memory(), originalRequest.Memory(), recommendation.Memory(), defaultLimit.Memory())
 	if annotation != "" {
 		annotations = append(annotations, annotation)
 	}
 	if memLimit == nil && cpuLimit == nil {
 		return nil, []string{}
 	}
-	result := core.ResourceList{}
+	result := corev1.ResourceList{}
 	if cpuLimit != nil {
-		result[core.ResourceCPU] = *cpuLimit
+		result[corev1.ResourceCPU] = *cpuLimit
 	}
 	if memLimit != nil {
-		result[core.ResourceMemory] = *memLimit
+		result[corev1.ResourceMemory] = *memLimit
 	}
 	return result, annotations
 }
 
-func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit, originalRequest, recommendedRequest, defaultLimit *resource.Quantity) (*resource.Quantity, string) {
+func getProportionalResourceLimit(resourceName corev1.ResourceName, originalLimit, originalRequest, recommendedRequest, defaultLimit *resource.Quantity) (*resource.Quantity, string) {
 	if originalLimit == nil || originalLimit.Value() == 0 && defaultLimit != nil {
 		originalLimit = defaultLimit
 	}
@@ -78,7 +78,7 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 		result := *recommendedRequest
 		return &result, ""
 	}
-	if resourceName == core.ResourceCPU {
+	if resourceName == corev1.ResourceCPU {
 		result, capped := scaleQuantityProportionallyCPU( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
 		if !capped {
 			return result, ""
@@ -96,7 +96,7 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 
 // GetBoundaryRequest returns the boundary (min/max) request that can be specified with
 // preserving the original limit to request ratio. Returns nil if no boundary exists
-func GetBoundaryRequest(resourceName core.ResourceName, originalRequest, originalLimit, boundaryLimit, defaultLimit *resource.Quantity) *resource.Quantity {
+func GetBoundaryRequest(resourceName corev1.ResourceName, originalRequest, originalLimit, boundaryLimit, defaultLimit *resource.Quantity) *resource.Quantity {
 	if originalLimit == nil || originalLimit.Value() == 0 && defaultLimit != nil {
 		originalLimit = defaultLimit
 	}
@@ -111,7 +111,7 @@ func GetBoundaryRequest(resourceName core.ResourceName, originalRequest, origina
 
 	// Determine which scaling function to use based on resource type.
 	var result *resource.Quantity
-	if resourceName == core.ResourceCPU {
+	if resourceName == corev1.ResourceCPU {
 		result, _ = scaleQuantityProportionallyCPU(originalRequest /* scaledQuantity */, originalLimit /* scaleBase */, boundaryLimit /* scaleResult */, noRounding)
 		return result
 	}

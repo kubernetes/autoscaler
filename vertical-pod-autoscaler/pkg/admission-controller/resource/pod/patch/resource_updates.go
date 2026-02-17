@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -57,7 +57,7 @@ func (*resourcesUpdatesPatchCalculator) PatchResourceTarget() PatchResourceTarge
 	return Pod
 }
 
-func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
 	containersResources, annotationsPerContainer, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
@@ -110,7 +110,7 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *v
 	return result, nil
 }
 
-func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
+func getContainerPatch(pod *corev1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
 	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
 	requests, limits := resourcehelpers.ContainerRequestsAndLimits(pod.Spec.Containers[i].Name, pod)
@@ -130,7 +130,7 @@ func getContainerPatch(pod *core.Pod, i int, annotationsPerContainer vpa_api_uti
 	return patches, updatesAnnotation
 }
 
-func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annotations []string, current core.ResourceList, containerIndex int, resources core.ResourceList, fieldName, resourceName string) ([]resource_admission.PatchRecord, []string) {
+func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annotations []string, current corev1.ResourceList, containerIndex int, resources corev1.ResourceList, fieldName, resourceName string) ([]resource_admission.PatchRecord, []string) {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
 		patches = append(patches, GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
@@ -142,7 +142,7 @@ func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annot
 	return patches, annotations
 }
 
-func (c *resourcesUpdatesPatchCalculator) applyCPUStartupBoost(container *core.Container, vpa *vpa_types.VerticalPodAutoscaler, containerResources *vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, error) {
+func (c *resourcesUpdatesPatchCalculator) applyCPUStartupBoost(container *corev1.Container, vpa *vpa_types.VerticalPodAutoscaler, containerResources *vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, error) {
 	var patches []resource_admission.PatchRecord
 
 	startupBoostPolicy := getContainerStartupBoostPolicy(container, vpa)
@@ -164,7 +164,7 @@ func (c *resourcesUpdatesPatchCalculator) applyCPUStartupBoost(container *core.C
 	return patches, nil
 }
 
-func getContainerStartupBoostPolicy(container *core.Container, vpa *vpa_types.VerticalPodAutoscaler) *vpa_types.StartupBoost {
+func getContainerStartupBoostPolicy(container *corev1.Container, vpa *vpa_types.VerticalPodAutoscaler) *vpa_types.StartupBoost {
 	policy := vpa_api_util.GetContainerResourcePolicy(container.Name, vpa.Spec.ResourcePolicy)
 	startupBoost := vpa.Spec.StartupBoost
 	if policy != nil && policy.StartupBoost != nil {
@@ -226,52 +226,52 @@ func (c *resourcesUpdatesPatchCalculator) calculateBoostedCPU(recommendedCPU, or
 
 // capStartupBoostToContainerLimit makes sure startup boost recommendation is not above current limit for the container for CPU.
 // It attempts to keep the request 1m below the limit to maintain QoS.
-func capStartupBoostToContainerLimit(recommendation core.ResourceList, containerLimits core.ResourceList) {
-	limit, found := containerLimits[core.ResourceCPU]
+func capStartupBoostToContainerLimit(recommendation corev1.ResourceList, containerLimits corev1.ResourceList) {
+	limit, found := containerLimits[corev1.ResourceCPU]
 	if !found {
 		return
 	}
 
-	recommendedValue, found := recommendation[core.ResourceCPU]
+	recommendedValue, found := recommendation[corev1.ResourceCPU]
 	if found && recommendedValue.MilliValue() > limit.MilliValue() {
 		newRecommended := limit.DeepCopy()
 		if limit.Cmp(resource.MustParse("1m")) > 0 {
 			newRecommended.Sub(resource.MustParse("1m"))
 		}
-		recommendation[core.ResourceCPU] = newRecommended
+		recommendation[corev1.ResourceCPU] = newRecommended
 	}
 }
 
-func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container *core.Container, vpa *vpa_types.VerticalPodAutoscaler, containerResources *vpa_api_util.ContainerResources, startupBoostPolicy *vpa_types.StartupBoost) error {
+func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container *corev1.Container, vpa *vpa_types.VerticalPodAutoscaler, containerResources *vpa_api_util.ContainerResources, startupBoostPolicy *vpa_types.StartupBoost) error {
 	controlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpa.Spec.ResourcePolicy)
 
-	recommendedRequest := containerResources.Requests[core.ResourceCPU]
-	originalRequest := container.Resources.Requests[core.ResourceCPU]
+	recommendedRequest := containerResources.Requests[corev1.ResourceCPU]
+	originalRequest := container.Resources.Requests[corev1.ResourceCPU]
 	boostedRequest, err := c.calculateBoostedCPU(recommendedRequest, originalRequest, startupBoostPolicy)
 	if err != nil {
 		return err
 	}
 
 	if containerResources.Requests == nil {
-		containerResources.Requests = core.ResourceList{}
+		containerResources.Requests = corev1.ResourceList{}
 	}
-	containerResources.Requests[core.ResourceCPU] = *boostedRequest
+	containerResources.Requests[corev1.ResourceCPU] = *boostedRequest
 
 	switch controlledValues {
 	case vpa_types.ContainerControlledValuesRequestsOnly:
 		capStartupBoostToContainerLimit(containerResources.Requests, container.Resources.Limits)
 	case vpa_types.ContainerControlledValuesRequestsAndLimits:
 		if containerResources.Limits == nil {
-			containerResources.Limits = core.ResourceList{}
+			containerResources.Limits = corev1.ResourceList{}
 		}
 		newLimits, _ := vpa_api_util.GetProportionalLimit(
-			container.Resources.Limits,                           // originalLimits
-			container.Resources.Requests,                         // originalRequests
-			core.ResourceList{core.ResourceCPU: *boostedRequest}, // newRequests
-			core.ResourceList{},                                  // defaultLimit
+			container.Resources.Limits,                               // originalLimits
+			container.Resources.Requests,                             // originalRequests
+			corev1.ResourceList{corev1.ResourceCPU: *boostedRequest}, // newRequests
+			corev1.ResourceList{},                                    // defaultLimit
 		)
-		if newLimit, ok := newLimits[core.ResourceCPU]; ok {
-			containerResources.Limits[core.ResourceCPU] = newLimit
+		if newLimit, ok := newLimits[corev1.ResourceCPU]; ok {
+			containerResources.Limits[corev1.ResourceCPU] = newLimit
 		}
 	default:
 		// Do nothing
