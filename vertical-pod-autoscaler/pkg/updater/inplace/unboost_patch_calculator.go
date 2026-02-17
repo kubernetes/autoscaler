@@ -17,7 +17,7 @@ limitations under the License.
 package inplace
 
 import (
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
@@ -39,7 +39,7 @@ func (*unboostAnnotationPatchCalculator) PatchResourceTarget() patch.PatchResour
 }
 
 // CalculatePatches calculates the patch to remove the startup CPU boost annotation if the pod is ready to be unboosted.
-func (c *unboostAnnotationPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+func (c *unboostAnnotationPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	if vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa) {
 		return []resource_admission.PatchRecord{
 			patch.GetRemoveAnnotationPatch(annotations.StartupCPUBoostAnnotation),

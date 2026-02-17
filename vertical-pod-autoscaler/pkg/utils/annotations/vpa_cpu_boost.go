@@ -19,7 +19,7 @@ package annotations
 import (
 	"encoding/json"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -30,34 +30,34 @@ const (
 
 // OriginalResources contains the original resources of a container.
 type OriginalResources struct {
-	Requests core.ResourceList `json:"requests"`
-	Limits   core.ResourceList `json:"limits"`
+	Requests corev1.ResourceList `json:"requests"`
+	Limits   corev1.ResourceList `json:"limits"`
 }
 
 // GetOriginalResourcesAnnotationValue returns the annotation value for the original resources.
-func GetOriginalResourcesAnnotationValue(container *core.Container) (string, error) {
+func GetOriginalResourcesAnnotationValue(container *corev1.Container) (string, error) {
 	original := OriginalResources{
-		Requests: core.ResourceList{},
-		Limits:   core.ResourceList{},
+		Requests: corev1.ResourceList{},
+		Limits:   corev1.ResourceList{},
 	}
-	if cpu, ok := container.Resources.Requests[core.ResourceCPU]; ok {
-		original.Requests[core.ResourceCPU] = cpu
+	if cpu, ok := container.Resources.Requests[corev1.ResourceCPU]; ok {
+		original.Requests[corev1.ResourceCPU] = cpu
 	}
-	if mem, ok := container.Resources.Requests[core.ResourceMemory]; ok {
-		original.Requests[core.ResourceMemory] = mem
+	if mem, ok := container.Resources.Requests[corev1.ResourceMemory]; ok {
+		original.Requests[corev1.ResourceMemory] = mem
 	}
-	if cpu, ok := container.Resources.Limits[core.ResourceCPU]; ok {
-		original.Limits[core.ResourceCPU] = cpu
+	if cpu, ok := container.Resources.Limits[corev1.ResourceCPU]; ok {
+		original.Limits[corev1.ResourceCPU] = cpu
 	}
-	if mem, ok := container.Resources.Limits[core.ResourceMemory]; ok {
-		original.Limits[core.ResourceMemory] = mem
+	if mem, ok := container.Resources.Limits[corev1.ResourceMemory]; ok {
+		original.Limits[corev1.ResourceMemory] = mem
 	}
 	b, err := json.Marshal(original)
 	return string(b), err
 }
 
 // GetOriginalResourcesFromAnnotation returns the original resources from the annotation.
-func GetOriginalResourcesFromAnnotation(pod *core.Pod) (*OriginalResources, error) {
+func GetOriginalResourcesFromAnnotation(pod *corev1.Pod) (*OriginalResources, error) {
 	val, ok := pod.Annotations[StartupCPUBoostAnnotation]
 	if !ok {
 		return nil, nil

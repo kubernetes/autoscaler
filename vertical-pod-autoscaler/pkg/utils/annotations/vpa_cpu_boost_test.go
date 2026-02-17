@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,63 +29,63 @@ import (
 func TestGetOriginalResourcesAnnotationValue(t *testing.T) {
 	testCases := []struct {
 		name      string
-		container *core.Container
+		container *corev1.Container
 		expected  *OriginalResources
 		expectErr bool
 	}{
 		{
 			name: "full resources",
-			container: &core.Container{
-				Resources: core.ResourceRequirements{
-					Requests: core.ResourceList{
-						core.ResourceCPU:    resource.MustParse("1"),
-						core.ResourceMemory: resource.MustParse("1Gi"),
+			container: &corev1.Container{
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1"),
+						corev1.ResourceMemory: resource.MustParse("1Gi"),
 					},
-					Limits: core.ResourceList{
-						core.ResourceCPU:    resource.MustParse("2"),
-						core.ResourceMemory: resource.MustParse("2Gi"),
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("2"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
 					},
 				},
 			},
 			expected: &OriginalResources{
-				Requests: core.ResourceList{
-					core.ResourceCPU:    resource.MustParse("1"),
-					core.ResourceMemory: resource.MustParse("1Gi"),
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("1"),
+					corev1.ResourceMemory: resource.MustParse("1Gi"),
 				},
-				Limits: core.ResourceList{
-					core.ResourceCPU:    resource.MustParse("2"),
-					core.ResourceMemory: resource.MustParse("2Gi"),
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("2"),
+					corev1.ResourceMemory: resource.MustParse("2Gi"),
 				},
 			},
 			expectErr: false,
 		},
 		{
 			name: "only requests",
-			container: &core.Container{
-				Resources: core.ResourceRequirements{
-					Requests: core.ResourceList{
-						core.ResourceCPU:    resource.MustParse("1"),
-						core.ResourceMemory: resource.MustParse("1Gi"),
+			container: &corev1.Container{
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1"),
+						corev1.ResourceMemory: resource.MustParse("1Gi"),
 					},
 				},
 			},
 			expected: &OriginalResources{
-				Requests: core.ResourceList{
-					core.ResourceCPU:    resource.MustParse("1"),
-					core.ResourceMemory: resource.MustParse("1Gi"),
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("1"),
+					corev1.ResourceMemory: resource.MustParse("1Gi"),
 				},
-				Limits: core.ResourceList{},
+				Limits: corev1.ResourceList{},
 			},
 			expectErr: false,
 		},
 		{
 			name: "no resources",
-			container: &core.Container{
-				Resources: core.ResourceRequirements{},
+			container: &corev1.Container{
+				Resources: corev1.ResourceRequirements{},
 			},
 			expected: &OriginalResources{
-				Requests: core.ResourceList{},
-				Limits:   core.ResourceList{},
+				Requests: corev1.ResourceList{},
+				Limits:   corev1.ResourceList{},
 			},
 			expectErr: false,
 		},
@@ -114,13 +114,13 @@ func TestGetOriginalResourcesAnnotationValue(t *testing.T) {
 func TestGetOriginalResourcesFromAnnotation(t *testing.T) {
 	testCases := []struct {
 		name      string
-		pod       *core.Pod
+		pod       *corev1.Pod
 		expected  *OriginalResources
 		expectErr bool
 	}{
 		{
 			name: "valid annotation",
-			pod: &core.Pod{
+			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						StartupCPUBoostAnnotation: `{"requests":{"cpu":"1","memory":"1Gi"},"limits":{"cpu":"2","memory":"2Gi"}}`,
@@ -128,20 +128,20 @@ func TestGetOriginalResourcesFromAnnotation(t *testing.T) {
 				},
 			},
 			expected: &OriginalResources{
-				Requests: core.ResourceList{
-					core.ResourceCPU:    resource.MustParse("1"),
-					core.ResourceMemory: resource.MustParse("1Gi"),
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("1"),
+					corev1.ResourceMemory: resource.MustParse("1Gi"),
 				},
-				Limits: core.ResourceList{
-					core.ResourceCPU:    resource.MustParse("2"),
-					core.ResourceMemory: resource.MustParse("2Gi"),
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("2"),
+					corev1.ResourceMemory: resource.MustParse("2Gi"),
 				},
 			},
 			expectErr: false,
 		},
 		{
 			name: "no annotation",
-			pod: &core.Pod{
+			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{},
 				},
@@ -151,7 +151,7 @@ func TestGetOriginalResourcesFromAnnotation(t *testing.T) {
 		},
 		{
 			name: "invalid json",
-			pod: &core.Pod{
+			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						StartupCPUBoostAnnotation: "invalid-json",
