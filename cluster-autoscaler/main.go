@@ -29,8 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -56,7 +56,7 @@ import (
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
+	cbctrl "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
@@ -202,7 +202,7 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
 		capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			nodeBufferController := capacitybuffer.NewDefaultBufferController(capacitybufferClient)
+			nodeBufferController := cbctrl.NewDefaultBufferController(capacitybufferClient)
 			go nodeBufferController.Run(make(chan struct{}))
 		}
 	}
@@ -220,7 +220,7 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 			buffersPodsRegistry := cbprocessor.NewDefaultCapacityBuffersFakePodsRegistry()
 			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(
 				capacitybufferClient,
-				[]string{common.ActiveProvisioningStrategy},
+				[]string{capacitybuffer.ActiveProvisioningStrategy},
 				buffersPodsRegistry, true)
 			podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{bufferPodInjector, podListProcessor})
 			opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{
