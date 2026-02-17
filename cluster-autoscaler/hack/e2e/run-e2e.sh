@@ -36,5 +36,32 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh
-${CA_ROOT}/hack/e2e/run-e2e-tests.sh "${REMAINING_ARGS[@]}"
+# Build and push image once to be used in both steps.
+echo "### STEP 0: Building and pushing Cluster Autoscaler image..."
+mkdir -p "${HOME}/.docker"
+gcloud auth configure-docker -q
+GIT_COMMIT="$(git describe --always --dirty --exclude '*')"
+TAG="dev-${GIT_COMMIT}-$(date +%s)"
+REGISTRY="gcr.io/$(gcloud config get core/project)"
+make -C "${CA_ROOT}" execute-release REGISTRY=${REGISTRY} TAG=${TAG}
+CA_IMAGE="${REGISTRY}/cluster-autoscaler:${TAG}"
+
+echo "### STEP 1: Standard Autoscaling tests ###"
+${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh "${CA_IMAGE}"
+${CA_ROOT}/hack/e2e/run-e2e-tests.sh "Standard Autoscaling${REMAINING_ARGS[0]:+.*${REMAINING_ARGS[0]}}"
+
+echo "### STEP 2: DRA Autoscaling tests ###"
+echo "Removing Cluster Autoscaler to reset its state..."
+kubectl delete deployment cluster-autoscaler -n kube-system
+
+echo "Installing DRA driver..."
+kubectl apply -f "${CA_ROOT}/e2e/manifests/dra-driver.yaml"
+
+echo "Waiting for DRA driver to be ready..."
+kubectl rollout status daemonset/dra-example-driver-kubeletplugin -n kube-system --timeout=5m
+
+echo "Redeploying Cluster Autoscaler..."
+${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh "${CA_IMAGE}"
+
+echo "Running DRA tests..."
+${CA_ROOT}/hack/e2e/run-e2e-tests.sh "DRA Autoscaling${REMAINING_ARGS[0]:+.*${REMAINING_ARGS[0]}}"
