@@ -41,11 +41,15 @@ echo "Configuring registry authentication..."
 mkdir -p "${HOME}/.docker"
 gcloud auth configure-docker -q
 
-echo "Building and pushing image..."
-pushd "${CA_ROOT}" >/dev/null
-make execute-release REGISTRY=${REGISTRY} TAG=${TAG}
-IMAGE="${REGISTRY}/cluster-autoscaler:${TAG}"
-popd >/dev/null
+if [[ -z "${IMAGE:-}" ]]; then
+    echo "Building and pushing image..."
+    pushd "${CA_ROOT}" >/dev/null
+    make execute-release REGISTRY=${REGISTRY} TAG=${TAG}
+    IMAGE="${REGISTRY}/cluster-autoscaler:${TAG}"
+    popd >/dev/null
+else
+    echo "Using existing image: ${IMAGE}"
+fi
 
 # Deploy
 echo "Deploying to cluster..."
