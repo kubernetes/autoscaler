@@ -338,8 +338,14 @@ type CapacityBufferStatus struct {
   //provide details about the error state.
   // +optional  
   PodTemplateRef *PodTemplateRef
+  // Number of replicas calculated by the buffer controller that autoscaler
+  // should act on.
   // +optional
   Replicas *int
+  // Number of replicas from this buffer that have provisioned capacity in the
+  // cluster that is ready to be used.
+  // +optional 
+  ReadyReplicas *int
   // +optional
   PodTemplateGeneration  *int
   Conditions             []metav1.Condition
