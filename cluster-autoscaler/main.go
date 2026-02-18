@@ -157,7 +157,7 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(&autoscalingOptions.NodeInfoCacheExpireTime, autoscalingOptions.ForceDaemonSets)
-	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere)
+	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere, autoscalingOptions.SchedulingSimulationTimeout)
 
 	var ProvisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
 	if autoscalingOptions.ProvisioningRequestEnabled {
@@ -188,7 +188,7 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 
 		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client, opts.CheckCapacityProcessorInstance)
+		provreqProcesor := provreq.NewProvReqProcessor(client, opts.CheckCapacityProcessorInstance, opts.SchedulingSimulationTimeout)
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 		podListProcessor.AddProcessor(provreqProcesor)

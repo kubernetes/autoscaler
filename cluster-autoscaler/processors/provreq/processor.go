@@ -46,7 +46,7 @@ const (
 )
 
 type injector interface {
-	TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]scheduling.Status, int, error)
+	TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure, simulationEarlyStopEnabled bool) ([]scheduling.Status, []*apiv1.Pod, int, error)
 }
 
 type provReqProcessor struct {
@@ -58,8 +58,8 @@ type provReqProcessor struct {
 }
 
 // NewProvReqProcessor return ProvisioningRequestProcessor.
-func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient, checkCapacityProcessorInstance string) *provReqProcessor {
-	return &provReqProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client, injector: scheduling.NewHintingSimulator(), checkCapacityProcessorInstance: checkCapacityProcessorInstance}
+func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient, checkCapacityProcessorInstance string, schedulingSimulationTimeout time.Duration) *provReqProcessor {
+	return &provReqProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client, injector: scheduling.NewHintingSimulator(schedulingSimulationTimeout), checkCapacityProcessorInstance: checkCapacityProcessorInstance}
 }
 
 // Refresh implements loop.Observer interface and will be run at the start
@@ -165,7 +165,7 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 		return nil
 	}
 	// Scheduling the pods to reserve capacity for provisioning request.
-	if _, _, err = p.injector.TrySchedulePods(autoscalingCtx.ClusterSnapshot, podsToCreate, scheduling.ScheduleAnywhere, false); err != nil {
+	if _, _, _, err = p.injector.TrySchedulePods(autoscalingCtx.ClusterSnapshot, podsToCreate, scheduling.ScheduleAnywhere, false, false); err != nil {
 		return err
 	}
 	return nil

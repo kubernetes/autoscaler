@@ -232,9 +232,9 @@ type fakeInjector struct {
 	pods []*apiv1.Pod
 }
 
-func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]scheduling.Status, int, error) {
+func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure, simulationEarlyStopEnabled bool) ([]scheduling.Status, []*apiv1.Pod, int, error) {
 	f.pods = pods
-	return nil, 0, nil
+	return nil, nil, 0, nil
 }
 
 func TestBookCapacity(t *testing.T) {

@@ -71,7 +71,7 @@ func (o *provReqOrchestrator) Initialize(
 ) {
 	o.initialized = true
 	o.autoscalingCtx = autoscalingCtx
-	o.injector = scheduling.NewHintingSimulator()
+	o.injector = scheduling.NewHintingSimulator(autoscalingCtx.AutoscalingOptions.SchedulingSimulationTimeout)
 	for _, mode := range o.provisioningClasses {
 		mode.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector, quotasTrackerFactory)
 	}

@@ -190,7 +190,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 
 			clusterSnapshot.Fork()
 
-			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter)
+			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter, 10*time.Minute)
 			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err)
@@ -287,7 +287,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {
-					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere)
+					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere, 10*time.Minute)
 					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {

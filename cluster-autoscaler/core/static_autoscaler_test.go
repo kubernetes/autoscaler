@@ -391,6 +391,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		SchedulingSimulationTimeout: 10 * time.Minute,
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
@@ -648,6 +649,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 
 			// Create context with mocked lister registry.
 			options := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime:         config.DefaultScaleDownUnneededTime,
 					ScaleDownUnreadyTime:          time.Minute,
@@ -803,6 +805,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		SchedulingSimulationTimeout: 10 * time.Minute,
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
@@ -951,6 +954,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 			// Create context with mocked lister registry.
 			options := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime:         time.Minute,
 					ScaleDownUnreadyTime:          time.Minute,
@@ -1116,6 +1120,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		SchedulingSimulationTimeout: 10 * time.Minute,
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
@@ -1251,6 +1256,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		SchedulingSimulationTimeout: 10 * time.Minute,
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
@@ -1349,6 +1355,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		SchedulingSimulationTimeout: 10 * time.Minute,
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
@@ -1474,6 +1481,7 @@ func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 	bypassedScheduler := "bypassed-scheduler"
 	nonBypassedScheduler := "non-bypassed-scheduler"
 	options := config.AutoscalingOptions{
+		SchedulingSimulationTimeout: 10 * time.Minute,
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
@@ -1684,6 +1692,7 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 			assert.NotNil(t, provider)
 
 			options := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime:         time.Minute,
 					ScaleDownUnreadyTime:          time.Minute,
@@ -1807,6 +1816,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 
 			// Create context with mocked lister registry.
 			options := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime:         time.Minute,
 					ScaleDownUnreadyTime:          time.Minute,
@@ -2183,6 +2193,7 @@ func setupTestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testi
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		SchedulingSimulationTimeout: 10 * time.Minute,
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
@@ -2577,6 +2588,7 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 
 	autoscalingCtx := &ca_context.AutoscalingContext{
 		AutoscalingOptions: config.AutoscalingOptions{
+			SchedulingSimulationTimeout: 10 * time.Minute,
 			NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 				MaxNodeProvisionTime: 45 * time.Minute,
 			},
@@ -2626,6 +2638,7 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 
 	autoscalingCtx := &ca_context.AutoscalingContext{
 		AutoscalingOptions: config.AutoscalingOptions{
+			SchedulingSimulationTimeout: 10 * time.Minute,
 			NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 				MaxNodeProvisionTime: 45 * time.Minute,
 			},
@@ -2686,6 +2699,7 @@ func setupTestRemoveOldUnregisteredNodesAtomic(t *testing.T, now time.Time, allo
 
 	autoscalingCtx := &ca_context.AutoscalingContext{
 		AutoscalingOptions: config.AutoscalingOptions{
+			SchedulingSimulationTimeout: 10 * time.Minute,
 			NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 				MaxNodeProvisionTime: time.Hour,
 			},
@@ -2890,7 +2904,8 @@ func TestFilterOutYoungPods(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			autoscalingCtx := ca_context.AutoscalingContext{
 				AutoscalingOptions: config.AutoscalingOptions{
-					NewPodScaleUpDelay: tt.newPodScaleUpDelay,
+					SchedulingSimulationTimeout: 10 * time.Minute,
+					NewPodScaleUpDelay:          tt.newPodScaleUpDelay,
 				},
 			}
 			autoscaler := &StaticAutoscaler{
@@ -2921,11 +2936,12 @@ func TestStaticAutoscalerRunOnceInvokesScaleDownStatusProcessor(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:    estimator.BinpackingEstimatorName,
-		ScaleDownEnabled: true,
-		MaxNodesTotal:    10,
-		MaxCoresTotal:    10,
-		MaxMemoryTotal:   100000,
+		EstimatorName:               estimator.BinpackingEstimatorName,
+		ScaleDownEnabled:            true,
+		MaxNodesTotal:               10,
+		MaxCoresTotal:               10,
+		MaxMemoryTotal:              100000,
+		SchedulingSimulationTimeout: 10 * time.Minute,
 	}
 	now := time.Now()
 	n1 := BuildTestNode("n1", 1000, 1000)
@@ -3454,6 +3470,7 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 		MaxCoresTotal:                  10,
 		MaxMemoryTotal:                 1000,
 		MaxNodeGroupBinpackingDuration: 1 * time.Second,
+		SchedulingSimulationTimeout:    10 * time.Minute,
 	}
 
 	type testCase struct {

@@ -17,18 +17,20 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list
 // processor, which wraps and sequentially runs other sub-processors.
-func NewDefaultPodListProcessor(nodeFilter func(*framework.NodeInfo) bool) *pods.CombinedPodListProcessor {
+func NewDefaultPodListProcessor(nodeFilter func(*framework.NodeInfo) bool, simulationTimeout time.Duration) *pods.CombinedPodListProcessor {
 	return pods.NewCombinedPodListProcessor([]pods.PodListProcessor{
 		NewClearTPURequestsPodListProcessor(),
 		NewFilterOutExpendablePodListProcessor(),
 		NewCurrentlyDrainedNodesPodListProcessor(),
-		NewFilterOutSchedulablePodListProcessor(nodeFilter),
+		NewFilterOutSchedulablePodListProcessor(nodeFilter, simulationTimeout),
 		NewFilterOutDaemonSetPodListProcessor(),
 	})
 }

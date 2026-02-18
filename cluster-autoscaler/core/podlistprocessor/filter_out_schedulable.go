@@ -37,9 +37,9 @@ type filterOutSchedulablePodListProcessor struct {
 }
 
 // NewFilterOutSchedulablePodListProcessor creates a PodListProcessor filtering out schedulable pods
-func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo) bool) *filterOutSchedulablePodListProcessor {
+func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo) bool, simulationTimeout time.Duration) *filterOutSchedulablePodListProcessor {
 	return &filterOutSchedulablePodListProcessor{
-		schedulingSimulator: scheduling.NewHintingSimulator(),
+		schedulingSimulator: scheduling.NewHintingSimulator(simulationTimeout),
 		nodeFilter:          nodeFilter,
 	}
 }
@@ -100,7 +100,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 		return corev1helpers.PodPriority(unschedulableCandidates[i]) > corev1helpers.PodPriority(unschedulableCandidates[j])
 	})
 
-	statuses, overflowingControllerCount, err := p.schedulingSimulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, p.nodeFilter, false)
+	statuses, unprocessedPods, overflowingControllerCount, err := p.schedulingSimulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, p.nodeFilter, false, true)
 	if err != nil {
 		return nil, err
 	}
@@ -110,16 +110,21 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 		scheduledPods[status.Pod.UID] = true
 	}
 
+	unprocessedPodsMap := make(map[types.UID]bool)
+	for _, pod := range unprocessedPods {
+		unprocessedPodsMap[pod.UID] = true
+	}
+
 	// Pods that remain unschedulable
 	var unschedulablePods []*apiv1.Pod
 	for _, pod := range unschedulableCandidates {
-		if !scheduledPods[pod.UID] {
+		if !scheduledPods[pod.UID] && !unprocessedPodsMap[pod.UID] {
 			unschedulablePods = append(unschedulablePods, pod)
 		}
 	}
 
 	metrics.UpdateOverflowingControllers(overflowingControllerCount)
-	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
+	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled. %v pods were skipped due to scheduling simulation took longer", len(unschedulableCandidates)-len(unschedulablePods)-len(unprocessedPods), len(unprocessedPods))
 
 	p.schedulingSimulator.DropOldHints()
 	return unschedulablePods, nil
