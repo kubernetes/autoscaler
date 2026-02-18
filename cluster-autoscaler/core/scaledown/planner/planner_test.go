@@ -494,6 +494,7 @@ func TestUpdateClusterState(t *testing.T) {
 				provider.AddNode("ng1", node)
 			}
 			opts := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: 10 * time.Minute,
 				},
@@ -692,6 +693,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 				provider.AddNode("ng1", node)
 			}
 			autoscalingOpts := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: tc.maxUnneededTime,
 				},
@@ -801,6 +803,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 			allNodeLister.SetNodes(tc.allNodes)
 
 			autoscalingOptions := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime:         time.Minute,
 					ScaleDownUnreadyTime:          time.Minute,
@@ -1021,6 +1024,7 @@ func TestNodesToDelete(t *testing.T) {
 				}
 			}
 			autoscalingOpts := config.AutoscalingOptions{
+				SchedulingSimulationTimeout: 10 * time.Minute,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: 10 * time.Minute,
 					ScaleDownUnreadyTime:  0 * time.Minute,

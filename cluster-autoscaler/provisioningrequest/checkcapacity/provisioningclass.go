@@ -177,7 +177,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	o.autoscalingCtx.ClusterSnapshot.Fork()
 
 	// Case 1: Capacity fits.
-	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
+	scheduled, _, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true, false)
 	if err == nil && len(scheduled) == len(unschedulablePods) {
 		commitError := o.autoscalingCtx.ClusterSnapshot.Commit()
 		if commitError != nil {

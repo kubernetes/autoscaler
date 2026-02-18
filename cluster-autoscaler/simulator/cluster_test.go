@@ -220,7 +220,7 @@ func TestSimulateNodeRemoval(t *testing.T) {
 				destinations[node.Name] = true
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
-			r := NewRemovalSimulator(registry, clusterSnapshot, testDeleteOptions(), nil, false)
+			r := NewRemovalSimulator(registry, clusterSnapshot, testDeleteOptions(), nil, false, 10*time.Minute)
 			toRemove, unremovable := r.SimulateNodeRemoval(test.nodeName, destinations, time.Now(), nil)
 			fmt.Printf("Test scenario: %s, toRemove=%v, unremovable=%v\n", test.name, toRemove, unremovable)
 			assert.Equal(t, test.toRemove, toRemove)

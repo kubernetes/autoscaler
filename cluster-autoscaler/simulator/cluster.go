@@ -108,14 +108,14 @@ type RemovalSimulator struct {
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool, schedulingSimulationTimeout time.Duration) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:             listers,
 		clusterSnapshot:     clusterSnapshot,
 		canPersist:          persistSuccessfulSimulations,
 		deleteOptions:       deleteOptions,
 		drainabilityRules:   drainabilityRules,
-		schedulingSimulator: scheduling.NewHintingSimulator(),
+		schedulingSimulator: scheduling.NewHintingSimulator(schedulingSimulationTimeout),
 	}
 }
 
@@ -205,7 +205,7 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 		newpods = append(newpods, &newpod)
 	}
 
-	statuses, _, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, isCandidateNode, true)
+	statuses, _, _, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, isCandidateNode, true, true)
 	if err != nil {
 		return err
 	}

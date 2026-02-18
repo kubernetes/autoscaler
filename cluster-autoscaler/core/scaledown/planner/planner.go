@@ -102,8 +102,8 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 		autoscalingCtx:        autoscalingCtx,
 		unremovableNodes:      unremovable.NewNodes(),
 		unneededNodes:         unneededNodes,
-		rs:                    simulator.NewRemovalSimulator(autoscalingCtx.ListerRegistry, autoscalingCtx.ClusterSnapshot, deleteOptions, drainabilityRules, true),
-		actuationInjector:     scheduling.NewHintingSimulator(),
+		rs:                    simulator.NewRemovalSimulator(autoscalingCtx.ListerRegistry, autoscalingCtx.ClusterSnapshot, deleteOptions, drainabilityRules, true, autoscalingCtx.SchedulingSimulationTimeout),
+		actuationInjector:     scheduling.NewHintingSimulator(autoscalingCtx.AutoscalingOptions.SchedulingSimulationTimeout),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
 		nodeUtilizationMap:    make(map[string]utilization.Info),
 		resourceLimitsFinder:  resourceLimitsFinder,
@@ -261,7 +261,7 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 	pods = pod_util.ClearPodNodeNames(pods)
 	// Note: We're using ScheduleAnywhere, but the pods won't schedule back
 	// on the drained nodes due to taints.
-	statuses, _, err := p.actuationInjector.TrySchedulePods(p.autoscalingCtx.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, true)
+	statuses, _, _, err := p.actuationInjector.TrySchedulePods(p.autoscalingCtx.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, true, true)
 	if err != nil {
 		return fmt.Errorf("cannot scale down, an unexpected error occurred: %v", err)
 	}

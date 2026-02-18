@@ -107,6 +107,7 @@ var (
 			"When calculating the pool size for additional candidates we take"+
 			"max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count).")
 	schedulerConfigFile         = flag.String(config.SchedulerConfigFileFlag, "", "scheduler-config allows changing configuration of in-tree scheduler plugins acting on PreFilter and Filter extension points")
+	schedulingSimulationTimout  = flag.Duration("scheduling-simulation-timeout", 5*time.Minute, "Maximum time hinting simulator spends on scheduler simulations")
 	nodeDeletionDelayTimeout    = flag.Duration("node-deletion-delay-timeout", 2*time.Minute, "Maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.")
 	nodeDeletionBatcherInterval = flag.Duration("node-deletion-batcher-interval", 0*time.Second, "How long CA ScaleDown gather nodes to delete them in batch.")
 	scanInterval                = flag.Duration("scan-interval", config.DefaultScanInterval, "How often cluster is reevaluated for scale up or down")
@@ -353,6 +354,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
 		DrainPriorityConfig:              drainPriorityConfigMap,
 		SchedulerConfig:                  parsedSchedConfig,
+		SchedulingSimulationTimeout:      *schedulingSimulationTimout,
 		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
 		StatusConfigMapName:              *statusConfigMapName,
 		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
