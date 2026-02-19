@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_scheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
 	scheduler_validation "k8s.io/kubernetes/pkg/scheduler/apis/config/validation"
@@ -79,7 +79,7 @@ func isHugePageResourceName(name apiv1.ResourceName) bool {
 }
 
 // ResourceToResourceList returns a resource list of the resource.
-func ResourceToResourceList(r fwk.Resource) apiv1.ResourceList {
+func ResourceToResourceList(r schedulerinterface.Resource) apiv1.ResourceList {
 	result := apiv1.ResourceList{
 		apiv1.ResourceCPU:              *resource.NewMilliQuantity(r.GetMilliCPU(), resource.DecimalSI),
 		apiv1.ResourceMemory:           *resource.NewQuantity(r.GetMemory(), resource.BinarySI),

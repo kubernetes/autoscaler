@@ -28,7 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/klog/v2"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 // ResourceClaimId is a unique identifier for a ResourceClaim.
@@ -84,34 +84,34 @@ func NewEmptySnapshot() *Snapshot {
 	}
 }
 
-// ResourceClaims exposes the Snapshot as fwk.ResourceClaimTracker, in order to interact with
+// ResourceClaims exposes the Snapshot as schedulerinterface.ResourceClaimTracker, in order to interact with
 // the scheduler framework.
-func (s *Snapshot) ResourceClaims() fwk.ResourceClaimTracker {
+func (s *Snapshot) ResourceClaims() schedulerinterface.ResourceClaimTracker {
 	return snapshotClaimTracker{snapshot: s}
 }
 
-// ResourceSlices exposes the Snapshot as fwk.ResourceSliceLister, in order to interact with
+// ResourceSlices exposes the Snapshot as schedulerinterface.ResourceSliceLister, in order to interact with
 // the scheduler framework.
-func (s *Snapshot) ResourceSlices() fwk.ResourceSliceLister {
+func (s *Snapshot) ResourceSlices() schedulerinterface.ResourceSliceLister {
 	return snapshotSliceLister{snapshot: s}
 }
 
-// DeviceClasses exposes the Snapshot as fwk.DeviceClassLister, in order to interact with
+// DeviceClasses exposes the Snapshot as schedulerinterface.DeviceClassLister, in order to interact with
 // the scheduler framework.
-func (s *Snapshot) DeviceClasses() fwk.DeviceClassLister {
+func (s *Snapshot) DeviceClasses() schedulerinterface.DeviceClassLister {
 	return snapshotClassLister{snapshot: s}
 }
 
-// DeviceClassResolver exposes the Snapshot as fwk.DeviceClassResolver, in order to interact with
+// DeviceClassResolver exposes the Snapshot as schedulerinterface.DeviceClassResolver, in order to interact with
 // the scheduler framework.
-func (s *Snapshot) DeviceClassResolver() fwk.DeviceClassResolver {
+func (s *Snapshot) DeviceClassResolver() schedulerinterface.DeviceClassResolver {
 	return newSnapshotDeviceClassResolver(s)
 }
 
-// WrapSchedulerNodeInfo wraps the provided fwk.NodeInfo into an internal *framework.NodeInfo, adding
+// WrapSchedulerNodeInfo wraps the provided schedulerinterface.NodeInfo into an internal *framework.NodeInfo, adding
 // dra information. Node-local ResourceSlices are added to the NodeInfo, and all ResourceClaims referenced by each Pod
 // are added to each PodInfo. Returns an error if any of the Pods is missing a ResourceClaim.
-func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework.NodeInfo, error) {
+func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo schedulerinterface.NodeInfo) (*framework.NodeInfo, error) {
 	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(schedNodeInfo.GetPods()))
 	for _, pod := range schedNodeInfo.GetPods() {
 		podClaims, err := s.PodClaims(pod.GetPod())

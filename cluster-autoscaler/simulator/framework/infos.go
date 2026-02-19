@@ -22,12 +22,12 @@ import (
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
-	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // PodInfo contains all necessary information about a Pod that Cluster Autoscaler needs to track.
-// TODO: Rewrite PodInfo to be an interface extending fwk.PodInfo
+// TODO: Rewrite PodInfo to be an interface extending schedulerinterface.PodInfo
 type PodInfo struct {
 	// This type embeds *apiv1.Pod to make the accesses easier - most of the code just needs to access the Pod.
 	*apiv1.Pod
@@ -43,11 +43,11 @@ type PodExtraInfo struct {
 }
 
 // NodeInfo contains all necessary information about a Node that Cluster Autoscaler needs to track.
-// It's essentially a wrapper around schedulerframework.NodeInfo, with extra data on top.
-// TODO: Rewrite NodeInfo to be an interface extending fwk.NodeInfo
+// It's essentially a wrapper around schedulerimpl.NodeInfo, with extra data on top.
+// TODO: Rewrite NodeInfo to be an interface extending schedulerinterface.NodeInfo
 type NodeInfo struct {
 	// schedNodeInfo is the part of information needed by the scheduler.
-	schedNodeInfo fwk.NodeInfo
+	schedNodeInfo schedulerinterface.NodeInfo
 	// podsExtraInfo contains extra pod-level data needed only by CA.
 	podsExtraInfo map[types.UID]PodExtraInfo
 
@@ -83,7 +83,7 @@ func (n *NodeInfo) Pods() []*PodInfo {
 
 // AddPod adds the given Pod and associated data to the NodeInfo.
 func (n *NodeInfo) AddPod(pod *PodInfo) {
-	podInfo, _ := schedulerframework.NewPodInfo(pod.Pod)
+	podInfo, _ := schedulerimpl.NewPodInfo(pod.Pod)
 	n.schedNodeInfo.AddPodInfo(podInfo)
 	if len(pod.PodExtraInfo.NeededResourceClaims) > 0 {
 		n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
@@ -100,8 +100,8 @@ func (n *NodeInfo) RemovePod(pod *apiv1.Pod) error {
 	return nil
 }
 
-// ToScheduler returns the embedded fwk.NodeInfo portion of the tracked data.
-func (n *NodeInfo) ToScheduler() fwk.NodeInfo {
+// ToScheduler returns the embedded schedulerinterface.NodeInfo portion of the tracked data.
+func (n *NodeInfo) ToScheduler() schedulerinterface.NodeInfo {
 	return n.schedNodeInfo
 }
 
@@ -154,7 +154,7 @@ func (n *NodeInfo) SetCSINode(csiNode *storagev1.CSINode) *NodeInfo {
 // NewNodeInfo returns a new internal NodeInfo from the provided data.
 func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...*PodInfo) *NodeInfo {
 	result := &NodeInfo{
-		schedNodeInfo:       schedulerframework.NewNodeInfo(),
+		schedNodeInfo:       schedulerimpl.NewNodeInfo(),
 		podsExtraInfo:       map[types.UID]PodExtraInfo{},
 		LocalResourceSlices: slices,
 	}
@@ -167,8 +167,8 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 	return result
 }
 
-// WrapSchedulerNodeInfo wraps a fwk.NodeInfo into an internal *NodeInfo.
-func WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo, slices []*resourceapi.ResourceSlice, podExtraInfos map[types.UID]PodExtraInfo) *NodeInfo {
+// WrapSchedulerNodeInfo wraps a schedulerinterface.NodeInfo into an internal *NodeInfo.
+func WrapSchedulerNodeInfo(schedNodeInfo schedulerinterface.NodeInfo, slices []*resourceapi.ResourceSlice, podExtraInfos map[types.UID]PodExtraInfo) *NodeInfo {
 	if podExtraInfos == nil {
 		podExtraInfos = map[types.UID]PodExtraInfo{}
 	}
