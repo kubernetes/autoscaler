@@ -25,7 +25,7 @@ import (
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // PredicateSnapshot implements ClusterSnapshot on top of a ClusterSnapshotStore by using
@@ -52,7 +52,7 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	return snapshot
 }
 
-// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerframework.NodeInfo.
+// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerimpl.NodeInfo.
 func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
 	schedNodeInfo, err := s.ClusterSnapshotStore.NodeInfos().Get(nodeName)
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 	return wrappedNodeInfo, nil
 }
 
-// ListNodeInfos returns internal NodeInfos wrapping all schedulerframework.NodeInfos in the snapshot.
+// ListNodeInfos returns internal NodeInfos wrapping all schedulerimpl.NodeInfos in the snapshot.
 func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
 	schedNodeInfos, err := s.ClusterSnapshotStore.NodeInfos().List()
 	if err != nil {
@@ -260,7 +260,7 @@ func (s *PredicateSnapshot) verifyScheduledPodResourceClaims(pod *apiv1.Pod, nod
 	return nil
 }
 
-func (s *PredicateSnapshot) modifyResourceClaimsForScheduledPod(pod *apiv1.Pod, node *apiv1.Node, postFilterState *schedulerframework.CycleState) error {
+func (s *PredicateSnapshot) modifyResourceClaimsForScheduledPod(pod *apiv1.Pod, node *apiv1.Node, postFilterState *schedulerimpl.CycleState) error {
 	// We need to run the scheduler Reserve phase to allocate the appropriate ResourceClaims in the DRA snapshot. The allocations are
 	// actually computed and cached in the Filter phase, and Reserve only grabs them from the cycle state. So this should be quick, but
 	// it needs the cycle state from after running the Filter phase.

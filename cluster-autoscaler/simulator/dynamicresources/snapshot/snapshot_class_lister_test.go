@@ -25,7 +25,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 var (
@@ -52,7 +52,7 @@ func TestSnapshotClassListerList(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			snapshot := NewSnapshot(nil, nil, nil, tc.classes)
-			var deviceClassLister fwk.DeviceClassLister = snapshot.DeviceClasses()
+			var deviceClassLister schedulerinterface.DeviceClassLister = snapshot.DeviceClasses()
 			classes, err := deviceClassLister.List()
 			if err != nil {
 				t.Fatalf("snapshotClassLister.List(): got unexpected error: %v", err)
@@ -86,7 +86,7 @@ func TestSnapshotClassListerGet(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			classes := map[string]*resourceapi.DeviceClass{"class-1": class1, "class-2": class2, "class-3": class3}
 			snapshot := NewSnapshot(nil, nil, nil, classes)
-			var deviceClassLister fwk.DeviceClassLister = snapshot.DeviceClasses()
+			var deviceClassLister schedulerinterface.DeviceClassLister = snapshot.DeviceClasses()
 			class, err := deviceClassLister.Get(tc.className)
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("snapshotClassLister.Get(): unexpected error (-want +got): %s", diff)
