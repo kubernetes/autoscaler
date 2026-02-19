@@ -18,14 +18,13 @@ package customresources
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
@@ -67,7 +66,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 
 		nodeResourcesSlices, _ := draSnapshot.NodeResourceSlices(node.Name)
-		if isEqualResourceSlices(nodeResourcesSlices, nodeInfo.LocalResourceSlices) {
+		if utils.HasSliceDevices(nodeResourcesSlices, nodeInfo.LocalResourceSlices) {
 			newReadyNodes = append(newReadyNodes, node)
 		} else {
 			nodesWithUnreadyDraResources[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
@@ -92,52 +91,6 @@ func getNodeInfo(autoscalingCtx *ca_context.AutoscalingContext, ng cloudprovider
 		return ni, nil
 	}
 	return ng.TemplateNodeInfo()
-}
-
-type resourceSliceSpecs struct {
-	driver string
-	pool   string
-}
-
-func isEqualResourceSlices(nodeResourcesSlices []*resourceapi.ResourceSlice, templateResourcesSlices []*resourceapi.ResourceSlice) bool {
-	tempSlicesByPools := getDevicesBySpecs(templateResourcesSlices)
-	nodeSlicesByPools := getDevicesBySpecs(nodeResourcesSlices)
-
-	for templSpecs, tempDevicesSet := range tempSlicesByPools {
-		matched := false
-		for nodeSpecs, nodeDevicesSet := range nodeSlicesByPools {
-			if templSpecs.driver == nodeSpecs.driver && nodeDevicesSet.Equal(tempDevicesSet) {
-				delete(nodeSlicesByPools, nodeSpecs)
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			return false
-		}
-	}
-
-	return true
-}
-
-func getDevicesBySpecs(resourcesSlices []*resourceapi.ResourceSlice) map[resourceSliceSpecs]sets.Set[string] {
-	slicesGroupedByPoolAndDriver := make(map[resourceSliceSpecs]sets.Set[string])
-	for _, rs := range resourcesSlices {
-		rsSpecs := resourceSliceSpecs{
-			pool:   rs.Spec.Pool.Name,
-			driver: rs.Spec.Driver,
-		}
-		slicesGroupedByPoolAndDriver[rsSpecs] = getResourceSliceDevicesSet(rs)
-	}
-	return slicesGroupedByPoolAndDriver
-}
-
-func getResourceSliceDevicesSet(resourcesSlice *resourceapi.ResourceSlice) sets.Set[string] {
-	devices := sets.New[string]()
-	for _, device := range resourcesSlice.Spec.Devices {
-		devices.Insert(device.Name)
-	}
-	return devices
 }
 
 // GetNodeResourceTargets returns the resource targets for DRA resource slices, not implemented.
