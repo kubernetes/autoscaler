@@ -27,6 +27,7 @@ import (
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	capacitybufferpodlister "k8s.io/autoscaler/cluster-autoscaler/processors/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -278,6 +279,8 @@ func podsToEvict(nodeInfo *framework.NodeInfo, evictDsByDefault bool) (dsPods, n
 		if pod_util.IsMirrorPod(podInfo.Pod) {
 			continue
 		} else if fake.IsFake(podInfo.Pod) {
+			continue
+		} else if capacitybufferpodlister.IsFakeCapacityBuffersPod(podInfo.Pod) {
 			continue
 		} else if pod_util.IsDaemonSetPod(podInfo.Pod) {
 			dsPods = append(dsPods, podInfo.Pod)
