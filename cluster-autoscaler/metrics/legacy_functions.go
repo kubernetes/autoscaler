@@ -49,6 +49,31 @@ func UpdateDuration(label FunctionLabel, duration time.Duration) {
 	DefaultMetrics.UpdateDuration(label, duration)
 }
 
+// UpdateDurationAggregated records the duration of the step identified by the
+// label key. The choice of using int as a key is to avoid the overhead of
+// hashing strings and to enforce zero collisions.
+//
+// Warning: if the label key is not registered, it will be ignored when flushing the
+// aggregated durations.
+func UpdateDurationAggregated(labelKey FunctionLabelKey, duration time.Duration) {
+	DefaultMetrics.UpdateDurationAggregated(labelKey, duration)
+}
+
+// UpdateDurationAggregatedFromStart records the duration of the step identified by the
+// label key using start time.
+//
+// Warning: if the label key is not registered, it will be ignored when flushing the
+// aggregated durations.
+func UpdateDurationAggregatedFromStart(labelKey FunctionLabelKey, start time.Time) {
+	DefaultMetrics.UpdateDurationAggregatedFromStart(labelKey, start)
+}
+
+// FlushAggregatedDurations records aggregated durations of the steps tracked
+// by UpdateDuration, resets the tracker and updates the metric.
+func FlushAggregatedDurations() {
+	DefaultMetrics.FlushAggregatedDurations()
+}
+
 // UpdateLastTime records the time the step identified by the label was started
 func UpdateLastTime(label FunctionLabel, now time.Time) {
 	DefaultMetrics.UpdateLastTime(label, now)
