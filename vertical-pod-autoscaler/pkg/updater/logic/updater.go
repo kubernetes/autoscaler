@@ -82,6 +82,9 @@ type updater struct {
 	statusValidator              status.Validator
 	controllerFetcher            controllerfetcher.ControllerFetcher
 	ignoredNamespaces            []string
+	defaultUpdateThreshold       float64
+	podLifetimeUpdateThreshold   time.Duration
+	evictAfterOOMThreshold       time.Duration
 }
 
 // NewUpdater creates Updater with given configuration
@@ -94,6 +97,9 @@ func NewUpdater(
 	evictionToleranceFraction float64,
 	useAdmissionControllerStatus bool,
 	inPlaceSkipDisruptionBudget bool,
+	defaultUpdateThreshold float64,
+	podLifetimeUpdateThreshold time.Duration,
+	evictAfterOOMThreshold time.Duration,
 	statusNamespace string,
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
@@ -136,7 +142,10 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
-		ignoredNamespaces: ignoredNamespaces,
+		ignoredNamespaces:          ignoredNamespaces,
+		defaultUpdateThreshold:     defaultUpdateThreshold,
+		podLifetimeUpdateThreshold: podLifetimeUpdateThreshold,
+		evictAfterOOMThreshold:     evictAfterOOMThreshold,
 	}, nil
 }
 
@@ -409,9 +418,14 @@ func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
 func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*corev1.Pod {
+	updateconfig := priority.UpdateConfig{
+		MinChangePriority:          u.defaultUpdateThreshold,
+		PodLifetimeUpdateThreshold: u.podLifetimeUpdateThreshold,
+		EvictAfterOOMThreshold:     u.evictAfterOOMThreshold,
+	}
 	priorityCalculator := priority.NewUpdatePriorityCalculator(
 		vpa,
-		nil,
+		updateconfig,
 		u.recommendationProcessor,
 		u.priorityProcessor)
 

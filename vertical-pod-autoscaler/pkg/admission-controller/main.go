@@ -17,29 +17,25 @@ limitations under the License.
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/spf13/pflag"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
-	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	admissioncontroller_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
@@ -59,58 +55,24 @@ const (
 	webHookDelay                               = 10 * time.Second
 )
 
-var (
-	certsConfiguration = &certsConfig{
-		clientCaFile:  flag.String("client-ca-file", "/etc/tls-certs/caCert.pem", "Path to CA PEM file."),
-		tlsCertFile:   flag.String("tls-cert-file", "/etc/tls-certs/serverCert.pem", "Path to server certificate PEM file."),
-		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
-		reload:        flag.Bool("reload-cert", false, "If set to true, reload leaf and CA certificates when changed."),
-	}
-	ciphers              = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
-	minTlsVersion        = flag.String("min-tls-version", "tls1_2", "The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3.")
-	port                 = flag.Int("port", 8000, "The port to listen on.")
-	address              = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	namespace            = os.Getenv("NAMESPACE")
-	serviceName          = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
-	webhookAddress       = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
-	webhookPort          = flag.String("webhook-port", "", "Server Port for Webhook")
-	webhookTimeout       = flag.Int("webhook-timeout-seconds", 30, "Timeout in seconds that the API server should wait for this webhook to respond before failing.")
-	webHookFailurePolicy = flag.Bool("webhook-failure-policy-fail", false, "If set to true, will configure the admission webhook failurePolicy to \"Fail\". Use with caution.")
-	registerWebhook      = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
-	webhookLabels        = flag.String("webhook-labels", "", "Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2")
-	registerByURL        = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
-	maxAllowedCPUBoost   = resource.QuantityValue{}
-)
-
-func init() {
-	flag.Var(&maxAllowedCPUBoost, "max-allowed-cpu-boost", "Maximum amount of CPU that will be applied for a container with boost.")
-}
-
 func main() {
-	commonFlags := common.InitCommonFlags()
-	klog.InitFlags(nil)
-	common.InitLoggingFlags()
-	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
-	kube_flag.InitFlags()
-	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion())
+	config := admissioncontroller_config.InitAdmissionControllerFlags()
 
-	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
-		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
-	}
+	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion())
 
 	healthCheck := metrics.NewHealthCheck(time.Minute)
 	metrics_admission.Register()
-	server.Initialize(&commonFlags.EnableProfiling, healthCheck, address)
+	server.Initialize(&config.CommonFlags.EnableProfiling, healthCheck, &config.Address)
 
-	config := common.CreateKubeConfigOrDie(commonFlags.KubeConfig, float32(commonFlags.KubeApiQps), int(commonFlags.KubeApiBurst))
+	kubeConfig := common.CreateKubeConfigOrDie(config.CommonFlags.KubeConfig, float32(config.CommonFlags.KubeApiQps), int(config.CommonFlags.KubeApiBurst))
 
-	vpaClient := vpa_clientset.NewForConfigOrDie(config)
-	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), commonFlags.VpaObjectNamespace)
-	kubeClient := kube_client.NewForConfigOrDie(config)
-	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlags.VpaObjectNamespace))
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	vpaClient := vpa_clientset.NewForConfigOrDie(kubeConfig)
+	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), config.CommonFlags.VpaObjectNamespace)
+	kubeClient := kube_client.NewForConfigOrDie(kubeConfig)
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(config.CommonFlags.VpaObjectNamespace))
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, factory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
@@ -140,8 +102,8 @@ func main() {
 	}
 
 	statusNamespace := status.AdmissionControllerStatusNamespace
-	if namespace != "" {
-		statusNamespace = namespace
+	if config.Namespace != "" {
+		statusNamespace = config.Namespace
 	}
 	statusUpdater := status.NewUpdater(
 		kubeClient,
@@ -151,37 +113,37 @@ func main() {
 		hostname,
 	)
 
-	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider, maxAllowedCPUBoost), patch.NewObservedContainersCalculator()}
+	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider, config.MaxAllowedCPUBoost), patch.NewObservedContainersCalculator()}
 	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
 	})
 	var mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface
-	if *registerWebhook {
+	if config.RegisterWebhook {
 		mutatingWebhookClient = kubeClient.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	}
 	server := &http.Server{
-		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(*certsConfiguration, *minTlsVersion, *ciphers, stopCh, mutatingWebhookClient),
+		Addr:      fmt.Sprintf(":%d", config.Port),
+		TLSConfig: configTLS(*config.CertsConfiguration, config.MinTlsVersion, config.Ciphers, stopCh, mutatingWebhookClient),
 	}
-	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
-	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
+	url := fmt.Sprintf("%v:%v", config.WebhookAddress, config.WebhookPort)
+	ignoredNamespaces := strings.Split(config.CommonFlags.IgnoredVpaObjectNamespaces, ",")
 	go func() {
-		if *registerWebhook {
+		if config.RegisterWebhook {
 			selfRegistration(
 				kubeClient,
-				readFile(*certsConfiguration.clientCaFile),
+				readFile(config.CertsConfiguration.ClientCaFile),
 				webHookDelay,
-				namespace,
-				*serviceName,
+				config.Namespace,
+				config.ServiceName,
 				url,
-				*registerByURL,
-				int32(*webhookTimeout),
-				commonFlags.VpaObjectNamespace,
+				config.RegisterByURL,
+				int32(config.WebhookTimeout),
+				config.CommonFlags.VpaObjectNamespace,
 				ignoredNamespaces,
-				*webHookFailurePolicy,
-				*webhookLabels,
+				config.WebhookFailurePolicy,
+				config.WebhookLabels,
 			)
 		}
 		// Start status updates after the webhook is initialized.

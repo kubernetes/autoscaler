@@ -35,16 +35,36 @@ type CommonFlags struct {
 	IgnoredVpaObjectNamespaces string
 }
 
+// DefaultCommonConfig returns the default values for common flags
+func DefaultCommonConfig() *CommonFlags {
+	return &CommonFlags{
+		KubeConfig:                 "",
+		KubeApiQps:                 50.0,
+		KubeApiBurst:               100.0,
+		EnableProfiling:            false,
+		VpaObjectNamespace:         corev1.NamespaceAll,
+		IgnoredVpaObjectNamespaces: "",
+	}
+}
+
 // InitCommonFlags initializes the common flags
 func InitCommonFlags() *CommonFlags {
-	cf := &CommonFlags{}
-	flag.StringVar(&cf.KubeConfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
-	flag.Float64Var(&cf.KubeApiQps, "kube-api-qps", 50.0, "QPS limit when making requests to Kubernetes apiserver")
-	flag.Float64Var(&cf.KubeApiBurst, "kube-api-burst", 100.0, "QPS burst limit when making requests to Kubernetes apiserver")
-	flag.BoolVar(&cf.EnableProfiling, "profiling", false, "Is debug/pprof endpoint enabled")
-	flag.StringVar(&cf.VpaObjectNamespace, "vpa-object-namespace", corev1.NamespaceAll, "Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace.")
-	flag.StringVar(&cf.IgnoredVpaObjectNamespaces, "ignored-vpa-object-namespaces", "", "A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector.")
+	cf := DefaultCommonConfig()
+	flag.StringVar(&cf.KubeConfig, "kubeconfig", cf.KubeConfig, "Path to a kubeconfig. Only required if out-of-cluster.")
+	flag.Float64Var(&cf.KubeApiQps, "kube-api-qps", cf.KubeApiQps, "QPS limit when making requests to Kubernetes apiserver")
+	flag.Float64Var(&cf.KubeApiBurst, "kube-api-burst", cf.KubeApiBurst, "QPS burst limit when making requests to Kubernetes apiserver")
+	flag.BoolVar(&cf.EnableProfiling, "profiling", cf.EnableProfiling, "Is debug/pprof endpoint enabled")
+	flag.StringVar(&cf.VpaObjectNamespace, "vpa-object-namespace", cf.VpaObjectNamespace, "Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace.")
+	flag.StringVar(&cf.IgnoredVpaObjectNamespaces, "ignored-vpa-object-namespaces", cf.IgnoredVpaObjectNamespaces, "A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector.")
 	return cf
+}
+
+// ValidateCommonConfig performs validation of the common flags
+func ValidateCommonConfig(config *CommonFlags) {
+	if len(config.VpaObjectNamespace) > 0 && len(config.IgnoredVpaObjectNamespaces) > 0 {
+		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 }
 
 // InitLoggingFlags initializes the logging flags

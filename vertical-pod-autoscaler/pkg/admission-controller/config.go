@@ -28,6 +28,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	"k8s.io/klog/v2"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
 )
 
 const (
@@ -36,7 +38,7 @@ const (
 )
 
 // MutatingWebhookConfigurationInterface
-func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struct{}, mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface) *tls.Config {
+func configTLS(cfg config.CertsConfig, minTlsVersion, ciphers string, stop <-chan struct{}, mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface) *tls.Config {
 	var tlsVersion uint16
 	var ciphersuites []uint16
 	reverseCipherMap := make(map[string]uint16)
@@ -67,11 +69,11 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 		MinVersion:   tlsVersion,
 		CipherSuites: ciphersuites,
 	}
-	if *cfg.reload {
+	if cfg.Reload {
 		cr := certReloader{
-			tlsCertPath:           *cfg.tlsCertFile,
-			tlsKeyPath:            *cfg.tlsPrivateKey,
-			clientCaPath:          *cfg.clientCaFile,
+			tlsCertPath:           cfg.TlsCertFile,
+			tlsKeyPath:            cfg.TlsPrivateKey,
+			clientCaPath:          cfg.ClientCaFile,
 			mutatingWebhookClient: mutatingWebhookClient,
 		}
 		if err := cr.load(); err != nil {
@@ -82,7 +84,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 		}
 		config.GetCertificate = cr.getCertificate
 	} else {
-		cert, err := tls.LoadX509KeyPair(*cfg.tlsCertFile, *cfg.tlsPrivateKey)
+		cert, err := tls.LoadX509KeyPair(cfg.TlsCertFile, cfg.TlsPrivateKey)
 		if err != nil {
 			klog.Fatal(err)
 		}

@@ -32,11 +32,6 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type certsConfig struct {
-	clientCaFile, tlsCertFile, tlsPrivateKey *string
-	reload                                   *bool
-}
-
 func readFile(filePath string) []byte {
 	res, err := os.ReadFile(filePath)
 	if err != nil {
