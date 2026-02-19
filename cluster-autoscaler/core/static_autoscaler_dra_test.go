@@ -419,6 +419,7 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 					MaxMemoryTotal:                   100000000,
 					ScaleUpFromZero:                  true,
 					DynamicResourceAllocationEnabled: true,
+					SchedulingSimulationTimeout:      10 * time.Minute,
 				},
 				nodeGroups:             nodeGroups,
 				nodeStateUpdateTime:    now,

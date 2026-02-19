@@ -17,6 +17,8 @@ limitations under the License.
 package test
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
@@ -43,7 +45,7 @@ func NewTestProcessors(options config.AutoscalingOptions) (*processors.Autoscali
 	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(templateNodeInfoProvider)
 
 	return &processors.AutoscalingProcessors{
-		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere),
+		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere, 10*time.Minute),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		BinpackingLimiter:      binpacking.NewTimeLimiter(options.MaxNodeGroupBinpackingDuration),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),

@@ -157,13 +157,13 @@ func TestTrySchedulePods(t *testing.T) {
 			t.Parallel()
 			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
-			s := NewHintingSimulator()
+			s := NewHintingSimulator(10 * time.Minute)
 
 			for pod, nodeName := range tc.hints {
 				s.hints.Set(HintKeyFromPod(pod), nodeName)
 			}
 
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
+			statuses, _, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false, false)
 			if tc.wantErr {
 				assert.Error(t, err)
 				return
@@ -242,7 +242,7 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, nodes, []*apiv1.Pod{})
 			pods := make([]*apiv1.Pod, 0, len(tc.podNodes))
-			s := NewHintingSimulator()
+			s := NewHintingSimulator(10 * time.Minute)
 			var expectedStatuses []Status
 			for p, n := range tc.podNodes {
 				pod := BuildTestPod(p, 1, 1)
@@ -250,7 +250,7 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 				s.hints.Set(HintKeyFromPod(pod), n)
 				expectedStatuses = append(expectedStatuses, Status{Pod: pod, NodeName: n})
 			}
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, pods, ScheduleAnywhere, false)
+			statuses, _, _, err := s.TrySchedulePods(clusterSnapshot, pods, ScheduleAnywhere, false, false)
 			assert.NoError(t, err)
 			assert.Equal(t, expectedStatuses, statuses)
 

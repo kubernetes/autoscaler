@@ -17,6 +17,8 @@ limitations under the License.
 package scheduling
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
@@ -32,13 +34,15 @@ type Status struct {
 
 // HintingSimulator is a helper object for simulating scheduler behavior.
 type HintingSimulator struct {
-	hints *Hints
+	hints             *Hints
+	simulationTimeout time.Duration
 }
 
 // NewHintingSimulator returns a new HintingSimulator.
-func NewHintingSimulator() *HintingSimulator {
+func NewHintingSimulator(simulationTimeout time.Duration) *HintingSimulator {
 	return &HintingSimulator{
-		hints: NewHints(),
+		hints:             NewHints(),
+		simulationTimeout: simulationTimeout,
 	}
 }
 
@@ -50,22 +54,35 @@ func NewHintingSimulator() *HintingSimulator {
 // after the first scheduling attempt that fails. This is useful if all provided
 // pods need to be scheduled.
 // Note: this function does not fork clusterSnapshot: this has to be done by the caller.
-func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]Status, int, error) {
+// If simulationEarlyStopEnabled is set to true, simulation will be stopped early after
+// simulationTimout and unprocessed pods will be filtered out from the list of unschedulable
+// pods
+func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure, simulationEarlyStopEnabled bool) ([]Status, []*apiv1.Pod, int, error) {
 	similarPods := NewSimilarPodsScheduling()
 
 	var statuses []Status
 	loggingQuota := klogx.PodsLoggingQuota()
-	for _, pod := range pods {
+	var unprocessedPods []*apiv1.Pod
+	startTime := time.Now()
+	for idx, pod := range pods {
+		now := time.Now()
+		if simulationEarlyStopEnabled && now.After(startTime.Add(s.simulationTimeout)) {
+			for i := idx; i < len(pods); i += 1 {
+				unprocessedPods = append(unprocessedPods, pods[i])
+			}
+			klogx.V(4).Infof("Scheduling simulation aborted early after: %v. Simulated %d pods. %d pods were unprocessed", now.Sub(startTime), idx, len(unprocessedPods))
+			break
+		}
 		klogx.V(5).UpTo(loggingQuota).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 		nodeName, err := s.tryScheduleUsingHints(clusterSnapshot, pod, isNodeAcceptable)
 		if err != nil {
-			return nil, 0, err
+			return nil, nil, 0, err
 		}
 
 		if nodeName == "" {
 			nodeName, err = s.trySchedule(similarPods, clusterSnapshot, pod, loggingQuota, isNodeAcceptable)
 			if err != nil {
-				return nil, 0, err
+				return nil, nil, 0, err
 			}
 		}
 
@@ -77,7 +94,7 @@ func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.Clust
 		}
 	}
 	klogx.V(4).Over(loggingQuota).Infof("There were also %v other logs from HintingSimulator.TrySchedulePods func that were capped.", -loggingQuota.Left())
-	return statuses, similarPods.OverflowingControllerCount(), nil
+	return statuses, unprocessedPods, similarPods.OverflowingControllerCount(), nil
 }
 
 // tryScheduleUsingHints tries to schedule the provided Pod in the provided clusterSnapshot using hints. If the pod is scheduled, the name of its Node is returned. If the
