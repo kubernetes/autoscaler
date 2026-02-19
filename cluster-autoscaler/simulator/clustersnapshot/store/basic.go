@@ -24,8 +24,8 @@ import (
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/klog/v2"
-	fwk "k8s.io/kube-scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.
@@ -37,20 +37,20 @@ type BasicSnapshotStore struct {
 }
 
 type internalBasicSnapshotData struct {
-	nodeInfoMap        map[string]fwk.NodeInfo
+	nodeInfoMap        map[string]schedulerinterface.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
 }
 
-func (data *internalBasicSnapshotData) listNodeInfos() []fwk.NodeInfo {
-	nodeInfoList := make([]fwk.NodeInfo, 0, len(data.nodeInfoMap))
+func (data *internalBasicSnapshotData) listNodeInfos() []schedulerinterface.NodeInfo {
+	nodeInfoList := make([]schedulerinterface.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		nodeInfoList = append(nodeInfoList, v)
 	}
 	return nodeInfoList
 }
 
-func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList() ([]fwk.NodeInfo, error) {
-	havePodsWithAffinityList := make([]fwk.NodeInfo, 0, len(data.nodeInfoMap))
+func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	havePodsWithAffinityList := make([]schedulerinterface.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		if len(v.GetPodsWithAffinity()) > 0 {
 			havePodsWithAffinityList = append(havePodsWithAffinityList, v)
@@ -60,8 +60,8 @@ func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList
 	return havePodsWithAffinityList, nil
 }
 
-func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredAntiAffinityList() ([]fwk.NodeInfo, error) {
-	havePodsWithRequiredAntiAffinityList := make([]fwk.NodeInfo, 0, len(data.nodeInfoMap))
+func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	havePodsWithRequiredAntiAffinityList := make([]schedulerinterface.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		if len(v.GetPodsWithRequiredAntiAffinity()) > 0 {
 			havePodsWithRequiredAntiAffinityList = append(havePodsWithRequiredAntiAffinityList, v)
@@ -71,7 +71,7 @@ func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredAnti
 	return havePodsWithRequiredAntiAffinityList, nil
 }
 
-func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (fwk.NodeInfo, error) {
+func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (schedulerinterface.NodeInfo, error) {
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
 	}
@@ -94,7 +94,7 @@ func (data *internalBasicSnapshotData) addPvcUsedByPod(pod *apiv1.Pod) {
 		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		k := schedulerimpl.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
 		_, found := data.pvcNamespacePodMap[k]
 		if !found {
 			data.pvcNamespacePodMap[k] = make(map[string]bool)
@@ -113,7 +113,7 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		k := schedulerimpl.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
 		if _, found := data.pvcNamespacePodMap[k]; found {
 			delete(data.pvcNamespacePodMap[k], pod.GetName())
 			if len(data.pvcNamespacePodMap[k]) == 0 {
@@ -125,13 +125,13 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 
 func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
-		nodeInfoMap:        make(map[string]fwk.NodeInfo),
+		nodeInfoMap:        make(map[string]schedulerinterface.NodeInfo),
 		pvcNamespacePodMap: make(map[string]map[string]bool),
 	}
 }
 
 func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
-	clonedNodeInfoMap := make(map[string]fwk.NodeInfo)
+	clonedNodeInfoMap := make(map[string]schedulerinterface.NodeInfo)
 	for k, v := range data.nodeInfoMap {
 		clonedNodeInfoMap[k] = v.Snapshot()
 	}
@@ -152,7 +152,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	if _, found := data.nodeInfoMap[node.Name]; found {
 		return fmt.Errorf("node %s already in snapshot", node.Name)
 	}
-	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo := schedulerimpl.NewNodeInfo()
 	nodeInfo.SetNode(node)
 	data.nodeInfoMap[node.Name] = nodeInfo
 	return nil
@@ -173,7 +173,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
-	podInfo, _ := schedulerframework.NewPodInfo(pod)
+	podInfo, _ := schedulerimpl.NewPodInfo(pod)
 	data.nodeInfoMap[nodeName].AddPodInfo(podInfo)
 	data.addPvcUsedByPod(pod)
 	return nil
@@ -221,7 +221,7 @@ func (snapshot *BasicSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
 }
 
 // AddSchedulerNodeInfo adds a NodeInfo.
-func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error {
+func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo schedulerinterface.NodeInfo) error {
 	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
 		return err
 	}
@@ -331,57 +331,57 @@ type basicSnapshotStoreNodeLister BasicSnapshotStore
 type basicSnapshotStoreStorageLister BasicSnapshotStore
 
 // NodeInfos exposes snapshot as NodeInfoLister.
-func (snapshot *BasicSnapshotStore) NodeInfos() fwk.NodeInfoLister {
+func (snapshot *BasicSnapshotStore) NodeInfos() schedulerinterface.NodeInfoLister {
 	return (*basicSnapshotStoreNodeLister)(snapshot)
 }
 
 // StorageInfos exposes snapshot as StorageInfoLister.
-func (snapshot *BasicSnapshotStore) StorageInfos() fwk.StorageInfoLister {
+func (snapshot *BasicSnapshotStore) StorageInfos() schedulerinterface.StorageInfoLister {
 	return (*basicSnapshotStoreStorageLister)(snapshot)
 }
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
-func (snapshot *BasicSnapshotStore) ResourceClaims() fwk.ResourceClaimTracker {
+func (snapshot *BasicSnapshotStore) ResourceClaims() schedulerinterface.ResourceClaimTracker {
 	return snapshot.DraSnapshot().ResourceClaims()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
-func (snapshot *BasicSnapshotStore) ResourceSlices() fwk.ResourceSliceLister {
+func (snapshot *BasicSnapshotStore) ResourceSlices() schedulerinterface.ResourceSliceLister {
 	return snapshot.DraSnapshot().ResourceSlices()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
-func (snapshot *BasicSnapshotStore) DeviceClasses() fwk.DeviceClassLister {
+func (snapshot *BasicSnapshotStore) DeviceClasses() schedulerinterface.DeviceClassLister {
 	return snapshot.DraSnapshot().DeviceClasses()
 }
 
 // DeviceClassResolver exposes the snapshot as DeviceClassResolver.
-func (snapshot *BasicSnapshotStore) DeviceClassResolver() fwk.DeviceClassResolver {
+func (snapshot *BasicSnapshotStore) DeviceClassResolver() schedulerinterface.DeviceClassResolver {
 	return snapshot.DraSnapshot().DeviceClassResolver()
 }
 
 // CSINodes returns the CSI nodes snapshot.
-func (snapshot *BasicSnapshotStore) CSINodes() fwk.CSINodeLister {
+func (snapshot *BasicSnapshotStore) CSINodes() schedulerinterface.CSINodeLister {
 	return snapshot.csiSnapshot.CSINodes()
 }
 
 // List returns the list of nodes in the snapshot.
-func (snapshot *basicSnapshotStoreNodeLister) List() ([]fwk.NodeInfo, error) {
+func (snapshot *basicSnapshotStoreNodeLister) List() ([]schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos(), nil
 }
 
 // HavePodsWithAffinityList returns the list of nodes with at least one pods with inter-pod affinity
-func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithAffinityList() ([]fwk.NodeInfo, error) {
+func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithAffinityList() ([]schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfosThatHavePodsWithAffinityList()
 }
 
 // HavePodsWithRequiredAntiAffinityList returns the list of NodeInfos of nodes with pods with required anti-affinity terms.
-func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredAntiAffinityList() ([]fwk.NodeInfo, error) {
+func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfosThatHavePodsWithRequiredAntiAffinityList()
 }
 
 // Returns the NodeInfo of the given node name.
-func (snapshot *basicSnapshotStoreNodeLister) Get(nodeName string) (fwk.NodeInfo, error) {
+func (snapshot *basicSnapshotStoreNodeLister) Get(nodeName string) (schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().getNodeInfo(nodeName)
 }
 

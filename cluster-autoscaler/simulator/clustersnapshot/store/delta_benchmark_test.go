@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 func BenchmarkBuildNodeInfoList(b *testing.B) {
@@ -53,7 +53,7 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			}
 			deltaStore.Fork()
 			for _, node := range nodes[tc.nodeCount:] {
-				schedNodeInfo := schedulerframework.NewNodeInfo()
+				schedNodeInfo := schedulerimpl.NewNodeInfo()
 				schedNodeInfo.SetNode(node)
 				if err := deltaStore.AddSchedulerNodeInfo(schedNodeInfo); err != nil {
 					assert.NoError(b, err)

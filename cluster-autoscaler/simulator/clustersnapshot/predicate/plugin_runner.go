@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // SchedulerPluginRunner can be used to run various phases of scheduler plugins through the scheduler framework.
@@ -47,7 +47,7 @@ func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapsh
 // function - until a Node where the Filters pass is found. Filters are only run for matching Nodes. If no matching Node with passing Filters is found, an error is returned.
 //
 // The node iteration always starts from the next Node from the last Node that was found by this method. TODO: Extract the iteration strategy out of SchedulerPluginRunner.
-func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (*apiv1.Node, *schedulerframework.CycleState, clustersnapshot.SchedulingError) {
+func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (*apiv1.Node, *schedulerimpl.CycleState, clustersnapshot.SchedulingError) {
 	nodeInfosList, err := p.snapshot.ListNodeInfos()
 	if err != nil {
 		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error listing NodeInfos: %v", err))
@@ -56,7 +56,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
-	state := schedulerframework.NewCycleState()
+	state := schedulerimpl.NewCycleState()
 	// Run the PreFilter phase of the framework for the Pod. This allows plugins to precompute some things (for all Nodes in the cluster at once) and
 	// save them in the CycleState. During the Filter phase, plugins can retrieve the precomputes from the CycleState and use them for answering the Filter
 	// for a given Node.
@@ -125,7 +125,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 }
 
 // RunFiltersOnNode runs the scheduler framework PreFilter and Filter phases to check if the given pod can be scheduled on the given node.
-func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string) (*apiv1.Node, *schedulerframework.CycleState, clustersnapshot.SchedulingError) {
+func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string) (*apiv1.Node, *schedulerimpl.CycleState, clustersnapshot.SchedulingError) {
 	nodeInfo, err := p.snapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error obtaining NodeInfo for name %q: %v", nodeName, err))
@@ -134,7 +134,7 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
-	state := schedulerframework.NewCycleState()
+	state := schedulerimpl.NewCycleState()
 	// Run the PreFilter phase of the framework for the Pod and check the results. See the corresponding comments in RunFiltersUntilPassingNode() for more info.
 	preFilterResult, preFilterStatus, nodeFilteringPlugins := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
@@ -163,7 +163,7 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 }
 
 // RunReserveOnNode runs the scheduler framework Reserve phase to update the scheduler plugins state to reflect the Pod being scheduled on the Node.
-func (p *SchedulerPluginRunner) RunReserveOnNode(pod *apiv1.Pod, nodeName string, postFilterState *schedulerframework.CycleState) error {
+func (p *SchedulerPluginRunner) RunReserveOnNode(pod *apiv1.Pod, nodeName string, postFilterState *schedulerimpl.CycleState) error {
 	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
