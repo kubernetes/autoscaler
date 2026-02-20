@@ -24,36 +24,42 @@ import (
 
 // NodeOrderMapping defines the order in which nodes are iterated during scheduling simulation.
 type NodeOrderMapping interface {
-	// Init initializes the mapping with the list of nodes and the index of the last successful match.
-	Init(collection []*framework.NodeInfo, lastMatch int)
+	// Reset initializes or resets the mapping with the list of nodeInfos.
+	// It will be called every time the scheduler tries to schedule a given pod on nodes.
+	Reset(collection []*framework.NodeInfo)
 	// At returns the index of the node at the given iteration step 'i'.
 	// Returns -1 if no more nodes should be processed.
+	// It starts from 0 every time a  pod is being scheduled.
 	At(i int) int
+	// MarkMatch marks the node at the given index as the last successful match.
+	// This can be used by the mapping to adjust the order for subsequent pods.
+	MarkMatch(index int)
 }
 
 type lastIndexOrderMapping struct {
-	currentOffset int
-	collection    []*framework.NodeInfo
+	lastIndex  int
+	offset     int
+	collection []*framework.NodeInfo
 }
 
 // NewLastIndexOrderMapping returns a NodeOrderMapping that starts the iteration from the last match + some defined offset.
-func NewLastIndexOrderMapping(additionalOffset int) NodeOrderMapping {
-	return &lastIndexOrderMapping{currentOffset: additionalOffset}
+func NewLastIndexOrderMapping(offset int) NodeOrderMapping {
+	return &lastIndexOrderMapping{offset: offset}
 }
 
-func (m *lastIndexOrderMapping) Init(collection []*framework.NodeInfo, lastMatch int) {
+func (m *lastIndexOrderMapping) Reset(collection []*framework.NodeInfo) {
 	m.collection = collection
-	if len(collection) == 0 {
-		return
-	}
-	m.currentOffset = (m.currentOffset + lastMatch) % len(collection)
 }
 
 func (m *lastIndexOrderMapping) At(i int) int {
 	if len(m.collection) == 0 {
 		return -1
 	}
-	return (i + m.currentOffset) % len(m.collection)
+	return (i + m.offset + m.lastIndex) % len(m.collection)
+}
+
+func (m *lastIndexOrderMapping) MarkMatch(index int) {
+	m.lastIndex = index
 }
 
 type priorityNodeOrderMapping struct {
@@ -67,7 +73,7 @@ func NewPriorityNodeOrderMapping(less func(a, b *framework.NodeInfo) bool) NodeO
 	return &priorityNodeOrderMapping{less: less}
 }
 
-func (m *priorityNodeOrderMapping) Init(collection []*framework.NodeInfo, _ int) {
+func (m *priorityNodeOrderMapping) Reset(collection []*framework.NodeInfo) {
 	m.collection = collection
 	m.order = make([]int, len(collection))
 	for i := range collection {
@@ -83,6 +89,10 @@ func (m *priorityNodeOrderMapping) At(i int) int {
 		return -1
 	}
 	return m.order[i]
+}
+
+func (m *priorityNodeOrderMapping) MarkMatch(index int) {
+	// No work needed here bec we want to respect the ordering every time.
 }
 
 // SchedulingOptions contains options for the scheduling strategies and simulation.

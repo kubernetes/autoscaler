@@ -32,21 +32,24 @@ import (
 
 // SchedulerPluginRunner can be used to run various phases of scheduler plugins through the scheduler framework.
 type SchedulerPluginRunner struct {
-	fwHandle    *framework.Handle
-	snapshot    clustersnapshot.ClusterSnapshot
-	lastIndex   int
-	parallelism int
+	fwHandle            *framework.Handle
+	snapshot            clustersnapshot.ClusterSnapshot
+	defaultNodeOrdering clustersnapshot.NodeOrderMapping
+	parallelism         int
 }
 
 // NewSchedulerPluginRunner builds a SchedulerPluginRunner.
 func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot, parallelism int) *SchedulerPluginRunner {
-	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshot: snapshot, parallelism: parallelism}
+	return &SchedulerPluginRunner{
+		fwHandle:            fwHandle,
+		snapshot:            snapshot,
+		defaultNodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
+		parallelism:         parallelism,
+	}
 }
 
 // RunFiltersUntilPassingNode runs the scheduler framework PreFilter phase once, and then keeps running the Filter phase for all nodes in the cluster that match the
 // opts.IsNodeAcceptable function - until a Node where the Filters pass is found. Filters are only run for matching Nodes. If no matching Node with passing Filters is found, an error is returned.
-//
-// If opts.NodeOrdering is unspecified, the node iteration will start from the next Node from the last Node that was found by this method.
 func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts clustersnapshot.SchedulingOptions) (*apiv1.Node, *schedulerframework.CycleState, clustersnapshot.SchedulingError) {
 	nodeInfosList, err := p.snapshot.ListNodeInfos()
 	if err != nil {
@@ -75,10 +78,10 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 
 	nodeOrdering := opts.NodeOrdering
 	if nodeOrdering == nil {
-		nodeOrdering = clustersnapshot.NewLastIndexOrderMapping(1)
+		nodeOrdering = p.defaultNodeOrdering
 	}
 
-	nodeOrdering.Init(nodeInfosList, p.lastIndex)
+	nodeOrdering.Reset(nodeInfosList)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -131,7 +134,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode)
 
 	if foundNode != nil {
-		p.lastIndex = foundIndex
+		nodeOrdering.MarkMatch(foundIndex)
 		return foundNode, state, nil
 	}
 

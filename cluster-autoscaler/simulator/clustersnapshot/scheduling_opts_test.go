@@ -69,7 +69,8 @@ func TestLastIndexOrderMapping(t *testing.T) {
 			}
 
 			mapping := NewLastIndexOrderMapping(tc.additionalOffset)
-			mapping.Init(nodes, tc.lastMatch)
+			mapping.MarkMatch(tc.lastMatch)
+			mapping.Reset(nodes)
 
 			var gotOrder []int
 			for i := 0; i < len(nodes); i++ {
@@ -121,7 +122,7 @@ func TestPriorityNodeOrderMapping(t *testing.T) {
 			}
 
 			mapping := NewPriorityNodeOrderMapping(tc.less)
-			mapping.Init(nodes, 1)
+			mapping.Reset(nodes)
 
 			var gotOrder []int
 			for i := 0; i < len(nodes); i++ {
