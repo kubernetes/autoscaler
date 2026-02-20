@@ -6,13 +6,14 @@ package instancepools
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	apiv1 "k8s.io/api/core/v1"
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/workrequests"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
-	"reflect"
-	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
@@ -372,6 +373,12 @@ func TestGetInstancePoolNodes(t *testing.T) {
 		AvailabilityDomain: common.String("PHX-AD-1"),
 		State:              common.String(string(core.InstanceLifecycleStateTerminating)),
 	},
+		{
+			// Instance state is running with varied capitalization
+			Id:                 common.String("ocid1.instance.oc1.phx.aaa3"),
+			AvailabilityDomain: common.String("PHX-AD-1"),
+			State:              common.String("Running"),
+		},
 	}
 
 	expected := []cloudprovider.Instance{
@@ -385,6 +392,12 @@ func TestGetInstancePoolNodes(t *testing.T) {
 			Id: "ocid1.instance.oc1.phx.aaa2",
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceDeleting,
+			},
+		},
+		{
+			Id: "ocid1.instance.oc1.phx.aaa3",
+			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceRunning,
 			},
 		},
 	}
