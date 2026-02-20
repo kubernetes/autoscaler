@@ -202,7 +202,7 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 // NewBasicSnapshotStore creates instances of BasicSnapshotStore.
 func NewBasicSnapshotStore() *BasicSnapshotStore {
 	snapshot := &BasicSnapshotStore{}
-	snapshot.clear()
+	snapshot.Clear()
 	return snapshot
 }
 
@@ -233,40 +233,6 @@ func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo schedulerinter
 	return nil
 }
 
-// SetClusterState sets the cluster state.
-func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
-	snapshot.clear()
-
-	knownNodes := make(map[string]bool)
-	for _, node := range nodes {
-		if err := snapshot.getInternalData().addNode(node); err != nil {
-			return err
-		}
-		knownNodes[node.Name] = true
-	}
-	for _, pod := range scheduledPods {
-		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.getInternalData().addPod(pod, pod.Spec.NodeName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if draSnapshot == nil {
-		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
-	} else {
-		snapshot.draSnapshot = draSnapshot
-	}
-
-	if csiSnapshot == nil {
-		snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
-	} else {
-		snapshot.csiSnapshot = csiSnapshot
-	}
-
-	return nil
-}
-
 // RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
 func (snapshot *BasicSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
 	return snapshot.getInternalData().removeNodeInfo(nodeName)
@@ -285,6 +251,16 @@ func (snapshot *BasicSnapshotStore) ForceRemovePod(namespace, podName, nodeName 
 // IsPVCUsedByPods returns if the pvc is used by any pod
 func (snapshot *BasicSnapshotStore) IsPVCUsedByPods(key string) bool {
 	return snapshot.getInternalData().isPVCUsedByPods(key)
+}
+
+// SetDraSnapshot replaces the DRA snapshot in the store.
+func (snapshot *BasicSnapshotStore) SetDraSnapshot(draSnapshot *drasnapshot.Snapshot) {
+	snapshot.draSnapshot = draSnapshot
+}
+
+// SetCsiSnapshot replaces the CSI snapshot in the store.
+func (snapshot *BasicSnapshotStore) SetCsiSnapshot(csiSnapshot *csisnapshot.Snapshot) {
+	snapshot.csiSnapshot = csiSnapshot
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
@@ -317,8 +293,8 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 	return nil
 }
 
-// clear reset cluster snapshot to empty, unforked state
-func (snapshot *BasicSnapshotStore) clear() {
+// Clear reset cluster snapshot to empty, unforked state
+func (snapshot *BasicSnapshotStore) Clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
 	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
