@@ -341,14 +341,17 @@ func newEarlyExitNodeOrderMapping(limit int) *earlyExitNodeOrderMapping {
 		limit: limit,
 	}
 }
-func (m *earlyExitNodeOrderMapping) Init(nodeInfos []*framework.NodeInfo, lastMatched int) {
-	m.sortedNodesOrdering.Init(nodeInfos, lastMatched)
+func (m *earlyExitNodeOrderMapping) Reset(nodeInfos []*framework.NodeInfo) {
+	m.sortedNodesOrdering.Reset(nodeInfos)
 }
 func (m *earlyExitNodeOrderMapping) At(i int) int {
 	if i >= m.limit {
 		return -1
 	}
 	return m.sortedNodesOrdering.At(i)
+}
+func (m *earlyExitNodeOrderMapping) MarkMatch(index int) {
+	m.sortedNodesOrdering.MarkMatch(index)
 }
 
 func TestRunFilterUntilPassingNode_ExitEarlyWhenOrderingReturnNegativeOne(t *testing.T) {
@@ -554,8 +557,9 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 			pluginRunner.parallelism = tc.parallelism
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				pluginRunner.lastIndex = 0 // Reset state for each run
-				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, clustersnapshot.SchedulingOptions{})
+				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, clustersnapshot.SchedulingOptions{
+					NodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
+				})
 				assert.NoError(b, err)
 			}
 		})
