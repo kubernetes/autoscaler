@@ -47,7 +47,6 @@ This functionality will be guarded by a new feature gate `NativeSidecar` to allo
 The Recommender component identifies native sidecar containers by examining init containers with `restartPolicy: Always` in the [`SpecClient`](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/recommender/input/spec/spec_client.go#L53-L56). These containers are assigned the `ContainerTypeInitSidecar` type.
 
 When the `NativeSidecar` feature gate is enabled, the `ClusterFeeder` processes native sidecars similarly to standard containers:
-- They are stored in a separate `InitSidecarsContainers` map in the pod state
 - Resource usage samples are collected and aggregated for recommendations
 - Recommendations are generated using the same logic as standard containers
 ```go
@@ -67,7 +66,7 @@ for _, initContainer := range pod.InitContainers {
 }
 ```
 
-The VPA custom resource definition remains unchanged. Native sidecar recommendations are included in the `containerRecommendations` array alongside standard container recommendations, using the unique container name to identify them.
+The VPA custom resource definition remains unchanged. Native sidecar recommendations treated exactly like standard container recommendations, the unique container names allow us to identify them.
 
 ### Update / Admission
 
