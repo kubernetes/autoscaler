@@ -6,7 +6,6 @@ package instancepools
 
 import (
 	"fmt"
-	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"os"
 	"strconv"
 	"strings"
@@ -14,6 +13,7 @@ import (
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
+	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -267,30 +267,32 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 	var providerInstances []cloudprovider.Instance
 	for _, instance := range *instanceSummaries {
 		status := &cloudprovider.InstanceStatus{}
-		switch *instance.State {
-		case string(core.InstanceLifecycleStateStopped), string(core.InstanceLifecycleStateTerminated):
+		switch strings.ToLower(*instance.State) {
+		case strings.ToLower(string(core.InstanceLifecycleStateStopped)), strings.ToLower(string(core.InstanceLifecycleStateTerminated)):
 			klog.V(4).Infof("skipping instance is in stopped/terminated state: %q", *instance.Id)
-		case string(core.InstanceLifecycleStateRunning):
+		case strings.ToLower(string(core.InstanceLifecycleStateRunning)):
 			status.State = cloudprovider.InstanceRunning
-		case string(core.InstanceLifecycleStateCreatingImage):
+		case strings.ToLower(string(core.InstanceLifecycleStateCreatingImage)):
 			status.State = cloudprovider.InstanceCreating
-		case string(core.InstanceLifecycleStateStarting):
+		case strings.ToLower(string(core.InstanceLifecycleStateStarting)):
 			status.State = cloudprovider.InstanceCreating
-		case string(core.InstanceLifecycleStateMoving):
+		case strings.ToLower(string(core.InstanceLifecycleStateMoving)):
 			status.State = cloudprovider.InstanceCreating
-		case string(core.InstanceLifecycleStateProvisioning):
+		case strings.ToLower(string(core.InstanceLifecycleStateProvisioning)):
 			status.State = cloudprovider.InstanceCreating
-		case string(core.InstanceLifecycleStateTerminating):
+		case strings.ToLower(string(core.InstanceLifecycleStateTerminating)):
 			status.State = cloudprovider.InstanceDeleting
-		case string(core.InstanceLifecycleStateStopping):
+		case strings.ToLower(string(core.InstanceLifecycleStateStopping)):
 			status.State = cloudprovider.InstanceDeleting
-		case consts.InstanceStateUnfulfilled:
+		case strings.ToLower(consts.InstanceStateUnfulfilled):
 			status.State = cloudprovider.InstanceCreating
 			status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
 				ErrorCode:    consts.InstanceStateUnfulfilled,
 				ErrorMessage: "OCI cannot provision additional instances for this instance pool. Review quota and/or capacity.",
 			}
+		default:
+			klog.Warningf("instance %s has unknown state: %s", *instance.Id, *instance.State)
 		}
 
 		// Instance not in a terminal or unknown state, ok to add.
@@ -310,7 +312,7 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails ocicommon.OciRef) (*InstancePoolNodeGroup, error) {
 	if m.cfg.Global.UseNonMemberAnnotation && instanceDetails.InstancePoolID == consts.OciInstancePoolIDNonPoolMember {
 		// Instance is not part of a configured pool. Return early and avoid additional API calls.
-		klog.V(4).Infof(instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
+		klog.V(4).Info(instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
 			consts.OciInstancePoolIDNonPoolMember)
 		return nil, errInstanceInstancePoolNotFound
 	}
