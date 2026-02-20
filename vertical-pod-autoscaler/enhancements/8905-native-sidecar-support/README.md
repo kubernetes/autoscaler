@@ -53,13 +53,13 @@ When the `NativeSidecar` feature gate is enabled, the `ClusterFeeder` processes 
 ```go
 for _, container := range pod.Containers {
   if err := feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
-    klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
+    klog.V(4).ErrorS(err, "Failed to add container", "container", container.ID)
   }
 }
 for _, initContainer := range pod.InitContainers {
   if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeInitSidecar {
     if err := feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
-      klog.V(0).InfoS("Failed to add initContainer", "container", initContainer.ID, "error", err)
+      klog.V(4).ErrorS(err, "Failed to add initContainer", "container", initContainer.ID)
     }
   } else {
     // existing init container logic...
@@ -93,16 +93,20 @@ The following test scenarios will be added to e2e tests.
 
 #### Upgrade
 
-On upgrade of the VPA to 1.6.0 (tentative release version), nothing will change,
-VPAs will continue to work as before.
+Upgrading to VPA 1.7.0 (tentative release version) does not change behavior by default. Existing VPAs continue to work as before.
 
-Users can use the new `NativeSidecar` by enabling the alpha Feature Gate (which defaults to disabled)
-by passing `--feature-gates=NativeSidecar=true` to the VPA components.
+To use native sidecar support, enable the (alpha) `NativeSidecar` feature gate (disabled by default) by passing `--feature-gates=NativeSidecar=true` to all VPA components.
+When enabled, the Recommender will generate recommendations for native sidecars, and the Updater and Admission Controller will apply them.
 
 #### Downgrade
 
-On downgrade of VPA from 1.6.0 (tentative release version), nothing will change.
-VPAs will continue to work as previously. Checkpoints may contain sidecar resource information until updated, but updater and admission will not modify sidecar resources.
+If the `NativeSidecar` feature gate was never enabled, downgrading from VPA 1.7.0 (tentative release version) has no behavioral impact.
+
+If `NativeSidecar` was enabled before the downgrade:
+
+- Existing VPA behavior remains the same as in versions without native sidecar support; the Updater and Admission Controller will not modify native sidecar resources.
+- Checkpoints may still contain native sidecar data until they are refreshed.
+- Pods that already had native sidecar resources applied will keep running with those last applied values. Manual intervention may be needed to revert native sidecar resources if you want to return to pre-feature-gate behavior.
 
 ## Implementation History
 
