@@ -288,7 +288,7 @@ func TestCleanAllToBeDeleted(t *testing.T) {
 	n2.Spec.Taints = []apiv1.Taint{{Key: ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 
 	fakeClient := buildFakeClient(t, n1, n2)
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient, false)
+	fakeRecorder := kube_util.CreateEventRecorder(context.TODO(), fakeClient, false)
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
@@ -304,7 +304,7 @@ func TestCleanAllDeletionCandidates(t *testing.T) {
 	n2.Spec.Taints = []apiv1.Taint{{Key: DeletionCandidateTaintKey, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 
 	fakeClient := buildFakeClient(t, n1, n2)
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient, false)
+	fakeRecorder := kube_util.CreateEventRecorder(context.TODO(), fakeClient, false)
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
@@ -925,7 +925,7 @@ func TestCleanStaleDeletionCandidates(t *testing.T) {
 			CleanStaleDeletionCandidates(
 				tc.allNodes,
 				fakeClient,
-				kube_util.CreateEventRecorder(fakeClient, false),
+				kube_util.CreateEventRecorder(context.TODO(), fakeClient, false),
 				tc.nodeDeletionCandidateTTL,
 			)
 

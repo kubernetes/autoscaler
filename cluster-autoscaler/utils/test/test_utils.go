@@ -346,8 +346,18 @@ func TolerateGpuForPod(pod *apiv1.Pod) {
 	pod.Spec.Tolerations = append(pod.Spec.Tolerations, apiv1.Toleration{Key: resourceNvidiaGPU, Operator: apiv1.TolerationOpExists})
 }
 
+// NodeOption is a function that modifies a Node during construction.
+type NodeOption func(*apiv1.Node)
+
+// IsReady sets the node to a Ready state.
+func IsReady(ready bool) NodeOption {
+	return func(node *apiv1.Node) {
+		SetNodeReadyState(node, ready, time.Now())
+	}
+}
+
 // BuildTestNode creates a node with specified capacity.
-func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64) *apiv1.Node {
+func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64, opts ...NodeOption) *apiv1.Node {
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:     name,
@@ -374,6 +384,10 @@ func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64) *apiv
 	node.Status.Allocatable = apiv1.ResourceList{}
 	for k, v := range node.Status.Capacity {
 		node.Status.Allocatable[k] = v
+	}
+
+	for _, opt := range opts {
+		opt(node)
 	}
 
 	return node
