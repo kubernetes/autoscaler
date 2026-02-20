@@ -17,14 +17,12 @@ limitations under the License.
 package store
 
 import (
-	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
-	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -435,7 +433,7 @@ func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 	snapshot := &DeltaSnapshotStore{
 		parallelism: parallelism,
 	}
-	snapshot.clear()
+	snapshot.Clear()
 	return snapshot
 }
 
@@ -462,80 +460,6 @@ func (snapshot *DeltaSnapshotStore) AddSchedulerNodeInfo(nodeInfo schedulerinter
 	return nil
 }
 
-// setClusterStatePodsSequential sets the pods in cluster state in a sequential way.
-func (snapshot *DeltaSnapshotStore) setClusterStatePodsSequential(nodeInfos []schedulerinterface.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
-	for _, pod := range scheduledPods {
-		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
-			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerimpl.NewPodInfo(pod)
-			nodeInfos[nodeIdx].AddPodInfo(podInfo)
-		}
-	}
-}
-
-// setClusterStatePodsParallelized sets the pods in cluster state in parallel based on snapshot.parallelism value.
-func (snapshot *DeltaSnapshotStore) setClusterStatePodsParallelized(nodeInfos []schedulerinterface.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
-	podsForNode := make([][]*apiv1.Pod, len(nodeInfos))
-	for _, pod := range scheduledPods {
-		nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]
-		if !ok {
-			continue
-		}
-		podsForNode[nodeIdx] = append(podsForNode[nodeIdx], pod)
-	}
-
-	ctx := context.Background()
-	workqueue.ParallelizeUntil(ctx, snapshot.parallelism, len(nodeInfos), func(nodeIdx int) {
-		nodeInfo := nodeInfos[nodeIdx]
-		for _, pod := range podsForNode[nodeIdx] {
-			// Can add pod directly. Cache will be cleared afterwards.
-			podInfo, _ := schedulerimpl.NewPodInfo(pod)
-			nodeInfo.AddPodInfo(podInfo)
-		}
-	})
-}
-
-// SetClusterState sets the cluster state.
-func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
-	snapshot.clear()
-
-	nodeNameToIdx := make(map[string]int, len(nodes))
-	nodeInfos := make([]schedulerinterface.NodeInfo, len(nodes))
-	for i, node := range nodes {
-		nodeInfo, err := snapshot.data.addNode(node)
-		if err != nil {
-			return err
-		}
-		nodeNameToIdx[node.Name] = i
-		nodeInfos[i] = nodeInfo
-	}
-
-	if snapshot.parallelism > 1 {
-		snapshot.setClusterStatePodsParallelized(nodeInfos, nodeNameToIdx, scheduledPods)
-	} else {
-		// TODO(macsko): Migrate to setClusterStatePodsParallelized for parallelism == 1
-		// after making sure the implementation is always correct in CA 1.33.
-		snapshot.setClusterStatePodsSequential(nodeInfos, nodeNameToIdx, scheduledPods)
-	}
-
-	// Clear caches after adding pods.
-	snapshot.data.clearCaches()
-
-	if draSnapshot == nil {
-		snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
-	} else {
-		snapshot.draSnapshot = draSnapshot
-	}
-
-	if csiSnapshot == nil {
-		snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
-	} else {
-		snapshot.csiSnapshot = csiSnapshot
-	}
-
-	return nil
-}
-
 // RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
 func (snapshot *DeltaSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
 	return snapshot.data.removeNodeInfo(nodeName)
@@ -554,6 +478,16 @@ func (snapshot *DeltaSnapshotStore) ForceRemovePod(namespace, podName, nodeName 
 // IsPVCUsedByPods returns if the pvc is used by any pod
 func (snapshot *DeltaSnapshotStore) IsPVCUsedByPods(key string) bool {
 	return snapshot.data.isPVCUsedByPods(key)
+}
+
+// SetDraSnapshot replaces the DRA snapshot in the store.
+func (snapshot *DeltaSnapshotStore) SetDraSnapshot(draSnapshot *drasnapshot.Snapshot) {
+	snapshot.draSnapshot = draSnapshot
+}
+
+// SetCsiSnapshot replaces the CSI snapshot in the store.
+func (snapshot *DeltaSnapshotStore) SetCsiSnapshot(csiSnapshot *csisnapshot.Snapshot) {
+	snapshot.csiSnapshot = csiSnapshot
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
@@ -589,7 +523,7 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 
 // Clear reset cluster snapshot to empty, unforked state
 // Time: O(1)
-func (snapshot *DeltaSnapshotStore) clear() {
+func (snapshot *DeltaSnapshotStore) Clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
 	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
 	snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()

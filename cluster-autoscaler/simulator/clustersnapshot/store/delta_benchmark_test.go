@@ -48,8 +48,12 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 		b.Run(fmt.Sprintf("fork add 1000 to %d", tc.nodeCount), func(b *testing.B) {
 			nodes := clustersnapshot.CreateTestNodes(tc.nodeCount + 1000)
 			deltaStore := NewDeltaSnapshotStore(16)
-			if err := deltaStore.SetClusterState(nodes[:tc.nodeCount], nil, nil, nil); err != nil {
-				assert.NoError(b, err)
+			for _, node := range nodes[:tc.nodeCount] {
+				schedNodeInfo := schedulerimpl.NewNodeInfo()
+				schedNodeInfo.SetNode(node)
+				if err := deltaStore.AddSchedulerNodeInfo(schedNodeInfo); err != nil {
+					assert.NoError(b, err)
+				}
 			}
 			deltaStore.Fork()
 			for _, node := range nodes[tc.nodeCount:] {
@@ -70,8 +74,12 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 		b.Run(fmt.Sprintf("base %d", tc.nodeCount), func(b *testing.B) {
 			nodes := clustersnapshot.CreateTestNodes(tc.nodeCount)
 			deltaStore := NewDeltaSnapshotStore(16)
-			if err := deltaStore.SetClusterState(nodes, nil, nil, nil); err != nil {
-				assert.NoError(b, err)
+			for _, node := range nodes {
+				schedNodeInfo := schedulerimpl.NewNodeInfo()
+				schedNodeInfo.SetNode(node)
+				if err := deltaStore.AddSchedulerNodeInfo(schedNodeInfo); err != nil {
+					assert.NoError(b, err)
+				}
 			}
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
