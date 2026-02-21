@@ -72,6 +72,7 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
+// The caller must hold the lock protecting the calculator.
 func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa, pod)
 	if err != nil {
