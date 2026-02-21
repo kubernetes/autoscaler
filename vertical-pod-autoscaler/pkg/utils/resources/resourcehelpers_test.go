@@ -23,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -340,6 +341,96 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 			gotRequests, gotLimits := InitContainerRequestsAndLimits(tc.initContainerName, tc.pod)
 			assert.Equal(t, tc.wantRequests, gotRequests, "requests don't match")
 			assert.Equal(t, tc.wantLimits, gotLimits, "limits don't match")
+		})
+	}
+}
+
+func TestResourcesEqual(t *testing.T) {
+	resA := corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("100m"),
+		corev1.ResourceMemory: resource.MustParse("256Mi"),
+	}
+	resB := corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("100m"),
+		corev1.ResourceMemory: resource.MustParse("256Mi"),
+	}
+	resC := corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("200m"),
+		corev1.ResourceMemory: resource.MustParse("256Mi"),
+	}
+
+	tests := []struct {
+		name     string
+		a        corev1.ResourceList
+		b        corev1.ResourceList
+		expected bool
+	}{
+		{"Both empty", corev1.ResourceList{}, corev1.ResourceList{}, true},
+		{"Identical resources", resA, resB, true},
+		{"Different values", resA, resC, false},
+		{"Different lengths", resA, corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")}, false},
+		{"Missing key", resA, corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m"), "disk": resource.MustParse("1Gi")}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ResourcesEqual(tt.a, tt.b); got != tt.expected {
+				t.Errorf("ResourcesEqual() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestRecommendationsEqual(t *testing.T) {
+	container1 := vpa_types.RecommendedContainerResources{
+		ContainerName: "app",
+		Target: corev1.ResourceList{
+			corev1.ResourceCPU: resource.MustParse("100m"),
+		},
+	}
+
+	container2 := vpa_types.RecommendedContainerResources{
+		ContainerName: "sidecar",
+		Target: corev1.ResourceList{
+			corev1.ResourceCPU: resource.MustParse("50m"),
+		},
+	}
+
+	tests := []struct {
+		name     string
+		a        *vpa_types.RecommendedPodResources
+		b        *vpa_types.RecommendedPodResources
+		expected bool
+	}{
+		{"Both nil", nil, nil, true},
+		{"One nil", &vpa_types.RecommendedPodResources{}, nil, false},
+		{"Both empty lists",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{}},
+			true,
+		},
+		{"Matching recommendations",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
+			true,
+		},
+		{"Different container names",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container2}},
+			false,
+		},
+		{"Different number of containers",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1, container2}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RecommendationsEqual(tt.a, tt.b); got != tt.expected {
+				t.Errorf("RecommendationsEqual() = %v, want %v", got, tt.expected)
+			}
 		})
 	}
 }

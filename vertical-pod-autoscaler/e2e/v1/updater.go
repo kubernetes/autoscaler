@@ -66,7 +66,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		podList := setupPodsForUpscalingEviction(f)
+		podList := setupPodsForUpscalingEviction(f, vpa_types.UpdateModeRecreate)
 
 		ginkgo.By("Waiting for pods to be evicted")
 		err := WaitForPodsEvicted(f, podList)
@@ -97,7 +97,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		podList := setupPodsForDownscalingEviction(f, nil)
+		podList := setupPodsForDownscalingEviction(f, nil, vpa_types.UpdateModeRecreate)
 
 		ginkgo.By("Waiting for pods to be evicted")
 		err := WaitForPodsEvicted(f, podList)
@@ -132,14 +132,14 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 				ChangeRequirement: vpa_types.TargetHigherThanRequests,
 			},
 		}
-		podList := setupPodsForDownscalingEviction(f, er)
+		podList := setupPodsForDownscalingEviction(f, er, vpa_types.UpdateModeRecreate)
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
 	// FIXME todo(adrianmoisey): This test seems to be flaky after running in parallel, unsure why, see if it's possible to fix
 	framework.It("doesn't evict pods when Admission Controller status unavailable", framework.WithSerial(), func() {
-		podList := setupPodsForUpscalingEviction(f)
+		podList := setupPodsForUpscalingEviction(f, vpa_types.UpdateModeInPlaceOrRecreate)
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
@@ -169,7 +169,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		podList := setupPodsForUpscalingInPlace(f)
+		podList := setupPodsForUpscalingInPlace(f, vpa_types.UpdateModeInPlaceOrRecreate)
 		initialPods := podList.DeepCopy()
 
 		ginkgo.By("Waiting for pods to be in-place updated")
@@ -201,14 +201,159 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		podList := setupPodsForDownscalingInPlace(f, nil)
+		podList := setupPodsForDownscalingInPlace(f, nil, vpa_types.UpdateModeInPlaceOrRecreate)
 		initialPods := podList.DeepCopy()
 
 		ginkgo.By("Waiting for pods to be in-place downscaled")
 		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
+
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("In-place updates pods with InPlace mode when update succeeds", framework.WithSerial(), framework.WithFeatureGate(features.InPlace), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForUpscalingInPlace(f, vpa_types.UpdateModeInPlace)
+		initialPods := podList.DeepCopy()
+
+		ginkgo.By("Waiting for pods to be in-place updated with InPlace mode")
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+	framework.It("does not evicts pods for downscaling with InPlace mode", framework.WithSerial(), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForDownscalingEviction(f, nil, vpa_types.UpdateModeInPlace)
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
+	framework.It("InPlace mode retries when recommendations change", framework.WithSerial(), framework.WithFeatureGate(features.InPlace), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		// Set up pods with initial recommendation (100m -> 200m)
+		podList := setupPodsForUpscalingInPlace(f, vpa_types.UpdateModeInPlace)
+		initialPodSet := MakePodSet(podList)
+		initialPods := podList.DeepCopy()
+
+		ginkgo.By("Waiting for initial in-place update")
+		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Recording current pod state after first update")
+		podListAfterFirstUpdate, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podsAfterFirstUpdate := podListAfterFirstUpdate.DeepCopy()
+
+		ginkgo.By("Updating VPA with new recommendations (300m)")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaClientSet := utils.GetVpaClientSet(f)
+
+		vpaCRD, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).
+			Get(context.TODO(), "hamster-vpa", metav1.GetOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: containerName,
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("300m"),
+						apiv1.ResourceMemory: resource.MustParse("200Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("300m"),
+						apiv1.ResourceMemory: resource.MustParse("200Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("300m"),
+						apiv1.ResourceMemory: resource.MustParse("200Mi"),
+					},
+				},
+			},
+		}
+
+		_, err = vpaClientSet.AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).
+			UpdateStatus(context.TODO(), vpaCRD, metav1.UpdateOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Waiting for pods to be updated again with new recommendations")
+		err = WaitForPodsUpdatedWithoutEviction(f, podsAfterFirstUpdate)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Verifying no pods were evicted during the process")
+		currentPods, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		currentPodSet := MakePodSet(currentPods)
+
+		// Verify no pods were evicted by checking UIDs remain the same
+		evictedCount := GetEvictedPodsCount(currentPodSet, initialPodSet)
+		gomega.Expect(evictedCount).To(gomega.Equal(0),
+			"No pods should be evicted when using InPlace mode")
+	})
 })
+
+func setupPodsForUpscalingEviction(f *framework.Framework, updateMode vpa_types.UpdateMode) *apiv1.PodList {
+	return setupPodsForEviction(f, "100m", "100Mi", nil, updateMode)
+}
 
 var _ = UpdaterE2eDescribe("Updater with PerVPAConfig", func() {
 	const replicas = 3
@@ -409,15 +554,11 @@ func setupPodsForCPUBoost(f *framework.Framework, hamsterCPU, hamsterMemory stri
 	return podList
 }
 
-func setupPodsForUpscalingEviction(f *framework.Framework) *apiv1.PodList {
-	return setupPodsForEviction(f, "100m", "100Mi", nil)
+func setupPodsForDownscalingEviction(f *framework.Framework, er []*vpa_types.EvictionRequirement, updateMode vpa_types.UpdateMode) *apiv1.PodList {
+	return setupPodsForEviction(f, "500m", "500Mi", er, updateMode)
 }
 
-func setupPodsForDownscalingEviction(f *framework.Framework, er []*vpa_types.EvictionRequirement) *apiv1.PodList {
-	return setupPodsForEviction(f, "500m", "500Mi", er)
-}
-
-func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory string, er []*vpa_types.EvictionRequirement) *apiv1.PodList {
+func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory string, er []*vpa_types.EvictionRequirement, updateMode vpa_types.UpdateMode) *apiv1.PodList {
 	controller := &autoscaling.CrossVersionObjectReference{
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -434,7 +575,7 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
 		WithTargetRef(controller).
-		WithUpdateMode(vpa_types.UpdateModeRecreate).
+		WithUpdateMode(updateMode).
 		WithEvictionRequirements(er).
 		WithContainer(containerName).
 		AppendRecommendation(
@@ -451,15 +592,15 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 	return podList
 }
 
-func setupPodsForUpscalingInPlace(f *framework.Framework) *apiv1.PodList {
-	return setupPodsForInPlace(f, "100m", "100Mi", nil, true)
+func setupPodsForUpscalingInPlace(f *framework.Framework, updateMode vpa_types.UpdateMode) *apiv1.PodList {
+	return setupPodsForInPlace(f, "100m", "100Mi", nil, true, updateMode)
 }
 
-func setupPodsForDownscalingInPlace(f *framework.Framework, er []*vpa_types.EvictionRequirement) *apiv1.PodList {
-	return setupPodsForInPlace(f, "500m", "500Mi", er, true)
+func setupPodsForDownscalingInPlace(f *framework.Framework, er []*vpa_types.EvictionRequirement, updateMode vpa_types.UpdateMode) *apiv1.PodList {
+	return setupPodsForInPlace(f, "500m", "500Mi", er, true, updateMode)
 }
 
-func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory string, er []*vpa_types.EvictionRequirement, withRecommendation bool) *apiv1.PodList {
+func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory string, er []*vpa_types.EvictionRequirement, withRecommendation bool, updateMode vpa_types.UpdateMode) *apiv1.PodList {
 	controller := &autoscaling.CrossVersionObjectReference{
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -476,7 +617,7 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
 		WithTargetRef(controller).
-		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+		WithUpdateMode(updateMode).
 		WithEvictionRequirements(er).
 		WithContainer(containerName)
 

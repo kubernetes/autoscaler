@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
@@ -61,10 +62,10 @@ func TestSortPriority(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
-	calculator.AddPod(pod2, timestampNow)
-	calculator.AddPod(pod3, timestampNow)
-	calculator.AddPod(pod4, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod2, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod3, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod4, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{pod3, pod1, pod4, pod2}, result, "Wrong priority order")
@@ -85,9 +86,9 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
-	calculator.AddPod(pod2, timestampNow)
-	calculator.AddPod(pod3, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod2, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod3, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 
 	// Expect the following order:
 	// 1. pod1 - wants to grow by 1 unit.
@@ -108,7 +109,7 @@ func TestUpdateNotRequired(t *testing.T) {
 		priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod should not be updated")
@@ -130,7 +131,7 @@ func TestUseProcessor(t *testing.T) {
 		vpa, updateconfig, recommendationProcessor, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod should not be updated")
@@ -165,7 +166,7 @@ func TestUpdateLonglivedPods(t *testing.T) {
 	// Pretend that the test pods started 13 hours ago.
 	timestampNow := pods[0].Status.StartTime.Add(time.Hour * 13)
 	for i := range 3 {
-		calculator.AddPod(pods[i], timestampNow)
+		calculator.AddPod(pods[i], timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 	}
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{pods[1], pods[2]}, result, "Exactly POD2 and POD3 should be updated")
@@ -201,7 +202,7 @@ func TestUpdateShortlivedPods(t *testing.T) {
 	// Pretend that the test pods started 11 hours ago.
 	timestampNow := pods[0].Status.StartTime.Add(time.Hour * 11)
 	for i := range 3 {
-		calculator.AddPod(pods[i], timestampNow)
+		calculator.AddPod(pods[i], timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 	}
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{pods[2]}, result, "Only POD3 should be updated")
@@ -240,7 +241,7 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-	calculator.AddPod(pod, timestampNow)
+	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{pod}, result, "Pod should be updated")
 }
@@ -278,7 +279,7 @@ func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-	calculator.AddPod(pod, timestampNow)
+	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod should not be updated")
 }
@@ -314,7 +315,7 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-	calculator.AddPod(pod, timestampNow)
+	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod shouldn't be updated")
 }
@@ -376,7 +377,7 @@ func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 			calculator := NewUpdatePriorityCalculator(
 				vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-			calculator.AddPod(pod, timestampNow)
+			calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 			isUpdate := len(result) != 0
 			assert.Equal(t, tc.want, isUpdate)
@@ -467,7 +468,7 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 			calculator := NewUpdatePriorityCalculator(
 				vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
-			calculator.AddPod(pod, timestampNow)
+			calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 			isUpdate := len(result) != 0
 			assert.Equal(t, tc.want, isUpdate)
@@ -508,10 +509,10 @@ func TestAdmission(t *testing.T) {
 		&test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	timestampNow := pod1.Status.StartTime.Add(time.Hour * 24)
-	calculator.AddPod(pod1, timestampNow)
-	calculator.AddPod(pod2, timestampNow)
-	calculator.AddPod(pod3, timestampNow)
-	calculator.AddPod(pod4, timestampNow)
+	calculator.AddPod(pod1, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod2, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod3, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	calculator.AddPod(pod4, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 
 	result := calculator.GetSortedPods(&pod1Admission{})
 	assert.Exactly(t, []*corev1.Pod{pod1}, result, "Wrong priority order")
@@ -646,6 +647,183 @@ func TestAddPodLogs(t *testing.T) {
 
 			actualLog := calculator.GetProcessedRecommendationTargets(tc.givenRec)
 			assert.Equal(t, tc.expectedLog, actualLog)
+		})
+	}
+}
+
+func TestHasLowerResourceRecommendation(t *testing.T) {
+	testCases := []struct {
+		name              string
+		lastAttempt       *vpa_types.RecommendedPodResources
+		newRecommendation *vpa_types.RecommendedPodResources
+		expected          bool
+	}{
+		{
+			name:              "both nil",
+			lastAttempt:       nil,
+			newRecommendation: nil,
+			expected:          false,
+		},
+		{
+			name:              "lastAttempt nil",
+			lastAttempt:       nil,
+			newRecommendation: test.Recommendation().WithContainer(containerName).WithTarget("100m", "").Get(),
+			expected:          false,
+		},
+		{
+			name:              "newRecommendation nil",
+			lastAttempt:       test.Recommendation().WithContainer(containerName).WithTarget("100m", "").Get(),
+			newRecommendation: nil,
+			expected:          false,
+		},
+		{
+			name:              "new CPU is lower",
+			lastAttempt:       test.Recommendation().WithContainer(containerName).WithTarget("200m", "").Get(),
+			newRecommendation: test.Recommendation().WithContainer(containerName).WithTarget("100m", "").Get(),
+			expected:          true,
+		},
+		{
+			name:              "new memory is lower",
+			lastAttempt:       test.Recommendation().WithContainer(containerName).WithTarget("", "512Mi").Get(),
+			newRecommendation: test.Recommendation().WithContainer(containerName).WithTarget("", "256Mi").Get(),
+			expected:          true,
+		},
+		{
+			name:              "new resources are higher",
+			lastAttempt:       test.Recommendation().WithContainer(containerName).WithTarget("100m", "256Mi").Get(),
+			newRecommendation: test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			expected:          false,
+		},
+		{
+			name:              "equal resources",
+			lastAttempt:       test.Recommendation().WithContainer(containerName).WithTarget("100m", "256Mi").Get(),
+			newRecommendation: test.Recommendation().WithContainer(containerName).WithTarget("100m", "256Mi").Get(),
+			expected:          false,
+		},
+		{
+			name:              "container not in lastAttempt",
+			lastAttempt:       test.Recommendation().WithContainer(containerName).WithTarget("100m", "").Get(),
+			newRecommendation: test.Recommendation().WithContainer("other-container").WithTarget("50m", "").Get(),
+			expected:          false,
+		},
+		{
+			name:              "one resource lower one higher",
+			lastAttempt:       test.Recommendation().WithContainer(containerName).WithTarget("200m", "256Mi").Get(),
+			newRecommendation: test.Recommendation().WithContainer(containerName).WithTarget("100m", "512Mi").Get(),
+			expected:          true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := hasLowerResourceRecommendation(tc.lastAttempt, tc.newRecommendation)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestAddPodWithInfeasibleAttempts(t *testing.T) {
+	testCases := []struct {
+		name            string
+		updateMode      vpa_types.UpdateMode
+		lastAttempt     *vpa_types.RecommendedPodResources
+		currentRecommen *vpa_types.RecommendedPodResources
+		shouldAddPod    bool
+	}{
+		{
+			name:            "InPlace mode: no previous infeasible attempt",
+			updateMode:      vpa_types.UpdateModeInPlace,
+			lastAttempt:     nil,
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			shouldAddPod:    true,
+		},
+		{
+			name:            "InPlace mode: same recommendation as last infeasible attempt",
+			updateMode:      vpa_types.UpdateModeInPlace,
+			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			shouldAddPod:    false,
+		},
+		{
+			name:            "InPlace mode: higher recommendation than last infeasible attempt",
+			updateMode:      vpa_types.UpdateModeInPlace,
+			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("300m", "1Gi").Get(),
+			shouldAddPod:    false,
+		},
+		{
+			name:            "InPlace mode: lower CPU than last infeasible attempt",
+			updateMode:      vpa_types.UpdateModeInPlace,
+			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("100m", "512Mi").Get(),
+			shouldAddPod:    true,
+		},
+		{
+			name:            "InPlace mode: lower memory than last infeasible attempt",
+			updateMode:      vpa_types.UpdateModeInPlace,
+			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("200m", "256Mi").Get(),
+			shouldAddPod:    true,
+		},
+		{
+			name:            "InPlace mode: one resource lower, one higher",
+			updateMode:      vpa_types.UpdateModeInPlace,
+			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("100m", "1Gi").Get(),
+			shouldAddPod:    true,
+		},
+		{
+			name:            "Recreate mode: same recommendation as last infeasible attempt",
+			updateMode:      vpa_types.UpdateModeRecreate,
+			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			shouldAddPod:    true,
+		},
+		{
+			name:            "Auto mode: same recommendation as last infeasible attempt",
+			updateMode:      vpa_types.UpdateModeAuto, //nolint:staticcheck
+			lastAttempt:     test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			currentRecommen: test.Recommendation().WithContainer(containerName).WithTarget("200m", "512Mi").Get(),
+			shouldAddPod:    true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pod := test.Pod().WithName("POD1").
+				AddContainer(test.Container().WithName(containerName).
+					WithCPURequest(resource.MustParse("100m")).
+					WithMemRequest(resource.MustParse("128Mi")).Get()).Get()
+
+			vpa := test.VerticalPodAutoscaler().
+				WithContainer(containerName).
+				WithTarget("200m", "512Mi").
+				WithUpdateMode(tc.updateMode).Get()
+
+			priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+				"POD1": {OutsideRecommendedRange: true, ScaleUp: true, ResourceDiff: 1.0},
+			})
+
+			recommendationProcessor := &test.RecommendationProcessorMock{}
+			recommendationProcessor.On("Apply").Return(tc.currentRecommen, nil)
+
+			calculator := NewUpdatePriorityCalculator(vpa, updateconfig, recommendationProcessor, priorityProcessor)
+
+			infeasibleAttempts := make(map[types.UID]*vpa_types.RecommendedPodResources)
+			if tc.lastAttempt != nil {
+				infeasibleAttempts[pod.UID] = tc.lastAttempt
+			}
+
+			timestampNow := pod.Status.StartTime.Add(time.Hour * 24)
+			calculator.AddPod(pod, timestampNow, infeasibleAttempts)
+
+			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+			if tc.shouldAddPod {
+				assert.Len(t, result, 1, "Pod should be added to update queue")
+				assert.Equal(t, pod, result[0])
+			} else {
+				assert.Len(t, result, 0, "Pod should not be added to update queue")
+			}
 		})
 	}
 }

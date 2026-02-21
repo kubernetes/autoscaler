@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
@@ -640,6 +641,57 @@ func TestLogDeprecationWarnings(t *testing.T) {
 		})
 	}
 }
+
+func TestInfeasibleAttempts(t *testing.T) {
+	containerName := "container1"
+	pod1 := test.Pod().WithName("pod1").WithUID("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()
+	pod2 := test.Pod().WithName("pod2").WithUID("pod2").AddContainer(test.Container().WithName(containerName).Get()).Get()
+
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
+
+	// Initialize updater with required fields for these functions
+	u := &updater{
+		recommendationProcessor: &test.FakeRecommendationProcessor{},
+		infeasibleAttempts:      make(map[types.UID]*vpa_types.RecommendedPodResources),
+	}
+
+	t.Run("recordInfeasibleAttempt stores recommendation", func(t *testing.T) {
+		u.recordInfeasibleAttempt(pod1, vpa)
+		u.recordInfeasibleAttempt(pod2, vpa)
+
+		u.infeasibleMu.RLock()
+		defer u.infeasibleMu.RUnlock()
+
+		assert.Len(t, u.infeasibleAttempts, 2)
+		assert.Contains(t, u.infeasibleAttempts, pod1.UID)
+		assert.Contains(t, u.infeasibleAttempts, pod2.UID)
+	})
+
+	t.Run("cleanupStaleInfeasibleAttempts removes old pods", func(t *testing.T) {
+		// Only pod1 is "live" now
+		livePods := []*corev1.Pod{pod1}
+
+		u.cleanupStaleInfeasibleAttempts(livePods)
+
+		u.infeasibleMu.RLock()
+		defer u.infeasibleMu.RUnlock()
+
+		// pod1 should stay, pod2 should be deleted
+		assert.Len(t, u.infeasibleAttempts, 1)
+		assert.Contains(t, u.infeasibleAttempts, pod1.UID)
+		assert.NotContains(t, u.infeasibleAttempts, pod2.UID)
+	})
+
+	t.Run("cleanupStaleInfeasibleAttempts clears all if none live", func(t *testing.T) {
+		u.cleanupStaleInfeasibleAttempts([]*corev1.Pod{})
+
+		u.infeasibleMu.RLock()
+		defer u.infeasibleMu.RUnlock()
+
+		assert.Empty(t, u.infeasibleAttempts)
+	})
+}
+
 func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 

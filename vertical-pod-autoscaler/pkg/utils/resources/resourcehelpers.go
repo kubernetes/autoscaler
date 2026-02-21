@@ -20,6 +20,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	metrics_resources "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/resources"
 )
 
@@ -107,4 +108,38 @@ func initContainerStatusFor(initContainerName string, pod *corev1.Pod) *corev1.C
 		}
 	}
 	return nil
+}
+
+// RecommendationsEqual compare recommendations
+func RecommendationsEqual(a, b *vpa_types.RecommendedPodResources) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	// Compare container recommendations
+	if len(a.ContainerRecommendations) != len(b.ContainerRecommendations) {
+		return false
+	}
+	for i, aRec := range a.ContainerRecommendations {
+		bRec := b.ContainerRecommendations[i]
+		if aRec.ContainerName != bRec.ContainerName {
+			return false
+		}
+		if !ResourcesEqual(aRec.Target, bRec.Target) {
+			return false
+		}
+	}
+	return true
+}
+
+// ResourcesEqual compare resources
+func ResourcesEqual(a, b corev1.ResourceList) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for key, aVal := range a {
+		if bVal, exists := b[key]; !exists || !aVal.Equal(bVal) {
+			return false
+		}
+	}
+	return true
 }
