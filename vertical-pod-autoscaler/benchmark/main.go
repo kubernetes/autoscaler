@@ -76,11 +76,13 @@ func main() {
 	var profilesFlag string
 	var runs int
 	var outputFile string
+	var noisePercentage int
 
 	flag.StringVar(&kubeconfig, "kubeconfig", "", "path to kubeconfig (default: $KUBECONFIG or ~/.kube/config)")
 	flag.StringVar(&profilesFlag, "profile", "small", "benchmark profiles (comma-separated): small,medium,large,xlarge,xxlarge,huge")
 	flag.IntVar(&runs, "runs", 1, "number of benchmark runs per profile for averaging")
 	flag.StringVar(&outputFile, "output", "", "path to output CSV file (optional)")
+	flag.IntVar(&noisePercentage, "noise-percentage", 0, "percentage of additional noise (unmanaged) ReplicaSets relative to managed ReplicaSets (0 = no noise) (optional)")
 	klog.InitFlags(nil)
 	flag.Parse()
 
@@ -90,6 +92,10 @@ func main() {
 		if _, ok := profiles[p]; !ok {
 			klog.Fatalf("Unknown profile: %s", p)
 		}
+	}
+
+	if noisePercentage < 0 {
+		klog.Fatalf("noise-percentage must not be negative")
 	}
 
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
@@ -134,8 +140,14 @@ func main() {
 	for _, profile := range profileList {
 		profile = strings.TrimSpace(profile)
 		count := profiles[profile]
+		noiseCount := count * noisePercentage / 100
 
-		fmt.Printf("\n========== Profile: %s (%d VPAs) ==========\n", profile, count)
+		if noiseCount > 0 {
+			fmt.Printf("\n========== Profile: %s (%d VPAs, %d noise RS, %d total pods) ==========\n",
+				profile, count, noiseCount, (count+noiseCount)*replicasPerReplicaSet)
+		} else {
+			fmt.Printf("\n========== Profile: %s (%d VPAs) ==========\n", profile, count)
+		}
 
 		// Collect results from all runs for this profile
 		allResults := make([]map[string]float64, 0, runs)
@@ -146,7 +158,7 @@ func main() {
 			}
 
 			// Run one benchmark iteration
-			latencies, err := runBenchmarkIteration(ctx, kubeClient, vpaClient, count)
+			latencies, err := runBenchmarkIteration(ctx, kubeClient, vpaClient, count, noiseCount)
 			if err != nil {
 				klog.Warningf("Run %d failed: %v", run, err)
 				continue
@@ -191,13 +203,13 @@ func main() {
 
 	// Print results table and write to file
 	if len(profileResults) > 0 {
-		printResultsTable(profileList, profileResults, outputFile)
+		printResultsTable(profileList, profileResults, outputFile, noisePercentage)
 	}
 
 	fmt.Println("\nBenchmark completed successfully.")
 }
 
-func runBenchmarkIteration(ctx context.Context, kubeClient kubernetes.Interface, vpaClient vpa_clientset.Interface, count int) (map[string]float64, error) {
+func runBenchmarkIteration(ctx context.Context, kubeClient kubernetes.Interface, vpaClient vpa_clientset.Interface, count int, noiseCount int) (map[string]float64, error) {
 	// Step 1: Scale down VPA components
 	fmt.Println("Scaling down VPA components...")
 	if err := scaleDownVPAComponents(ctx, kubeClient); err != nil {
@@ -228,6 +240,32 @@ func runBenchmarkIteration(ctx context.Context, kubeClient kubernetes.Interface,
 		}
 	})
 
+	// Step 4b: Create noise ReplicaSets (not managed by any VPA)
+	if noiseCount > 0 {
+		fmt.Printf("Creating %d noise ReplicaSets (%d pods each, %d noise pods)...\n",
+			noiseCount, replicasPerReplicaSet, noiseCount*replicasPerReplicaSet)
+		g, gctx := errgroup.WithContext(ctx)
+		g.SetLimit(50)
+		for i := range noiseCount {
+			g.Go(func() error {
+				name := fmt.Sprintf("noise-%d", i)
+				rs := makeReplicaSet(name)
+				err := withRetry(func() error {
+					_, err := kubeClient.AppsV1().ReplicaSets(benchmarkNamespace).Create(gctx, rs, metav1.CreateOptions{})
+					if errors.IsAlreadyExists(err) {
+						return nil
+					}
+					return err
+				})
+				if err != nil {
+					klog.Warningf("Error creating noise ReplicaSet %s: %v", name, err)
+				}
+				return nil
+			})
+		}
+		g.Wait()
+	}
+
 	// Step 5: Create VPAs (while VPA components are still down)
 	fmt.Printf("Creating %d VPAs...\n", count)
 	createInParallel(ctx, count, func(ctx context.Context, name string) {
@@ -245,8 +283,9 @@ func runBenchmarkIteration(ctx context.Context, kubeClient kubernetes.Interface,
 	})
 
 	// Step 6: Wait for pods to be running
-	expectedPods := count * replicasPerReplicaSet
-	fmt.Printf("Waiting for %d KWOK pods to be running...\n", expectedPods)
+	expectedPods := (count + noiseCount) * replicasPerReplicaSet
+	fmt.Printf("Waiting for %d KWOK pods to be running (%d managed + %d noise)...\n",
+		expectedPods, count*replicasPerReplicaSet, noiseCount*replicasPerReplicaSet)
 	err := wait.PollUntilContextTimeout(ctx, 2*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
 		pods, _ := kubeClient.CoreV1().Pods(benchmarkNamespace).List(ctx, metav1.ListOptions{
 			FieldSelector: "status.phase=Running",
@@ -619,7 +658,7 @@ func printRunSummary(profileList []string, allRunResults map[string][]map[string
 	}
 }
 
-func printResultsTable(profileList []string, results map[string]map[string]float64, outputFile string) {
+func printResultsTable(profileList []string, results map[string]map[string]float64, outputFile string, noisePercentage int) {
 	// Get all steps from metric results
 	stepSet := make(map[string]bool)
 	for _, r := range results {
@@ -638,7 +677,12 @@ func printResultsTable(profileList []string, results map[string]map[string]float
 	for _, p := range profileList {
 		p = strings.TrimSpace(p)
 		count := profiles[p]
-		header = append(header, fmt.Sprintf("%s (%d)", p, count))
+		noiseCount := count * noisePercentage / 100
+		if noiseCount > 0 {
+			header = append(header, fmt.Sprintf("%s (%d+%dn)", p, count, noiseCount))
+		} else {
+			header = append(header, fmt.Sprintf("%s (%d)", p, count))
+		}
 	}
 
 	// Build rows

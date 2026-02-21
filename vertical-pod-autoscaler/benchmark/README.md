@@ -74,7 +74,8 @@ The benchmark program (`main.go`) assumes the cluster is already set up with VPA
    - Scales down VPA components
    - Cleans up previous benchmark resources
    - Creates ReplicaSets with fake pods assigned directly to KWOK node (bypasses scheduler)
-   - Creates VPAs targeting those ReplicaSets
+   - Creates noise ReplicaSets (if `--noise-ratio` > 0) — these are not managed by any VPA
+   - Creates VPAs targeting managed ReplicaSets only
    - Scales up recommender, waits for recommendations
    - Scales up updater, waits for its loop to complete
    - Scrapes `vpa_updater_execution_latency_seconds_sum` metrics
@@ -109,6 +110,8 @@ Ideally the benchmark would be done on the same machine (or a similar one), with
 | xlarge  | 500  | 500         | 1000 |
 | xxlarge | 1000 | 1000        | 2000 |
 
+When `--noise-percentage=P` is set, each profile also creates `P%` additional noise ReplicaSets (not managed by any VPA). For example, `--profile=medium --noise-percentage=50` creates 100 managed RS (200 pods) + 50 noise RS (100 pods) = 300 total pods.
+
 ## Flags
 
 | Flag | Default | Description |
@@ -117,6 +120,7 @@ Ideally the benchmark would be done on the same machine (or a similar one), with
 | `--runs` | 1 | Iterations per profile. This is used for averaging multiple runs. |
 | `--output` | "" | Path to output file for results table (CSV format). Output will always be printed to stdout. |
 | `--kubeconfig` | "" | Path to kubeconfig. Required if not using KUBECONFIG env var or ~/.kube/config. |
+| `--noise-percentage` | 0% | Percentage of additional noise (unmanaged) ReplicaSets relative to managed ReplicaSets. Set to 0% for no noise. Noise pods increase `FilterPods` and `ListPods` costs without adding VPAs. |
 
 ## Metrics Collected
 
