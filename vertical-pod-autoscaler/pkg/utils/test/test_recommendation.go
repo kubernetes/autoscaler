@@ -18,7 +18,6 @@ package test
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -106,11 +105,9 @@ func (b *recommendationBuilder) Get() *vpa_types.RecommendedPodResources {
 }
 
 func (b *recommendationBuilder) GetContainerResources() vpa_types.RecommendedContainerResources {
-	uncappedTarget := v1.ResourceList{}
+	uncappedTarget := b.target
 	if b.uncappedTarget != nil {
 		uncappedTarget = b.uncappedTarget
-	} else {
-		uncappedTarget = b.target
 	}
 	return vpa_types.RecommendedContainerResources{
 		ContainerName:  b.containerName,

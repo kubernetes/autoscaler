@@ -299,9 +299,8 @@ func ApplyRecommenderLevelPolicies(
 	policy *vpa_types.PodResourcePolicy,
 	globalMaxAllowed limits.GlobalMaxAllowed,
 ) (*vpa_types.RecommendedPodResources, error) {
-
 	if recommendations == nil {
-		return nil, fmt.Errorf("no Pod-level recommendation available")
+		return nil, errors.New("no Pod-level recommendation available")
 	}
 	if policy == nil {
 		policy = &vpa_types.PodResourcePolicy{

@@ -26,7 +26,6 @@ import (
 
 type cappingPostProcessor struct {
 	globalMaxAllowed limits.GlobalMaxAllowed
-	globalMinAllowed limits.GlobalMinAllowed
 }
 
 var _ RecommendationPostProcessor = &cappingPostProcessor{}
