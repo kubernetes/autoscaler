@@ -312,6 +312,14 @@ func WaitForRecommendationPresent(c vpa_clientset.Interface, vpa *vpa_types.Vert
 	})
 }
 
+// WaitForPodLevelRecommendationPresent polls the VPA object until Pod-level recommendations are not empty.
+// It returns the polled VPA object. It returns an error on timeout.
+func WaitForPodLevelRecommendationPresent(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
+	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+		return vpa.Status.Recommendation != nil && vpa.Status.Recommendation.PodRecommendations != nil
+	})
+}
+
 // WaitForVPAMatch pools VPA object until match function returns true. Returns
 // polled vpa object. On timeout returns error.
 func WaitForVPAMatch(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler, match func(vpa *vpa_types.VerticalPodAutoscaler) bool) (*vpa_types.VerticalPodAutoscaler, error) {

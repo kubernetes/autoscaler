@@ -88,6 +88,15 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *v1.VerticalPo
 
 	for _, postProcessor := range r.recommendationPostProcessor {
 		listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
+
+		if vpa.ResourcePolicy != nil &&
+			vpa.ResourcePolicy.PodPolicies != nil &&
+			vpa.ResourcePolicy.PodPolicies.Mode != nil &&
+			*vpa.ResourcePolicy.PodPolicies.Mode == v1.PodScalingModeAuto {
+
+			listOfResourceRecommendation = logic.CalculatePodlevelRecommendations(listOfResourceRecommendation.ContainerRecommendations)
+			listOfResourceRecommendation = postProcessor.ProcessPodLevel(observedVpa, listOfResourceRecommendation)
+		}
 	}
 
 	vpa.UpdateRecommendation(listOfResourceRecommendation)

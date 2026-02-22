@@ -17,22 +17,23 @@ limitations under the License.
 package routines
 
 import (
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limits"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 type cappingPostProcessor struct {
-	globalMaxAllowed apiv1.ResourceList
+	globalMaxAllowed limits.GlobalMaxAllowed
+	globalMinAllowed limits.GlobalMinAllowed
 }
 
 var _ RecommendationPostProcessor = &cappingPostProcessor{}
 
 // NewCappingRecommendationProcessor constructs new RecommendationPostProcessor that adjusts recommendation
 // for given pod to obey VPA resources policy and a global max allowed configuration.
-func NewCappingRecommendationProcessor(globalMaxAllowed apiv1.ResourceList) RecommendationPostProcessor {
+func NewCappingRecommendationProcessor(globalMaxAllowed limits.GlobalMaxAllowed) RecommendationPostProcessor {
 	return &cappingPostProcessor{
 		globalMaxAllowed: globalMaxAllowed,
 	}
@@ -44,6 +45,16 @@ func (c cappingPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, reco
 	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
 	if err != nil {
 		klog.ErrorS(err, "Failed to apply policy for VPA", "vpa", klog.KObj(vpa))
+		return recommendation
+	}
+	return cappedRecommendation
+}
+
+// ProcessPodLevel applies capping to Pod-level recommendations.
+func (c cappingPostProcessor) ProcessPodLevel(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+	cappedRecommendation, err := vpa_utils.ApplyRecommenderLevelPolicies(recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
+	if err != nil {
+		klog.ErrorS(err, "Failed to apply Pod-level policy for VPA", "vpa", klog.KObj(vpa))
 		return recommendation
 	}
 	return cappedRecommendation

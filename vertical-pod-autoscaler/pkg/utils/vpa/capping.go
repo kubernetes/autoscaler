@@ -26,6 +26,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limits"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 )
 
@@ -269,7 +270,7 @@ func maybeCapToMin(recommended resource.Quantity, resourceName apiv1.ResourceNam
 
 // ApplyVPAPolicy returns a recommendation, adjusted to obey policy.
 func ApplyVPAPolicy(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy, globalMaxAllowed apiv1.ResourceList) (*vpa_types.RecommendedPodResources, error) {
+	policy *vpa_types.PodResourcePolicy, globalMaxAllowed limits.GlobalMaxAllowed) (*vpa_types.RecommendedPodResources, error) {
 	if podRecommendation == nil {
 		return nil, nil
 	}
@@ -278,13 +279,76 @@ func ApplyVPAPolicy(podRecommendation *vpa_types.RecommendedPodResources,
 	for _, containerRecommendation := range podRecommendation.ContainerRecommendations {
 		containerName := containerRecommendation.ContainerName
 		updatedContainerResources, err := applyVPAPolicyForContainer(containerName,
-			&containerRecommendation, policy, globalMaxAllowed)
+			&containerRecommendation, policy, globalMaxAllowed.Container)
 		if err != nil {
 			return nil, fmt.Errorf("cannot apply policy on recommendation for container name %v", containerName)
 		}
 		updatedRecommendations = append(updatedRecommendations, *updatedContainerResources)
 	}
-	return &vpa_types.RecommendedPodResources{ContainerRecommendations: updatedRecommendations}, nil
+	return &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: updatedRecommendations,
+		PodRecommendations:       nil,
+	}, nil
+}
+
+// ApplyRecommenderLevelPolicies returns a recommendation adjusted to comply with Pod-level policies that the recommender uses:
+// - Recommender-level flags
+// - Policies defined in the podPolicies stanza of the VerticalPodAutoscaler (i.e. minAllowed, maxAllowed)
+func ApplyRecommenderLevelPolicies(
+	recommendations *vpa_types.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy,
+	globalMaxAllowed limits.GlobalMaxAllowed,
+) (*vpa_types.RecommendedPodResources, error) {
+
+	if recommendations == nil {
+		return nil, fmt.Errorf("no Pod-level recommendation available")
+	}
+	if policy == nil {
+		policy = &vpa_types.PodResourcePolicy{
+			PodPolicies: &vpa_types.PodResourcePolicies{},
+		}
+	}
+
+	podPolicies := policy.PodPolicies
+	var minAllowed, maxAllowed apiv1.ResourceList
+	if podPolicies != nil {
+		minAllowed = podPolicies.MinAllowed
+		maxAllowed = podPolicies.MaxAllowed
+	}
+
+	if maxAllowed == nil {
+		maxAllowed = globalMaxAllowed.Pod
+	} else {
+		// Set resources from the global max allowed if the VPA max allowed is missing them.
+		for resourceName, quantity := range globalMaxAllowed.Pod {
+			if _, ok := maxAllowed[resourceName]; !ok {
+				maxAllowed[resourceName] = quantity
+			}
+		}
+	}
+
+	cappedRecommendations := recommendations.DeepCopy()
+	process := func(recommendation apiv1.ResourceList) {
+		for resourceName := range recommendation {
+			if minAllowed != nil {
+				cappedToMin, _ := maybeCapToMin(recommendation[resourceName], resourceName, minAllowed)
+				recommendation[resourceName] = cappedToMin
+			}
+			if maxAllowed != nil {
+				cappedToMax, _ := maybeCapToMax(recommendation[resourceName], resourceName, maxAllowed)
+				recommendation[resourceName] = cappedToMax
+			}
+		}
+	}
+
+	process(cappedRecommendations.PodRecommendations.Target)
+	process(cappedRecommendations.PodRecommendations.LowerBound)
+	process(cappedRecommendations.PodRecommendations.UpperBound)
+
+	return &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: cappedRecommendations.ContainerRecommendations,
+		PodRecommendations:       cappedRecommendations.PodRecommendations,
+	}, nil
 }
 
 func getRecommendationForContainer(containerName string, resources []vpa_types.RecommendedContainerResources) *vpa_types.RecommendedContainerResources {

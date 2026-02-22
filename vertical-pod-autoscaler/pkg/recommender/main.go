@@ -51,6 +51,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limits"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
@@ -111,8 +112,10 @@ var (
 var (
 	// CPU as integer to benefit for CPU management Static Policy ( https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy )
 	postProcessorCPUasInteger = flag.Bool("cpu-integer-post-processor-enabled", false, "Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental)")
-	maxAllowedCPU             = resource.QuantityValue{}
-	maxAllowedMemory          = resource.QuantityValue{}
+	containerMaxAllowedCPU    = resource.QuantityValue{}
+	containerMaxAllowedMemory = resource.QuantityValue{}
+	podMaxAllowedCPU          = resource.QuantityValue{}
+	podMaxAllowedMemory       = resource.QuantityValue{}
 )
 
 const (
@@ -126,8 +129,10 @@ const (
 )
 
 func init() {
-	flag.Var(&maxAllowedCPU, "container-recommendation-max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
-	flag.Var(&maxAllowedMemory, "container-recommendation-max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&containerMaxAllowedCPU, "container-recommendation-max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&containerMaxAllowedMemory, "container-recommendation-max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&podMaxAllowedCPU, "pod-recommendation-max-allowed-cpu", "The maximum amount of CPU that will be recommended at the Pod level (Pod-level resource stanza). The VerticalPodAutoscaler-level podPolicies.maxAllowed takes precedence over the value that you define with this flag.")
+	flag.Var(&podMaxAllowedMemory, "pod-recommendation-max-allowed-memory", "The maximum amount of memory that will be recommended at the Pod level (Pod-level resource stanza). The VerticalPodAutoscaler-level podPolicies.maxAllowed takes precedence over the value that you define with this flag.")
 }
 
 func main() {
@@ -369,13 +374,27 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 	}
 }
 
-func initGlobalMaxAllowed() apiv1.ResourceList {
-	result := make(apiv1.ResourceList)
-	if !maxAllowedCPU.IsZero() {
-		result[apiv1.ResourceCPU] = maxAllowedCPU.Quantity
+func initGlobalMaxAllowed() limits.GlobalMaxAllowed {
+	result := limits.GlobalMaxAllowed{}
+
+	if !containerMaxAllowedCPU.IsZero() || !containerMaxAllowedMemory.IsZero() {
+		result.Container = apiv1.ResourceList{}
+		if !containerMaxAllowedCPU.IsZero() {
+			result.Container[apiv1.ResourceCPU] = containerMaxAllowedCPU.Quantity
+		}
+		if !containerMaxAllowedMemory.IsZero() {
+			result.Container[apiv1.ResourceMemory] = containerMaxAllowedMemory.Quantity
+		}
 	}
-	if !maxAllowedMemory.IsZero() {
-		result[apiv1.ResourceMemory] = maxAllowedMemory.Quantity
+
+	if !podMaxAllowedCPU.IsZero() || !podMaxAllowedMemory.IsZero() {
+		result.Pod = apiv1.ResourceList{}
+		if !podMaxAllowedCPU.IsZero() {
+			result.Pod[apiv1.ResourceCPU] = podMaxAllowedCPU.Quantity
+		}
+		if !podMaxAllowedMemory.IsZero() {
+			result.Pod[apiv1.ResourceMemory] = podMaxAllowedMemory.Quantity
+		}
 	}
 
 	return result

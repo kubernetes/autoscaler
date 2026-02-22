@@ -17,6 +17,7 @@ limitations under the License.
 package api
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limits"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -263,7 +265,7 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 	}, res.ContainerRecommendations[0].UpperBound)
 }
 
-var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.RecommendedPodResources{
+var containerRecommendations1 *vpa_types.RecommendedPodResources = &vpa_types.RecommendedPodResources{
 	ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 		{
 			ContainerName: "ctr-name",
@@ -280,21 +282,21 @@ var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.Recommende
 	},
 }
 var applyTestCases = []struct {
-	PodRecommendation         *vpa_types.RecommendedPodResources
+	Recommendations           *vpa_types.RecommendedPodResources
 	Policy                    *vpa_types.PodResourcePolicy
 	ExpectedPodRecommendation *vpa_types.RecommendedPodResources
 	ExpectedError             error
 }{
 	{
-		PodRecommendation:         nil,
+		Recommendations:           nil,
 		Policy:                    nil,
 		ExpectedPodRecommendation: nil,
 		ExpectedError:             nil,
 	},
 	{
-		PodRecommendation:         podRecommendation,
+		Recommendations:           containerRecommendations1,
 		Policy:                    nil,
-		ExpectedPodRecommendation: podRecommendation,
+		ExpectedPodRecommendation: containerRecommendations1,
 		ExpectedError:             nil,
 	},
 }
@@ -306,7 +308,7 @@ func TestApply(t *testing.T) {
 	for _, testCase := range applyTestCases {
 		vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
 		vpa.Spec.ResourcePolicy = testCase.Policy
-		vpa.Status.Recommendation = testCase.PodRecommendation
+		vpa.Status.Recommendation = testCase.Recommendations
 		res, _, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(
 			vpa, pod)
 		assert.Equal(t, testCase.ExpectedPodRecommendation, res)
@@ -315,7 +317,7 @@ func TestApply(t *testing.T) {
 }
 
 var (
-	recommendation = &vpa_types.RecommendedPodResources{
+	containerRecommendations2 = &vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
 				ContainerName: "foo",
@@ -342,29 +344,29 @@ var (
 
 func TestApplyVPAPolicy(t *testing.T) {
 	tests := []struct {
-		Name              string
-		PodRecommendation *vpa_types.RecommendedPodResources
-		ResourcePolicy    *vpa_types.PodResourcePolicy
-		GlobalMaxAllowed  apiv1.ResourceList
-		Expected          *vpa_types.RecommendedPodResources
+		Name             string
+		Recommendations  *vpa_types.RecommendedPodResources
+		ResourcePolicy   *vpa_types.PodResourcePolicy
+		GlobalMaxAllowed limits.GlobalMaxAllowed
+		Expected         *vpa_types.RecommendedPodResources
 	}{
 		{
-			Name:              "recommendation is nil",
-			PodRecommendation: nil,
-			ResourcePolicy:    nil,
-			GlobalMaxAllowed:  nil,
-			Expected:          nil,
+			Name:             "recommendation is nil",
+			Recommendations:  nil,
+			ResourcePolicy:   nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
+			Expected:         nil,
 		},
 		{
-			Name:              "resource policy is nil and global max allowed is nil",
-			PodRecommendation: recommendation,
-			ResourcePolicy:    nil,
-			GlobalMaxAllowed:  nil,
-			Expected:          recommendation.DeepCopy(),
+			Name:             "resource policy is nil and global max allowed is nil",
+			Recommendations:  containerRecommendations2,
+			ResourcePolicy:   nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
+			Expected:         containerRecommendations2.DeepCopy(),
 		},
 		{
-			Name:              "resource policy has min allowed and global max allowed is nil",
-			PodRecommendation: recommendation,
+			Name:            "resource policy has min allowed and global max allowed is nil",
+			Recommendations: containerRecommendations2,
 			ResourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -376,7 +378,7 @@ func TestApplyVPAPolicy(t *testing.T) {
 					},
 				},
 			},
-			GlobalMaxAllowed: nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
 			Expected: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					{
@@ -402,8 +404,8 @@ func TestApplyVPAPolicy(t *testing.T) {
 			},
 		},
 		{
-			Name:              "resource policy has max allowed and global max allowed is nil",
-			PodRecommendation: recommendation,
+			Name:            "resource policy has max allowed and global max allowed is nil",
+			Recommendations: containerRecommendations2,
 			ResourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -415,7 +417,7 @@ func TestApplyVPAPolicy(t *testing.T) {
 					},
 				},
 			},
-			GlobalMaxAllowed: nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
 			Expected: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					{
@@ -441,12 +443,14 @@ func TestApplyVPAPolicy(t *testing.T) {
 			},
 		},
 		{
-			Name:              "resource policy is nil and global max allowed is set for cpu and memory",
-			PodRecommendation: recommendation,
-			ResourcePolicy:    nil,
-			GlobalMaxAllowed: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("40m"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			Name:            "resource policy is nil and global max allowed is set for cpu and memory",
+			Recommendations: containerRecommendations2,
+			ResourcePolicy:  nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Container: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("40m"),
+					apiv1.ResourceMemory: resource.MustParse("40Mi"),
+				},
 			},
 			Expected: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
@@ -473,8 +477,8 @@ func TestApplyVPAPolicy(t *testing.T) {
 			},
 		},
 		{
-			Name:              "resource policy has maxAllowed and global max allowed is set",
-			PodRecommendation: recommendation,
+			Name:            "resource policy has minAllowed and global max allowed is set",
+			Recommendations: containerRecommendations2,
 			ResourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -486,9 +490,11 @@ func TestApplyVPAPolicy(t *testing.T) {
 					},
 				},
 			},
-			GlobalMaxAllowed: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("50m"),
-				apiv1.ResourceMemory: resource.MustParse("50Mi"),
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Container: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("50m"),
+					apiv1.ResourceMemory: resource.MustParse("50Mi"),
+				},
 			},
 			Expected: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
@@ -515,8 +521,8 @@ func TestApplyVPAPolicy(t *testing.T) {
 			},
 		},
 		{
-			Name:              "resource policy has max allowed for cpu and global max allowed is set for memory",
-			PodRecommendation: recommendation,
+			Name:            "resource policy has max allowed for cpu and global max allowed is set for memory",
+			Recommendations: containerRecommendations2,
 			ResourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -527,8 +533,10 @@ func TestApplyVPAPolicy(t *testing.T) {
 					},
 				},
 			},
-			GlobalMaxAllowed: apiv1.ResourceList{
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Container: apiv1.ResourceList{
+					apiv1.ResourceMemory: resource.MustParse("40Mi"),
+				},
 			},
 			Expected: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
@@ -555,8 +563,8 @@ func TestApplyVPAPolicy(t *testing.T) {
 			},
 		},
 		{
-			Name:              "resource policy has max allowed for cpu and global max allowed is set for cpu and memory",
-			PodRecommendation: recommendation,
+			Name:            "resource policy has max allowed for cpu and global max allowed is set for cpu and memory",
+			Recommendations: containerRecommendations2,
 			ResourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{
@@ -567,9 +575,11 @@ func TestApplyVPAPolicy(t *testing.T) {
 					},
 				},
 			},
-			GlobalMaxAllowed: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("30m"),
-				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Container: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("30m"),
+					apiv1.ResourceMemory: resource.MustParse("30Mi"),
+				},
 			},
 			Expected: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
@@ -601,9 +611,281 @@ func TestApplyVPAPolicy(t *testing.T) {
 		t.Run(tt.Name, func(t *testing.T) {
 			resourcePolicyCopy := tt.ResourcePolicy.DeepCopy()
 
-			actual, err := ApplyVPAPolicy(tt.PodRecommendation, tt.ResourcePolicy, tt.GlobalMaxAllowed)
+			actual, err := ApplyVPAPolicy(tt.Recommendations, tt.ResourcePolicy, tt.GlobalMaxAllowed)
 			assert.Nil(t, err)
 			assert.Equal(t, tt.Expected, actual)
+
+			// Make sure that the func does not have a side affect and does not modify the passed resource policy.
+			assert.Equal(t, resourcePolicyCopy, tt.ResourcePolicy)
+		})
+	}
+}
+
+func podRecommendations() *vpa_types.RecommendedPodResources {
+	return &vpa_types.RecommendedPodResources{
+		PodRecommendations: &vpa_types.RecommendedPodRes{
+			Target: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("42m"),
+				apiv1.ResourceMemory: resource.MustParse("42Mi"),
+			},
+			LowerBound: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("31m"),
+				apiv1.ResourceMemory: resource.MustParse("31Mi"),
+			},
+			UpperBound: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("53m"),
+				apiv1.ResourceMemory: resource.MustParse("53Mi"),
+			},
+			UncappedTarget: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("42m"),
+				apiv1.ResourceMemory: resource.MustParse("42Mi"),
+			},
+		},
+	}
+}
+
+func TestApplyRecommenderLevelPolicies(t *testing.T) {
+	tests := []struct {
+		Name             string
+		Recommendations  *vpa_types.RecommendedPodResources
+		ResourcePolicy   *vpa_types.PodResourcePolicy
+		GlobalMaxAllowed limits.GlobalMaxAllowed
+		Expected         *vpa_types.RecommendedPodResources
+		ExpectedError    error
+	}{
+		{
+			Name:             "recommendation is nil",
+			Recommendations:  nil,
+			ResourcePolicy:   nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
+			ExpectedError:    fmt.Errorf("no Pod-level recommendation available"),
+		},
+		{
+			Name:             "resource policy is nil and global max allowed is nil",
+			Recommendations:  podRecommendations(),
+			ResourcePolicy:   nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
+			Expected:         podRecommendations(),
+		},
+		{
+			Name:            "resource policy has min allowed and global max allowed is nil",
+			Recommendations: podRecommendations(),
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				PodPolicies: &vpa_types.PodResourcePolicies{
+					MinAllowed: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("50m"),
+						apiv1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+				},
+			},
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
+			Expected: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.RecommendedPodRes{
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("50m"),
+						apiv1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("50m"),
+						apiv1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("53m"),
+						apiv1.ResourceMemory: resource.MustParse("53Mi"),
+					},
+					UncappedTarget: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("42m"),
+						apiv1.ResourceMemory: resource.MustParse("42Mi"),
+					},
+				},
+			},
+		},
+		{
+			Name:            "resource policy has max allowed and global max allowed is nil",
+			Recommendations: podRecommendations(),
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				PodPolicies: &vpa_types.PodResourcePolicies{
+					MaxAllowed: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+			},
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
+			Expected: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.RecommendedPodRes{
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("31m"),
+						apiv1.ResourceMemory: resource.MustParse("31Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					UncappedTarget: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("42m"),
+						apiv1.ResourceMemory: resource.MustParse("42Mi"),
+					},
+				},
+			},
+		},
+		{
+			Name:            "resource policy is nil and global max allowed is set for cpu and memory",
+			Recommendations: podRecommendations(),
+			ResourcePolicy:  nil,
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Pod: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("40m"),
+					apiv1.ResourceMemory: resource.MustParse("40Mi"),
+				},
+			},
+			Expected: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.RecommendedPodRes{
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("31m"),
+						apiv1.ResourceMemory: resource.MustParse("31Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					UncappedTarget: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("42m"),
+						apiv1.ResourceMemory: resource.MustParse("42Mi"),
+					},
+				},
+			},
+		},
+		{
+			Name:            "resource policy has minAllowed and global max allowed is set",
+			Recommendations: podRecommendations(),
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				PodPolicies: &vpa_types.PodResourcePolicies{
+					MinAllowed: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("35m"),
+						apiv1.ResourceMemory: resource.MustParse("35Mi"),
+					},
+				},
+			},
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Pod: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("50m"),
+					apiv1.ResourceMemory: resource.MustParse("50Mi"),
+				},
+			},
+			Expected: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.RecommendedPodRes{
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("42m"),
+						apiv1.ResourceMemory: resource.MustParse("42Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("35m"),
+						apiv1.ResourceMemory: resource.MustParse("35Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("50m"),
+						apiv1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+					UncappedTarget: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("42m"),
+						apiv1.ResourceMemory: resource.MustParse("42Mi"),
+					},
+				},
+			},
+		},
+		{
+			Name:            "resource policy has max allowed for cpu and global max allowed is set for memory",
+			Recommendations: podRecommendations(),
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				PodPolicies: &vpa_types.PodResourcePolicies{
+					MaxAllowed: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("40m"),
+					},
+				},
+			},
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Pod: apiv1.ResourceList{
+					apiv1.ResourceMemory: resource.MustParse("40Mi"),
+				},
+			},
+			Expected: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.RecommendedPodRes{
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("31m"),
+						apiv1.ResourceMemory: resource.MustParse("31Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					UncappedTarget: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("42m"),
+						apiv1.ResourceMemory: resource.MustParse("42Mi"),
+					},
+				},
+			},
+		},
+		{
+			Name:            "resource policy has max allowed for cpu and global max allowed is set for cpu and memory",
+			Recommendations: podRecommendations(),
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				PodPolicies: &vpa_types.PodResourcePolicies{
+					MaxAllowed: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("40m"),
+					},
+				},
+			},
+			GlobalMaxAllowed: limits.GlobalMaxAllowed{
+				Pod: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("30m"),
+					apiv1.ResourceMemory: resource.MustParse("30Mi"),
+				},
+			},
+			Expected: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.RecommendedPodRes{
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					LowerBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("31m"),
+						apiv1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("40m"),
+						apiv1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					UncappedTarget: apiv1.ResourceList{
+						apiv1.ResourceCPU:    resource.MustParse("42m"),
+						apiv1.ResourceMemory: resource.MustParse("42Mi"),
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			resourcePolicyCopy := tt.ResourcePolicy.DeepCopy()
+
+			actual, err := ApplyRecommenderLevelPolicies(tt.Recommendations, tt.ResourcePolicy, tt.GlobalMaxAllowed)
+			if err == nil {
+				assert.Equal(t, tt.Expected, actual)
+			} else {
+				assert.Equal(t, tt.ExpectedError, err)
+			}
 
 			// Make sure that the func does not have a side affect and does not modify the passed resource policy.
 			assert.Equal(t, resourcePolicyCopy, tt.ResourcePolicy)

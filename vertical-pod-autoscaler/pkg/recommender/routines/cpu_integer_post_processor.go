@@ -63,6 +63,11 @@ func (p *IntegerCPUPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, 
 	return amendedRecommendation
 }
 
+// ProcessPodLevel is a no-op for this post processor because it only adjusts per-container CPU quantities.
+func (p *IntegerCPUPostProcessor) ProcessPodLevel(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+	return recommendation
+}
+
 func setIntegerCPURecommendation(recommendation apiv1.ResourceList) {
 	for resourceName, recommended := range recommendation {
 		if resourceName != apiv1.ResourceCPU {
