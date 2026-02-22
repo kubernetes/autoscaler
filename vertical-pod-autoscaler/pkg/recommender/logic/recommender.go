@@ -22,6 +22,7 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
@@ -208,7 +209,7 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources)
 	return recommendation
 }
 
-// This function implements the algorithm that calculates Pod-level recommendations.
+// CalculatePodlevelRecommendations function implements the algorithm that calculates Pod-level recommendations.
 // This function takes already post-processed Container-level recommendations as input.
 func CalculatePodlevelRecommendations(containerRecommendations []vpa_types.RecommendedContainerResources) *vpa_types.RecommendedPodResources {
 	podRecommendations := vpa_types.RecommendedPodRes{
@@ -235,7 +236,6 @@ func CalculatePodlevelRecommendations(containerRecommendations []vpa_types.Recom
 		podRecommendations.Target = add(podRecommendations.Target, container.Target)
 		podRecommendations.UpperBound = add(podRecommendations.UpperBound, container.UpperBound)
 		podRecommendations.UncappedTarget = add(podRecommendations.UncappedTarget, container.UncappedTarget)
-
 	}
 
 	recommendation := &vpa_types.RecommendedPodResources{

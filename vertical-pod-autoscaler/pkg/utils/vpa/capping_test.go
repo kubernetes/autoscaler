@@ -17,7 +17,7 @@ limitations under the License.
 package api
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -658,7 +658,7 @@ func TestApplyRecommenderLevelPolicies(t *testing.T) {
 			Recommendations:  nil,
 			ResourcePolicy:   nil,
 			GlobalMaxAllowed: limits.GlobalMaxAllowed{},
-			ExpectedError:    fmt.Errorf("no Pod-level recommendation available"),
+			ExpectedError:    errors.New("no Pod-level recommendation available"),
 		},
 		{
 			Name:             "resource policy is nil and global max allowed is nil",

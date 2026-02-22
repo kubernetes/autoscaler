@@ -160,7 +160,6 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				}
 				if *mode == vpa_types.ContainerScalingModeRecsOnly && !features.Enabled(features.PodLevelResourcesSupportForVPA) {
 					return fmt.Errorf("in order to use %s containerPolicies mode, you must enable feature gate %s in the admission-controller args", vpa_types.ContainerScalingModeRecsOnly, features.PodLevelResourcesSupportForVPA)
-
 				}
 			}
 

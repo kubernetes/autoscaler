@@ -48,7 +48,7 @@ func TestValidateVPA(t *testing.T) {
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
-	ContainerScalingModeRecsOnlyMode := vpa_types.ContainerScalingModeRecsOnly
+	containerScalingModeRecsOnlyMode := vpa_types.ContainerScalingModeRecsOnly
 	tests := []struct {
 		name                                 string
 		vpa                                  vpa_types.VerticalPodAutoscaler
@@ -390,7 +390,7 @@ func TestValidateVPA(t *testing.T) {
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
 								ContainerName: "c1",
-								Mode:          &ContainerScalingModeRecsOnlyMode,
+								Mode:          &containerScalingModeRecsOnlyMode,
 							},
 						},
 					},

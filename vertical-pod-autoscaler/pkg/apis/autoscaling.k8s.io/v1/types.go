@@ -288,7 +288,8 @@ const (
 	ContainerScalingModeAuto ContainerScalingMode = "Auto"
 	// ContainerScalingModeOff means autoscaling is disabled for a container.
 	ContainerScalingModeOff ContainerScalingMode = "Off"
-	// RecommendationOnly.
+	// ContainerScalingModeRecsOnly means that Container-level recommendations are calculated,
+	// but the related Container-level resource stanzas are not managed.
 	ContainerScalingModeRecsOnly ContainerScalingMode = "RecommendationOnly"
 )
 
@@ -297,9 +298,9 @@ const (
 type PodScalingMode string
 
 const (
-	// ContainerScalingModeAuto means autoscaling is enabled for a container.
+	// PodScalingModeAuto means autoscaling is enabled at the Pod level.
 	PodScalingModeAuto PodScalingMode = "Auto"
-	// ContainerScalingModeOff means autoscaling is disabled for a container.
+	// PodScalingModeOff means autoscaling is disabled at the Pod level.
 	PodScalingModeOff PodScalingMode = "Off"
 )
 
