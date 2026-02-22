@@ -485,11 +485,11 @@ func TestNoPods(t *testing.T) {
 
 type pod1Admission struct{}
 
-func (p *pod1Admission) LoopInit([]*corev1.Pod, map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod) {}
-func (p *pod1Admission) Admit(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+func (*pod1Admission) LoopInit([]*corev1.Pod, map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod) {}
+func (*pod1Admission) Admit(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return pod.Name == "POD1"
 }
-func (p *pod1Admission) CleanUp() {}
+func (*pod1Admission) CleanUp() {}
 
 func TestAdmission(t *testing.T) {
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("2")).Get()).Get()
