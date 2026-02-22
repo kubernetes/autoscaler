@@ -58,6 +58,7 @@ linters:
         - name: early-return
         - name: redefines-builtin-id
         - name: redundant-import-alias
+        - name: confusing-results
 
         # Below lists the rules disabled
 
