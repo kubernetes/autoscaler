@@ -36,8 +36,9 @@ import (
 
 var (
 	possibleScalingModes = map[vpa_types.ContainerScalingMode]any{
-		vpa_types.ContainerScalingModeAuto: struct{}{},
-		vpa_types.ContainerScalingModeOff:  struct{}{},
+		vpa_types.ContainerScalingModeAuto:     struct{}{},
+		vpa_types.ContainerScalingModeOff:      struct{}{},
+		vpa_types.ContainerScalingModeRecsOnly: struct{}{},
 	}
 )
 
@@ -157,7 +158,12 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				if _, found := possibleScalingModes[*mode]; !found {
 					return fmt.Errorf("unexpected Mode value %s", *mode)
 				}
+				if *mode == vpa_types.ContainerScalingModeRecsOnly && !features.Enabled(features.PodLevelResourcesSupportForVPA) {
+					return fmt.Errorf("in order to use %s containerPolicies mode, you must enable feature gate %s in the admission-controller args", vpa_types.ContainerScalingModeRecsOnly, features.PodLevelResourcesSupportForVPA)
+
+				}
 			}
+
 			for resource, min := range policy.MinAllowed {
 				if err := validateResourceResolution(resource, min); err != nil {
 					return fmt.Errorf("minAllowed: %v", err)
@@ -177,6 +183,49 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			if mode != nil && controlledValues != nil {
 				if *mode == vpa_types.ContainerScalingModeOff && *controlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
 					return errors.New("controlledValues shouldn't be specified if container scaling mode is off")
+				}
+			}
+		}
+
+		// Todo:  I may validate that the sum of container level MaxAllowed can't be bigger than the pod level MaxAllowed etc
+		if podPolicies := vpa.Spec.ResourcePolicy.PodPolicies; podPolicies != nil {
+			if !features.Enabled(features.PodLevelResourcesSupportForVPA) {
+				return fmt.Errorf("in order to use podPolicies stanza, you must enable feature gate %s in the admission-controller args", features.PodLevelResourcesSupportForVPA)
+			}
+
+			if err := validatePerVPAFeatureFlag(podPolicies); err != nil {
+				return err
+			}
+
+			// Validate OOMBumpUpRatio
+			if podPolicies.OOMBumpUpRatio != nil {
+				ratio := float64(podPolicies.OOMBumpUpRatio.MilliValue()) / 1000.0
+				if ratio < 1.0 {
+					return fmt.Errorf("oomBumpUpRatio must be greater than or equal to 1.0, got %v", ratio)
+				}
+			}
+
+			// Validate OOMMinBumpUp
+			if podPolicies.OOMMinBumpUp != nil {
+				minBump := podPolicies.OOMMinBumpUp.Value()
+				if minBump < 0 {
+					return fmt.Errorf("oomMinBumpUp must be greater than or equal to 0, got %v bytes", minBump)
+				}
+			}
+
+			for resource, min := range podPolicies.MinAllowed {
+				if err := validateResourceResolution(resource, min); err != nil {
+					return fmt.Errorf("minAllowed: %v", err)
+				}
+				max, found := podPolicies.MaxAllowed[resource]
+				if found && max.Cmp(min) < 0 {
+					return fmt.Errorf("max resource for %v is lower than min", resource)
+				}
+			}
+
+			for resource, max := range podPolicies.MaxAllowed {
+				if err := validateResourceResolution(resource, max); err != nil {
+					return fmt.Errorf("maxAllowed: %v", err)
 				}
 			}
 		}
@@ -217,9 +266,18 @@ func validateMemoryResolution(val apires.Quantity) error {
 	return nil
 }
 
-func validatePerVPAFeatureFlag(policy *vpa_types.ContainerResourcePolicy) error {
+func validatePerVPAFeatureFlag(policy any) error {
 	featureFlagOn := features.Enabled(features.PerVPAConfig)
-	perVPA := policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil
+	var perVPA bool
+	switch p := policy.(type) {
+	case *vpa_types.ContainerResourcePolicy:
+		perVPA = p.OOMBumpUpRatio != nil || p.OOMMinBumpUp != nil
+	case *vpa_types.PodResourcePolicies:
+		perVPA = p.OOMBumpUpRatio != nil || p.OOMMinBumpUp != nil
+	default:
+		return fmt.Errorf("unexpected policy type %T", policy)
+	}
+
 	if !featureFlagOn && perVPA {
 		return fmt.Errorf("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag %s is disabled", features.PerVPAConfig)
 	}

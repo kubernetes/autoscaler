@@ -21,6 +21,7 @@ _Validation:_
 
 _Appears in:_
 - [ContainerResourcePolicy](#containerresourcepolicy)
+- [PodResourcePolicies](#podresourcepolicies)
 
 | Field | Description |
 | --- | --- |
@@ -43,7 +44,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerName` _string_ | Name of the container or DefaultContainerResourcePolicy, in which<br />case the policy is used by the containers that don't have their own<br />policy specified. |  |  |
-| `mode` _[ContainerScalingMode](#containerscalingmode)_ | Whether autoscaler is enabled for the container. The default is "Auto". |  | Enum: [Auto Off] <br /> |
+| `mode` _[ContainerScalingMode](#containerscalingmode)_ | Whether autoscaler is enabled for the container. The default is "Auto". |  | Enum: [Auto Off RecommendationOnly] <br /> |
 | `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the minimal amount of resources that will be recommended<br />for the container. The default is no minimum. |  |  |
 | `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  |  |
 | `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
@@ -60,7 +61,7 @@ ContainerScalingMode controls whether autoscaler is enabled for a specific
 container.
 
 _Validation:_
-- Enum: [Auto Off]
+- Enum: [Auto Off RecommendationOnly]
 
 _Appears in:_
 - [ContainerResourcePolicy](#containerresourcepolicy)
@@ -69,6 +70,7 @@ _Appears in:_
 | --- | --- |
 | `Auto` | ContainerScalingModeAuto means autoscaling is enabled for a container.<br /> |
 | `Off` | ContainerScalingModeOff means autoscaling is disabled for a container.<br /> |
+| `RecommendationOnly` | RecommendationOnly.<br /> |
 
 
 #### EvictionChangeRequirement
@@ -125,6 +127,29 @@ _Appears in:_
 | `totalWeight` _float_ | Sum of samples to be used as denominator for weights from BucketWeights. |  |  |
 
 
+#### PodResourcePolicies
+
+
+
+PodResourcePolicies controls how autoscaler computes the recommended
+resources for the pod.
+
+
+
+_Appears in:_
+- [PodResourcePolicy](#podresourcepolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `mode` _[PodScalingMode](#podscalingmode)_ | Whether autoscaler is enabled for pod level resource requests The default is "Off". |  | Enum: [Auto Off] <br /> |
+| `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the minimal amount of resources that will be recommended<br />for the pod. The default is no minimum. |  |  |
+| `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the pod. The default is no maximum. |  |  |
+| `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
+| `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br /> |
+| `oomBumpUpRatio` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#quantity-resource-api)_ | oomBumpUpRatio is the ratio to increase memory when OOM is detected. |  |  |
+| `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  |  |
+
+
 #### PodResourcePolicy
 
 
@@ -142,6 +167,25 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerPolicies` _[ContainerResourcePolicy](#containerresourcepolicy) array_ | Per-container resource policies. |  |  |
+| `podPolicies` _[PodResourcePolicies](#podresourcepolicies)_ |  |  |  |
+
+
+#### PodScalingMode
+
+_Underlying type:_ _string_
+
+PodScalingMode controls whether autoscaler is enabled to calculate pod-level recommendations
+
+_Validation:_
+- Enum: [Auto Off]
+
+_Appears in:_
+- [PodResourcePolicies](#podresourcepolicies)
+
+| Field | Description |
+| --- | --- |
+| `Auto` | ContainerScalingModeAuto means autoscaling is enabled for a container.<br /> |
+| `Off` | ContainerScalingModeOff means autoscaling is disabled for a container.<br /> |
 
 
 #### PodUpdatePolicy
@@ -185,12 +229,37 @@ _Appears in:_
 | `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | The most recent recommended resources target computed by the autoscaler<br />for the controlled pods, based only on actual resource usage, not taking<br />into account the ContainerResourcePolicy.<br />May differ from the Recommendation if the actual resource usage causes<br />the target to violate the ContainerResourcePolicy (lower than MinAllowed<br />or higher that MaxAllowed).<br />Used only as status indication, will not affect actual resource assignment. |  |  |
 
 
+#### RecommendedPodRes
+
+
+
+RecommendedPodRes is the resource recommendation computed by the
+autoscaler for the pod. It respects the container resource policy and the
+pod resource policy. In particular, the autoscaler omits a container
+from the pod-level recommendation calculation when ContainerScalingMode is set to "Off"
+in the container resource policy.
+
+
+
+_Appears in:_
+- [RecommendedPodResources](#recommendedpodresources)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `target` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies. |  |  |
+| `lowerBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Minimum recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies.<br />This amount is not guaranteed to be sufficient for the application to operate in a stable way, however<br />running with less resources is likely to have significant impact on performance/availability. |  |  |
+| `upperBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Maximum recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies.<br />Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum<br />amount of application is actually capable of consuming. |  |  |
+| `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | The most recent recommended resources target computed by the autoscaler<br />for the controlled pods, based only on actual resource usage, not taking<br />into account the ContainerResourcePolicy and PodResourcePolicies.<br />May differ from the Recommendation if the actual resource usage causes<br />the target to violate the ContainerResourcePolicy (lower than MinAllowed<br />or higher that MaxAllowed) or the PodResourcePolicies.<br />Used only as status indication, will not affect actual resource assignment. |  |  |
+
+
 #### RecommendedPodResources
 
 
 
 RecommendedPodResources is the recommendation of resources computed by
 autoscaler. It contains a recommendation for each container in the pod
+and a pod-level recommendation when the pod-level resource stanza is present
+in the PodSpec.
 (except for those with `ContainerScalingMode` set to 'Off').
 
 
@@ -201,6 +270,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  |  |
+| `podRecommendations` _[RecommendedPodRes](#recommendedpodres)_ | Resources recommended by the autoscaler for each container. |  |  |
 
 
 #### UpdateMode

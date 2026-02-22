@@ -195,6 +195,7 @@ type PodResourcePolicy struct {
 	// +patchMergeKey=containerName
 	// +patchStrategy=merge
 	ContainerPolicies []ContainerResourcePolicy `json:"containerPolicies,omitempty" patchStrategy:"merge" patchMergeKey:"containerName" protobuf:"bytes,1,rep,name=containerPolicies"`
+	PodPolicies       *PodResourcePolicies      `json:"podPolicies,omitempty" protobuf:"bytes,1,rep,name=podPolicies"`
 }
 
 // ContainerResourcePolicy controls how autoscaler computes the recommended
@@ -236,6 +237,41 @@ type ContainerResourcePolicy struct {
 	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
 }
 
+// PodResourcePolicies controls how autoscaler computes the recommended
+// resources for the pod.
+type PodResourcePolicies struct {
+	// Whether autoscaler is enabled for pod level resource requests The default is "Off".
+	// +optional
+	Mode *PodScalingMode `json:"mode,omitempty" protobuf:"bytes,2,opt,name=mode"`
+	// Specifies the minimal amount of resources that will be recommended
+	// for the pod. The default is no minimum.
+	// +optional
+	MinAllowed v1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
+	// Specifies the maximum amount of resources that will be recommended
+	// for the pod. The default is no maximum.
+	// +optional
+	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+
+	// Specifies the type of recommendations that will be computed
+	// (and possibly applied) by VPA.
+	// If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
+	// +patchStrategy=merge
+	ControlledResources *[]v1.ResourceName `json:"controlledResources,omitempty" patchStrategy:"merge" protobuf:"bytes,5,rep,name=controlledResources"`
+
+	// Specifies which resource values should be controlled.
+	// The default is "RequestsAndLimits".
+	// +optional
+	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// oomBumpUpRatio is the ratio to increase memory when OOM is detected.
+	// +optional
+	OOMBumpUpRatio *resource.Quantity `json:"oomBumpUpRatio,omitempty" protobuf:"bytes,7,opt,name=oomBumpUpRatio"`
+
+	// oomMinBumpUp is the minimum increase in memory when OOM is detected.
+	// +optional
+	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
+}
+
 const (
 	// DefaultContainerResourcePolicy can be passed as
 	// ContainerResourcePolicy.ContainerName to specify the default policy.
@@ -244,7 +280,7 @@ const (
 
 // ContainerScalingMode controls whether autoscaler is enabled for a specific
 // container.
-// +kubebuilder:validation:Enum=Auto;Off
+// +kubebuilder:validation:Enum=Auto;Off;RecommendationOnly
 type ContainerScalingMode string
 
 const (
@@ -252,6 +288,19 @@ const (
 	ContainerScalingModeAuto ContainerScalingMode = "Auto"
 	// ContainerScalingModeOff means autoscaling is disabled for a container.
 	ContainerScalingModeOff ContainerScalingMode = "Off"
+	// RecommendationOnly.
+	ContainerScalingModeRecsOnly ContainerScalingMode = "RecommendationOnly"
+)
+
+// PodScalingMode controls whether autoscaler is enabled to calculate pod-level recommendations
+// +kubebuilder:validation:Enum=Auto;Off
+type PodScalingMode string
+
+const (
+	// ContainerScalingModeAuto means autoscaling is enabled for a container.
+	PodScalingModeAuto PodScalingMode = "Auto"
+	// ContainerScalingModeOff means autoscaling is disabled for a container.
+	PodScalingModeOff PodScalingMode = "Off"
 )
 
 // ContainerControlledValues controls which resource value should be autoscaled.
@@ -283,11 +332,16 @@ type VerticalPodAutoscalerStatus struct {
 
 // RecommendedPodResources is the recommendation of resources computed by
 // autoscaler. It contains a recommendation for each container in the pod
+// and a pod-level recommendation when the pod-level resource stanza is present
+// in the PodSpec.
 // (except for those with `ContainerScalingMode` set to 'Off').
 type RecommendedPodResources struct {
 	// Resources recommended by the autoscaler for each container.
 	// +optional
 	ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations,omitempty" protobuf:"bytes,1,rep,name=containerRecommendations"`
+	// Resources recommended by the autoscaler for each container.
+	// +optional
+	PodRecommendations *RecommendedPodRes `json:"podRecommendations,omitempty" protobuf:"bytes,1,rep,name=podRecommendations"`
 }
 
 // RecommendedContainerResources is the recommendation of resources computed by
@@ -315,6 +369,36 @@ type RecommendedContainerResources struct {
 	// May differ from the Recommendation if the actual resource usage causes
 	// the target to violate the ContainerResourcePolicy (lower than MinAllowed
 	// or higher that MaxAllowed).
+	// Used only as status indication, will not affect actual resource assignment.
+	// +optional
+	UncappedTarget v1.ResourceList `json:"uncappedTarget,omitempty" protobuf:"bytes,5,opt,name=uncappedTarget"`
+}
+
+// RecommendedPodRes is the resource recommendation computed by the
+// autoscaler for the pod. It respects the container resource policy and the
+// pod resource policy. In particular, the autoscaler omits a container
+// from the pod-level recommendation calculation when ContainerScalingMode is set to "Off"
+// in the container resource policy.
+type RecommendedPodRes struct {
+	// Recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies.
+	// +optional
+	Target v1.ResourceList `json:"target" protobuf:"bytes,2,rep,name=target,casttype=ResourceList,castkey=ResourceName"`
+	// Minimum recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies.
+	// This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
+	// running with less resources is likely to have significant impact on performance/availability.
+	// +optional
+	LowerBound v1.ResourceList `json:"lowerBound,omitempty" protobuf:"bytes,3,rep,name=lowerBound,casttype=ResourceList,castkey=ResourceName"`
+	// Maximum recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies.
+	// Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
+	// amount of application is actually capable of consuming.
+	// +optional
+	UpperBound v1.ResourceList `json:"upperBound,omitempty" protobuf:"bytes,4,rep,name=upperBound,casttype=ResourceList,castkey=ResourceName"`
+	// The most recent recommended resources target computed by the autoscaler
+	// for the controlled pods, based only on actual resource usage, not taking
+	// into account the ContainerResourcePolicy and PodResourcePolicies.
+	// May differ from the Recommendation if the actual resource usage causes
+	// the target to violate the ContainerResourcePolicy (lower than MinAllowed
+	// or higher that MaxAllowed) or the PodResourcePolicies.
 	// Used only as status indication, will not affect actual resource assignment.
 	// +optional
 	UncappedTarget v1.ResourceList `json:"uncappedTarget,omitempty" protobuf:"bytes,5,opt,name=uncappedTarget"`

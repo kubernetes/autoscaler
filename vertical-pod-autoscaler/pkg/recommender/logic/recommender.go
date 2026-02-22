@@ -21,6 +21,7 @@ import (
 	"sort"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
@@ -202,6 +203,44 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources)
 	}
 	recommendation := &vpa_types.RecommendedPodResources{
 		ContainerRecommendations: containerResources,
+		PodRecommendations:       nil,
+	}
+	return recommendation
+}
+
+// This function implements the algorithm that calculates Pod-level recommendations.
+// This function takes already post-processed Container-level recommendations as input.
+func CalculatePodlevelRecommendations(containerRecommendations []vpa_types.RecommendedContainerResources) *vpa_types.RecommendedPodResources {
+	podRecommendations := vpa_types.RecommendedPodRes{
+		Target:         make(v1.ResourceList),
+		LowerBound:     make(v1.ResourceList),
+		UpperBound:     make(v1.ResourceList),
+		UncappedTarget: make(v1.ResourceList),
+	}
+
+	add := func(dst, src v1.ResourceList) v1.ResourceList {
+		for name, q := range src {
+			if existing, ok := dst[name]; ok {
+				existing.Add(q)
+				dst[name] = existing
+				continue
+			}
+			dst[name] = q.DeepCopy()
+		}
+		return dst
+	}
+
+	for _, container := range containerRecommendations {
+		podRecommendations.LowerBound = add(podRecommendations.LowerBound, container.LowerBound)
+		podRecommendations.Target = add(podRecommendations.Target, container.Target)
+		podRecommendations.UpperBound = add(podRecommendations.UpperBound, container.UpperBound)
+		podRecommendations.UncappedTarget = add(podRecommendations.UncappedTarget, container.UncappedTarget)
+
+	}
+
+	recommendation := &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: containerRecommendations,
+		PodRecommendations:       &podRecommendations,
 	}
 	return recommendation
 }
