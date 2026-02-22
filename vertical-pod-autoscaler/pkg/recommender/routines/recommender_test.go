@@ -38,7 +38,7 @@ import (
 
 type mockPodResourceRecommender struct{}
 
-func (m *mockPodResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) logic.RecommendedPodResources {
+func (*mockPodResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) logic.RecommendedPodResources {
 	return logic.RecommendedPodResources{}
 }
 

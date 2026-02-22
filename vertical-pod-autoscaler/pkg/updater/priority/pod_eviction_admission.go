@@ -72,10 +72,10 @@ func (a *sequentialPodEvictionAdmission) CleanUp() {
 
 type noopPodEvictionAdmission struct{}
 
-func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*corev1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod) {
+func (*noopPodEvictionAdmission) LoopInit(allLivePods []*corev1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod) {
 }
-func (n *noopPodEvictionAdmission) Admit(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+func (*noopPodEvictionAdmission) Admit(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return true
 }
-func (n *noopPodEvictionAdmission) CleanUp() {
+func (*noopPodEvictionAdmission) CleanUp() {
 }

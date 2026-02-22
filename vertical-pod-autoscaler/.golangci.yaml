@@ -59,6 +59,7 @@ linters:
         - name: redefines-builtin-id
         - name: redundant-import-alias
         - name: confusing-results
+        - name: unused-receiver
 
         # Below lists the rules disabled
 

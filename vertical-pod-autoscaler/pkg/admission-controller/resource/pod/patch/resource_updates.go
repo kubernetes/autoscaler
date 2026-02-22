@@ -173,7 +173,7 @@ func getContainerStartupBoostPolicy(container *corev1.Container, vpa *vpa_types.
 	return startupBoost
 }
 
-func (c *resourcesUpdatesPatchCalculator) calculateBoostedCPUValue(baseCPU resource.Quantity, startupBoost *vpa_types.StartupBoost) (*resource.Quantity, error) {
+func (*resourcesUpdatesPatchCalculator) calculateBoostedCPUValue(baseCPU resource.Quantity, startupBoost *vpa_types.StartupBoost) (*resource.Quantity, error) {
 	boostType := startupBoost.CPU.Type
 	if boostType == "" {
 		boostType = vpa_types.FactorStartupBoostType

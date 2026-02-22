@@ -171,7 +171,7 @@ func (m *PodListerMock) List(selector labels.Selector) (ret []*corev1.Pod, err e
 }
 
 // Get is not implemented for this mock
-func (m *PodListerMock) Get(name string) (*corev1.Pod, error) {
+func (*PodListerMock) Get(name string) (*corev1.Pod, error) {
 	return nil, errors.New("unimplemented")
 }
 
@@ -202,7 +202,7 @@ func (m *VerticalPodAutoscalerListerMock) VerticalPodAutoscalers(namespace strin
 }
 
 // Get is not implemented for this mock
-func (m *VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalPodAutoscaler, error) {
+func (*VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalPodAutoscaler, error) {
 	return nil, errors.New("unimplemented")
 }
 
@@ -232,7 +232,7 @@ func (m *VerticalPodAutoscalerCheckPointListerMock) VerticalPodAutoscalerCheckpo
 }
 
 // Get is not implemented for this mock
-func (m *VerticalPodAutoscalerCheckPointListerMock) Get(name string) (*vpa_types.VerticalPodAutoscalerCheckpoint, error) {
+func (*VerticalPodAutoscalerCheckPointListerMock) Get(name string) (*vpa_types.VerticalPodAutoscalerCheckpoint, error) {
 	return nil, errors.New("unimplemented")
 }
 
@@ -263,7 +263,7 @@ func (m *VerticalPodAutoscalerV1Beta1ListerMock) VerticalPodAutoscalers(namespac
 }
 
 // Get is not implemented for this mock
-func (m *VerticalPodAutoscalerV1Beta1ListerMock) Get(name string) (*vpa_types_v1beta1.VerticalPodAutoscaler, error) {
+func (*VerticalPodAutoscalerV1Beta1ListerMock) Get(name string) (*vpa_types_v1beta1.VerticalPodAutoscaler, error) {
 	return nil, errors.New("unimplemented")
 }
 
@@ -291,7 +291,7 @@ func (m *RecommendationProcessorMock) Apply(vpa *vpa_types.VerticalPodAutoscaler
 type FakeRecommendationProcessor struct{}
 
 // Apply is a dummy implementation of RecommendationProcessor.Apply which returns provided podRecommendation
-func (f *FakeRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
+func (*FakeRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
 	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
 	return vpa.Status.Recommendation, nil, nil
 }
@@ -300,18 +300,18 @@ func (f *FakeRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler
 type fakeEventRecorder struct{}
 
 // Event is a dummy implementation of record.EventRecorder interface.
-func (f *fakeEventRecorder) Event(object runtime.Object, eventtype, reason, message string) {}
+func (*fakeEventRecorder) Event(object runtime.Object, eventtype, reason, message string) {}
 
 // Eventf is a dummy implementation of record.EventRecorder interface.
-func (f *fakeEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...any) {
+func (*fakeEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // PastEventf is a dummy implementation of record.EventRecorder interface.
-func (f *fakeEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...any) {
+func (*fakeEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // AnnotatedEventf is a dummy implementation of record.EventRecorder interface.
-func (f *fakeEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...any) {
+func (*fakeEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // FakeEventRecorder returns a dummy implementation of record.EventRecorder.
@@ -330,15 +330,15 @@ func (m *mockedEventRecorder) Event(object runtime.Object, eventtype, reason, me
 }
 
 // Eventf is a dummy implementation of record.EventRecorder interface.
-func (m *mockedEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...any) {
+func (*mockedEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // PastEventf is a dummy implementation of record.EventRecorder interface.
-func (m *mockedEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...any) {
+func (*mockedEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // AnnotatedEventf is a dummy implementation of record.EventRecorder interface.
-func (m *mockedEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...any) {
+func (*mockedEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...any) {
 }
 
 // MockEventRecorder returns a dummy implementation of record.EventRecorder.
