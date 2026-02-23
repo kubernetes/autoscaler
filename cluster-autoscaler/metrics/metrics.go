@@ -97,6 +97,8 @@ const (
 	PodEvictionSucceed PodEvictionResult = "succeeded"
 	// PodEvictionFailed means creation of the pod eviction object failed
 	PodEvictionFailed PodEvictionResult = "failed"
+
+	gpuNodeMetricsDeprecatedVersion = "1.35.0"
 )
 
 // Names of Cluster Autoscaler operations
@@ -340,9 +342,10 @@ func newCaMetrics() *caMetrics {
 
 		gpuScaleUpCount: k8smetrics.NewCounterVec(
 			&k8smetrics.CounterOpts{
-				Namespace: caNamespace,
-				Name:      "scaled_up_gpu_nodes_total",
-				Help:      "Number of GPU nodes added by CA, by GPU name.",
+				Namespace:         caNamespace,
+				Name:              "scaled_up_gpu_nodes_total",
+				Help:              "Number of GPU nodes added by CA, by GPU name.",
+				DeprecatedVersion: gpuNodeMetricsDeprecatedVersion,
 			}, []string{"gpu_resource_name", "gpu_name"},
 		),
 
@@ -364,9 +367,10 @@ func newCaMetrics() *caMetrics {
 
 		failedGPUScaleUpCount: k8smetrics.NewCounterVec(
 			&k8smetrics.CounterOpts{
-				Namespace: caNamespace,
-				Name:      "failed_gpu_scale_ups_total",
-				Help:      "Number of times scale-up operation has failed.",
+				Namespace:         caNamespace,
+				Name:              "failed_gpu_scale_ups_total",
+				Help:              "Number of times scale-up operation has failed.",
+				DeprecatedVersion: gpuNodeMetricsDeprecatedVersion,
 			}, []string{"reason", "gpu_resource_name", "gpu_name"},
 		),
 
@@ -380,9 +384,10 @@ func newCaMetrics() *caMetrics {
 
 		gpuScaleDownCount: k8smetrics.NewCounterVec(
 			&k8smetrics.CounterOpts{
-				Namespace: caNamespace,
-				Name:      "scaled_down_gpu_nodes_total",
-				Help:      "Number of GPU nodes removed by CA, by reason and GPU name.",
+				Namespace:         caNamespace,
+				Name:              "scaled_down_gpu_nodes_total",
+				Help:              "Number of GPU nodes removed by CA, by reason and GPU name.",
+				DeprecatedVersion: gpuNodeMetricsDeprecatedVersion,
 			}, []string{"reason", "gpu_resource_name", "gpu_name"},
 		),
 
