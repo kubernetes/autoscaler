@@ -74,6 +74,7 @@ func getMostRecentPod(podList []corev1.Pod) *corev1.Pod {
 }
 
 func buildPodTemplateFromPod(pod *corev1.Pod) *corev1.PodTemplateSpec {
+	pod.Spec.NodeName = ""
 	return &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:      pod.Labels,
