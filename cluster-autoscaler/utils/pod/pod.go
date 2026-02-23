@@ -17,7 +17,6 @@ limitations under the License.
 package pod
 
 import (
-	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/kubelet/types"
@@ -99,18 +98,16 @@ func PodRequests(pod *apiv1.Pod) apiv1.ResourceList {
 // GetPodFromTemplate generates a Pod from a PodTemplateSpec.
 //
 // Source: https://github.com/kubernetes/kubernetes/blob/f366ba158ab7f0370e4e988dca8b0330a5952f43/pkg/controller/controller_utils.go#L562
-func GetPodFromTemplate(template *apiv1.PodTemplateSpec, namespace string) *apiv1.Pod {
+func GetPodFromTemplate(template *apiv1.PodTemplateSpec) *apiv1.Pod {
 	desiredLabels := getPodsLabelSet(template)
 	desiredFinalizers := getPodsFinalizers(template)
 	desiredAnnotations := getPodsAnnotationSet(template)
 
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels:       desiredLabels,
-			Namespace:    namespace,
-			Annotations:  desiredAnnotations,
-			GenerateName: uuid.NewString(),
-			Finalizers:   desiredFinalizers,
+			Labels:      desiredLabels,
+			Annotations: desiredAnnotations,
+			Finalizers:  desiredFinalizers,
 		},
 	}
 
