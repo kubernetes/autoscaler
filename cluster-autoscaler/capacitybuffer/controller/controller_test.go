@@ -88,7 +88,8 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 	client, err := cbclient.NewCapacityBufferClientFromClients(buffersClient, k8sClient, nil, nil)
 	assert.NoError(t, err)
 
-	controller := NewDefaultBufferController(client).(*bufferController)
+	resolver := testutil.NewFakeResolver()
+	controller := NewDefaultBufferController(client, resolver).(*bufferController)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -132,7 +133,12 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 					gotLimited = true
 				}
 			}
-			t.Errorf("%s reconciliation failed, got replicas: %d, limited: %t, want replicas: %d, limited: %t", name, *b.Status.Replicas, gotLimited, expectedReplicas, checkLimited)
+			if b.Status.Replicas != nil {
+				gotReplicas := *b.Status.Replicas
+				t.Errorf("%s reconciliation failed, got replicas: %d, limited: %t, want replicas: %d, limited: %t", name, gotReplicas, gotLimited, expectedReplicas, checkLimited)
+			} else {
+				t.Errorf("%s reconciliation failed, got replicas: nil, want replicas: %d", name, expectedReplicas)
+			}
 		}
 	}
 

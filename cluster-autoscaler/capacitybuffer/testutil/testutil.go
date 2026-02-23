@@ -17,10 +17,14 @@ limitations under the License.
 package testutil
 
 import (
+	"context"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
+	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 // To use their pointers in creating testing capacity buffer objects
@@ -31,6 +35,32 @@ var (
 	SomePodTemplateRefName    = "some-pod-template"
 	AnotherPodTemplateRefName = "another-pod-template"
 )
+
+// FakeResolver is a mock resolver for testing
+type FakeResolver struct{}
+
+// NewFakeResolver returns a new FakeResolver
+func NewFakeResolver() fakepods.Resolver {
+	return &FakeResolver{}
+}
+
+// Resolve returns a fake pod based on the provided template
+func (r *FakeResolver) Resolve(_ context.Context, namespace string, template *corev1.PodTemplateSpec) (*corev1.Pod, error) {
+	pod := podutils.GetPodFromTemplate(template)
+	pod.Namespace = namespace
+	// Copy limits to requests if requests are missing (simplified)
+	for i := range pod.Spec.Containers {
+		if pod.Spec.Containers[i].Resources.Requests == nil {
+			pod.Spec.Containers[i].Resources.Requests = make(corev1.ResourceList)
+		}
+		for k, v := range pod.Spec.Containers[i].Resources.Limits {
+			if _, exists := pod.Spec.Containers[i].Resources.Requests[k]; !exists {
+				pod.Spec.Containers[i].Resources.Requests[k] = v
+			}
+		}
+	}
+	return pod, nil
+}
 
 // SanitizeBuffersStatus returns a list of the status objects of the passed buffers after sanitizing them for testing comparison
 func SanitizeBuffersStatus(buffers []*v1.CapacityBuffer) []*v1.CapacityBufferStatus {

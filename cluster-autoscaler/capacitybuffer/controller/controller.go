@@ -33,6 +33,7 @@ import (
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
@@ -77,6 +78,7 @@ func NewBufferController(
 // NewDefaultBufferController creates bufferController with default configs
 func NewDefaultBufferController(
 	client *cbclient.CapacityBufferClient,
+	resolver fakepods.Resolver,
 ) BufferController {
 	bc := &bufferController{
 		client: client,
@@ -84,8 +86,8 @@ func NewDefaultBufferController(
 		strategyFilter: filters.NewStrategyFilter([]string{capacitybuffer.ActiveProvisioningStrategy, ""}),
 		translator: translators.NewCombinedTranslator(
 			[]translators.Translator{
-				translators.NewPodTemplateBufferTranslator(client),
-				translators.NewDefaultScalableObjectsTranslator(client),
+				translators.NewPodTemplateBufferTranslator(client, resolver),
+				translators.NewDefaultScalableObjectsTranslator(client, resolver),
 				translators.NewResourceLimitsTranslator(client),
 			},
 		),
@@ -247,7 +249,7 @@ func (c *bufferController) processNextItem() bool {
 	} else {
 		// Put the item back on the queue to handle it later
 		c.queue.AddRateLimited(key)
-		runtime.HandleError(fmt.Errorf("error syncing namespace %q", key))
+		runtime.HandleError(fmt.Errorf("capacity buffer controller: error syncing namespace %q, requeueing", key))
 	}
 	return true
 }
