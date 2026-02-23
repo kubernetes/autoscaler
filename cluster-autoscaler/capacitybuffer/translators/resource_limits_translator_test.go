@@ -48,7 +48,7 @@ func TestResourceLimitsTranslator(t *testing.T) {
 	})
 	fakeClient := fakeClient.NewSimpleClientset(podTemp4mem100cpu, podTemp8mem200cpu, podTemp4gpu)
 	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil)
-	noResourcesSetMessage := "couldn't calculate number of pods for buffer based on provided resource limits. Check if the pod template requests at least one limited resource"
+	noResourcesSetMessage := "Buffer not ready for provisioning: couldn't calculate number of pods for buffer based on provided resource limits. Check if the pod template requests at least one limited resource"
 
 	tests := []struct {
 		name                   string

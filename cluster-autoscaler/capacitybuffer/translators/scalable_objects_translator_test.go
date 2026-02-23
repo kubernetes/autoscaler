@@ -32,7 +32,7 @@ import (
 
 const defaultNamespace = "default"
 
-func TestScalabaleObjectsTranslator(t *testing.T) {
+func TestScalableObjectsTranslator(t *testing.T) {
 	podTemplate1 := &corev1.PodTemplate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:       "podTemp1",
@@ -148,7 +148,8 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			translator := NewDefaultScalableObjectsTranslator(fakeCapacityBuffersClient)
+			resolver := testutil.NewFakeResolver()
+			translator := NewDefaultScalableObjectsTranslator(fakeCapacityBuffersClient, resolver)
 			errors := translator.Translate(test.buffers)
 			assert.Equal(t, test.expectedNumberOfErrors, len(errors))
 			assert.ElementsMatch(t, test.expectedStatus, testutil.SanitizeBuffersStatus(test.buffers))
