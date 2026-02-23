@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"testing"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/assert"
@@ -54,3 +55,36 @@ func TestEnabledPerNodeGroupMetrics(t *testing.T) {
 	assert.Equal(t, 2, int(testutil.ToFloat64(m.nodesGroupMinNodes.GaugeVec.WithLabelValues("foo"))))
 	assert.Equal(t, 100, int(testutil.ToFloat64(m.nodesGroupMaxNodes.GaugeVec.WithLabelValues("foo"))))
 }
+
+func BenchmarkUpdateDuration(b *testing.B) {
+	start := time.Now()
+	for b.Loop() {
+		// We don't care about the result, just the performance of the function.
+		UpdateDuration(ScaleDown, time.Since(start))
+	}
+}
+
+func BenchmarkUpdateDurationFromStart(b *testing.B) {
+	start := time.Now()
+	for b.Loop() {
+		// We don't care about the result, just the performance of the function.
+		UpdateDurationFromStart(ScaleDown, start)
+	}
+}
+
+func BenchmarkUpdateAggregatedDuration(b *testing.B) {
+	start := time.Now()
+	for b.Loop() {
+		// We don't care about the result, just the performance of the function.
+		UpdateDurationAggregated(DraSnapshotWrapSchedulerNodeInfoKey, time.Since(start))
+	}
+}
+
+func BenchmarkUpdateAggregatedDurationFromStart(b *testing.B) {
+	start := time.Now()
+	for b.Loop() {
+		// We don't care about the result, just the performance of the function.
+		UpdateDurationAggregatedFromStart(DraSnapshotWrapSchedulerNodeInfoKey, start)
+	}
+}
+

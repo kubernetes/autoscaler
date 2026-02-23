@@ -25,15 +25,31 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apiserver/pkg/util/feature"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	featuretesting "k8s.io/component-base/featuregate/testing"
-	"k8s.io/kubernetes/pkg/features"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
+
+var draSnapshotFactories = map[string]func() (clustersnapshot.ClusterSnapshot, error){
+	"basic": func() (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle, err := framework.NewTestFrameworkHandle()
+		if err != nil {
+			return nil, err
+		}
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, false), nil
+	},
+	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle, err := framework.NewTestFrameworkHandle()
+		if err != nil {
+			return nil, err
+		}
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, false), nil
+	},
+}
 
 func createTestResourceSlice(nodeName string, devicesPerSlice int, slicesPerNode int, driver string) *resourceapi.ResourceSlice {
 	sliceId := uuid.New().String()
@@ -180,8 +196,6 @@ func selectorForNode(node string) *apiv1.NodeSelector {
 // - Adding nodes with DRA resources to the snapshot.
 // - The overhead of snapshot Fork, Commit, and Revert operations, especially in scenarios involving DRA objects.
 func BenchmarkScheduleRevert(b *testing.B) {
-	featuretesting.SetFeatureGateDuringTest(b, feature.DefaultFeatureGate, features.DynamicResourceAllocation, true)
-
 	const maxNodesCount = 100
 	const devicesPerSlice = 100
 	const maxPodsCount = 100
@@ -311,7 +325,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for snapshotName, snapshotFactory := range snapshots {
+	for snapshotName, snapshotFactory := range draSnapshotFactories {
 		b.Run(snapshotName, func(b *testing.B) {
 			for cfgName, cfg := range configurations {
 				b.Run(cfgName, func(b *testing.B) {

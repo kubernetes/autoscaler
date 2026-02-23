@@ -18,11 +18,13 @@ package snapshot
 
 import (
 	"fmt"
+	"time"
 
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/dynamic-resource-allocation/structured"
 	"k8s.io/kubernetes/pkg/features"
 )
@@ -45,6 +47,8 @@ func (ct snapshotClaimTracker) Get(namespace, claimName string) (*resourceapi.Re
 }
 
 func (ct snapshotClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.DeviceID], error) {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotListAllAllocatedDevicesKey, time.Now())
+
 	result := sets.New[structured.DeviceID]()
 	for _, claim := range ct.snapshot.listResourceClaims() {
 		foreachAllocatedDevice(claim,
@@ -56,6 +60,8 @@ func (ct snapshotClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.De
 }
 
 func (ct snapshotClaimTracker) GatherAllocatedState() (*structured.AllocatedState, error) {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotGatherAllocatedStateKey, time.Now())
+
 	allocatedDevices := sets.New[structured.DeviceID]()
 	allocatedSharedDeviceIDs := sets.New[structured.SharedDeviceID]()
 	aggregatedCapacity := structured.NewConsumedCapacityCollection()
@@ -90,6 +96,8 @@ func (ct snapshotClaimTracker) SignalClaimPendingAllocation(claimUid types.UID, 
 	//
 	// In Cluster Autoscaler only the scheduling phase is run, so SignalClaimPendingAllocation() is used to obtain the allocation
 	// and persist it in-memory in the snapshot.
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotSignalClaimPendingAllocationKey, time.Now())
+
 	claimId := ResourceClaimId{Name: allocatedClaim.Name, Namespace: allocatedClaim.Namespace}
 	claim, found := ct.snapshot.getResourceClaim(claimId)
 	if !found {

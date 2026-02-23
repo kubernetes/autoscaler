@@ -19,8 +19,6 @@ package metrics
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client-go metrics registration
 )
@@ -186,7 +184,7 @@ func UpdateUnneededNodesCount(nodesCount int) {
 }
 
 // UpdateUnremovableNodesCount records number of currently unremovable nodes
-func UpdateUnremovableNodesCount(unremovableReasonCounts map[simulator.UnremovableReason]int) {
+func UpdateUnremovableNodesCount(unremovableReasonCounts map[string]int) {
 	DefaultMetrics.UpdateUnremovableNodesCount(unremovableReasonCounts)
 }
 

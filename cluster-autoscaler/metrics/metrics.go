@@ -17,11 +17,8 @@ limitations under the License.
 package metrics
 
 import (
-	"fmt"
 	"strconv"
 	"time"
-
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -105,25 +102,69 @@ const (
 
 // Names of Cluster Autoscaler operations
 const (
-	ScaleDown                  FunctionLabel = "scaleDown"
-	ScaleDownNodeDeletion      FunctionLabel = "scaleDown:nodeDeletion"
-	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
-	ScaleUp                    FunctionLabel = "scaleUp"
-	BuildPodEquivalenceGroups  FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
-	Estimate                   FunctionLabel = "scaleUp:estimate"
-	FindUnneeded               FunctionLabel = "findUnneeded"
-	UpdateState                FunctionLabel = "updateClusterState"
-	FilterOutSchedulable       FunctionLabel = "filterOutSchedulable"
-	CloudProviderRefresh       FunctionLabel = "cloudProviderRefresh"
-	Main                       FunctionLabel = "main"
-	MainSuccessful             FunctionLabel = "mainSuccessful"
-	Poll                       FunctionLabel = "poll"
-	Reconfigure                FunctionLabel = "reconfigure"
-	Autoscaling                FunctionLabel = "autoscaling"
-	LoopWait                   FunctionLabel = "loopWait"
-	BulkListAllGceInstances    FunctionLabel = "bulkListInstances:listAllInstances"
-	BulkListMigInstances       FunctionLabel = "bulkListInstances:listMigInstances"
+	ScaleDown                               FunctionLabel = "scaleDown"
+	ScaleDownNodeDeletion                   FunctionLabel = "scaleDown:nodeDeletion"
+	ScaleDownSoftTaintUnneeded              FunctionLabel = "scaleDown:softTaintUnneeded"
+	ScaleUp                                 FunctionLabel = "scaleUp"
+	BuildPodEquivalenceGroups               FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
+	Estimate                                FunctionLabel = "scaleUp:estimate"
+	FindUnneeded                            FunctionLabel = "findUnneeded"
+	UpdateState                             FunctionLabel = "updateClusterState"
+	FilterOutSchedulable                    FunctionLabel = "filterOutSchedulable"
+	CloudProviderRefresh                    FunctionLabel = "cloudProviderRefresh"
+	Main                                    FunctionLabel = "main"
+	MainSuccessful                          FunctionLabel = "mainSuccessful"
+	Poll                                    FunctionLabel = "poll"
+	Reconfigure                             FunctionLabel = "reconfigure"
+	Autoscaling                             FunctionLabel = "autoscaling"
+	LoopWait                                FunctionLabel = "loopWait"
+	BulkListAllGceInstances                 FunctionLabel = "bulkListInstances:listAllInstances"
+	BulkListMigInstances                    FunctionLabel = "bulkListInstances:listMigInstances"
+	DraSnapshotWrapSchedulerNodeInfo        FunctionLabel = "dra:snapshot:WrapSchedulerNodeInfo"
+	DraSnapshotAddClaims                    FunctionLabel = "dra:snapshot:AddClaims"
+	SnapshotRemovePodOwnedClaims            FunctionLabel = "dra:snapshot:RemovePodOwnedClaims"
+	DraSnapshotPodClaims                    FunctionLabel = "dra:snapshot:PodClaims"
+	DraSnapshotReservePodClaims             FunctionLabel = "dra:snapshot:ReservePodClaims"
+	DraSnapshotUnreservePodClaims           FunctionLabel = "dra:snapshot:UnreservePodClaims"
+	DraSnapshotNodeResourceSlices           FunctionLabel = "dra:snapshot:NodeResourceSlices"
+	DraSnapshotAddNodeResourceSlices        FunctionLabel = "dra:snapshot:AddNodeResourceSlices"
+	DraSnapshotRemoveNodeResourceSlices     FunctionLabel = "dra:snapshot:RemoveNodeResourceSlices"
+	DraSnapshotSignalClaimPendingAllocation FunctionLabel = "dra:snapshot:SignalClaimPendingAllocation"
+	DraSnapshotListAllAllocatedDevices      FunctionLabel = "dra:snapshot:ListAllAllocatedDevices"
+	DraSnapshotGatherAllocatedState         FunctionLabel = "dra:snapshot:GatherAllocatedState"
+	DraSnapshotCommit                       FunctionLabel = "dra:snapshot:Commit"
+	DraSnapshotRevert                       FunctionLabel = "dra:snapshot:Revert"
+	DraSnapshotFork                         FunctionLabel = "dra:snapshot:Fork"
 )
+
+const (
+	DraSnapshotWrapSchedulerNodeInfoKey FunctionLabelKey = iota
+	DraSnapshotAddClaimsKey
+	SnapshotRemovePodOwnedClaimsKey
+	DraSnapshotPodClaimsKey
+	DraSnapshotReservePodClaimsKey
+	DraSnapshotUnreservePodClaimsKey
+	DraSnapshotNodeResourceSlicesKey
+	DraSnapshotAddNodeResourceSlicesKey
+	DraSnapshotRemoveNodeResourceSlicesKey
+	DraSnapshotSignalClaimPendingAllocationKey
+	DraSnapshotListAllAllocatedDevicesKey
+	DraSnapshotGatherAllocatedStateKey
+	DraSnapshotCommitKey
+	DraSnapshotRevertKey
+	DraSnapshotForkKey
+	// The key is used for static validation and shouldn't be used for anything else
+	_MaxFunctionLabelKey
+)
+
+// This is a compile-time check to ensure that the number of function labels
+// is not greater than the capacity of the duration counter.
+//
+// If you are reading this - likely that you've introduced a new function label
+// and it doesn't fit in the current capacity of the duration counter.
+// In that case, you should increase the capacity of the duration counter or
+// re-assess whether we need that many function labels.
+var _ [DurationCountersCapacity - int(_MaxFunctionLabelKey)]struct{}
 
 type caMetrics struct {
 	registry metrics.KubeRegistry
@@ -317,7 +358,7 @@ func newCaMetrics() *caMetrics {
 				Buckets:   k8smetrics.ExponentialBuckets(0.01, 1.5, 30), // 0.01, 0.015, 0.0225, ..., 852.2269299239293, 1278.3403948858938
 			}, []string{"function"},
 		),
-		functionAggregatedTracker: NewDurationCounter(),
+		functionAggregatedTracker: newRegisteredDurationCounter(),
 
 		functionDurationSummary: k8smetrics.NewSummaryVec(
 			&k8smetrics.SummaryOpts{
@@ -514,6 +555,29 @@ func newCaMetrics() *caMetrics {
 	}
 }
 
+
+// newRegisteredDurationCounter builds a duration counter and registers all the known function labels into it
+// after this call - it would be ready to accept duration increases.
+func newRegisteredDurationCounter() *DurationCounter {
+	dc := NewDurationCounter()
+	dc.RegisterLabel(int(DraSnapshotWrapSchedulerNodeInfoKey), string(DraSnapshotWrapSchedulerNodeInfo))
+	dc.RegisterLabel(int(DraSnapshotAddClaimsKey), string(DraSnapshotAddClaims))
+	dc.RegisterLabel(int(SnapshotRemovePodOwnedClaimsKey), string(SnapshotRemovePodOwnedClaims))
+	dc.RegisterLabel(int(DraSnapshotPodClaimsKey), string(DraSnapshotPodClaims))
+	dc.RegisterLabel(int(DraSnapshotReservePodClaimsKey), string(DraSnapshotReservePodClaims))
+	dc.RegisterLabel(int(DraSnapshotUnreservePodClaimsKey), string(DraSnapshotUnreservePodClaims))
+	dc.RegisterLabel(int(DraSnapshotNodeResourceSlicesKey), string(DraSnapshotNodeResourceSlices))
+	dc.RegisterLabel(int(DraSnapshotAddNodeResourceSlicesKey), string(DraSnapshotAddNodeResourceSlices))
+	dc.RegisterLabel(int(DraSnapshotRemoveNodeResourceSlicesKey), string(DraSnapshotRemoveNodeResourceSlices))
+	dc.RegisterLabel(int(DraSnapshotSignalClaimPendingAllocationKey), string(DraSnapshotSignalClaimPendingAllocation))
+	dc.RegisterLabel(int(DraSnapshotListAllAllocatedDevicesKey), string(DraSnapshotListAllAllocatedDevices))
+	dc.RegisterLabel(int(DraSnapshotGatherAllocatedStateKey), string(DraSnapshotGatherAllocatedState))
+	dc.RegisterLabel(int(DraSnapshotCommitKey), string(DraSnapshotCommit))
+	dc.RegisterLabel(int(DraSnapshotRevertKey), string(DraSnapshotRevert))
+	dc.RegisterLabel(int(DraSnapshotForkKey), string(DraSnapshotFork))
+	return dc
+}
+
 func (m *caMetrics) mustRegister(cs ...k8smetrics.Registerable) {
 	if m.registry != nil {
 		m.registry.MustRegister(cs...)
@@ -594,8 +658,7 @@ func (m *caMetrics) InitMetrics() {
 // UpdateDurationFromStart records the duration of the step identified by the
 // label using start time
 func (m *caMetrics) UpdateDurationFromStart(label FunctionLabel, start time.Time) {
-	duration := time.Now().Sub(start)
-	m.UpdateDuration(label, duration)
+	m.UpdateDuration(label, time.Since(start))
 }
 
 // UpdateDuration records the duration of the step identified by the label
@@ -784,9 +847,9 @@ func (m *caMetrics) UpdateUnneededNodesCount(nodesCount int) {
 }
 
 // UpdateUnremovableNodesCount records number of currently unremovable nodes
-func (m *caMetrics) UpdateUnremovableNodesCount(unremovableReasonCounts map[simulator.UnremovableReason]int) {
+func (m *caMetrics) UpdateUnremovableNodesCount(unremovableReasonCounts map[string]int) {
 	for reason, count := range unremovableReasonCounts {
-		m.unremovableNodesCount.WithLabelValues(fmt.Sprintf("%v", reason)).Set(float64(count))
+		m.unremovableNodesCount.WithLabelValues(reason).Set(float64(count))
 	}
 }
 

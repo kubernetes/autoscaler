@@ -19,10 +19,12 @@ package snapshot
 import (
 	"fmt"
 	"maps"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -112,6 +114,8 @@ func (s *Snapshot) DeviceClassResolver() fwk.DeviceClassResolver {
 // dra information. Node-local ResourceSlices are added to the NodeInfo, and all ResourceClaims referenced by each Pod
 // are added to each PodInfo. Returns an error if any of the Pods is missing a ResourceClaim.
 func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework.NodeInfo, error) {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotWrapSchedulerNodeInfoKey, time.Now())
+
 	podExtraInfos := make(map[types.UID]framework.PodExtraInfo, len(schedNodeInfo.GetPods()))
 	for _, pod := range schedNodeInfo.GetPods() {
 		podClaims, err := s.PodClaims(pod.GetPod())
@@ -129,6 +133,8 @@ func (s *Snapshot) WrapSchedulerNodeInfo(schedNodeInfo fwk.NodeInfo) (*framework
 // AddClaims adds additional ResourceClaims to the Snapshot. It can be used e.g. if we need to duplicate a Pod that
 // owns ResourceClaims. Returns an error if any of the claims is already tracked in the snapshot.
 func (s *Snapshot) AddClaims(newClaims []*resourceapi.ResourceClaim) error {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotAddClaimsKey, time.Now())
+
 	for _, claim := range newClaims {
 		if _, found := s.resourceClaims.FindValue(GetClaimId(claim)); found {
 			return fmt.Errorf("claim %s/%s already tracked in the snapshot", claim.Namespace, claim.Name)
@@ -152,6 +158,8 @@ func (s *Snapshot) PodClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, erro
 // Claims referenced by the Pod but not owned by it are not removed, but the Pod's reservation is removed from them.
 // This method removes all relevant claims that are in the snapshot, and doesn't error out if any of the claims are missing.
 func (s *Snapshot) RemovePodOwnedClaims(pod *apiv1.Pod) {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.SnapshotRemovePodOwnedClaimsKey, time.Now())
+
 	claims, err := s.findPodClaims(pod, true)
 	if err != nil {
 		klog.Errorf("Snapshot.RemovePodOwnedClaims ignored an error: %s", err)
@@ -174,6 +182,8 @@ func (s *Snapshot) RemovePodOwnedClaims(pod *apiv1.Pod) {
 // claims isn't tracked in the Snapshot, or if any of the claims are already at maximum reservation count, an error is
 // returned.
 func (s *Snapshot) ReservePodClaims(pod *apiv1.Pod) error {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotReservePodClaimsKey, time.Now())
+
 	claims, err := s.findPodClaims(pod, false)
 	if err != nil {
 		return err
@@ -199,6 +209,8 @@ func (s *Snapshot) ReservePodClaims(pod *apiv1.Pod) error {
 // claims isn't tracked in the Snapshot, an error is returned. If a claim is owned by the pod, or if the claim has no more reservations,
 // its allocation is cleared.
 func (s *Snapshot) UnreservePodClaims(pod *apiv1.Pod) error {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotUnreservePodClaimsKey, time.Now())
+
 	claims, err := s.findPodClaims(pod, false)
 	if err != nil {
 		return err
@@ -226,6 +238,8 @@ func (s *Snapshot) NodeResourceSlices(nodeName string) ([]*resourceapi.ResourceS
 // AddNodeResourceSlices adds additional node-local ResourceSlices to the Snapshot. This should be used whenever a Node with
 // node-local ResourceSlices is duplicated in the cluster snapshot.
 func (s *Snapshot) AddNodeResourceSlices(nodeName string, slices []*resourceapi.ResourceSlice) error {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotAddNodeResourceSlicesKey, time.Now())
+
 	if _, alreadyInSnapshot := s.NodeResourceSlices(nodeName); alreadyInSnapshot {
 		return fmt.Errorf("node %q ResourceSlices already present", nodeName)
 	}
@@ -237,6 +251,8 @@ func (s *Snapshot) AddNodeResourceSlices(nodeName string, slices []*resourceapi.
 // RemoveNodeResourceSlices removes all node-local ResourceSlices for the Node with the given node name.
 // It's a no-op if there aren't any slices to remove.
 func (s *Snapshot) RemoveNodeResourceSlices(nodeName string) {
+	defer metrics.UpdateDurationAggregatedFromStart(metrics.DraSnapshotRemoveNodeResourceSlicesKey, time.Now())
+
 	s.resourceSlices.DeleteCurrent(nodeName)
 }
 

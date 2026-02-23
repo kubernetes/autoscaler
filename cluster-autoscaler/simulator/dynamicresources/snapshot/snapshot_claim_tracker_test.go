@@ -245,3 +245,43 @@ func TestSnapshotClaimTrackerSignalClaimPendingAllocation(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkSignalClaimPendingAllocation(b *testing.B) {
+	snapshot := NewEmptySnapshot()
+	snapshot.AddClaims([]*resourceapi.ResourceClaim{claim1})
+	var resourceClaimTracker fwk.ResourceClaimTracker = snapshot.ResourceClaims()
+
+	for b.Loop() {
+		err := resourceClaimTracker.SignalClaimPendingAllocation(claim1.UID, claim1)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
+	}
+}
+
+func BenchmarkListAllAllocatedDevices(b *testing.B) {
+	snapshot := NewEmptySnapshot()
+	snapshot.AddClaims([]*resourceapi.ResourceClaim{claim1, allocatedClaim1, claim3})
+	var resourceClaimTracker fwk.ResourceClaimTracker = snapshot.ResourceClaims()
+
+	for b.Loop() {
+		_, err := resourceClaimTracker.ListAllAllocatedDevices()
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
+	}
+}
+
+func BenchmarkGatherAllocatedState(b *testing.B) {
+	snapshot := NewEmptySnapshot()
+	snapshot.AddClaims([]*resourceapi.ResourceClaim{claim1, allocatedClaim1, claim3})
+	var resourceClaimTracker fwk.ResourceClaimTracker = snapshot.ResourceClaims()
+
+	for b.Loop() {
+		_, err := resourceClaimTracker.GatherAllocatedState()
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
+	}
+}
+

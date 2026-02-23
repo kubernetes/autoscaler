@@ -1142,11 +1142,11 @@ func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64,
 	return coresTotal, memoryTotal
 }
 
-func countsByReason(nodes []*simulator.UnremovableNode) map[simulator.UnremovableReason]int {
-	counts := make(map[simulator.UnremovableReason]int)
+func countsByReason(nodes []*simulator.UnremovableNode) map[string]int {
+	counts := make(map[string]int)
 
 	for _, node := range nodes {
-		counts[node.Reason]++
+		counts[fmt.Sprintf("%v", node.Reason)]++
 	}
 
 	return counts

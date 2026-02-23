@@ -773,3 +773,227 @@ func TestSnapshotForkCommitRevert(t *testing.T) {
 		compareSnapshots(t, expectedState, snapshot, "After Fork, Modify, Revert, Fork, Modify")
 	})
 }
+
+func BenchmarkAddNodeResourceSlices(b *testing.B) {
+	nodeName := "benchmark-node"
+	slices := []*resourceapi.ResourceSlice{
+		{ObjectMeta: metav1.ObjectMeta{Name: "bench-slice-1", UID: "bench-slice-1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &nodeName}},
+	}
+	snapshot := NewEmptySnapshot()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		snapshot.RemoveNodeResourceSlices(nodeName)
+		b.StartTimer()
+		_ = snapshot.AddNodeResourceSlices(nodeName, slices)
+	}
+}
+
+func BenchmarkNodeResourceSlices(b *testing.B) {
+	nodeName := "benchmark-node"
+	slices := []*resourceapi.ResourceSlice{
+		{ObjectMeta: metav1.ObjectMeta{Name: "bench-slice-1", UID: "bench-slice-1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &nodeName}},
+	}
+	snapshot := NewEmptySnapshot()
+	_ = snapshot.AddNodeResourceSlices(nodeName, slices)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = snapshot.NodeResourceSlices(nodeName)
+	}
+}
+
+func BenchmarkRemoveNodeResourceSlices(b *testing.B) {
+	nodeName := "benchmark-node"
+	slices := []*resourceapi.ResourceSlice{
+		{ObjectMeta: metav1.ObjectMeta{Name: "bench-slice-1", UID: "bench-slice-1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &nodeName}},
+	}
+	snapshot := NewEmptySnapshot()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		_ = snapshot.AddNodeResourceSlices(nodeName, slices)
+		b.StartTimer()
+		snapshot.RemoveNodeResourceSlices(nodeName)
+	}
+}
+
+func BenchmarkAddClaims(b *testing.B) {
+	c1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim1", UID: "claim1", Namespace: "default"}}
+	c2 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim2", UID: "claim2", Namespace: "default"}}
+	claims := []*resourceapi.ResourceClaim{c1, c2}
+
+	snapshot := NewEmptySnapshot()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		snapshot.Fork()
+		b.StartTimer()
+
+		_ = snapshot.AddClaims(claims)
+
+		b.StopTimer()
+		snapshot.Revert()
+		b.StartTimer()
+	}
+}
+
+func BenchmarkPodClaims(b *testing.B) {
+	// Setup a pod with claims
+	pod := test.BuildTestPod("bench-pod", 1, 1,
+		test.WithResourceClaim("claim1", "claim1", "claim1"),
+		test.WithResourceClaim("claim2", "claim2", "claim2"),
+	)
+	c1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim1", UID: "claim1", Namespace: "default"}}
+	c2 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim2", UID: "claim2", Namespace: "default"}}
+
+	claims := map[ResourceClaimId]*resourceapi.ResourceClaim{
+		GetClaimId(c1): c1,
+		GetClaimId(c2): c2,
+	}
+	snapshot := NewSnapshot(claims, nil, nil, nil)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = snapshot.PodClaims(pod)
+	}
+}
+
+func BenchmarkWrapSchedulerNodeInfo(b *testing.B) {
+	// Setup a node info with pods that have claims
+	pod := test.BuildTestPod("bench-pod", 1, 1,
+		test.WithResourceClaim("claim1", "claim1", "claim1"),
+	)
+	c1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim1", UID: "claim1", Namespace: "default"}}
+
+	claims := map[ResourceClaimId]*resourceapi.ResourceClaim{
+		GetClaimId(c1): c1,
+	}
+	nodeName := "node1"
+	slices := []*resourceapi.ResourceSlice{
+		{ObjectMeta: metav1.ObjectMeta{Name: "slice1", UID: "slice1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: &nodeName}},
+	}
+
+	snapshot := NewSnapshot(claims, map[string][]*resourceapi.ResourceSlice{nodeName: slices}, nil, nil)
+
+	schedNodeInfo := schedulerframework.NewNodeInfo(pod)
+	node := test.BuildTestNode(nodeName, 1000, 1000)
+	schedNodeInfo.SetNode(node)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = snapshot.WrapSchedulerNodeInfo(schedNodeInfo)
+	}
+}
+
+func BenchmarkReservePodClaims(b *testing.B) {
+	pod := test.BuildTestPod("bench-pod", 1, 1,
+		test.WithResourceClaim("claim1", "claim1", "claim1"),
+	)
+	c1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim1", UID: "claim1", Namespace: "default"}}
+
+	baseClaims := map[ResourceClaimId]*resourceapi.ResourceClaim{
+		GetClaimId(c1): c1,
+	}
+	snapshot := NewSnapshot(baseClaims, nil, nil, nil)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		snapshot.Fork()
+		b.StartTimer()
+
+		_ = snapshot.ReservePodClaims(pod)
+
+		b.StopTimer()
+		snapshot.Revert()
+		b.StartTimer()
+	}
+}
+
+func BenchmarkUnreservePodClaims(b *testing.B) {
+	pod := test.BuildTestPod("bench-pod", 1, 1,
+		test.WithResourceClaim("claim1", "claim1", "claim1"),
+	)
+
+	c1 := &resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim1", UID: "claim1", Namespace: "default"}}
+	reservedC1 := drautils.TestClaimWithPodReservations(c1, pod)
+
+	baseClaims := map[ResourceClaimId]*resourceapi.ResourceClaim{
+		GetClaimId(c1): reservedC1,
+	}
+	snapshot := NewSnapshot(baseClaims, nil, nil, nil)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		snapshot.Fork()
+		b.StartTimer()
+
+		_ = snapshot.UnreservePodClaims(pod)
+
+		b.StopTimer()
+		snapshot.Revert()
+		b.StartTimer()
+	}
+}
+
+func BenchmarkRemovePodOwnedClaims(b *testing.B) {
+	pod := test.BuildTestPod("bench-pod", 1, 1,
+		test.WithResourceClaim("claim1", "claim1", "claim1"),
+	)
+
+	// Create a claim owned by the pod
+	c1 := drautils.TestClaimWithPodOwnership(pod,
+		&resourceapi.ResourceClaim{ObjectMeta: metav1.ObjectMeta{Name: "claim1", UID: "claim1", Namespace: "default"}})
+
+	baseClaims := map[ResourceClaimId]*resourceapi.ResourceClaim{
+		GetClaimId(c1): c1,
+	}
+	snapshot := NewSnapshot(baseClaims, nil, nil, nil)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		snapshot.Fork()
+		b.StartTimer()
+
+		snapshot.RemovePodOwnedClaims(pod)
+
+		b.StopTimer()
+		snapshot.Revert()
+		b.StartTimer()
+	}
+}
+
+func BenchmarkFork(b *testing.B) {
+	snapshot := NewEmptySnapshot()
+	for b.Loop() {
+		snapshot.Fork()
+	}
+}
+
+func BenchmarkRevert(b *testing.B) {
+	snapshot := NewEmptySnapshot()
+	for i := 0; i < b.N; i++ {
+		snapshot.Fork()
+	}
+
+	for b.Loop() {
+		snapshot.Revert()
+	}
+}
+
+func BenchmarkCommit(b *testing.B) {
+	snapshot := NewEmptySnapshot()
+	for i := 0; i < b.N; i++ {
+		snapshot.Fork()
+	}
+
+	for b.Loop() {
+		snapshot.Commit()
+	}
+}
