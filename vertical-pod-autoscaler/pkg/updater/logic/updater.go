@@ -485,14 +485,8 @@ func (u *updater) cleanupStaleInfeasibleAttempts(livePods []*corev1.Pod) {
 
 // recordInfeasibleAttempt stores the recommendation that failed as infeasible
 func (u *updater) recordInfeasibleAttempt(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) {
-	processedRecommendation, _, err := u.recommendationProcessor.Apply(vpa, pod)
-	if err != nil {
-		klog.V(2).ErrorS(err, "Failed to get recommendation for infeasible attempt recording", "pod", klog.KObj(pod))
-		return
-	}
-
 	u.infeasibleMu.Lock()
-	u.infeasibleAttempts[pod.UID] = processedRecommendation
+	u.infeasibleAttempts[pod.UID] = vpa.Status.Recommendation
 	u.infeasibleMu.Unlock()
 
 	klog.V(2).InfoS("Recorded infeasible attempt, will retry when recommendation changes", "pod", klog.KObj(pod))
