@@ -51,6 +51,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -233,7 +234,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 	allLivePods := filterDeletedPods(podsList)
 
 	// Clean up stale infeasible attempts for pods that no longer exist
-	u.cleanupStaleInfeasibleAttempts(allLivePods)
+	if len(u.infeasibleAttempts) > 0 {
+		u.cleanupStaleInfeasibleAttempts(allLivePods)
+	}
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod)
 	for _, pod := range allLivePods {
@@ -370,11 +373,18 @@ func (u *updater) RunOnce(ctx context.Context) {
 				podsForEviction = append(podsForEviction, pod)
 				continue
 			case utils.InPlaceInfeasible:
-				// Status is Infeasible, but recommendation has changed enough (>10%)
+				// if the recommendation hasn't changed we skip the pod
+				if resourcehelpers.RecommendationsEqual(u.infeasibleAttempts[pod.UID], vpa.Status.Recommendation) {
+					klog.V(2).InfoS("In-place update infeasible, recommendation unchanged, skipping pod", "pod", klog.KObj(pod))
+					continue
+				}
+
+				// Status is Infeasible, but recommendation has changed
 				// Retry in-place update (no backoff for alpha)
 				// this status should only be returned with InPlace update mode (InPlaceOrRecreate will return InPlaceEvict in case of infeasible state)
-				klog.V(2).InfoS("In-place update infeasible, retrying with new recommendation", "pod", klog.KObj(pod))
 				// Fall through to attempt in-place update
+				klog.V(2).InfoS("In-place update infeasible, retrying with new recommendation", "pod", klog.KObj(pod))
+				u.recordInfeasibleAttempt(pod, vpa)
 			case utils.InPlaceApproved:
 				klog.V(2).InfoS("In-place update approved", "pod", klog.KObj(pod))
 				// Proceed with in-place update
@@ -597,8 +607,9 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 }
 
 // isInfeasibleError checks if an error indicates the resize is infeasible.
-// infeasible error on admission controller level is still in progress
-// this is just a placeholder until
+// Infeasible error detection at the admission controller level is still in progress
+// (https://github.com/kubernetes/kubernetes/pull/136043).
+// This is just a placeholder until that work lands and we know the exact error format.
 func isInfeasibleError(err error) bool {
 	return false
 }

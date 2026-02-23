@@ -110,7 +110,7 @@ func initContainerStatusFor(initContainerName string, pod *corev1.Pod) *corev1.C
 	return nil
 }
 
-// RecommendationsEqual compare recommendations
+// RecommendationsEqual compare recommendations(target only)
 func RecommendationsEqual(a, b *vpa_types.RecommendedPodResources) bool {
 	if a == nil || b == nil {
 		return a == b
