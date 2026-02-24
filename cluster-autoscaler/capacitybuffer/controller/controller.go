@@ -24,6 +24,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -135,10 +136,6 @@ func (c *bufferController) configureEventHandlers() {
 			oldQuota := oldObj.(*corev1.ResourceQuota)
 			newQuota := newObj.(*corev1.ResourceQuota)
 
-			if oldQuota.ResourceVersion == newQuota.ResourceVersion {
-				c.enqueueNamespace(newObj)
-				return
-			}
 			// Reconcile only on Status changes (Status.Hard and Status.Used)
 			if equality.Semantic.DeepEqual(oldQuota.Status.Hard, newQuota.Status.Hard) &&
 				equality.Semantic.DeepEqual(oldQuota.Status.Used, newQuota.Status.Used) {
@@ -157,6 +154,19 @@ func (c *bufferController) configureEventHandlers() {
 			c.enqueueBuffersReferencingPodTemplate(obj)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldMeta, err := meta.Accessor(oldObj)
+			if err != nil {
+				klog.Errorf("CapacityBuffer controller: failed to get meta for object, err: %v", err)
+				return
+			}
+			newMeta, err := meta.Accessor(newObj)
+			if err != nil {
+				klog.Errorf("CapacityBuffer controller: failed to get meta for object, err: %v", err)
+				return
+			}
+			if oldMeta.GetGeneration() == newMeta.GetGeneration() {
+				return
+			}
 			c.enqueueBuffersReferencingPodTemplate(newObj)
 		},
 		DeleteFunc: func(obj interface{}) {
