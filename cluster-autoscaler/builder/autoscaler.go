@@ -208,7 +208,11 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
 		capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			fakePodsResolver = fakepods.NewResolver(b.kubeClient)
+			if autoscalingOptions.CapacityBufferPodDryRunEnabled {
+				fakePodsResolver = fakepods.NewDryRunResolver(b.kubeClient)
+			} else {
+				fakePodsResolver = fakepods.NewDefaultingResolver()
+			}
 			nodeBufferController := cbctrl.NewDefaultBufferController(capacitybufferClient, fakePodsResolver)
 			go nodeBufferController.Run(ctx.Done())
 		}
