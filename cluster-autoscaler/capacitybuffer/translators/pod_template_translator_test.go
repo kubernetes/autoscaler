@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	fakeClient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/utils/ptr"
 
@@ -119,7 +120,7 @@ func TestPodTemplateBufferTranslator(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			resolver := testutil.NewFakeResolver()
+			resolver := fakepods.NewDefaultingResolver()
 			podTemplateBufferTranslator := NewPodTemplateBufferTranslator(fakeCapacityBuffersClient, resolver)
 			errors := podTemplateBufferTranslator.Translate(test.buffers)
 			assert.Equal(t, len(errors), test.expectedNumberOfErrors)
@@ -164,7 +165,7 @@ func TestPodTemplateBufferTranslator_ManagedPodTemplate(t *testing.T) {
 
 	fakeClient := fakeClient.NewSimpleClientset(bufferPodTemplate)
 	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil)
-	resolver := testutil.NewFakeResolver()
+	resolver := fakepods.NewDefaultingResolver()
 	podTemplateBufferTranslator := NewPodTemplateBufferTranslator(fakeCapacityBuffersClient, resolver)
 	buffers := []*v1.CapacityBuffer{buffer}
 	errors := podTemplateBufferTranslator.Translate(buffers)

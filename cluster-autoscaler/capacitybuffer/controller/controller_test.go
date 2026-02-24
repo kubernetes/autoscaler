@@ -34,6 +34,7 @@ import (
 	fakebuffers "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 	fakek8s "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
@@ -88,7 +89,8 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 	client, err := cbclient.NewCapacityBufferClientFromClients(buffersClient, k8sClient, nil, nil)
 	assert.NoError(t, err)
 
-	resolver := testutil.NewFakeResolver()
+	// TODO: use DryRunResolver once migrated to envtest
+	resolver := fakepods.NewDefaultingResolver()
 	controller := NewDefaultBufferController(client, resolver).(*bufferController)
 
 	ctx, cancel := context.WithCancel(context.Background())
