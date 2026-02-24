@@ -19,6 +19,7 @@ set -o pipefail
 
 BASE_NAME=$(basename $0)
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+KIND_CONFIG="${SCRIPT_ROOT}/../.github/kind-config.yaml"
 source "${SCRIPT_ROOT}/hack/lib/util.sh"
 
 ARCH=$(kube::util::host_arch)
@@ -80,11 +81,14 @@ esac
 echo "Deleting KIND cluster 'kind'."
 kind delete cluster -n kind -q
 
+if [ ! -f "${KIND_CONFIG}" ]; then
+  echo "Missing KIND config file: ${KIND_CONFIG}"
+  exit 1
+fi
+
 echo "Creating KIND cluster 'kind'"
-KIND_VERSION="kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f"
-if ! kind create cluster --image=${KIND_VERSION}; then
-    echo "Failed to create KIND cluster. Exiting. Make sure kind version is updated."
-    echo "Available versions: https://github.com/kubernetes-sigs/kind/releases"
+if ! kind create cluster --config "${KIND_CONFIG}"; then
+    echo "Failed to create KIND cluster using ${KIND_CONFIG}. Exiting."
     exit 1
 fi
 
