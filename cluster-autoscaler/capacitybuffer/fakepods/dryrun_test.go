@@ -28,7 +28,7 @@ import (
 	core "k8s.io/client-go/testing"
 )
 
-func TestResolver(t *testing.T) {
+func TestDryRunResolver(t *testing.T) {
 	namespace := "default"
 	templateName := "test-template"
 	podName := "test-pod"
@@ -91,7 +91,7 @@ func TestResolver(t *testing.T) {
 		return true, pod, nil
 	})
 
-	resolver := NewResolver(fakeClient)
+	resolver := NewDryRunResolver(fakeClient)
 
 	pod, err := resolver.Resolve(t.Context(), podTemplate.Namespace, &podTemplate.Template)
 	assert.NoError(t, err)
