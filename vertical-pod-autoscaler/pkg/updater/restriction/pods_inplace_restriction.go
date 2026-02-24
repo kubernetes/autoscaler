@@ -154,12 +154,11 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, updateMo
 		return utils.InPlaceDeferred
 	}
 
-	if ip.inPlaceSkipDisruptionBudget && utils.IsNonDisruptiveResize(pod) {
-		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
-		return utils.InPlaceApproved
-	}
-
 	if ip.inPlaceSkipDisruptionBudget {
+		if utils.IsNonDisruptiveResize(pod) {
+			klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
+			return utils.InPlaceApproved
+		}
 		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
 	}
 
