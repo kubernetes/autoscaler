@@ -334,7 +334,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
-	f.It("Unboost pods when they become Ready", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	f.It("Unboost pods when they become Ready", framework.WithFeatureGate(features.CPUStartupBoost), framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")

@@ -384,7 +384,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 			}
 
 			containerName := utils.GetHamsterContainerNameByIndex(0)
-			factor := int32(100)
+			factor := int32(20)
 			vpaCRD := test.VerticalPodAutoscaler().
 				WithName("hamster-vpa").
 				WithNamespace(f.Namespace.Name).
@@ -406,10 +406,10 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				f.ClientSet,
 				f.ScalesGetter)
 
-			// Pods should be created with boosted CPU (10m * 100 = 1000m)
+			// Pods should be created with boosted CPU (10m * 20 = 200m)
 			err := waitForResourceRequestInRangeInPods(
 				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-				ParseQuantityOrDie("900m"), ParseQuantityOrDie("1100m"))
+				ParseQuantityOrDie("180m"), ParseQuantityOrDie("220m"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// Pods should be scaled back down in-place after they become Ready and
@@ -431,7 +431,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 			}
 
 			containerName := utils.GetHamsterContainerNameByIndex(0)
-			factor := int32(100)
+			factor := int32(20)
 			vpaCRD := test.VerticalPodAutoscaler().
 				WithName("hamster-vpa").
 				WithNamespace(f.Namespace.Name).
@@ -454,10 +454,10 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				f.ClientSet,
 				f.ScalesGetter)
 
-			// Pods should be created with boosted CPU (10m * 100 = 1000m)
+			// Pods should be created with boosted CPU (10m * 20 = 200m)
 			err := waitForResourceRequestInRangeInPods(
 				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-				ParseQuantityOrDie("900m"), ParseQuantityOrDie("1100m"))
+				ParseQuantityOrDie("180m"), ParseQuantityOrDie("220m"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// Pods should be scaled back down in-place after they become Ready and
