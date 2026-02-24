@@ -17,10 +17,13 @@ limitations under the License.
 package translator
 
 import (
+	"errors"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	api_v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 )
@@ -39,36 +42,35 @@ func NewResourceLimitsTranslator(client *cbclient.CapacityBufferClient) *resourc
 
 // Translate translates buffers processors into pod capacity.
 func (t *resourceLimitsTranslator) Translate(buffers []*api_v1.CapacityBuffer) []error {
-	errors := []error{}
+	var errs []error
 	for _, buffer := range buffers {
 		if isResourcesLimitsDefinedInBuffer(buffer) {
-			if buffer.Status.PodTemplateRef == nil {
-				err := fmt.Errorf("Can't get pod template, PodTemplateRef is nil")
-				common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
-				errors = append(errors, err)
+			if buffer.Status.PodTemplateRef == nil || buffer.Status.PodTemplateGeneration == nil || meta.IsStatusConditionFalse(buffer.Status.Conditions, capacitybuffer.ReadyForProvisioningCondition) {
+				// that means that previous translators failed to resolve the pod template, we don't want to override
+				// the condition here in order to keep the error message from previous translators.
 				continue
 			}
 			podTemplate, err := t.client.GetPodTemplate(buffer.Namespace, buffer.Status.PodTemplateRef.Name)
 			if err != nil {
 				err = fmt.Errorf("Couldn't get pod template, error: %v", err)
 				common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
-				errors = append(errors, err)
+				errs = append(errs, err)
 				continue
 			}
 			numberOfPods := limitNumberOfPodsForResource(podTemplate, *buffer.Spec.Limits)
 			if numberOfPods == nil {
-				err := fmt.Errorf("Couldn't calculate number of pods for buffer %v based on provided resource limits %v", buffer.Name, *buffer.Spec.Limits)
+				err := errors.New("couldn't calculate number of pods for buffer based on provided resource limits. Check if the pod template requests at least one limited resource")
 				common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
-				errors = append(errors, err)
+				// this error is expected when the buffer is misconfigured, so we don't want it to trigger requeue
 				continue
 			}
 			if buffer.Status.Replicas != nil {
 				numberOfPods = pointerToInt32(min(*buffer.Status.Replicas, *numberOfPods))
 			}
-			common.SetBufferAsReadyForProvisioning(buffer, buffer.Status.PodTemplateRef, &podTemplate.Generation, numberOfPods, buffer.Spec.ProvisioningStrategy)
+			common.SetBufferAsReadyForProvisioning(buffer, buffer.Status.PodTemplateRef, buffer.Status.PodTemplateGeneration, numberOfPods, buffer.Spec.ProvisioningStrategy)
 		}
 	}
-	return errors
+	return errs
 }
 
 func limitNumberOfPodsForResource(podTemplate *corev1.PodTemplate, limits api_v1.ResourceList) *int32 {

@@ -19,15 +19,17 @@ package translator
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	fakeClient "k8s.io/client-go/kubernetes/fake"
-
-	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	fakeClient "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/utils/ptr"
 )
 
 func TestResourceLimitsTranslator(t *testing.T) {
@@ -46,6 +48,7 @@ func TestResourceLimitsTranslator(t *testing.T) {
 	})
 	fakeClient := fakeClient.NewSimpleClientset(podTemp4mem100cpu, podTemp8mem200cpu, podTemp4gpu)
 	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	noResourcesSetMessage := "couldn't calculate number of pods for buffer based on provided resource limits. Check if the pod template requests at least one limited resource"
 
 	tests := []struct {
 		name                   string
@@ -71,9 +74,9 @@ func TestResourceLimitsTranslator(t *testing.T) {
 				}),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
-				testutil.GetBufferStatus(nil, nil, nil, &testutil.ProvisioningStrategy, testutil.GetConditionNotReady()),
+				testutil.GetBufferStatus(nil, nil, nil, &testutil.ProvisioningStrategy, nil),
 			},
-			expectedNumberOfErrors: 1,
+			expectedNumberOfErrors: 0,
 		},
 		{
 			name: "Limits exist and no replicas, buffer filtered",
@@ -185,9 +188,29 @@ func TestResourceLimitsTranslator(t *testing.T) {
 				}),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
-				testutil.GetBufferStatus(nil, nil, nil, &testutil.ProvisioningStrategy, testutil.GetConditionNotReady()),
+				testutil.GetBufferStatus(
+					nil, nil, nil, &testutil.ProvisioningStrategy, testutil.GetConditionNotReadyWithMessage(noResourcesSetMessage)),
 			},
-			expectedNumberOfErrors: 1,
+			expectedNumberOfErrors: 0,
+		},
+		{
+			name: "conditions are not overridden if buffer is not ready",
+			buffers: []*v1.CapacityBuffer{
+				testutil.NewBuffer(
+					testutil.WithPodTemplateRef(podTemp4mem100cpu.Name),
+					testutil.WithLimits(v1.ResourceList{
+						"nvidia.com/gpu": resource.MustParse("100m"),
+					}),
+					testutil.WithActiveProvisioningStrategy(),
+					func(buffer *v1.CapacityBuffer) {
+						buffer.Status.Conditions = testutil.GetConditionNotReadyWithMessage("test error")
+					},
+				),
+			},
+			expectedStatus: []*v1.CapacityBufferStatus{
+				testutil.GetBufferStatus(nil, nil, nil, nil, testutil.GetConditionNotReadyWithMessage("test error")),
+			},
+			expectedNumberOfErrors: 0,
 		},
 	}
 	for _, test := range tests {
@@ -195,17 +218,26 @@ func TestResourceLimitsTranslator(t *testing.T) {
 			translator := NewResourceLimitsTranslator(fakeCapacityBuffersClient)
 			errors := translator.Translate(test.buffers)
 			assert.Equal(t, len(errors), test.expectedNumberOfErrors)
-			assert.ElementsMatch(t, test.expectedStatus, testutil.SanitizeBuffersStatus(test.buffers))
+			for i, buffer := range test.buffers {
+				wantStatus := test.expectedStatus[i]
+				if diff := cmp.Diff(wantStatus, &buffer.Status, cmpopts.IgnoreFields(metav1.Condition{}, "LastTransitionTime")); diff != "" {
+					t.Errorf("buffer status mismatch (-want +got):\n%s", diff)
+				}
+			}
 		})
 	}
 }
 
 func getTestBufferWithLimits(podTemplateRef *v1.LocalObjectRef, replicas *int32, limits *v1.ResourceList) *v1.CapacityBuffer {
-	return testutil.GetBuffer(&testutil.ProvisioningStrategy, nil, nil, podTemplateRef, replicas, nil, nil, limits)
+	var podTemplateGeneration *int64
+	if podTemplateRef != nil {
+		podTemplateGeneration = ptr.To[int64](1)
+	}
+	return testutil.GetBuffer(&testutil.ProvisioningStrategy, nil, nil, podTemplateRef, replicas, podTemplateGeneration, nil, limits)
 }
 
 func getTestBufferStatusWithReplicas(podTemplateRef *v1.LocalObjectRef, replicas int32) *v1.CapacityBufferStatus {
-	return testutil.GetBufferStatus(podTemplateRef, &replicas, pointerToInt64(1), &testutil.ProvisioningStrategy, testutil.GetConditionReady())
+	return testutil.GetBufferStatus(podTemplateRef, &replicas, ptr.To[int64](1), &testutil.ProvisioningStrategy, testutil.GetConditionReadyWithMessage("ready"))
 }
 
 func getPodTemplateWithResources(name string, resources corev1.ResourceList) *corev1.PodTemplate {
