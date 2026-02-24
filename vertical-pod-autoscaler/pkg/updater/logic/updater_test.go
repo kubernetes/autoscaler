@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
+	"k8s.io/utils/set"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
@@ -669,9 +670,9 @@ func TestInfeasibleAttempts(t *testing.T) {
 
 	t.Run("cleanupStaleInfeasibleAttempts removes old pods", func(t *testing.T) {
 		// Only pod1 is "live" now
-		livePods := []*corev1.Pod{pod1}
+		livePodUIDs := set.New(pod1.UID)
 
-		u.cleanupStaleInfeasibleAttempts(livePods)
+		u.cleanupStaleInfeasibleAttempts(livePodUIDs)
 
 		u.infeasibleMu.RLock()
 		defer u.infeasibleMu.RUnlock()
@@ -683,7 +684,7 @@ func TestInfeasibleAttempts(t *testing.T) {
 	})
 
 	t.Run("cleanupStaleInfeasibleAttempts clears all if none live", func(t *testing.T) {
-		u.cleanupStaleInfeasibleAttempts([]*corev1.Pod{})
+		u.cleanupStaleInfeasibleAttempts(set.New[types.UID]())
 
 		u.infeasibleMu.RLock()
 		defer u.infeasibleMu.RUnlock()

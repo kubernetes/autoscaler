@@ -233,17 +233,19 @@ func (u *updater) RunOnce(ctx context.Context) {
 	timer.ObserveStep("ListPods")
 	allLivePods := filterDeletedPods(podsList)
 
-	// Clean up stale infeasible attempts for pods that no longer exist
-	if len(u.infeasibleAttempts) > 0 {
-		u.cleanupStaleInfeasibleAttempts(allLivePods)
-	}
-
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod)
+	livePodUIDs := set.New[types.UID]()
 	for _, pod := range allLivePods {
+		livePodUIDs.Insert(pod.UID)
 		controllingVPA := vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
 		}
+	}
+
+	// Clean up stale infeasible attempts for pods that no longer exist
+	if len(u.infeasibleAttempts) > 0 {
+		u.cleanupStaleInfeasibleAttempts(livePodUIDs)
 	}
 	timer.ObserveStep("FilterPods")
 
@@ -467,17 +469,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 	timer.ObserveStep("EvictPods")
 }
 
-func (u *updater) cleanupStaleInfeasibleAttempts(livePods []*corev1.Pod) {
-	livePodKeys := set.New[types.UID]()
-	for _, pod := range livePods {
-		livePodKeys.Insert(pod.UID)
-	}
-
+func (u *updater) cleanupStaleInfeasibleAttempts(livePodUIDs set.Set[types.UID]) {
 	u.infeasibleMu.Lock()
 	defer u.infeasibleMu.Unlock()
 
 	for podID := range u.infeasibleAttempts {
-		if !livePodKeys.Has(podID) {
+		if !livePodUIDs.Has(podID) {
 			delete(u.infeasibleAttempts, podID)
 		}
 	}
