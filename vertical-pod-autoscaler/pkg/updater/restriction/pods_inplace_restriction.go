@@ -138,7 +138,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, updateMo
 				return utils.InPlaceDeferred
 			case utils.ResizeStatusError:
 				// Error during resize, retry
-				klog.V(4).InfoS("In-place update error, will retry", "pod", klog.KObj(pod))
+				klog.V(4).ErrorS(nil, "In-place update error, will retry", "pod", klog.KObj(pod))
 				return utils.InPlaceInfeasible
 			default:
 				klog.V(4).InfoS("In-place update status unknown, waiting", "pod", klog.KObj(pod), "status", resizeStatus)
