@@ -719,6 +719,19 @@ func TestValidateVPA(t *testing.T) {
 			expectError:          errors.New("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
 		},
 		{
+			name:     "creating VPA with InPlace update mode not allowed by disabled feature gate",
+			isCreate: true,
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceUpdateMode,
+					},
+				},
+			},
+			inPlaceFeatureGateDisabled: true,
+			expectError:                fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlace, features.InPlace),
+		},
+		{
 			name: "InPlace update mode with minReplicas",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
