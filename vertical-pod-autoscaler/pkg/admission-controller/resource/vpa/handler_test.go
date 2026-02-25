@@ -783,7 +783,9 @@ func TestValidateVPA(t *testing.T) {
 				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, !tc.cpuStartupBoostFeatureGateDisabled)
 			}
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
-			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, !tc.inPlaceFeatureGateDisabled)
+			if !tc.inPlaceOrRecreateFeatureGateDisabled {
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, !tc.inPlaceFeatureGateDisabled)
+			}
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)

@@ -166,11 +166,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 	if u.useAdmissionControllerStatus {
 		isValid, err := u.statusValidator.IsStatusValid(ctx, status.AdmissionControllerStatusTimeout)
 		if err != nil {
-			klog.ErrorS(err, "Error getting Admission Controller status. Skipping eviction loop")
+			klog.ErrorS(err, "Error getting Admission Controller status. Skipping update loop")
 			return
 		}
 		if !isValid {
-			klog.V(0).InfoS("Admission Controller status is not valid. Skipping eviction loop", "timeout", status.AdmissionControllerStatusTimeout)
+			klog.V(0).InfoS("Admission Controller status is not valid. Skipping update loop", "timeout", status.AdmissionControllerStatusTimeout)
 			return
 		}
 	}
@@ -376,12 +376,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 				continue
 			case utils.InPlaceInfeasible:
 				// if no resource in the new recommendation is lower, skip the pod
-				if !resourcehelpers.RecommendationHasLowerResource(u.infeasibleAttempts[pod.UID], vpa.Status.Recommendation) {
+				lastAttempt, exist := u.infeasibleAttempts[pod.UID]
+				if exist && !resourcehelpers.RecommendationHasLowerResource(lastAttempt, vpa.Status.Recommendation) {
 					klog.V(2).InfoS("In-place update infeasible, no resource is lower in new recommendation, skipping pod", "pod", klog.KObj(pod))
 					continue
 				}
 
 				// Status is Infeasible, but recommendation has changed
+				// (or first infeasible attemp)
 				// Retry in-place update (no backoff for alpha)
 				// this status should only be returned with InPlace update mode (InPlaceOrRecreate will return InPlaceEvict in case of infeasible state)
 				// Fall through to attempt in-place update
