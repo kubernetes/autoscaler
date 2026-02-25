@@ -240,6 +240,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
+
 	framework.It("does not evicts pods for downscaling with InPlace mode", framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
