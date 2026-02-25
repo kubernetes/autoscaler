@@ -269,6 +269,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
+
 	framework.It("InPlace mode retries when recommendations change", framework.WithSerial(), framework.WithFeatureGate(features.InPlace), func() {
 		const statusUpdateInterval = 10 * time.Second
 
