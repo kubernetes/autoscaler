@@ -335,6 +335,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instances:               make(map[GceRef][]GceInstance),
 		instancesUpdateTime:     make(map[GceRef]time.Time),
 		instancesToMig:          make(map[GceRef]GceRef),
+		migIsStableCache:        make(map[GceRef]bool),
 		instancesFromUnknownMig: make(map[GceRef]bool),
 		autoscalingOptionsCache: map[GceRef]map[string]string{},
 		machinesCache: map[MachineTypeKey]MachineType{
