@@ -327,7 +327,7 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 					t.Errorf("%d-th PodInfo.Pod address identical after DeepCopyNodeInfo", podIndex)
 				}
 				for claimIndex := range len(newPodInfo.NeededResourceClaims) {
-					if oldPodInfo.NeededResourceClaims[podIndex] == newPodInfo.NeededResourceClaims[podIndex] {
+					if oldPodInfo.NeededResourceClaims[claimIndex] == newPodInfo.NeededResourceClaims[claimIndex] {
 						t.Errorf("%d-th PodInfo - %d-th NeededResourceClaim address identical after DeepCopyNodeInfo", podIndex, claimIndex)
 					}
 				}
