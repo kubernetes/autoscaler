@@ -345,51 +345,91 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 	}
 }
 
-func TestResourcesEqual(t *testing.T) {
-	resA := corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("100m"),
-		corev1.ResourceMemory: resource.MustParse("256Mi"),
-	}
-	resB := corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("100m"),
-		corev1.ResourceMemory: resource.MustParse("256Mi"),
-	}
-	resC := corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("200m"),
-		corev1.ResourceMemory: resource.MustParse("256Mi"),
-	}
-
+func TestHasLowerResource(t *testing.T) {
 	tests := []struct {
 		name     string
 		a        corev1.ResourceList
 		b        corev1.ResourceList
 		expected bool
 	}{
-		{"Both empty", corev1.ResourceList{}, corev1.ResourceList{}, true},
-		{"Identical resources", resA, resB, true},
-		{"Different values", resA, resC, false},
-		{"Different lengths", resA, corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")}, false},
-		{"Missing key", resA, corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m"), "disk": resource.MustParse("1Gi")}, false},
+		{"Both empty", corev1.ResourceList{}, corev1.ResourceList{}, false},
+		{"Identical resources", corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, false},
+		{"b has lower CPU", corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, true},
+		{"b has lower memory", corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("512Mi"),
+		}, corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, true},
+		{"b has higher resources", corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("512Mi"),
+		}, false},
+		{"b missing key from a", corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, corev1.ResourceList{
+			corev1.ResourceCPU: resource.MustParse("50m"),
+		}, true},
+		{"b has extra key not in a", corev1.ResourceList{
+			corev1.ResourceCPU: resource.MustParse("100m"),
+		}, corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		}, false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ResourcesEqual(tt.a, tt.b); got != tt.expected {
-				t.Errorf("ResourcesEqual() = %v, want %v", got, tt.expected)
+			if got := HasLowerResource(tt.a, tt.b); got != tt.expected {
+				t.Errorf("HasLowerResource() = %v, want %v", got, tt.expected)
 			}
 		})
 	}
 }
 
-func TestRecommendationsEqual(t *testing.T) {
-	container1 := vpa_types.RecommendedContainerResources{
+func TestRecommendationHasLowerResource(t *testing.T) {
+	containerHigh := vpa_types.RecommendedContainerResources{
 		ContainerName: "app",
 		Target: corev1.ResourceList{
-			corev1.ResourceCPU: resource.MustParse("100m"),
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("512Mi"),
 		},
 	}
 
-	container2 := vpa_types.RecommendedContainerResources{
+	containerLowCPU := vpa_types.RecommendedContainerResources{
+		ContainerName: "app",
+		Target: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("512Mi"),
+		},
+	}
+
+	containerSame := vpa_types.RecommendedContainerResources{
+		ContainerName: "app",
+		Target: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("512Mi"),
+		},
+	}
+
+	containerDiffName := vpa_types.RecommendedContainerResources{
 		ContainerName: "sidecar",
 		Target: corev1.ResourceList{
 			corev1.ResourceCPU: resource.MustParse("50m"),
@@ -402,34 +442,39 @@ func TestRecommendationsEqual(t *testing.T) {
 		b        *vpa_types.RecommendedPodResources
 		expected bool
 	}{
-		{"Both nil", nil, nil, true},
+		{"Both nil", nil, nil, false},
 		{"One nil", &vpa_types.RecommendedPodResources{}, nil, false},
 		{"Both empty lists",
 			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{}},
 			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{}},
-			true,
-		},
-		{"Matching recommendations",
-			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
-			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
-			true,
-		},
-		{"Different container names",
-			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
-			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container2}},
 			false,
 		},
-		{"Different number of containers",
-			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1, container2}},
-			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{container1}},
+		{"Same recommendations",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerHigh}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerSame}},
 			false,
+		},
+		{"b has lower CPU for matching container",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerHigh}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerLowCPU}},
+			true,
+		},
+		{"No matching container names",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerHigh}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerDiffName}},
+			false,
+		},
+		{"Multiple containers one has lower resource",
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerHigh, containerDiffName}},
+			&vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{containerLowCPU, containerDiffName}},
+			true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := RecommendationsEqual(tt.a, tt.b); got != tt.expected {
-				t.Errorf("RecommendationsEqual() = %v, want %v", got, tt.expected)
+			if got := RecommendationHasLowerResource(tt.a, tt.b); got != tt.expected {
+				t.Errorf("RecommendationHasLowerResource() = %v, want %v", got, tt.expected)
 			}
 		})
 	}

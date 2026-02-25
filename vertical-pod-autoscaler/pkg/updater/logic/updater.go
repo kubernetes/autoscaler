@@ -375,9 +375,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 				podsForEviction = append(podsForEviction, pod)
 				continue
 			case utils.InPlaceInfeasible:
-				// if the recommendation hasn't changed we skip the pod
-				if resourcehelpers.RecommendationsEqual(u.infeasibleAttempts[pod.UID], vpa.Status.Recommendation) {
-					klog.V(2).InfoS("In-place update infeasible, recommendation unchanged, skipping pod", "pod", klog.KObj(pod))
+				// if no resource in the new recommendation is lower, skip the pod
+				if !resourcehelpers.RecommendationHasLowerResource(u.infeasibleAttempts[pod.UID], vpa.Status.Recommendation) {
+					klog.V(2).InfoS("In-place update infeasible, no resource is lower in new recommendation, skipping pod", "pod", klog.KObj(pod))
 					continue
 				}
 
