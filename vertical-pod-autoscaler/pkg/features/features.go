@@ -65,7 +65,7 @@ const (
 	// same cluster.
 	PerVPAConfig featuregate.Feature = "PerVPAConfig"
 
-	// alpha: v1.5.0
+	// alpha: v1.7.0
 	// components: admission-controller, updater
 
 	// InPlace enables the InPlace update mode to be used.
