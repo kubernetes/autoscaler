@@ -780,7 +780,7 @@ func TestInPlaceModeDisabledFeatureGate(t *testing.T) {
 
 	for _, pod := range pods {
 		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, updateMode),
-			"InPlace mode should return InPlaceEvict when feature gate is disabled")
+			"InPlace mode should return InPlaceDeferred when feature gate is disabled")
 	}
 }
 
