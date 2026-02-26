@@ -383,7 +383,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				}
 
 				// Status is Infeasible, but recommendation has changed
-				// (or first infeasible attemp)
+				// (or first infeasible attempt)
 				// Retry in-place update (no backoff for alpha)
 				// this status should only be returned with InPlace update mode (InPlaceOrRecreate will return InPlaceEvict in case of infeasible state)
 				// Fall through to attempt in-place update
