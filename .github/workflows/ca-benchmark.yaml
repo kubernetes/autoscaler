@@ -1,0 +1,65 @@
+name: Cluster Autoscaler Benchmark
+
+on:
+  pull_request:
+    paths:
+      - 'cluster-autoscaler/**'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Run and Compare Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4.2.2
+        with:
+          path: pr
+
+      - name: Checkout Base
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+          cache-dependency-path: pr/cluster-autoscaler/go.sum
+
+      - name: Apt-get dependencies
+        run: sudo apt-get install libseccomp-dev -qq
+
+      - name: Run Benchmark (Base)
+        shell: bash
+        run: |
+          cd base/cluster-autoscaler
+          go test -v -bench=BenchmarkRunOnce -benchmem -count=10 ./core/bench/... | tee ../../base.txt
+
+      - name: Run Benchmark (PR)
+        shell: bash
+        run: |
+          cd pr/cluster-autoscaler
+          go test -v -bench=BenchmarkRunOnce -benchmem -count=10 ./core/bench/... | tee ../../pr.txt
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
+      - name: Compare Results
+        shell: bash
+        run: |
+          echo "### Cluster Autoscaler Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "Comparing PR branch against `${{ github.event.pull_request.base.ref }}`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -s base.txt ] && [ -s pr.txt ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            $(go env GOPATH)/bin/benchstat base.txt pr.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Error: Benchmark results not found or empty." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
