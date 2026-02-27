@@ -73,6 +73,10 @@ func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingCon
 	utilLogsQuota := klogx.NewLoggingQuota(20)
 
 	for _, node := range scaleDownCandidates {
+		if processNodeGroupDeallocate(autoscalingCtx, node) {
+			continue
+		}
+
 		nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(node.Name)
 		if err != nil {
 			klog.Errorf("Can't retrieve scale-down candidate %s from snapshot, err: %v", node.Name, err)

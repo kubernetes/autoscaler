@@ -87,3 +87,33 @@ func (mr *MockVMSSDeleteClientMockRecorder) BeginDeleteInstances(ctx, resourceGr
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginDeleteInstances", reflect.TypeOf((*MockVMSSDeleteClient)(nil).BeginDeleteInstances), ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs, options)
 }
+
+// BeginStart mocks base method.
+func (m *MockVMSSDeleteClient) BeginStart(ctx context.Context, resourceGroupName, vmScaleSetName string, options *armcompute.VirtualMachineScaleSetsClientBeginStartOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientStartResponse], error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BeginStart", ctx, resourceGroupName, vmScaleSetName, options)
+	ret0, _ := ret[0].(*runtime.Poller[armcompute.VirtualMachineScaleSetsClientStartResponse])
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BeginStart indicates an expected call of BeginStart.
+func (mr *MockVMSSDeleteClientMockRecorder) BeginStart(ctx, resourceGroupName, vmScaleSetName, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginStart", reflect.TypeOf((*MockVMSSDeleteClient)(nil).BeginStart), ctx, resourceGroupName, vmScaleSetName, options)
+}
+
+// BeginDeallocate mocks base method.
+func (m *MockVMSSDeleteClient) BeginDeallocate(ctx context.Context, resourceGroupName, vmScaleSetName string, options *armcompute.VirtualMachineScaleSetsClientBeginDeallocateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeallocateResponse], error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BeginDeallocate", ctx, resourceGroupName, vmScaleSetName, options)
+	ret0, _ := ret[0].(*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeallocateResponse])
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BeginDeallocate indicates an expected call of BeginDeallocate.
+func (mr *MockVMSSDeleteClientMockRecorder) BeginDeallocate(ctx, resourceGroupName, vmScaleSetName, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginDeallocate", reflect.TypeOf((*MockVMSSDeleteClient)(nil).BeginDeallocate), ctx, resourceGroupName, vmScaleSetName, options)
+}

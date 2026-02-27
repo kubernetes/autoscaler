@@ -666,6 +666,16 @@ func vmPowerStateFromStatuses(statuses []*armcompute.InstanceViewStatus) string 
 	return vmPowerStateUnknown
 }
 
+func powerStateDeallocating(state string) bool {
+	return powerStateExpectedMatchesActual(vmPowerStateDeallocating, state)
+}
+func powerStateDeallocated(state string) bool {
+	return powerStateExpectedMatchesActual(vmPowerStateDeallocated, state)
+}
+func powerStateExpectedMatchesActual(expected, actual string) bool {
+	return strings.EqualFold(actual, expected)
+}
+
 // strconv.ParseInt, but for int
 func parseInt32(s string, base int) (int, error) {
 	val, err := strconv.ParseInt(s, base, 32)

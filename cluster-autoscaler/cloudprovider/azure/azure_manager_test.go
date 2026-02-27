@@ -29,6 +29,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/deallocate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/utils/ptr"
 	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
@@ -771,7 +772,7 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 	min, max, name := 1, 15, "test-asg"
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs: []string{
-			fmt.Sprintf("%d:%d:%s", min, max, name),
+			fmt.Sprintf("%d:%d:%s:%s", min, max, deallocate.Delete, name),
 		},
 	}
 

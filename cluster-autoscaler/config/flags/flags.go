@@ -28,6 +28,7 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -244,13 +245,27 @@ var (
 	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "[Deprecated] Should CA scale down the cluster")
 )
 
+// fork-specific flags that are no longer functional but kept for compatibility.
+var (
+	configPath                = flag.String("config-path", "", "The path for the mounted ConfigMap containing the settings used for dynamic reconfiguration. Set as empty string to use static mode.")
+	enableForceDelete         = flag.Bool("enable-force-delete", false, "Whether to enable force deletion")
+	enableDynamicInstanceList = flag.Bool("enable-dynamic-instance-list", false, "Whether to enable dynamic instance list workflow")
+	enableDetailedCSEMessage  = flag.Bool("enable-detailed-cse-message", false, "Whether to enable emitting error messages in CSE error body")
+)
+
+var (
+	// ConfigFetcher is used to fetch dynamic configuration for the cluster autoscaler.
+	// Temporary + fork only, will be removed after CA is made restartable by PUT AP and have NodeGroups passed in by flags.
+	ConfigFetcher dynamic.ConfigFetcher
+)
+
 var autoscalingOptions *config.AutoscalingOptions
 
 // AutoscalingOptions returns the singleton instance of AutoscalingOptions, initializing it if necessary.
 func AutoscalingOptions() config.AutoscalingOptions {
-	if autoscalingOptions == nil {
-		newAutoscalingOptions := createAutoscalingOptions()
-		autoscalingOptions = &newAutoscalingOptions
+	if autoscalingOptions == nil { // Fork: assert: createAutoscalingOptions (first NodeGroups fetched) must be called only once per lifetime, until dynamic config is fully deforked
+		newAutoscalingOptions := createAutoscalingOptions() // Fork: assert: createAutoscalingOptions (first NodeGroups fetched) must be called only once per lifetime, until dynamic config is fully deforked
+		autoscalingOptions = &newAutoscalingOptions         // Fork: assert: createAutoscalingOptions (first NodeGroups fetched) must be called only once per lifetime, until dynamic config is fully deforked
 	}
 	return *autoscalingOptions
 }
@@ -338,7 +353,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxMemoryTotal:                   maxMemoryTotal,
 		MinMemoryTotal:                   minMemoryTotal,
 		GpuTotal:                         parsedGpuTotal,
-		NodeGroups:                       *nodeGroupsFlag,
 		EnforceNodeGroupMinSize:          *enforceNodeGroupMinSize,
 		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
 		ScaleDownDelayTypeLocal:          *scaleDownDelayTypeLocal,
@@ -442,6 +456,22 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CapacitybufferPodInjectionEnabled:            *capacitybufferPodInjectionEnabled,
 		NodeRemovalLatencyTrackingEnabled:            *nodeRemovalLatencyTrackingEnabled,
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
+		NodeGroups: func() []string {
+			// Temporary + fork only, will be removed after CA is made restartable by PUT AP and have NodeGroups passed in by flags.
+			// Will fetch from ConfigMap rather than flags for now.
+			ConfigFetcher = dynamic.NewConfigFetcher(dynamic.ConfigFetcherOptions{
+				ConfigPath: "/opt/conf/autoscaler/settings.json",
+			})
+			if updatedConfig, err := ConfigFetcher.FetchConfigIfUpdated(); err != nil {
+				// Ideally we want this to be fatal, but that would resulted in CrashLoopBackOff in a race condition where the configmap takes time to initialize, delaying the initialization.
+				klog.Errorf("failed to fetch updated NodeGroups config: %v, could be resulted from the configmap not initialized yet", err)
+			} else if updatedConfig != nil {
+				// First fetch is always considered updated if not empty
+				klog.V(3).Infof("Fetched NodeGroups: %v", updatedConfig.NodeGroupSpecStrings())
+				return updatedConfig.NodeGroupSpecStrings()
+			}
+			return []string{}
+		}(),
 	}
 }
 

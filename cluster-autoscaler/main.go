@@ -335,11 +335,35 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 		for {
 			trigger.Wait(previousRun)
 			previousRun, lastRun = lastRun, time.Now()
+
+			// Temporary + fork only, will be removed after CA is made restartable by PUT AP and have NodeGroups passed in by flags.
+			// Will restart as soon as it changes to OM-induced restart + mimic passing in by flags.
+			// Expect ConfigFetcher to be initialized. It contains the previous state to compare the difference to.
+			if updatedConfig, err := flags.ConfigFetcher.FetchConfigIfUpdated(); err != nil {
+				// Ideally we want this to be fatal, but that would resulted in CrashLoopBackOff in a race condition where the configmap takes time to initialize, delaying the initialization.
+				klog.Errorf("failed to fetch updated NodeGroups config: %v, could be resulted from the configmap not initialized yet", err)
+			} else if updatedConfig != nil {
+				klog.V(3).Infof("NodeGroups config has changed: %v, restarting...", updatedConfig.NodeGroupSpecStrings())
+				os.Exit(0)
+			}
+
 			loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
 		}
 	} else {
 		for {
 			time.Sleep(autoscalingOpts.ScanInterval)
+
+			// Temporary + fork only, will be removed after CA is made restartable by PUT AP and have NodeGroups passed in by flags.
+			// Will restart as soon as it changes to OM-induced restart + mimic passing in by flags.
+			// Expect ConfigFetcher to be initialized. It contains the previous state to compare the difference to.
+			if updatedConfig, err := flags.ConfigFetcher.FetchConfigIfUpdated(); err != nil {
+				// Ideally we want this to be fatal, but that would resulted in CrashLoopBackOff in a race condition where the configmap takes time to initialize, delaying the initialization.
+				klog.Errorf("failed to fetch updated NodeGroups config: %v, could be resulted from the configmap not initialized yet", err)
+			} else if updatedConfig != nil {
+				klog.V(3).Infof("NodeGroups config has changed: %v, restarting...", updatedConfig.NodeGroupSpecStrings())
+				os.Exit(0)
+			}
+
 			loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
 		}
 	}

@@ -25,6 +25,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/deallocate"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 )
@@ -235,8 +236,8 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 	case VMProvisioningStateFailed:
 		status.State = cloudprovider.InstanceRunning
 
-		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, eligible for fast delete: %s", ptr.Deref(vm.ID, ""), powerState, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
-		if scaleSet.enableFastDeleteOnFailedProvisioning {
+		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, scale down mode: %s, eligible for fast delete: %s", ptr.Deref(vm.ID, ""), powerState, scaleSet.scaleDownPolicy, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
+		if scaleSet.scaleDownPolicy != deallocate.Deallocate && scaleSet.enableFastDeleteOnFailedProvisioning {
 			// Provisioning can fail both during instance creation or after the instance is running.
 			// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
 			// ProvisioningState represents the most recent provisioning state, therefore only report
@@ -253,6 +254,9 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 			} else {
 				status.State = cloudprovider.InstanceRunning
 			}
+		} else if scaleSet.scaleDownPolicy == deallocate.Deallocate {
+			// Current(?) deallocate mode design handles InstanceFailed and InstanceRunning differently.
+			status.State = cloudprovider.InstanceFailed
 		}
 	default:
 		status.State = cloudprovider.InstanceRunning
@@ -261,7 +265,7 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 	// Add vmssCSE Provisioning Failed Message in error info body for vmssCSE Extensions if enableDetailedCSEMessage is true
 	if scaleSet.enableDetailedCSEMessage && vm.Properties.InstanceView != nil {
 		if err, failed := scaleSet.cseErrors(vm.Properties.InstanceView.Extensions); failed {
-			klog.V(3).Infof("VM %s reports CSE failure: %v, with provisioning state %s, power state %s", ptr.Deref(vm.ID, ""), err, ptr.Deref(vm.Properties.ProvisioningState, ""), powerState)
+			klog.V(3).Infof("VM %s reports CSE failure: %v, with provisioning state %s, power state %s, scale down mode: %s", ptr.Deref(vm.ID, ""), err, ptr.Deref(vm.Properties.ProvisioningState, ""), powerState, scaleSet.scaleDownPolicy)
 			status.State = cloudprovider.InstanceCreating
 			errorInfo := &cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OtherErrorClass,
@@ -272,5 +276,23 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 		}
 	}
 
+	// now check power state
+	if vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Statuses != nil {
+		statuses := vm.Properties.InstanceView.Statuses
+
+		for _, s := range statuses {
+			state := ptr.Deref(s.Code, "")
+			// set the state to deallocated/deallocating based on their running state if provisioning is succeeded.
+			// This is to avoid the weird states with Failed VMs which can fail all API calls.
+			// This information is used to build instanceCache in CA.
+			if ptr.Deref(vm.Properties.ProvisioningState, "") == string(armcompute.GalleryProvisioningStateSucceeded) {
+				if powerStateDeallocated(state) {
+					status.State = cloudprovider.InstanceDeallocated
+				} else if powerStateDeallocating(state) {
+					status.State = cloudprovider.InstanceDeallocating
+				}
+			}
+		}
+	}
 	return status
 }

@@ -311,22 +311,25 @@ func (tcp *TestCloudProvider) InsertNodeGroup(nodeGroup cloudprovider.NodeGroup)
 }
 
 // AddNodeGroup adds node group to test cloud provider.
-func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
+func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) cloudprovider.NodeGroup {
 	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, true, false, "", nil)
 	tcp.InsertNodeGroup(nodeGroup)
+	return nodeGroup
 }
 
 // AddUpcomingNodeGroup adds upcoming node group to test cloud provider.
-func (tcp *TestCloudProvider) AddUpcomingNodeGroup(id string, min int, max int, size int) {
+func (tcp *TestCloudProvider) AddUpcomingNodeGroup(id string, min int, max int, size int) cloudprovider.NodeGroup {
 	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, false, false, "", nil)
 	tcp.InsertNodeGroup(nodeGroup)
+	return nodeGroup
 }
 
 // AddNodeGroupWithCustomOptions adds node group with custom options
 // to test cloud provider.
-func (tcp *TestCloudProvider) AddNodeGroupWithCustomOptions(id string, min int, max int, size int, opts *config.NodeGroupAutoscalingOptions) {
+func (tcp *TestCloudProvider) AddNodeGroupWithCustomOptions(id string, min int, max int, size int, opts *config.NodeGroupAutoscalingOptions) cloudprovider.NodeGroup {
 	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, true, false, "", opts)
 	tcp.InsertNodeGroup(nodeGroup)
+	return nodeGroup
 }
 
 // AddAutoprovisionedNodeGroup adds node group to test cloud provider.

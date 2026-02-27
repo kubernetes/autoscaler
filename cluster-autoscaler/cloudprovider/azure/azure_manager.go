@@ -210,7 +210,7 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 	if strings.EqualFold(m.config.VMType, providerazureconsts.VMTypeVMSS) {
 		scaleToZeroSupported = scaleToZeroSupportedVMSS
 	}
-	s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
+	s, err := dynamic.SpecFromStringWithLabelsAndTaints(spec, scaleToZeroSupported)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
 	}

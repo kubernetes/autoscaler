@@ -290,7 +290,32 @@ const (
 	InstanceCreating InstanceState = 2
 	// InstanceDeleting means instance is being deleted
 	InstanceDeleting InstanceState = 3
+	// InstanceFailed means instance has a failed provisioning state
+	InstanceFailed InstanceState = 4
+	// InstanceDeallocated means that the instance is deallocated
+	InstanceDeallocated InstanceState = 5
+	// InstanceDeallocating means the instance is currently being deallocated
+	InstanceDeallocating InstanceState = 6
 )
+
+func (s InstanceState) String() string {
+	switch s {
+	case InstanceRunning:
+		return "Running"
+	case InstanceCreating:
+		return "Creating"
+	case InstanceFailed:
+		return "Failed"
+	case InstanceDeleting:
+		return "Deleting"
+	case InstanceDeallocated:
+		return "Deallocated"
+	case InstanceDeallocating:
+		return "Deallocating"
+	default:
+		return fmt.Sprintf("%d", s)
+	}
+}
 
 // InstanceErrorInfo provides information about error condition on instance
 type InstanceErrorInfo struct {

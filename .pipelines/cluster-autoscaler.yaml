@@ -1,0 +1,56 @@
+pr:
+  - master
+  - cluster-autoscaler-release-*
+
+variables:
+- name: GOPATH
+  value: $(Agent.BuildDirectory)/go
+- name: GOBIN
+  value: $(GOPATH)/bin
+- name: GO111MODULE
+  value: auto
+- name: autoscaler.clone.dir
+  value: go/src/k8s.io/autoscaler
+# There are many references to alternative container registries in this repository, including
+# in sample deployment artifacts for other cloud providers, and in VPA; none of these are relevant for this build.
+# Disable container registry analysis to eliminate noise. For more information please visit: https://aka.ms/sscatask
+- name: DisableDockerDetector
+  value: true
+- name: DisableKubernetesDeploymentDetector
+  value: true
+
+jobs:
+  - job: cluster_autoscaler_test
+    pool: staging-pool-amd64-mariner-2
+    displayName: Autoscaler Unit Tests
+    workspace:
+      clean: all
+    steps:
+    - checkout: self
+      path: $(autoscaler.clone.dir)
+      fetchDepth: "1"
+    - script: |
+        echo '##vso[task.prependpath]$(GOPATH)/bin'
+        hack/install-verify-tools.sh
+        go install github.com/t-yuki/gocover-cobertura@master
+      displayName: "Prepare"
+    - task: UseDotNet@2
+      inputs:
+        version: 7.0.x
+      displayName: 'Prepare .NET Core SDK'
+    - script: |
+        hack/verify-all.sh -v
+      displayName: "Verify"
+    - script: |
+        cd cluster-autoscaler
+        go mod tidy
+        go test -v -coverprofile=coverage.txt -covermode=atomic -race $(go list ./... | grep -v vertical-pod-autoscaler/e2e | grep -v /cloudprovider/ && go list ./cloudprovider/azure/...)
+      displayName: "Test"
+    - script: |
+        gocover-cobertura < '$(System.DefaultWorkingDirectory)/cluster-autoscaler/coverage.txt' > '$(System.DefaultWorkingDirectory)/cluster-autoscaler/coverage.xml'
+      displayName: 'Convert'
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/cluster-autoscaler/coverage.xml'
+      displayName: 'Publish Coverage'
