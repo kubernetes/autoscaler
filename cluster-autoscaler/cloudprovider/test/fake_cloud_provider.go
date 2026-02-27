@@ -153,6 +153,21 @@ func WithNode(node *apiv1.Node) NodeGroupOption {
 	}
 }
 
+// WithMinMax sets the min and max sizes for the node group.
+func WithMinMax(min, max int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.minSize = min
+		n.maxSize = max
+	}
+}
+
+// WithTargetSize sets the target size for the node group.
+func WithTargetSize(size int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.targetSize = size
+	}
+}
+
 // AddNodeGroup is a helper for tests to add a group with its template.
 func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) {
 	c.Lock()
@@ -274,6 +289,8 @@ func (n *NodeGroup) Id() string {
 
 // Debug returns a string representation of the node group's current state.
 func (n *NodeGroup) Debug() string {
+	n.RLock()
+	defer n.RUnlock()
 	return fmt.Sprintf("NodeGroup{id: %s, targetSize: %d}", n.id, n.targetSize)
 }
 
@@ -320,7 +337,11 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 }
 
 // TargetSize returns the current target size of the node group.
-func (n *NodeGroup) TargetSize() (int, error) { return n.targetSize, nil }
+func (n *NodeGroup) TargetSize() (int, error) {
+	n.RLock()
+	defer n.RUnlock()
+	return n.targetSize, nil
+}
 
 // IncreaseSize adds nodes to the node group and updates internal instance mapping.
 func (n *NodeGroup) IncreaseSize(delta int) error {
@@ -362,4 +383,8 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 }
 
 // GetTargetSize returns the target size as a raw integer (helper method).
-func (n *NodeGroup) GetTargetSize() int { return n.targetSize }
+func (n *NodeGroup) GetTargetSize() int {
+	n.RLock()
+	defer n.RUnlock()
+	return n.targetSize
+}

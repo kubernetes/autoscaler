@@ -17,9 +17,10 @@ limitations under the License.
 package integration
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
-	"time"
 )
 
 // DefaultAutoscalingOptions provides the baseline configuration for all tests.
@@ -96,9 +97,23 @@ func WithCloudProviderName(name string) AutoscalingOptionOverride {
 	}
 }
 
+// WithMaxNodesTotal sets the maximum total nodes.
+func WithMaxNodesTotal(n int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxNodesTotal = n
+	}
+}
+
 // WithScaleDownUnneededTime sets the scale down unneeded time option.
 func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 	return func(o *config.AutoscalingOptions) {
 		o.NodeGroupDefaults.ScaleDownUnneededTime = d
+	}
+}
+
+// WithMaxScaleDownParallelism sets the maximum scale down parallelism.
+func WithMaxScaleDownParallelism(sdp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxScaleDownParallelism = sdp
 	}
 }
