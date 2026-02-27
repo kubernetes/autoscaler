@@ -17,6 +17,10 @@ limitations under the License.
 package integration
 
 import (
+	"context"
+	"fmt"
+	"testing"
+
 	"k8s.io/autoscaler/cluster-autoscaler/builder"
 	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -28,7 +32,6 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
-	"testing"
 )
 
 // TestInfrastructure holds the dependencies for a test.
@@ -112,4 +115,18 @@ func DefaultAutoscalingBuilder(
 		WithInformerFactory(infra.Fakes.InformerFactory).
 		WithCloudProvider(infra.Fakes.CloudProvider).
 		WithPodObserver(infra.Fakes.PodObserver)
+}
+
+// StartAndSyncInformers starts the informer factory and waits for all caches to sync.
+// This is useful for tests that require informers to be fully populated (e.g. tests using
+// LoadFromExistingTaints) before building the Autoscaler.
+func (infra *TestInfrastructure) StartAndSyncInformers(ctx context.Context) error {
+	infra.Fakes.InformerFactory.Start(ctx.Done())
+	synced := infra.Fakes.InformerFactory.WaitForCacheSync(ctx.Done())
+	for informerType, isSynced := range synced {
+		if !isSynced {
+			return fmt.Errorf("failed to sync informer cache for %v", informerType)
+		}
+	}
+	return nil
 }

@@ -153,6 +153,21 @@ func WithNode(node *apiv1.Node) NodeGroupOption {
 	}
 }
 
+// WithMinMax sets the min and max sizes for the node group.
+func WithMinMax(min, max int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.minSize = min
+		n.maxSize = max
+	}
+}
+
+// WithTargetSize sets the target size for the node group.
+func WithTargetSize(size int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.targetSize = size
+	}
+}
+
 // AddNodeGroup is a helper for tests to add a group with its template.
 func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) {
 	c.Lock()
