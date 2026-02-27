@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	"k8s.io/klog/v2"
@@ -195,8 +196,10 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}
 	}
-	// Remove the node from the snapshot, so that it doesn't interfere with topology spread constraint scheduling.
-	r.clusterSnapshot.RemoveNodeInfo(removedNode)
+
+	if err := r.replaceWithTaintedGhostNode(removedNode, timestamp); err != nil {
+		return err
+	}
 
 	newpods := make([]*apiv1.Pod, 0, len(pods))
 	for _, podptr := range pods {
@@ -211,6 +214,39 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 	}
 	if len(statuses) != len(newpods) {
 		return fmt.Errorf("can reschedule only %d out of %d pods", len(statuses), len(newpods))
+	}
+
+	// After successful scheduling simulation, remove the tainted ghost node so that
+	// persisted snapshot state (used by subsequent simulations when canPersist=true)
+	// correctly reflects the node being gone.
+	return r.clusterSnapshot.RemoveNodeInfo(removedNode)
+}
+
+// replaceWithTaintedGhostNode replaces the given node in the snapshot with a
+// pod-less copy carrying the ToBeDeletedByClusterAutoscaler NoSchedule taint.
+// This mirrors what happens in reality during drain: the node is tainted but
+// stays in the cluster. Keeping it in the snapshot is critical for
+// PodTopologySpread constraints with the default nodeTaintsPolicy=Ignore,
+// where the scheduler still counts tainted nodes as topology domains even
+// though pods can't schedule on them. Removing the node entirely would
+// eliminate its domain from topology calculations, making the simulation
+// overly optimistic and causing scale-down/scale-up oscillation.
+func (r *RemovalSimulator) replaceWithTaintedGhostNode(nodeName string, timestamp time.Time) error {
+	nodeInfo, err := r.clusterSnapshot.GetNodeInfo(nodeName)
+	if err != nil {
+		return fmt.Errorf("couldn't get NodeInfo for removed node %s: %v", nodeName, err)
+	}
+	taintedNode := nodeInfo.Node().DeepCopy()
+	taintedNode.Spec.Taints = append(taintedNode.Spec.Taints, apiv1.Taint{
+		Key:    taints.ToBeDeletedTaint,
+		Value:  fmt.Sprint(timestamp.Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+	if err = r.clusterSnapshot.RemoveNodeInfo(nodeName); err != nil {
+		return fmt.Errorf("couldn't remove NodeInfo for %s: %v", nodeName, err)
+	}
+	if err = r.clusterSnapshot.AddNodeInfo(framework.NewNodeInfo(taintedNode, nil)); err != nil {
+		return fmt.Errorf("couldn't add tainted ghost node for %s: %v", nodeName, err)
 	}
 	return nil
 }
