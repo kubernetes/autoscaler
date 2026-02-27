@@ -41,7 +41,7 @@ type MigInfoProvider interface {
 	GetMigForInstance(instanceRef GceRef) (Mig, error)
 	// RegenerateMigInstancesCache regenerates MIGs to instances mapping cache
 	RegenerateMigInstancesCache() error
-	// GetMigTargetSize returns target size of a MIG
+	// GetMigTargetSize returns target size for given MIG ref
 	GetMigTargetSize(migRef GceRef) (int64, error)
 	// GetMigBasename returns basename for given MIG ref
 	GetMigBasename(migRef GceRef) (string, error)

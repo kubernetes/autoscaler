@@ -126,7 +126,7 @@ func TestMigInstancesCache(t *testing.T) {
 	}
 
 	// Pecondition: Cache is empty before it is set
-	assert.True(t, c.IsMigInstancesCacheEmpty(migRef), "Expected MIG instaces cache to be empty before SetMigInstances was called")
+	assert.True(t, c.IsMigInstancesCacheEmpty(migRef), "Expected MIG instances cache to be empty before SetMigInstances was called")
 
 	// When: set MIG instances cache
 	instances := make([]GceInstance, 0)
@@ -136,7 +136,7 @@ func TestMigInstancesCache(t *testing.T) {
 
 	// Then: can retrieve instances from cache by MIG reference
 	gotInstances, found := c.GetMigInstances(migRef)
-	assert.False(t, c.IsMigInstancesCacheEmpty(migRef), "Expected MIG instaces cache to not be empty after SetMigInstances was called")
+	assert.False(t, c.IsMigInstancesCacheEmpty(migRef), "Expected MIG instances cache to not be empty after SetMigInstances was called")
 	assert.True(t, found, "Expected MIG insatcnes cache to be populated")
 	assert.Equal(t, gotInstances, instances)
 
@@ -145,6 +145,6 @@ func TestMigInstancesCache(t *testing.T) {
 
 	// Then: Cache is empty
 	_, found = c.GetMigInstances(migRef)
-	assert.False(t, found, "Expected MIG instaces cache to be empty after InvalidateAllMigInstances was called")
+	assert.False(t, found, "Expected MIG instances cache to be empty after InvalidateAllMigInstances was called")
 	assert.True(t, c.IsMigInstancesCacheEmpty(migRef))
 }
