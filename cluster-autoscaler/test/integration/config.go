@@ -46,6 +46,7 @@ var DefaultAutoscalingOptions = config.AutoscalingOptions{
 	FrequentLoopsEnabled:       true,
 	ClusterName:                "cluster-test",
 	MaxBinpackingTime:          10 * time.Second,
+	PredicateParallelism:       1,
 }
 
 // TestConfig is the "blueprint" for a test. It defines the entire
@@ -96,6 +97,13 @@ func WithCloudProviderName(name string) AutoscalingOptionOverride {
 	}
 }
 
+// WithMaxNodeGroupBinpackingDuration sets the maximum ng binpacking duration.
+func WithMaxNodeGroupBinpackingDuration(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxNodeGroupBinpackingDuration = d
+	}
+}
+
 // WithScaleDownUnneededTime sets the scale down unneeded time option.
 func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 	return func(o *config.AutoscalingOptions) {
@@ -107,5 +115,19 @@ func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 func WithProvisioningRequestEnabled() AutoscalingOptionOverride {
 	return func(o *config.AutoscalingOptions) {
 		o.ProvisioningRequestEnabled = true
+	}
+}
+
+// WithMaxScaleDownParallelism sets the maximum scale down parallelism.
+func WithMaxScaleDownParallelism(sdp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxScaleDownParallelism = sdp
+	}
+}
+
+// WithPredicateParallelism sets the predicate parallelism.
+func WithPredicateParallelism(p int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.PredicateParallelism = p
 	}
 }

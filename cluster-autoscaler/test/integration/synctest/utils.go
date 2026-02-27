@@ -56,6 +56,6 @@ func TearDown(cancel context.CancelFunc) {
 	// Synctest drain: Background goroutines (like MetricAsyncRecorder) often use uninterruptible time.Sleep loops.
 	// In a synctest bubble, these are "durable" sleeps. We must advance the virtual clock to allow these goroutines to wake up, observe the
 	// closed context channel, and terminate gracefully.
-	time.Sleep(1 * time.Minute)
+	time.Sleep(10 * time.Minute)
 	synctest.Wait()
 }

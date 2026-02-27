@@ -40,12 +40,13 @@ func TestProvReqFullLifecycle(t *testing.T) {
 		)
 
 	options := config.ResolveOptions()
-	infra := integration.SetupInfrastructure(t)
-	fakes := infra.Fakes
 
 	synctest.Test(t, func(t *testing.T) {
 		ctx, cancel := context.WithCancel(t.Context())
 		defer synctestutils.TearDown(cancel)
+
+		infra := integration.SetupInfrastructure(t)
+		fakes := infra.Fakes
 
 		autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
 		assert.NoError(t, err)
