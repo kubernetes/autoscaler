@@ -22,6 +22,10 @@ containerSecurityContext: {}
 
 admissionController:
   enabled: true
+
+  # Annotations to add to the Admission Controller deployment.
+  annotations: {}
+
   image:
     # Image repository for the Admission Controller default container.
     repository: registry.k8s.io/autoscaling/vpa-admission-controller
@@ -183,6 +187,10 @@ admissionController:
 
 recommender:
   enabled: true
+
+  # Annotations to add to the Recommender deployment.
+  annotations: {}
+
   image:
     # Image repository for the Recommender default container.
     repository: registry.k8s.io/autoscaling/vpa-recommender
@@ -276,6 +284,9 @@ recommender:
 
 updater:
   enabled: true
+
+  # Annotations to add to the Updater deployment.
+  annotations: {}
 
   # Additional args for the updater
   extraArgs: []
