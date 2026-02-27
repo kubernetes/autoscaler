@@ -23,14 +23,21 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/sidecar"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // Provider gets current recommendation, annotations and vpaName for the given pod.
 type Provider interface {
-	GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error)
+	GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (
+		[]vpa_api_util.ContainerResources,
+		[]vpa_api_util.ContainerResources,
+		vpa_api_util.ContainerToAnnotationsMap,
+		error,
+	)
 }
 
 type recommendationProvider struct {
@@ -111,12 +118,52 @@ func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodRes
 	return resources
 }
 
+// GetInitContainersResources returns the recommended resources for each native sidecar init container.
+// The returned slice has the same length as pod.Spec.InitContainers; non-sidecar entries are empty.
+func GetInitContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *corev1.LimitRangeItem,
+	annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
+	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.InitContainers))
+	for i, container := range pod.Spec.InitContainers {
+		if !sidecar.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+			continue
+		}
+		containerRequests, containerLimits := resourcehelpers.InitContainerRequestsAndLimits(container.Name, pod)
+		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
+		if recommendation == nil {
+			klog.V(2).InfoS("No recommendation found for native sidecar container, skipping", "container", container.Name)
+			continue
+		}
+		resources[i].Requests = recommendation.Target
+		defaultLimit := corev1.ResourceList{}
+		if limitRange != nil {
+			defaultLimit = limitRange.Default
+		}
+		containerControlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpaResourcePolicy)
+		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
+			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(containerLimits, containerRequests, resources[i].Requests, defaultLimit)
+			if proportionalLimits != nil {
+				resources[i].Limits = proportionalLimits
+				if len(limitAnnotations) > 0 {
+					annotations[container.Name] = append(annotations[container.Name], limitAnnotations...)
+				}
+			}
+		}
+	}
+	return resources
+}
+
 // GetContainersResourcesForPod returns recommended request for a given pod and associated annotations.
-// The returned slice corresponds 1-1 to containers in the Pod.
-func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+// The first returned slice corresponds 1-1 to containers in the Pod.
+// The second returned slice corresponds 1-1 to init containers in the Pod (only native sidecar entries are populated).
+func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (
+	[]vpa_api_util.ContainerResources,
+	[]vpa_api_util.ContainerResources,
+	vpa_api_util.ContainerToAnnotationsMap,
+	error,
+) {
 	if vpa == nil || pod == nil {
 		klog.V(2).InfoS("Can't calculate recommendations, one of VPA or Pod is nil", "vpa", vpa, "pod", pod)
-		return nil, nil, nil
+		return nil, nil, nil, nil
 	}
 	klog.V(2).InfoS("Updating requirements for pod", "pod", klog.KObj(pod))
 
@@ -128,12 +175,12 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, v
 		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpa, pod)
 		if err != nil {
 			klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod))
-			return nil, annotations, err
+			return nil, nil, annotations, err
 		}
 	}
 	containerLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error getting containerLimitRange: %s", err)
+		return nil, nil, nil, fmt.Errorf("error getting containerLimitRange: %s", err)
 	}
 	var resourcePolicy *vpa_types.PodResourcePolicy
 	if vpa.Spec.UpdatePolicy == nil || vpa.Spec.UpdatePolicy.UpdateMode == nil || *vpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeOff {
@@ -148,5 +195,15 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, v
 		}
 	}
 
-	return containerResources, annotations, nil
+	var initContainerResources []vpa_api_util.ContainerResources
+	if features.Enabled(features.NativeSidecar) {
+		initContainerResources = GetInitContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, annotations)
+		for _, resource := range initContainerResources {
+			if resource.RemoveEmptyResourceKeyIfAny() {
+				klog.InfoS("An empty resource key was found and purged from init container", "pod", klog.KObj(pod), "vpa", klog.KObj(vpa))
+			}
+		}
+	}
+
+	return containerResources, initContainerResources, annotations, nil
 }

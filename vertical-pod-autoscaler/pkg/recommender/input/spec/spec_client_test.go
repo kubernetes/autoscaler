@@ -50,3 +50,24 @@ func TestGetPodSpecsReturnsSpecs(t *testing.T) {
 		assert.Contains(t, tc.podSpecs, podSpec, "One of returned BasicPodSpec is different than expected")
 	}
 }
+
+func TestGetPodSpecsNativeSidecar(t *testing.T) {
+	tc := newNativeSidecarSpecClientTestCase()
+	client := tc.createFakeSpecClient()
+
+	podSpecs, err := client.GetPodSpecs()
+	assert.NoError(t, err)
+	if !assert.Len(t, podSpecs, 1) {
+		return
+	}
+	pod := podSpecs[0]
+	// The native sidecar init container should be marked
+	if assert.Len(t, pod.InitContainers, 2, "expected 2 init containers") {
+		assert.True(t, pod.InitContainers[0].IsNativeSidecar, "native sidecar should have IsNativeSidecar=true")
+		assert.False(t, pod.InitContainers[1].IsNativeSidecar, "regular init container should have IsNativeSidecar=false")
+	}
+	// Regular containers should not be marked as native sidecar
+	for _, c := range pod.Containers {
+		assert.False(t, c.IsNativeSidecar, "regular container %q should have IsNativeSidecar=false", c.ID.ContainerName)
+	}
+}

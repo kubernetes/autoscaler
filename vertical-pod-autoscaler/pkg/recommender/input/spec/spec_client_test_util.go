@@ -189,6 +189,65 @@ func newTestPodSpec(podId model.PodID, containerSpecs []BasicContainerSpec, init
 	}
 }
 
+const nativeSidecarPodYaml = `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: PodWithSidecar
+  labels:
+    SidecarLabelKey: SidecarLabelValue
+spec:
+  containers:
+  - name: main
+    image: mainImage
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+  initContainers:
+  - name: sidecar
+    image: sidecarImage
+    restartPolicy: Always
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+  - name: regular-init
+    image: regularInitImage
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+`
+
+func newNativeSidecarSpecClientTestCase() *specClientTestCase {
+	podID := model.PodID{Namespace: "", PodName: "PodWithSidecar"}
+
+	containerSpec := newTestContainerSpec(podID, "main", 500, 512*1024*1024)
+	sidecarSpec := BasicContainerSpec{
+		ID: model.ContainerID{
+			PodID:         podID,
+			ContainerName: "sidecar",
+		},
+		Image:           "sidecarImage",
+		Request:         model.Resources{model.ResourceCPU: model.ResourceAmount(100), model.ResourceMemory: model.ResourceAmount(128 * 1024 * 1024)},
+		IsNativeSidecar: true,
+	}
+	regularInitSpec := newTestContainerSpec(podID, "regular-init", 50, 64*1024*1024)
+
+	podSpec := &BasicPodSpec{
+		ID:             podID,
+		PodLabels:      map[string]string{"SidecarLabelKey": "SidecarLabelValue"},
+		Containers:     []BasicContainerSpec{containerSpec},
+		InitContainers: []BasicContainerSpec{sidecarSpec, regularInitSpec},
+	}
+
+	return &specClientTestCase{
+		podSpecs: []*BasicPodSpec{podSpec},
+		podYamls: []string{nativeSidecarPodYaml},
+	}
+}
+
 func (tc *specClientTestCase) createFakeSpecClient() SpecClient {
 	podListerMock := new(podListerMock)
 	podListerMock.On("List").Return(tc.getFakePods(), nil)

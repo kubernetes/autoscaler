@@ -32,10 +32,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/klog/v2/ktesting"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
@@ -483,6 +485,76 @@ func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].Containers), 2)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
+}
+
+func TestClusterStateFeeder_LoadPods_NativeSidecarGateOn(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+
+	podID := model.PodID{Namespace: "default", PodName: "PodWithSidecar"}
+	containerSpecs := []spec.BasicContainerSpec{
+		newTestContainerSpec(podID, "main", 500, 512*1024*1024),
+	}
+	initContainerSpecs := []spec.BasicContainerSpec{
+		{
+			ID:              model.ContainerID{PodID: podID, ContainerName: "sidecar"},
+			Image:           "sidecarImage",
+			Request:         model.Resources{model.ResourceCPU: 100, model.ResourceMemory: 128 * 1024 * 1024},
+			IsNativeSidecar: true,
+		},
+		newTestContainerSpec(podID, "regular-init", 50, 64*1024*1024),
+	}
+	podSpec := newTestPodSpec(podID, containerSpecs, initContainerSpecs)
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{podSpec}}
+
+	clusterState := model.NewClusterState(testGcPeriod)
+	feeder := clusterStateFeeder{
+		specClient:     client,
+		memorySaveMode: false,
+		clusterState:   clusterState,
+	}
+	feeder.LoadPods()
+
+	podState := clusterState.Pods()[podID]
+	// Native sidecar should be tracked as a regular container (in Containers map)
+	assert.Contains(t, podState.Containers, "sidecar", "native sidecar should be in Containers map")
+	assert.Contains(t, podState.Containers, "main", "main container should be in Containers map")
+	// Regular init container should still be in InitContainers list
+	assert.Contains(t, podState.InitContainers, "regular-init", "regular init should be in InitContainers list")
+	assert.NotContains(t, podState.InitContainers, "sidecar", "native sidecar should not be in InitContainers list")
+}
+
+func TestClusterStateFeeder_LoadPods_NativeSidecarGateOff(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
+
+	podID := model.PodID{Namespace: "default", PodName: "PodWithSidecar"}
+	containerSpecs := []spec.BasicContainerSpec{
+		newTestContainerSpec(podID, "main", 500, 512*1024*1024),
+	}
+	initContainerSpecs := []spec.BasicContainerSpec{
+		{
+			ID:              model.ContainerID{PodID: podID, ContainerName: "sidecar"},
+			Image:           "sidecarImage",
+			Request:         model.Resources{model.ResourceCPU: 100, model.ResourceMemory: 128 * 1024 * 1024},
+			IsNativeSidecar: true,
+		},
+		newTestContainerSpec(podID, "regular-init", 50, 64*1024*1024),
+	}
+	podSpec := newTestPodSpec(podID, containerSpecs, initContainerSpecs)
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{podSpec}}
+
+	clusterState := model.NewClusterState(testGcPeriod)
+	feeder := clusterStateFeeder{
+		specClient:     client,
+		memorySaveMode: false,
+		clusterState:   clusterState,
+	}
+	feeder.LoadPods()
+
+	podState := clusterState.Pods()[podID]
+	// With gate off, both init containers should be in InitContainers list
+	assert.Contains(t, podState.InitContainers, "sidecar", "with gate off, sidecar should be in InitContainers list")
+	assert.Contains(t, podState.InitContainers, "regular-init", "regular init should be in InitContainers list")
+	assert.NotContains(t, podState.Containers, "sidecar", "with gate off, sidecar should not be in Containers map")
 }
 
 func TestClusterStateFeeder_LoadPods_MemorySaverMode(t *testing.T) {

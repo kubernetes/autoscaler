@@ -22,12 +22,13 @@ import (
 )
 
 type containerBuilder struct {
-	name         string
-	cpuRequest   *resource.Quantity
-	memRequest   *resource.Quantity
-	cpuLimit     *resource.Quantity
-	memLimit     *resource.Quantity
-	resizePolicy []corev1.ContainerResizePolicy
+	name          string
+	cpuRequest    *resource.Quantity
+	memRequest    *resource.Quantity
+	cpuLimit      *resource.Quantity
+	memLimit      *resource.Quantity
+	resizePolicy  []corev1.ContainerResizePolicy
+	restartPolicy *corev1.ContainerRestartPolicy
 }
 
 // Container returns object that helps build containers for tests.
@@ -71,6 +72,13 @@ func (cb *containerBuilder) WithContainerResizePolicy(resizePolicy []corev1.Cont
 	return &r
 }
 
+// WithRestartPolicy sets the container's restart policy (used for native sidecars).
+func (cb *containerBuilder) WithRestartPolicy(policy corev1.ContainerRestartPolicy) *containerBuilder {
+	r := *cb
+	r.restartPolicy = &policy
+	return &r
+}
+
 func (cb *containerBuilder) Get() corev1.Container {
 	container := corev1.Container{
 		Name: cb.name,
@@ -93,6 +101,9 @@ func (cb *containerBuilder) Get() corev1.Container {
 	}
 	if cb.resizePolicy != nil {
 		container.ResizePolicy = cb.resizePolicy
+	}
+	if cb.restartPolicy != nil {
+		container.RestartPolicy = cb.restartPolicy
 	}
 	return container
 }

@@ -47,6 +47,8 @@ type BasicContainerSpec struct {
 	Image string
 	// Currently requested resources for this container.
 	Request model.Resources
+	// IsNativeSidecar is true if this is an init container with restartPolicy: Always.
+	IsNativeSidecar bool
 }
 
 // SpecClient provides information about pods and containers Specification
@@ -112,6 +114,10 @@ func newContainerSpec(pod *corev1.Pod, container corev1.Container, isInitContain
 		},
 		Image:   container.Image,
 		Request: calculateRequestedResources(pod, container, isInitContainer),
+	}
+	if isInitContainer && container.RestartPolicy != nil &&
+		*container.RestartPolicy == corev1.ContainerRestartPolicyAlways {
+		containerSpec.IsNativeSidecar = true
 	}
 	return containerSpec
 }

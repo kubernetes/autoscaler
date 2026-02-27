@@ -30,6 +30,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/sidecar"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -105,6 +106,31 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
 			terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < evictOOMThreshold {
 			quickOOM = true
 			klog.V(2).InfoS("Quick OOM detected in pod", "pod", klog.KObj(pod), "containerName", cs.Name)
+		}
+	}
+
+	// Also check init container statuses for OOM on native sidecars
+	if features.Enabled(features.NativeSidecar) {
+		for i := range pod.Status.InitContainerStatuses {
+			cs := &pod.Status.InitContainerStatuses[i]
+			if !sidecar.IsNativeSidecarByName(cs.Name, pod) {
+				continue
+			}
+			if hasObservedContainers && !vpaContainerSet.Has(cs.Name) {
+				continue
+			}
+			crp := vpa_api_util.GetContainerResourcePolicy(cs.Name, calc.vpa.Spec.ResourcePolicy)
+			if crp != nil && crp.Mode != nil && *crp.Mode == vpa_types.ContainerScalingModeOff {
+				continue
+			}
+			evictOOMThreshold := calc.getEvictOOMThreshold()
+			terminationState := &cs.LastTerminationState
+			if terminationState.Terminated != nil &&
+				terminationState.Terminated.Reason == "OOMKilled" &&
+				terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < evictOOMThreshold {
+				quickOOM = true
+				klog.V(2).InfoS("Quick OOM detected in native sidecar", "pod", klog.KObj(pod), "containerName", cs.Name)
+			}
 		}
 	}
 

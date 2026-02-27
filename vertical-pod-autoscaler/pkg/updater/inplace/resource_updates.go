@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/sidecar"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -65,10 +66,20 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 			},
 		}
 	} else {
+		var initContainersResources []vpa_api_util.ContainerResources
 		var err error
-		containersResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
+		containersResources, initContainersResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
 		if err != nil {
 			return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+		}
+
+		// Process native sidecar init containers
+		for i, initContainerResources := range initContainersResources {
+			if !sidecar.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				continue
+			}
+			newPatches := getInitContainerPatch(pod, i, initContainerResources)
+			result = append(result, newPatches...)
 		}
 	}
 
@@ -85,22 +96,35 @@ func getContainerPatch(pod *corev1.Pod, i int, containerResources vpa_api_util.C
 	// Add empty resources object if missing.
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
 		pod.Spec.Containers[i].Resources.Requests == nil {
-		patches = append(patches, patch.GetPatchInitializingEmptyResources(i))
+		patches = append(patches, patch.GetPatchInitializingEmptyResources(patch.ContainersPath, i))
 	}
 
-	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests")
-	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits")
+	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Requests, patch.ContainersPath, i, containerResources.Requests, "requests")
+	patches = appendPatches(patches, pod.Spec.Containers[i].Resources.Limits, patch.ContainersPath, i, containerResources.Limits, "limits")
 
 	return patches
 }
 
-func appendPatches(patches []resource_admission.PatchRecord, current corev1.ResourceList, containerIndex int, resources corev1.ResourceList, fieldName string) []resource_admission.PatchRecord {
+func getInitContainerPatch(pod *corev1.Pod, i int, containerResources vpa_api_util.ContainerResources) []resource_admission.PatchRecord {
+	var patches []resource_admission.PatchRecord
+	if pod.Spec.InitContainers[i].Resources.Limits == nil &&
+		pod.Spec.InitContainers[i].Resources.Requests == nil {
+		patches = append(patches, patch.GetPatchInitializingEmptyResources(patch.InitContainersPath, i))
+	}
+
+	patches = appendPatches(patches, pod.Spec.InitContainers[i].Resources.Requests, patch.InitContainersPath, i, containerResources.Requests, "requests")
+	patches = appendPatches(patches, pod.Spec.InitContainers[i].Resources.Limits, patch.InitContainersPath, i, containerResources.Limits, "limits")
+
+	return patches
+}
+
+func appendPatches(patches []resource_admission.PatchRecord, current corev1.ResourceList, basePath string, containerIndex int, resources corev1.ResourceList, fieldName string) []resource_admission.PatchRecord {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
-		patches = append(patches, patch.GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
+		patches = append(patches, patch.GetPatchInitializingEmptyResourcesSubfield(basePath, containerIndex, fieldName))
 	}
 	for resource, request := range resources {
-		patches = append(patches, patch.GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
+		patches = append(patches, patch.GetAddResourceRequirementValuePatch(basePath, containerIndex, fieldName, resource, request))
 	}
 	return patches
 }

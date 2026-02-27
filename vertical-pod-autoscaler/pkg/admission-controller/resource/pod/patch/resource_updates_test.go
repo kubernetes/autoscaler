@@ -44,50 +44,71 @@ const (
 
 type fakeRecommendationProvider struct {
 	resources              []vpa_api_util.ContainerResources
+	initResources          []vpa_api_util.ContainerResources
 	containerToAnnotations vpa_api_util.ContainerToAnnotationsMap
 	e                      error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
-	return frp.resources, frp.containerToAnnotations, frp.e
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+	return frp.resources, frp.initResources, frp.containerToAnnotations, frp.e
 }
 
 func addResourcesPatch(idx int) resource_admission.PatchRecord {
+	return addResourcesPatchForPath(ContainersPath, idx)
+}
+
+func addResourcesPatchForPath(basePath string, idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources", idx),
+		Path:  fmt.Sprintf("%s/%d/resources", basePath, idx),
 		Value: corev1.ResourceRequirements{},
 	}
 }
 
 func addRequestsPatch(idx int) resource_admission.PatchRecord {
+	return addRequestsPatchForPath(ContainersPath, idx)
+}
+
+func addRequestsPatchForPath(basePath string, idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests", idx),
+		Path:  fmt.Sprintf("%s/%d/resources/requests", basePath, idx),
 		Value: corev1.ResourceList{},
 	}
 }
 
 func addLimitsPatch(idx int) resource_admission.PatchRecord {
+	return addLimitsPatchForPath(ContainersPath, idx)
+}
+
+func addLimitsPatchForPath(basePath string, idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits", idx),
+		Path:  fmt.Sprintf("%s/%d/resources/limits", basePath, idx),
 		Value: corev1.ResourceList{},
 	}
 }
 
 func addResourceRequestPatch(index int, res, amount string) resource_admission.PatchRecord {
+	return addResourceRequestPatchForPath(ContainersPath, index, res, amount)
+}
+
+func addResourceRequestPatchForPath(basePath string, index int, res, amount string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", index, res),
+		Path:  fmt.Sprintf("%s/%d/resources/requests/%s", basePath, index, res),
 		Value: resource.MustParse(amount),
 	}
 }
 
 func addResourceLimitPatch(index int, res, amount string) resource_admission.PatchRecord {
+	return addResourceLimitPatchForPath(ContainersPath, index, res, amount)
+}
+
+func addResourceLimitPatchForPath(basePath string, index int, res, amount string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", index, res),
+		Path:  fmt.Sprintf("%s/%d/resources/limits/%s", basePath, index, res),
 		Value: resource.MustParse(amount),
 	}
 }
@@ -307,7 +328,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
+			frp := fakeRecommendationProvider{tc.recommendResources, nil, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().WithContainer("test").WithName("name").Get())
 			if tc.expectError == nil {
@@ -349,7 +370,7 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 		},
 	}
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
-	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, nil}
+	frp := fakeRecommendationProvider{recommendResources, nil, recommendAnnotations, nil}
 	c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 	patches, err := c.CalculatePatches(pod, test.VerticalPodAutoscaler().WithName("name").WithContainer("test").Get())
 	assert.NoError(t, err)
@@ -908,7 +929,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.featureGateEnabled)
 
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
+			frp := fakeRecommendationProvider{tc.recommendResources, nil, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, tc.maxAllowedCpu)
 			patches, err := c.CalculatePatches(tc.pod, tc.vpa)
 			if tc.expectError == nil {

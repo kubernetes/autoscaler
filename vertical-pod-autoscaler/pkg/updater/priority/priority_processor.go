@@ -23,8 +23,10 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/sidecar"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -86,6 +88,42 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 			}
 		}
 	}
+
+	// Include native sidecar init containers when gate is enabled
+	if features.Enabled(features.NativeSidecar) {
+		for i, initContainer := range pod.Spec.InitContainers {
+			if !sidecar.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				continue
+			}
+			if hasObservedContainers && !vpaContainerSet.Has(initContainer.Name) {
+				continue
+			}
+			recommendedRequest := vpa_api_util.GetRecommendationForContainer(initContainer.Name, recommendation)
+			if recommendedRequest == nil {
+				continue
+			}
+			for resourceName, recommended := range recommendedRequest.Target {
+				totalRecommendedPerResource[resourceName] += recommended.MilliValue()
+				lowerBound, hasLowerBound := recommendedRequest.LowerBound[resourceName]
+				upperBound, hasUpperBound := recommendedRequest.UpperBound[resourceName]
+				requests, _ := resourcehelpers.InitContainerRequestsAndLimits(initContainer.Name, pod)
+				if request, hasRequest := requests[resourceName]; hasRequest {
+					totalRequestPerResource[resourceName] += request.MilliValue()
+					if recommended.MilliValue() > request.MilliValue() {
+						scaleUp = true
+					}
+					if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
+						(hasUpperBound && request.Cmp(upperBound) > 0) {
+						outsideRecommendedRange = true
+					}
+				} else {
+					scaleUp = true
+					outsideRecommendedRange = true
+				}
+			}
+		}
+	}
+
 	resourceDiff := 0.0
 	for resource, totalRecommended := range totalRecommendedPerResource {
 		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)

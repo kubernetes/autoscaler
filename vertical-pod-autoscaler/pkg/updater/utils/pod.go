@@ -18,6 +18,9 @@ package utils
 
 import (
 	corev1 "k8s.io/api/core/v1"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/sidecar"
 )
 
 // GetPodCondition will get Pod's condition.
@@ -42,7 +45,18 @@ func IsNonDisruptiveResize(pod *corev1.Pod) bool {
 			}
 		}
 	}
-	// TODO(omerap12): do we want to check here for InitContainers/InitContainers+restartPolicy Always/
-	// Also check init containers if they can be resized
+	// Also check native sidecar init containers for resize policy
+	if features.Enabled(features.NativeSidecar) {
+		for i, container := range pod.Spec.InitContainers {
+			if !sidecar.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				continue
+			}
+			for _, policy := range container.ResizePolicy {
+				if policy.RestartPolicy == corev1.RestartContainer {
+					return false
+				}
+			}
+		}
+	}
 	return true
 }

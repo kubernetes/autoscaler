@@ -302,7 +302,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 				},
 			}
 
-			resources, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
+			resources, _, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
 
 			if tc.expectedAction {
 				assert.Nil(t, err)

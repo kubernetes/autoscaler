@@ -56,6 +56,12 @@ const (
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlaceOrRecreate featuregate.Feature = "InPlaceOrRecreate"
 
+	// alpha: v1.7.0
+	// components: admission-controller, recommender, updater
+
+	// NativeSidecar enables support for native sidecar containers.
+	NativeSidecar featuregate.Feature = "NativeSidecar"
+
 	// alpha: v1.5.0
 	// components: admission-controller, recommender, updater
 

@@ -25,6 +25,13 @@ import (
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 )
 
+const (
+	// ContainersPath is the JSON patch base path for regular containers.
+	ContainersPath = "/spec/containers"
+	// InitContainersPath is the JSON patch base path for init containers.
+	InitContainersPath = "/spec/initContainers"
+)
+
 // GetAddEmptyAnnotationsPatch returns a patch initializing empty annotations.
 func GetAddEmptyAnnotationsPatch() resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
@@ -52,28 +59,28 @@ func GetRemoveAnnotationPatch(annotationName string) resource_admission.PatchRec
 }
 
 // GetAddResourceRequirementValuePatch returns a patch record to add resource requirements to a container.
-func GetAddResourceRequirementValuePatch(i int, kind string, resource corev1.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
+func GetAddResourceRequirementValuePatch(basePath string, i int, kind string, resource corev1.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
+		Path:  fmt.Sprintf("%s/%d/resources/%s/%s", basePath, i, kind, resource),
 		Value: quantity.String()}
 }
 
 // GetPatchInitializingEmptyResources returns a patch record to initialize an empty resources object for a container.
-func GetPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
+func GetPatchInitializingEmptyResources(basePath string, i int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
+		Path:  fmt.Sprintf("%s/%d/resources", basePath, i),
 		Value: corev1.ResourceRequirements{},
 	}
 }
 
 // GetPatchInitializingEmptyResourcesSubfield returns a patch record to initialize an empty subfield
 // (e.g., "requests" or "limits") within a container's resources object.
-func GetPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_admission.PatchRecord {
+func GetPatchInitializingEmptyResourcesSubfield(basePath string, i int, kind string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
+		Path:  fmt.Sprintf("%s/%d/resources/%s", basePath, i, kind),
 		Value: corev1.ResourceList{},
 	}
 }
