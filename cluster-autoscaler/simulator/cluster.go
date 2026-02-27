@@ -236,15 +236,15 @@ func (r *RemovalSimulator) replaceWithTaintedGhostNode(nodeName string, timestam
 	if err != nil {
 		return fmt.Errorf("couldn't get NodeInfo for removed node %s: %v", nodeName, err)
 	}
+	if err = r.clusterSnapshot.RemoveNodeInfo(nodeName); err != nil {
+		return fmt.Errorf("couldn't remove NodeInfo for %s: %v", nodeName, err)
+	}
 	taintedNode := nodeInfo.Node().DeepCopy()
 	taintedNode.Spec.Taints = append(taintedNode.Spec.Taints, apiv1.Taint{
 		Key:    taints.ToBeDeletedTaint,
 		Value:  fmt.Sprint(timestamp.Unix()),
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
-	if err = r.clusterSnapshot.RemoveNodeInfo(nodeName); err != nil {
-		return fmt.Errorf("couldn't remove NodeInfo for %s: %v", nodeName, err)
-	}
 	ghostNodeInfo := framework.NewNodeInfo(taintedNode, nodeInfo.LocalResourceSlices)
 	if nodeInfo.CSINode != nil {
 		ghostNodeInfo.SetCSINode(nodeInfo.CSINode)
