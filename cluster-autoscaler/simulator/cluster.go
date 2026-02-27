@@ -245,7 +245,11 @@ func (r *RemovalSimulator) replaceWithTaintedGhostNode(nodeName string, timestam
 	if err = r.clusterSnapshot.RemoveNodeInfo(nodeName); err != nil {
 		return fmt.Errorf("couldn't remove NodeInfo for %s: %v", nodeName, err)
 	}
-	if err = r.clusterSnapshot.AddNodeInfo(framework.NewNodeInfo(taintedNode, nil)); err != nil {
+	ghostNodeInfo := framework.NewNodeInfo(taintedNode, nodeInfo.LocalResourceSlices)
+	if nodeInfo.CSINode != nil {
+		ghostNodeInfo.SetCSINode(nodeInfo.CSINode)
+	}
+	if err = r.clusterSnapshot.AddNodeInfo(ghostNodeInfo); err != nil {
 		return fmt.Errorf("couldn't add tainted ghost node for %s: %v", nodeName, err)
 	}
 	return nil
