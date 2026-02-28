@@ -19,11 +19,11 @@ package inmemory
 import (
 	"context"
 	"fmt"
-	apiv1 "k8s.io/api/core/v1"
 	"testing"
 	"testing/synctest"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -319,6 +319,76 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 
 				assert.Equal(t, tc.expectedTargetSize1, tg1, "target size for ng1")
 				assert.Equal(t, tc.expectedTargetSize2, tg2, "target size for ng2")
+			})
+		})
+	}
+}
+
+func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
+	for _, forceDeleteLongUnregisteredNodes := range []bool{false, true} {
+		t.Run(fmt.Sprintf("forceDeleteLongUnregisteredNodes=%v", forceDeleteLongUnregisteredNodes), func(t *testing.T) {
+			cfg := integration.NewTestConfig().
+				WithOverrides(
+					integration.WithScaleDownUnneededTime(time.Minute),
+				)
+			options := cfg.ResolveOptions()
+			options.ForceDeleteLongUnregisteredNodes = forceDeleteLongUnregisteredNodes
+
+			infra := integration.SetupInfrastructure(t)
+			fakes := infra.Fakes
+
+			synctest.Test(t, func(t *testing.T) {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer synctestutils.TearDown(cancel)
+
+				autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+				assert.NoError(t, err)
+
+				n1 := tutils.BuildTestNode("n1", 1000, 1000, tutils.IsReady(true))
+				n2 := tutils.BuildTestNode("n2", 1000, 1000, tutils.IsReady(true))
+
+				p1 := tutils.BuildScheduledTestPod("p1", 600, 100, "n1")
+				p2 := tutils.BuildTestPod("p2", 600, 100, tutils.MarkUnschedulable())
+
+				fakes.CloudProvider.AddNodeGroup("ng1", fakecloudprovider.WithMinMax(2, 10), fakecloudprovider.WithTargetSize(2), fakecloudprovider.WithNode(n1))
+
+				// broken node, that will be just hanging out there during
+				// the test (it can't be removed since that would validate group min size)
+				brokenNode := tutils.BuildTestNode("broken", 1000, 1000)
+				fakes.CloudProvider.AddNode("ng1", brokenNode)
+
+				fakes.K8s.AddNode(n1)
+				fakes.K8s.AddPod(p1)
+
+				// Initial run to register n1 and discover brokenNode as unregistered
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+
+				// broken node failed to register in time, run again
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+
+				if !forceDeleteLongUnregisteredNodes {
+					// Add unschedulable pod p2 to trigger scale up
+					fakes.K8s.AddPod(p2)
+
+					synctestutils.MustRunOnceAfter(t, autoscaler, time.Hour)
+					tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+					assert.Equal(t, 3, tg1) // scale up to 3 for p2
+
+					// Register the nodes that were scaled up so they don't timeout
+					fakes.K8s.AddNode(n2)
+					fakes.CloudProvider.AddNode("ng1", n2)
+					fakes.CloudProvider.GetNodeGroup("ng1").(*fakecloudprovider.NodeGroup).SetTargetSize(3)
+				}
+
+				// Remove broken node
+				fakes.K8s.DeletePod(p1.Namespace, p1.Name)
+				fakes.K8s.DeletePod(p2.Namespace, p2.Name)
+				synctestutils.MustRunOnceAfter(t, autoscaler, 2*time.Hour)
+
+				// check if broken node is removed
+				ng, err := fakes.CloudProvider.NodeGroupForNode(brokenNode)
+				assert.NoError(t, err)
+				assert.Nil(t, ng) // SHOULD return nil if node is deleted
 			})
 		})
 	}
