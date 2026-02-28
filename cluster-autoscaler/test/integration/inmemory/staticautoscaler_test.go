@@ -19,14 +19,15 @@ package inmemory
 import (
 	"context"
 	"fmt"
-	apiv1 "k8s.io/api/core/v1"
 	"testing"
 	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	fcp "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
 	synctestutils "k8s.io/autoscaler/cluster-autoscaler/test/integration/synctest"
 	tu "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -310,5 +311,66 @@ func TestStaticAutoscalerScaleDownDelayAfterFailure(t *testing.T) {
 
 		assert.Equal(t, 2, tg1After, "ng1 should not scale down due to simulated test failure earlier")
 		assert.Equal(t, 0, tg2After, "ng2 can freely scale down")
+	})
+}
+
+// Setup common config for long unregistered node tests
+func setUpLongUnregisteredNodeTest(t *testing.T, forceDelete bool) (*integration.FakeSet, core.Autoscaler, context.CancelFunc) {
+	cfg := integration.NewTestConfig().
+		WithOverrides(
+			integration.WithScaleDownUnneededTime(time.Minute),
+		)
+	options := cfg.ResolveOptions()
+	options.ForceDeleteLongUnregisteredNodes = forceDelete
+
+	infra := integration.SetupInfrastructure(t)
+	fakes := infra.Fakes
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+	assert.NoError(t, err)
+
+	return fakes, autoscaler, cancel
+}
+
+func TestStaticAutoscalerRunOnceKeepALongUnregisteredNode(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		fakes, autoscaler, cancel := setUpLongUnregisteredNodeTest(t, false)
+		defer synctestutils.TearDown(cancel)
+
+		n1 := tu.BuildTestNode("n1", 1000, 1000, tu.IsReady(true))
+		n2 := tu.BuildTestNode("n2", 1000, 1000, tu.IsReady(true))
+
+		p1 := tu.BuildScheduledTestPod("p1", 600, 100, "n1")
+		p2 := tu.BuildTestPod("p2", 600, 100, tu.MarkUnschedulable())
+
+		fakes.CloudProvider.AddNodeGroup("ng1", fcp.WithMinMax(2, 10), fcp.WithTargetSize(2), fcp.WithNode(n1))
+
+		brokenNode := tu.BuildTestNode("broken", 1000, 1000)
+		fakes.CloudProvider.AddNode("ng1", brokenNode)
+
+		fakes.K8s.AddNodes(n1).AddPods(p1)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		synctestutils.MustRunOnceAfter(t, autoscaler, 15*time.Minute)
+
+		fakes.K8s.AddPod(p2)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		assert.Equal(t, 3, tg1)
+
+		fakes.K8s.AddNode(n2)
+		fakes.CloudProvider.AddNode("ng1", n2)
+
+		fakes.K8s.DeletePod(p1.Namespace, p1.Name)
+		fakes.K8s.DeletePod(p2.Namespace, p2.Name)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, 2*time.Minute)
+		// check if broken node is removed.
+		ng, err := fakes.CloudProvider.NodeGroupForNode(brokenNode)
+		assert.NoError(t, err)
+		assert.Nil(t, ng)
 	})
 }
