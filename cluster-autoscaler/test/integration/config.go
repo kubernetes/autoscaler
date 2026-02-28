@@ -102,3 +102,45 @@ func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 		o.NodeGroupDefaults.ScaleDownUnneededTime = d
 	}
 }
+
+// WithScaleDownDelayAfterAdd sets the scale down delay after add option.
+func WithScaleDownDelayAfterAdd(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterAdd = d
+	}
+}
+
+// WithScaleDownDelayAfterDelete sets the scale down delay after delete option.
+func WithScaleDownDelayAfterDelete(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterDelete = d
+	}
+}
+
+// WithScaleDownDelayAfterFailure sets the scale down delay after failure option.
+func WithScaleDownDelayAfterFailure(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterFailure = d
+	}
+}
+
+// WithMaxCoresTotal sets the maximum total cores.
+func WithMaxCoresTotal(n int64) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxCoresTotal = n
+	}
+}
+
+// WithMaxScaleDownParallelism sets the maximum scale down parallelism.
+func WithMaxScaleDownParallelism(sdp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxScaleDownParallelism = sdp
+	}
+}
+
+// WithMaxDrainParallelism sets the maximum drain parallelism.
+func WithMaxDrainParallelism(dp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxDrainParallelism = dp
+	}
+}
