@@ -238,6 +238,13 @@ func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
 	}
 }
 
+// WithNodeSelector sets the pod node selector.
+func WithNodeSelector(selector map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.NodeSelector = selector
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
@@ -353,6 +360,13 @@ type NodeOption func(*apiv1.Node)
 func IsReady(ready bool) NodeOption {
 	return func(node *apiv1.Node) {
 		SetNodeReadyState(node, ready, time.Now())
+	}
+}
+
+// WithNodeLabels sets the node labels.
+func WithNodeLabels(k, v string) NodeOption {
+	return func(node *apiv1.Node) {
+		node.Labels[k] = v
 	}
 }
 

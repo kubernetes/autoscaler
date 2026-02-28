@@ -18,13 +18,16 @@ package inmemory
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	fcp "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
 	synctestutils "k8s.io/autoscaler/cluster-autoscaler/test/integration/synctest"
 	tu "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -145,5 +148,183 @@ func TestScaleUpResourceLimits(t *testing.T) {
 		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
 		newSize, _ := fakes.CloudProvider.GetNodeGroup("ng").TargetSize()
 		assert.Equal(t, 2, newSize, "Should scale up after resource limit is increased")
+	})
+}
+
+// setupScaleDownDelayTest sets up common infra for scale down delay tests.
+func setupScaleDownDelayTest(t *testing.T) (core.Autoscaler, *integration.FakeSet, context.CancelFunc) {
+	config := integration.NewTestConfig().
+		WithOverrides(
+			integration.WithScaleDownUnneededTime(time.Minute),
+			integration.WithScaleDownDelayAfterAdd(5*time.Minute),
+			integration.WithScaleDownDelayAfterDelete(5*time.Minute),
+			integration.WithScaleDownDelayAfterFailure(5*time.Minute),
+			integration.WithMaxScaleDownParallelism(10),
+			integration.WithMaxDrainParallelism(1),
+			integration.WithMaxNodeGroupBinpackingDuration(time.Second),
+		)
+
+	infra := integration.SetupInfrastructure(t)
+	ctx, cancel := context.WithCancel(t.Context())
+
+	autoscaler, _, err := integration.DefaultAutoscalingBuilder(config.ResolveOptions(), infra).Build(ctx)
+	assert.NoError(t, err)
+
+	return autoscaler, infra.Fakes, cancel
+}
+
+// TestStaticAutoscalerScaleDownDelayAfterAdd verifies that when a node group scales up,
+// it cannot scale down any nodes for the duration of ScaleDownDelayAfterAdd,
+// while other node groups remain unaffected.
+func TestStaticAutoscalerScaleDownDelayAfterAdd(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		autoscaler, fakes, cancel := setupScaleDownDelayTest(t)
+		defer synctestutils.TearDown(cancel)
+
+		// n1 and n2 are utilized above 50% threshold, so they won't scale down during normal runs.
+		n1 := tu.BuildTestNode("n1", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng1"))
+		fakes.CloudProvider.AddNodeGroup("ng1", fcp.WithNGSize(0, 5), fcp.WithTargetSize(1), fcp.WithNode(n1))
+
+		n2 := tu.BuildTestNode("n2", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng2"))
+		fakes.CloudProvider.AddNodeGroup("ng2", fcp.WithNGSize(0, 5), fcp.WithTargetSize(1), fcp.WithNode(n2))
+
+		p1 := tu.BuildScheduledTestPod("p1-n1", 600, 100, "n1")
+		p2 := tu.BuildScheduledTestPod("p2-n2", 600, 100, "n2")
+		p3 := tu.BuildTestPod("p-ng1", 600, 100, tu.MarkUnschedulable(), tu.WithNodeSelector(map[string]string{"ng": "ng1"}))
+
+		fakes.K8s.AddNodes(n1, n2).AddPods(p1, p2, p3)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		assert.Equal(t, 2, tg1)
+
+		fakes.K8s.DeletePod(p3.Namespace, p3.Name)
+		fakes.K8s.DeletePod(p1.Namespace, p1.Name)
+		fakes.K8s.DeletePod(p2.Namespace, p2.Name)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+		synctestutils.MustRunOnceAfter(t, autoscaler, 2*time.Minute)
+
+		tg1After, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		tg2After, _ := fakes.CloudProvider.GetNodeGroup("ng2").TargetSize()
+
+		// ng1 scaled up recently (T=1s), so it is delayed by AfterAdd.
+		// ng2 never scaled up, so it is free to scale down.
+		assert.Equal(t, 2, tg1After, "ng1 scales up, but is delayed from downscaling because of AfterAdd constraint")
+		assert.Equal(t, 0, tg2After, "ng2 scales down immediately")
+	})
+}
+
+// TestStaticAutoscalerScaleDownDelayAfterDelete verifies that when a node group successfully
+// scales down (deleted node), it cannot scale down any more nodes for the duration of ScaleDownDelayAfterDelete.
+func TestStaticAutoscalerScaleDownDelayAfterDelete(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		autoscaler, fakes, cancel := setupScaleDownDelayTest(t)
+		defer synctestutils.TearDown(cancel)
+
+		n1 := tu.BuildTestNode("n1", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng1"))
+		fakes.CloudProvider.AddNodeGroup("ng1", fcp.WithNGSize(0, 5), fcp.WithTargetSize(1), fcp.WithNode(n1))
+
+		n2 := tu.BuildTestNode("n2", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng2"))
+		fakes.CloudProvider.AddNodeGroup("ng2", fcp.WithNGSize(0, 5), fcp.WithTargetSize(1), fcp.WithNode(n2))
+
+		p1 := tu.BuildScheduledTestPod("p1-n1", 600, 100, "n1")
+		p2 := tu.BuildScheduledTestPod("p2-n2", 600, 100, "n2")
+		p3 := tu.BuildTestPod("p-ng2", 600, 100, tu.MarkUnschedulable(), tu.WithNodeSelector(map[string]string{"ng": "ng2"}))
+
+		fakes.K8s.AddNodes(n1, n2).AddPods(p1, p2, p3)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+		tg2, _ := fakes.CloudProvider.GetNodeGroup("ng2").TargetSize()
+		assert.Equal(t, 2, tg2)
+
+		fakes.K8s.DeletePod(p3.Namespace, p3.Name)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+		// Run for 7 minutes to scale down ng2 back to 1.
+		// ng2 is blocked by ScaleDownDelayAfterAdd (5m) from the scale up at T=1s.
+		// It can only be marked unneeded after 5m (at run 6), and scales down at run 7.
+		// This creates a fresh ScaleDown event at T=7m.
+		for i := 0; i < 7; i++ {
+			synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		}
+
+		tg2, _ = fakes.CloudProvider.GetNodeGroup("ng2").TargetSize()
+		assert.Equal(t, 1, tg2)
+
+		fakes.K8s.DeletePod(p1.Namespace, p1.Name)
+		fakes.K8s.DeletePod(p2.Namespace, p2.Name)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+		synctestutils.MustRunOnceAfter(t, autoscaler, 2*time.Minute)
+
+		tg1After, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		tg2After, _ := fakes.CloudProvider.GetNodeGroup("ng2").TargetSize()
+
+		assert.Equal(t, 0, tg1After, "ng1 scales down cleanly")
+		assert.Equal(t, 1, tg2After, "ng2 scaled down already, now it's delayed")
+	})
+}
+
+// TestStaticAutoscalerScaleDownDelayAfterFailure verifies that when a scale-down attempt fails,
+// the node group cannot attempt scale-down again for the duration of ScaleDownDelayAfterFailure.
+func TestStaticAutoscalerScaleDownDelayAfterFailure(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		autoscaler, fakes, cancel := setupScaleDownDelayTest(t)
+		defer synctestutils.TearDown(cancel)
+
+		n1 := tu.BuildTestNode("n1", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng1"))
+		fakes.CloudProvider.AddNodeGroup("ng1", fcp.WithNGSize(0, 5), fcp.WithTargetSize(1), fcp.WithNode(n1))
+
+		n2 := tu.BuildTestNode("n2", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng2"))
+		fakes.CloudProvider.AddNodeGroup("ng2", fcp.WithNGSize(0, 5), fcp.WithTargetSize(1), fcp.WithNode(n2))
+
+		p1 := tu.BuildScheduledTestPod("p1-n1", 600, 100, "n1")
+		p2 := tu.BuildScheduledTestPod("p2-n2", 600, 100, "n2")
+		p3 := tu.BuildTestPod("p-ng1", 600, 100, tu.MarkUnschedulable(), tu.WithNodeSelector(map[string]string{"ng": "ng1"}))
+
+		fakes.K8s.AddNodes(n1, n2).AddPods(p1, p2, p3)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		assert.Equal(t, 2, tg1)
+
+		fakes.K8s.DeletePod(p3.Namespace, p3.Name)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+		ng1 := fakes.CloudProvider.GetNodeGroup("ng1").(*fcp.NodeGroup)
+		originalDelete := ng1.DeleteNodesOverride
+		ng1.DeleteNodesOverride = func(nodes []*apiv1.Node) error {
+			return fmt.Errorf("simulated scale down failure")
+		}
+
+		// Run for 7 minutes to attempt scale down and cause failure.
+		// ng1 is blocked by ScaleDownDelayAfterAdd (5m) initially.
+		// It fails at run 7, recording a fresh ScaleDown failure at T=7m.
+		for i := 0; i < 7; i++ {
+			synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		}
+
+		tg1, _ = fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		assert.Equal(t, 2, tg1)
+
+		ng1.DeleteNodesOverride = originalDelete
+
+		fakes.K8s.DeletePod(p1.Namespace, p1.Name)
+		fakes.K8s.DeletePod(p2.Namespace, p2.Name)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+		synctestutils.MustRunOnceAfter(t, autoscaler, 2*time.Minute)
+
+		tg1After, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		tg2After, _ := fakes.CloudProvider.GetNodeGroup("ng2").TargetSize()
+
+		assert.Equal(t, 2, tg1After, "ng1 should not scale down due to simulated test failure earlier")
+		assert.Equal(t, 0, tg2After, "ng2 can freely scale down")
 	})
 }

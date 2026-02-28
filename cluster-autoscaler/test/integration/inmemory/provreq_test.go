@@ -37,6 +37,7 @@ func TestProvReqFullLifecycle(t *testing.T) {
 		WithOverrides(
 			integration.WithScaleDownUnneededTime(10*time.Minute),
 			integration.WithProvisioningRequestEnabled(),
+			integration.WithMaxScaleDownParallelism(10),
 		)
 
 	options := config.ResolveOptions()
