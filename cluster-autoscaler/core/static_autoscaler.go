@@ -230,6 +230,11 @@ func (a *StaticAutoscaler) LastScaleDownDeleteTime() time.Time {
 	return a.lastScaleDownDeleteTime
 }
 
+// Processors returns the AutoscalingProcessors used by the autoscaler
+func (a *StaticAutoscaler) Processors() *ca_processors.AutoscalingProcessors {
+	return a.processors
+}
+
 // Start starts components running in background.
 func (a *StaticAutoscaler) Start() error {
 	a.clusterStateRegistry.Start()
