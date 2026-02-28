@@ -19,10 +19,11 @@ package restriction
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -34,7 +35,8 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // TODO: Make these configurable by flags
@@ -54,9 +56,11 @@ const (
 type PodsInPlaceRestriction interface {
 	// InPlaceUpdate attempts to actuate the in-place resize.
 	// Returns error if client returned error.
-	InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
+	InPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
 	// CanInPlaceUpdate checks if pod can be safely updated in-place. If not, it will return a decision to potentially evict the pod.
-	CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision
+	CanInPlaceUpdate(pod *corev1.Pod) utils.InPlaceDecision
+	// CanUnboost checks if a pod can be safely unboosted.
+	CanUnboost(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool
 }
 
 // PodsInPlaceRestrictionImpl is the implementation of the PodsInPlaceRestriction interface.
@@ -71,7 +75,7 @@ type PodsInPlaceRestrictionImpl struct {
 }
 
 // CanInPlaceUpdate checks if pod can be safely updated
-func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision {
+func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod) utils.InPlaceDecision {
 	if !features.Enabled(features.InPlaceOrRecreate) {
 		return utils.InPlaceEvict
 	}
@@ -79,7 +83,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InP
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
-		if pod.Status.Phase == apiv1.PodPending {
+		if pod.Status.Phase == corev1.PodPending {
 			return utils.InPlaceDeferred
 		}
 		if present {
@@ -106,9 +110,31 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod) utils.InP
 	return utils.InPlaceDeferred
 }
 
+// CanUnboost checks if a pod can be safely unboosted.
+func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if !features.Enabled(features.CPUStartupBoost) {
+		return false
+	}
+	durationPassed := vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa)
+
+	klog.V(2).InfoS("Checking if pod can be unboosted", "pod", klog.KObj(pod), "durationPassed", durationPassed)
+
+	if !durationPassed {
+		return false
+	}
+	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
+	if present {
+		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
+		if present {
+			return singleGroupStats.isPodDisruptable()
+		}
+	}
+	return false
+}
+
 // InPlaceUpdate sends calculates patches and sends resize request to api client. Returns error if pod cannot be in-place updated or if client returned error.
 // Does not check if pod was actually in-place updated after grace period.
-func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
 	cr, present := ip.podToReplicaCreatorMap[getPodID(podToUpdate)]
 	if !present {
 		return fmt.Errorf("pod not suitable for in-place update %v: not in replicated pods map", podToUpdate.Name)
@@ -136,34 +162,36 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 			annotationPatches = append(annotationPatches, p...)
 		}
 	}
-	if len(resizePatches) > 0 {
-		patch, err := json.Marshal(resizePatches)
-		if err != nil {
-			return err
-		}
 
-		res, err := ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{}, "resize")
-		if err != nil {
-			return err
-		}
-		klog.V(4).InfoS("In-place patched pod /resize subresource using patches", "pod", klog.KObj(res), "patches", string(patch))
-
-		if len(annotationPatches) > 0 {
-			patch, err := json.Marshal(annotationPatches)
-			if err != nil {
-				return err
-			}
-			res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
-			if err != nil {
-				return err
-			}
-			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
-		}
-	} else {
-		return fmt.Errorf("no resource patches were calculated to apply")
+	if len(resizePatches) == 0 {
+		return errors.New("no resource patches were calculated to apply")
 	}
 
-	eventRecorder.Event(podToUpdate, apiv1.EventTypeNormal, "InPlaceResizedByVPA", "Pod was resized in place by VPA Updater.")
+	patch, err := json.Marshal(resizePatches)
+	if err != nil {
+		return err
+	}
+
+	res, err := ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{}, "resize")
+	if err != nil {
+		return err
+	}
+	klog.V(4).InfoS("In-place patched pod /resize subresource using patches", "pod", klog.KObj(res), "patches", string(patch))
+
+	if len(annotationPatches) > 0 {
+		patch, err := json.Marshal(annotationPatches)
+		if err != nil {
+			return err
+		}
+		res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
+		if err != nil {
+			klog.V(4).ErrorS(err, "Failed to patch pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+		} else {
+			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+		}
+	}
+
+	eventRecorder.Event(podToUpdate, corev1.EventTypeNormal, "InPlaceResizedByVPA", "Pod was resized in place by VPA Updater.")
 
 	singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
 	if !present {
@@ -177,7 +205,7 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *apiv1.Pod, vpa 
 }
 
 // CanEvictInPlacingPod checks if the pod can be evicted while it is currently in the middle of an in-place update.
-func CanEvictInPlacingPod(pod *apiv1.Pod, singleGroupStats singleGroupStats, lastInPlaceAttemptTimeMap map[string]time.Time, clock clock.Clock) bool {
+func CanEvictInPlacingPod(pod *corev1.Pod, singleGroupStats singleGroupStats, lastInPlaceAttemptTimeMap map[string]time.Time, clock clock.Clock) bool {
 	if !isInPlaceUpdating(pod) {
 		return false
 	}
@@ -193,15 +221,15 @@ func CanEvictInPlacingPod(pod *apiv1.Pod, singleGroupStats singleGroupStats, las
 		// - Infeasible
 		// - Deferred + more than 5 minutes has elapsed since the lastInPlaceUpdateTime
 		// - InProgress + more than 1 hour has elapsed since the lastInPlaceUpdateTime
-		resizePendingCondition, ok := utils.GetPodCondition(pod, apiv1.PodResizePending)
+		resizePendingCondition, ok := utils.GetPodCondition(pod, corev1.PodResizePending)
 		if ok {
 			switch resizePendingCondition.Reason {
-			case apiv1.PodReasonDeferred:
+			case corev1.PodReasonDeferred:
 				if clock.Since(lastUpdate) > DeferredResizeUpdateTimeout {
 					klog.V(4).InfoS(fmt.Sprintf("In-place update deferred for more than %v, falling back to eviction", DeferredResizeUpdateTimeout), "pod", klog.KObj(pod))
 					return true
 				}
-			case apiv1.PodReasonInfeasible:
+			case corev1.PodReasonInfeasible:
 				klog.V(4).InfoS("In-place update infeasible, falling back to eviction", "pod", klog.KObj(pod))
 				return true
 			default:
@@ -209,14 +237,14 @@ func CanEvictInPlacingPod(pod *apiv1.Pod, singleGroupStats singleGroupStats, las
 				return true
 			}
 		} else {
-			resizeInProgressCondition, ok := utils.GetPodCondition(pod, apiv1.PodResizeInProgress)
+			resizeInProgressCondition, ok := utils.GetPodCondition(pod, corev1.PodResizeInProgress)
 			if ok {
 				if resizeInProgressCondition.Reason == "" && resizeInProgressCondition.Message == "" {
 					if clock.Since(lastUpdate) > InProgressResizeUpdateTimeout {
 						klog.V(4).InfoS(fmt.Sprintf("In-place update in progress for more than %v, falling back to eviction", InProgressResizeUpdateTimeout), "pod", klog.KObj(pod))
 						return true
 					}
-				} else if resizeInProgressCondition.Reason == apiv1.PodReasonError {
+				} else if resizeInProgressCondition.Reason == corev1.PodReasonError {
 					klog.V(4).InfoS("In-place update error, falling back to eviction", "pod", klog.KObj(pod), "message", resizeInProgressCondition.Message)
 					return true
 				} else {

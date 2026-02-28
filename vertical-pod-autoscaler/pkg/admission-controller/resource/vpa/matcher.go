@@ -19,7 +19,7 @@ package vpa
 import (
 	"context"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
 
@@ -33,7 +33,7 @@ import (
 // Matcher is capable of returning a single matching VPA object
 // for a pod. Will return nil if no matching object is found.
 type Matcher interface {
-	GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.VerticalPodAutoscaler
+	GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_types.VerticalPodAutoscaler
 }
 
 type matcher struct {
@@ -51,7 +51,7 @@ func NewMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 		controllerFetcher: controllerFetcher}
 }
 
-func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
+func (m *matcher) GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_types.VerticalPodAutoscaler {
 	parentController, err := vpa_api_util.FindParentControllerForPod(ctx, pod, m.controllerFetcher)
 	if err != nil {
 		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
@@ -69,7 +69,7 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.
 
 	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	for _, vpaConfig := range configs {
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
+		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff && vpaConfig.Spec.StartupBoost == nil {
 			continue
 		}
 		if vpaConfig.Spec.TargetRef == nil {

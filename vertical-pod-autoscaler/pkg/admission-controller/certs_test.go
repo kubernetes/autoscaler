@@ -260,7 +260,6 @@ func TestChangedCAReloader(t *testing.T) {
 
 	oldCAEncodedString := base64.StdEncoding.EncodeToString(oldWebhookCABundle)
 	for !patchCalled.Load() {
-
 		time.Sleep(1 * time.Second)
 	}
 	newWebhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})

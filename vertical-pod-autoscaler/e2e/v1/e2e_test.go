@@ -28,6 +28,7 @@ import (
 	// See https://github.com/kubernetes/kubernetes/issues/74827
 	// "github.com/onsi/ginkgo"
 
+	"k8s.io/kubernetes/test/e2e"
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/config"
 	"k8s.io/kubernetes/test/e2e/framework/testfiles"
@@ -68,5 +69,5 @@ func TestMain(m *testing.M) {
 }
 
 func TestE2E(t *testing.T) {
-	RunE2ETests(t)
+	e2e.RunE2ETests(t)
 }

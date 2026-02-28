@@ -17,11 +17,13 @@ limitations under the License.
 package restriction
 
 import (
+	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
 	coreinformer "k8s.io/client-go/informers/core/v1"
@@ -32,6 +34,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 const (
@@ -57,7 +60,7 @@ type podReplicaCreator struct {
 
 // PodsRestrictionFactory is a factory for creating PodsEvictionRestriction and PodsInPlaceRestriction.
 type PodsRestrictionFactory interface {
-	GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error)
+	GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error)
 	NewPodsEvictionRestriction(creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats, podToReplicaCreatorMap map[string]podReplicaCreator) PodsEvictionRestriction
 	NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats, podToReplicaCreatorMap map[string]podReplicaCreator) PodsInPlaceRestriction
 }
@@ -120,9 +123,9 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		if !exists {
 			return 0, fmt.Errorf("replication controller %s/%s does not exist", creator.Namespace, creator.Name)
 		}
-		rc, ok := rcObj.(*apiv1.ReplicationController)
+		rc, ok := rcObj.(*corev1.ReplicationController)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse Replication Controller")
+			return 0, errors.New("failed to parse Replication Controller")
 		}
 		if rc.Spec.Replicas == nil || *rc.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("replication controller %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -138,7 +141,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		rs, ok := rsObj.(*appsv1.ReplicaSet)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse Replicaset")
+			return 0, errors.New("failed to parse Replicaset")
 		}
 		if rs.Spec.Replicas == nil || *rs.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("replica set %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -154,7 +157,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		ss, ok := ssObj.(*appsv1.StatefulSet)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse StatefulSet")
+			return 0, errors.New("failed to parse StatefulSet")
 		}
 		if ss.Spec.Replicas == nil || *ss.Spec.Replicas == 0 {
 			return 0, fmt.Errorf("stateful set %s/%s has no replicas config", creator.Namespace, creator.Name)
@@ -170,7 +173,7 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		}
 		ds, ok := dsObj.(*appsv1.DaemonSet)
 		if !ok {
-			return 0, fmt.Errorf("failed to parse DaemonSet")
+			return 0, errors.New("failed to parse DaemonSet")
 		}
 		if ds.Status.NumberReady == 0 {
 			return 0, fmt.Errorf("daemon set %s/%s has no number ready pods", creator.Namespace, creator.Name)
@@ -182,8 +185,8 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 
 // GetCreatorMaps is a helper function that returns a map of pod replica creators to their single group stats
 // and a map of pod ids to pod replica creator from a list of pods and it's corresponding VPA.
-func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
-	livePods := make(map[podReplicaCreator][]*apiv1.Pod)
+func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
+	livePods := make(map[podReplicaCreator][]*corev1.Pod)
 
 	for _, pod := range pods {
 		creator, err := getPodReplicaCreator(pod)
@@ -208,11 +211,28 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		klog.V(3).InfoS("Overriding minReplicas from global to per-VPA value", "globalMinReplicas", f.minReplicas, "vpaMinReplicas", required, "vpa", klog.KObj(vpa))
 	}
 
+	// if the VPA is using InPlaceOrRecreate update mode and user has opted into skipping disruption, we can skip the replica count check
+	// TODO: Add InPlace mode here when it's implemented
+	usingInPlaceOrRecreate := vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlaceOrRecreate
+	skipReplicaCheck := usingInPlaceOrRecreate && f.inPlaceSkipDisruptionBudget
+
 	for creator, replicas := range livePods {
 		actual := len(replicas)
+
+		isBelowMinReplicas := false
 		if actual < required {
-			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
-			continue
+			// If checking for unboost, we want to process even if we have fewer replicas than required.
+			hasBoostedPod := slices.ContainsFunc(replicas, func(pod *corev1.Pod) bool {
+				return vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod)
+			})
+			if !hasBoostedPod && !skipReplicaCheck {
+				klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+				continue
+			}
+			if skipReplicaCheck {
+				klog.V(2).InfoS("in-place-skip-disruption-budget enabled, skipping minReplicas check for in-place update", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+				isBelowMinReplicas = true
+			}
 		}
 
 		var configured int
@@ -231,9 +251,10 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		singleGroup := singleGroupStats{}
 		singleGroup.configured = configured
 		singleGroup.evictionTolerance = int(float64(configured) * f.evictionToleranceFraction) // truncated
+		singleGroup.belowMinReplicas = isBelowMinReplicas
 		for _, pod := range replicas {
 			podToReplicaCreatorMap[getPodID(pod)] = creator
-			if pod.Status.Phase == apiv1.PodPending {
+			if pod.Status.Phase == corev1.PodPending {
 				singleGroup.pending = singleGroup.pending + 1
 			}
 			if isInPlaceUpdating(pod) {
@@ -242,7 +263,6 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_
 		}
 		singleGroup.running = len(replicas) - singleGroup.pending
 		creatorToSingleGroupStatsMap[creator] = singleGroup
-
 	}
 	return creatorToSingleGroupStatsMap, podToReplicaCreatorMap, nil
 }
@@ -271,14 +291,14 @@ func (f *PodsRestrictionFactoryImpl) NewPodsInPlaceRestriction(creatorToSingleGr
 	}
 }
 
-func getPodID(pod *apiv1.Pod) string {
+func getPodID(pod *corev1.Pod) string {
 	if pod == nil {
 		return ""
 	}
 	return pod.Namespace + "/" + pod.Name
 }
 
-func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
+func getPodReplicaCreator(pod *corev1.Pod) (*podReplicaCreator, error) {
 	creator := managingControllerRef(pod)
 	if creator == nil {
 		return nil, nil
@@ -291,7 +311,7 @@ func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
 	return podReplicaCreator, nil
 }
 
-func managingControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
+func managingControllerRef(pod *corev1.Pod) *metav1.OwnerReference {
 	var managingController metav1.OwnerReference
 	for _, ownerReference := range pod.GetOwnerReferences() {
 		if *ownerReference.Controller {
@@ -306,16 +326,16 @@ func setupInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 	var informer cache.SharedIndexInformer
 	switch kind {
 	case replicationController:
-		informer = coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
+		informer = coreinformer.NewReplicationControllerInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case replicaSet:
-		informer = appsinformer.NewReplicaSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewReplicaSetInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case statefulSet:
-		informer = appsinformer.NewStatefulSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewStatefulSetInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case daemonSet:
-		informer = appsinformer.NewDaemonSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewDaemonSetInformer(kubeClient, corev1.NamespaceAll,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	default:
 		return nil, fmt.Errorf("unknown controller kind: %v", kind)
@@ -335,8 +355,9 @@ type singleGroupStats struct {
 	running                int
 	evictionTolerance      int
 	evicted                int
-	inPlaceUpdateOngoing   int // number of pods from last loop that are still in-place updating
-	inPlaceUpdateInitiated int // number of pods from the current loop that have newly requested in-place resize
+	inPlaceUpdateOngoing   int  // number of pods from last loop that are still in-place updating
+	inPlaceUpdateInitiated int  // number of pods from the current loop that have newly requested in-place resize
+	belowMinReplicas       bool // true if this group was allowed through despite being below minReplicas (for in-place only)
 }
 
 // isPodDisruptable checks if all pods are running and eviction tolerance is small, we can
@@ -350,10 +371,10 @@ func (s *singleGroupStats) isPodDisruptable() bool {
 }
 
 // isInPlaceUpdating checks whether or not the given pod is currently in the middle of an in-place update
-func isInPlaceUpdating(podToCheck *apiv1.Pod) bool {
+func isInPlaceUpdating(podToCheck *corev1.Pod) bool {
 	for _, c := range podToCheck.Status.Conditions {
-		if c.Type == apiv1.PodResizePending || c.Type == apiv1.PodResizeInProgress {
-			return c.Status == apiv1.ConditionTrue
+		if c.Type == corev1.PodResizePending || c.Type == corev1.PodResizeInProgress {
+			return c.Status == corev1.ConditionTrue
 		}
 	}
 	return false

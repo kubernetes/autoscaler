@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -170,7 +170,7 @@ func equalRecommendedPodResources(a, b *vpa_types.RecommendedPodResources) bool 
 	return true
 }
 
-func equalResourceList(rla, rlb v1.ResourceList) bool {
+func equalResourceList(rla, rlb corev1.ResourceList) bool {
 	if len(rla) != len(rlb) {
 		return false
 	}
@@ -192,40 +192,40 @@ func equalResourceList(rla, rlb v1.ResourceList) bool {
 func TestSetIntegerCPURecommendation(t *testing.T) {
 	tests := []struct {
 		name                   string
-		recommendation         v1.ResourceList
-		expectedRecommendation v1.ResourceList
+		recommendation         corev1.ResourceList
+		expectedRecommendation corev1.ResourceList
 	}{
 		{
 			name: "unchanged",
-			recommendation: map[v1.ResourceName]resource.Quantity{
-				v1.ResourceCPU:    resource.MustParse("8"),
-				v1.ResourceMemory: resource.MustParse("6Gi"),
+			recommendation: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("8"),
+				corev1.ResourceMemory: resource.MustParse("6Gi"),
 			},
-			expectedRecommendation: map[v1.ResourceName]resource.Quantity{
-				v1.ResourceCPU:    resource.MustParse("8"),
-				v1.ResourceMemory: resource.MustParse("6Gi"),
+			expectedRecommendation: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("8"),
+				corev1.ResourceMemory: resource.MustParse("6Gi"),
 			},
 		},
 		{
 			name: "round up from 0.1",
-			recommendation: map[v1.ResourceName]resource.Quantity{
-				v1.ResourceCPU:    resource.MustParse("8.1"),
-				v1.ResourceMemory: resource.MustParse("6Gi"),
+			recommendation: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("8.1"),
+				corev1.ResourceMemory: resource.MustParse("6Gi"),
 			},
-			expectedRecommendation: map[v1.ResourceName]resource.Quantity{
-				v1.ResourceCPU:    resource.MustParse("9"),
-				v1.ResourceMemory: resource.MustParse("6Gi"),
+			expectedRecommendation: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("9"),
+				corev1.ResourceMemory: resource.MustParse("6Gi"),
 			},
 		},
 		{
 			name: "round up from 0.9",
-			recommendation: map[v1.ResourceName]resource.Quantity{
-				v1.ResourceCPU:    resource.MustParse("8.9"),
-				v1.ResourceMemory: resource.MustParse("6Gi"),
+			recommendation: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("8.9"),
+				corev1.ResourceMemory: resource.MustParse("6Gi"),
 			},
-			expectedRecommendation: map[v1.ResourceName]resource.Quantity{
-				v1.ResourceCPU:    resource.MustParse("9"),
-				v1.ResourceMemory: resource.MustParse("6Gi"),
+			expectedRecommendation: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("9"),
+				corev1.ResourceMemory: resource.MustParse("6Gi"),
 			},
 		},
 	}

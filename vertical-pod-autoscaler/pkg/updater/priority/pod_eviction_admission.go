@@ -17,7 +17,7 @@ limitations under the License.
 package priority
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -26,9 +26,9 @@ import (
 type PodEvictionAdmission interface {
 	// LoopInit initializes PodEvictionAdmission for next Updater loop with the live pods and
 	// pods currently controlled by VPA in this cluster.
-	LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
+	LoopInit(allLivePods []*corev1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod)
 	// Admit returns true if PodEvictionAdmission decides that pod can be evicted with given recommendation.
-	Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
+	Admit(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
 	// CleanUp cleans up any state that PodEvictionAdmission may keep. Called
 	// when no VPA objects are present in the cluster.
 	CleanUp()
@@ -48,13 +48,13 @@ type sequentialPodEvictionAdmission struct {
 	admissions []PodEvictionAdmission
 }
 
-func (a *sequentialPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
+func (a *sequentialPodEvictionAdmission) LoopInit(allLivePods []*corev1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod) {
 	for _, admission := range a.admissions {
 		admission.LoopInit(allLivePods, vpaControlledPods)
 	}
 }
 
-func (a *sequentialPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+func (a *sequentialPodEvictionAdmission) Admit(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	for _, admission := range a.admissions {
 		admit := admission.Admit(pod, recommendation)
 		if !admit {
@@ -72,9 +72,9 @@ func (a *sequentialPodEvictionAdmission) CleanUp() {
 
 type noopPodEvictionAdmission struct{}
 
-func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
+func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*corev1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod) {
 }
-func (n *noopPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+func (n *noopPodEvictionAdmission) Admit(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return true
 }
 func (n *noopPodEvictionAdmission) CleanUp() {

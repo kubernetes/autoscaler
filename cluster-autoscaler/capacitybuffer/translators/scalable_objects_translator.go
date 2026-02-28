@@ -19,12 +19,13 @@ package translator
 import (
 	"fmt"
 
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	scalableobject "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators/scalable_objects"
 )
 
@@ -156,8 +157,8 @@ func (t *ScalableObjectsTranslator) getPodTemplateFromSpecs(pts *corev1.PodTempl
 			Namespace: buffer.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion:         common.CapacityBufferApiVersion,
-					Kind:               common.CapacityBufferKind,
+					APIVersion:         capacitybuffer.CapacityBufferApiVersion,
+					Kind:               capacitybuffer.CapacityBufferKind,
 					Name:               buffer.Name,
 					UID:                buffer.UID,
 					Controller:         pointerBool(true),

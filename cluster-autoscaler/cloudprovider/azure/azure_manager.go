@@ -19,12 +19,15 @@ limitations under the License.
 package azure
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -33,7 +36,6 @@ import (
 	kretry "k8s.io/client-go/util/retry"
 	klog "k8s.io/klog/v2"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -43,6 +45,24 @@ const (
 	scaleToZeroSupportedVMSS     = true
 	refreshInterval              = 1 * time.Minute
 )
+
+// isErrorRetriable checks if an error is retriable.
+func isErrorRetriable(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	var respErr *azcore.ResponseError
+	if errors.As(err, &respErr) {
+		// 429 (Too Many Requests) and 5xx errors are retriable
+		if respErr.StatusCode == http.StatusTooManyRequests ||
+			(respErr.StatusCode >= 500 && respErr.StatusCode < 600) {
+			return true
+		}
+	}
+
+	return false
+}
 
 // AzureManager handles Azure communication and data caching.
 type AzureManager struct {
@@ -134,7 +154,7 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	}
 
 	// skuCache will already be created at this step by newAzureCache()
-	err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
+	err = kretry.OnError(retryBackoff, isErrorRetriable, func() (err error) {
 		return manager.forceRefresh()
 	})
 	if err != nil {
@@ -401,11 +421,11 @@ func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) (
 		}
 
 		curSize := int64(-1)
-		if scaleSet.Sku != nil && scaleSet.Sku.Capacity != nil {
-			curSize = *scaleSet.Sku.Capacity
+		if scaleSet.SKU != nil && scaleSet.SKU.Capacity != nil {
+			curSize = *scaleSet.SKU.Capacity
 		}
 
-		dedicatedHost := scaleSet.VirtualMachineScaleSetProperties != nil && scaleSet.VirtualMachineScaleSetProperties.HostGroup != nil
+		dedicatedHost := scaleSet.Properties != nil && scaleSet.Properties.HostGroup != nil
 
 		vmss, err := NewScaleSet(spec, m, curSize, dedicatedHost)
 		if err != nil {

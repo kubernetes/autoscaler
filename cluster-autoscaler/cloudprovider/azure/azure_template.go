@@ -24,8 +24,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -99,7 +99,7 @@ type VMSSNodeTemplate struct {
 	InputLabels map[string]string
 	InputTaints string
 	Tags        map[string]*string
-	OSDisk      *compute.VirtualMachineScaleSetOSDisk
+	OSDisk      *armcompute.VirtualMachineScaleSetOSDisk
 }
 
 // NodeTemplate represents a template for an Azure node
@@ -112,22 +112,24 @@ type NodeTemplate struct {
 	VMSSNodeTemplate   *VMSSNodeTemplate
 }
 
-func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels map[string]string, inputTaints string) (NodeTemplate, error) {
+func buildNodeTemplateFromVMSS(vmss *armcompute.VirtualMachineScaleSet, inputLabels map[string]string, inputTaints string) (NodeTemplate, error) {
 	instanceOS := cloudprovider.DefaultOS
-	if vmss.VirtualMachineProfile != nil &&
-		vmss.VirtualMachineProfile.OsProfile != nil &&
-		vmss.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
+	if vmss.Properties != nil &&
+		vmss.Properties.VirtualMachineProfile != nil &&
+		vmss.Properties.VirtualMachineProfile.OSProfile != nil &&
+		vmss.Properties.VirtualMachineProfile.OSProfile.WindowsConfiguration != nil {
 		instanceOS = "windows"
 	}
 
-	var osDisk *compute.VirtualMachineScaleSetOSDisk
-	if vmss.VirtualMachineProfile != nil &&
-		vmss.VirtualMachineProfile.StorageProfile != nil &&
-		vmss.VirtualMachineProfile.StorageProfile.OsDisk != nil {
-		osDisk = vmss.VirtualMachineProfile.StorageProfile.OsDisk
+	var osDisk *armcompute.VirtualMachineScaleSetOSDisk
+	if vmss.Properties != nil &&
+		vmss.Properties.VirtualMachineProfile != nil &&
+		vmss.Properties.VirtualMachineProfile.StorageProfile != nil &&
+		vmss.Properties.VirtualMachineProfile.StorageProfile.OSDisk != nil {
+		osDisk = vmss.Properties.VirtualMachineProfile.StorageProfile.OSDisk
 	}
 
-	if vmss.Sku == nil || vmss.Sku.Name == nil {
+	if vmss.SKU == nil || vmss.SKU.Name == nil {
 		return NodeTemplate{}, fmt.Errorf("VMSS %s has no SKU", ptr.Deref(vmss.Name, ""))
 	}
 
@@ -137,11 +139,15 @@ func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet, inputLabels 
 
 	zones := []string{}
 	if vmss.Zones != nil {
-		zones = *vmss.Zones
+		for _, zone := range vmss.Zones {
+			if zone != nil {
+				zones = append(zones, *zone)
+			}
+		}
 	}
 
 	return NodeTemplate{
-		SkuName: *vmss.Sku.Name,
+		SkuName: *vmss.SKU.Name,
 
 		Location:   *vmss.Location,
 		Zones:      zones,
@@ -342,16 +348,16 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 		// Add the storage profile and storage tier labels for vmss node
 		if template.VMSSNodeTemplate.OSDisk != nil {
 			// ephemeral
-			if template.VMSSNodeTemplate.OSDisk.DiffDiskSettings != nil && template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option == compute.Local {
+			if template.VMSSNodeTemplate.OSDisk.DiffDiskSettings != nil && template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option != nil && *template.VMSSNodeTemplate.OSDisk.DiffDiskSettings.Option == armcompute.DiffDiskOptionsLocal {
 				labels[legacyStorageProfileNodeLabelKey] = "ephemeral"
 				labels[storageProfileNodeLabelKey] = "ephemeral"
 			} else {
 				labels[legacyStorageProfileNodeLabelKey] = "managed"
 				labels[storageProfileNodeLabelKey] = "managed"
 			}
-			if template.VMSSNodeTemplate.OSDisk.ManagedDisk != nil {
-				labels[legacyStorageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
-				labels[storageTierNodeLabelKey] = string(template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
+			if template.VMSSNodeTemplate.OSDisk.ManagedDisk != nil && template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType != nil {
+				labels[legacyStorageTierNodeLabelKey] = string(*template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
+				labels[storageTierNodeLabelKey] = string(*template.VMSSNodeTemplate.OSDisk.ManagedDisk.StorageAccountType)
 			}
 		}
 

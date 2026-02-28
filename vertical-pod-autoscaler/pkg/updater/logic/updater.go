@@ -23,14 +23,14 @@ import (
 	"time"
 
 	"golang.org/x/time/rate"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	corescheme "k8s.io/client-go/kubernetes/scheme"
-	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	v1lister "k8s.io/client-go/listers/core/v1"
+	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
@@ -44,8 +44,8 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
-	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -53,9 +53,9 @@ import (
 
 // logDeprecationWarnings logs deprecation warnings for VPAs using deprecated modes
 func logDeprecationWarnings(vpa *vpa_types.VerticalPodAutoscaler) {
-	if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.UpdateMode != nil &&
-		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto {
-
+	if vpa.Spec.UpdatePolicy != nil &&
+		vpa.Spec.UpdatePolicy.UpdateMode != nil &&
+		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto { //nolint:staticcheck
 		klog.InfoS("VPA uses deprecated UpdateMode 'Auto'. This mode is deprecated and will be removed in a future API version. Please use explicit update modes like 'Recreate', 'Initial', or 'InPlaceOrRecreate'",
 			"vpa", klog.KObj(vpa), "issue", "https://github.com/kubernetes/autoscaler/issues/8424")
 	}
@@ -69,7 +69,7 @@ type Updater interface {
 
 type updater struct {
 	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
-	podLister                    v1lister.PodLister
+	podLister                    listersv1.PodLister
 	eventRecorder                record.EventRecorder
 	restrictionFactory           restriction.PodsRestrictionFactory
 	recommendationProcessor      vpa_api_util.RecommendationProcessor
@@ -82,6 +82,9 @@ type updater struct {
 	statusValidator              status.Validator
 	controllerFetcher            controllerfetcher.ControllerFetcher
 	ignoredNamespaces            []string
+	defaultUpdateThreshold       float64
+	podLifetimeUpdateThreshold   time.Duration
+	evictAfterOOMThreshold       time.Duration
 }
 
 // NewUpdater creates Updater with given configuration
@@ -94,6 +97,9 @@ func NewUpdater(
 	evictionToleranceFraction float64,
 	useAdmissionControllerStatus bool,
 	inPlaceSkipDisruptionBudget bool,
+	defaultUpdateThreshold float64,
+	podLifetimeUpdateThreshold time.Duration,
+	evictAfterOOMThreshold time.Duration,
 	statusNamespace string,
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
@@ -136,7 +142,10 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
-		ignoredNamespaces: ignoredNamespaces,
+		ignoredNamespaces:          ignoredNamespaces,
+		defaultUpdateThreshold:     defaultUpdateThreshold,
+		podLifetimeUpdateThreshold: podLifetimeUpdateThreshold,
+		evictAfterOOMThreshold:     evictAfterOOMThreshold,
 	}, nil
 }
 
@@ -173,13 +182,15 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
 			continue
 		}
-
 		// Log deprecation warnings for VPAs using deprecated modes
 		logDeprecationWarnings(vpa)
 
-		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
-			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto && vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeInPlaceOrRecreate {
-			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
+		updateMode := vpa_api_util.GetUpdateMode(vpa)
+		if updateMode != vpa_types.UpdateModeRecreate &&
+			updateMode != vpa_types.UpdateModeAuto && //nolint:staticcheck
+			updateMode != vpa_types.UpdateModeInPlaceOrRecreate &&
+			vpa.Spec.StartupBoost == nil {
+			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"Recreate\" or \"Auto\" and it doesn't have startupBoost configured", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
@@ -210,7 +221,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	timer.ObserveStep("ListPods")
 	allLivePods := filterDeletedPods(podsList)
 
-	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
+	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod)
 	for _, pod := range allLivePods {
 		controllingVPA := vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher)
 		if controllingVPA != nil {
@@ -244,8 +255,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer vpasWithInPlaceUpdatablePodsCounter.Observe()
 	defer vpasWithInPlaceUpdatedPodsCounter.Observe()
 
-	// NOTE: this loop assumes that controlledPods are filtered
-	// to contain only Pods controlled by a VPA in auto, recreate, or inPlaceOrRecreate mode
+	cpuStartupBoostEnabled := features.Enabled(features.CPUStartupBoost)
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
 		updateMode := vpa_api_util.GetUpdateMode(vpa)
@@ -256,31 +266,80 @@ func (u *updater) RunOnce(ctx context.Context) {
 			continue
 		}
 
-		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 		inPlaceLimiter := u.restrictionFactory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+		podsAvailableForUpdate := make([]*corev1.Pod, 0)
+		podsToUnboost := make([]*corev1.Pod, 0)
+		withInPlaceUpdated := false
 
-		podsForInPlace := make([]*apiv1.Pod, 0)
-		podsForEviction := make([]*apiv1.Pod, 0)
+		if cpuStartupBoostEnabled && vpa.Spec.StartupBoost != nil {
+			// First, handle unboosting for pods that have finished their startup period.
+			for _, pod := range livePods {
+				if vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
+					if vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa) {
+						podsToUnboost = append(podsToUnboost, pod)
+					}
+				} else {
+					podsAvailableForUpdate = append(podsAvailableForUpdate, pod)
+				}
+			}
+
+			// Perform unboosting
+			for _, pod := range podsToUnboost {
+				if inPlaceLimiter.CanUnboost(pod, vpa) {
+					klog.V(2).InfoS("Unboosting pod", "pod", klog.KObj(pod))
+					err = u.inPlaceRateLimiter.Wait(ctx)
+					if err != nil {
+						klog.V(0).InfoS("In-place rate limiter wait failed for unboosting", "error", err)
+						return
+					}
+					err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
+					if err != nil {
+						klog.V(0).InfoS("Unboosting failed", "error", err, "pod", klog.KObj(pod))
+						metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "UnboostError")
+					} else {
+						klog.V(2).InfoS("Successfully unboosted pod", "pod", klog.KObj(pod))
+						withInPlaceUpdated = true
+						metrics_updater.AddInPlaceUpdatedPod(vpaSize, vpa.Name, vpa.Namespace)
+					}
+				}
+			}
+		} else {
+			// CPU Startup Boost is not enabled or configured for this VPA,
+			// so all live pods are available for potential standard VPA updates.
+			podsAvailableForUpdate = livePods
+		}
+
+		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial {
+			continue
+		}
+
+		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+		podsForEviction := make([]*corev1.Pod, 0)
+		podsForInPlace := make([]*corev1.Pod, 0)
+		withInPlaceUpdatable := false
+		withEvictable := false
 
 		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceFeatureEnable {
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(livePods, inPlaceLimiter), vpa)
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
+			if len(podsForInPlace) > 0 {
+				withInPlaceUpdatable = true
+			}
 		} else {
 			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
 			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
 			}
-			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
+			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(podsAvailableForUpdate, evictionLimiter), vpa)
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
+			if len(podsForEviction) > 0 {
+				withEvictable = true
+			}
 		}
 
-		withInPlaceUpdatable := false
-		withInPlaceUpdated := false
-		withEvictable := false
 		withEvicted := false
 
 		for _, pod := range podsForInPlace {
-			withInPlaceUpdatable = true
 			decision := inPlaceLimiter.CanInPlaceUpdate(pod)
 
 			if decision == utils.InPlaceDeferred {
@@ -308,7 +367,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 
 		for _, pod := range podsForEviction {
-			withEvictable = true
 			if !evictionLimiter.CanEvict(pod) {
 				continue
 			}
@@ -359,10 +417,15 @@ func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
+func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*corev1.Pod {
+	updateconfig := priority.UpdateConfig{
+		MinChangePriority:          u.defaultUpdateThreshold,
+		PodLifetimeUpdateThreshold: u.podLifetimeUpdateThreshold,
+		EvictAfterOOMThreshold:     u.evictAfterOOMThreshold,
+	}
 	priorityCalculator := priority.NewUpdatePriorityCalculator(
 		vpa,
-		nil,
+		updateconfig,
 		u.recommendationProcessor,
 		u.priorityProcessor)
 
@@ -373,8 +436,8 @@ func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalP
 	return priorityCalculator.GetSortedPods(u.evictionAdmission)
 }
 
-func filterPods(pods []*apiv1.Pod, predicate func(*apiv1.Pod) bool) []*apiv1.Pod {
-	result := make([]*apiv1.Pod, 0)
+func filterPods(pods []*corev1.Pod, predicate func(*corev1.Pod) bool) []*corev1.Pod {
+	result := make([]*corev1.Pod, 0)
 	for _, pod := range pods {
 		if predicate(pod) {
 			result = append(result, pod)
@@ -383,29 +446,29 @@ func filterPods(pods []*apiv1.Pod, predicate func(*apiv1.Pod) bool) []*apiv1.Pod
 	return result
 }
 
-func filterNonInPlaceUpdatablePods(pods []*apiv1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction) []*apiv1.Pod {
-	return filterPods(pods, func(pod *apiv1.Pod) bool {
+func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction) []*corev1.Pod {
+	return filterPods(pods, func(pod *corev1.Pod) bool {
 		return inplaceRestriction.CanInPlaceUpdate(pod) != utils.InPlaceDeferred
 	})
 }
 
-func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriction restriction.PodsEvictionRestriction) []*apiv1.Pod {
+func filterNonEvictablePods(pods []*corev1.Pod, evictionRestriction restriction.PodsEvictionRestriction) []*corev1.Pod {
 	return filterPods(pods, evictionRestriction.CanEvict)
 }
 
-func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
-	return filterPods(pods, func(pod *apiv1.Pod) bool {
+func filterDeletedPods(pods []*corev1.Pod) []*corev1.Pod {
+	return filterPods(pods, func(pod *corev1.Pod) bool {
 		return pod.DeletionTimestamp == nil
 	})
 }
 
-func newPodLister(kubeClient kube_client.Interface, namespace string) v1lister.PodLister {
+func newPodLister(kubeClient kube_client.Interface, namespace string) listersv1.PodLister {
 	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
-		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
+		string(corev1.PodSucceeded) + ",status.phase!=" + string(corev1.PodFailed))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	podLister := v1lister.NewPodLister(store)
-	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
+	podLister := listersv1.NewPodLister(store)
+	podReflector := cache.NewReflector(podListWatch, &corev1.Pod{}, store, time.Hour)
 	stopCh := make(chan struct{})
 	go podReflector.Run(stopCh)
 
@@ -416,9 +479,9 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartStructuredLogging(4)
 	if _, isFake := kubeClient.(*fake.Clientset); !isFake {
-		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: clientv1.New(kubeClient.CoreV1().RESTClient()).Events("")})
+		eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: typedcorev1.New(kubeClient.CoreV1().RESTClient()).Events("")})
 	} else {
-		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: kubeClient.CoreV1().Events("")})
+		eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events("")})
 	}
 
 	vpascheme := scheme.Scheme
@@ -427,5 +490,5 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
+	return eventBroadcaster.NewRecorder(vpascheme, corev1.EventSource{Component: "vpa-updater"})
 }

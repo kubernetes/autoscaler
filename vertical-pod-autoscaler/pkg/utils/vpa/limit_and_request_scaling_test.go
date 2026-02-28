@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -100,7 +100,7 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotLimit, gotAnnotation := getProportionalResourceLimit(core.ResourceCPU, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
+			gotLimit, gotAnnotation := getProportionalResourceLimit(corev1.ResourceCPU, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
 			if tc.expectLimit == nil {
 				assert.Nil(t, gotLimit)
 			} else {
@@ -183,7 +183,7 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotLimit, gotAnnotation := getProportionalResourceLimit(core.ResourceMemory, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
+			gotLimit, gotAnnotation := getProportionalResourceLimit(corev1.ResourceMemory, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
 			if tc.expectLimit == nil {
 				assert.Nil(t, gotLimit)
 			} else {

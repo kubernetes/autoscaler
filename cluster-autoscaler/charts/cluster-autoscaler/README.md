@@ -339,7 +339,7 @@ rbac:
 
 ### Azure - Using azure workload identity
 
-You can use the project [Azure workload identity](https://github.com/Azure/azure-workload-identity), to automatically configure the correct setup for your pods to used federated identity with Azure.
+You can use the project [Azure workload identity](https://github.com/Azure/azure-workload-identity), to automatically configure the correct setup for your pods to use federated identity with Azure.
 
 You can also set the correct settings yourself instead of relying on this project.
 
@@ -463,6 +463,7 @@ vpa:
 | containerSecurityContext | object | `{}` | [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | customArgs | list | `[]` | Additional custom container arguments. Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler parameters and their default values. List of arguments as strings. |
 | deployment.annotations | object | `{}` | Annotations to add to the Deployment object. |
+| deployment.selector | object | `{}` | Labels for Deployment `spec.selector.matchLabels`. |
 | dnsConfig | object | `{}` | [Pod's DNS Config](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config) |
 | dnsPolicy | string | `"ClusterFirst"` | Defaults to `ClusterFirst`. Valid values are: `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`. If autoscaler does not depend on cluster DNS, recommended to set this to `Default`. |
 | envFromConfigMap | string | `""` | ConfigMap name to use as envFrom. |
@@ -481,7 +482,7 @@ vpa:
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.34.2"` | Image tag |
+| image.tag | string | `"v1.35.0"` | Image tag |
 | initContainers | list | `[]` | Any additional init containers. |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | kwokConfigMapName | string | `"kwok-provider-config"` | configmap for configuring kwok provider |
@@ -490,7 +491,9 @@ vpa:
 | nameOverride | string | `""` | String to partially override `cluster-autoscaler.fullname` template (will maintain the release name) |
 | nodeSelector | object | `{}` | Node labels for pod assignment. Ref: https://kubernetes.io/docs/user-guide/node-selection/. |
 | podAnnotations | object | `{}` | Annotations to add to each pod. |
-| podDisruptionBudget | object | `{"maxUnavailable":1}` | Pod disruption budget. |
+| podDisruptionBudget | object | `{"annotations":{},"maxUnavailable":1,"selector":{}}` | Pod disruption budget. |
+| podDisruptionBudget.annotations | object | `{}` | Annotations to add to the PodDisruptionBudget. |
+| podDisruptionBudget.selector | object | `{}` | Override labels for PodDisruptionBudget `spec.selector.matchLabels`. |
 | podLabels | object | `{}` | Labels to add to each pod. |
 | priorityClassName | string | `"system-cluster-critical"` | priorityClassName |
 | priorityConfigMapAnnotations | object | `{}` | Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap. |
@@ -500,6 +503,7 @@ vpa:
 | prometheusRule.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
 | prometheusRule.rules | list | `[]` | Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule). |
 | rbac.additionalRules | list | `[]` | Additional rules for role/clusterrole |
+| rbac.annotations | object | `{}` | Additional annotations to add to RBAC resources (Role/RoleBinding/ClusterRole/ClusterRoleBinding). |
 | rbac.clusterScoped | bool | `true` | if set to false will only provision RBAC to alter resources in the current namespace. Most useful for Cluster-API |
 | rbac.create | bool | `true` | If `true`, create and use RBAC resources. |
 | rbac.pspEnabled | bool | `false` | If `true`, creates and uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled. Must be used with `rbac.create` set to `true`. |
@@ -520,6 +524,7 @@ vpa:
 | service.loadBalancerIP | string | `""` | IP address to assign to load balancer (if supported). |
 | service.loadBalancerSourceRanges | list | `[]` | List of IP CIDRs allowed access to load balancer (if supported). |
 | service.portName | string | `"http"` | Name for service port. |
+| service.selector | object | `{}` | Override labels for Service `spec.selector`. |
 | service.servicePort | int | `8085` | Service port to expose. |
 | service.type | string | `"ClusterIP"` | Type of service to create. |
 | serviceMonitor.annotations | object | `{}` | Annotations to add to service monitor |
@@ -534,7 +539,7 @@ vpa:
 | topologySpreadConstraints | list | `[]` | You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19). |
 | updateStrategy | object | `{}` | [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
 | vpa | object | `{"containerPolicy":{},"enabled":false,"recommender":"default","updateMode":"Auto"}` | Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment. |
-| vpa.containerPolicy | object | `{}` | [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled. |
+| vpa.containerPolicy | object | `{}` | [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always set to the deployment's container name. This value is required if VPA is enabled. |
 | vpa.enabled | bool | `false` | If true, creates a VerticalPodAutoscaler. |
 | vpa.recommender | string | `"default"` | Name of the VPA recommender that will provide recommendations for vertical scaling. |
 | vpa.updateMode | string | `"Auto"` | [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124) |

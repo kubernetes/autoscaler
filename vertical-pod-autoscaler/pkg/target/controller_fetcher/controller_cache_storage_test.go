@@ -17,12 +17,12 @@ limitations under the License.
 package controllerfetcher
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	autoscalingapi "k8s.io/api/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -37,8 +37,8 @@ func getKey(key string) scaleCacheKey {
 	}
 }
 
-func getScale() *autoscalingapi.Scale {
-	return &autoscalingapi.Scale{}
+func getScale() *autoscalingv1.Scale {
+	return &autoscalingv1.Scale{}
 }
 
 func TestControllerCache_InitiallyNotPresent(t *testing.T) {
@@ -85,7 +85,7 @@ func TestControllerCache_InsertAndRefresh(t *testing.T) {
 	assert.Equal(t, getScale(), val)
 	assert.Nil(t, err)
 
-	c.Refresh(key.namespace, key.groupResource, key.name, nil, fmt.Errorf("err"))
+	c.Refresh(key.namespace, key.groupResource, key.name, nil, errors.New("err"))
 	present, val, err = c.Get(key.namespace, key.groupResource, key.name)
 	assert.True(t, present)
 	assert.Nil(t, val)
@@ -105,7 +105,7 @@ func TestControllerCache_InsertExistingKey(t *testing.T) {
 	assert.Nil(t, err)
 
 	// We might overwrite old values or keep them, either way should be fine.
-	c.Insert(key.namespace, key.groupResource, key.name, nil, fmt.Errorf("err"))
+	c.Insert(key.namespace, key.groupResource, key.name, nil, errors.New("err"))
 	present, _, _ = c.Get(key.namespace, key.groupResource, key.name)
 	assert.True(t, present)
 }

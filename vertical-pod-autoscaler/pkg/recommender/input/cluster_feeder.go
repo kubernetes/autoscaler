@@ -22,15 +22,15 @@ import (
 	"slices"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	kube_client "k8s.io/client-go/kubernetes"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	v1lister "k8s.io/client-go/listers/core/v1"
+	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 
@@ -83,7 +83,7 @@ type ClusterStateFeederFactory struct {
 	VpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	VpaCheckpointLister vpa_lister.VerticalPodAutoscalerCheckpointLister
 	VpaLister           vpa_lister.VerticalPodAutoscalerLister
-	PodLister           v1lister.PodLister
+	PodLister           listersv1.PodLister
 	OOMObserver         oom.Observer
 	SelectorFetcher     target.VpaTargetSelectorFetcher
 	MemorySaveMode      bool
@@ -152,7 +152,7 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 			return
 		}
 		if evictedEvent.Type == watch.Added {
-			evictedEvent, ok := evictedEvent.Object.(*apiv1.Event)
+			evictedEvent, ok := evictedEvent.Object.(*corev1.Event)
 			if !ok {
 				continue
 			}
@@ -162,7 +162,7 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 }
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
-func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string, stopCh <-chan struct{}) v1lister.PodLister {
+func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string, stopCh <-chan struct{}) listersv1.PodLister {
 	// We are interested in pods which are Running or Unknown (in case the pod is
 	// running but there are some transient errors we don't want to delete it from
 	// our model).
@@ -170,10 +170,10 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	// yet.
 	// Succeeded and Failed failed pods don't generate any usage anymore but we
 	// don't necessarily want to immediately delete them.
-	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
+	selector := fields.ParseSelectorOrDie("status.phase!=" + string(corev1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
 	informerOptions := cache.InformerOptions{
-		ObjectType:    &apiv1.Pod{},
+		ObjectType:    &corev1.Pod{},
 		ListerWatcher: podListWatch,
 		Handler:       resourceEventHandler,
 		ResyncPeriod:  time.Hour,
@@ -186,7 +186,7 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 		klog.ErrorS(nil, "Expected Indexer, but got a Store that does not implement Indexer")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
-	podLister := v1lister.NewPodLister(indexer)
+	podLister := listersv1.NewPodLister(indexer)
 	go controller.Run(stopCh)
 	if !cache.WaitForCacheSync(stopCh, controller.HasSynced) {
 		klog.ErrorS(nil, "Failed to sync Pod cache during initialization")
@@ -195,7 +195,7 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 }
 
 // NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
-func NewPodListerAndOOMObserver(ctx context.Context, kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) (v1lister.PodLister, oom.Observer) {
+func NewPodListerAndOOMObserver(ctx context.Context, kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) (listersv1.PodLister, oom.Observer) {
 	oomObserver := oom.NewObserver()
 	podLister := newPodClients(kubeClient, oomObserver, namespace, stopCh)
 	WatchEvictionEventsWithRetries(ctx, kubeClient, oomObserver, namespace)
@@ -203,7 +203,7 @@ func NewPodListerAndOOMObserver(ctx context.Context, kubeClient kube_client.Inte
 }
 
 type clusterStateFeeder struct {
-	coreClient          corev1.CoreV1Interface
+	coreClient          typedcorev1.CoreV1Interface
 	specClient          spec.SpecClient
 	metricsClient       metrics.MetricsClient
 	oomChan             <-chan oom.OomInfo
@@ -227,7 +227,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	}
 	for podID, podHistory := range clusterHistory {
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, apiv1.PodUnknown)
+		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, corev1.PodUnknown)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,
@@ -444,9 +444,9 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 
 			for _, condition := range conditions {
 				if condition.delete {
-					delete(feeder.clusterState.VPAs()[vpaID].Conditions, condition.conditionType)
+					feeder.clusterState.VPAs()[vpaID].DeleteCondition(condition.conditionType)
 				} else {
-					feeder.clusterState.VPAs()[vpaID].Conditions.Set(condition.conditionType, true, "", condition.message)
+					feeder.clusterState.VPAs()[vpaID].SetCondition(condition.conditionType, true, "", condition.message)
 				}
 			}
 		}
@@ -492,7 +492,6 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		for _, initContainer := range pod.InitContainers {
 			podInitContainers := feeder.clusterState.Pods()[pod.ID].InitContainers
 			feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
-
 		}
 	}
 }

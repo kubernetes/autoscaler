@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -215,7 +216,7 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 		Resource:     ResourceMemory,
 	}
 	if !container.addMemorySample(&oomMemorySample, true) {
-		return fmt.Errorf("adding OOM sample failed")
+		return errors.New("adding OOM sample failed")
 	}
 	return nil
 }

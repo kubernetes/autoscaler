@@ -86,7 +86,7 @@ cluster_autoscaler:update_deps() {
       exit 1
     fi
     mod_version=$(echo "${gomod_json}" | "${SED}" -n 's|.*"Version": "\(.*\)".*|\1|p')
-    if [ "${pkg}" = "./cluster-autoscaler" ]; then
+    if [ "${pkg}" = "./cluster-autoscaler" ] || [ "${pkg}" = "./cluster-autoscaler/e2e" ]; then
       go mod edit "-replace=${mod}=${mod}@${mod_version}"
     else
       go get "${mod}@${mod_version}"
@@ -95,9 +95,12 @@ cluster_autoscaler:update_deps() {
 
   go mod tidy
 
-  if [ "${pkg}" = "./cluster-autoscaler" ]; then
+  if [ "${pkg}" = "./cluster-autoscaler" ] || [ "${pkg}" = "./cluster-autoscaler/e2e" ]; then
     go get "k8s.io/kubernetes@v${k8s_version}"
     go mod tidy
+  fi
+
+  if [ "${pkg}" = "./cluster-autoscaler" ]; then
     "${SED}" -i 's/const ClusterAutoscalerVersion = "[0-9.]+"/const ClusterAutoscalerVersion = "'${k8s_version}'"/g' version/version.go
   fi
 
@@ -108,6 +111,9 @@ cluster_autoscaler:update_deps() {
 # k8s.io/autoscaler/cluster-autoscaler/go.mod
 mods=($(cluster_autoscaler:list_mods "${VERSION}"))
 cluster_autoscaler:update_deps "./cluster-autoscaler" "${VERSION}" "${mods[@]}"
+
+# k8s.io/autoscaler/cluster-autoscaler/e2e/go.mod
+cluster_autoscaler:update_deps "./cluster-autoscaler/e2e" "${VERSION}" "${mods[@]}"
 
 # k8s.io/autoscaler/cluster-autoscaler/apis/go.mod
 apis_mods=($(cluster_autoscaler:list_mods "${APIS_VERSION}"))

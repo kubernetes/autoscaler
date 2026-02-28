@@ -18,12 +18,13 @@ package model
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -43,7 +44,7 @@ const (
 // All input to the VPA Recommender algorithm lives in this structure.
 type ClusterState interface {
 	StateMapSize() int
-	AddOrUpdatePod(podID PodID, newLabels labels.Set, phase apiv1.PodPhase)
+	AddOrUpdatePod(podID PodID, newLabels labels.Set, phase corev1.PodPhase)
 	GetContainer(containerID ContainerID) *ContainerState
 	DeletePod(podID PodID)
 	AddOrUpdateContainer(containerID ContainerID, request Resources) error
@@ -123,7 +124,7 @@ type PodState struct {
 	// InitContainers is a list of init containers names which belong to the Pod.
 	InitContainers []string
 	// PodPhase describing current life cycle phase of the Pod.
-	Phase apiv1.PodPhase
+	Phase corev1.PodPhase
 }
 
 // NewClusterState returns a new clusterState with no pods.
@@ -151,7 +152,7 @@ type ContainerUsageSampleWithKey struct {
 // the Cluster object.
 // If the labels of the pod have changed, it updates the links between the containers
 // and the aggregations.
-func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, phase apiv1.PodPhase) {
+func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, phase corev1.PodPhase) {
 	pod, podExists := cluster.pods[podID]
 	if !podExists {
 		pod = newPod(podID)
@@ -249,7 +250,7 @@ func (cluster *clusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 		return NewKeyError(sample.Container)
 	}
 	if !containerState.AddSample(&sample.ContainerUsageSample) {
-		return fmt.Errorf("sample discarded (invalid or out of order)")
+		return errors.New("sample discarded (invalid or out of order)")
 	}
 	return nil
 }
@@ -283,7 +284,7 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		conditionsMap[condition.Type] = condition
 	}
 	var currentRecommendation *vpa_types.RecommendedPodResources
-	if conditionsMap[vpa_types.RecommendationProvided].Status == apiv1.ConditionTrue {
+	if conditionsMap[vpa_types.RecommendationProvided].Status == corev1.ConditionTrue {
 		currentRecommendation = apiObject.Status.Recommendation
 	}
 
@@ -306,8 +307,8 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Annotations = annotationsMap
-	vpa.Conditions = conditionsMap
-	vpa.Recommendation = currentRecommendation
+	vpa.SetConditionsMap(conditionsMap)
+	vpa.SetRecommendationDirect(currentRecommendation)
 	vpa.SetUpdateMode(apiObject.Spec.UpdatePolicy)
 	vpa.SetResourcePolicy(apiObject.Spec.ResourcePolicy)
 	vpa.SetAPIVersion(apiObject.GetObjectKind().GroupVersionKind().Version)
@@ -457,7 +458,7 @@ func (cluster *clusterState) getContributiveAggregateStateKeys(ctx context.Conte
 		// 1) It is in active state - i.e. not PodSucceeded nor PodFailed.
 		// 2) Its associated controller (e.g. Deployment) still exists.
 		podControllerExists := cluster.GetControllerForPodUnderVPA(ctx, pod, controllerFetcher) != nil
-		podActive := pod.Phase != apiv1.PodSucceeded && pod.Phase != apiv1.PodFailed
+		podActive := pod.Phase != corev1.PodSucceeded && pod.Phase != corev1.PodFailed
 		if podActive || podControllerExists {
 			for container := range pod.Containers {
 				contributiveKeys[cluster.MakeAggregateStateKey(pod, container)] = true
@@ -473,7 +474,10 @@ func (cluster *clusterState) getContributiveAggregateStateKeys(ctx context.Conte
 func (cluster *clusterState) RecordRecommendation(vpa *Vpa, now time.Time) error {
 	cluster.mutex.Lock()
 	defer cluster.mutex.Unlock()
-	if vpa.Recommendation != nil && len(vpa.Recommendation.ContainerRecommendations) > 0 {
+	// TODO(jkyros): Today the VPA critical sections don't try to grab the cluster mutex, but
+	// if anyone ever changes it so they do we'd deadlock. This makes me a little nervous, but
+	// if I don't fix this one, we'll fail the race tests
+	if vpa.HasRecommendation() {
 		delete(cluster.emptyVPAs, vpa.ID)
 		return nil
 	}

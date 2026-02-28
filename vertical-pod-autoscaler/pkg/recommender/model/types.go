@@ -17,10 +17,11 @@ limitations under the License.
 package model
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
 )
@@ -82,14 +83,14 @@ func ScaleResource(amount ResourceAmount, factor float64) ResourceAmount {
 }
 
 // ResourcesAsResourceList converts internal Resources representation to ResourcesList.
-func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUMillicores, roundMemoryBytes int) apiv1.ResourceList {
-	result := make(apiv1.ResourceList)
+func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUMillicores, roundMemoryBytes int) corev1.ResourceList {
+	result := make(corev1.ResourceList)
 	for key, resourceAmount := range resources {
-		var newKey apiv1.ResourceName
+		var newKey corev1.ResourceName
 		var quantity resource.Quantity
 		switch key {
 		case ResourceCPU:
-			newKey = apiv1.ResourceCPU
+			newKey = corev1.ResourceCPU
 			quantity = QuantityFromCPUAmount(resourceAmount)
 			if roundCPUMillicores != 1 && !quantity.IsZero() {
 				roundedValues, err := RoundUpToScale(resourceAmount, roundCPUMillicores)
@@ -101,7 +102,7 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUM
 				quantity = QuantityFromCPUAmount(roundedValues)
 			}
 		case ResourceMemory:
-			newKey = apiv1.ResourceMemory
+			newKey = corev1.ResourceMemory
 			quantity = QuantityFromMemoryAmount(resourceAmount)
 			if roundMemoryBytes != 1 && !quantity.IsZero() {
 				roundedValues, err := RoundUpToScale(resourceAmount, roundMemoryBytes)
@@ -128,13 +129,13 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool, roundCPUM
 }
 
 // ResourceNamesApiToModel converts an array of resource names expressed in API types into model types.
-func ResourceNamesApiToModel(resources []apiv1.ResourceName) *[]ResourceName {
+func ResourceNamesApiToModel(resources []corev1.ResourceName) *[]ResourceName {
 	result := make([]ResourceName, 0, len(resources))
 	for _, resource := range resources {
 		switch resource {
-		case apiv1.ResourceCPU:
+		case corev1.ResourceCPU:
 			result = append(result, ResourceCPU)
-		case apiv1.ResourceMemory:
+		case corev1.ResourceMemory:
 			result = append(result, ResourceMemory)
 		default:
 			klog.ErrorS(nil, "Cannot translate resource name", "resourceName", resource)
@@ -191,7 +192,7 @@ func HumanizeMemoryQuantity(bytes int64) string {
 // RoundUpToScale rounds the value to the nearest multiple of scale, rounding up
 func RoundUpToScale(value ResourceAmount, scale int) (ResourceAmount, error) {
 	if scale <= 0 {
-		return value, fmt.Errorf("scale must be greater than zero")
+		return value, errors.New("scale must be greater than zero")
 	}
 	scale64 := int64(scale)
 	roundedValue := int64(math.Ceil(float64(value)/float64(scale64))) * scale64

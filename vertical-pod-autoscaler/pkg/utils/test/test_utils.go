@@ -17,23 +17,23 @@ limitations under the License.
 package test
 
 import (
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/stretchr/testify/mock"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	v1 "k8s.io/client-go/listers/core/v1"
+	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
-	utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 )
 
 var (
@@ -49,28 +49,28 @@ func BuildTestPolicy(containerName, minCPU, maxCPU, minMemory, maxMemory string)
 	maxMemVal, _ := resource.ParseQuantity(maxMemory)
 	return &vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
 		ContainerName: containerName,
-		MinAllowed: apiv1.ResourceList{
-			apiv1.ResourceMemory: minMemVal,
-			apiv1.ResourceCPU:    minCPUVal,
+		MinAllowed: corev1.ResourceList{
+			corev1.ResourceMemory: minMemVal,
+			corev1.ResourceCPU:    minCPUVal,
 		},
-		MaxAllowed: apiv1.ResourceList{
-			apiv1.ResourceMemory: maxMemVal,
-			apiv1.ResourceCPU:    maxCPUVal,
+		MaxAllowed: corev1.ResourceList{
+			corev1.ResourceMemory: maxMemVal,
+			corev1.ResourceCPU:    maxCPUVal,
 		},
 	},
 	}}
 }
 
 // Resources creates a ResourceList with given amount of cpu and memory.
-func Resources(cpu, mem string) apiv1.ResourceList {
-	result := make(apiv1.ResourceList)
+func Resources(cpu, mem string) corev1.ResourceList {
+	result := make(corev1.ResourceList)
 	if len(cpu) > 0 {
 		cpuVal, _ := resource.ParseQuantity(cpu)
-		result[apiv1.ResourceCPU] = cpuVal
+		result[corev1.ResourceCPU] = cpuVal
 	}
 	if len(mem) > 0 {
 		memVal, _ := resource.ParseQuantity(mem)
-		result[apiv1.ResourceMemory] = memVal
+		result[corev1.ResourceMemory] = memVal
 	}
 	return result
 }
@@ -81,7 +81,7 @@ type RecommenderAPIMock struct {
 }
 
 // GetRecommendation is mock implementation of RecommenderAPI.GetRecommendation
-func (m *RecommenderAPIMock) GetRecommendation(spec *apiv1.PodSpec) (*vpa_types.RecommendedPodResources, error) {
+func (m *RecommenderAPIMock) GetRecommendation(spec *corev1.PodSpec) (*vpa_types.RecommendedPodResources, error) {
 	args := m.Called(spec)
 	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
@@ -96,7 +96,7 @@ type RecommenderMock struct {
 }
 
 // Get is a mock implementation of Recommender.Get
-func (m *RecommenderMock) Get(spec *apiv1.PodSpec) (*vpa_types.RecommendedPodResources, error) {
+func (m *RecommenderMock) Get(spec *corev1.PodSpec) (*vpa_types.RecommendedPodResources, error) {
 	args := m.Called(spec)
 	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
@@ -111,13 +111,13 @@ type PodsEvictionRestrictionMock struct {
 }
 
 // Evict is a mock implementation of PodsEvictionRestriction.Evict
-func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+func (m *PodsEvictionRestrictionMock) Evict(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
 	args := m.Called(pod, eventRecorder)
 	return args.Error(0)
 }
 
 // CanEvict is a mock implementation of PodsEvictionRestriction.CanEvict
-func (m *PodsEvictionRestrictionMock) CanEvict(pod *apiv1.Pod) bool {
+func (m *PodsEvictionRestrictionMock) CanEvict(pod *corev1.Pod) bool {
 	args := m.Called(pod)
 	return args.Bool(0)
 }
@@ -128,15 +128,21 @@ type PodsInPlaceRestrictionMock struct {
 }
 
 // InPlaceUpdate is a mock implementation of PodsInPlaceRestriction.InPlaceUpdate
-func (m *PodsInPlaceRestrictionMock) InPlaceUpdate(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+func (m *PodsInPlaceRestrictionMock) InPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
 	args := m.Called(pod, eventRecorder)
 	return args.Error(0)
 }
 
 // CanInPlaceUpdate is a mock implementation of PodsInPlaceRestriction.CanInPlaceUpdate
-func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod) utils.InPlaceDecision {
+func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *corev1.Pod) utils.InPlaceDecision {
 	args := m.Called(pod)
 	return args.Get(0).(utils.InPlaceDecision)
+}
+
+// CanUnboost is a mock implementation of PodsInPlaceRestriction.CanUnboost
+func (m *PodsInPlaceRestrictionMock) CanUnboost(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	args := m.Called(pod, vpa)
+	return args.Bool(0)
 }
 
 // PodListerMock is a mock of PodLister
@@ -145,28 +151,28 @@ type PodListerMock struct {
 }
 
 // Pods is a mock implementation of PodLister.Pods
-func (m *PodListerMock) Pods(namespace string) v1.PodNamespaceLister {
+func (m *PodListerMock) Pods(namespace string) listersv1.PodNamespaceLister {
 	args := m.Called(namespace)
-	var returnArg v1.PodNamespaceLister
+	var returnArg listersv1.PodNamespaceLister
 	if args.Get(0) != nil {
-		returnArg = args.Get(0).(v1.PodNamespaceLister)
+		returnArg = args.Get(0).(listersv1.PodNamespaceLister)
 	}
 	return returnArg
 }
 
 // List is a mock implementation of PodLister.List
-func (m *PodListerMock) List(selector labels.Selector) (ret []*apiv1.Pod, err error) {
+func (m *PodListerMock) List(selector labels.Selector) (ret []*corev1.Pod, err error) {
 	args := m.Called()
-	var returnArg []*apiv1.Pod
+	var returnArg []*corev1.Pod
 	if args.Get(0) != nil {
-		returnArg = args.Get(0).([]*apiv1.Pod)
+		returnArg = args.Get(0).([]*corev1.Pod)
 	}
 	return returnArg, args.Error(1)
 }
 
 // Get is not implemented for this mock
-func (m *PodListerMock) Get(name string) (*apiv1.Pod, error) {
-	return nil, fmt.Errorf("unimplemented")
+func (m *PodListerMock) Get(name string) (*corev1.Pod, error) {
+	return nil, errors.New("unimplemented")
 }
 
 // VerticalPodAutoscalerListerMock is a mock of VerticalPodAutoscalerLister or
@@ -197,7 +203,7 @@ func (m *VerticalPodAutoscalerListerMock) VerticalPodAutoscalers(namespace strin
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalPodAutoscaler, error) {
-	return nil, fmt.Errorf("unimplemented")
+	return nil, errors.New("unimplemented")
 }
 
 // VerticalPodAutoscalerCheckPointListerMock is a mock of VerticalPodAutoscalerCheckPointLister
@@ -227,7 +233,7 @@ func (m *VerticalPodAutoscalerCheckPointListerMock) VerticalPodAutoscalerCheckpo
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerCheckPointListerMock) Get(name string) (*vpa_types.VerticalPodAutoscalerCheckpoint, error) {
-	return nil, fmt.Errorf("unimplemented")
+	return nil, errors.New("unimplemented")
 }
 
 // VerticalPodAutoscalerV1Beta1ListerMock is a mock of VerticalPodAutoscalerLister or
@@ -258,7 +264,7 @@ func (m *VerticalPodAutoscalerV1Beta1ListerMock) VerticalPodAutoscalers(namespac
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerV1Beta1ListerMock) Get(name string) (*vpa_types_v1beta1.VerticalPodAutoscaler, error) {
-	return nil, fmt.Errorf("unimplemented")
+	return nil, errors.New("unimplemented")
 }
 
 // RecommendationProcessorMock is mock implementation of RecommendationProcessor
@@ -268,7 +274,7 @@ type RecommendationProcessorMock struct {
 
 // Apply is a mock implementation of RecommendationProcessor.Apply
 func (m *RecommendationProcessorMock) Apply(vpa *vpa_types.VerticalPodAutoscaler,
-	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
+	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
 	args := m.Called()
 	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
@@ -286,7 +292,7 @@ type FakeRecommendationProcessor struct{}
 
 // Apply is a dummy implementation of RecommendationProcessor.Apply which returns provided podRecommendation
 func (f *FakeRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
-	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
+	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
 	return vpa.Status.Recommendation, nil, nil
 }
 

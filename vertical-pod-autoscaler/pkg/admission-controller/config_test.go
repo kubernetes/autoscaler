@@ -28,7 +28,6 @@ import (
 )
 
 func TestSelfRegistrationBase(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
@@ -72,7 +71,6 @@ func TestSelfRegistrationBase(t *testing.T) {
 }
 
 func TestSelfRegistrationWithURL(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
@@ -100,7 +98,6 @@ func TestSelfRegistrationWithURL(t *testing.T) {
 }
 
 func TestSelfRegistrationWithOutURL(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
@@ -130,7 +127,6 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 }
 
 func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
@@ -161,7 +157,6 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 }
 
 func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
@@ -193,7 +188,6 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 }
 
 func TestSelfRegistrationWithFailurePolicy(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
@@ -220,7 +214,6 @@ func TestSelfRegistrationWithFailurePolicy(t *testing.T) {
 }
 
 func TestSelfRegistrationWithOutFailurePolicy(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second
@@ -247,7 +240,6 @@ func TestSelfRegistrationWithOutFailurePolicy(t *testing.T) {
 }
 
 func TestSelfRegistrationWithInvalidLabels(t *testing.T) {
-
 	testClientSet := fake.NewClientset()
 	caCert := []byte("fake")
 	webHookDelay := 0 * time.Second

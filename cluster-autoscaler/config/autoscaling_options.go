@@ -272,6 +272,8 @@ type AutoscalingOptions struct {
 	// MaxBinpackingTime is the maximum time spend on binpacking for a single scale-up.
 	// If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.
 	MaxBinpackingTime time.Duration
+	// FastpathBinpackingEnabled tells if to use fastpath binpacking algorithm to optimize scale-ups.
+	FastpathBinpackingEnabled bool
 	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
 	NodeDeletionBatcherInterval time.Duration
 	// SkipNodesWithSystemPods tells if nodes with pods from kube-system should be deleted (except for DaemonSet or mirror pods)
@@ -294,6 +296,8 @@ type AutoscalingOptions struct {
 	DynamicNodeDeleteDelayAfterTaintEnabled bool
 	// BypassedSchedulers are used to specify which schedulers to bypass their processing
 	BypassedSchedulers map[string]bool
+	// AllowedSchedulers when specified CA will proceed only with pods that are targeting allowed schedulers from unschedulable pods and unprocessed pods by BypassedSchedulers.
+	AllowedSchedulers map[string]bool
 	// ProvisioningRequestEnabled tells if CA processes ProvisioningRequest.
 	ProvisioningRequestEnabled bool
 	// AsyncNodeGroupsEnabled tells if CA creates/deletes node groups asynchronously.
@@ -362,6 +366,7 @@ type AutoscalingOptions struct {
 	MaxNodeSkipEvalTimeTrackerEnabled bool
 	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
 	NodeRemovalLatencyTrackingEnabled bool
+	CapacityQuotasEnabled             bool
 }
 
 // KubeClientOptions specify options for kube client

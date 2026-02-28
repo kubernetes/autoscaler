@@ -19,12 +19,13 @@ package inplace
 import (
 	"fmt"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -46,12 +47,29 @@ func (*resourcesInplaceUpdatesPatchCalculator) PatchResourceTarget() patch.Patch
 }
 
 // CalculatePatches calculates a JSON patch from a VPA's recommendation to send to the pod "resize" subresource as an in-place resize.
-func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
-	containersResources, _, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
-	if err != nil {
-		return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+	var containersResources []vpa_api_util.ContainerResources
+	if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff {
+		// If update mode is "Off", we don't want to apply any recommendations,
+		// but we still want to unboost.
+		original, err := annotations.GetOriginalResourcesFromAnnotation(pod)
+		if err != nil {
+			return nil, err
+		}
+		containersResources = []vpa_api_util.ContainerResources{
+			{
+				Requests: original.Requests,
+				Limits:   original.Limits,
+			},
+		}
+	} else {
+		var err error
+		containersResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
+		if err != nil {
+			return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+		}
 	}
 
 	for i, containerResources := range containersResources {
@@ -62,7 +80,7 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *core.Pod,
 	return result, nil
 }
 
-func getContainerPatch(pod *core.Pod, i int, containerResources vpa_api_util.ContainerResources) []resource_admission.PatchRecord {
+func getContainerPatch(pod *corev1.Pod, i int, containerResources vpa_api_util.ContainerResources) []resource_admission.PatchRecord {
 	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
@@ -76,7 +94,7 @@ func getContainerPatch(pod *core.Pod, i int, containerResources vpa_api_util.Con
 	return patches
 }
 
-func appendPatches(patches []resource_admission.PatchRecord, current core.ResourceList, containerIndex int, resources core.ResourceList, fieldName string) []resource_admission.PatchRecord {
+func appendPatches(patches []resource_admission.PatchRecord, current corev1.ResourceList, containerIndex int, resources corev1.ResourceList, fieldName string) []resource_admission.PatchRecord {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
 		patches = append(patches, patch.GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))

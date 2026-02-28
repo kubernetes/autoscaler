@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,52 +26,25 @@ import (
 
 	"github.com/spf13/pflag"
 
-	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
-	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
-	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/loop"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
-	"k8s.io/kubernetes/pkg/features"
-
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	autoscalerbuilder "k8s.io/autoscaler/cluster-autoscaler/builder"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
-	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
+	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/loop"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
-	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	cbprocessor "k8s.io/autoscaler/cluster-autoscaler/processors/capacitybuffer"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/podinjection"
-	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/previouscandidates"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	provreqorchestrator "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/orchestrator"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
@@ -83,7 +55,22 @@ import (
 	_ "k8s.io/component-base/logs/json/register"
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
+	"k8s.io/kubernetes/pkg/features"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
+
+var (
+	scheme = runtime.NewScheme()
+)
+
+func init() {
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(cqv1alpha1.AddToScheme(scheme))
+	// TODO: add other CRDs
+}
 
 func registerSignalHandlers(autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
@@ -100,203 +87,6 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
-	// Get AutoscalingOptions from flags.
-	autoscalingOptions := flags.AutoscalingOptions()
-
-	kubeClient := kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts)
-
-	// Informer transform to trim ManagedFields for memory efficiency.
-	trim := func(obj interface{}) (interface{}, error) {
-		if accessor, err := meta.Accessor(obj); err == nil {
-			accessor.SetManagedFields(nil)
-		}
-		return obj, nil
-	}
-	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
-
-	fwHandle, err := framework.NewHandle(informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.CSINodeAwareSchedulingEnabled)
-	if err != nil {
-		return nil, nil, err
-	}
-	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
-	drainabilityRules := rules.Default(deleteOptions)
-
-	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
-	opts := coreoptions.AutoscalerOptions{
-		AutoscalingOptions:   autoscalingOptions,
-		FrameworkHandle:      fwHandle,
-		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled),
-		KubeClient:           kubeClient,
-		InformerFactory:      informerFactory,
-		DebuggingSnapshotter: debuggingSnapshotter,
-		DeleteOptions:        deleteOptions,
-		DrainabilityRules:    drainabilityRules,
-		ScaleUpOrchestrator:  orchestrator.New(),
-	}
-
-	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
-	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(&autoscalingOptions.NodeInfoCacheExpireTime, autoscalingOptions.ForceDaemonSets)
-	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere)
-
-	var ProvisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
-	if autoscalingOptions.ProvisioningRequestEnabled {
-		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
-
-		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		ProvisioningRequestInjector, err = provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize, opts.CheckCapacityBatchProcessing, opts.CheckCapacityProcessorInstance)
-		if err != nil {
-			return nil, nil, err
-		}
-		podListProcessor.AddProcessor(ProvisioningRequestInjector)
-
-		var provisioningRequestPodsInjector *provreq.ProvisioningRequestPodsInjector
-		if autoscalingOptions.CheckCapacityBatchProcessing {
-			klog.Infof("Batch processing for check capacity requests is enabled. Passing provisioning request injector to check capacity processor.")
-			provisioningRequestPodsInjector = ProvisioningRequestInjector
-		}
-
-		provreqOrchestrator := provreqorchestrator.New(client, []provreqorchestrator.ProvisioningClass{
-			checkcapacity.New(client, provisioningRequestPodsInjector),
-			besteffortatomic.New(client),
-		})
-
-		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
-		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client, opts.CheckCapacityProcessorInstance)
-		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
-
-		podListProcessor.AddProcessor(provreqProcesor)
-
-		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
-	}
-
-	var capacitybufferClient *capacityclient.CapacityBufferClient
-	var capacitybufferClientError error
-	if autoscalingOptions.CapacitybufferControllerEnabled {
-		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
-		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			nodeBufferController := capacitybuffer.NewDefaultBufferController(capacitybufferClient)
-			go nodeBufferController.Run(make(chan struct{}))
-		}
-	}
-
-	if autoscalingOptions.CapacitybufferPodInjectionEnabled {
-		if capacitybufferClient == nil {
-			restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
-		}
-		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			buffersPodsRegistry := cbprocessor.NewDefaultCapacityBuffersFakePodsRegistry()
-			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(
-				capacitybufferClient,
-				[]string{common.ActiveProvisioningStrategy},
-				buffersPodsRegistry, true)
-			podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{bufferPodInjector, podListProcessor})
-			opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{
-				cbprocessor.NewFakePodsScaleUpStatusProcessor(buffersPodsRegistry), opts.Processors.ScaleUpStatusProcessor})
-		}
-	}
-
-	if autoscalingOptions.ProactiveScaleupEnabled {
-		podInjectionBackoffRegistry := podinjectionbackoff.NewFakePodControllerRegistry()
-
-		podInjectionPodListProcessor := podinjection.NewPodInjectionPodListProcessor(podInjectionBackoffRegistry)
-		enforceInjectedPodsLimitProcessor := podinjection.NewEnforceInjectedPodsLimitProcessor(autoscalingOptions.PodInjectionLimit)
-
-		podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{podInjectionPodListProcessor, podListProcessor, enforceInjectedPodsLimitProcessor})
-
-		// FakePodsScaleUpStatusProcessor processor needs to be the first processor in ScaleUpStatusProcessor before the default processor
-		// As it filters out fake pods from Scale Up status so that we don't emit events.
-		opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{podinjection.NewFakePodsScaleUpStatusProcessor(podInjectionBackoffRegistry), opts.Processors.ScaleUpStatusProcessor})
-	}
-
-	opts.Processors.PodListProcessor = podListProcessor
-	sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
-	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{
-		emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions, drainabilityRules),
-		sdCandidatesSorting,
-	}
-	opts.Processors.ScaleDownCandidatesNotifier.Register(sdCandidatesSorting)
-
-	cp := scaledowncandidates.NewCombinedScaleDownCandidatesProcessor()
-	cp.Register(scaledowncandidates.NewScaleDownCandidatesSortingProcessor(scaleDownCandidatesComparers))
-
-	if autoscalingOptions.ScaleDownDelayTypeLocal {
-		sdp := scaledowncandidates.NewScaleDownCandidatesDelayProcessor()
-		cp.Register(sdp)
-		opts.Processors.ScaleStateNotifier.Register(sdp)
-
-	}
-	opts.Processors.ScaleDownNodeProcessor = cp
-
-	var nodeInfoComparator nodegroupset.NodeInfoComparator
-	if len(autoscalingOptions.BalancingLabels) > 0 {
-		nodeInfoComparator = nodegroupset.CreateLabelNodeInfoComparator(autoscalingOptions.BalancingLabels)
-	} else {
-		// TODO elmiko - now that we are passing the AutoscalerOptions in to the
-		// NewCloudProvider function, we should migrate these cloud provider specific
-		// configurations to the NewCloudProvider method so that we remove more provider
-		// code from the core.
-		nodeInfoComparatorBuilder := nodegroupset.CreateGenericNodeInfoComparator
-		if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
-			nodeInfoComparatorBuilder = nodegroupset.CreateAzureNodeInfoComparator
-		} else if autoscalingOptions.CloudProviderName == cloudprovider.AwsProviderName {
-			nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
-			opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewAsgTagResourceNodeInfoProvider(&autoscalingOptions.NodeInfoCacheExpireTime, autoscalingOptions.ForceDaemonSets)
-		} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
-			nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
-			opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewAnnotationNodeInfoProvider(&autoscalingOptions.NodeInfoCacheExpireTime, autoscalingOptions.ForceDaemonSets)
-		}
-		nodeInfoComparator = nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels, autoscalingOptions.NodeGroupSetRatios)
-	}
-
-	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
-		Comparator: nodeInfoComparator,
-	}
-
-	// These metrics should be published only once.
-	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
-	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
-
-	// Initialize metrics.
-	metrics.InitMetrics()
-
-	// Create autoscaler.
-	autoscaler, err := core.NewAutoscaler(opts, informerFactory)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Start informers. This must come after fully constructing the autoscaler because
-	// additional informers might have been registered in the factory during NewAutoscaler.
-	stop := make(chan struct{})
-	informerFactory.Start(stop)
-
-	klog.Info("Initializing resource informers, blocking until caches are synced")
-	informersSynced := informerFactory.WaitForCacheSync(stop)
-	for _, synced := range informersSynced {
-		if !synced {
-			return nil, nil, fmt.Errorf("unable to start and sync resource informers")
-		}
-	}
-
-	podObserver := loop.StartPodObserver(ctx, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
-
-	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
-	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
-	// also marks the ProvisioningRequest as accepted or failed.
-	trigger := loop.NewLoopTrigger(autoscaler, ProvisioningRequestInjector, podObserver, autoscalingOptions.ScanInterval)
-
-	return autoscaler, trigger, nil
-}
-
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
 	autoscalingOpts := flags.AutoscalingOptions()
 
@@ -304,12 +94,26 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	autoscaler, trigger, err := buildAutoscaler(ctx, debuggingSnapshotter)
+	restConfig := kube_util.GetKubeConfig(autoscalingOpts.KubeClientOpts)
+	mgr, err := ctrl.NewManager(restConfig, ctrl.Options{
+		Scheme: scheme,
+		Cache: cache.Options{
+			DefaultTransform: cache.TransformStripManagedFields(),
+		},
+		// TODO: migrate leader election, metrics, healthcheck, pprof servers to Manager
+		LeaderElection:         false,
+		Metrics:                metricsserver.Options{BindAddress: "0"},
+		HealthProbeBindAddress: "0",
+		PprofBindAddress:       "0",
+	})
 	if err != nil {
-		klog.Fatalf("Failed to create autoscaler: %v", err)
+		klog.Fatalf("Failed to create manager: %v", err)
 	}
 
+	autoscaler, trigger := mustBuildAutoscaler(ctx, autoscalingOpts, debuggingSnapshotter, mgr)
+
 	// Register signal handlers for graceful shutdown.
+	// TODO: replace with ctrl.SetupSignalHandlers() and handle graceful shutdown with context
 	registerSignalHandlers(autoscaler)
 
 	// Start updating health check endpoint.
@@ -320,23 +124,68 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 		klog.Fatalf("Failed to autoscaler background components: %v", err)
 	}
 
-	// Autoscale ad infinitum.
-	if autoscalingOpts.FrequentLoopsEnabled {
-		// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
-		// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
-		lastRun := time.Now()
-		previousRun := time.Now()
-		for {
-			trigger.Wait(previousRun)
-			previousRun, lastRun = lastRun, time.Now()
-			loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
+		// Autoscale ad infinitum.
+		if autoscalingOpts.FrequentLoopsEnabled {
+			// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
+			// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
+			lastRun := time.Now()
+			previousRun := time.Now()
+			for {
+				select {
+				case <-ctx.Done():
+					// TODO: handle graceful shutdown with context
+					return nil
+				default:
+					trigger.Wait(previousRun)
+					previousRun, lastRun = lastRun, time.Now()
+					loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+				}
+			}
+		} else {
+			for {
+				select {
+				case <-ctx.Done():
+					// TODO: handle graceful shutdown with context
+					return nil
+				case <-time.After(autoscalingOpts.ScanInterval):
+					loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
+				}
+			}
 		}
-	} else {
-		for {
-			time.Sleep(autoscalingOpts.ScanInterval)
-			loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
-		}
+	}))
+	if err != nil {
+		klog.Fatalf("Failed to add runnable to manager: %v", err)
 	}
+
+	if err := mgr.Start(ctx); err != nil {
+		klog.Fatalf("Manager exited with error: %v", err)
+	}
+}
+
+func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, mgr manager.Manager) (core.Autoscaler, *loop.LoopTrigger) {
+	kubeClient := kube_util.CreateKubeClient(opts.KubeClientOpts)
+
+	// Informer transform to trim ManagedFields for memory efficiency.
+	trim := func(obj interface{}) (interface{}, error) {
+		if accessor, err := meta.Accessor(obj); err == nil {
+			accessor.SetManagedFields(nil)
+		}
+		return obj, nil
+	}
+	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
+
+	autoscaler, trigger, err := autoscalerbuilder.New(opts).
+		WithDebuggingSnapshotter(debuggingSnapshotter).
+		WithManager(mgr).
+		WithKubeClient(kubeClient).
+		WithInformerFactory(informerFactory).
+		Build(ctx)
+
+	if err != nil {
+		klog.Fatalf("Failed to create autoscaler: %v", err)
+	}
+	return autoscaler, trigger
 }
 
 func main() {
@@ -370,9 +219,16 @@ func main() {
 	}
 
 	logs.InitLogs()
-	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
+
+	opts, err := flags.ComputeLoggingOptions(pflag.CommandLine)
+	if err != nil {
+		klog.Fatalf("Failed to configure logging: %v", err)
+	}
+
+	if err := logsapi.ValidateAndApplyWithOptions(loggingConfig, opts, featureGate); err != nil {
 		klog.Fatalf("Failed to validate and apply logging configuration: %v", err)
 	}
+	ctrl.SetLogger(klog.NewKlogr())
 
 	healthCheck := metrics.NewHealthCheck(autoscalingOpts.MaxInactivityTime, autoscalingOpts.MaxFailingTime)
 
@@ -421,7 +277,7 @@ func main() {
 			kubeClient.CoordinationV1(),
 			resourcelock.ResourceLockConfig{
 				Identity:      id,
-				EventRecorder: kube_util.CreateEventRecorder(kubeClient, autoscalingOpts.RecordDuplicatedEvents),
+				EventRecorder: kube_util.CreateEventRecorder(context.TODO(), kubeClient, autoscalingOpts.RecordDuplicatedEvents),
 			},
 		)
 		if err != nil {

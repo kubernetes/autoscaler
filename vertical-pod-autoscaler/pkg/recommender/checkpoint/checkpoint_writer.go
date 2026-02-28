@@ -23,7 +23,6 @@ import (
 	"sync"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
@@ -55,11 +54,7 @@ func NewCheckpointWriter(cluster model.ClusterState, vpaCheckpointClient vpa_api
 }
 
 func isFetchingHistory(vpa *model.Vpa) bool {
-	condition, found := vpa.Conditions[vpa_types.FetchingHistory]
-	if !found {
-		return false
-	}
-	return condition.Status == v1.ConditionTrue
+	return vpa.ConditionActive(vpa_types.FetchingHistory)
 }
 
 func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {

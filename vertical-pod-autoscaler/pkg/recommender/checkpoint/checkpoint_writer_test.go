@@ -25,7 +25,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -78,7 +78,7 @@ func addVpa(t *testing.T, cluster model.ClusterState, vpaID model.VpaID, selecto
 
 func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	cluster := model.NewClusterState(testGcPeriod)
-	cluster.AddOrUpdatePod(testPodID1, testLabels, v1.PodRunning)
+	cluster.AddOrUpdatePod(testPodID1, testLabels, corev1.PodRunning)
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID1, testRequest))
 	container := cluster.GetContainer(testContainerID1)
 
@@ -106,48 +106,48 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 }
 
 func TestIsFetchingHistory(t *testing.T) {
-
 	testCases := []struct {
-		vpa               model.Vpa
+		vpa               *model.Vpa
 		isFetchingHistory bool
 	}{
 		{
-			vpa:               model.Vpa{},
+			vpa:               &model.Vpa{},
 			isFetchingHistory: false,
 		},
 		{
-			vpa: model.Vpa{
-				PodSelector: nil,
-				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+			vpa: func() *model.Vpa {
+				vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+				vpa.SetConditionsMap(map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 					vpa_types.FetchingHistory: {
 						Type:   vpa_types.FetchingHistory,
-						Status: v1.ConditionFalse,
+						Status: corev1.ConditionFalse,
 					},
-				},
-			},
+				})
+				return vpa
+			}(),
 			isFetchingHistory: false,
 		},
 		{
-			vpa: model.Vpa{
-				PodSelector: nil,
-				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+			vpa: func() *model.Vpa {
+				vpa := model.NewVpa(model.VpaID{}, nil, time.Time{})
+				vpa.SetConditionsMap(map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
 					vpa_types.FetchingHistory: {
 						Type:   vpa_types.FetchingHistory,
-						Status: v1.ConditionTrue,
+						Status: corev1.ConditionTrue,
 					},
-				},
-			},
+				})
+				return vpa
+			}(),
 			isFetchingHistory: true,
 		},
 	}
 
 	for _, tc := range testCases {
-		assert.Equalf(t, tc.isFetchingHistory, isFetchingHistory(&tc.vpa), "%+v should have %v as isFetchingHistoryResult", tc.vpa, tc.isFetchingHistory)
+		assert.Equalf(t, tc.isFetchingHistory, isFetchingHistory(tc.vpa), "%+v should have %v as isFetchingHistoryResult", tc.vpa, tc.isFetchingHistory)
 	}
 }
 
 func TestGetVpasToCheckpointSorts(t *testing.T) {
-
 	time1 := time.Unix(10000, 0)
 	time2 := time.Unix(20000, 0)
 
@@ -178,7 +178,6 @@ func TestGetVpasToCheckpointSorts(t *testing.T) {
 	assert.Equal(t, genVpaID(0), result[0].ID)
 	assert.Equal(t, genVpaID(1), result[1].ID)
 	assert.Equal(t, genVpaID(2), result[2].ID)
-
 }
 
 func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {
@@ -215,7 +214,7 @@ func TestStoreCheckpointsMakesProgressEvenForCancelledContext(t *testing.T) {
 			PodName:   fmt.Sprintf("pod-%d", i),
 		}
 		podLabels := map[string]string{"app": fmt.Sprintf("pod-%d", i)}
-		clusterState.AddOrUpdatePod(podID, podLabels, v1.PodRunning)
+		clusterState.AddOrUpdatePod(podID, podLabels, corev1.PodRunning)
 		for j := range 2 {
 			containerID := model.ContainerID{
 				PodID:         podID,

@@ -17,7 +17,7 @@ limitations under the License.
 package patch
 
 import (
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -26,7 +26,7 @@ import (
 
 type observedContainers struct{}
 
-func (*observedContainers) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+func (*observedContainers) CalculatePatches(pod *corev1.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	vpaObservedContainersValue := annotations.GetVpaObservedContainersValue(pod)
 	return []resource_admission.PatchRecord{GetAddAnnotationPatch(annotations.VpaObservedContainersLabel, vpaObservedContainersValue)}, nil
 }

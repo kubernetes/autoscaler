@@ -1,7 +1,7 @@
 # Vertical Pod Autoscaler Flags
 This document contains the flags for all VPA components.
 
-To view the most recent _release_ of flags for all VPA components, consult the release tag [flags(1.5.1)](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.5.1/vertical-pod-autoscaler/docs/flags.md) documentation.
+To view the most recent _release_ of flags for all VPA components, consult the release tag [flags(1.6.0)](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.6.0/vertical-pod-autoscaler/docs/flags.md) documentation.
 
 > **Note:** This document is auto-generated from the default branch (master) of the VPA repository.
 
@@ -20,7 +20,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `address` | string |  ":8944" | The address to expose Prometheus metrics.  |
 | `alsologtostderr` |  |  | log to standard error as well as files (no effect when -logtostderr=true) |
 | `client-ca-file` | string |  "/etc/tls-certs/caCert.pem" | Path to CA PEM file.  |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `kube-api-burst` | float |  100 | QPS burst limit when making requests to Kubernetes apiserver  |
 | `kube-api-qps` | float |  50 | QPS limit when making requests to Kubernetes apiserver  |
@@ -30,6 +30,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `log-file` | string |  | If non-empty, use this log file (no effect when -logtostderr=true) |
 | `log-file-max-size` | int |  1800 | uDefines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited.  |
 | `logtostderr` |  |  true | log to standard error instead of files  |
+| `max-allowed-cpu-boost` |  |  | quantity         Maximum amount of CPU that will be applied for a container with boost. |
 | `min-tls-version` | string |  | The minimum TLS version to accept.  Must be set to either tls1_2  or tls1_3. (default "tls1_2") |
 | `one-output` | severity |  | If true, only write logs to their native level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
 | `port` | int |  8000 | The port to listen on.  |
@@ -74,7 +75,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `cpu-integer-post-processor-enabled` |  |  | Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
 | `external-metrics-cpu-metric` | string |  | ALPHA.  Metric to use with external metrics provider for CPU usage. |
 | `external-metrics-memory-metric` | string |  | ALPHA.  Metric to use with external metrics provider for memory usage. |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
 | `history-length` | string |  "8d" | How much time back prometheus have to be queried to get historical metrics  |
 | `history-resolution` | string |  "1h" | Resolution at which Prometheus is queried for historical metrics  |
 | `humanize-memory` |  |  | DEPRECATED: Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. This flag is deprecated and will be removed in a future version. Use --round-memory-bytes instead. |
@@ -146,11 +147,11 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `add-dir-header` |  |  | If true, adds the file directory to the header of the log messages |
 | `address` | string |  ":8943" | The address to expose Prometheus metrics.  |
 | `alsologtostderr` |  |  | log to standard error as well as files (no effect when -logtostderr=true) |
-| `evict-after-oom-threshold` |  |  10m0s | duration                              Evict pod that has OOMed in less than evict-after-oom-threshold since start.  |
+| `evict-after-oom-threshold` |  |  10m0s | duration                              The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.  |
 | `eviction-rate-burst` | int |  1 | Burst of pods that can be evicted.  |
-| `eviction-rate-limit` | float |  | Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable<br>the rate limiter. (default -1) |
+| `eviction-rate-limit` | float |  -1 | Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable the rate limiter.  |
 | `eviction-tolerance` | float |  0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted.  |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>InPlaceOrRecreate=true\|false (BETA - default=true)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `in-place-skip-disruption-budget` |  |  | [ALPHA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource. |
 | `in-recommendation-bounds-eviction-lifetime-threshold` |  |  12h0m0s | duration   Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range  |
@@ -181,4 +182,3 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `v,` |  | : 4 | , --v Level                                                         set the log level verbosity  (default 4) |
 | `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
 | `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
-

@@ -2,6 +2,8 @@ version: "2"
 linters:
   enable:
     - forbidigo
+    - modernize
+    - importas
     - revive
   settings:
     forbidigo:
@@ -9,6 +11,34 @@ linters:
         # Forbid use of archived package "github.com/pkg/errors". Context: https://github.com/kubernetes/autoscaler/pull/7845
         - pkg: github.com/pkg/errors
       analyze-types: true
+    modernize:
+      disable:
+        # Disabling omitzero linter as it catches issues with API types, which would be best if kube-api-lint can handle
+        - omitzero
+
+    importas:
+      alias:
+        # Inspired by Kubernetes' import alias conventions for consistency:
+        # https://github.com/kubernetes/kubernetes/blob/master/hack/.import-aliases
+        - pkg: "k8s.io/api/admission/v1"
+          alias: admissionv1
+        - pkg: k8s.io/api/apps/v1
+          alias: appsv1
+        - pkg: "k8s.io/api/autoscaling/v1"
+          alias: autoscalingv1
+        - pkg: k8s.io/api/batch/v1
+          alias: batchv1
+        - pkg: "k8s.io/api/core/v1"
+          alias: corev1
+        - pkg: k8s.io/api/policy/v1
+          alias: policyv1
+        - pkg: "k8s.io/apimachinery/pkg/apis/meta/v1"
+          alias: metav1
+        - pkg: k8s.io/client-go/kubernetes/typed/core/v1
+          alias: typedcorev1
+        - pkg: k8s.io/client-go/listers/core/v1
+          alias: listersv1
+
     revive:
       enable-all-rules: false # Disabling all rules for now and enabling each one later
       rules:
@@ -18,19 +48,51 @@ linters:
         - name: useless-fallthrough
         - name: comment-spacings
         - name: enforce-switch-style
+        - name: exported
+          arguments:
+            # Disabling for now since it hasn't been previously enforced
+            - "disable-stuttering-check"
         - name: unexported-naming
+        - name: empty-lines
+        - name: use-errors-new
+        - name: early-return
+        - name: redefines-builtin-id
+        - name: redundant-import-alias
 
         # Below lists the rules disabled
+
+        # Limits function parameter count; disabled due to generators/tests exceeding it without clarity gains.
         - name: argument-limit
           disabled: true
+
+        # Flags non-TLS (http) URLs; disabled because internal/test endpoints intentionally use http.
         - name: unsecure-url-scheme
           disabled: true
+
+        # Detects confusing/misleading identifiers which should be fine to have both exported and unexported func with same within a pkg.
         - name: confusing-naming
           disabled: true
+
+        # Discourages boolean parameters; disabled since it is mostly been followed across to take boolean values as func params.
         - name: flag-parameter
           disabled: true
+        
+        # Limits number of exported structs; disabled because API/codegen packages expose many types by design.
         - name: max-public-structs
           disabled: true
+
+        # Requires package-level comments; disabled until comments are added across the repo.
+        - name: package-comments
+          disabled: true
+
+        # Validates struct tag keys; disabled because pb/types use inline/casttype widely and fixing needs generator bumps and broad refactors.
+        - name: struct-tag
+          disabled: true
+
+        # Flags exported funcs returning unexported types; disabled for intentional encapsulation in internal APIs.
+        - name: unexported-return
+          disabled: true
+
 formatters:
   enable:
     - goimports
@@ -47,3 +109,6 @@ formatters:
         - dot
         - blank
       custom-order: true
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

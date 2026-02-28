@@ -17,8 +17,8 @@ limitations under the License.
 package v1
 
 import (
-	autoscaling "k8s.io/api/autoscaling/v1"
-	v1 "k8s.io/api/core/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -46,6 +46,8 @@ type VerticalPodAutoscalerList struct {
 // +kubebuilder:printcolumn:name="Mem",type="string",JSONPath=".status.recommendation.containerRecommendations[0].target.memory"
 // +kubebuilder:printcolumn:name="Provided",type="string",JSONPath=".status.conditions[?(@.type=='RecommendationProvided')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="MinReplicas",type="integer",JSONPath=".spec.updatePolicy.minReplicas",priority=1
+// +kubebuilder:printcolumn:name="OOMSeconds",type="integer",JSONPath=".spec.updatePolicy.evictAfterOOMSeconds",priority=1
 // +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
@@ -85,7 +87,7 @@ type VerticalPodAutoscalerSpec struct {
 	// of scale subresource - it will not use it to modify the replica count.
 	// The only thing retrieved is a label selector matching pods grouped by
 	// the target resource.
-	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef" protobuf:"bytes,1,name=targetRef"`
+	TargetRef *autoscalingv1.CrossVersionObjectReference `json:"targetRef" protobuf:"bytes,1,name=targetRef"`
 
 	// Describes the rules on how changes are applied to the pods.
 	// If not specified, all fields in the `PodUpdatePolicy` are set to their
@@ -108,7 +110,60 @@ type VerticalPodAutoscalerSpec struct {
 	// recommendation) or contain exactly one recommender.
 	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
+
+	// startupBoost specifies the startup boost policy for the pod.
+	// +optional
+	StartupBoost *StartupBoost `json:"startupBoost,omitempty" protobuf:"bytes,5,opt,name=startupBoost"`
 }
+
+// StartupBoost defines the startup boost policy.
+type StartupBoost struct {
+	// cpu specifies the CPU startup boost policy.
+	// If this field is not set, no startup boost is applied.
+	// +optional
+	CPU *GenericStartupBoost `json:"cpu,omitempty" protobuf:"bytes,1,opt,name=cpu"`
+}
+
+// GenericStartupBoost defines the startup boost policy for a resource.
+// +union
+// +kubebuilder:validation:XValidation:rule="(self.type == 'Factor') == has(self.factor)",message="factor is required when type is Factor and forbidden otherwise"
+// +kubebuilder:validation:XValidation:rule="(self.type == 'Quantity') == has(self.quantity)",message="quantity is required when type is Quantity and forbidden otherwise"
+type GenericStartupBoost struct {
+	// type specifies the kind of boost to apply.
+	// Supported values are: "Factor", "Quantity".
+	// No startupboost will be applied for unrecognized values.
+	// +unionDiscriminator
+	// +required
+	Type StartupBoostType `json:"type" protobuf:"bytes,1,opt,name=type"`
+	// factor specifies the factor to apply to the resource request.
+	// This field is required when Type is "Factor".
+	// +unionMember=Factor
+	// +optional
+	Factor *int32 `json:"factor,omitempty" protobuf:"bytes,2,opt,name=factor"`
+
+	// quantity specifies the absolute resource quantity to be used as the
+	// resource request and limit during the boost phase.
+	// This field is required when Type is "Quantity".
+	// +unionMember=Quantity
+	// +optional
+	Quantity *resource.Quantity `json:"quantity,omitempty" protobuf:"bytes,3,opt,name=quantity"`
+
+	// durationSeconds indicates for how long to keep the pod boosted after it goes to Ready.
+	// Defaults to 0.
+	// +optional
+	DurationSeconds *int32 `json:"durationSeconds,omitempty" protobuf:"varint,4,opt,name=durationSeconds"`
+}
+
+// StartupBoostType is the type of startup boost.
+// +kubebuilder:validation:Enum=Factor;Quantity
+type StartupBoostType string
+
+const (
+	// FactorStartupBoostType applies a factor to the resource.
+	FactorStartupBoostType StartupBoostType = "Factor"
+	// QuantityStartupBoostType applies a fixed quantity to the resource.
+	QuantityStartupBoostType StartupBoostType = "Quantity"
+)
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
 // +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetLowerThanRequests
@@ -127,7 +182,7 @@ type EvictionRequirement struct {
 	// Resources is a list of one or more resources that the condition applies
 	// to. If more than one resource is given, the EvictionRequirement is fulfilled
 	// if at least one resource meets `changeRequirement`.
-	Resources         []v1.ResourceName         `json:"resources" protobuf:"bytes,1,name=resources"`
+	Resources         []corev1.ResourceName     `json:"resources" protobuf:"bytes,1,name=resources"`
 	ChangeRequirement EvictionChangeRequirement `json:"changeRequirement" protobuf:"bytes,2,name=changeRequirement"`
 }
 
@@ -149,6 +204,13 @@ type PodUpdatePolicy struct {
 	// EvictionRequirement is specified, all of them need to be fulfilled to allow eviction.
 	// +optional
 	EvictionRequirements []*EvictionRequirement `json:"evictionRequirements,omitempty" protobuf:"bytes,3,opt,name=evictionRequirements"`
+
+	// evictAfterOOMSeconds specifies the time in seconds to wait after an OOM event before
+	// considering the pod for eviction. Pods that have OOMed in less than this time
+	// since start will be evicted.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	EvictAfterOOMSeconds *int32 `json:"evictAfterOOMSeconds,omitempty" protobuf:"varint,4,opt,name=evictAfterOOMSeconds"`
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resources.
@@ -171,6 +233,7 @@ const (
 	// and additionally can update them during the lifetime of the pod,
 	// using any available update method. Currently this is equivalent to
 	// Recreate.
+	//
 	// Deprecated: This value is deprecated and will be removed in a future API version.
 	// Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.
 	// See https://github.com/kubernetes/autoscaler/issues/8424 for more details.
@@ -209,17 +272,17 @@ type ContainerResourcePolicy struct {
 	// Specifies the minimal amount of resources that will be recommended
 	// for the container. The default is no minimum.
 	// +optional
-	MinAllowed v1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
+	MinAllowed corev1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
 	// Specifies the maximum amount of resources that will be recommended
 	// for the container. The default is no maximum.
 	// +optional
-	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+	MaxAllowed corev1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
 
 	// Specifies the type of recommendations that will be computed
 	// (and possibly applied) by VPA.
 	// If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
 	// +patchStrategy=merge
-	ControlledResources *[]v1.ResourceName `json:"controlledResources,omitempty" patchStrategy:"merge" protobuf:"bytes,5,rep,name=controlledResources"`
+	ControlledResources *[]corev1.ResourceName `json:"controlledResources,omitempty" patchStrategy:"merge" protobuf:"bytes,5,rep,name=controlledResources"`
 
 	// Specifies which resource values should be controlled.
 	// The default is "RequestsAndLimits".
@@ -233,6 +296,13 @@ type ContainerResourcePolicy struct {
 	// oomMinBumpUp is the minimum increase in memory when OOM is detected.
 	// +optional
 	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
+
+	// startupBoost specifies the startup boost policy for the container.
+	// This overrides any pod-level startup boost policy.
+	// The startup boost policy takes precedence over the rest of the fields in
+	// this struct, except for ContainerName and ControlledValues.
+	// +optional
+	StartupBoost *StartupBoost `json:"startupBoost,omitempty" protobuf:"bytes,7,opt,name=startupBoost"`
 }
 
 const (
@@ -297,17 +367,17 @@ type RecommendedContainerResources struct {
 	// Name of the container.
 	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
 	// Recommended amount of resources. Observes ContainerResourcePolicy.
-	Target v1.ResourceList `json:"target" protobuf:"bytes,2,rep,name=target,casttype=ResourceList,castkey=ResourceName"`
+	Target corev1.ResourceList `json:"target" protobuf:"bytes,2,rep,name=target,casttype=ResourceList,castkey=ResourceName"`
 	// Minimum recommended amount of resources. Observes ContainerResourcePolicy.
 	// This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
 	// running with less resources is likely to have significant impact on performance/availability.
 	// +optional
-	LowerBound v1.ResourceList `json:"lowerBound,omitempty" protobuf:"bytes,3,rep,name=lowerBound,casttype=ResourceList,castkey=ResourceName"`
+	LowerBound corev1.ResourceList `json:"lowerBound,omitempty" protobuf:"bytes,3,rep,name=lowerBound,casttype=ResourceList,castkey=ResourceName"`
 	// Maximum recommended amount of resources. Observes ContainerResourcePolicy.
 	// Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
 	// amount of application is actually capable of consuming.
 	// +optional
-	UpperBound v1.ResourceList `json:"upperBound,omitempty" protobuf:"bytes,4,rep,name=upperBound,casttype=ResourceList,castkey=ResourceName"`
+	UpperBound corev1.ResourceList `json:"upperBound,omitempty" protobuf:"bytes,4,rep,name=upperBound,casttype=ResourceList,castkey=ResourceName"`
 	// The most recent recommended resources target computed by the autoscaler
 	// for the controlled pods, based only on actual resource usage, not taking
 	// into account the ContainerResourcePolicy.
@@ -316,7 +386,7 @@ type RecommendedContainerResources struct {
 	// or higher that MaxAllowed).
 	// Used only as status indication, will not affect actual resource assignment.
 	// +optional
-	UncappedTarget v1.ResourceList `json:"uncappedTarget,omitempty" protobuf:"bytes,5,opt,name=uncappedTarget"`
+	UncappedTarget corev1.ResourceList `json:"uncappedTarget,omitempty" protobuf:"bytes,5,opt,name=uncappedTarget"`
 }
 
 // VerticalPodAutoscalerConditionType are the valid conditions of
@@ -347,7 +417,7 @@ type VerticalPodAutoscalerCondition struct {
 	// type describes the current condition
 	Type VerticalPodAutoscalerConditionType `json:"type" protobuf:"bytes,1,name=type"`
 	// status is the status of the condition (True, False, Unknown)
-	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,name=status"`
+	Status corev1.ConditionStatus `json:"status" protobuf:"bytes,2,name=status"`
 	// lastTransitionTime is the last time the condition transitioned from
 	// one status to another
 	// +optional

@@ -18,13 +18,12 @@ package routines
 
 import (
 	"context"
-	"flag"
 	"sync"
 	"time"
 
 	"k8s.io/klog/v2"
 
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
@@ -33,12 +32,6 @@ import (
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-)
-
-var (
-	checkpointsWriteTimeout = flag.Duration("checkpoints-timeout", time.Minute, `Timeout for writing checkpoints since the start of the recommender's main loop`)
-	// MinCheckpointsPerRun is exported to allow displaying a deprecation warning. TODO (voelzmo): remove this flag and the warning in a future release.
-	MinCheckpointsPerRun = flag.Int("min-checkpoints", 10, "Minimum number of checkpoints to write per recommender's main loop. WARNING: this flag is deprecated and doesn't have any effect. It will be removed in a future release. Refer to update-worker-count to influence the minimum number of checkpoints written per loop.")
 )
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
@@ -62,10 +55,12 @@ type recommender struct {
 	clusterStateFeeder            input.ClusterStateFeeder
 	checkpointWriter              checkpoint.CheckpointWriter
 	checkpointsGCInterval         time.Duration
+	checkpointsWriteTimeout       time.Duration
 	controllerFetcher             controllerfetcher.ControllerFetcher
 	lastCheckpointGC              time.Time
 	vpaClient                     vpa_api.VerticalPodAutoscalersGetter
 	podResourceRecommender        logic.PodResourceRecommender
+	recommendationFormat          logic.RecommendationFormat
 	useCheckpoints                bool
 	lastAggregateContainerStateGC time.Time
 	recommendationPostProcessor   []RecommendationPostProcessor
@@ -80,11 +75,11 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 	return r.clusterStateFeeder
 }
 
-func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *v1.VerticalPodAutoscaler) {
+func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalingv1.VerticalPodAutoscaler) {
 	resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 	had := vpa.HasRecommendation()
 
-	listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
+	listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources, r.recommendationFormat)
 
 	for _, postProcessor := range r.recommendationPostProcessor {
 		listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
@@ -120,7 +115,7 @@ func (r *recommender) UpdateVPAs() {
 	defer cnt.Observe()
 
 	// Create a channel to send VPA updates to workers
-	vpaUpdates := make(chan *v1.VerticalPodAutoscaler, len(r.clusterState.ObservedVPAs()))
+	vpaUpdates := make(chan *vpaautoscalingv1.VerticalPodAutoscaler, len(r.clusterState.ObservedVPAs()))
 
 	// Create a wait group to wait for all workers to finish
 	var wg sync.WaitGroup
@@ -188,7 +183,7 @@ func (r *recommender) RunOnce() {
 	r.UpdateVPAs()
 	timer.ObserveStep("UpdateVPAs")
 
-	stepCtx, cancelFunc := context.WithDeadline(ctx, time.Now().Add(*checkpointsWriteTimeout))
+	stepCtx, cancelFunc := context.WithDeadline(ctx, time.Now().Add(r.checkpointsWriteTimeout))
 	defer cancelFunc()
 	r.MaintainCheckpoints(stepCtx)
 	timer.ObserveStep("MaintainCheckpoints")
@@ -206,13 +201,15 @@ type RecommenderFactory struct {
 	ControllerFetcher      controllerfetcher.ControllerFetcher
 	CheckpointWriter       checkpoint.CheckpointWriter
 	PodResourceRecommender logic.PodResourceRecommender
+	RecommendationFormat   logic.RecommendationFormat
 	VpaClient              vpa_api.VerticalPodAutoscalersGetter
 
 	RecommendationPostProcessors []RecommendationPostProcessor
 
-	CheckpointsGCInterval time.Duration
-	UseCheckpoints        bool
-	UpdateWorkerCount     int
+	CheckpointsGCInterval   time.Duration
+	CheckpointsWriteTimeout time.Duration
+	UseCheckpoints          bool
+	UpdateWorkerCount       int
 }
 
 // Make creates a new recommender instance,
@@ -223,10 +220,12 @@ func (c RecommenderFactory) Make() Recommender {
 		clusterStateFeeder:            c.ClusterStateFeeder,
 		checkpointWriter:              c.CheckpointWriter,
 		checkpointsGCInterval:         c.CheckpointsGCInterval,
+		checkpointsWriteTimeout:       c.CheckpointsWriteTimeout,
 		controllerFetcher:             c.ControllerFetcher,
 		useCheckpoints:                c.UseCheckpoints,
 		vpaClient:                     c.VpaClient,
 		podResourceRecommender:        c.PodResourceRecommender,
+		recommendationFormat:          c.RecommendationFormat,
 		recommendationPostProcessor:   c.RecommendationPostProcessors,
 		lastAggregateContainerStateGC: time.Now(),
 		lastCheckpointGC:              time.Now(),

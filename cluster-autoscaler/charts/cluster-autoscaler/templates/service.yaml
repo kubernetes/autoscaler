@@ -34,6 +34,10 @@ spec:
       targetPort: 8085
       name: {{ .Values.service.portName }}
   selector:
+{{- if .Values.service.selector }}
+{{ toYaml .Values.service.selector | indent 4 }}
+{{- else }}
 {{ include "cluster-autoscaler.instance-name" . | indent 4 }}
+{{- end }}
   type: "{{ .Values.service.type }}"
 {{- end }}

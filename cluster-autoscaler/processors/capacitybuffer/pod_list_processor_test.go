@@ -23,9 +23,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 
 	corev1 "k8s.io/api/core/v1"
@@ -89,7 +89,7 @@ func TestPodListProcessor(t *testing.T) {
 			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod")},
 			expectedUnschedPodsCount:     1,
 			expectedUnschedFakePodsCount: 0,
-			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {Type: common.ProvisioningCondition, Status: common.ConditionFalse}},
+			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionFalse}},
 			expectError:                  false,
 		},
 		{
@@ -100,7 +100,7 @@ func TestPodListProcessor(t *testing.T) {
 			forceSafeToEvict:             true,
 			expectedUnschedPodsCount:     2,
 			expectedUnschedFakePodsCount: 1,
-			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {Type: common.ProvisioningCondition, Status: common.ConditionTrue}},
+			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionTrue}},
 			expectError:                  false,
 		},
 		{
@@ -125,8 +125,8 @@ func TestPodListProcessor(t *testing.T) {
 			expectedUnschedPodsCount:     11,
 			expectedUnschedFakePodsCount: 8,
 			expectedBuffersProvCondition: map[string]metav1.Condition{
-				"buffer1": {Type: common.ProvisioningCondition, Status: common.ConditionTrue},
-				"buffer2": {Type: common.ProvisioningCondition, Status: common.ConditionTrue},
+				"buffer1": {Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionTrue},
+				"buffer2": {Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionTrue},
 			},
 			expectError: false,
 		},
@@ -140,8 +140,49 @@ func TestPodListProcessor(t *testing.T) {
 			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod1"), getTestingPod("Pod2"), getTestingPod("Pod3")},
 			expectedUnschedPodsCount:     8,
 			expectedUnschedFakePodsCount: 5,
-			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer2": {Type: common.ProvisioningCondition, Status: common.ConditionTrue}},
+			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer2": {Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionTrue}},
 			expectError:                  false,
+		},
+		{
+			name:                      "Buffer not ready for provisioning and provisioning set to true",
+			objectsInKubernetesClient: []runtime.Object{getTestingPodTemplate("ref", 1)},
+			objectsInBuffersClient: []runtime.Object{testutil.NewBuffer(
+				testutil.WithName("buffer"),
+				testutil.WithStatusPodTemplateRef("ref"),
+				testutil.WithStatusReplicas(1),
+				func(cb *apiv1.CapacityBuffer) {
+					cb.Status.Conditions = []metav1.Condition{
+						{
+							Type:   capacitybuffer.ReadyForProvisioningCondition,
+							Status: metav1.ConditionFalse,
+						},
+						{
+							Type:   capacitybuffer.ProvisioningCondition,
+							Status: metav1.ConditionTrue,
+						},
+					}
+					cb.Status.ProvisioningStrategy = &testProvStrategyAllowed
+				},
+			)},
+			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod")},
+			expectedUnschedPodsCount:     1,
+			expectedUnschedFakePodsCount: 0,
+			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {
+				Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionFalse, Reason: NotReadyForProvisioningReason,
+			}},
+			expectError: false,
+		},
+		{
+			name:                         "Buffer with zero replicas",
+			objectsInKubernetesClient:    []runtime.Object{getTestingPodTemplate("ref", 1)},
+			objectsInBuffersClient:       []runtime.Object{getTestingBuffer("buffer", "ref", 0, 1, true, 1, testProvStrategyAllowed)},
+			unschedulablePods:            []*corev1.Pod{getTestingPod("Pod")},
+			forceSafeToEvict:             true,
+			expectedUnschedPodsCount:     1,
+			expectedUnschedFakePodsCount: 0,
+			expectedBuffersProvCondition: map[string]metav1.Condition{"buffer": {
+				Type: capacitybuffer.ProvisioningCondition, Status: metav1.ConditionFalse, Reason: BufferIsEmptyReason,
+			}},
 		},
 	}
 	for _, test := range tests {
@@ -167,12 +208,18 @@ func TestPodListProcessor(t *testing.T) {
 			}
 			assert.Equal(t, test.expectedUnschedFakePodsCount, numberOfFakePods)
 
-			for buffer, condition := range test.expectedBuffersProvCondition {
-				buffer, err := fakeBuffersClient.AutoscalingV1alpha1().CapacityBuffers(corev1.NamespaceDefault).Get(context.TODO(), buffer, metav1.GetOptions{})
+			for bufferName, expectedCondition := range test.expectedBuffersProvCondition {
+				buffer, err := fakeBuffersClient.AutoscalingV1beta1().CapacityBuffers(corev1.NamespaceDefault).Get(context.TODO(), bufferName, metav1.GetOptions{})
 				assert.Equal(t, err, nil)
-				assert.Equal(t, len(buffer.Status.Conditions), 1)
-				assert.Equal(t, string(buffer.Status.Conditions[0].Type), string(condition.Type))
-				assert.Equal(t, string(buffer.Status.Conditions[0].Status), string(condition.Status))
+				found := false
+				for _, cond := range buffer.Status.Conditions {
+					if cond.Type == expectedCondition.Type {
+						assert.Equal(t, string(expectedCondition.Status), string(cond.Status))
+						found = true
+						break
+					}
+				}
+				assert.True(t, found, "Condition %s not found", expectedCondition.Type)
 			}
 		})
 	}
@@ -223,7 +270,7 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
 			for _, pod := range resUnschedulablePods {
 				if IsFakeCapacityBuffersPod(pod) {
-					podBufferObj, found := registry.fakePodsUIDToBuffer[string(pod.UID)]
+					podBufferObj, found := registry.FakePodsUIDToBuffer[string(pod.UID)]
 					assert.True(t, found)
 					expectedPodsNum, found := test.expectedBuffersPodsNum[podBufferObj.Name]
 					assert.True(t, found)
@@ -242,11 +289,17 @@ func getTestingPod(name string) *corev1.Pod {
 }
 
 func getTestingPodTemplate(name string, generation int64) *corev1.PodTemplate {
-	return &corev1.PodTemplate{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "default", Generation: generation}}
+	return &corev1.PodTemplate{
+		TypeMeta:   metav1.TypeMeta{Kind: "PodTemplate", APIVersion: "v1"},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "default", Generation: generation},
+	}
 }
 
 func getTestingBuffer(bufferName, refName string, replicas int32, generation int64, ready bool, bufferGeneration int64, provStrategy string) *apiv1.CapacityBuffer {
-	buffer := &apiv1.CapacityBuffer{ObjectMeta: metav1.ObjectMeta{Name: bufferName, Namespace: "default", Generation: bufferGeneration, UID: types.UID(fmt.Sprintf("%s-uid", bufferName))}}
+	buffer := &apiv1.CapacityBuffer{
+		TypeMeta:   metav1.TypeMeta{Kind: "CapacityBuffer", APIVersion: "autoscaling.x-k8s.io/v1beta1"},
+		ObjectMeta: metav1.ObjectMeta{Name: bufferName, Namespace: "default", Generation: bufferGeneration, UID: types.UID(fmt.Sprintf("%s-uid", bufferName))},
+	}
 	buffer.Status = *testutil.GetBufferStatus(&apiv1.LocalObjectRef{Name: refName}, &replicas, &generation, &provStrategy, nil)
 	if ready {
 		buffer.Status.Conditions = testutil.GetConditionReady()

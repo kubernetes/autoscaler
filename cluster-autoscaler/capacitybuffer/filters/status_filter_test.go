@@ -21,8 +21,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 )
 
@@ -47,7 +47,7 @@ func TestStatusFilter(t *testing.T) {
 		},
 		{
 			name:                  "One buffer, filter out ready for provisioning",
-			conditionsToFilterOut: map[string]string{common.ReadyForProvisioningCondition: common.ConditionTrue},
+			conditionsToFilterOut: map[string]string{capacitybuffer.ReadyForProvisioningCondition: string(metav1.ConditionTrue)},
 			buffers: []*v1.CapacityBuffer{
 				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
 			},
@@ -58,7 +58,7 @@ func TestStatusFilter(t *testing.T) {
 		},
 		{
 			name:                  "Two buffers, one Filtered",
-			conditionsToFilterOut: map[string]string{common.ReadyForProvisioningCondition: common.ConditionTrue},
+			conditionsToFilterOut: map[string]string{capacitybuffer.ReadyForProvisioningCondition: string(metav1.ConditionTrue)},
 			buffers: []*v1.CapacityBuffer{
 				getTestBufferWithCondition(testutil.SomePodTemplateRefName, testutil.GetConditionReady()),
 				getTestBufferWithCondition(testutil.AnotherPodTemplateRefName, testutil.GetConditionNotReady()),

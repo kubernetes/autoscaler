@@ -17,7 +17,7 @@ limitations under the License.
 package test
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -27,7 +27,7 @@ type containerBuilder struct {
 	memRequest   *resource.Quantity
 	cpuLimit     *resource.Quantity
 	memLimit     *resource.Quantity
-	resizePolicy []apiv1.ContainerResizePolicy
+	resizePolicy []corev1.ContainerResizePolicy
 }
 
 // Container returns object that helps build containers for tests.
@@ -65,31 +65,31 @@ func (cb *containerBuilder) WithMemLimit(memLimit resource.Quantity) *containerB
 	return &r
 }
 
-func (cb *containerBuilder) WithContainerResizePolicy(resizePolicy []apiv1.ContainerResizePolicy) *containerBuilder {
+func (cb *containerBuilder) WithContainerResizePolicy(resizePolicy []corev1.ContainerResizePolicy) *containerBuilder {
 	r := *cb
 	r.resizePolicy = resizePolicy
 	return &r
 }
 
-func (cb *containerBuilder) Get() apiv1.Container {
-	container := apiv1.Container{
+func (cb *containerBuilder) Get() corev1.Container {
+	container := corev1.Container{
 		Name: cb.name,
-		Resources: apiv1.ResourceRequirements{
-			Requests: apiv1.ResourceList{},
-			Limits:   apiv1.ResourceList{},
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{},
+			Limits:   corev1.ResourceList{},
 		},
 	}
 	if cb.cpuRequest != nil {
-		container.Resources.Requests[apiv1.ResourceCPU] = *cb.cpuRequest
+		container.Resources.Requests[corev1.ResourceCPU] = *cb.cpuRequest
 	}
 	if cb.memRequest != nil {
-		container.Resources.Requests[apiv1.ResourceMemory] = *cb.memRequest
+		container.Resources.Requests[corev1.ResourceMemory] = *cb.memRequest
 	}
 	if cb.cpuLimit != nil {
-		container.Resources.Limits[apiv1.ResourceCPU] = *cb.cpuLimit
+		container.Resources.Limits[corev1.ResourceCPU] = *cb.cpuLimit
 	}
 	if cb.memLimit != nil {
-		container.Resources.Limits[apiv1.ResourceMemory] = *cb.memLimit
+		container.Resources.Limits[corev1.ResourceMemory] = *cb.memLimit
 	}
 	if cb.resizePolicy != nil {
 		container.ResizePolicy = cb.resizePolicy
