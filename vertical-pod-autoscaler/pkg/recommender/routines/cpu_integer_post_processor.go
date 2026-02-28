@@ -41,7 +41,7 @@ var _ RecommendationPostProcessor = &IntegerCPUPostProcessor{}
 
 // Process apply the capping post-processing to the recommendation.
 // For this post processor the CPU value is rounded up to an integer
-func (p *IntegerCPUPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+func (p *IntegerCPUPostProcessor) Process(podLevel bool, vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
 	amendedRecommendation := recommendation.DeepCopy()
 
 	for key, value := range vpa.Annotations {
@@ -61,11 +61,6 @@ func (p *IntegerCPUPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, 
 		}
 	}
 	return amendedRecommendation
-}
-
-// ProcessPodLevel is a no-op for this post processor because it only adjusts per-container CPU quantities.
-func (p *IntegerCPUPostProcessor) ProcessPodLevel(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
-	return recommendation
 }
 
 func setIntegerCPURecommendation(recommendation apiv1.ResourceList) {

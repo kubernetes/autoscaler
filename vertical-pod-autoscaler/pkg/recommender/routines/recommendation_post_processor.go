@@ -22,6 +22,5 @@ import (
 
 // RecommendationPostProcessor can amend the recommendation according to the defined policies
 type RecommendationPostProcessor interface {
-	Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources
-	ProcessPodLevel(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources
+	Process(podLevel bool, vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources
 }

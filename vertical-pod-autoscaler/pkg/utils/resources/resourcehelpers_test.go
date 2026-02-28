@@ -21,8 +21,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -340,6 +342,136 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 			gotRequests, gotLimits := InitContainerRequestsAndLimits(tc.initContainerName, tc.pod)
 			assert.Equal(t, tc.wantRequests, gotRequests, "requests don't match")
 			assert.Equal(t, tc.wantLimits, gotLimits, "limits don't match")
+		})
+	}
+}
+
+func TestSumContainerLevelRecommendations(t *testing.T) {
+	cases := []struct {
+		name                       string
+		containerRecommendations   []vpa_types.RecommendedContainerResources
+		expectedPodRecommendations vpa_types.RecommendedPodRes
+	}{
+		{
+			name: "no container recommendations",
+			containerRecommendations: []vpa_types.RecommendedContainerResources{
+				test.Recommendation().
+					WithContainer("container1").
+					WithTarget("", "").
+					WithLowerBound("", "").
+					WithUpperBound("", "").
+					GetContainerResources(),
+			},
+			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+				Target: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("0"),
+					v1.ResourceMemory: resource.MustParse("0"),
+				},
+				LowerBound: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("0"),
+					v1.ResourceMemory: resource.MustParse("0"),
+				},
+				UpperBound: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("0"),
+					v1.ResourceMemory: resource.MustParse("0"),
+				},
+				UncappedTarget: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("0"),
+					v1.ResourceMemory: resource.MustParse("0"),
+				},
+			},
+		},
+		{
+			name: "one container resource does not include a recommendations",
+			containerRecommendations: []vpa_types.RecommendedContainerResources{
+				test.Recommendation().
+					WithContainer("container1").
+					WithTarget("2m", "10Mi").
+					WithLowerBound("2m", "10Mi").
+					WithUpperBound("2m", "10Mi").
+					GetContainerResources(),
+				test.Recommendation().
+					WithContainer("container2").
+					WithTarget("8m", "").
+					WithLowerBound("8m", "").
+					WithUpperBound("8m", "").
+					GetContainerResources(),
+			},
+			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+				Target: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+				LowerBound: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+				UpperBound: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+				UncappedTarget: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+			},
+		},
+		{
+			name: "all containers contain recommendations",
+			containerRecommendations: []vpa_types.RecommendedContainerResources{
+				test.Recommendation().
+					WithContainer("container1").
+					WithTarget("4m", "4Mi").
+					WithLowerBound("4m", "4Mi").
+					WithUpperBound("4m", "4Mi").
+					GetContainerResources(),
+				test.Recommendation().
+					WithContainer("container2").
+					WithTarget("4m", "4Mi").
+					WithLowerBound("4m", "4Mi").
+					WithUpperBound("4m", "4Mi").
+					GetContainerResources(),
+				test.Recommendation().
+					WithContainer("container3").
+					WithTarget("2m", "2Mi").
+					WithLowerBound("2m", "2Mi").
+					WithUpperBound("2m", "2Mi").
+					GetContainerResources(),
+			},
+			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+				Target: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+				LowerBound: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+				UpperBound: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+				UncappedTarget: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			outRecommendations := SumContainerLevelRecommendations(tc.containerRecommendations)
+			assert.Equal(t, tc.expectedPodRecommendations.Target.Cpu().MilliValue(), outRecommendations.Target.Cpu().MilliValue())
+			assert.Equal(t, tc.expectedPodRecommendations.Target.Memory().Value(), outRecommendations.Target.Memory().Value())
+
+			assert.Equal(t, tc.expectedPodRecommendations.LowerBound.Cpu().MilliValue(), outRecommendations.LowerBound.Cpu().MilliValue())
+			assert.Equal(t, tc.expectedPodRecommendations.LowerBound.Memory().Value(), outRecommendations.LowerBound.Memory().Value())
+
+			assert.Equal(t, tc.expectedPodRecommendations.UpperBound.Cpu().MilliValue(), outRecommendations.UpperBound.Cpu().MilliValue())
+			assert.Equal(t, tc.expectedPodRecommendations.UpperBound.Memory().Value(), outRecommendations.UpperBound.Memory().Value())
+
+			assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Cpu().MilliValue(), outRecommendations.UncappedTarget.Cpu().MilliValue())
+			assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Memory().Value(), outRecommendations.UncappedTarget.Memory().Value())
 		})
 	}
 }
