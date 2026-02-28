@@ -328,3 +328,92 @@ func TestStaticAutoscalerScaleDownDelayAfterFailure(t *testing.T) {
 		assert.Equal(t, 0, tg2After, "ng2 can freely scale down")
 	})
 }
+
+// setUpLongUnregisteredNodeTest sets up common config for long unregistered node tests.
+func setUpLongUnregisteredNodeTest(t *testing.T, forceDelete bool) (core.Autoscaler, *integration.FakeSet, context.CancelFunc) {
+	cfg := integration.NewTestConfig().
+		WithOverrides(
+			integration.WithScaleDownUnneededTime(time.Minute),
+			integration.WithForceDeleteLongUnregisteredNodes(forceDelete),
+		)
+	options := cfg.ResolveOptions()
+
+	infra := integration.SetupInfrastructure(t)
+	fakes := infra.Fakes
+
+	ctx, cancel := context.WithCancel(t.Context())
+
+	autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+	assert.NoError(t, err)
+
+	return autoscaler, fakes, cancel
+}
+
+// TestStaticAutoscalerRunOnceKeepALongUnregisteredNode verifies that when ForceDeleteLongUnregisteredNodes is false,
+// old unregistered nodes are kept during normal runs, but can still be removed if the cluster becomes empty and we are above min size.
+func TestStaticAutoscalerRunOnceKeepALongUnregisteredNode(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		autoscaler, fakes, cancel := setUpLongUnregisteredNodeTest(t, false)
+		defer synctestutils.TearDown(cancel)
+
+		n1 := tu.BuildTestNode("n1", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng1"))
+		n2 := tu.BuildTestNode("n2", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng1"))
+
+		p1 := tu.BuildScheduledTestPod("p1", 600, 100, "n1")
+		p2 := tu.BuildTestPod("p2", 600, 100, tu.MarkUnschedulable())
+
+		fakes.CloudProvider.AddNodeGroup("ng1", fcp.WithNGSize(2, 10), fcp.WithTargetSize(2), fcp.WithNode(n1))
+
+		brokenNode := tu.BuildTestNode("broken", 1000, 1000)
+		fakes.CloudProvider.AddNode("ng1", brokenNode)
+
+		fakes.K8s.AddNodes(n1).AddPods(p1)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+
+		fakes.K8s.AddPod(p2)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		assert.Equal(t, 3, tg1)
+
+		fakes.K8s.AddNode(n2)
+		fakes.CloudProvider.AddNode("ng1", n2)
+
+		fakes.K8s.DeletePod(p1.Namespace, p1.Name)
+		fakes.K8s.DeletePod(p2.Namespace, p2.Name)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		// check if broken node is removed.
+		ng, err := fakes.CloudProvider.NodeGroupForNode(brokenNode)
+		assert.NoError(t, err)
+		assert.Nil(t, ng)
+	})
+}
+
+// TestStaticAutoscalerRunOnceDeleteALongUnregisteredNode verifies that when ForceDeleteLongUnregisteredNodes is true,
+// old unregistered nodes are removed immediately without needing a scale-up event or empty cluster scale-down.
+func TestStaticAutoscalerRunOnceDeleteALongUnregisteredNode(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		autoscaler, fakes, cancel := setUpLongUnregisteredNodeTest(t, true)
+		defer synctestutils.TearDown(cancel)
+
+		n1 := tu.BuildTestNode("n1", 1000, 1000, tu.IsReady(true), tu.WithNodeLabels("ng", "ng1"))
+		p1 := tu.BuildScheduledTestPod("p1", 600, 100, "n1")
+
+		fakes.CloudProvider.AddNodeGroup("ng1", fcp.WithNGSize(2, 10), fcp.WithTargetSize(2), fcp.WithNode(n1))
+
+		brokenNode := tu.BuildTestNode("broken", 1000, 1000)
+		fakes.CloudProvider.AddNode("ng1", brokenNode)
+
+		fakes.K8s.AddNodes(n1).AddPods(p1)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+
+		// Check if broken node is removed immediately because forceDelete is true.
+		ng, err := fakes.CloudProvider.NodeGroupForNode(brokenNode)
+		assert.NoError(t, err)
+		assert.Nil(t, ng, "broken node should be removed by forceDeleteLongUnregisteredNodes")
+	})
+}

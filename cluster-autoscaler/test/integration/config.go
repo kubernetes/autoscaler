@@ -111,6 +111,13 @@ func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 	}
 }
 
+// WithForceDeleteLongUnregisteredNodes sets the force delete long unregistered nodes option.
+func WithForceDeleteLongUnregisteredNodes(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ForceDeleteLongUnregisteredNodes = b
+	}
+}
+
 // WithProvisioningRequestEnabled enables ProvisioningRequest support.
 func WithProvisioningRequestEnabled() AutoscalingOptionOverride {
 	return func(o *config.AutoscalingOptions) {
