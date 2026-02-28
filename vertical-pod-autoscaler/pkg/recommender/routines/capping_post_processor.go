@@ -38,22 +38,14 @@ func NewCappingRecommendationProcessor(globalMaxAllowed limits.GlobalMaxAllowed)
 	}
 }
 
-// Process apply the capping post-processing to the recommendation. (use to be function getCappedRecommendation)
-func (c cappingPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+// Process applies capping post-processing to container-level recommendations.
+// - If you call this method with podLevel set to false, it uses only container-level constraints.
+// - If you call this method with podLevel set to true, it also enforces Pod-level constraints on container-level recommendations.
+func (c cappingPostProcessor) Process(podLevel bool, vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
 	// TODO: maybe rename the vpa_utils.ApplyVPAPolicy to something that mention that it is doing capping only
-	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
+	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(podLevel, recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
 	if err != nil {
 		klog.ErrorS(err, "Failed to apply policy for VPA", "vpa", klog.KObj(vpa))
-		return recommendation
-	}
-	return cappedRecommendation
-}
-
-// ProcessPodLevel applies capping to Pod-level recommendations.
-func (c cappingPostProcessor) ProcessPodLevel(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
-	cappedRecommendation, err := vpa_utils.ApplyRecommenderLevelPolicies(recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
-	if err != nil {
-		klog.ErrorS(err, "Failed to apply Pod-level policy for VPA", "vpa", klog.KObj(vpa))
 		return recommendation
 	}
 	return cappedRecommendation
