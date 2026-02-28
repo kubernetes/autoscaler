@@ -97,19 +97,16 @@ for COMPONENT in ${COMPONENTS}; do
   case ${COMPONENT} in
     recommender)
       HELM_SET_ARGS+=("--set" "recommender.enabled=true")
-      HELM_SET_ARGS+=("--set" "recommender.replicas=1")
       HELM_SET_ARGS+=("--set" "recommender.image.repository=${REGISTRY}/vpa-recommender")
       HELM_SET_ARGS+=("--set" "recommender.image.tag=${TAG}")
       ;;
     updater)
       HELM_SET_ARGS+=("--set" "updater.enabled=true")
-      HELM_SET_ARGS+=("--set" "updater.replicas=1")
       HELM_SET_ARGS+=("--set" "updater.image.repository=${REGISTRY}/vpa-updater")
       HELM_SET_ARGS+=("--set" "updater.image.tag=${TAG}")
       ;;
     admission-controller)
       HELM_SET_ARGS+=("--set" "admissionController.enabled=true")
-      HELM_SET_ARGS+=("--set" "admissionController.replicas=1")
       HELM_SET_ARGS+=("--set" "admissionController.image.repository=${REGISTRY}/vpa-admission-controller")
       HELM_SET_ARGS+=("--set" "admissionController.image.tag=${TAG}")
       ;;
