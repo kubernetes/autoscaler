@@ -123,20 +123,21 @@ const (
 type caMetrics struct {
 	registry metrics.KubeRegistry
 
-	clusterSafeToAutoscale *k8smetrics.Gauge
-	nodesCount             *k8smetrics.GaugeVec
-	nodeGroupsCount        *k8smetrics.GaugeVec
-	unschedulablePodsCount *k8smetrics.GaugeVec
-	maxNodesCount          *k8smetrics.Gauge
-	cpuCurrentCores        *k8smetrics.Gauge
-	cpuLimitsCores         *k8smetrics.GaugeVec
-	memoryCurrentBytes     *k8smetrics.Gauge
-	memoryLimitsBytes      *k8smetrics.GaugeVec
-	nodesGroupMinNodes     *k8smetrics.GaugeVec
-	nodesGroupMaxNodes     *k8smetrics.GaugeVec
-	nodesGroupTargetSize   *k8smetrics.GaugeVec
-	nodesGroupHealthiness  *k8smetrics.GaugeVec
-	nodeGroupBackOffStatus *k8smetrics.GaugeVec
+	clusterSafeToAutoscale         *k8smetrics.Gauge
+	nodesCount                     *k8smetrics.GaugeVec
+	nodeGroupsCount                *k8smetrics.GaugeVec
+	unschedulablePodsCount         *k8smetrics.GaugeVec
+	maxNodesCount                  *k8smetrics.Gauge
+	cpuCurrentCores                *k8smetrics.Gauge
+	cpuLimitsCores                 *k8smetrics.GaugeVec
+	memoryCurrentBytes             *k8smetrics.Gauge
+	memoryLimitsBytes              *k8smetrics.GaugeVec
+	nodesGroupMinNodes             *k8smetrics.GaugeVec
+	nodesGroupMaxNodes             *k8smetrics.GaugeVec
+	nodesGroupTargetSize           *k8smetrics.GaugeVec
+	nodesGroupUnfulfilledNodeCount *k8smetrics.GaugeVec
+	nodesGroupHealthiness          *k8smetrics.GaugeVec
+	nodeGroupBackOffStatus         *k8smetrics.GaugeVec
 
 	// Metrics related to autoscaler execution
 	lastActivity            *k8smetrics.GaugeVec
@@ -265,6 +266,14 @@ func newCaMetrics() *caMetrics {
 				Namespace: caNamespace,
 				Name:      "node_group_target_count",
 				Help:      "Target number of nodes in the node group by CA.",
+			}, []string{"node_group"},
+		),
+
+		nodesGroupUnfulfilledNodeCount: k8smetrics.NewGaugeVec(
+			&k8smetrics.GaugeOpts{
+				Namespace: caNamespace,
+				Name:      "node_group_unfulfilled_node_count",
+				Help:      "Difference between node group target size and number of K8S registered nodes excluding deleted nodes(in k8s but not in cloud provider)",
 			}, []string{"node_group"},
 		),
 
@@ -546,6 +555,7 @@ func (m *caMetrics) RegisterAll(emitPerNodeGroupMetrics bool) {
 		m.mustRegister(m.nodesGroupMinNodes)
 		m.mustRegister(m.nodesGroupMaxNodes)
 		m.mustRegister(m.nodesGroupTargetSize)
+		m.mustRegister(m.nodesGroupUnfulfilledNodeCount)
 		m.mustRegister(m.nodesGroupHealthiness)
 		m.mustRegister(m.nodeGroupBackOffStatus)
 	}
@@ -670,6 +680,13 @@ func (m *caMetrics) UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
 func (m *caMetrics) UpdateNodeGroupTargetSize(targetSizes map[string]int) {
 	for nodeGroup, targetSize := range targetSizes {
 		m.nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
+	}
+}
+
+// UpdateNodeGroupUnfulfilledNodeCount records the node group unfulfilled node count
+func (m *caMetrics) UpdateNodeGroupUnfulfilledNodeCount(unfulfilledNodeCount map[string]int) {
+	for nodeGroup, count := range unfulfilledNodeCount {
+		m.nodesGroupUnfulfilledNodeCount.WithLabelValues(nodeGroup).Set(float64(count))
 	}
 }
 

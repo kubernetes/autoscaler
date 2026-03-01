@@ -388,6 +388,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	csr.updateUnregisteredNodes(notRegistered)
 	csr.updateCloudProviderDeletedNodes(cloudProviderNodesRemoved)
 	csr.updateReadinessStats(currentTime)
+	csr.updateUnfulfilledNodeCountMetrics(targetSizes)
 
 	// update acceptable ranges based on requests from last loop and targetSizes
 	// updateScaleRequests relies on acceptableRanges being up to date
@@ -531,6 +532,30 @@ func (csr *ClusterStateRegistry) areThereUpcomingNodesInNodeGroup(nodeGroupName 
 		return false
 	}
 	return target > provisioned
+}
+
+func (csr *ClusterStateRegistry) updateUnfulfilledNodeCountMetrics(targetSizes map[string]int) {
+	unfulfilledNodeCount := csr.getUnfulfilledNodeCount(targetSizes)
+	metrics.UpdateNodeGroupUnfulfilledNodeCount(unfulfilledNodeCount)
+}
+
+func (csr *ClusterStateRegistry) getUnfulfilledNodeCount(targetSizes map[string]int) map[string]int {
+	result := make(map[string]int, len(targetSizes))
+	for ng, target := range targetSizes {
+		readiness, found := csr.perNodeGroupReadiness[ng]
+		actual := 0
+		if found {
+			actual = len(readiness.Registered) - len(readiness.Deleted)
+		}
+		unfulfilled := target - actual
+		if unfulfilled < 0 {
+			klog.Warningf("negative unfulfilledNodeCount for %s: unfulfilled %d, target: %d, registered: %d, deleted: %d", ng, unfulfilled, target, len(readiness.Registered), len(readiness.Deleted))
+			unfulfilled = 0
+		}
+		result[ng] = unfulfilled
+	}
+
+	return result
 }
 
 // IsNodeGroupRegistered returns true if the node group is registered in cluster state.

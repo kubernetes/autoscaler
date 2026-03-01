@@ -1692,3 +1692,63 @@ type mockMetrics struct {
 func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string) {
 	m.Called(reason, gpuResourceName, gpuType)
 }
+
+func TestGetUnfulfilledNodeCount(t *testing.T) {
+	tests := []struct {
+		name      string
+		target    map[string]int
+		readiness map[string]Readiness
+		want      map[string]int
+	}{
+		{
+			name:      "readiness missing -> actual 0",
+			target:    map[string]int{"ng1": 2},
+			readiness: map[string]Readiness{},
+			want:      map[string]int{"ng1": 2},
+		},
+		{
+			name:   "normal case registered",
+			target: map[string]int{"ng1": 10},
+			readiness: map[string]Readiness{
+				"ng1": {Registered: make([]string, 10), Deleted: make([]string, 0)},
+			},
+			want: map[string]int{"ng1": 0},
+		},
+		{
+			name:   "normal case registered minus deleted",
+			target: map[string]int{"ng1": 9},
+			readiness: map[string]Readiness{
+				"ng1": {Registered: make([]string, 10), Deleted: make([]string, 1)},
+			},
+			want: map[string]int{"ng1": 0},
+		},
+		{
+			name:   "negative unfulfilled clamped to 0",
+			target: map[string]int{"ng1": 5},
+			readiness: map[string]Readiness{
+				"ng1": {Registered: make([]string, 10), Deleted: make([]string, 0)},
+			},
+			want: map[string]int{"ng1": 0},
+		},
+		{
+			name:   "multiple node groups mixed",
+			target: map[string]int{"ng1": 10, "ng2": 5, "ng3": 0},
+			readiness: map[string]Readiness{
+				"ng1": {Registered: make([]string, 9), Deleted: make([]string, 0)},
+				"ng2": {Registered: make([]string, 2), Deleted: make([]string, 0)},
+				"ng3": {Registered: make([]string, 0), Deleted: make([]string, 0)},
+			},
+			want: map[string]int{"ng1": 1, "ng2": 3, "ng3": 0},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			csr := &ClusterStateRegistry{
+				perNodeGroupReadiness: tt.readiness,
+			}
+			got := csr.getUnfulfilledNodeCount(tt.target)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
