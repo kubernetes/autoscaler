@@ -118,7 +118,7 @@ func (cs *fakeClusterState) VPAs() map[model.VpaID]*model.Vpa {
 	return cs.stubbedVPAs
 }
 
-func (cs *fakeClusterState) StateMapSize() int {
+func (*fakeClusterState) StateMapSize() int {
 	return 0
 }
 

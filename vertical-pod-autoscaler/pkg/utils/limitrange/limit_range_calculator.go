@@ -37,11 +37,11 @@ type LimitRangeCalculator interface {
 
 type noopLimitsRangeCalculator struct{}
 
-func (lc *noopLimitsRangeCalculator) GetContainerLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
+func (*noopLimitsRangeCalculator) GetContainerLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
 	return nil, nil
 }
 
-func (lc *noopLimitsRangeCalculator) GetPodLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
+func (*noopLimitsRangeCalculator) GetPodLimitRangeItem(namespace string) (*corev1.LimitRangeItem, error) {
 	return nil, nil
 }
 

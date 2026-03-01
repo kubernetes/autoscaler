@@ -68,7 +68,7 @@ func (s *AdmissionServer) RegisterResourceHandler(resourceHandler resource.Handl
 }
 
 // addDeprecationWarnings adds deprecation warnings to the admission response for VPA objects using deprecated modes
-func (s *AdmissionServer) addDeprecationWarnings(req *admissionv1.AdmissionRequest, resp *admissionv1.AdmissionResponse) {
+func (*AdmissionServer) addDeprecationWarnings(req *admissionv1.AdmissionRequest, resp *admissionv1.AdmissionResponse) {
 	if req.Object.Raw == nil {
 		return
 	}
