@@ -18,6 +18,8 @@ package test
 
 import (
 	"fmt"
+	"sync"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -25,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	fakek8s "k8s.io/autoscaler/cluster-autoscaler/utils/fake"
-	"sync"
 )
 
 const (
@@ -150,6 +151,27 @@ func WithNode(node *apiv1.Node) NodeGroupOption {
 		if n.provider.k8s != nil {
 			n.provider.k8s.AddNode(node)
 		}
+	}
+}
+
+// WithMinSize sets the minimum size of the node group.
+func WithMinSize(min int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.minSize = min
+	}
+}
+
+// WithMaxSize sets the maximum size of the node group.
+func WithMaxSize(max int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.maxSize = max
+	}
+}
+
+// WithTemplate sets the node template for the node group.
+func WithTemplate(template *framework.NodeInfo) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.template = template
 	}
 }
 
@@ -348,6 +370,21 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		if n.provider.k8s != nil {
 			n.provider.k8s.AddNode(newNode)
 		}
+	}
+	n.targetSize += delta
+	return nil
+}
+
+// NoOpIncreaseSize is a special function to simulate scale up
+// without doing any operation on nodes.
+// This is for benchmarks that will only evaluate target size and
+// want to avoid the overhead (and CPU profile noise) of adding
+// nodes to the internal state of the fake cloud provider.
+func (n *NodeGroup) NoOpIncreaseSize(delta int) error {
+	n.Lock()
+	defer n.Unlock()
+	if n.targetSize+delta > n.maxSize {
+		return fmt.Errorf("size too large")
 	}
 	n.targetSize += delta
 	return nil
