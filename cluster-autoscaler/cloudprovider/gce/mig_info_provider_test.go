@@ -236,7 +236,7 @@ func TestFillMigInstances(t *testing.T) {
 		{
 			name: "Old instances in cache",
 			cache: &GceCache{
-				instances:           map[GceRef][]GceInstance{migRef: oldInstances},
+				instances:           map[GceRef][]GceInstance{},
 				instancesUpdateTime: map[GceRef]time.Time{migRef: timeOld},
 				instancesToMig:      map[GceRef]GceRef{},
 			},
@@ -268,7 +268,8 @@ func TestFillMigInstances(t *testing.T) {
 			assert.True(t, ok)
 			provider.timeProvider = &fakeTime{now: timeNow}
 
-			assert.NoError(t, provider.fillMigInstances(migRef))
+			_, err := provider.GetMigInstances(migRef)
+			assert.NoError(t, err)
 			assert.Equal(t, tc.wantClientCalls, callCounter[migRef])
 
 			updateTime, updateTimeFound := tc.cache.GetMigInstancesUpdateTime(migRef)
@@ -1562,7 +1563,7 @@ func TestGetMigMachineType(t *testing.T) {
 	}
 }
 
-func TestMultipleGetMigInstanceCallsLimited(t *testing.T) {
+func TestMultipleFillMigInstancesCallsLimited(t *testing.T) {
 	mig := &gceMig{
 		gceRef: GceRef{
 			Project: "project",
@@ -1570,16 +1571,6 @@ func TestMultipleGetMigInstanceCallsLimited(t *testing.T) {
 			Name:    "base-instance-name",
 		},
 	}
-	instance := GceInstance{
-		Instance: cloudprovider.Instance{Id: "gce://project/zone/base-instance-name-abcd"}, NumericId: 1111,
-	}
-	instanceRef, err := GceRefFromProviderId(instance.Id)
-	assert.Nil(t, err)
-	instance2 := GceInstance{
-		Instance: cloudprovider.Instance{Id: "gce://project/zone/base-instance-name-abcd2"}, NumericId: 222,
-	}
-	instanceRef2, err := GceRefFromProviderId(instance2.Id)
-	assert.Nil(t, err)
 	now := time.Now()
 	for name, tc := range map[string]struct {
 		refreshRateDuration              time.Duration
@@ -1613,25 +1604,35 @@ func TestMultipleGetMigInstanceCallsLimited(t *testing.T) {
 			}
 			cache.migBaseNameCache = map[GceRef]string{mig.GceRef(): "base-instance-name"}
 			callCounter := make(map[GceRef]int)
+			instanceRef := GceRef{Project: "project", Zone: "zone", Name: "base-instance-name-abcd"}
+			instance := GceInstance{
+				Instance: cloudprovider.Instance{
+					Id: fmt.Sprintf("gce://%s/%s/%s", instanceRef.Project, instanceRef.Zone, instanceRef.Name),
+				},
+				Igm: mig.GceRef(),
+			}
+
 			client := &mockAutoscalingGceClient{
-				fetchMigInstances: fetchMigInstancesWithCounter(nil, callCounter),
+				fetchMigInstances: fetchMigInstancesWithCounter([]GceInstance{instance}, callCounter),
 			}
 			migLister := NewMigLister(cache)
 			ft := &fakeTime{}
-			provider := &cachingMigInfoProvider{
-				cache:                          cache,
-				migLister:                      migLister,
-				gceClient:                      client,
-				projectId:                      projectId,
-				concurrentGceRefreshes:         1,
-				migInstancesMinRefreshWaitTime: tc.refreshRateDuration,
-				timeProvider:                   ft,
-			}
+			provider := NewCachingMigInfoProvider(cache, migLister, client, "project", 1, tc.refreshRateDuration, false, false).(*cachingMigInfoProvider)
+			provider.timeProvider = ft
+
 			ft.now = tc.firstCallTime
-			_, err = provider.GetMigForInstance(instanceRef)
+			_, err := provider.GetMigForInstance(instanceRef)
 			assert.NoError(t, err)
+
+			// Manually clear the instances list but keep the update time to test fillMigInstances rate limiting.
+			cache.cacheMutex.Lock()
+			delete(cache.instances, mig.GceRef())
+			delete(cache.instancesToMig, instanceRef)
+			delete(cache.instancesFromUnknownMig, instanceRef)
+			cache.cacheMutex.Unlock()
+
 			ft.now = tc.secondCallTime
-			_, err = provider.GetMigForInstance(instanceRef2)
+			_, err = provider.GetMigForInstance(instanceRef)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedCallsToFetchMigInstances, callCounter[mig.GceRef()])
 		})
@@ -1955,6 +1956,7 @@ func emptyCache() *GceCache {
 		migs:                             map[GceRef]Mig{mig.GceRef(): mig, mig1.GceRef(): mig1},
 		instances:                        make(map[GceRef][]GceInstance),
 		instancesUpdateTime:              make(map[GceRef]time.Time),
+		instancesToMig:                   make(map[GceRef]GceRef),
 		migTargetSizeCache:               make(map[GceRef]int64),
 		migBaseNameCache:                 make(map[GceRef]string),
 		migInstancesStateCountCache:      make(map[GceRef]map[cloudprovider.InstanceState]int64),
