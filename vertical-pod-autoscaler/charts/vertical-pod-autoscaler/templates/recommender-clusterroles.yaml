@@ -14,6 +14,9 @@ rules:
     verbs:
       - get
       - list
+  {{- if .Values.rbac.extraRules }}
+{{ toYaml .Values.rbac.extraRules | indent 2 }}
+  {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

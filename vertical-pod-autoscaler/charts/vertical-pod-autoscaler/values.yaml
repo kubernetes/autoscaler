@@ -13,6 +13,8 @@ commonLabels: {}
 rbac:
   # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
   create: true
+  # extraRules -- Additional rules to add to the ClusterRole
+  extraRules: []
 
 podSecurityContext:
   runAsNonRoot: true

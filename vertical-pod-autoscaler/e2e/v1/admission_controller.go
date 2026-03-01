@@ -1049,9 +1049,14 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-e2e-certs secret")
 		actualCertsSecret, err := c.CoreV1().Secrets(metav1.NamespaceSystem).Get(ctx, "vpa-tls-certs", metav1.GetOptions{})
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-tls-certs secret")
-		actualCertsSecret.Data["serverKey.pem"] = e2eCertsSecret.Data["e2eKey.pem"]
-		actualCertsSecret.Data["serverCert.pem"] = e2eCertsSecret.Data["e2eCert.pem"]
-		actualCertsSecret.Data["caCert.pem"] = e2eCertsSecret.Data["e2eCaCert.pem"]
+		// Detect secret key format: Helm certgen uses "key/cert/ca", gencerts.sh uses "serverKey.pem/serverCert.pem/caCert.pem"
+		keyName, certName, caName := "key", "cert", "ca"
+		if _, ok := actualCertsSecret.Data["serverKey.pem"]; ok {
+			keyName, certName, caName = "serverKey.pem", "serverCert.pem", "caCert.pem"
+		}
+		actualCertsSecret.Data[keyName] = e2eCertsSecret.Data["e2eKey.pem"]
+		actualCertsSecret.Data[certName] = e2eCertsSecret.Data["e2eCert.pem"]
+		actualCertsSecret.Data[caName] = e2eCertsSecret.Data["e2eCaCert.pem"]
 		_, err = c.CoreV1().Secrets(metav1.NamespaceSystem).Update(ctx, actualCertsSecret, metav1.UpdateOptions{})
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to update vpa-tls-certs secret with e2e rotation certs")
 
@@ -1067,13 +1072,14 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 		gomega.Expect(admissionController.Name).ToNot(gomega.BeEmpty())
 
+		// Wait for certificate reload - Kubernetes secret propagation can take up to 2 minutes
 		gomega.Eventually(func(g gomega.Gomega) string {
 			reader, err := c.CoreV1().Pods(metav1.NamespaceSystem).GetLogs(admissionController.Name, &apiv1.PodLogOptions{}).Stream(ctx)
 			g.Expect(err).To(gomega.Succeed())
 			logs, err := io.ReadAll(reader)
 			g.Expect(err).To(gomega.Succeed())
 			return string(logs)
-		}).Should(gomega.And(gomega.ContainSubstring("New certificate found, reloading"), gomega.ContainSubstring("New client CA found, reloading and patching webhook"), gomega.ContainSubstring("Successfully patched webhook with new client CA")))
+		}, 3*time.Minute, 5*time.Second).Should(gomega.And(gomega.ContainSubstring("New certificate found, reloading"), gomega.ContainSubstring("New client CA found, reloading and patching webhook"), gomega.ContainSubstring("Successfully patched webhook with new client CA")))
 
 		ginkgo.By("Setting up invalid VPA object")
 		// there is an invalid "requests" field.

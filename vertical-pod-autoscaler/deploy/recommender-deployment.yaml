@@ -13,6 +13,8 @@ spec:
     metadata:
       labels:
         app: vpa-recommender
+        app.kubernetes.io/component: recommender
+        app.kubernetes.io/name: vertical-pod-autoscaler
     spec:
       serviceAccountName: vpa-recommender
       securityContext:
