@@ -621,3 +621,119 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testing.T) {
+	testCases := []struct {
+		name                       string
+		zeroOrMaxNodeScaling       bool
+		allowNonAtomicScaleUpToMax bool
+		nodesStatus                map[string]cloudprovider.InstanceState
+		nodesError                 map[string]*cloudprovider.InstanceErrorInfo
+		expectedRemainingNodes     []string // node names expected to remain
+	}{
+		{
+			name:                       "Case 1: zero or max scale-up should remove all nodes in case when only some them have creation errors and AllowNonAtomicScaleUpToMax IS NOT set",
+			zeroOrMaxNodeScaling:       true,
+			allowNonAtomicScaleUpToMax: false,
+			nodesStatus: map[string]cloudprovider.InstanceState{
+				"D-node-1": cloudprovider.InstanceRunning,
+				"D-node-2": cloudprovider.InstanceRunning,
+				"D-node-3": cloudprovider.InstanceCreating,
+			},
+			nodesError: map[string]*cloudprovider.InstanceErrorInfo{
+				"D-node-3": {
+					ErrorClass: cloudprovider.OtherErrorClass,
+					ErrorCode:  "OTHER",
+				},
+			},
+			expectedRemainingNodes: []string{}, // all instances are removed
+		},
+		{
+			name:                       "Case 2: zero or max scale-up should not remove any nodes if only some them have creation errors and AllowNonAtomicScaleUpToMax IS set",
+			zeroOrMaxNodeScaling:       true,
+			allowNonAtomicScaleUpToMax: true,
+			nodesStatus: map[string]cloudprovider.InstanceState{
+				"D-node-1": cloudprovider.InstanceRunning,
+				"D-node-2": cloudprovider.InstanceRunning,
+				"D-node-3": cloudprovider.InstanceCreating,
+			},
+			nodesError: map[string]*cloudprovider.InstanceErrorInfo{
+				"D-node-3": {
+					ErrorClass: cloudprovider.OtherErrorClass,
+					ErrorCode:  "OTHER",
+				},
+			},
+			expectedRemainingNodes: []string{"D-node-1", "D-node-2", "D-node-3"}, // none removed
+		},
+		{
+			name:                       "Case 3: zero or max scale-up should remove all nodes if all of them fail, even if AllowNonAtomicScaleUpToMax IS set",
+			zeroOrMaxNodeScaling:       true,
+			allowNonAtomicScaleUpToMax: true,
+			nodesStatus: map[string]cloudprovider.InstanceState{
+				"D-node-1": cloudprovider.InstanceCreating,
+				"D-node-2": cloudprovider.InstanceCreating,
+				"D-node-3": cloudprovider.InstanceCreating,
+			},
+			nodesError: map[string]*cloudprovider.InstanceErrorInfo{
+				"D-node-1": {ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: "OTHER"},
+				"D-node-2": {ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: "OTHER"},
+				"D-node-3": {ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: "OTHER"},
+			},
+			expectedRemainingNodes: []string{}, // all failing nodes removed
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := integration.NewTestConfig().
+				WithOverrides(
+					integration.WithMaxNodeGroupBinpackingDuration(1*time.Second),
+					integration.WithMaxTotalUnreadyPercentage(100),
+					integration.WithOkTotalUnreadyCount(6),
+					integration.WithZeroOrMaxNodeScaling(tc.zeroOrMaxNodeScaling),
+					integration.WithAllowNonAtomicScaleUpToMax(tc.allowNonAtomicScaleUpToMax),
+				)
+			options := cfg.ResolveOptions()
+			infra := integration.SetupInfrastructure(t)
+			fakes := infra.Fakes
+
+			synctest.Test(t, func(t *testing.T) {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer synctestutils.TearDown(cancel)
+
+				autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+				assert.NoError(t, err)
+
+				fakes.CloudProvider.AddNodeGroup("D")
+				ngD := fakes.CloudProvider.GetNodeGroup("D").(*fakecloudprovider.NodeGroup)
+
+				ngD.SetOptions(&options.NodeGroupDefaults)
+
+				for id, state := range tc.nodesStatus {
+					ngD.SetInstanceState(id, state)
+					if errInfo, found := tc.nodesError[id]; found {
+						ngD.SetInstanceError(id, errInfo)
+					}
+				}
+
+				ngD.SetTargetSize(len(tc.nodesStatus))
+
+				// Refresh instance cache directly with what is in fake cloud provider
+				autoscaler.(*core.StaticAutoscaler).ClusterStateRegistry().RefreshCloudProviderNodeInstancesCache()
+
+				// RunRunOnceAfter will automatically refresh cloud provider cache and act upon errors
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesD, _ := ngD.Nodes()
+				assert.Len(t, instancesD, len(tc.expectedRemainingNodes))
+				instanceIds := make(map[string]bool)
+				for _, instance := range instancesD {
+					instanceIds[instance.Id] = true
+				}
+				for _, expected := range tc.expectedRemainingNodes {
+					assert.True(t, instanceIds[expected], "Expected to find node %s but it was deleted", expected)
+				}
+			})
+		})
+	}
+}

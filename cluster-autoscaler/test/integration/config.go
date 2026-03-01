@@ -172,3 +172,24 @@ func WithMaxNodeGroupBinpackingDuration(d time.Duration) AutoscalingOptionOverri
 		o.MaxNodeGroupBinpackingDuration = d
 	}
 }
+
+// WithOkTotalUnreadyCount sets OkTotalUnreadyCount.
+func WithOkTotalUnreadyCount(cnt int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.OkTotalUnreadyCount = cnt
+	}
+}
+
+// WithZeroOrMaxNodeScaling sets the zero or max node scaling option.
+func WithZeroOrMaxNodeScaling(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.NodeGroupDefaults.ZeroOrMaxNodeScaling = b
+	}
+}
+
+// WithAllowNonAtomicScaleUpToMax sets the allow non atomic scaleup option.
+func WithAllowNonAtomicScaleUpToMax(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.NodeGroupDefaults.AllowNonAtomicScaleUpToMax = b
+	}
+}
