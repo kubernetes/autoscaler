@@ -17,15 +17,19 @@ limitations under the License.
 package predicate
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // PredicateSnapshot implements ClusterSnapshot on top of a ClusterSnapshotStore by using
@@ -35,6 +39,7 @@ type PredicateSnapshot struct {
 	pluginRunner                 *SchedulerPluginRunner
 	draEnabled                   bool
 	enableCSINodeAwareScheduling bool
+	parallelism                  int
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
@@ -43,6 +48,7 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 		ClusterSnapshotStore:         snapshotStore,
 		draEnabled:                   draEnabled,
 		enableCSINodeAwareScheduling: enableCSINodeAwareScheduling,
+		parallelism:                  parallelism,
 	}
 	// Plugin runner really only needs a framework.SharedLister for running the plugins, but it also needs to run the provided Node-matching functions
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
@@ -52,7 +58,78 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	return snapshot
 }
 
-// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerframework.NodeInfo.
+// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
+// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
+func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
+	s.ClusterSnapshotStore.Clear()
+
+	nodeInfos := make([]*schedulerimpl.NodeInfo, len(nodes))
+	nodeNameToIdx := make(map[string]int, len(nodes))
+	for i, node := range nodes {
+		ni := schedulerimpl.NewNodeInfo()
+		ni.SetNode(node)
+		nodeInfos[i] = ni
+		nodeNameToIdx[node.Name] = i
+	}
+
+	if s.parallelism > 1 {
+		s.setClusterStatePodsParallelized(nodeInfos, nodeNameToIdx, scheduledPods)
+	} else {
+		// TODO(macsko): Migrate to setClusterStatePodsParallelized for parallelism == 1
+		// after making sure the implementation is always correct in CA 1.33.
+		s.setClusterStatePodsSequential(nodeInfos, nodeNameToIdx, scheduledPods)
+	}
+
+	// We build NodeInfo objects with all their pods before adding them to the store.
+	// This allows parallelizing PodInfo construction and enables the store to
+	// perform bulk internal state / cache updates per-node rather than per-pod.
+	for _, ni := range nodeInfos {
+		if err := s.ClusterSnapshotStore.AddSchedulerNodeInfo(ni); err != nil {
+			return err
+		}
+	}
+
+	if draSnapshot == nil {
+		draSnapshot = drasnapshot.NewEmptySnapshot()
+	}
+	s.ClusterSnapshotStore.SetDraSnapshot(draSnapshot)
+
+	if csiSnapshot == nil {
+		csiSnapshot = csisnapshot.NewEmptySnapshot()
+	}
+	s.ClusterSnapshotStore.SetCsiSnapshot(csiSnapshot)
+
+	return nil
+}
+
+func (s *PredicateSnapshot) setClusterStatePodsSequential(nodeInfos []*schedulerimpl.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
+	for _, pod := range scheduledPods {
+		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
+			podInfo, _ := schedulerimpl.NewPodInfo(pod)
+			nodeInfos[nodeIdx].AddPodInfo(podInfo)
+		}
+	}
+}
+
+func (s *PredicateSnapshot) setClusterStatePodsParallelized(nodeInfos []*schedulerimpl.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) {
+	podsForNode := make([][]*apiv1.Pod, len(nodeInfos))
+	for _, pod := range scheduledPods {
+		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
+			podsForNode[nodeIdx] = append(podsForNode[nodeIdx], pod)
+		}
+	}
+
+	ctx := context.Background()
+	workqueue.ParallelizeUntil(ctx, s.parallelism, len(nodeInfos), func(nodeIdx int) {
+		nodeInfo := nodeInfos[nodeIdx]
+		for _, pod := range podsForNode[nodeIdx] {
+			podInfo, _ := schedulerimpl.NewPodInfo(pod)
+			nodeInfo.AddPodInfo(podInfo)
+		}
+	})
+}
+
+// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerimpl.NodeInfo.
 func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
 	schedNodeInfo, err := s.ClusterSnapshotStore.NodeInfos().Get(nodeName)
 	if err != nil {
@@ -76,7 +153,7 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 	return wrappedNodeInfo, nil
 }
 
-// ListNodeInfos returns internal NodeInfos wrapping all schedulerframework.NodeInfos in the snapshot.
+// ListNodeInfos returns internal NodeInfos wrapping all schedulerimpl.NodeInfos in the snapshot.
 func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
 	schedNodeInfos, err := s.ClusterSnapshotStore.NodeInfos().List()
 	if err != nil {
@@ -260,7 +337,7 @@ func (s *PredicateSnapshot) verifyScheduledPodResourceClaims(pod *apiv1.Pod, nod
 	return nil
 }
 
-func (s *PredicateSnapshot) modifyResourceClaimsForScheduledPod(pod *apiv1.Pod, node *apiv1.Node, postFilterState *schedulerframework.CycleState) error {
+func (s *PredicateSnapshot) modifyResourceClaimsForScheduledPod(pod *apiv1.Pod, node *apiv1.Node, postFilterState *schedulerimpl.CycleState) error {
 	// We need to run the scheduler Reserve phase to allocate the appropriate ResourceClaims in the DRA snapshot. The allocations are
 	// actually computed and cached in the Filter phase, and Reserve only grabs them from the cycle state. So this should be quick, but
 	// it needs the cycle state from after running the Filter phase.

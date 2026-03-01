@@ -24,13 +24,17 @@ import (
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
 	ClusterSnapshotStore
+
+	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
+	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
+	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
 
 	// AddNodeInfo adds the given NodeInfo to the snapshot without checking scheduler predicates. The Node and the Pods are added,
 	// as well as any DRA objects passed along them.
@@ -76,10 +80,6 @@ type ClusterSnapshot interface {
 type ClusterSnapshotStore interface {
 	framework.SharedLister
 
-	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
-	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
-	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
-
 	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
 	ForceAddPod(pod *apiv1.Pod, nodeName string) error
 	// ForceRemovePod removes the given Pod (and all DRA objects it owns) from the snapshot.
@@ -88,16 +88,24 @@ type ClusterSnapshotStore interface {
 	// AddSchedulerNodeInfo adds the given schedulerframework.NodeInfo to the snapshot without checking scheduler predicates, and
 	// without taking DRA objects into account. This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.AddNodeInfo()
 	// instead.
-	AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error
+	AddSchedulerNodeInfo(nodeInfo schedulerinterface.NodeInfo) error
 	// RemoveSchedulerNodeInfo removes the given schedulerframework.NodeInfo from the snapshot without taking DRA objects into account. This shouldn't
 	// be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
 	RemoveSchedulerNodeInfo(nodeName string) error
+
+	// SetDraSnapshot replaces the DRA snapshot in the store.
+	SetDraSnapshot(draSnapshot *drasnapshot.Snapshot)
+	// SetCsiSnapshot replaces the CSI snapshot in the store.
+	SetCsiSnapshot(csiSnapshot *csisnapshot.Snapshot)
 
 	// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
 	DraSnapshot() *drasnapshot.Snapshot
 
 	// CsiSnapshot returns an interface that allows accessing and modifying the CSINode objects in the snapshot.
 	CsiSnapshot() *csisnapshot.Snapshot
+
+	// Clear resets the snapshot to an empty, unforked state.
+	Clear()
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.
