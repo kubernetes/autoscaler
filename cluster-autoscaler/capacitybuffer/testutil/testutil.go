@@ -169,6 +169,13 @@ func WithStatusReplicas(replicas int32) BufferOption {
 	}
 }
 
+// WithStatusPodTemplateGeneration sets the Status.PodTemplateGeneration
+func WithStatusPodTemplateGeneration(generation int64) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Status.PodTemplateGeneration = &generation
+	}
+}
+
 // WithActiveProvisioningStrategy sets the ProvisioningStrategy to ActiveProvisioningStrategy
 func WithActiveProvisioningStrategy() BufferOption {
 	return func(b *v1.CapacityBuffer) {

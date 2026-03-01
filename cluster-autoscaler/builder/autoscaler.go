@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	cbctrl "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -202,11 +203,17 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 
 	var capacitybufferClient *capacityclient.CapacityBufferClient
 	var capacitybufferClientError error
+	var fakePodsResolver fakepods.Resolver
 	if autoscalingOptions.CapacitybufferControllerEnabled {
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
 		capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			nodeBufferController := cbctrl.NewDefaultBufferController(capacitybufferClient)
+			if autoscalingOptions.CapacityBufferPodDryRunEnabled {
+				fakePodsResolver = fakepods.NewDryRunResolver(b.kubeClient)
+			} else {
+				fakePodsResolver = fakepods.NewDefaultingResolver()
+			}
+			nodeBufferController := cbctrl.NewDefaultBufferController(capacitybufferClient, fakePodsResolver)
 			go nodeBufferController.Run(ctx.Done())
 		}
 	}

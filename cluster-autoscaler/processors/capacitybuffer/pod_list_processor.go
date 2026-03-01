@@ -199,7 +199,7 @@ func (p *CapacityBufferPodListProcessor) updateBufferStatus(buffer *v1beta1.Capa
 // makeFakePods creates podCount number of copies of the sample pod
 func makeFakePods(buffer *v1beta1.CapacityBuffer, samplePodTemplate *apiv1.PodTemplateSpec, podCount int, forceSafeToEvictFakePods bool) ([]*apiv1.Pod, error) {
 	var fakePods []*apiv1.Pod
-	samplePod := pod.GetPodFromTemplate(samplePodTemplate, buffer.Namespace)
+	samplePod := pod.GetPodFromTemplate(samplePodTemplate)
 	samplePod.Spec.NodeName = ""
 	samplePod = withCapacityBufferFakePodAnnotation(samplePod)
 	if forceSafeToEvictFakePods {
@@ -208,6 +208,7 @@ func makeFakePods(buffer *v1beta1.CapacityBuffer, samplePodTemplate *apiv1.PodTe
 	for i := 1; i <= podCount; i++ {
 		fakePod := samplePod.DeepCopy()
 		fakePod.Name = fmt.Sprintf("capacity-buffer-%s-%d", buffer.Name, i)
+		fakePod.Namespace = buffer.Namespace
 		fakePod.UID = types.UID(fmt.Sprintf("%s-%d", string(buffer.UID), i))
 		fakePods = append(fakePods, fakePod)
 	}
