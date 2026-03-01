@@ -435,3 +435,123 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		assert.Equal(t, 0, tg1) // n1 is scaled down because p1 is expendable
 	})
 }
+
+func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
+	testCases := []struct {
+		name                   string
+		forceDeleteEnabled     bool
+		forceDeleteImplemented bool
+	}{
+		{
+			name:                   "forceDeleteEnabled=false,forceDeleteImplemented=false",
+			forceDeleteEnabled:     false,
+			forceDeleteImplemented: false,
+		},
+		{
+			name:                   "forceDeleteEnabled=true,forceDeleteImplemented=false",
+			forceDeleteEnabled:     true,
+			forceDeleteImplemented: false,
+		},
+		{
+			name:                   "forceDeleteEnabled=true,forceDeleteImplemented=true",
+			forceDeleteEnabled:     true,
+			forceDeleteImplemented: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := integration.NewTestConfig().
+				WithOverrides(
+					integration.WithScaleDownUnneededTime(time.Minute),
+					integration.WithExpendablePodsPriorityCutoff(10),
+					integration.WithForceDeleteFailedNodes(tc.forceDeleteEnabled),
+					integration.WithMaxNodeGroupBinpackingDuration(1*time.Second),
+					integration.WithMaxTotalUnreadyPercentage(100),
+				)
+			options := cfg.ResolveOptions()
+			infra := integration.SetupInfrastructure(t)
+			fakes := infra.Fakes
+
+			synctest.Test(t, func(t *testing.T) {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer synctestutils.TearDown(cancel)
+
+				autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+				assert.NoError(t, err)
+
+				templateNodeA := tu.BuildTestNode("A-template", 1000, 1000, tu.IsReady(true))
+				fakes.CloudProvider.AddNodeGroup("A", fcp.WithMinMax(0, 6), fcp.WithTargetSize(1), fcp.WithNode(templateNodeA))
+				fakes.K8s.AddNode(templateNodeA)
+
+				ngA := fakes.CloudProvider.GetNodeGroup("A").(*fcp.NodeGroup)
+
+				for i := 1; i <= 5; i++ {
+					p := tu.BuildTestPod(fmt.Sprintf("p-%d", i), 800, 100, tu.MarkUnschedulable())
+					fakes.K8s.AddPod(p)
+				}
+
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				// Helper to simulate instances for NodeGroup A
+				setupNodeGroupA := func() {
+					ngA.SetInstanceState("A-template", cloudprovider.InstanceRunning)
+					ngA.SetInstanceState("A-node-1", cloudprovider.InstanceCreating)
+
+					errors := []struct {
+						id       string
+						errClass cloudprovider.InstanceErrorClass
+						errCode  string
+					}{
+						{"A-node-2", cloudprovider.OutOfResourcesErrorClass, "RESOURCE_POOL_EXHAUSTED"},
+						{"A-node-3", cloudprovider.OutOfResourcesErrorClass, "RESOURCE_POOL_EXHAUSTED"},
+						{"A-node-4", cloudprovider.OutOfResourcesErrorClass, "QUOTA"},
+						{"A-node-5", cloudprovider.OtherErrorClass, "OTHER"},
+					}
+
+					for _, e := range errors {
+						ngA.SetInstanceState(e.id, cloudprovider.InstanceCreating)
+						ngA.SetInstanceError(e.id, &cloudprovider.InstanceErrorInfo{
+							ErrorClass: e.errClass,
+							ErrorCode:  e.errCode,
+						})
+					}
+				}
+				setupNodeGroupA()
+
+				for i := 1; i <= 5; i++ {
+					fakes.K8s.DeletePod("default", fmt.Sprintf("p-%d", i))
+				}
+
+				// CA acts upon unready and errored nodes natively.
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesA, _ := ngA.Nodes()
+				assert.Len(t, instancesA, 2)
+				instanceIds := make(map[string]bool)
+				for _, instance := range instancesA {
+					instanceIds[instance.Id] = true
+				}
+				assert.True(t, instanceIds["A-template"])
+				assert.True(t, instanceIds["A-node-1"])
+
+				setupNodeGroupA()
+
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesA, _ = ngA.Nodes()
+				assert.Len(t, instancesA, 2)
+
+				for i := 2; i <= 5; i++ {
+					id := fmt.Sprintf("A-node-%d", i)
+					ngA.SetInstanceState(id, cloudprovider.InstanceRunning)
+					ngA.SetInstanceError(id, nil)
+				}
+
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesA, _ = ngA.Nodes()
+				assert.Len(t, instancesA, 6)
+			})
+		})
+	}
+}
