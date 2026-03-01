@@ -21,6 +21,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
@@ -80,6 +83,27 @@ func TestCombinedStatusSet(t *testing.T) {
 			exportedResut: status.ScaleUpSuccessful,
 			exportedError: errors.NewAutoscalerError(errors.InternalError, "error 0"),
 		},
+		{
+			name:          "all partial capacity",
+			statuses:      generateStatuses(2, status.ScaleUpPartialCapacityAvailable),
+			exportedResut: status.ScaleUpPartialCapacityAvailable,
+		},
+		{
+			name:          "successful and partial capacity",
+			statuses:      append(generateStatuses(1, status.ScaleUpPartialCapacityAvailable), generateStatuses(1, status.ScaleUpSuccessful)...),
+			exportedResut: status.ScaleUpSuccessful,
+		},
+		{
+			name:          "partial capacity and no options available",
+			statuses:      append(generateStatuses(1, status.ScaleUpPartialCapacityAvailable), generateStatuses(1, status.ScaleUpNoOptionsAvailable)...),
+			exportedResut: status.ScaleUpPartialCapacityAvailable,
+		},
+		{
+			name:          "error and partial capacity",
+			statuses:      append(generateStatuses(1, status.ScaleUpError), generateStatuses(1, status.ScaleUpPartialCapacityAvailable)...),
+			exportedResut: status.ScaleUpPartialCapacityAvailable,
+			exportedError: errors.NewAutoscalerError(errors.InternalError, "error 0"),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -126,4 +150,120 @@ func generateStatuses(n int, result status.ScaleUpResult) []*status.ScaleUpStatu
 		statuses[i] = &status.ScaleUpStatus{Result: result, ScaleUpError: scaleUpErr}
 	}
 	return statuses
+}
+
+func TestSortPodsFromProvReq(t *testing.T) {
+	testCases := []struct {
+		name               string
+		input              []*apiv1.Pod
+		expectedSortedPods []types.NamespacedName
+	}{
+		{
+			name: "single PodSet with multiple pods",
+			input: []*apiv1.Pod{
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-2", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-0", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-1", Namespace: "default"}},
+			},
+			expectedSortedPods: []types.NamespacedName{
+				{Namespace: "default", Name: "workload-0-0"},
+				{Namespace: "default", Name: "workload-0-1"},
+				{Namespace: "default", Name: "workload-0-2"},
+			},
+		},
+		{
+			name: "multiple PodSets",
+			input: []*apiv1.Pod{
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-1-0", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-1", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-2-0", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-0", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-1-1", Namespace: "default"}},
+			},
+			expectedSortedPods: []types.NamespacedName{
+				{Namespace: "default", Name: "workload-0-0"},
+				{Namespace: "default", Name: "workload-0-1"},
+				{Namespace: "default", Name: "workload-1-0"},
+				{Namespace: "default", Name: "workload-1-1"},
+				{Namespace: "default", Name: "workload-2-0"},
+			},
+		},
+		{
+			name: "mixed with non-matching pattern - fallback to lexicographic",
+			input: []*apiv1.Pod{
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-1", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "other-pod", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-0", Namespace: "default"}},
+			},
+			expectedSortedPods: []types.NamespacedName{
+				{Namespace: "default", Name: "other-pod"},
+				{Namespace: "default", Name: "workload-0-0"},
+				{Namespace: "default", Name: "workload-0-1"},
+			},
+		},
+		{
+			name: "different namespaces with same indices - namespace used as tiebreaker",
+			input: []*apiv1.Pod{
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-0", Namespace: "ns-b"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-1", Namespace: "ns-a"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-0", Namespace: "ns-a"}},
+			},
+			expectedSortedPods: []types.NamespacedName{
+				{Namespace: "ns-a", Name: "workload-0-0"},
+				{Namespace: "ns-b", Name: "workload-0-0"},
+				{Namespace: "ns-a", Name: "workload-0-1"},
+			},
+		},
+		{
+			name: "complex PodSet indices",
+			input: []*apiv1.Pod{
+				{ObjectMeta: metav1.ObjectMeta{Name: "app-10-5", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "app-2-10", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "app-2-2", Namespace: "default"}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "app-10-0", Namespace: "default"}},
+			},
+			expectedSortedPods: []types.NamespacedName{
+				{Namespace: "default", Name: "app-2-2"},
+				{Namespace: "default", Name: "app-2-10"},
+				{Namespace: "default", Name: "app-10-0"},
+				{Namespace: "default", Name: "app-10-5"},
+			},
+		},
+		{
+			name:               "empty list",
+			input:              []*apiv1.Pod{},
+			expectedSortedPods: []types.NamespacedName{},
+		},
+		{
+			name: "single pod",
+			input: []*apiv1.Pod{
+				{ObjectMeta: metav1.ObjectMeta{Name: "workload-0-0", Namespace: "default"}},
+			},
+			expectedSortedPods: []types.NamespacedName{
+				{Namespace: "default", Name: "workload-0-0"},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			sorted := sortPodsFromProvReq(tc.input)
+
+			sortedNamespacedNames := make([]types.NamespacedName, len(sorted))
+			for i, pod := range sorted {
+				sortedNamespacedNames[i] = types.NamespacedName{
+					Namespace: pod.Namespace,
+					Name:      pod.Name,
+				}
+			}
+
+			assert.Equal(t, tc.expectedSortedPods, sortedNamespacedNames, "Pods should be sorted in the correct order")
+
+			// Verify we didn't modify the number of pods
+			assert.Equal(t, len(tc.input), len(sorted), "Should have same number of pods")
+		})
+	}
 }
