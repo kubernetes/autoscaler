@@ -43,6 +43,11 @@ type FailedScaleUpReason string
 // we measure duration
 type FunctionLabel string
 
+// FunctionLabelKey is a key of Cluster Autoscaler operation for which
+// we measure duration. Integer based key is used to improve performance
+// by avoiding string hashing and enforce zero collisions at runtime.
+type FunctionLabelKey int
+
 // NodeGroupType describes node group relation to CA
 type NodeGroupType string
 
@@ -139,10 +144,12 @@ type caMetrics struct {
 	nodeGroupBackOffStatus *k8smetrics.GaugeVec
 
 	// Metrics related to autoscaler execution
-	lastActivity            *k8smetrics.GaugeVec
-	functionDuration        *k8smetrics.HistogramVec
-	functionDurationSummary *k8smetrics.SummaryVec
-	pendingNodeDeletions    *k8smetrics.Gauge
+	lastActivity               *k8smetrics.GaugeVec
+	functionDuration           *k8smetrics.HistogramVec
+	functionAggregatedDuration *k8smetrics.HistogramVec
+	functionAggregatedTracker  *DurationCounter
+	functionDurationSummary    *k8smetrics.SummaryVec
+	pendingNodeDeletions       *k8smetrics.Gauge
 
 	// Metrics related to autoscaler operations
 	errorsCount                      *k8smetrics.CounterVec
@@ -301,6 +308,16 @@ func newCaMetrics() *caMetrics {
 				Buckets:   k8smetrics.ExponentialBuckets(0.01, 1.5, 30), // 0.01, 0.015, 0.0225, ..., 852.2269299239293, 1278.3403948858938
 			}, []string{"function"},
 		),
+
+		functionAggregatedDuration: k8smetrics.NewHistogramVec(
+			&k8smetrics.HistogramOpts{
+				Namespace: caNamespace,
+				Name:      "function_aggregated_duration_seconds",
+				Help:      "Time taken by various parts of autoscaler aggregated per loop",
+				Buckets:   k8smetrics.ExponentialBuckets(0.01, 1.5, 30), // 0.01, 0.015, 0.0225, ..., 852.2269299239293, 1278.3403948858938
+			}, []string{"function"},
+		),
+		functionAggregatedTracker: NewDurationCounter(),
 
 		functionDurationSummary: k8smetrics.NewSummaryVec(
 			&k8smetrics.SummaryOpts{
@@ -519,6 +536,7 @@ func (m *caMetrics) RegisterAll(emitPerNodeGroupMetrics bool) {
 	m.mustRegister(m.lastActivity)
 	m.mustRegister(m.functionDuration)
 	m.mustRegister(m.functionDurationSummary)
+	m.mustRegister(m.functionAggregatedDuration)
 	m.mustRegister(m.errorsCount)
 	m.mustRegister(m.scaleUpCount)
 	m.mustRegister(m.gpuScaleUpCount)
@@ -587,6 +605,34 @@ func (m *caMetrics) UpdateDuration(label FunctionLabel, duration time.Duration) 
 	}
 	m.functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())
 	m.functionDurationSummary.WithLabelValues(string(label)).Observe(duration.Seconds())
+}
+
+// UpdateDurationAggregated records the duration of the step identified by the
+// label key.
+//
+// Warning: if the label key is not registered, it will be ignored when flushing the
+// aggregated durations.
+func (m *caMetrics) UpdateDurationAggregated(labelKey FunctionLabelKey, duration time.Duration) {
+	m.functionAggregatedTracker.Increment(int(labelKey), duration)
+}
+
+// UpdateDurationAggregatedFromStart records the duration of the step identified by the
+// label key using start time.
+//
+// Warning: if the label key is not registered, it will be ignored when flushing the
+// aggregated durations.
+func (m *caMetrics) UpdateDurationAggregatedFromStart(labelKey FunctionLabelKey, start time.Time) {
+	m.functionAggregatedTracker.Increment(int(labelKey), time.Since(start))
+}
+
+// FlushAggregatedDurations records aggregated durations of the steps tracked
+// by UpdateDuration, resets the tracker and updates the metric.
+func (m *caMetrics) FlushAggregatedDurations() {
+	snapshot := m.functionAggregatedTracker.Snapshot()
+	for label, duration := range snapshot {
+		m.functionAggregatedDuration.WithLabelValues(label).Observe(duration.Seconds())
+	}
+	m.functionAggregatedTracker.Reset()
 }
 
 // UpdateLastTime records the time the step identified by the label was started
