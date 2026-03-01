@@ -152,6 +152,30 @@ func TestSimulateNodeRemoval(t *testing.T) {
 	blocker2 := BuildTestPod("blocker2", 100, 100000)
 	blocker2.Spec.NodeName = "topo-n3"
 
+	// Same constraint but with NodeTaintsPolicy: Honor — ghost node's taint
+	// excludes it from domain counting, so removal succeeds even with maxSkew=1.
+	honorPolicy := apiv1.NodeInclusionPolicyHonor
+	honorTopoConstraint := topoConstraint
+	honorTopoConstraint.NodeTaintsPolicy = &honorPolicy
+
+	pod8 := BuildTestPod("p8", 100, 100000)
+	pod8.Labels = map[string]string{"app": "topo-app"}
+	pod8.OwnerReferences = ownerRefs
+	pod8.Spec.NodeName = "topo-n1"
+	pod8.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{honorTopoConstraint}
+
+	pod9 := BuildTestPod("p9", 100, 100000)
+	pod9.Labels = map[string]string{"app": "topo-app"}
+	pod9.OwnerReferences = ownerRefs
+	pod9.Spec.NodeName = "topo-n2"
+	pod9.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{honorTopoConstraint}
+
+	pod10 := BuildTestPod("p10", 100, 100000)
+	pod10.Labels = map[string]string{"app": "topo-app"}
+	pod10.OwnerReferences = ownerRefs
+	pod10.Spec.NodeName = "topo-n3"
+	pod10.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{honorTopoConstraint}
+
 	tests := []simulateNodeRemovalTestConfig{
 		{
 			name:        "just an empty node, should be removed",
@@ -196,11 +220,22 @@ func TestSimulateNodeRemoval(t *testing.T) {
 			unremovable: nil,
 		},
 		{
-			name:        "topology spread constraint test - one node should be removable",
-			pods:        []*apiv1.Pod{pod5, pod6, pod7, blocker1, blocker2},
+			name:     "topology spread constraint test - node unremovable due to phantom zone",
+			pods:     []*apiv1.Pod{pod5, pod6, pod7, blocker1, blocker2},
+			allNodes: []*apiv1.Node{topoNode1, topoNode2, topoNode3},
+			nodeName: topoNode1.Name,
+			toRemove: nil,
+			unremovable: &UnremovableNode{
+				Node:   topoNode1,
+				Reason: NoPlaceToMovePods,
+			},
+		},
+		{
+			name:        "topology spread constraint test - node removable with nodeTaintsPolicy Honor",
+			pods:        []*apiv1.Pod{pod8, pod9, pod10},
 			allNodes:    []*apiv1.Node{topoNode1, topoNode2, topoNode3},
 			nodeName:    topoNode1.Name,
-			toRemove:    &NodeToBeRemoved{Node: topoNode1, PodsToReschedule: []*apiv1.Pod{pod5}},
+			toRemove:    &NodeToBeRemoved{Node: topoNode1, PodsToReschedule: []*apiv1.Pod{pod8}},
 			unremovable: nil,
 		},
 		{
