@@ -41,6 +41,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Scaleway](./cloudprovider/scaleway/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
 * [Utho](./cloudprovider/utho/README.md)
+* [VerdaCloud](./cloudprovider/verdacloud/README.md)
 * [Vultr](./cloudprovider/vultr/README.md)
 
 # Releases
