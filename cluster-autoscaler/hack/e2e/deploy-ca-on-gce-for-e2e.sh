@@ -41,11 +41,15 @@ echo "Configuring registry authentication..."
 mkdir -p "${HOME}/.docker"
 gcloud auth configure-docker -q
 
-echo "Building and pushing image..."
-pushd "${CA_ROOT}" >/dev/null
-make execute-release REGISTRY=${REGISTRY} TAG=${TAG}
-IMAGE="${REGISTRY}/cluster-autoscaler:${TAG}"
-popd >/dev/null
+if [[ -z "${CA_IMAGE:-}" ]]; then
+    echo "Building and pushing image..."
+    pushd "${CA_ROOT}" >/dev/null
+    make execute-release REGISTRY=${REGISTRY} TAG=${TAG}
+    CA_IMAGE="${REGISTRY}/cluster-autoscaler:${TAG}"
+    popd >/dev/null
+else
+    echo "Using existing image: ${CA_IMAGE}"
+fi
 
 # Deploy
 echo "Deploying to cluster..."
@@ -90,7 +94,7 @@ EXTRA_CA_FLAGS="${EXTRA_CA_FLAGS:-""}"
 NODES_SPEC="${MIN_NODES}:${MAX_NODES}:https://www.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}/instanceGroups/${MIG_NAME}"
 echo "Nodes spec: ${NODES_SPEC}"
 
-sed -e "s|{{IMAGE}}|${IMAGE}|g" \
+sed -e "s|{{CA_IMAGE}}|${CA_IMAGE}|g" \
     -e "s|{{CONTROL_PLANE_NODE}}|${CONTROL_PLANE_NODE}|g" \
     -e "s|{{KUBERNETES_SERVICE_HOST}}|${KUBERNETES_SERVICE_HOST}|g" \
     -e "s|{{KUBERNETES_SERVICE_PORT}}|${KUBERNETES_SERVICE_PORT}|g" \
@@ -105,4 +109,4 @@ sed -e "s|{{IMAGE}}|${IMAGE}|g" \
     fi
 done | kubectl apply -f -
 
-echo "Deployed ${IMAGE} to cluster."
+echo "Deployed ${CA_IMAGE} to cluster."

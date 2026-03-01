@@ -1,5 +1,5 @@
 # This is a template file used by deploy-ca-on-gce-for-e2e.sh script.
-# It contains placeholders like {{IMAGE}}, {{NODES_SPEC}} that are populated by the script.
+# It contains placeholders like {{CA_IMAGE}}, {{NODES_SPEC}} that are populated by the script.
 # Do not apply this file directly.
 ---
 apiVersion: v1
@@ -156,7 +156,7 @@ spec:
           type: RuntimeDefault
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: {{IMAGE}}
+        - image: {{CA_IMAGE}}
           name: cluster-autoscaler
           resources:
             requests:
