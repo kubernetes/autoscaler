@@ -34,6 +34,18 @@ type GpuLimits struct {
 	Max int64
 }
 
+// DraLimits define lower and upper bound on DRA instances of given type in cluster
+type DraLimits struct {
+	// Driver is the driver name for the DRA (e.g. nvidia)
+	Driver string
+	// DeviceAttribute is the device's attribute by which autoscaler will filter resources (e.g. productName=tesla-k80)
+	DeviceAttribute string
+	// Lower bound on number of DRAs of given type in cluster
+	Min int64
+	// Upper bound on number of DRAs of given type in cluster
+	Max int64
+}
+
 // NodeGroupAutoscalingOptions contain various options to customize how autoscaling of
 // a given NodeGroup works. Different options can be used for each NodeGroup.
 type NodeGroupAutoscalingOptions struct {
@@ -120,6 +132,8 @@ type AutoscalingOptions struct {
 	MinMemoryTotal int64
 	// GpuTotal is a list of strings with configuration of min/max limits for different GPUs.
 	GpuTotal []GpuLimits
+	// DraTotal is a list of strings with configuration of min/max limits for different DRAs.
+	DraTotal []DraLimits
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery []string
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.

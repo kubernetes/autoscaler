@@ -114,6 +114,7 @@ var (
 	coresTotal                  = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	memoryTotal                 = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	gpuTotal                    = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
+	draTotal                    = multiStringFlag("dra-total", "Minimum and maximum number of DRA devices with specific attributes in cluster, in the format <driver>:<device_identifier_attribute>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. 'driver' refers to the DRA driver in which the limits will apply. 'device_identifier_attribute' is used to identify unique devices types (e.g. the productName value in the gpu.nvidia.com driver, like 'nvidia l4'). This flag can be passed multiple times.")
 	cloudProviderFlag           = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
@@ -270,7 +271,12 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	minMemoryTotal = minMemoryTotal * units.GiB
 	maxMemoryTotal = maxMemoryTotal * units.GiB
 
-	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
+	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal, parseSingleGpuLimit)
+	if err != nil {
+		klog.Fatalf("Failed to parse flags: %v", err)
+	}
+
+	parsedDraTotal, err := parseMultipleGpuLimits(*draTotal, parseSingleDraLimit)
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
@@ -340,6 +346,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxMemoryTotal:                   maxMemoryTotal,
 		MinMemoryTotal:                   minMemoryTotal,
 		GpuTotal:                         parsedGpuTotal,
+		DraTotal:                         parsedDraTotal,
 		NodeGroups:                       *nodeGroupsFlag,
 		EnforceNodeGroupMinSize:          *enforceNodeGroupMinSize,
 		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
@@ -487,10 +494,10 @@ func parseMinMaxFlag(flag string) (int64, int64, error) {
 	return min, max, nil
 }
 
-func parseMultipleGpuLimits(flags MultiStringFlag) ([]config.GpuLimits, error) {
-	parsedFlags := make([]config.GpuLimits, 0, len(flags))
+func parseMultipleGpuLimits[T any](flags MultiStringFlag, parser func(string) (T, error)) ([]T, error) {
+	parsedFlags := make([]T, 0, len(flags))
 	for _, flag := range flags {
-		parsedFlag, err := parseSingleGpuLimit(flag)
+		parsedFlag, err := parser(flag)
 		if err != nil {
 			return nil, err
 		}
@@ -528,6 +535,40 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 		Max:     maxVal,
 	}
 	return parsedGpuLimits, nil
+}
+
+// parseSingleDraLimit parses a string in the format "driver:deviceAttribute:min:max" into a DraLimits struct.
+func parseSingleDraLimit(limits string) (config.DraLimits, error) {
+	parts := strings.Split(limits, ":")
+	if len(parts) != 4 {
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit specification: %v", limits)
+	}
+	driver := parts[0]
+	deviceAttribute := parts[1]
+	minVal, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - min is not integer: %v", limits)
+	}
+	maxVal, err := strconv.ParseInt(parts[3], 10, 64)
+	if err != nil {
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - max is not integer: %v", limits)
+	}
+	if minVal < 0 {
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - min is less than 0; %v", limits)
+	}
+	if maxVal < 0 {
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - max is less than 0; %v", limits)
+	}
+	if minVal > maxVal {
+		return config.DraLimits{}, fmt.Errorf("incorrect DRA limit - min is greater than max; %v", limits)
+	}
+	parsedDraLimits := config.DraLimits{
+		Driver:          driver,
+		DeviceAttribute: deviceAttribute,
+		Min:             minVal,
+		Max:             maxVal,
+	}
+	return parsedDraLimits, nil
 }
 
 // parseShutdownGracePeriodsAndPriorities parse priorityGracePeriodStr and returns an array of ShutdownGracePeriodByPodPriority if succeeded.
