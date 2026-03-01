@@ -555,3 +555,129 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testing.T) {
+	testCases := []struct {
+		desc                       string
+		zeroOrMaxNodeScaling       bool
+		allowNonAtomicScaleUpToMax bool
+		nodesStatus                map[string]cloudprovider.InstanceState
+		nodesError                 map[string]*cloudprovider.InstanceErrorInfo
+		wantRemainingNodes         []string
+	}{
+		{
+			desc:                       "zero or max scale-up should remove all nodes in case when only some them have creation errors and AllowNonAtomicScaleUpToMax IS NOT set",
+			zeroOrMaxNodeScaling:       true,
+			allowNonAtomicScaleUpToMax: false,
+			nodesStatus: map[string]cloudprovider.InstanceState{
+				"D-node-0": cloudprovider.InstanceRunning,
+				"D-node-1": cloudprovider.InstanceRunning,
+				"D-node-2": cloudprovider.InstanceCreating,
+			},
+			nodesError: map[string]*cloudprovider.InstanceErrorInfo{
+				"D-node-2": {
+					ErrorClass: cloudprovider.OtherErrorClass,
+					ErrorCode:  "OTHER",
+				},
+			},
+			wantRemainingNodes: []string{},
+		},
+		{
+			desc:                       "zero or max scale-up should not remove any nodes if only some them have creation errors and AllowNonAtomicScaleUpToMax IS set",
+			zeroOrMaxNodeScaling:       true,
+			allowNonAtomicScaleUpToMax: true,
+			nodesStatus: map[string]cloudprovider.InstanceState{
+				"D-node-0": cloudprovider.InstanceRunning,
+				"D-node-1": cloudprovider.InstanceRunning,
+				"D-node-2": cloudprovider.InstanceCreating,
+			},
+			nodesError: map[string]*cloudprovider.InstanceErrorInfo{
+				"D-node-2": {
+					ErrorClass: cloudprovider.OtherErrorClass,
+					ErrorCode:  "OTHER",
+				},
+			},
+			wantRemainingNodes: []string{"D-node-0", "D-node-1", "D-node-2"},
+		},
+		{
+			desc:                       "zero or max scale-up should remove all nodes if all of them fail, even if AllowNonAtomicScaleUpToMax IS set",
+			zeroOrMaxNodeScaling:       true,
+			allowNonAtomicScaleUpToMax: true,
+			nodesStatus: map[string]cloudprovider.InstanceState{
+				"D-node-0": cloudprovider.InstanceCreating,
+				"D-node-1": cloudprovider.InstanceCreating,
+				"D-node-2": cloudprovider.InstanceCreating,
+			},
+			nodesError: map[string]*cloudprovider.InstanceErrorInfo{
+				"D-node-0": {ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: "OTHER"},
+				"D-node-1": {ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: "OTHER"},
+				"D-node-2": {ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: "OTHER"},
+			},
+			wantRemainingNodes: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			cfg := integration.NewTestConfig().
+				WithOverrides(
+					integration.WithMaxNodeGroupBinpackingDuration(1*time.Second),
+					integration.WithMaxTotalUnreadyPercentage(100),
+					integration.WithOkTotalUnreadyCount(6),
+					integration.WithZeroOrMaxNodeScaling(tc.zeroOrMaxNodeScaling),
+					integration.WithAllowNonAtomicScaleUpToMax(tc.allowNonAtomicScaleUpToMax),
+				)
+			options := cfg.ResolveOptions()
+			infra := integration.SetupInfrastructure(t)
+			fakes := infra.Fakes
+
+			synctest.Test(t, func(t *testing.T) {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer synctestutils.TearDown(cancel)
+
+				autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+				assert.NoError(t, err)
+
+				templateNodeD := tu.BuildTestNode("D-template", 1000, 1000, tu.IsReady(true))
+				fakes.CloudProvider.AddNodeGroup("D", fcp.WithMinMax(0, 3), fcp.WithNode(templateNodeD))
+
+				ngD := fakes.CloudProvider.GetNodeGroup("D").(*fcp.NodeGroup)
+
+				ngD.DeleteNodes([]*apiv1.Node{templateNodeD})
+				ngD.SetTargetSize(0)
+
+				ngD.SetOptions(&options.NodeGroupDefaults)
+
+				for i := 1; i <= 3; i++ {
+					p := tu.BuildTestPod(fmt.Sprintf("p-%d", i), 800, 100, tu.MarkUnschedulable())
+					fakes.K8s.AddPod(p)
+				}
+
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				for id, state := range tc.nodesStatus {
+					ngD.SetInstanceState(id, state)
+					if errInfo, found := tc.nodesError[id]; found {
+						ngD.SetInstanceError(id, errInfo)
+					}
+				}
+
+				for i := 1; i <= 3; i++ {
+					fakes.K8s.DeletePod("default", fmt.Sprintf("p-%d", i))
+				}
+
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesD, _ := ngD.Nodes()
+				assert.Len(t, instancesD, len(tc.wantRemainingNodes))
+				instanceIds := make(map[string]bool)
+				for _, instance := range instancesD {
+					instanceIds[instance.Id] = true
+				}
+				for _, want := range tc.wantRemainingNodes {
+					assert.True(t, instanceIds[want], "want to find node %s but it was deleted", want)
+				}
+			})
+		})
+	}
+}
