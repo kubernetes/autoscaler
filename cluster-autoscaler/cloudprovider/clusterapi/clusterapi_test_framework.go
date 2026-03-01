@@ -62,6 +62,7 @@ type testConfigBuilder struct {
 	capacity      map[string]string
 	nodeInfo      map[string]string
 	managedLabels map[string]string
+	specTaints    []map[string]interface{}
 }
 
 // NewTestConfigBuilder returns a builder for dynamically constructing mock ClusterAPI resources for testing.
@@ -96,6 +97,7 @@ func (b *testConfigBuilder) Build() *TestConfig {
 			b.capacity,
 			b.nodeInfo,
 			b.managedLabels,
+			b.specTaints,
 		)[0],
 	)[0]
 }
@@ -118,6 +120,7 @@ func (b *testConfigBuilder) BuildMultiple(configCount int) []*TestConfig {
 			b.capacity,
 			b.nodeInfo,
 			b.managedLabels,
+			b.specTaints,
 		)...,
 	)
 }
@@ -203,6 +206,11 @@ func (b *testConfigBuilder) WithManagedLabels(l map[string]string) *testConfigBu
 	return b
 }
 
+func (b *testConfigBuilder) WithSpecTaints(taints []map[string]interface{}) *testConfigBuilder {
+	b.specTaints = taints
+	return b
+}
+
 // TestConfig contains clusterspecific information about a single test configuration.
 type TestConfig struct {
 	spec              *TestSpec
@@ -270,6 +278,16 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 			}
 		}
 
+		if spec.specTaints != nil {
+			rawTaints := make([]interface{}, len(spec.specTaints))
+			for i, t := range spec.specTaints {
+				rawTaints[i] = t
+			}
+			if err := unstructured.SetNestedSlice(config.machineSet.Object, rawTaints, "spec", "template", "spec", "taints"); err != nil {
+				panic(err)
+			}
+		}
+
 		if !spec.rootIsMachineDeployment {
 			config.machineSet.SetAnnotations(spec.annotations)
 		} else {
@@ -325,6 +343,16 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 
 			if spec.managedLabels != nil {
 				if err := unstructured.SetNestedStringMap(config.machineDeployment.Object, spec.managedLabels, "spec", "template", "spec", "metadata", "labels"); err != nil {
+					panic(err)
+				}
+			}
+
+			if spec.specTaints != nil {
+				rawTaints := make([]interface{}, len(spec.specTaints))
+				for i, t := range spec.specTaints {
+					rawTaints[i] = t
+				}
+				if err := unstructured.SetNestedSlice(config.machineDeployment.Object, rawTaints, "spec", "template", "spec", "taints"); err != nil {
 					panic(err)
 				}
 			}
@@ -388,6 +416,7 @@ type TestSpec struct {
 	capacity                map[string]string
 	nodeInfo                map[string]string
 	managedLabels           map[string]string
+	specTaints              []map[string]interface{}
 	machineDeploymentName   string
 	machineSetName          string
 	machinePoolName         string
@@ -408,11 +437,12 @@ func createTestSpecs(
 	capacity map[string]string,
 	nodeInfo map[string]string,
 	managedLabels map[string]string,
+	specTaints []map[string]interface{},
 ) []TestSpec {
 	var specs []TestSpec
 
 	for i := 0; i < scalableResourceCount; i++ {
-		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations, capacity, nodeInfo, managedLabels))
+		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations, capacity, nodeInfo, managedLabels, specTaints))
 	}
 
 	return specs
@@ -428,11 +458,13 @@ func createTestSpec(
 	capacity map[string]string,
 	nodeInfo map[string]string,
 	managedLabels map[string]string,
+	specTaints []map[string]interface{},
 ) TestSpec {
 	return TestSpec{
 		annotations:             annotations,
 		capacity:                capacity,
 		managedLabels:           managedLabels,
+		specTaints:              specTaints,
 		machineDeploymentName:   name,
 		machineSetName:          name,
 		clusterName:             clusterName,
