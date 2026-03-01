@@ -214,26 +214,9 @@ func (np *nodePool) DecreaseTargetSize(delta int) error {
 		}
 	}
 	klog.V(4).Infof("DECREASE_TARGET_CHECK_VIA_COMPUTE: %v", decreaseTargetCheckViaComputeBool)
-	np.manager.InvalidateAndRefreshCache()
-	nodes, err := np.manager.GetNodePoolNodes(np)
 	if err != nil {
 		klog.V(4).Error(err, "error while performing GetNodePoolNodes call")
 		return err
-	}
-	// We do not have an OCI API that allows us to delete a node with a compute instance. So we rely on
-	// the below approach to determine the number running instance in a nodepool from the compute API and
-	//update the size of the nodepool accordingly. We should move away from this approach once we have an API
-	// to delete a specific node without a compute instance.
-	if !decreaseTargetCheckViaComputeBool {
-		for _, node := range nodes {
-			if node.Status != nil && node.Status.ErrorInfo != nil {
-				if node.Status.ErrorInfo.ErrorClass == cloudprovider.OutOfResourcesErrorClass {
-					klog.Infof("Using Compute to calculate nodepool size as nodepool may contain nodes without a compute instance.")
-					decreaseTargetCheckViaComputeBool = true
-					break
-				}
-			}
-		}
 	}
 	var nodesLen int
 	if decreaseTargetCheckViaComputeBool {
@@ -243,6 +226,21 @@ func (np *nodePool) DecreaseTargetSize(delta int) error {
 			return err
 		}
 	} else {
+		np.manager.InvalidateAndRefreshCache()
+		nodes, err := np.manager.GetNodePoolNodes(np)
+		if err != nil {
+			klog.V(4).Error(err, "error while performing GetNodePoolNodes call")
+			return err
+		}
+		nodesLen = 0
+		for _, node := range nodes {
+			// Skip OOC nodes to achieve the same effect as DECREASE_TARGET_CHECK_VIA_COMPUTE.
+			// Nodes with no backing instance (i.e., OOC or LimitExceeded) should not be counted and will be excluded from nodeLen.
+			// This ensures that the subsequent SetNodePoolSize call will delete the OOC/LimitExceeded nodes.
+			if node.Id != "" {
+				nodesLen++
+			}
+		}
 		nodesLen = len(nodes)
 	}
 
