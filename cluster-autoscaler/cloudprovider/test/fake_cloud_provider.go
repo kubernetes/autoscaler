@@ -179,12 +179,13 @@ func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) {
 	defer c.Unlock()
 
 	group := &NodeGroup{
-		id:         id,
-		minSize:    defaultMinSize,
-		maxSize:    defaultMaxSize,
-		targetSize: 0,
-		instances:  make(map[string]cloudprovider.InstanceState),
-		provider:   c,
+		id:             id,
+		minSize:        defaultMinSize,
+		maxSize:        defaultMaxSize,
+		targetSize:     0,
+		instances:      make(map[string]cloudprovider.InstanceState),
+		instanceErrors: make(map[string]*cloudprovider.InstanceErrorInfo),
+		provider:       c,
 	}
 
 	for _, opt := range opts {
@@ -209,6 +210,9 @@ func (c *CloudProvider) AddNode(groupId string, node *apiv1.Node) {
 		cg.Lock()
 		if cg.instances == nil {
 			cg.instances = make(map[string]cloudprovider.InstanceState)
+		}
+		if cg.instanceErrors == nil {
+			cg.instanceErrors = make(map[string]*cloudprovider.InstanceErrorInfo)
 		}
 		cg.instances[node.Name] = cloudprovider.InstanceRunning
 		cg.Unlock()
@@ -326,12 +330,16 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 
 	var instances []cloudprovider.Instance
 	for id, state := range n.instances {
-		instances = append(instances, cloudprovider.Instance{
+		instance := cloudprovider.Instance{
 			Id: id,
 			Status: &cloudprovider.InstanceStatus{
 				State: state,
 			},
-		})
+		}
+		if errInfo, ok := n.instanceErrors[id]; ok {
+			instance.Status.ErrorInfo = errInfo
+		}
+		instances = append(instances, instance)
 	}
 	return instances, nil
 }
@@ -358,7 +366,19 @@ func (n *NodeGroup) Autoprovisioned() bool {
 
 // GetOptions returns autoscaling options specific to this node group.
 func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, nil
+	n.RLock()
+	defer n.RUnlock()
+	if n.options != nil {
+		return n.options, nil
+	}
+	return nil, cloudprovider.ErrNotImplemented
+}
+
+// SetOptions allows configuring autoscaling options for tests.
+func (n *NodeGroup) SetOptions(options *config.NodeGroupAutoscalingOptions) {
+	n.Lock()
+	defer n.Unlock()
+	n.options = options
 }
 
 // TargetSize returns the current target size of the node group.
@@ -407,3 +427,18 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // GetTargetSize returns the target size as a raw integer (helper method).
 func (n *NodeGroup) GetTargetSize() int { return n.targetSize }
+
+// SetInstanceError allows configuring an error for a specific instance in the fake cloud provider.
+func (n *NodeGroup) SetInstanceError(instanceId string, errorInfo *cloudprovider.InstanceErrorInfo) {
+	n.provider.Lock()
+	defer n.provider.Unlock()
+	n.instanceErrors[instanceId] = errorInfo
+}
+
+// SetInstanceState allows configuring the state of a specific instance in the fake cloud provider.
+func (n *NodeGroup) SetInstanceState(instanceId string, state cloudprovider.InstanceState) {
+	n.provider.Lock()
+	defer n.provider.Unlock()
+	n.instances[instanceId] = state
+	n.provider.nodeToGroup[instanceId] = n.id
+}

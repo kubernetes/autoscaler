@@ -151,3 +151,24 @@ func WithExpendablePodsPriorityCutoff(dp int) AutoscalingOptionOverride {
 		o.ExpendablePodsPriorityCutoff = dp
 	}
 }
+
+// WithMaxTotalUnreadyPercentage sets maximum percentage of unready nodes in the cluster
+func WithMaxTotalUnreadyPercentage(maxTotalUnreadyPercentage float64) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxTotalUnreadyPercentage = maxTotalUnreadyPercentage
+	}
+}
+
+// WithForceDeleteFailedNodes sets ForceDeleteFailedNodes.
+func WithForceDeleteFailedNodes(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ForceDeleteFailedNodes = b
+	}
+}
+
+// WithMaxNodeGroupBinpackingDuration sets MaxNodeGroupBinpackingDuration.
+func WithMaxNodeGroupBinpackingDuration(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxNodeGroupBinpackingDuration = d
+	}
+}

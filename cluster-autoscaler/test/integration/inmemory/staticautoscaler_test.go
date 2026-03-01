@@ -23,8 +23,8 @@ import (
 	"testing/synctest"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -497,4 +497,127 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
 		assert.Equal(t, 0, tg1) // n1 is scaled down because p1 is expendable
 	})
+}
+
+func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
+	testCases := []struct {
+		name                   string
+		forceDeleteEnabled     bool
+		forceDeleteImplemented bool
+	}{
+		{
+			name:                   "forceDeleteEnabled=false,forceDeleteImplemented=false",
+			forceDeleteEnabled:     false,
+			forceDeleteImplemented: false,
+		},
+		{
+			name:                   "forceDeleteEnabled=true,forceDeleteImplemented=false",
+			forceDeleteEnabled:     true,
+			forceDeleteImplemented: false,
+		},
+		{
+			name:                   "forceDeleteEnabled=true,forceDeleteImplemented=true",
+			forceDeleteEnabled:     true,
+			forceDeleteImplemented: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := integration.NewTestConfig().
+				WithOverrides(
+					integration.WithScaleDownUnneededTime(time.Minute),
+					integration.WithExpendablePodsPriorityCutoff(10),
+					integration.WithForceDeleteFailedNodes(tc.forceDeleteEnabled),
+					integration.WithMaxNodeGroupBinpackingDuration(1*time.Second),
+					integration.WithMaxTotalUnreadyPercentage(100),
+				)
+			options := cfg.ResolveOptions()
+			infra := integration.SetupInfrastructure(t)
+			fakes := infra.Fakes
+
+			synctest.Test(t, func(t *testing.T) {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer synctestutils.TearDown(cancel)
+
+				autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+				assert.NoError(t, err)
+
+				templateNodeA := tutils.BuildTestNode("A-template", 1000, 1000)
+				tutils.SetNodeReadyState(templateNodeA, true, time.Time{})
+				templateNodeB := tutils.BuildTestNode("B-template", 1000, 1000)
+				tutils.SetNodeReadyState(templateNodeB, true, time.Time{})
+
+				fakes.CloudProvider.AddNodeGroup("A", fakecloudprovider.WithMinMax(0, 10), fakecloudprovider.WithTargetSize(1), fakecloudprovider.WithNode(templateNodeA))
+
+				ngA := fakes.CloudProvider.GetNodeGroup("A").(*fakecloudprovider.NodeGroup)
+				ngA.SetTargetSize(6)
+
+				// Set up instances for NodeGroup A to match what the Autoscaler expects
+				setupNodeGroupA := func() {
+					ngA.SetInstanceState("A-template", cloudprovider.InstanceRunning)
+					ngA.SetInstanceState("A-node-1", cloudprovider.InstanceCreating)
+
+					// simulate creating nodes A-node-2 to A-node-5 with errors
+					errors := []struct {
+						id       string
+						errClass cloudprovider.InstanceErrorClass
+						errCode  string
+					}{
+						{"A-node-2", cloudprovider.OutOfResourcesErrorClass, "RESOURCE_POOL_EXHAUSTED"},
+						{"A-node-3", cloudprovider.OutOfResourcesErrorClass, "RESOURCE_POOL_EXHAUSTED"},
+						{"A-node-4", cloudprovider.OutOfResourcesErrorClass, "QUOTA"},
+						{"A-node-5", cloudprovider.OtherErrorClass, "OTHER"},
+					}
+
+					for _, e := range errors {
+						ngA.SetInstanceState(e.id, cloudprovider.InstanceCreating)
+						ngA.SetInstanceError(e.id, &cloudprovider.InstanceErrorInfo{
+							ErrorClass: e.errClass,
+							ErrorCode:  e.errCode,
+						})
+					}
+				}
+				setupNodeGroupA()
+
+				// RunRunOnceAfter will automatically refresh cloud provider cache and act upon errors
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				// Option: run first iteration with zero delay so they are discovered
+				autoscaler.(*core.StaticAutoscaler).ClusterStateRegistry().RefreshCloudProviderNodeInstancesCache()
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesA, _ := ngA.Nodes()
+				assert.Len(t, instancesA, 2)
+				instanceIds := make(map[string]bool)
+				for _, instance := range instancesA {
+					instanceIds[instance.Id] = true
+				}
+				assert.True(t, instanceIds["A-template"])
+				assert.True(t, instanceIds["A-node-1"])
+				// A-node-2, A-node-3, A-node-4, A-node-5 should be deleted
+
+				// Run again without changing errors, they should be deleted again if they reappear
+				setupNodeGroupA() // Re-add errors to simulate provider still returning them
+
+				autoscaler.(*core.StaticAutoscaler).ClusterStateRegistry().RefreshCloudProviderNodeInstancesCache()
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesA, _ = ngA.Nodes()
+				assert.Len(t, instancesA, 2)
+
+				// Now simulate A-node-2, A-node-3, A-node-4, A-node-5 not reporting errors anymore
+				for i := 2; i <= 5; i++ {
+					id := fmt.Sprintf("A-node-%d", i)
+					ngA.SetInstanceState(id, cloudprovider.InstanceRunning)
+					ngA.SetInstanceError(id, nil)
+				}
+
+				autoscaler.(*core.StaticAutoscaler).ClusterStateRegistry().RefreshCloudProviderNodeInstancesCache()
+				synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+
+				instancesA, _ = ngA.Nodes()
+				assert.Len(t, instancesA, 6) // All 6 should be there now and not deleted
+			})
+		})
+	}
 }

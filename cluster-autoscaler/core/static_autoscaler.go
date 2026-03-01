@@ -241,6 +241,11 @@ func (a *StaticAutoscaler) Start() error {
 	return nil
 }
 
+// ClusterStateRegistry returns the cluster state registry used by the autoscaler.
+func (a *StaticAutoscaler) ClusterStateRegistry() *clusterstate.ClusterStateRegistry {
+	return a.clusterStateRegistry
+}
+
 // cleanUpIfRequired removes ToBeDeleted taints added by a previous run of CA
 // the taints are removed only once per runtime
 func (a *StaticAutoscaler) cleanUpIfRequired() {
