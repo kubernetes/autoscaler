@@ -20,11 +20,36 @@ import (
 	"context"
 )
 
+// ServerRequestType represents the type of request to be made to the Kamatera API
+type ServerRequestType string
+
+const (
+	// ServerRequestPoweroff power off the server
+	ServerRequestPoweroff ServerRequestType = "poweroff"
+	// ServerRequestPoweron power on the server
+	ServerRequestPoweron ServerRequestType = "poweron"
+)
+
+// CommandStatus represents the status of a command executed on Kamatera API
+type CommandStatus int
+
+const (
+	// CommandStatusPending the command is still pending
+	CommandStatusPending CommandStatus = 1
+	// CommandStatusComplete the command is complete
+	CommandStatusComplete CommandStatus = 2
+	// CommandStatusError   the command ended with an error
+	CommandStatusError CommandStatus = 3
+)
+
 // kamateraAPIClient is the interface used to call kamatera API
 type kamateraAPIClient interface {
-	ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string) ([]Server, error)
-	DeleteServer(ctx context.Context, name string) error
-	CreateServers(ctx context.Context, count int, config ServerConfig) ([]Server, error)
+	ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string, providerIDPrefix string) ([]Server, error)
+	StartServerTerminate(ctx context.Context, name string, force bool) (string, error)
+	StartServerRequest(ctx context.Context, requestType ServerRequestType, name string) (string, error)
+	StartCreateServers(ctx context.Context, count int, config ServerConfig) (map[string]string, error)
+	getServerTags(ctx context.Context, serverName string, instances map[string]*Instance, providerIDPrefix string) ([]string, error)
+	getCommandStatus(ctx context.Context, commandID string) (CommandStatus, error)
 }
 
 // buildKamateraAPIClient returns the struct ready to perform calls to kamatera API

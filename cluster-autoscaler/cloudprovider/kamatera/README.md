@@ -4,9 +4,11 @@ The cluster autoscaler for Kamatera scales nodes in a Kamatera cluster.
 
 ## Kamatera Kubernetes
 
-[Kamatera](https://www.kamatera.com/express/compute/) supports Kubernetes clusters using our Rancher app
-or by creating a self-managed cluster directly on Kamatera compute servers, the autoscaler supports 
-both methods.
+[Kamatera](https://www.kamatera.com/express/compute/) supports Kubernetes clusters using any Kubernetes distribution / provisioning tool.
+
+See the following example Terraform setup using RKE2 for a recommended production ready Kubernetes cluster:
+
+[Kamatera RKE2 Kubernetes Terraform](https://github.com/Kamatera/kamatera-rke2-kubernetes-terraform-example/blob/main/README.md)
 
 ## Cluster Autoscaler Node Groups
 
@@ -16,15 +18,11 @@ The cluster and node groups must be specified in the autoscaler cloud configurat
 
 ## Deployment
 
-Copy [examples/deployment.yaml](examples/deployment.yaml) and modify the configuration as needed, see below
-regarding the required configuration values and format. When the configuraiont is ready, deploy it to your cluster
-e.g. using `kubectl apply -f deployment.yaml`.
+See [examples/](examples/) and modify the configurations as needed.
 
 ## Configuration
 
 The cluster autoscaler only considers the cluster and node groups defined in the configuration file.
-
-You can see an example of the cloud config file at [examples/deployment.yaml](examples/deployment.yaml),
 
 **Important Note:** The cluster and node group names must be 15 characters or less.
 
@@ -36,13 +34,26 @@ it is an INI file with the following fields:
 | global/kamatera-api-secret             | Kamatera API Secret                                                                                                                                     | yes       | none                               |
 | global/cluster-name                    | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string used to set the cluster server tag                       | yes       | none                               |
 | global/filter-name-prefix              | autoscaler will only handle server names that start with this prefix                                                                                    | no        | none                               |
+| global/provider-id-prefix              | prefix used for Kubernetes node `.spec.providerID` (and for matching nodes to Kamatera instances)                                                       | no        | kamatera://                        |
+| global/poweroff-on-scale-down          | boolean - set to true to power-off servers instead of terminating them                                                                                  | no        | false                              |
+| global/poweron-on-scale-up             | boolean - set to true to look for powered off servers to use for scale up before creating additional servers, see note below regarding how to use this  | no        | false                              |
 | global/default-min-size                | default minimum size of a node group (must be > 0)                                                                                                      | no        | 1                                  |
 | global/default-max-size                | default maximum size of a node group                                                                                                                    | no        | 254                                |
 | global/default-<SERVER_CONFIG_KEY>     | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | see below | see below                          |
 | nodegroup \"name\"                     | **max 15 characters: english letters, numbers, dash, underscore, space, dot**: distinct string within the cluster used to set the node group server tag | yes       | none                               |
 | nodegroup \"name\"/min-size            | minimum size for a specific node group                                                                                                                  | no        | global/defaut-min-size             |
 | nodegroup \"name\"/max-size            | maximum size for a specific node group                                                                                                                  | no        | global/defaut-min-size             |
+| nodegroup \"name\"/template-label      | Set labels on the node template used for scale up checks (See below for details)                                                                        | no        | none                               |
 | nodegroup \"name\"/<SERVER_CONFIG_KEY> | replace <SERVER_CONFIG_KEY> with the relevant configuration key                                                                                         | no        | global/default-<SERVER_CONFIG_KEY> |
+
+### Using power on for scale up
+
+In this mode, when scaling up, the autoscaler will first look for powered off servers to power on before creating new servers.
+
+Pay attention that if the node being powered on is already registered on Kubernetes the cluster autoscaler may not handle it correctly.
+
+To use this option it's recommended to deploy the [Kamatera RKE2 Controller](https://github.com/Kamatera/kamatera-rke2-controller) and
+use its ability to delete nodes which are powered off. This way, when the autoscaler powers on a server, the controller will re-register it to the cluster.
 
 ### Server configuration keys
 
@@ -50,20 +61,20 @@ Following are the supported server configuration keys:
 
 | Key | Value | Mandatory | Default |
 |-----|-------|-----------|---------|
-| name-prefix | Prefix for all created server names | no | none |
-| password | Server root password | no | none |
-| ssh-key | Public SSH key to add to the server authorized keys | no | none |
-| datacenter | Datacenter ID | yes | none |
-| image | Image ID or name | yes | none |
-| cpu | CPU type and size identifier | yes | none |
-| ram | RAM size in MB | yes | none |
-| disk | Disk specifications - see below for details | yes | none |
-| dailybackup | boolean - set to true to enable daily backups | no | false |
-| managed | boolean - set to true to enable managed services | no | false |
-| network | Network specifications - see below for details | yes | none |
-| billingcycle | \"hourly\" or \"monthly\" | no | \"hourly\" |
-| monthlypackage | For monthly billing only - the monthly network package to use | no | none |
-| script-base64 | base64 encoded server initialization script, must be provided to connect the server to the cluster, see below for details | no | none |
+| name-prefix | Prefix for all created server names | no        | none |
+| password | Server root password | no        | none |
+| ssh-key | Public SSH key to add to the server authorized keys | no        | none |
+| datacenter | Datacenter ID | yes       | none |
+| image | Image ID or name | yes       | none |
+| cpu | CPU type and size identifier | yes       | none |
+| ram | RAM size in MB | yes       | none |
+| disk | Disk specifications - see below for details | yes       | none |
+| dailybackup | boolean - set to true to enable daily backups | no        | false |
+| managed | boolean - set to true to enable managed services | no        | false |
+| network | Network specifications - see below for details | yes       | none |
+| billingcycle | \"hourly\" or \"monthly\" | no        | \"hourly\" |
+| monthlypackage | For monthly billing only - the monthly network package to use | no        | none |
+| script-base64 | base64 encoded server initialization script, must be provided to connect the server to the cluster, see below for details | yes       | none |
 
 ### Disk specifications
 
@@ -110,41 +121,38 @@ network = "name=lan-12345-abcde,ip=auto"
 This script is required so that the server will connect to the relevant cluster. The specific script depends on
 how you create and manage the cluster.
 
-See below for some common configurations, but the exact script may need to be modified depending on your requirements
-and server image.
-
 The script needs to be provided as a base64 encoded string. You can encode your script using the following command: 
 `cat script.sh | base64 -w0`.
 
-#### Kamatera Rancher Server Initialization Script
+### Node Templates
 
-Using Kamatera Rancher you need to get the command to join a server to the cluster. This is available from the
-following URL: `https://rancher.domain/v3/clusterregistrationtokens`. The relevant command is available under
-`data[].nodeCommand`, if you have a single cluster, it will be the first one. If you have multiple cluster you
-will have to locate the relevant cluster from the array using `clusterId`. The command will look like this:
+When autoscaler makes scaling decisions it checks if added nodes will be able to run pending pods.
+
+If pods have node selectors or affinity restrictions, the autoscaler needs to know if the new nodes will match these requirements.
+
+Following example shows how to set labels on the node template used for scale up checks:
 
 ```
-sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run  rancher/rancher-agent:v2.6.4 --server https://rancher.domain --token aaa --ca-checksum bbb
+[nodegroup "ng1"]
+template-label = "disktype=ssd"
+template-label = "kubernetes.io/os=linux"
 ```
 
-You can replace this command in the example script at [examples/server-init-rancher.sh.txt](examples/server-init-rancher.sh.txt)
+This will cause the relevant node group to be considered for pending pods that require those labels.
 
-#### Kubeadm Initialization Script
-
-The example script at [examples/server-init-kubeadm.sh.txt](examples/server-init-kubeadm.sh.txt) can be used as a base for
-writing your own script to join the server to your cluster.
+It's still your responsibility to make sure the actual nodes created by the autoscaler will have these labels.
 
 ## Development
 
 Make sure you are inside the `cluster-autoscaler` path of the [autoscaler repository](https://github.com/kubernetes/autoscaler).
 
-Run tests:
+Run unit tests:
 
 ```
 go test -v k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kamatera
 ```
 
-Setup a Kamatera cluster, you can use [this guide](https://github.com/Kamatera/rancher-kubernetes/blob/main/README.md)
+Setup a Kamatera cluster, you can use [Kamatera RKE2 Kubernetes Terraform](https://github.com/Kamatera/kamatera-rke2-kubernetes-terraform-example/blob/main/README.md)
 
 Get the cluster kubeconfig and set in local file and set in the `KUBECONFIG` environment variable.
 Make sure you are connected to the cluster using `kubectl get nodes`.
@@ -170,6 +178,6 @@ docker tag staging-k8s.gcr.io/cluster-autoscaler-amd64:dev ghcr.io/github_userna
 docker push ghcr.io/github_username_lowercase/cluster-autoscaler-amd64
 ```
 
-Make sure relevant clsuter has access to this registry/image.
+Make sure relevant cluster has access to this registry/image.
 
 Follow the documentation for deploying the image and using the autoscaler.

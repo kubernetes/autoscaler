@@ -21,11 +21,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"regexp"
+	"sync"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/kubernetes"
-	"regexp"
 
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -36,11 +38,13 @@ const (
 // manager handles Kamatera communication and holds information about
 // the node groups
 type manager struct {
-	client     kamateraAPIClient
-	config     *kamateraConfig
-	nodeGroups map[string]*NodeGroup // key: NodeGroup.id
-	instances  map[string]*Instance  // key: Instance.id (which is also the Kamatera server name)
-	kubeClient kubernetes.Interface
+	client       kamateraAPIClient
+	config       *kamateraConfig
+	nodeGroupsMu sync.RWMutex
+	nodeGroups   map[string]*NodeGroup // key: NodeGroup.id
+	instancesMu  sync.RWMutex
+	instances    map[string]*Instance // key: Instance.id (which is the cloud provider ID)
+	kubeClient   kubernetes.Interface
 }
 
 func newManager(config io.Reader, kubeClient kubernetes.Interface) (*manager, error) {
@@ -60,10 +64,12 @@ func newManager(config io.Reader, kubeClient kubernetes.Interface) (*manager, er
 }
 
 func (m *manager) refresh() error {
+	instancesSnapshot := m.snapshotInstances()
 	servers, err := m.client.ListServers(
 		context.Background(),
-		m.instances,
+		instancesSnapshot,
 		m.config.filterNamePrefix,
+		m.config.providerIDPrefix,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to get list of Kamatera servers from Kamatera API: %v", err)
@@ -78,12 +84,14 @@ func (m *manager) refresh() error {
 	}
 
 	// show some debug info
-	klog.V(2).Infof("Kamatera node groups after refresh:")
+	klog.V(4).Infof("Kamatera node groups after refresh:")
 	for _, ng := range nodeGroups {
-		klog.V(2).Infof("%s", ng.extendedDebug())
+		klog.V(4).Infof("%s", ng.extendedDebug())
 	}
 
+	m.nodeGroupsMu.Lock()
 	m.nodeGroups = nodeGroups
+	m.nodeGroupsMu.Unlock()
 	return nil
 }
 
@@ -167,13 +175,23 @@ func (m *manager) buildNodeGroup(name string, cfg *nodeGroupConfig, servers []Se
 		UserdataFile:   "",
 		Tags:           tags,
 	}
-	ng := &NodeGroup{
-		id:           name,
-		manager:      m,
-		minSize:      cfg.minSize,
-		maxSize:      cfg.maxSize,
-		instances:    instances,
-		serverConfig: serverConfig,
+	ng, exists := m.nodeGroups[name]
+	if exists {
+		ng.minSize = cfg.minSize
+		ng.maxSize = cfg.maxSize
+		ng.instances = instances
+		ng.serverConfig = serverConfig
+		ng.templateLabels = cfg.TemplateLabels
+	} else {
+		ng = &NodeGroup{
+			id:             name,
+			manager:        m,
+			minSize:        cfg.minSize,
+			maxSize:        cfg.maxSize,
+			instances:      instances,
+			serverConfig:   serverConfig,
+			templateLabels: cfg.TemplateLabels,
+		}
 	}
 	return ng, nil
 }
@@ -182,6 +200,14 @@ func (m *manager) getNodeGroupInstances(name string, servers []Server) (map[stri
 	clusterTag := fmt.Sprintf("%s%s", clusterServerTagPrefix, m.config.clusterName)
 	nodeGroupTag := fmt.Sprintf("%s%s", nodeGroupTagPrefix, name)
 	instances := make(map[string]*Instance)
+	m.instancesMu.Lock()
+	defer m.instancesMu.Unlock()
+	if m.nodeGroups[name] != nil {
+		for _, instance := range m.nodeGroups[name].instances {
+			instances[instance.Id] = instance
+		}
+	}
+	var refreshedInstanceProviderIDs []string
 	for _, server := range servers {
 		hasClusterTag := false
 		hasNodeGroupTag := false
@@ -192,50 +218,74 @@ func (m *manager) getNodeGroupInstances(name string, servers []Server) (map[stri
 				hasClusterTag = true
 			}
 		}
-		if m.instances[server.Name] == nil {
-			var state cloudprovider.InstanceState
-			if server.PowerOn {
-				state = cloudprovider.InstanceRunning
-			} else {
-				// for new servers that are stopped we assume they were deleted previously and deletion failed
-				state = cloudprovider.InstanceDeleting
-			}
-			m.instances[server.Name] = &Instance{
-				Id:      server.Name,
-				Status:  &cloudprovider.InstanceStatus{State: state},
+		cloudProviderID := formatKamateraProviderID(m.config.providerIDPrefix, server.Name)
+		if m.instances[cloudProviderID] == nil {
+			// create a new instance object
+			instance := &Instance{
+				Id:      cloudProviderID,
 				PowerOn: server.PowerOn,
 				Tags:    server.Tags,
 			}
-		} else {
-			if server.PowerOn {
-				m.instances[server.Name].Status.State = cloudprovider.InstanceRunning
-			} else {
-				// we can only make assumption about server state being powered on
-				// for other conditions we can't know why server is powered off, so we can't update state
+			refreshedInstanceProviderIDs = append(refreshedInstanceProviderIDs, cloudProviderID)
+			if !instance.refresh(m.client, m.config.providerIDPrefix, m.config.PoweroffOnScaleDown, m.kubeClient, true) {
+				m.instances[cloudProviderID] = instance
+				if hasClusterTag && hasNodeGroupTag {
+					instances[cloudProviderID] = instance
+				}
 			}
-			m.instances[server.Name] = m.instances[server.Name]
-			m.instances[server.Name].PowerOn = server.PowerOn
-			m.instances[server.Name].Tags = server.Tags
+		} else {
+			// update an existing instance
+			instance := m.instances[cloudProviderID]
+			instance.PowerOn = server.PowerOn
+			instance.Tags = server.Tags
+			refreshedInstanceProviderIDs = append(refreshedInstanceProviderIDs, cloudProviderID)
+			if instance.refresh(m.client, m.config.providerIDPrefix, m.config.PoweroffOnScaleDown, m.kubeClient, true) {
+				delete(m.instances, cloudProviderID)
+			} else if hasClusterTag && hasNodeGroupTag {
+				instances[cloudProviderID] = instance
+			}
 		}
-		if hasClusterTag && hasNodeGroupTag {
-			instances[server.Name] = m.instances[server.Name]
+	}
+	for _, instance := range m.instances {
+		wasRefreshed := false
+		for _, refreshedID := range refreshedInstanceProviderIDs {
+			if instance.Id == refreshedID {
+				wasRefreshed = true
+				break
+			}
+		}
+		if !wasRefreshed {
+			if m.instances[instance.Id].refresh(m.client, m.config.providerIDPrefix, m.config.PoweroffOnScaleDown, m.kubeClient, false) {
+				delete(m.instances, instance.Id)
+				delete(instances, instance.Id)
+			}
 		}
 	}
 	return instances, nil
 }
 
-func (m *manager) addInstance(server Server, state cloudprovider.InstanceState) (*Instance, error) {
-	if m.instances[server.Name] == nil {
-		m.instances[server.Name] = &Instance{
-			Id:      server.Name,
-			Status:  &cloudprovider.InstanceStatus{State: state},
-			PowerOn: server.PowerOn,
-			Tags:    server.Tags,
-		}
-	} else {
-		m.instances[server.Name].Status.State = state
-		m.instances[server.Name].PowerOn = server.PowerOn
-		m.instances[server.Name].Tags = server.Tags
+func (m *manager) snapshotInstances() map[string]*Instance {
+	m.instancesMu.RLock()
+	defer m.instancesMu.RUnlock()
+	instances := make(map[string]*Instance, len(m.instances))
+	for key, value := range m.instances {
+		instances[key] = value
 	}
-	return m.instances[server.Name], nil
+	return instances
+}
+
+func (m *manager) addCreatingInstance(serverName string, commandId string, tags []string) *Instance {
+	cloudProviderID := formatKamateraProviderID(m.config.providerIDPrefix, serverName)
+	klog.V(4).Infof("Adding creating instance %s with command ID %s", cloudProviderID, commandId)
+	instance := &Instance{
+		Id:                cloudProviderID,
+		Status:            &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+		StatusCommandId:   commandId,
+		StatusCommandCode: InstanceCommandCreating,
+		Tags:              tags,
+	}
+	m.instancesMu.Lock()
+	defer m.instancesMu.Unlock()
+	m.instances[cloudProviderID] = instance
+	return instance
 }
