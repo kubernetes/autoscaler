@@ -228,20 +228,58 @@ func (r *unstructuredScalableResource) Labels() map[string]string {
 }
 
 func (r *unstructuredScalableResource) Taints() []apiv1.Taint {
+	var allTaints []apiv1.Taint
+
+	// Read taints from spec.template.spec.taints. Requires CAPI v1.12+ with the
+	// MachineTaintPropagation feature gate enabled.
+	if rawTaints, found, err := unstructured.NestedSlice(r.unstructured.UnstructuredContent(), "spec", "template", "spec", "taints"); found && err == nil {
+		for _, item := range rawTaints {
+			taintMap, ok := item.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			taint := apiv1.Taint{}
+			if key, ok := taintMap["key"].(string); ok {
+				taint.Key = key
+			}
+			if value, ok := taintMap["value"].(string); ok {
+				taint.Value = value
+			}
+			if effect, ok := taintMap["effect"].(string); ok {
+				taint.Effect = apiv1.TaintEffect(effect)
+			}
+			allTaints = append(allTaints, taint)
+		}
+	}
+
+	// Annotation taints take highest priority. If an annotation taint has the same
+	// key+effect as a spec taint, it overrides it; otherwise it is appended.
+	// Format: "key1=value1:NoSchedule,key2=value2:NoExecute"
 	annotations := r.unstructured.GetAnnotations()
-	// annotation value the form of "key1=value1:condition,key2=value2:condition"
 	if val, found := annotations[taintsKey]; found {
-		taints := strings.Split(val, ",")
-		ret := make([]apiv1.Taint, 0, len(taints))
-		for _, taintStr := range taints {
-			taint, err := parseTaint(taintStr)
-			if err == nil {
-				ret = append(ret, taint)
+		for _, taintStr := range strings.Split(val, ",") {
+			t, err := parseTaint(taintStr)
+			if err != nil {
+				continue
+			}
+			replaced := false
+			for i, existing := range allTaints {
+				if existing.Key == t.Key && existing.Effect == t.Effect {
+					allTaints[i] = t
+					replaced = true
+					break
+				}
+			}
+			if !replaced {
+				allTaints = append(allTaints, t)
 			}
 		}
-		return ret
 	}
-	return nil
+
+	if len(allTaints) == 0 {
+		return nil
+	}
+	return allTaints
 }
 
 // A node group can scale from zero if it can inform about the CPU and memory
