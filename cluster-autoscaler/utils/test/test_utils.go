@@ -356,6 +356,39 @@ func IsReady(ready bool) NodeOption {
 	}
 }
 
+// WithPriority sets the priority of a pod.
+func WithPriority(priority ...int32) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if len(priority) > 0 {
+			pod.Spec.Priority = &priority[0]
+		}
+	}
+}
+
+// WithNodeSelector sets the node selector of a pod.
+func WithNodeSelector(nodeSelector map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.NodeSelector = nodeSelector
+	}
+}
+
+// WithNominatedNodeName sets the nominated node name of a pod.
+func WithNominatedNodeName(nodeName string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Status.NominatedNodeName = nodeName
+	}
+}
+
+// WithNodeLabel sets a label on a node.
+func WithNodeLabel(key, value string) NodeOption {
+	return func(node *apiv1.Node) {
+		if node.Labels == nil {
+			node.Labels = make(map[string]string)
+		}
+		node.Labels[key] = value
+	}
+}
+
 // BuildTestNode creates a node with specified capacity.
 func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64, opts ...NodeOption) *apiv1.Node {
 	node := &apiv1.Node{

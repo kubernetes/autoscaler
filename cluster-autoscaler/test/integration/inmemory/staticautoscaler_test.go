@@ -374,3 +374,64 @@ func TestStaticAutoscalerRunOnceKeepALongUnregisteredNode(t *testing.T) {
 		assert.Nil(t, ng)
 	})
 }
+
+func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
+	cfg := integration.NewTestConfig().
+		WithOverrides(
+			integration.WithScaleDownUnneededTime(time.Minute),
+			integration.WithMaxScaleDownParallelism(10),
+			integration.WithMaxDrainParallelism(1),
+			// Pods with priority < 10 are considered "expendable" and won't block scale down.
+			integration.WithExpendablePodsPriorityCutoff(10),
+		)
+	options := cfg.ResolveOptions()
+
+	infra := integration.SetupInfrastructure(t)
+	fakes := infra.Fakes
+
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer synctestutils.TearDown(cancel)
+
+		autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+		assert.NoError(t, err)
+
+		n1 := tu.BuildTestNode("n1", 100, 1000, tu.IsReady(true)) // Target for scale down test
+		n2 := tu.BuildTestNode("n2", 1000, 1000, tu.IsReady(true), tu.WithNodeLabel("kubernetes.io/hostname", "n2"))
+		n3 := tu.BuildTestNode("n3", 1000, 1000, tu.IsReady(true))
+
+		p1 := tu.BuildTestPod("p1", 40, 0, tu.WithNodeName("n1"), tu.WithPriority(1), tu.WithControllerOwnerRef("rs", "ReplicaSet", "uid"))
+		p2 := tu.BuildTestPod("p2", 400, 0, tu.WithNodeName("n2"), tu.WithPriority(1), tu.WithControllerOwnerRef("rs", "ReplicaSet", "uid"))
+		p3 := tu.BuildTestPod("p3", 400, 0, tu.WithNodeName("n2"), tu.WithPriority(100), tu.WithControllerOwnerRef("rs", "ReplicaSet", "uid"))
+		// p4, p5, p6 are all Pending and with High Priority.
+		p4 := tu.BuildTestPod("p4", 500, 0, tu.MarkUnschedulable(), tu.WithPriority(100), tu.WithControllerOwnerRef("rs", "ReplicaSet", "uid"), tu.WithNodeSelector(map[string]string{"kubernetes.io/hostname": "n2"}))
+		p5 := tu.BuildTestPod("p5", 800, 0, tu.MarkUnschedulable(), tu.WithPriority(100), tu.WithControllerOwnerRef("rs", "ReplicaSet", "uid"), tu.WithNominatedNodeName("n3"))
+		p6 := tu.BuildTestPod("p6", 1000, 0, tu.MarkUnschedulable(), tu.WithPriority(100), tu.WithControllerOwnerRef("rs", "ReplicaSet", "uid"))
+
+		fakes.CloudProvider.AddNodeGroup("ng1", fcp.WithMinMax(0, 10), fcp.WithTargetSize(1), fcp.WithNode(n1))
+		fakes.CloudProvider.AddNodeGroup("ng2", fcp.WithMinMax(0, 10), fcp.WithTargetSize(2), fcp.WithNode(n2), fcp.WithNode(n3))
+
+		fakes.K8s.AddNodes(n1, n2, n3).AddPods(p1, p2, p3, p4, p5, p6)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+		tg2, _ := fakes.CloudProvider.GetNodeGroup("ng2").TargetSize()
+		assert.Equal(t, 3, tg2, "Autoscaler should scale up ng2 to accomodate p6.")
+
+		fakes.K8s.DeletePod(p6.Namespace, p6.Name)
+
+		// Detection and deletion of unneeded node.
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+
+		fakes.K8s.DeletePod(p4.Namespace, p4.Name)
+		// p4 is now scheduled on n2.
+		p4 = tu.BuildTestPod("p4", 500, 0, tu.WithNodeName("n2"), tu.WithPriority(100), tu.WithControllerOwnerRef("rs", "ReplicaSet", "uid"))
+		fakes.K8s.AddPod(p4)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Second)
+		synctestutils.MustRunOnceAfter(t, autoscaler, 2*time.Minute)
+
+		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		assert.Equal(t, 0, tg1) // n1 is scaled down because p1 is expendable
+	})
+}
