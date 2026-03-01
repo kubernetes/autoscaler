@@ -214,7 +214,7 @@ type PodUpdatePolicy struct {
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resources.
-// +kubebuilder:validation:Enum=Off;Initial;Recreate;InPlaceOrRecreate;Auto
+// +kubebuilder:validation:Enum=Off;Initial;Recreate;InPlaceOrRecreate;InPlace;Auto
 type UpdateMode string
 
 const (
@@ -245,6 +245,13 @@ const (
 	// on the admission and updater pods.
 	// Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.
 	UpdateModeInPlaceOrRecreate UpdateMode = "InPlaceOrRecreate"
+	// UpdateModeInPlace means that autoscaler will only attempt to update pods in-place
+	// and will never evict them. If in-place update fails, autoscaler will rely on
+	// Kubelet's automatic retry mechanism.
+	// Requires VPA level feature gate "InPlace" to be enabled
+	// on the admission and updater pods
+	// Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.
+	UpdateModeInPlace UpdateMode = "InPlace"
 )
 
 // PodResourcePolicy controls how autoscaler computes the recommended resources

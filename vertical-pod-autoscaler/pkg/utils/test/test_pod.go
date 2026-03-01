@@ -19,11 +19,13 @@ package test
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // PodBuilder helps building pods for tests.
 type PodBuilder interface {
 	WithName(name string) PodBuilder
+	WithUID(types.UID) PodBuilder
 	AddContainer(container corev1.Container) PodBuilder
 	AddInitContainer(initContainer corev1.Container) PodBuilder
 	AddContainerStatus(containerStatus corev1.ContainerStatus) PodBuilder
@@ -47,6 +49,7 @@ func Pod() PodBuilder {
 
 type podBuilderImpl struct {
 	name                  string
+	uid                   types.UID
 	containers            []corev1.Container
 	initContainers        []corev1.Container
 	creatorObjectMeta     *metav1.ObjectMeta
@@ -75,6 +78,12 @@ func (pb *podBuilderImpl) WithAnnotations(annotations map[string]string) PodBuil
 func (pb *podBuilderImpl) WithName(name string) PodBuilder {
 	r := *pb
 	r.name = name
+	return &r
+}
+
+func (pb *podBuilderImpl) WithUID(uid types.UID) PodBuilder {
+	r := *pb
+	r.uid = uid
 	return &r
 }
 
@@ -152,6 +161,10 @@ func (pb *podBuilderImpl) Get() *corev1.Pod {
 
 	if pb.annotations != nil {
 		pod.Annotations = pb.annotations
+	}
+
+	if pb.uid != "" {
+		pod.UID = pb.uid
 	}
 
 	if pb.creatorObjectMeta != nil && pb.creatorTypeMeta != nil {
