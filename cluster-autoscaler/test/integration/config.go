@@ -144,3 +144,10 @@ func WithMaxDrainParallelism(dp int) AutoscalingOptionOverride {
 		o.MaxDrainParallelism = dp
 	}
 }
+
+// WithExpendablePodsPriorityCutoff sets the priority cutoff to expandable pods.
+func WithExpendablePodsPriorityCutoff(dp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ExpendablePodsPriorityCutoff = dp
+	}
+}

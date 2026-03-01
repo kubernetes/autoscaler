@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -392,4 +393,108 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
+	cfg := integration.NewTestConfig().
+		WithOverrides(
+			integration.WithScaleDownUnneededTime(time.Minute),
+			integration.WithMaxScaleDownParallelism(10),
+			integration.WithMaxDrainParallelism(1),
+			integration.WithExpendablePodsPriorityCutoff(10),
+		)
+	options := cfg.ResolveOptions()
+
+	infra := integration.SetupInfrastructure(t)
+	fakes := infra.Fakes
+
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer synctestutils.TearDown(cancel)
+
+		autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+		assert.NoError(t, err)
+
+		n1 := tutils.BuildTestNode("n1", 100, 1000, tutils.IsReady(true))
+		n2 := tutils.BuildTestNode("n2", 1000, 1000, tutils.IsReady(true))
+		n2.Labels["kubernetes.io/hostname"] = "n2"
+		n3 := tutils.BuildTestNode("n3", 1000, 1000, tutils.IsReady(true))
+
+		var priority100 int32 = 100
+		var priority1 int32 = 1
+
+		ownerRef := metav1.OwnerReference{
+			APIVersion: "apps/v1",
+			Kind:       "ReplicaSet",
+			Name:       "rs",
+			UID:        "uid",
+		}
+
+		p1 := tutils.BuildTestPod("p1", 40, 0)
+		p1.Spec.NodeName = "n1"
+		p1.Spec.Priority = &priority1
+		p1.OwnerReferences = []metav1.OwnerReference{ownerRef}
+
+		p2 := tutils.BuildTestPod("p2", 400, 0)
+		p2.Spec.NodeName = "n2"
+		p2.Spec.Priority = &priority1
+		p2.OwnerReferences = []metav1.OwnerReference{ownerRef}
+
+		p3 := tutils.BuildTestPod("p3", 400, 0)
+		p3.Spec.NodeName = "n2"
+		p3.Spec.Priority = &priority100
+		p3.OwnerReferences = []metav1.OwnerReference{ownerRef}
+
+		p4 := tutils.BuildTestPod("p4", 500, 0, tutils.MarkUnschedulable())
+		p4.Spec.Priority = &priority100
+		p4.OwnerReferences = []metav1.OwnerReference{ownerRef}
+		// Pin p4 to n2 so that in subsequent rounds the scheduler doesn't allocate p4 onto the upcoming node (n4).
+		// If p4 takes space on the upcoming node, p6 will be unable to schedule, triggering a secondary scale-up.
+		p4.Spec.NodeSelector = map[string]string{"kubernetes.io/hostname": "n2"}
+
+		p5 := tutils.BuildTestPod("p5", 800, 0, tutils.MarkUnschedulable())
+		p5.Spec.Priority = &priority100
+		p5.Status.NominatedNodeName = "n3"
+		p5.OwnerReferences = []metav1.OwnerReference{ownerRef}
+
+		p6 := tutils.BuildTestPod("p6", 1000, 0, tutils.MarkUnschedulable())
+		p6.Spec.Priority = &priority100
+		p6.OwnerReferences = []metav1.OwnerReference{ownerRef}
+
+		fakes.CloudProvider.AddNodeGroup("ng1", fakecloudprovider.WithMinMax(0, 10), fakecloudprovider.WithTargetSize(1), fakecloudprovider.WithNode(n1))
+		fakes.CloudProvider.AddNodeGroup("ng2", fakecloudprovider.WithMinMax(0, 10), fakecloudprovider.WithTargetSize(2), fakecloudprovider.WithNode(n2), fakecloudprovider.WithNode(n3))
+
+		fakes.K8s.AddNode(n1)
+		fakes.K8s.AddNode(n2)
+		fakes.K8s.AddNode(n3)
+
+		fakes.K8s.AddPod(p1)
+		fakes.K8s.AddPod(p2)
+		fakes.K8s.AddPod(p3)
+		fakes.K8s.AddPod(p4)
+		fakes.K8s.AddPod(p5)
+		fakes.K8s.AddPod(p6)
+
+		// Scale up (trigger scale up for p4/p5/p6)
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Minute)
+		tg2, _ := fakes.CloudProvider.GetNodeGroup("ng2").TargetSize()
+		assert.Equal(t, 3, tg2)
+
+		// Mark unneeded nodes (p6 goes away)
+		fakes.K8s.DeletePod(p6.Namespace, p6.Name)
+		fakes.CloudProvider.GetNodeGroup("ng2").(*fakecloudprovider.NodeGroup).SetTargetSize(2)
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Hour*2)
+
+		// Scale down
+		fakes.K8s.DeletePod(p4.Namespace, p4.Name)
+		p4 = tutils.BuildScheduledTestPod("p4", 500, 0, "n2")
+		p4.Spec.Priority = &priority100
+		p4.OwnerReferences = []metav1.OwnerReference{ownerRef}
+		fakes.K8s.AddPod(p4)
+
+		synctestutils.MustRunOnceAfter(t, autoscaler, time.Hour*3)
+
+		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		assert.Equal(t, 0, tg1) // n1 is scaled down because p1 is expendable
+	})
 }
