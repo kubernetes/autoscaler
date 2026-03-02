@@ -120,6 +120,7 @@ type ScaleUpFailure struct {
 
 type metricObserver interface {
 	RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string)
+	RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int)
 }
 
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
@@ -1194,7 +1195,7 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 			}
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
-
+			csr.metrics.RegisterFailedNodeCreations(metrics.FailedScaleUpReason(errorCode.code), len(unseenInstanceIds))
 			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode.code), cloudprovider.InstanceErrorInfo{
 				ErrorClass:   errorCode.class,
 				ErrorCode:    errorCode.code,
