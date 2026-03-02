@@ -20,6 +20,7 @@ import (
 	"fmt"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -145,11 +146,30 @@ func WithNode(node *apiv1.Node) NodeGroupOption {
 	return func(n *NodeGroup) {
 		n.provider.nodeToGroup[node.Name] = n.id
 		n.instances[node.Name] = cloudprovider.InstanceRunning
-		n.targetSize = 1
-		n.template = framework.NewTestNodeInfo(node.DeepCopy())
+		if n.targetSize < len(n.instances) {
+			n.targetSize = len(n.instances)
+		}
+		if n.template == nil {
+			n.template = framework.NewTestNodeInfo(node.DeepCopy())
+		}
 		if n.provider.k8s != nil {
 			n.provider.k8s.AddNode(node)
 		}
+	}
+}
+
+// WithMinMax sets the min and max sizes for the node group.
+func WithMinMax(min, max int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.minSize = min
+		n.maxSize = max
+	}
+}
+
+// WithTargetSize sets the target size for the node group.
+func WithTargetSize(size int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.targetSize = size
 	}
 }
 
@@ -159,12 +179,13 @@ func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) {
 	defer c.Unlock()
 
 	group := &NodeGroup{
-		id:         id,
-		minSize:    defaultMinSize,
-		maxSize:    defaultMaxSize,
-		targetSize: 0,
-		instances:  make(map[string]cloudprovider.InstanceState),
-		provider:   c,
+		id:             id,
+		minSize:        defaultMinSize,
+		maxSize:        defaultMaxSize,
+		targetSize:     0,
+		instances:      make(map[string]cloudprovider.InstanceState),
+		instanceErrors: make(map[string]*cloudprovider.InstanceErrorInfo),
+		provider:       c,
 	}
 
 	for _, opt := range opts {
@@ -185,6 +206,17 @@ func (c *CloudProvider) AddNode(groupId string, node *apiv1.Node) {
 	c.Lock()
 	defer c.Unlock()
 	c.nodeToGroup[node.Name] = groupId
+	if cg, ok := c.groups[groupId].(*NodeGroup); ok {
+		cg.Lock()
+		if cg.instances == nil {
+			cg.instances = make(map[string]cloudprovider.InstanceState)
+		}
+		if cg.instanceErrors == nil {
+			cg.instanceErrors = make(map[string]*cloudprovider.InstanceErrorInfo)
+		}
+		cg.instances[node.Name] = cloudprovider.InstanceRunning
+		cg.Unlock()
+	}
 }
 
 // SetResourceLimit allows the test to reach in and change the limits.
@@ -205,7 +237,11 @@ type NodeGroup struct {
 	template   *framework.NodeInfo
 	// instances maps instanceID -> state.
 	instances map[string]cloudprovider.InstanceState
-	provider  *CloudProvider
+	// instanceErrors maps instanceID -> error info.
+	instanceErrors      map[string]*cloudprovider.InstanceErrorInfo
+	provider            *CloudProvider
+	options             *config.NodeGroupAutoscalingOptions
+	DeleteNodesOverride func([]*apiv1.Node) error
 }
 
 // MaxSize returns the maximum size of the node group.
@@ -225,6 +261,9 @@ func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
 
 // DeleteNodes removes specific nodes from the node group and updates the internal mapping.
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	if n.DeleteNodesOverride != nil {
+		return n.DeleteNodesOverride(nodes)
+	}
 	n.Lock()
 	defer n.Unlock()
 
@@ -241,7 +280,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 			}
 			deletedCount++
 		} else {
-			fmt.Printf("Warning: node %s not found in group %s or already deleted.", node.Name, n.id)
+			fmt.Printf("Warning: node %s not found in group %s or already deleted. exists=%t, mappedGroupId=%s\n", node.Name, n.id, exists, groupId)
 		}
 	}
 
@@ -267,6 +306,13 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 	return nil
 }
 
+// SetTargetSize forcefully sets the target size for testing purposes.
+func (n *NodeGroup) SetTargetSize(size int) {
+	n.Lock()
+	defer n.Unlock()
+	n.targetSize = size
+}
+
 // Id returns the unique identifier of the node group.
 func (n *NodeGroup) Id() string {
 	return n.id
@@ -284,12 +330,16 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 
 	var instances []cloudprovider.Instance
 	for id, state := range n.instances {
-		instances = append(instances, cloudprovider.Instance{
+		instance := cloudprovider.Instance{
 			Id: id,
 			Status: &cloudprovider.InstanceStatus{
 				State: state,
 			},
-		})
+		}
+		if errInfo, ok := n.instanceErrors[id]; ok {
+			instance.Status.ErrorInfo = errInfo
+		}
+		instances = append(instances, instance)
 	}
 	return instances, nil
 }
@@ -316,7 +366,19 @@ func (n *NodeGroup) Autoprovisioned() bool {
 
 // GetOptions returns autoscaling options specific to this node group.
 func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, nil
+	n.RLock()
+	defer n.RUnlock()
+	if n.options != nil {
+		return n.options, nil
+	}
+	return nil, cloudprovider.ErrNotImplemented
+}
+
+// SetOptions allows configuring autoscaling options for tests.
+func (n *NodeGroup) SetOptions(options *config.NodeGroupAutoscalingOptions) {
+	n.Lock()
+	defer n.Unlock()
+	n.options = options
 }
 
 // TargetSize returns the current target size of the node group.
@@ -342,6 +404,8 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		}
 		newNode := n.template.Node().DeepCopy()
 		newNode.Name = instanceId
+		newNode.Spec.ProviderID = instanceId
+		newNode.ObjectMeta.UID = types.UID(instanceId)
 
 		n.instances[instanceId] = cloudprovider.InstanceRunning
 		n.provider.nodeToGroup[instanceId] = n.id
@@ -363,3 +427,18 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // GetTargetSize returns the target size as a raw integer (helper method).
 func (n *NodeGroup) GetTargetSize() int { return n.targetSize }
+
+// SetInstanceError allows configuring an error for a specific instance in the fake cloud provider.
+func (n *NodeGroup) SetInstanceError(instanceId string, errorInfo *cloudprovider.InstanceErrorInfo) {
+	n.provider.Lock()
+	defer n.provider.Unlock()
+	n.instanceErrors[instanceId] = errorInfo
+}
+
+// SetInstanceState allows configuring the state of a specific instance in the fake cloud provider.
+func (n *NodeGroup) SetInstanceState(instanceId string, state cloudprovider.InstanceState) {
+	n.provider.Lock()
+	defer n.provider.Unlock()
+	n.instances[instanceId] = state
+	n.provider.nodeToGroup[instanceId] = n.id
+}

@@ -102,3 +102,94 @@ func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 		o.NodeGroupDefaults.ScaleDownUnneededTime = d
 	}
 }
+
+// WithScaleDownDelayAfterAdd sets the scale down delay after add option.
+func WithScaleDownDelayAfterAdd(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterAdd = d
+	}
+}
+
+// WithScaleDownDelayAfterDelete sets the scale down delay after delete option.
+func WithScaleDownDelayAfterDelete(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterDelete = d
+	}
+}
+
+// WithScaleDownDelayAfterFailure sets the scale down delay after failure option.
+func WithScaleDownDelayAfterFailure(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterFailure = d
+	}
+}
+
+// WithMaxCoresTotal sets the maximum total cores.
+func WithMaxCoresTotal(n int64) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxCoresTotal = n
+	}
+}
+
+// WithMaxScaleDownParallelism sets the maximum scale down parallelism.
+func WithMaxScaleDownParallelism(sdp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxScaleDownParallelism = sdp
+	}
+}
+
+// WithMaxDrainParallelism sets the maximum drain parallelism.
+func WithMaxDrainParallelism(dp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxDrainParallelism = dp
+	}
+}
+
+// WithExpendablePodsPriorityCutoff sets the priority cutoff to expandable pods.
+func WithExpendablePodsPriorityCutoff(dp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ExpendablePodsPriorityCutoff = dp
+	}
+}
+
+// WithMaxTotalUnreadyPercentage sets maximum percentage of unready nodes in the cluster
+func WithMaxTotalUnreadyPercentage(maxTotalUnreadyPercentage float64) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxTotalUnreadyPercentage = maxTotalUnreadyPercentage
+	}
+}
+
+// WithForceDeleteFailedNodes sets ForceDeleteFailedNodes.
+func WithForceDeleteFailedNodes(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ForceDeleteFailedNodes = b
+	}
+}
+
+// WithMaxNodeGroupBinpackingDuration sets MaxNodeGroupBinpackingDuration.
+func WithMaxNodeGroupBinpackingDuration(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxNodeGroupBinpackingDuration = d
+	}
+}
+
+// WithOkTotalUnreadyCount sets OkTotalUnreadyCount.
+func WithOkTotalUnreadyCount(cnt int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.OkTotalUnreadyCount = cnt
+	}
+}
+
+// WithZeroOrMaxNodeScaling sets the zero or max node scaling option.
+func WithZeroOrMaxNodeScaling(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.NodeGroupDefaults.ZeroOrMaxNodeScaling = b
+	}
+}
+
+// WithAllowNonAtomicScaleUpToMax sets the allow non atomic scaleup option.
+func WithAllowNonAtomicScaleUpToMax(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.NodeGroupDefaults.AllowNonAtomicScaleUpToMax = b
+	}
+}

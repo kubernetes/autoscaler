@@ -230,10 +230,20 @@ func (a *StaticAutoscaler) LastScaleDownDeleteTime() time.Time {
 	return a.lastScaleDownDeleteTime
 }
 
+// Processors returns the AutoscalingProcessors used by the autoscaler
+func (a *StaticAutoscaler) Processors() *ca_processors.AutoscalingProcessors {
+	return a.processors
+}
+
 // Start starts components running in background.
 func (a *StaticAutoscaler) Start() error {
 	a.clusterStateRegistry.Start()
 	return nil
+}
+
+// ClusterStateRegistry returns the cluster state registry used by the autoscaler.
+func (a *StaticAutoscaler) ClusterStateRegistry() *clusterstate.ClusterStateRegistry {
+	return a.clusterStateRegistry
 }
 
 // cleanUpIfRequired removes ToBeDeleted taints added by a previous run of CA
