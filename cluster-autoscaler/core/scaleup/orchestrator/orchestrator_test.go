@@ -2043,7 +2043,7 @@ func TestAuthErrorHandling(t *testing.T) {
 	results := runSimpleScaleUpTest(t, config)
 	assert.Equal(t, errors.AutoscalerErrorType("authError"), results.ScaleUpError.Type())
 	assert.Equal(t, "failed to increase node group size: auth error", results.ScaleUpError.Error())
-	assertLegacyRegistryEntry(t, "cluster_autoscaler_failed_scale_ups_total{reason=\"authError\"} 1")
+	assertLegacyRegistryEntry(t, "cluster_autoscaler_failed_scale_ups_total{dra_drivers=\"\",gpu_name=\"\",gpu_resource_name=\"\",reason=\"authError\"} 1")
 }
 
 func assertLegacyRegistryEntry(t *testing.T, entry string) {
