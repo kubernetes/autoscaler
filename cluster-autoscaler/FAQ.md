@@ -277,6 +277,8 @@ might stop working as it might assume the cluster is broken and should not be sc
 Startup taints are defined as:
 
 * all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
+* all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/` (deprecated),
+* all taints with prefixes specified using `--startup-taint-prefix` flag,
 * all taints defined using `--startup-taint` flag.
 
 ### Status taints
@@ -629,7 +631,7 @@ When using this class, Cluster Autoscaler performs following actions:
   Adds a Provisioned=True condition to the ProvReq if capacity is available.
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
 
-  Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler 
+  Since Cluster Autoscaler version 1.33, it is possible to configure the autoscaler
   to process only subset of check capacity ProvisioningRequests and ignore the rest.
   It should be done with caution by specifying `--check-capacity-processor-instance=<name>` flag.
   Then, ProvReq Parameters map should contain a key "processorInstance" with a value equal to the configured instance name.
@@ -1115,6 +1117,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `skip-nodes-with-local-storage`                      | If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true |
 | `skip-nodes-with-system-pods`                        | If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet or mirror pods) | true |
 | `startup-taint`                                      | Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint) | [] |
+| `startup-taint-prefix`                               | Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times. | [] |
 | `status-config-map-name`                             | Status configmap name | "cluster-autoscaler-status" |
 | `status-taint`                                       | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
 | `stderrthreshold`                                    | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true) | 2 |

@@ -220,6 +220,9 @@ type AutoscalingOptions struct {
 	// status that should be removed when creating a node template for scheduling.
 	// startup taints are expected to appear during node startup.
 	StartupTaints []string
+	// StartupTaintPrefixes is a list of taint key prefixes. Any taint whose key starts
+	// with one of these prefixes will be treated as a startup taint.
+	StartupTaintPrefixes []string
 	// StatusTaints is a list of taints CA considers to reflect transient node
 	// status that should be removed when creating a node template for scheduling.
 	// The status taints are expected to appear during node lifetime, after startup.
