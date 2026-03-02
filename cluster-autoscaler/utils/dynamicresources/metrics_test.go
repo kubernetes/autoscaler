@@ -138,7 +138,6 @@ func BenchmarkGetDriverNamesForMetrics(b *testing.B) {
 		},
 	}
 
-	b.ResetTimer()
 	for b.Loop() {
 		GetDriverNamesForMetrics(resourceSlices)
 	}
