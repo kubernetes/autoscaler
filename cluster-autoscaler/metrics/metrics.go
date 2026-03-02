@@ -97,7 +97,7 @@ const (
 	// PodEvictionFailed means creation of the pod eviction object failed
 	PodEvictionFailed PodEvictionResult = "failed"
 
-	gpuNodeMetricsDeprecatedVersion = "1.35.0"
+	gpuNodeMetricsDeprecatedVersion = "1.36.0"
 )
 
 // Names of Cluster Autoscaler operations
