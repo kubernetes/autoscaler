@@ -53,17 +53,9 @@ func NewCheckpointWriter(cluster model.ClusterState, vpaCheckpointClient vpa_api
 	}
 }
 
-func isFetchingHistory(vpa *model.Vpa) bool {
-	return vpa.ConditionActive(vpa_types.FetchingHistory)
-}
-
 func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	vpas := make([]*model.Vpa, 0, len(clusterVpas))
 	for _, vpa := range clusterVpas {
-		if isFetchingHistory(vpa) {
-			klog.V(3).InfoS("VPA is loading history, skipping checkpoints", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
-			continue
-		}
 		vpas = append(vpas, vpa)
 	}
 	sort.Slice(vpas, func(i, j int) bool {
