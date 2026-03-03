@@ -44,7 +44,7 @@ func (b *AutoscalerBuilder) buildProvisioningRequest(
 	autoscalingOptions config.AutoscalingOptions,
 	opts *coreoptions.AutoscalerOptions,
 	podListProcessor *pods.CombinedPodListProcessor,
-) (*provreq.ProvisioningRequestPodsInjector, error) {
+) (*provreq.ProvisioningRequestPodsInjector, loopstart.Observer, error) {
 	podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
 
 	var prClient provreqclientset.Interface
@@ -58,7 +58,7 @@ func (b *AutoscalerBuilder) buildProvisioningRequest(
 		restConfig.ContentType = "application/json"
 		prClient, err = provreqclientset.NewForConfig(restConfig)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -74,7 +74,7 @@ func (b *AutoscalerBuilder) buildProvisioningRequest(
 	synced := prFactory.WaitForCacheSync(ctx.Done())
 	for _, ok := range synced {
 		if !ok {
-			return nil, fmt.Errorf("failed to sync Provisioning Request informers")
+			return nil, nil, fmt.Errorf("failed to sync Provisioning Request informers")
 		}
 	}
 	klog.V(2).Info("Successful initial Provisioning Request sync")
@@ -96,11 +96,10 @@ func (b *AutoscalerBuilder) buildProvisioningRequest(
 	scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 	opts.ScaleUpOrchestrator = scaleUpOrchestrator
 	provreqProcesor := provreq.NewProvReqProcessor(client, opts.CheckCapacityProcessorInstance)
-	opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 	podListProcessor.AddProcessor(provreqProcesor)
 
 	opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
 
-	return injector, nil
+	return injector, provreqProcesor, nil
 }

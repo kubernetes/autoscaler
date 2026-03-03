@@ -512,8 +512,8 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		false,
 	)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker, processors.ScaleStateNotifier)
-	clusterState.UpdateNodes(nodes, nodeInfos, now)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults), templateNodeInfoRegistry)
+	clusterState.UpdateNodes(nodes, now)
 
 	var injector *provreq.ProvisioningRequestPodsInjector
 	if batchProcessing {
