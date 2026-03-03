@@ -12,6 +12,7 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.updater.replicas }}
+  revisionHistoryLimit: {{ .Values.updater.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "vertical-pod-autoscaler.updater.selectorLabels" . | nindent 6 }}

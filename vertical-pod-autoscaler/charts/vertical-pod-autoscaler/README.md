@@ -116,6 +116,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources | object | `{}` |  |
+| admissionController.revisionHistoryLimit | int | `10` |  |
 | admissionController.service.annotations | object | `{}` |  |
 | admissionController.service.name | string | `"vpa-webhook"` |  |
 | admissionController.service.ports[0].port | int | `443` |  |
@@ -178,6 +179,7 @@ helm upgrade <release-name> <chart> \
 | recommender.priorityClassName | string | `nil` |  |
 | recommender.replicas | int | `2` |  |
 | recommender.resources | object | `{}` |  |
+| recommender.revisionHistoryLimit | int | `10` |  |
 | recommender.serviceAccount.annotations | object | `{}` |  |
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
@@ -208,6 +210,7 @@ helm upgrade <release-name> <chart> \
 | updater.priorityClassName | string | `nil` |  |
 | updater.replicas | int | `2` |  |
 | updater.resources | object | `{}` |  |
+| updater.revisionHistoryLimit | int | `10` |  |
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |

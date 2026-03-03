@@ -56,6 +56,9 @@ admissionController:
   # Number of Admission Controller replicas to create.
   replicas: 2
 
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
+
   # Labels to add to the Admission Controller pod.
   podLabels: {}
 
@@ -212,6 +215,9 @@ recommender:
   # Number of Recommender replicas to create.
   replicas: 2
 
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
+
   # Labels to add to the Recommender pod.
   podLabels: {}
 
@@ -303,6 +309,9 @@ updater:
 
   # Number of Updater replicas to create.
   replicas: 2
+
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
 
   # Labels to add to the Updater pod.
   podLabels: {}
