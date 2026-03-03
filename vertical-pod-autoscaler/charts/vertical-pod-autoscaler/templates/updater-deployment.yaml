@@ -6,6 +6,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
+  {{- with .Values.updater.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.updater.replicas }}
   selector:

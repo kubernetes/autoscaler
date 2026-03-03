@@ -21,41 +21,41 @@ import (
 	"math"
 	"math/big"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // ContainerResources holds resources request for container
 type ContainerResources struct {
-	Limits   core.ResourceList
-	Requests core.ResourceList
+	Limits   corev1.ResourceList
+	Requests corev1.ResourceList
 }
 
 // GetProportionalLimit returns limit that will be in the same proportion to recommended request as original limit had to original request.
-func GetProportionalLimit(originalLimit, originalRequest, recommendation, defaultLimit core.ResourceList) (core.ResourceList, []string) {
+func GetProportionalLimit(originalLimit, originalRequest, recommendation, defaultLimit corev1.ResourceList) (corev1.ResourceList, []string) {
 	annotations := []string{}
-	cpuLimit, annotation := getProportionalResourceLimit(core.ResourceCPU, originalLimit.Cpu(), originalRequest.Cpu(), recommendation.Cpu(), defaultLimit.Cpu())
+	cpuLimit, annotation := getProportionalResourceLimit(corev1.ResourceCPU, originalLimit.Cpu(), originalRequest.Cpu(), recommendation.Cpu(), defaultLimit.Cpu())
 	if annotation != "" {
 		annotations = append(annotations, annotation)
 	}
-	memLimit, annotation := getProportionalResourceLimit(core.ResourceMemory, originalLimit.Memory(), originalRequest.Memory(), recommendation.Memory(), defaultLimit.Memory())
+	memLimit, annotation := getProportionalResourceLimit(corev1.ResourceMemory, originalLimit.Memory(), originalRequest.Memory(), recommendation.Memory(), defaultLimit.Memory())
 	if annotation != "" {
 		annotations = append(annotations, annotation)
 	}
 	if memLimit == nil && cpuLimit == nil {
 		return nil, []string{}
 	}
-	result := core.ResourceList{}
+	result := corev1.ResourceList{}
 	if cpuLimit != nil {
-		result[core.ResourceCPU] = *cpuLimit
+		result[corev1.ResourceCPU] = *cpuLimit
 	}
 	if memLimit != nil {
-		result[core.ResourceMemory] = *memLimit
+		result[corev1.ResourceMemory] = *memLimit
 	}
 	return result, annotations
 }
 
-func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit, originalRequest, recommendedRequest, defaultLimit *resource.Quantity) (*resource.Quantity, string) {
+func getProportionalResourceLimit(resourceName corev1.ResourceName, originalLimit, originalRequest, recommendedRequest, defaultLimit *resource.Quantity) (*resource.Quantity, string) {
 	if originalLimit == nil || originalLimit.Value() == 0 && defaultLimit != nil {
 		originalLimit = defaultLimit
 	}
@@ -78,13 +78,13 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 		result := *recommendedRequest
 		return &result, ""
 	}
-	if resourceName == core.ResourceCPU {
-		result, capped := scaleQuantityProportionallyCPU( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
-		if !capped {
-			return result, ""
+	if resourceName == corev1.ResourceCPU {
+		result, isCapped := scaleQuantityProportionallyCPU( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
+		if isCapped == capped {
+			return result, fmt.Sprintf(
+				"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
 		}
-		return result, fmt.Sprintf(
-			"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
+		return result, ""
 	}
 	result, capped := scaleQuantityProportionallyMem( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
 	if !capped {
@@ -96,7 +96,7 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 
 // GetBoundaryRequest returns the boundary (min/max) request that can be specified with
 // preserving the original limit to request ratio. Returns nil if no boundary exists
-func GetBoundaryRequest(resourceName core.ResourceName, originalRequest, originalLimit, boundaryLimit, defaultLimit *resource.Quantity) *resource.Quantity {
+func GetBoundaryRequest(resourceName corev1.ResourceName, originalRequest, originalLimit, boundaryLimit, defaultLimit *resource.Quantity) *resource.Quantity {
 	if originalLimit == nil || originalLimit.Value() == 0 && defaultLimit != nil {
 		originalLimit = defaultLimit
 	}
@@ -111,7 +111,7 @@ func GetBoundaryRequest(resourceName core.ResourceName, originalRequest, origina
 
 	// Determine which scaling function to use based on resource type.
 	var result *resource.Quantity
-	if resourceName == core.ResourceCPU {
+	if resourceName == corev1.ResourceCPU {
 		result, _ = scaleQuantityProportionallyCPU(originalRequest /* scaledQuantity */, originalLimit /* scaleBase */, boundaryLimit /* scaleResult */, noRounding)
 		return result
 	}
@@ -127,27 +127,45 @@ const (
 	roundDownToFullUnit
 )
 
-// scaleQuantityProportionallyCPU returns a value in milliunits which has the same proportion to scaledQuantity as scaleResult has to scaleBase.
-// It also returns a bool indicating if it had to cap result to MaxInt64 milliunits.
-func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, bool) {
+type scalingResultType int
+
+const (
+	success scalingResultType = iota
+	capped
+	divisionByZero
+)
+
+// scaleQuantityProportionallyCPU returns two values:
+//  1. The first return value is in milliunits and has the same proportion to
+//     scaledQuantity as scaleResult has to scaleBase.
+//     It is calculated as (scaledQuantity * scaleResult) / scaleBase
+//  2. The second return value describes the type of the first return value.
+func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, scalingResultType) {
+	if scaleBase.IsZero() {
+		return scaledQuantity, divisionByZero
+	}
+
 	originalMilli := big.NewInt(scaledQuantity.MilliValue())
 	scaleBaseMilli := big.NewInt(scaleBase.MilliValue())
 	scaleResultMilli := big.NewInt(scaleResult.MilliValue())
-	var scaledOriginal big.Int
-	scaledOriginal.Mul(originalMilli, scaleResultMilli)
-	scaledOriginal.Div(&scaledOriginal, scaleBaseMilli)
-	if scaledOriginal.IsInt64() {
-		result := resource.NewMilliQuantity(scaledOriginal.Int64(), scaledQuantity.Format)
-		if rounding == roundUpToFullUnit {
-			result.RoundUp(resource.Scale(0))
+
+	var result big.Int
+	result.Mul(originalMilli, scaleResultMilli)
+	// If the division produces a remainder:
+	// - with roundUpToFullUnit, we apply ceiling to the value
+	// - with noRounding or roundDownToFullUnit, we apply floor to the value.
+	//   Note: In other words, the remainder is discarded. This is acceptable because the difference is at most 1 millicore.
+	// TODO(iamzili) - I think we eventually want to get rid of the noRounding mode.
+	quotient := new(big.Int)
+	remainder := new(big.Int)
+	quotient.DivMod(&result, scaleBaseMilli, remainder)
+	if quotient.IsInt64() {
+		if remainder.Sign() != 0 && rounding == roundUpToFullUnit {
+			quotient.Add(quotient, big.NewInt(1))
 		}
-		if rounding == roundDownToFullUnit {
-			result.Sub(*resource.NewMilliQuantity(999, result.Format))
-			result.RoundUp(resource.Scale(0))
-		}
-		return result, false
+		return resource.NewMilliQuantity(quotient.Int64(), scaledQuantity.Format), success
 	}
-	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), true
+	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), capped
 }
 
 // scaleQuantityProportionallyMem returns a value in whole units which has the same proportion to scaledQuantity as scaleResult has to scaleBase.

@@ -81,6 +81,9 @@ var RecommenderLabels = map[string]string{"app": "vpa-recommender"}
 // HamsterLabels are labels of hamster app
 var HamsterLabels = map[string]string{"app": "hamster"}
 
+// OOMLabels are labels for OOM test pods
+var OOMLabels = map[string]string{"app": "oom-test"}
+
 // SIGDescribe adds sig-autoscaling tag to test description.
 // Takes args that are passed to ginkgo.Describe.
 func SIGDescribe(scenario, name string, args ...any) bool {
@@ -233,16 +236,16 @@ func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
 		panic("container count should be greater than 0")
 	}
 	d := framework_deployment.NewDeployment(
-		"hamster-deployment",                       /*deploymentName*/
-		DefaultHamsterReplicas,                     /*replicas*/
-		HamsterLabels,                              /*podLabels*/
-		GetHamsterContainerNameByIndex(0),          /*imageName*/
-		"ubuntu:latest",                            /*image*/
-		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+		"hamster-deployment",                               /*deploymentName*/
+		DefaultHamsterReplicas,                             /*replicas*/
+		HamsterLabels,                                      /*podLabels*/
+		GetHamsterContainerNameByIndex(0),                  /*imageName*/
+		"registry.k8s.io/e2e-test-images/busybox:1.37.0-2", /*image*/
+		appsv1.RollingUpdateDeploymentStrategyType,         /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
-	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}
+	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "yes >/dev/null"}
 	for i := 1; i < n; i++ {
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
 		d.Spec.Template.Spec.Containers[i].Name = GetHamsterContainerNameByIndex(i)

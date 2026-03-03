@@ -19,7 +19,7 @@ package priority
 import (
 	"slices"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
@@ -34,14 +34,14 @@ func NewScalingDirectionPodEvictionAdmission() PodEvictionAdmission {
 }
 
 type scalingDirectionPodEvictionAdmission struct {
-	EvictionRequirements map[*apiv1.Pod][]*vpa_types.EvictionRequirement
+	EvictionRequirements map[*corev1.Pod][]*vpa_types.EvictionRequirement
 }
 
 // Admit admits a Pod for eviction in one of three cases
 // * no EvictionRequirement exists for this Pod
 // * no Resource requests are set for at least one Container in this Pod
 // * all EvictionRequirements are evaluated to 'true' for at least one Container in this Pod
-func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *vpa_types.RecommendedPodResources) bool {
+func (s *scalingDirectionPodEvictionAdmission) Admit(pod *corev1.Pod, resources *vpa_types.RecommendedPodResources) bool {
 	podEvictionRequirements, found := s.EvictionRequirements[pod]
 	if !found {
 		return true
@@ -61,19 +61,19 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *
 	return false
 }
 
-func (s *scalingDirectionPodEvictionAdmission) admitContainer(containerRequests apiv1.ResourceList, recommendedResources *vpa_types.RecommendedContainerResources, podEvictionRequirements []*vpa_types.EvictionRequirement) bool {
-	_, foundCPURequests := containerRequests[apiv1.ResourceCPU]
+func (s *scalingDirectionPodEvictionAdmission) admitContainer(containerRequests corev1.ResourceList, recommendedResources *vpa_types.RecommendedContainerResources, podEvictionRequirements []*vpa_types.EvictionRequirement) bool {
+	_, foundCPURequests := containerRequests[corev1.ResourceCPU]
 	if !foundCPURequests {
 		return true
 	}
-	_, foundMemoryRequests := containerRequests[apiv1.ResourceMemory]
+	_, foundMemoryRequests := containerRequests[corev1.ResourceMemory]
 	if !foundMemoryRequests {
 		return true
 	}
 	return s.checkEvictionRequirementsForContainer(containerRequests, recommendedResources.Target, podEvictionRequirements)
 }
 
-func (s *scalingDirectionPodEvictionAdmission) checkEvictionRequirementsForContainer(requestedResources apiv1.ResourceList, recommendedResources apiv1.ResourceList, evictionRequirements []*vpa_types.EvictionRequirement) bool {
+func (s *scalingDirectionPodEvictionAdmission) checkEvictionRequirementsForContainer(requestedResources corev1.ResourceList, recommendedResources corev1.ResourceList, evictionRequirements []*vpa_types.EvictionRequirement) bool {
 	for _, requirement := range evictionRequirements {
 		var resultsForResources = []bool{}
 		for _, resource := range requirement.Resources {
@@ -101,8 +101,8 @@ func (s *scalingDirectionPodEvictionAdmission) checkChangeRequirement(currentReq
 
 // LoopInit initializes the object by creating a map holding all applicable EvictionRequirements for each Pod.
 // The map is re-created on every call, to ensure that any changes to a VPA's EvictionRequirements are picked up and not leak any EvictionRequirements for no longer existing Pods.
-func (s *scalingDirectionPodEvictionAdmission) LoopInit(_ []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
-	s.EvictionRequirements = make(map[*apiv1.Pod][]*vpa_types.EvictionRequirement)
+func (s *scalingDirectionPodEvictionAdmission) LoopInit(_ []*corev1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*corev1.Pod) {
+	s.EvictionRequirements = make(map[*corev1.Pod][]*vpa_types.EvictionRequirement)
 	for vpa, pods := range vpaControlledPods {
 		for _, pod := range pods {
 			// When UpdatePolicy is not specified, the default policy will be followed, and the EvictionRequirements field will be nil
@@ -115,5 +115,5 @@ func (s *scalingDirectionPodEvictionAdmission) LoopInit(_ []*apiv1.Pod, vpaContr
 }
 
 func (s *scalingDirectionPodEvictionAdmission) CleanUp() {
-	s.EvictionRequirements = make(map[*apiv1.Pod][]*vpa_types.EvictionRequirement)
+	s.EvictionRequirements = make(map[*corev1.Pod][]*vpa_types.EvictionRequirement)
 }

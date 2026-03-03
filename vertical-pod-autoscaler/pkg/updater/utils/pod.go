@@ -17,27 +17,27 @@ limitations under the License.
 package utils
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // GetPodCondition will get Pod's condition.
-func GetPodCondition(pod *apiv1.Pod, conditionType apiv1.PodConditionType) (apiv1.PodCondition, bool) {
+func GetPodCondition(pod *corev1.Pod, conditionType corev1.PodConditionType) (corev1.PodCondition, bool) {
 	for _, cond := range pod.Status.Conditions {
 		if cond.Type == conditionType {
 			return cond, true
 		}
 	}
-	return apiv1.PodCondition{}, false
+	return corev1.PodCondition{}, false
 }
 
 // IsNonDisruptiveResize checks if all containers in the pod have NotRequired
 // resize policy for the resources being resized. If any container requires
 // restart for any resource, returns false.
-func IsNonDisruptiveResize(pod *apiv1.Pod) bool {
+func IsNonDisruptiveResize(pod *corev1.Pod) bool {
 	for _, container := range pod.Spec.Containers {
 		for _, policy := range container.ResizePolicy {
 			// If any resource has RestartContainer policy, it's disruptive
-			if policy.RestartPolicy == apiv1.RestartContainer {
+			if policy.RestartPolicy == corev1.RestartContainer {
 				return false
 			}
 		}

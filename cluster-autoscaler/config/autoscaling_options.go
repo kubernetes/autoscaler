@@ -220,6 +220,9 @@ type AutoscalingOptions struct {
 	// status that should be removed when creating a node template for scheduling.
 	// startup taints are expected to appear during node startup.
 	StartupTaints []string
+	// StartupTaintPrefixes is a list of taint key prefixes. Any taint whose key starts
+	// with one of these prefixes will be treated as a startup taint.
+	StartupTaintPrefixes []string
 	// StatusTaints is a list of taints CA considers to reflect transient node
 	// status that should be removed when creating a node template for scheduling.
 	// The status taints are expected to appear during node lifetime, after startup.
@@ -272,6 +275,8 @@ type AutoscalingOptions struct {
 	// MaxBinpackingTime is the maximum time spend on binpacking for a single scale-up.
 	// If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.
 	MaxBinpackingTime time.Duration
+	// FastpathBinpackingEnabled tells if to use fastpath binpacking algorithm to optimize scale-ups.
+	FastpathBinpackingEnabled bool
 	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
 	NodeDeletionBatcherInterval time.Duration
 	// SkipNodesWithSystemPods tells if nodes with pods from kube-system should be deleted (except for DaemonSet or mirror pods)
@@ -364,6 +369,7 @@ type AutoscalingOptions struct {
 	MaxNodeSkipEvalTimeTrackerEnabled bool
 	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
 	NodeRemovalLatencyTrackingEnabled bool
+	CapacityQuotasEnabled             bool
 }
 
 // KubeClientOptions specify options for kube client

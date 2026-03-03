@@ -23,15 +23,15 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
 func TestLoopInit(t *testing.T) {
-	podEvictionRequirements := []*v1.EvictionRequirement{
+	podEvictionRequirements := []*vpaautoscalingv1.EvictionRequirement{
 		{
 			Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-			ChangeRequirement: v1.TargetHigherThanRequests,
+			ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 		},
 	}
 	container1Name := "test-container-1"
@@ -44,7 +44,7 @@ func TestLoopInit(t *testing.T) {
 		AddContainer(test.Container().WithName(container1Name).WithCPURequest(resource.MustParse("500m")).WithMemRequest(resource.MustParse("10Gi")).Get()).
 		AddContainer(test.Container().WithName(container2Name).WithCPURequest(resource.MustParse("500m")).WithMemRequest(resource.MustParse("10Gi")).Get()).
 		Get()
-	expectedEvictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+	expectedEvictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 		pod:  podEvictionRequirements,
 		pod2: podEvictionRequirements,
 	}
@@ -53,7 +53,7 @@ func TestLoopInit(t *testing.T) {
 		WithContainer(container1Name).
 		WithEvictionRequirements(podEvictionRequirements).
 		Get()
-	vpaToPodMap := map[*v1.VerticalPodAutoscaler][]*corev1.Pod{testVPA: {pod, pod2}}
+	vpaToPodMap := map[*vpaautoscalingv1.VerticalPodAutoscaler][]*corev1.Pod{testVPA: {pod, pod2}}
 
 	t.Run("it should not require UpdateMode and EvictionRequirements.", func(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
@@ -64,7 +64,7 @@ func TestLoopInit(t *testing.T) {
 			WithContainer(container1Name).
 			Get()
 
-		newVpaToPodMap := map[*v1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod, pod2}}
+		newVpaToPodMap := map[*vpaautoscalingv1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod, pod2}}
 
 		sdpea.LoopInit(nil, newVpaToPodMap)
 		assert.Len(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, 0)
@@ -81,10 +81,10 @@ func TestLoopInit(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.LoopInit(nil, vpaToPodMap)
 
-		newPodEvictionRequirements := []*v1.EvictionRequirement{
+		newPodEvictionRequirements := []*vpaautoscalingv1.EvictionRequirement{
 			{
 				Resources:         []corev1.ResourceName{corev1.ResourceMemory},
-				ChangeRequirement: v1.TargetLowerThanRequests,
+				ChangeRequirement: vpaautoscalingv1.TargetLowerThanRequests,
 			},
 		}
 		newTestVPA := test.VerticalPodAutoscaler().
@@ -92,8 +92,8 @@ func TestLoopInit(t *testing.T) {
 			WithContainer(container1Name).
 			WithEvictionRequirements(newPodEvictionRequirements).
 			Get()
-		newVpaToPodMap := map[*v1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod, pod2}}
-		newExpectedEvictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		newVpaToPodMap := map[*vpaautoscalingv1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod, pod2}}
+		newExpectedEvictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod:  newPodEvictionRequirements,
 			pod2: newPodEvictionRequirements,
 		}
@@ -106,10 +106,10 @@ func TestLoopInit(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.LoopInit(nil, vpaToPodMap)
 
-		newPodEvictionRequirements := []*v1.EvictionRequirement{
+		newPodEvictionRequirements := []*vpaautoscalingv1.EvictionRequirement{
 			{
 				Resources:         []corev1.ResourceName{corev1.ResourceMemory},
-				ChangeRequirement: v1.TargetLowerThanRequests,
+				ChangeRequirement: vpaautoscalingv1.TargetLowerThanRequests,
 			},
 		}
 		newTestVPA := test.VerticalPodAutoscaler().
@@ -117,8 +117,8 @@ func TestLoopInit(t *testing.T) {
 			WithContainer(container1Name).
 			WithEvictionRequirements(newPodEvictionRequirements).
 			Get()
-		newVpaToPodMap := map[*v1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod2}}
-		newExpectedEvictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		newVpaToPodMap := map[*vpaautoscalingv1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod2}}
+		newExpectedEvictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod2: newPodEvictionRequirements,
 		}
 		sdpea.LoopInit(nil, newVpaToPodMap)
@@ -143,10 +143,10 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should admit a Pod for eviction if no resource request is present for a Pod", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{podWithoutRequests: {
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{podWithoutRequests: {
 			{
 				Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-				ChangeRequirement: v1.TargetHigherThanRequests,
+				ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 			},
 		}}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
@@ -165,10 +165,10 @@ func TestAdmitForSingleContainer(t *testing.T) {
 				WithMemRequest(resource.MustParse("1Gi")).
 				WithMemLimit(resource.MustParse("1Gi")).Get()}
 
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			podWithContainerStatus: {
 				{Resources: []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
@@ -185,18 +185,18 @@ func TestAdmitForSingleContainer(t *testing.T) {
 
 	t.Run("it should admit a Pod for eviction if no config is given", func(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = map[*corev1.Pod][]*v1.EvictionRequirement{pod: {}}
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{pod: {}}
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("600m", "10Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
 	})
 
 	t.Run("it should admit a Pod for eviction if Container CPU is scaled up and config allows scaling up CPU", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
@@ -208,11 +208,11 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should admit a Pod for eviction if Container CPU is scaled down and config allows scaling down CPU", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetLowerThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetLowerThanRequests,
 				},
 			},
 		}
@@ -224,10 +224,10 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should not admit a Pod for eviction if Container CPU is scaled down and config allows only scaling up CPU", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{Resources: []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
@@ -239,10 +239,10 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should admit a Pod for eviction even if Container CPU is scaled down and config allows only scaling up CPU, because memory is scaled up", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{Resources: []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
@@ -254,11 +254,11 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should admit a Pod for eviction if Container memory is scaled up and config allows scaling up memory", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
@@ -270,11 +270,11 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should admit a Pod for eviction if Container memory is scaled down and config allows scaling down memory", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetLowerThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetLowerThanRequests,
 				},
 			},
 		}
@@ -286,11 +286,11 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should not admit a Pod for eviction if Container memory is scaled down and config allows only scaling up memory", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
@@ -302,15 +302,15 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should admit a Pod for eviction if Container CPU is scaled up, memory is scaled down and config allows scaling up CPU and scaling down memory", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetLowerThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetLowerThanRequests,
 				},
 			},
 		}
@@ -322,11 +322,11 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should not admit a Pod for eviction if Container CPU is scaled up and config allows only scaling down CPU", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetLowerThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetLowerThanRequests,
 				},
 			},
 		}
@@ -338,15 +338,15 @@ func TestAdmitForSingleContainer(t *testing.T) {
 	})
 
 	t.Run("it should not admit a Pod for eviction if Container CPU is scaled up, memory is scaled down and config allows scaling up CPU and scaling up memory", func(t *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
@@ -367,18 +367,18 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 		Get()
 
 	t.Run("it should admit the Pod if both containers fulfill the EvictionRequirements", func(tt *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
-			ContainerRecommendations: []v1.RecommendedContainerResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container1Name).WithTarget("600m", "10Gi").GetContainerResources(),
 				test.Recommendation().WithContainer(container2Name).WithTarget("700m", "10Gi").GetContainerResources(),
 			},
@@ -388,18 +388,18 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 	})
 
 	t.Run("it should admit the Pod if only one container fulfills the EvictionRequirements", func(tt *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
-			ContainerRecommendations: []v1.RecommendedContainerResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container1Name).WithTarget("200m", "10Gi").GetContainerResources(),
 				test.Recommendation().WithContainer(container2Name).WithTarget("700m", "10Gi").GetContainerResources(),
 			},
@@ -409,18 +409,18 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 	})
 
 	t.Run("it should not admit the Pod if no container fulfills the EvictionRequirements", func(tt *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
-			ContainerRecommendations: []v1.RecommendedContainerResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container1Name).WithTarget("200m", "10Gi").GetContainerResources(),
 				test.Recommendation().WithContainer(container2Name).WithTarget("300m", "10Gi").GetContainerResources(),
 			},
@@ -430,18 +430,18 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 	})
 
 	t.Run("it should not admit the Pod even if there is a container that doesn't have a Recommendation and the other one doesn't fulfill the EvictionRequirements", func(tt *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
-			ContainerRecommendations: []v1.RecommendedContainerResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container2Name).WithTarget("300m", "10Gi").GetContainerResources(),
 			},
 		}

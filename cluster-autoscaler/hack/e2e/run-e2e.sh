@@ -16,10 +16,25 @@
 
 set -o nounset
 set -o pipefail
+set -o errexit
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+SCRIPT_DIR=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+CA_ROOT="$(readlink -f "${SCRIPT_DIR}/../..")"
 
-# This script will eventually glue setting up a kubernetes cluster with running e2e CA tests.
-# For now it's a no-op that defers to run-e2e-tests.sh.
+# Parse flags
+REMAINING_ARGS=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --presubmit)
+      export EXTRA_CA_FLAGS="${EXTRA_CA_FLAGS:-} --unremovable-node-recheck-timeout=1m --scale-down-unneeded-time=1m --scale-down-delay-after-add=1m"
+      shift
+      ;;
+    *)
+      REMAINING_ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
 
-${SCRIPT_ROOT}/hack/run-e2e-tests.sh "$@"
+${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh
+${CA_ROOT}/hack/e2e/run-e2e-tests.sh "${REMAINING_ARGS[@]}"

@@ -2084,6 +2084,7 @@ func newEstimatorBuilder() estimator.EstimatorBuilder {
 		estimator.NewThresholdBasedEstimationLimiter(nil),
 		estimator.NewDecreasingPodOrderer(),
 		nil,
+		false,
 	)
 
 	return estimatorBuilder

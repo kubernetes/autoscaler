@@ -165,6 +165,7 @@ var (
 	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up. Can be increased for individual pods through annotation 'cluster-autoscaler.kubernetes.io/pod-scale-up-delay'.")
 
 	startupTaintsFlag         = multiStringFlag("startup-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
+	startupTaintPrefixesFlag  = multiStringFlag("startup-taint-prefix", "Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times.")
 	statusTaintsFlag          = multiStringFlag("status-taint", "Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready")
 	balancingIgnoreLabelsFlag = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	balancingLabelsFlag       = multiStringFlag("balancing-label", "Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label.")
@@ -196,6 +197,7 @@ var (
 	recordDuplicatedEvents                  = flag.Bool("record-duplicated-events", false, "enable duplication of similar events within a 5 minute window.")
 	maxNodesPerScaleUp                      = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
 	maxNodeGroupBinpackingDuration          = flag.Duration("max-nodegroup-binpacking-duration", 10*time.Second, "Maximum time that will be spent in binpacking simulation for each NodeGroup.")
+	fastpathBinpackingEnabled               = flag.Bool("fastpath-binpacking-enabled", false, "Whether to use fastpath binpacking algorithm to optimize scale-ups.")
 	skipNodesWithSystemPods                 = flag.Bool("skip-nodes-with-system-pods", true, "If true cluster autoscaler will wait for --blocking-system-pod-distruption-timeout before deleting nodes with pods from kube-system (except for DaemonSet or mirror pods)")
 	skipNodesWithLocalStorage               = flag.Bool("skip-nodes-with-local-storage", true, "If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
 	skipNodesWithCustomControllerPods       = flag.Bool("skip-nodes-with-custom-controller-pods", true, "If true cluster autoscaler will never delete nodes with pods owned by custom controllers")
@@ -238,6 +240,7 @@ var (
 	capacitybufferPodInjectionEnabled            = flag.Bool("capacity-buffer-pod-injection-enabled", false, "Whether to enable pod list processor that processes ready capacity buffers and injects fake pods accordingly")
 	nodeRemovalLatencyTrackingEnabled            = flag.Bool("node-removal-latency-tracking-enabled", false, "Whether to track latency from when an unneeded node is eligible for scale down until it is removed or needed again.")
 	maxNodeSkipEvalTimeTrackerEnabled            = flag.Bool("max-node-skip-eval-time-tracker-enabled", false, "Whether to enable the tracking of the maximum time of node being skipped during ScaleDown")
+	capacityQuotasEnabled                        = flag.Bool("capacity-quotas-enabled", false, "Whether to enable CapacityQuota CRD support.")
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
@@ -361,6 +364,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		Regional:                         *regional,
 		NewPodScaleUpDelay:               *newPodScaleUpDelay,
 		StartupTaints:                    append(*ignoreTaintsFlag, *startupTaintsFlag...),
+		StartupTaintPrefixes:             *startupTaintPrefixesFlag,
 		StatusTaints:                     *statusTaintsFlag,
 		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
 		BalancingLabels:                  *balancingLabelsFlag,
@@ -394,6 +398,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxNodesPerScaleUp:                 *maxNodesPerScaleUp,
 		MaxNodeGroupBinpackingDuration:     *maxNodeGroupBinpackingDuration,
 		MaxBinpackingTime:                  *maxBinpackingTimeFlag,
+		FastpathBinpackingEnabled:          *fastpathBinpackingEnabled,
 		NodeDeletionBatcherInterval:        *nodeDeletionBatcherInterval,
 		SkipNodesWithSystemPods:            *skipNodesWithSystemPods,
 		SkipNodesWithLocalStorage:          *skipNodesWithLocalStorage,
@@ -442,6 +447,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CapacitybufferPodInjectionEnabled:            *capacitybufferPodInjectionEnabled,
 		NodeRemovalLatencyTrackingEnabled:            *nodeRemovalLatencyTrackingEnabled,
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
+		CapacityQuotasEnabled:                        *capacityQuotasEnabled,
 	}
 }
 

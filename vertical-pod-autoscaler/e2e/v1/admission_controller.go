@@ -689,6 +689,184 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
+	ginkgo.It("raises cpu requests and limits according to pod min limit set in LimitRange", func() {
+		d := utils.NewNHamstersDeployment(f, 3)
+
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[2].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[2].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
+		container3Name := utils.GetHamsterContainerNameByIndex(2)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithTarget("4m", "100Mi").
+					WithLowerBound("4m", "100Mi").
+					WithUpperBound("4m", "100Mi").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithTarget("21m", "100Mi").
+					WithLowerBound("21m", "100Mi").
+					WithUpperBound("21m", "100Mi").
+					GetContainerResources()).
+			WithContainer(container3Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container3Name).
+					WithTarget("90m", "100Mi").
+					WithLowerBound("90m", "100Mi").
+					WithUpperBound("90m", "100Mi").
+					GetContainerResources()).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		minCpu := ParseQuantityOrDie("150m")
+		installLimitRange(f, &minCpu, nil, nil, nil, apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		expectedRequestsLimits := map[string]string{
+			container1Name: "6m",   // ceil((4*150)/115) = ceil(5.22) = 6; for more details check PR #8946
+			container2Name: "28m",  // ceil((21*150)/115)
+			container3Name: "118m", // ceil((90*150)/115)
+		}
+
+		for _, pod := range podList.Items {
+			for _, container := range pod.Spec.Containers {
+				gomega.Expect(*container.Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie(expectedRequestsLimits[container.Name])))
+				gomega.Expect(*container.Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+				gomega.Expect(*container.Resources.Limits.Cpu()).To(gomega.Equal(ParseQuantityOrDie(expectedRequestsLimits[container.Name])))
+				gomega.Expect(*container.Resources.Limits.Memory()).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+				gomega.Expect(float64(container.Resources.Limits.Cpu().MilliValue()) / float64(container.Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1))
+				gomega.Expect(float64(container.Resources.Limits.Memory().Value()) / float64(container.Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 1))
+			}
+		}
+	})
+
+	ginkgo.It("caps cpu requests and limits according to pod max limit set in LimitRange", func() {
+		d := utils.NewNHamstersDeployment(f, 3)
+
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[2].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[2].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("1m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
+		container3Name := utils.GetHamsterContainerNameByIndex(2)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithTarget("4m", "100Mi").
+					WithLowerBound("4m", "100Mi").
+					WithUpperBound("4m", "100Mi").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithTarget("21m", "100Mi").
+					WithLowerBound("21m", "100Mi").
+					WithUpperBound("21m", "100Mi").
+					GetContainerResources()).
+			WithContainer(container3Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container3Name).
+					WithTarget("90m", "100Mi").
+					WithLowerBound("90m", "100Mi").
+					WithUpperBound("90m", "100Mi").
+					GetContainerResources()).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		maxCpu := ParseQuantityOrDie("80m")
+		installLimitRange(f, nil, nil, &maxCpu, nil, apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		expectedRequestsLimits := map[string]string{
+			container1Name: "2m",  // floor((4*80)/115), for more details check PR #8946
+			container2Name: "14m", // floor((21*80)/115)
+			container3Name: "62m", // floor((90*80)/115)
+		}
+
+		for _, pod := range podList.Items {
+			for _, container := range pod.Spec.Containers {
+				gomega.Expect(*container.Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie(expectedRequestsLimits[container.Name])))
+				gomega.Expect(*container.Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+				gomega.Expect(*container.Resources.Limits.Cpu()).To(gomega.Equal(ParseQuantityOrDie(expectedRequestsLimits[container.Name])))
+				gomega.Expect(*container.Resources.Limits.Memory()).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+				gomega.Expect(float64(container.Resources.Limits.Cpu().MilliValue()) / float64(container.Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1))
+				gomega.Expect(float64(container.Resources.Limits.Memory().Value()) / float64(container.Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 1))
+			}
+		}
+	})
+
 	ginkgo.It("raises request according to pod min limit set in LimitRange", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f,
 			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
@@ -956,32 +1134,6 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: oomBumpUpRatio must be greater than or equal to 1.0, got -1",
 			},
 			{
-				name: "Invalid oomBumpUpRatio (string value)",
-				vpaJSON: `{
-            "apiVersion": "autoscaling.k8s.io/v1",
-            "kind": "VerticalPodAutoscaler",
-            "metadata": {"name": "oom-test-vpa"},
-            "spec": {
-                "targetRef": {
-                    "apiVersion": "apps/v1",
-                    "kind": "Deployment",
-                    "name": "oom-test"
-                },
-                "updatePolicy": {
-                    "updateMode": "Auto"
-                },
-                "resourcePolicy": {
-                    "containerPolicies": [{
-                        "containerName": "*",
-                        "oomBumpUpRatio": "not-a-number",
-                        "oomMinBumpUp": 104857600
-                    }]
-                }
-            }
-        }`,
-				expectedErr: "admission webhook \"vpa\\.k8s\\.io\" denied the request: quantities must match the regular expression",
-			},
-			{
 				name: "Invalid oomBumpUpRatio (less than 1)",
 				vpaJSON: `{
             "apiVersion": "autoscaling.k8s.io/v1",
@@ -1033,6 +1185,32 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
         }`,
 				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: oomMinBumpUp must be greater than or equal to 0, got -1 bytes",
 			},
+			{
+				name: "Invalid oomBumpUpRatio (string value)",
+				vpaJSON: `{
+            "apiVersion": "autoscaling.k8s.io/v1",
+            "kind": "VerticalPodAutoscaler",
+            "metadata": {"name": "oom-test-vpa"},
+            "spec": {
+                "targetRef": {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "oom-test"
+                },
+                "updatePolicy": {
+                    "updateMode": "Auto"
+                },
+                "resourcePolicy": {
+                    "containerPolicies": [{
+                        "containerName": "*",
+                        "oomBumpUpRatio": "not-a-number",
+                        "oomMinBumpUp": 104857600
+                    }]
+                }
+            }
+        }`,
+				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: quantities must match the regular expression",
+			},
 		}
 		for _, tc := range testCases {
 			ginkgo.By(fmt.Sprintf("Testing %s", tc.name))
@@ -1049,9 +1227,14 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-e2e-certs secret")
 		actualCertsSecret, err := c.CoreV1().Secrets(metav1.NamespaceSystem).Get(ctx, "vpa-tls-certs", metav1.GetOptions{})
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-tls-certs secret")
-		actualCertsSecret.Data["serverKey.pem"] = e2eCertsSecret.Data["e2eKey.pem"]
-		actualCertsSecret.Data["serverCert.pem"] = e2eCertsSecret.Data["e2eCert.pem"]
-		actualCertsSecret.Data["caCert.pem"] = e2eCertsSecret.Data["e2eCaCert.pem"]
+		// Detect secret key format: Helm certgen uses "key/cert/ca", gencerts.sh uses "serverKey.pem/serverCert.pem/caCert.pem"
+		keyName, certName, caName := "key", "cert", "ca"
+		if _, ok := actualCertsSecret.Data["serverKey.pem"]; ok {
+			keyName, certName, caName = "serverKey.pem", "serverCert.pem", "caCert.pem"
+		}
+		actualCertsSecret.Data[keyName] = e2eCertsSecret.Data["e2eKey.pem"]
+		actualCertsSecret.Data[certName] = e2eCertsSecret.Data["e2eCert.pem"]
+		actualCertsSecret.Data[caName] = e2eCertsSecret.Data["e2eCaCert.pem"]
 		_, err = c.CoreV1().Secrets(metav1.NamespaceSystem).Update(ctx, actualCertsSecret, metav1.UpdateOptions{})
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to update vpa-tls-certs secret with e2e rotation certs")
 
@@ -1067,13 +1250,14 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 		gomega.Expect(admissionController.Name).ToNot(gomega.BeEmpty())
 
+		// Wait for certificate reload - Kubernetes secret propagation can take up to 2 minutes
 		gomega.Eventually(func(g gomega.Gomega) string {
 			reader, err := c.CoreV1().Pods(metav1.NamespaceSystem).GetLogs(admissionController.Name, &apiv1.PodLogOptions{}).Stream(ctx)
 			g.Expect(err).To(gomega.Succeed())
 			logs, err := io.ReadAll(reader)
 			g.Expect(err).To(gomega.Succeed())
 			return string(logs)
-		}).Should(gomega.And(gomega.ContainSubstring("New certificate found, reloading"), gomega.ContainSubstring("New client CA found, reloading and patching webhook"), gomega.ContainSubstring("Successfully patched webhook with new client CA")))
+		}, 3*time.Minute, 5*time.Second).Should(gomega.And(gomega.ContainSubstring("New certificate found, reloading"), gomega.ContainSubstring("New client CA found, reloading and patching webhook"), gomega.ContainSubstring("Successfully patched webhook with new client CA")))
 
 		ginkgo.By("Setting up invalid VPA object")
 		// there is an invalid "requests" field.
@@ -1095,6 +1279,120 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		err = InstallRawVPA(f, invalidVPA)
 		gomega.Expect(err).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
+	})
+})
+
+var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		waitForVpaWebhookRegistration(f)
+	})
+
+	f.It("boosts CPU by factor on pod creation", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		expectedCPU := ParseQuantityOrDie("200m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with a startup boost policy (factor)")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		factor := int32(2)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 15).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("100m", "100Mi").
+					GetContainerResources(),
+			).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+	})
+
+	f.It("boosts CPU by quantity on pod creation", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		boostCPUQuantity := ParseQuantityOrDie("500m")
+		expectedCPU := ParseQuantityOrDie("600m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with a startup boost policy (quantity)")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &boostCPUQuantity, 15).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("100m", "100Mi").
+					GetContainerResources(),
+			).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+	})
+
+	f.It("boosts CPU on pod creation when VPA update mode is Off", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		expectedCPU := ParseQuantityOrDie("200m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with updateMode Off and a startup boost policy")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		factor := int32(2)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeOff). // VPA is off, but boost should still work
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 15).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(expectedCPU)).To(gomega.Equal(0))
+	})
+
+	f.It("doesn't boost CPU on pod creation when scaling mode is Off", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		initialCPU := ParseQuantityOrDie("100m")
+		d := NewHamsterDeploymentWithResources(f, initialCPU, ParseQuantityOrDie("100Mi"))
+
+		ginkgo.By("Setting up a VPA with a startup boost policy and scaling mode Off")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		factor := int32(2)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 15).
+			WithScalingMode(containerName, vpa_types.ContainerScalingModeOff).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is NOT boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(initialCPU)).To(gomega.Equal(0))
 	})
 })
 

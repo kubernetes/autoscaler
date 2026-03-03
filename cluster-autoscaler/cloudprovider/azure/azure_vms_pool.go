@@ -23,7 +23,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -158,7 +158,7 @@ func (vmPool *VMPool) IncreaseSize(delta int) error {
 	// hosted CAS will be using Autoscale scale profile
 	// HostedSystem will be using manual scale profile
 	// Both of them need to set the Target-Count and SKU headers
-	if len(versionedAP.Properties.VirtualMachinesProfile.Scale.Autoscale) > 0 ||
+	if versionedAP.Properties.VirtualMachinesProfile.Scale.Autoscale != nil ||
 		(versionedAP.Properties.Mode != nil &&
 			strings.EqualFold(string(*versionedAP.Properties.Mode), "HostedSystem")) {
 		header := make(http.Header)
@@ -210,8 +210,8 @@ func buildRequestBodyForScaleUp(agentpool armcontainerservice.AgentPool, count i
 
 	// set the count of the matching manual scale profile to the new target value
 	for _, manualProfile := range agentpool.Properties.VirtualMachinesProfile.Scale.Manual {
-		if manualProfile != nil && len(manualProfile.Sizes) == 1 &&
-			strings.EqualFold(ptr.Deref(manualProfile.Sizes[0], ""), vmSku) {
+		if manualProfile != nil && manualProfile.Size != nil &&
+			strings.EqualFold(ptr.Deref(manualProfile.Size, ""), vmSku) {
 			klog.V(5).Infof("Found matching manual profile for VM SKU: %s, updating count to: %d", vmSku, count)
 			manualProfile.Count = ptr.To(count)
 			requestBody.Properties.VirtualMachinesProfile = agentpool.Properties.VirtualMachinesProfile
