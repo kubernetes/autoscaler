@@ -18,6 +18,7 @@ package clusterstate
 
 import (
 	"fmt"
+	"log"
 	"testing"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/scaleupfailures"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
@@ -558,19 +560,25 @@ func TestExpiredScaleUp(t *testing.T) {
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	log.Println("Initialized fakeClient")
 	clusterstate := newClusterStateRegistryWithMetrics(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	log.Println("Initialized clusterstate")
 
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 4, now.Add(-3*time.Minute))
+	log.Println("Registered scale up")
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	log.Println("Update nodes")
 	assert.NoError(t, err)
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
 	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.Timeout, 4)
+	log.Println("Assert called")
 	assert.True(t, clusterstate.IsClusterHealthy())
+	log.Println("Assert passed")
 	assert.False(t, clusterstate.IsNodeGroupHealthy("ng1"))
-	assert.Equal(t, map[string][]ScaleUpFailure{
+	assert.Equal(t, clusterstate.GetScaleUpFailures(), map[string][]scaleupfailures.ScaleUpFailure{
 		"ng1": {
 			{
 				NodeGroup: provider.GetNodeGroup("ng1"),
@@ -1179,7 +1187,7 @@ func TestScaleUpFailures(t *testing.T) {
 	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.APIError, 1)
 
 	failures := clusterstate.GetScaleUpFailures()
-	assert.Equal(t, map[string][]ScaleUpFailure{
+	assert.Equal(t, map[string][]scaleupfailures.ScaleUpFailure{
 		"ng1": {
 			{NodeGroup: provider.GetNodeGroup("ng1"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, Time: now, Delta: 3},
 			{NodeGroup: provider.GetNodeGroup("ng1"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.APIError)}, Time: now.Add(time.Minute), Delta: 1},
