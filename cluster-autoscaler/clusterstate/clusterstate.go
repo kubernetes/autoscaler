@@ -184,11 +184,14 @@ type NodeGroupScalingSafety struct {
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker) *ClusterStateRegistry {
-	return newClusterStateRegistry(cloudProvider, config, logRecorder, backoff, nodeGroupConfigProcessor, asyncNodeGroupStateChecker, metrics.DefaultMetrics)
+func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker, scaleUpFailures *scaleupfailures.ScaleUpFailuresRegistry) *ClusterStateRegistry {
+	return newClusterStateRegistry(cloudProvider, config, logRecorder, backoff, nodeGroupConfigProcessor, asyncNodeGroupStateChecker, metrics.DefaultMetrics, scaleUpFailures)
 }
 
-func newClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker, metrics metricObserver) *ClusterStateRegistry {
+func newClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker, metrics metricObserver, scaleUpFailures *scaleupfailures.ScaleUpFailuresRegistry) *ClusterStateRegistry {
+	if scaleUpFailures == nil {
+		scaleUpFailures = scaleupfailures.NewScaleUpFailuresRegistry()
+	}
 	return &ClusterStateRegistry{
 		scaleUpRequests:                 make(map[string]*ScaleUpRequest),
 		scaleDownRequests:               make([]*ScaleDownRequest, 0),
@@ -207,7 +210,7 @@ func newClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		logRecorder:                     logRecorder,
 		cloudProviderNodeInstancesCache: utils.NewCloudProviderNodeInstancesCache(cloudProvider),
 		interrupt:                       make(chan struct{}),
-		scaleUpFailures:                 scaleupfailures.NewScaleUpFailuresRegistry(),
+		scaleUpFailures:                 scaleUpFailures,
 		nodeGroupConfigProcessor:        nodeGroupConfigProcessor,
 		asyncNodeGroupStateChecker:      asyncNodeGroupStateChecker,
 		metrics:                         metrics,
@@ -363,11 +366,9 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGr
 // when trying to scale-up node group. It will mark this group as not safe to autoscale
 // for some time.
 func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, gpuResourceName, gpuType string, currentTime time.Time) {
-	errReason := metrics.FailedScaleUpReason(errorInfo.ErrorCode)
-
-	csr.scaleUpFailures.Register(nodeGroup, errReason, currentTime)
-	csr.metrics.RegisterFailedScaleUp(errReason, gpuResourceName, gpuType)
-	csr.metrics.RegisterFailedNodeCreations(errReason, delta)
+	csr.scaleUpFailures.RegisterFailedScaleUp(nodeGroup, delta, errorInfo, gpuResourceName, gpuType, currentTime)
+	csr.metrics.RegisterFailedScaleUp(metrics.FailedScaleUpReason(errorInfo.ErrorCode), gpuResourceName, gpuType)
+	csr.metrics.RegisterFailedNodeCreations(metrics.FailedScaleUpReason(errorInfo.ErrorCode), delta)
 	csr.backoffNodeGroup(nodeGroup, errorInfo, currentTime)
 }
 
@@ -1209,6 +1210,7 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 			}
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
+
 			csr.RegisterFailedScaleUp(nodeGroup, len(unseenInstanceIds), cloudprovider.InstanceErrorInfo{
 				ErrorClass:   errorCode.class,
 				ErrorCode:    errorCode.code,
@@ -1312,18 +1314,6 @@ func FakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 			ProviderID: instance.Id,
 		},
 	}
-}
-
-// PeriodicCleanup performs clean-ups that should be done periodically, e.g.
-// each Autoscaler loop.
-func (csr *ClusterStateRegistry) PeriodicCleanup() {
-	// Clear the scale-up failures info so they don't accumulate.
-	csr.clearScaleUpFailures()
-}
-
-// clearScaleUpFailures clears the scale-up failures map.
-func (csr *ClusterStateRegistry) clearScaleUpFailures() {
-	csr.scaleUpFailures.Clear()
 }
 
 // GetScaleUpFailures returns the scale-up failures map.

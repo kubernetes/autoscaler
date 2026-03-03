@@ -76,6 +76,7 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
 		opts.Backoff,
+		opts.ScaleUpFailuresRegistry,
 		opts.DebuggingSnapshotter,
 		opts.RemainingPdbTracker,
 		opts.ScaleUpOrchestrator,

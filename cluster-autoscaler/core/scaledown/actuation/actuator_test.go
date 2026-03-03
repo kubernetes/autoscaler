@@ -36,6 +36,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/scaleupfailures"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
@@ -1233,7 +1234,7 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
 	}
-	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), scaleupfailures.NewScaleUpFailuresRegistry())
 	for _, bucket := range emptyNodeGroupViews {
 		for _, node := range bucket.Nodes {
 			err := autoscalingCtx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods[node.Name]...))
@@ -1546,7 +1547,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), scaleupfailures.NewScaleUpFailuresRegistry())
 			scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
 			scaleStateNotifier.Register(csr)
 			ndt := deletiontracker.NewNodeDeletionTracker(0)

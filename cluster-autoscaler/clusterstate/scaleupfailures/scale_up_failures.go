@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,15 +44,36 @@ func NewScaleUpFailuresRegistry() *ScaleUpFailuresRegistry {
 	}
 }
 
-// Register registers a scale-up failure.
-func (s *ScaleUpFailuresRegistry) Register(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, time time.Time) {
+// RegisterScaleUp records when the last scale up happened for a nodegroup.
+func (s *ScaleUpFailuresRegistry) RegisterScaleUp(_ cloudprovider.NodeGroup,
+	_ int, _ time.Time) {
+}
+
+// RegisterScaleDown records when the last scale down happened for a nodegroup.
+func (s *ScaleUpFailuresRegistry) RegisterScaleDown(_ cloudprovider.NodeGroup,
+	_ string, _ time.Time, _ time.Time) {
+}
+
+// RegisterFailedScaleUp records when the last scale up failed for a nodegroup.
+func (s *ScaleUpFailuresRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int,
+	errorInfo cloudprovider.InstanceErrorInfo, gpuResourceName, gpuType string, currentTime time.Time) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.failures[nodeGroup.Id()] = append(s.failures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, Reason: reason, Time: time})
+	s.failures[nodeGroup.Id()] = append(s.failures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, Reason: metrics.FailedScaleUpReason(errorInfo.ErrorCode), Time: currentTime})
+}
+
+// RegisterFailedScaleDown records failed scale-down for a nodegroup.
+func (s *ScaleUpFailuresRegistry) RegisterFailedScaleDown(_ cloudprovider.NodeGroup,
+	_ string, _ time.Time) {
+}
+
+// Refresh clears the scale-up failures.
+func (s *ScaleUpFailuresRegistry) Refresh() {
+	s.clear()
 }
 
 // Clear clears the scale-up failures.
-func (s *ScaleUpFailuresRegistry) Clear() {
+func (s *ScaleUpFailuresRegistry) clear() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.failures = make(map[string][]ScaleUpFailure)
