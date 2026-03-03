@@ -43,65 +43,108 @@ func TestGetDriverNamesForMetrics(t *testing.T) {
 			resourceSlices: []*v1.ResourceSlice{
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver1",
+						Driver: "compute-domain.nvidia.com",
 					},
 				},
 			},
-			wantDrivers:          []string{"driver1"},
-			wantDriversCompacted: "driver1",
+			wantDrivers:          []string{"compute-domain.nvidia.com"},
+			wantDriversCompacted: "compute-domain.nvidia.com",
 		},
 		"TwoDrivers": {
 			resourceSlices: []*v1.ResourceSlice{
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver1",
+						Driver: "compute-domain.nvidia.com",
 					},
 				},
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver2",
+						Driver: "dra.net",
 					},
 				},
 			},
-			wantDrivers:          []string{"driver1", "driver2"},
-			wantDriversCompacted: "driver1,driver2",
+			wantDrivers:          []string{"compute-domain.nvidia.com", "dra.net"},
+			wantDriversCompacted: "compute-domain.nvidia.com,dra.net",
 		},
 		"TwoDriversUnsorted": {
 			resourceSlices: []*v1.ResourceSlice{
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver2",
+						Driver: "dra.net",
 					},
 				},
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver1",
+						Driver: "compute-domain.nvidia.com",
 					},
 				},
 			},
-			wantDrivers:          []string{"driver1", "driver2"},
-			wantDriversCompacted: "driver1,driver2",
+			wantDrivers:          []string{"compute-domain.nvidia.com", "dra.net"},
+			wantDriversCompacted: "compute-domain.nvidia.com,dra.net",
 		},
 		"TwoDriversWithDuplicates": {
 			resourceSlices: []*v1.ResourceSlice{
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver1",
+						Driver: "compute-domain.nvidia.com",
 					},
 				},
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver2",
+						Driver: "dra.net",
 					},
 				},
 				{
 					Spec: v1.ResourceSliceSpec{
-						Driver: "driver1",
+						Driver: "compute-domain.nvidia.com",
 					},
 				},
 			},
-			wantDrivers:          []string{"driver1", "driver2"},
-			wantDriversCompacted: "driver1,driver2",
+			wantDrivers:          []string{"compute-domain.nvidia.com", "dra.net"},
+			wantDriversCompacted: "compute-domain.nvidia.com,dra.net",
+		},
+		"CustomDriver": {
+			resourceSlices: []*v1.ResourceSlice{
+				{
+					Spec: v1.ResourceSliceSpec{
+						Driver: "custom-driver",
+					},
+				},
+			},
+			wantDrivers:          []string{customDriverName},
+			wantDriversCompacted: customDriverName,
+		},
+		"KnownDriverAndCustomDriver": {
+			resourceSlices: []*v1.ResourceSlice{
+				{
+					Spec: v1.ResourceSliceSpec{
+						Driver: "compute-domain.nvidia.com",
+					},
+				},
+				{
+					Spec: v1.ResourceSliceSpec{
+						Driver: "custom-driver",
+					},
+				},
+			},
+			wantDrivers:          []string{"compute-domain.nvidia.com", customDriverName},
+			wantDriversCompacted: "compute-domain.nvidia.com," + customDriverName,
+		},
+		"KnownDriverAndCustomDriverUnsorted": {
+			resourceSlices: []*v1.ResourceSlice{
+				{
+					Spec: v1.ResourceSliceSpec{
+						Driver: "custom-driver",
+					},
+				},
+				{
+					Spec: v1.ResourceSliceSpec{
+						Driver: "compute-domain.nvidia.com",
+					},
+				},
+			},
+			wantDrivers:          []string{"compute-domain.nvidia.com", customDriverName},
+			wantDriversCompacted: "compute-domain.nvidia.com," + customDriverName,
 		},
 	}
 
@@ -123,17 +166,17 @@ func BenchmarkGetDriverNamesForMetrics(b *testing.B) {
 	resourceSlices := []*v1.ResourceSlice{
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver1",
+				Driver: "compute-domain.nvidia.com",
 			},
 		},
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver2",
+				Driver: "dra.net",
 			},
 		},
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver1",
+				Driver: "custom-driver",
 			},
 		},
 	}
@@ -147,17 +190,17 @@ func BenchmarkGetDriverNamesForMetricsCompacted(b *testing.B) {
 	resourceSlices := []*v1.ResourceSlice{
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver1",
+				Driver: "compute-domain.nvidia.com",
 			},
 		},
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver2",
+				Driver: "dra.net",
 			},
 		},
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver1",
+				Driver: "custom-driver",
 			},
 		},
 	}
