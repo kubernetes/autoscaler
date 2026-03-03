@@ -1712,7 +1712,7 @@ func TestFailedScaleUpWithDra(t *testing.T) {
 	nodeInfo.LocalResourceSlices = []*v1.ResourceSlice{
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver1",
+				Driver: "dra.net",
 			},
 		},
 		{
@@ -1735,7 +1735,7 @@ func TestFailedScaleUpWithDra(t *testing.T) {
 	// UpdateNodes will trigger handleInstanceCreationErrors
 	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
 	assert.NoError(t, err)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "", "", "driver1,driver2")
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "", "", "custom.driver,dra.net")
 }
 
 func TestFailedScaleUpWithDraAndGpu(t *testing.T) {
@@ -1771,7 +1771,7 @@ func TestFailedScaleUpWithDraAndGpu(t *testing.T) {
 	nodeInfo.LocalResourceSlices = []*v1.ResourceSlice{
 		{
 			Spec: v1.ResourceSliceSpec{
-				Driver: "driver1",
+				Driver: "dra.net",
 			},
 		},
 		{
@@ -1794,7 +1794,7 @@ func TestFailedScaleUpWithDraAndGpu(t *testing.T) {
 	// UpdateNodes will trigger handleInstanceCreationErrors
 	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
 	assert.NoError(t, err)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "dra_gpu-driver", "not-listed", "driver1,driver2")
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "dra_gpu-driver", "not-listed", "custom.driver,dra.net")
 }
 
 type mockMetrics struct {
