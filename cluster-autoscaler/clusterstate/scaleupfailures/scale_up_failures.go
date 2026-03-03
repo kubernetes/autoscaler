@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,48 +23,70 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-// ScaleUpFailure contains information about a failure of a scale-up.
-type ScaleUpFailure struct {
-	NodeGroup cloudprovider.NodeGroup
+// Record contains information about a failure of a scale-up.
+type Record struct {
 	ErrorInfo cloudprovider.InstanceErrorInfo
 	Delta     int
 	Time      time.Time
 }
 
-// ScaleUpFailuresRegistry contains information about scale-up failures.
-type ScaleUpFailuresRegistry struct {
+// Registry contains information about scale-up failures.
+type Registry struct {
 	mu       sync.Mutex
-	failures map[string][]ScaleUpFailure
+	failures map[string][]Record
 }
 
-// NewScaleUpFailuresRegistry returns a new ScaleUpFailuresRegistry.
-func NewScaleUpFailuresRegistry() *ScaleUpFailuresRegistry {
-	return &ScaleUpFailuresRegistry{
-		failures: make(map[string][]ScaleUpFailure),
+// NewRegistry returns a new Registry.
+func NewRegistry() *Registry {
+	return &Registry{
+		failures: make(map[string][]Record),
 	}
 }
 
-// Register registers a scale-up failure.
-func (s *ScaleUpFailuresRegistry) Register(nodeGroup cloudprovider.NodeGroup, errorInfo cloudprovider.InstanceErrorInfo, delta int, time time.Time) {
+// RegisterScaleUp records when the last scale up happened for a nodegroup.
+func (s *Registry) RegisterScaleUp(_ cloudprovider.NodeGroup,
+	_ int, _ time.Time) {
+}
+
+// RegisterScaleDown records when the last scale down happened for a nodegroup.
+func (s *Registry) RegisterScaleDown(_ cloudprovider.NodeGroup,
+	_ string, _ time.Time, _ time.Time) {
+}
+
+// RegisterFailedScaleUp records when the last scale up failed for a nodegroup.
+func (s *Registry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int,
+	errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.failures[nodeGroup.Id()] = append(s.failures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, ErrorInfo: errorInfo, Delta: delta, Time: time})
+	s.failures[nodeGroup.Id()] = append(s.failures[nodeGroup.Id()], Record{ErrorInfo: errorInfo, Delta: delta, Time: currentTime})
+}
+
+// RegisterFailedScaleDown records failed scale-down for a nodegroup.
+func (s *Registry) RegisterFailedScaleDown(_ cloudprovider.NodeGroup,
+	_ string, _ time.Time) {
+}
+
+// Refresh clears the scale-up failures.
+func (s *Registry) Refresh() {
+	s.clear()
 }
 
 // Clear clears the scale-up failures.
-func (s *ScaleUpFailuresRegistry) Clear() {
+func (s *Registry) clear() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.failures = make(map[string][]ScaleUpFailure)
+	s.failures = make(map[string][]Record)
 }
 
 // Get returns the scale-up failures.
-func (s *ScaleUpFailuresRegistry) Get() map[string][]ScaleUpFailure {
+func (s *Registry) Get() map[string][]Record {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	result := make(map[string][]ScaleUpFailure)
+	result := make(map[string][]Record)
 	for nodeGroupId, failures := range s.failures {
-		result[nodeGroupId] = failures
+		failuresCopy := make([]Record, len(failures))
+		copy(failuresCopy, failures)
+		result[nodeGroupId] = failuresCopy
 	}
 	return result
 }
