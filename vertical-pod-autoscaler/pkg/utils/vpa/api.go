@@ -294,8 +294,15 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 }
 
 // IsPodReadyAndStartupBoostDurationPassed returns true if the pod is ready and all container startup boost durations have passed.
+// TODO(kamarabbas99): Instead of allowing the pod to be unboosted only after all containers have passed their boost duration, we
+// can allow unboosting as soon as any container has passed its boost duration. This will require changes in the
+// way we track unboost and unboosting logic in the updater.
 func IsPodReadyAndStartupBoostDurationPassed(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
 	if !PodHasCPUBoostInProgressAnnotation(pod) {
+		return false
+	}
+
+	if !podutil.IsPodReady(pod) {
 		return false
 	}
 
@@ -320,10 +327,6 @@ func IsPodReadyAndStartupBoostDurationPassed(pod *corev1.Pod, vpa *vpa_types.Ver
 
 	if maxBoostDuration == 0 {
 		return true
-	}
-
-	if !podutil.IsPodReady(pod) {
-		return false
 	}
 
 	readyTime := time.Time{}
