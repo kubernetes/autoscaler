@@ -11,7 +11,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  {{- if not (eq .Values.updater.replicas nil) }}
   replicas: {{ .Values.updater.replicas }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.updater.revisionHistoryLimit }}
   selector:
     matchLabels:
