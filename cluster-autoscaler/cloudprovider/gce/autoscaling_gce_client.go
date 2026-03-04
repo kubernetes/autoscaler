@@ -138,7 +138,7 @@ type AutoscalingGceClient interface {
 	// modifying resources
 	ResizeMig(GceRef, int64) error
 	DeleteInstances(migRef GceRef, instances []GceRef) error
-	CreateInstances(GceRef, string, int64, []string) error
+	CreateInstances(GceRef, string, int64, []string) ([]string, error)
 
 	// WaitForOperation can be used to poll GCE operations until completion/timeout using WAIT calls.
 	// Calling this is normally not needed when interacting with the client, other methods should call it internally.
@@ -296,24 +296,26 @@ func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error
 	return client.WaitForOperation(op.Name, op.OperationType, migRef.Project, migRef.Zone)
 }
 
-func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName string, delta int64, existingInstanceProviderIds []string) error {
+func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName string, delta int64, existingInstanceProviderIds []string) ([]string, error) {
 	registerRequest("instance_group_managers", "create_instances")
 	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
 	defer cancel()
 	req := gce.InstanceGroupManagersCreateInstancesRequest{}
 	instanceNames := instanceIdsToNamesMap(existingInstanceProviderIds)
 	req.Instances = make([]*gce.PerInstanceConfig, 0, delta)
-	for i := int64(0); i < delta; i++ {
+	names := make([]string, delta)
+	for i := range delta {
 		newInstanceName := generateInstanceName(baseName, instanceNames)
 		instanceNames[newInstanceName] = true
+		names[i] = newInstanceName
 		req.Instances = append(req.Instances, &gce.PerInstanceConfig{Name: newInstanceName})
 	}
 
 	op, err := client.gceService.InstanceGroupManagers.CreateInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Context(ctx).Do()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return client.WaitForOperation(op.Name, op.OperationType, migRef.Project, migRef.Zone)
+	return names, client.WaitForOperation(op.Name, op.OperationType, migRef.Project, migRef.Zone)
 }
 
 func instanceIdsToNamesMap(instanceProviderIds []string) map[string]bool {
