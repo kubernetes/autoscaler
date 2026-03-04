@@ -22,10 +22,8 @@ import (
 	"fmt"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	corev1 "k8s.io/api/core/v1"
-
+	"k8s.io/apimachinery/pkg/api/equality"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/informers/externalversions"
@@ -41,7 +39,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingapi "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery/cached/memory"
@@ -265,7 +265,7 @@ func (c *CapacityBufferClient) GetPodTemplate(namespace, name string) (*corev1.P
 	}
 	template, err := c.kubernetesClient.CoreV1().PodTemplates(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("Capacity buffer client can't get pod template, error %v", err.Error())
+		return nil, fmt.Errorf("capacity buffer client can't get pod template: %w", err)
 	}
 	return template.DeepCopy(), nil
 }
@@ -305,6 +305,28 @@ func (c *CapacityBufferClient) UpdatePodTemplate(podTemplate *corev1.PodTemplate
 		return template.DeepCopy(), nil
 	}
 	return nil, err
+}
+
+// EnsurePodTemplate upserts a pod template.
+func (c *CapacityBufferClient) EnsurePodTemplate(ctx context.Context, podTemplate *corev1.PodTemplate) (*corev1.PodTemplate, error) {
+	if c.kubernetesClient == nil {
+		return nil, fmt.Errorf("capacity buffer client is not configured for applying pod template")
+	}
+
+	// Try to use the lister first to avoid unnecessary API calls.
+	existing, err := c.GetPodTemplate(podTemplate.Namespace, podTemplate.Name)
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			return c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Create(ctx, podTemplate, metav1.CreateOptions{})
+		}
+		return nil, err
+	}
+	if equality.Semantic.DeepEqual(existing.Template, podTemplate.Template) {
+		return existing, nil
+	}
+	existing.OwnerReferences = podTemplate.OwnerReferences
+	existing.Template = podTemplate.Template
+	return c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
 }
 
 // GetDeployment fetches the cached object using a lister object in the client

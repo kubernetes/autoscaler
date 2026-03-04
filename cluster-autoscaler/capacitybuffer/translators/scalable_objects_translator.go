@@ -17,27 +17,29 @@ limitations under the License.
 package translator
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
+	corev1 "k8s.io/api/core/v1"
+	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
-
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	scalableobject "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators/scalable_objects"
+	"k8s.io/klog/v2"
 )
 
 // ScalableObjectsTranslator translates buffers processors into pod capacity.
 type ScalableObjectsTranslator struct {
 	client             *cbclient.CapacityBufferClient
+	resolver           fakepods.Resolver
 	scaleResolver      *scalableobject.ScaleObjectPodResolver
 	supportedResolvers map[string]scalableobject.ScalableObjectTemplateResolver
 }
 
 // NewDefaultScalableObjectsTranslator creates an instance of ScalableObjectsTranslator.
-func NewDefaultScalableObjectsTranslator(client *cbclient.CapacityBufferClient) *ScalableObjectsTranslator {
+func NewDefaultScalableObjectsTranslator(client *cbclient.CapacityBufferClient, resolver fakepods.Resolver) *ScalableObjectsTranslator {
 	supportedResolvers := map[string]scalableobject.ScalableObjectTemplateResolver{}
 	for _, scalableObject := range scalableobject.GetSupportedScalableObjectResolvers(client) {
 		supportedResolvers[scalableObject.GetResolverKey()] = scalableObject
@@ -46,6 +48,7 @@ func NewDefaultScalableObjectsTranslator(client *cbclient.CapacityBufferClient) 
 
 	return &ScalableObjectsTranslator{
 		client:             client,
+		resolver:           resolver,
 		supportedResolvers: supportedResolvers,
 		scaleResolver:      scaleResolver,
 	}
@@ -74,51 +77,80 @@ func (t *ScalableObjectsTranslator) useScaleResolver(buffer *apiv1.CapacityBuffe
 func (t *ScalableObjectsTranslator) Translate(buffers []*apiv1.CapacityBuffer) []error {
 	errors := []error{}
 	for _, buffer := range buffers {
-		if isScalableObjectBuffer(buffer) {
-			createdPodTemplate, podTempErr := t.client.GetPodTemplate(buffer.Namespace, getPodTemplateNameForBuffer(buffer))
-
-			podTemplateSpec, replicasFromScalable, ScaleResolverErr := t.useScaleResolver(buffer)
-			if ScaleResolverErr == nil && podTemplateSpec == nil {
-				if podTempErr == nil && createdPodTemplate != nil {
-					podTemplateSpec = createdPodTemplate.Template.DeepCopy()
-				} else {
-					ScaleResolverErr = fmt.Errorf("Couldn't resolve buffer %v, Controller requires to observe a running pod for ScalableRef %v", buffer.Name, buffer.Spec.ScalableRef.Name)
-				}
-			}
-			var supportedResolversErr error
-			if ScaleResolverErr != nil {
-				podTemplateSpec, replicasFromScalable, supportedResolversErr = t.useSupportedResolvers(buffer)
-			}
-
-			if supportedResolversErr != nil {
-				err := fmt.Errorf("Couldn't resolve buffer %v, error resolving scale object: %v, and error resolving supported objects %v", buffer.Name, ScaleResolverErr.Error(), supportedResolversErr.Error())
-				common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, nil, err)
-				errors = append(errors, err)
-				continue
-			}
-			podTemplate := t.getPodTemplateFromSpecs(podTemplateSpec, buffer)
-			if podTempErr != nil {
-				createdPodTemplate, podTempErr = t.client.CreatePodTemplate(podTemplate)
-			} else {
-				createdPodTemplate, podTempErr = t.client.UpdatePodTemplate(podTemplate)
-			}
-
-			if podTempErr != nil {
-				err := fmt.Errorf("Failed to create pod template object for buffer %v with error: %v", buffer.Name, podTempErr.Error())
-				common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, nil, err)
-				errors = append(errors, err)
-				continue
-			}
-			numberOfPods := t.getBufferNumberOfPods(buffer, replicasFromScalable)
-			if numberOfPods == nil {
-				common.SetBufferAsNotReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: createdPodTemplate.Name}, &createdPodTemplate.Generation, nil, buffer.Spec.ProvisioningStrategy, fmt.Errorf("Couldn't get number of replicas for buffer %v, replicas and percentage are not defined", buffer.Name))
-				continue
-			}
-			common.SetBufferAsReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: createdPodTemplate.Name}, &createdPodTemplate.Generation, numberOfPods, buffer.Spec.ProvisioningStrategy)
-
+		if !isScalableObjectBuffer(buffer) {
+			continue
+		}
+		if err := t.translateBuffer(context.TODO(), buffer); err != nil {
+			errors = append(errors, err)
 		}
 	}
 	return errors
+}
+
+func (t *ScalableObjectsTranslator) translateBuffer(ctx context.Context, buffer *apiv1.CapacityBuffer) error {
+	spec, replicas, err := t.resolveSpecAndReplicas(ctx, buffer)
+	if err != nil {
+		common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
+		return err
+	}
+
+	managedTemplate, err := t.ensureManagedPodTemplate(ctx, buffer, spec)
+	if err != nil {
+		common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
+		return err
+	}
+
+	numberOfPods := t.getBufferNumberOfPods(buffer, replicas)
+	if numberOfPods == nil {
+		err := errors.New("couldn't get number of replicas for buffer, replicas and percentage are not defined")
+		common.SetBufferAsNotReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: managedTemplate.Name}, &managedTemplate.Generation, nil, buffer.Spec.ProvisioningStrategy, err)
+		// not returning err here, as it would trigger requeue. Hitting this case means that
+		// the buffer is misconfigured and consecutive reconciliations will also fail until
+		// the buffer spec is fixed.
+		return nil
+	}
+
+	common.SetBufferAsReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: managedTemplate.Name}, &managedTemplate.Generation, numberOfPods, buffer.Spec.ProvisioningStrategy)
+	return nil
+}
+
+func (t *ScalableObjectsTranslator) resolveSpecAndReplicas(ctx context.Context, buffer *apiv1.CapacityBuffer) (*corev1.PodTemplateSpec, *int32, error) {
+	// 1. Try resolving a live pod.
+	// This is the preferred method as it uses the exact spec from a running pod, which is fully defaulted.
+	spec, replicas, livePodErr := t.useScaleResolver(buffer)
+	// TODO: if fetching the live pod fails, but resolving the scalable object spec
+	// succeeds, error from fetching the live pod is hidden from the user. We should
+	// record an event here.
+	if livePodErr != nil {
+		klog.Errorf("capacity buffer scalable objects translator: failed to resolve live pod: %v", livePodErr)
+	}
+	if spec != nil {
+		return spec, replicas, nil
+	}
+
+	// 2. Resolve from scalable resource.
+	// If live pod is not available, we fetch the spec from the scalable resource and
+	// call server dry run on a pod with that spec to trigger pod defaulting and mutation webhooks.
+	spec, replicas, resolveErr := t.useSupportedResolvers(buffer)
+	if resolveErr != nil {
+		if livePodErr != nil {
+			return nil, nil, fmt.Errorf("failed to resolve live pod: %w, failed to resolve scalable object: %w", livePodErr, resolveErr)
+		}
+		return nil, nil, fmt.Errorf("failed to resolve scalable object: %w", resolveErr)
+	}
+
+	fakePod, err := t.resolver.Resolve(ctx, buffer.Namespace, spec)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to resolve pod spec: %w", err)
+	}
+	finalSpec := getPodTemplateSpecFromPod(fakePod)
+	return finalSpec, replicas, nil
+}
+
+func (t *ScalableObjectsTranslator) ensureManagedPodTemplate(ctx context.Context, buffer *apiv1.CapacityBuffer, spec *corev1.PodTemplateSpec) (*corev1.PodTemplate, error) {
+	targetPodTemplate := getPodTemplateFromSpec(spec, buffer)
+
+	return t.client.EnsurePodTemplate(ctx, targetPodTemplate)
 }
 
 func (t *ScalableObjectsTranslator) getBufferNumberOfPods(buffer *apiv1.CapacityBuffer, scalableReplicas *int32) *int32 {
@@ -146,44 +178,10 @@ func (t *ScalableObjectsTranslator) getBufferNumberOfPods(buffer *apiv1.Capacity
 	return numberOfPodsFromReplicas
 }
 
-func getPodTemplateNameForBuffer(buffer *apiv1.CapacityBuffer) string {
-	return fmt.Sprintf("capacitybuffer-%v-pod-template", buffer.Name)
-}
-
-func (t *ScalableObjectsTranslator) getPodTemplateFromSpecs(pts *corev1.PodTemplateSpec, buffer *apiv1.CapacityBuffer) *corev1.PodTemplate {
-	return &corev1.PodTemplate{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      getPodTemplateNameForBuffer(buffer),
-			Namespace: buffer.Namespace,
-			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion:         capacitybuffer.CapacityBufferApiVersion,
-					Kind:               capacitybuffer.CapacityBufferKind,
-					Name:               buffer.Name,
-					UID:                buffer.UID,
-					Controller:         pointerBool(true),
-					BlockOwnerDeletion: pointerBool(true),
-				},
-			},
-		},
-		Template: corev1.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels:      pts.Labels,
-				Annotations: pts.Annotations,
-			},
-			Spec: pts.Spec,
-		},
-	}
-}
-
 func isScalableObjectBuffer(buffer *apiv1.CapacityBuffer) bool {
 	return buffer.Spec.ScalableRef != nil
 }
 
 // CleanUp cleans up the translator's internal structures.
 func (t *ScalableObjectsTranslator) CleanUp() {
-}
-
-func pointerBool(b bool) *bool {
-	return &b
 }

@@ -26,13 +26,14 @@ import (
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
 )
 
 const defaultNamespace = "default"
 
-func TestScalabaleObjectsTranslator(t *testing.T) {
+func TestScalableObjectsTranslator(t *testing.T) {
 	podTemplate1 := &corev1.PodTemplate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:       "podTemp1",
@@ -148,7 +149,8 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			translator := NewDefaultScalableObjectsTranslator(fakeCapacityBuffersClient)
+			resolver := fakepods.NewDefaultingResolver()
+			translator := NewDefaultScalableObjectsTranslator(fakeCapacityBuffersClient, resolver)
 			errors := translator.Translate(test.buffers)
 			assert.Equal(t, test.expectedNumberOfErrors, len(errors))
 			assert.ElementsMatch(t, test.expectedStatus, testutil.SanitizeBuffersStatus(test.buffers))
