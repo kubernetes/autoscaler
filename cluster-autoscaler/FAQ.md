@@ -1130,12 +1130,12 @@ The following startup parameters are supported for cluster autoscaler:
 | `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
 | `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true) | 2 |
 | `unremovable-node-recheck-timeout` | The timeout before we check again a node that couldn't be removed before | 5m0s |
+| `unschedulable-gpu-pod-scale-up-delay` | How old the oldest unschedulable pod with GPU should be before considering scale-up. GPU nodes are expensive, so we wait longer to make more informed scale-up decisions. | 30s |
+| `unschedulable-pod-scale-up-delay` | How old the oldest unschedulable pod should be before considering scale-up. | 2s |
 | `user-agent` | User agent used for HTTP calls. | "cluster-autoscaler" |
 | `v` | number for the log level verbosity |  |
 | `vmodule` | comma-separated list of pattern=N settings for file-filtered logging (only works for text log format) |  |
 | `write-status-configmap` | Should CA write status information to a configmap | true |
-
-
 
 # Troubleshooting
 
