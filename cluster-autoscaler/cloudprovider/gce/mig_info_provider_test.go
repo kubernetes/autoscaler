@@ -195,8 +195,8 @@ func (client *mockAutoscalingGceClient) DeleteInstances(_ GceRef, _ []GceRef) er
 	return nil
 }
 
-func (client *mockAutoscalingGceClient) CreateInstances(_ GceRef, _ string, _ int64, _ []string) error {
-	return nil
+func (client *mockAutoscalingGceClient) CreateInstances(_ GceRef, _ string, _ int64, _ []string) ([]string, error) {
+	return nil, nil
 }
 
 func (client *mockAutoscalingGceClient) WaitForOperation(_, _, _, _ string) error {

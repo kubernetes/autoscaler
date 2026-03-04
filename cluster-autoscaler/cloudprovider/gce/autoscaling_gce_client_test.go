@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -34,6 +35,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	gce_api "google.golang.org/api/compute/v1"
 )
 
@@ -697,7 +699,8 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 	}{
 		"CreateInstances_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(GceRef{}, "", 0, nil)
+				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
@@ -764,7 +767,8 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"CreateInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(GceRef{}, "", 0, nil)
+				return err
 			},
 			httpTimeout: instantTimeout,
 		},
@@ -893,6 +897,27 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 			// NOTE: unable to test with ErrorIs as http errors are not wrapping an err, but overwriting it
 			assert.ErrorContains(t, err, context.DeadlineExceeded.Error())
 		})
+	}
+}
+
+func TestCreateInstances(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	b, err := json.Marshal(gce_api.Operation{
+		Name: "operation-2505728466148-216f5197",
+	})
+	assert.NoError(t, err)
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/igm1/createInstances").Return(string(b)).Times(1)
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-2505728466148-216f5197/wait").Return(operationDoneResponse).Once()
+	client := newTestAutoscalingGceClientWithTimeout(t, "project", server.URL, "", time.Second)
+	migRef := GceRef{Project: "project1", Zone: "us-central1-b", Name: "igm1"}
+	createdIds, err := client.CreateInstances(migRef, migRef.Name, 10, nil)
+	assert.NoError(t, err)
+	assert.Len(t, createdIds, 10, "Expected 10 instance names in result")
+	for _, id := range createdIds {
+		createdRef, _ := GceRefFromProviderId(id)
+		prefixed := strings.HasPrefix(createdRef.Name, migRef.Name+"-")
+		require.Truef(t, prefixed, "Expected node name \"%v\" to be prefixed with \"%v\"", createdRef.Name, migRef.Name)
 	}
 }
 
