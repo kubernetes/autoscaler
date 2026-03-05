@@ -189,8 +189,8 @@ func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) cluster
 }
 
 // SchedulePodOnAnyNodeMatching adds pod to the snapshot and schedules it to any node matching the provided function.
-func (s *PredicateSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, anyNodeMatching func(*framework.NodeInfo) bool) (string, clustersnapshot.SchedulingError) {
-	node, cycleState, schedErr := s.pluginRunner.RunFiltersUntilPassingNode(pod, anyNodeMatching)
+func (s *PredicateSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, opts clustersnapshot.SchedulingOptions) (string, clustersnapshot.SchedulingError) {
+	node, cycleState, schedErr := s.pluginRunner.RunFiltersUntilPassingNode(pod, opts)
 	if schedErr != nil {
 		return "", schedErr
 	}

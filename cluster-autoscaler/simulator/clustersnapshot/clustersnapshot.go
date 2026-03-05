@@ -51,13 +51,13 @@ type ClusterSnapshot interface {
 	// error explaining why not otherwise. The error Type() can be checked against SchedulingInternalError to distinguish
 	// failing predicates from unexpected errors.
 	SchedulePod(pod *apiv1.Pod, nodeName string) SchedulingError
-	// SchedulePodOnAnyNodeMatching tries to schedule the given Pod on any Node for which nodeMatches returns
+	// SchedulePodOnAnyNodeMatching tries to schedule the given Pod on any Node for which opts.IsNodeAcceptable returns
 	// true. Scheduling predicates are checked, and the pod is scheduled only if there is a matching Node with passing
 	// predicates. If the pod is scheduled, all relevant DRA objects are modified to reflect that, and the name of the
 	// Node its scheduled on and nil are returned. If the pod can't be scheduled on any Node, an empty string and a non-nil
 	// error explaining why are returned. The error Type() can be checked against SchedulingInternalError to distinguish
 	// failing predicates from unexpected errors.
-	SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (matchingNode string, err SchedulingError)
+	SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, opts SchedulingOptions) (matchingNode string, err SchedulingError)
 	// UnschedulePod removes the given Pod from the given Node inside the snapshot, and modifies all relevant DRA objects
 	// to reflect the removal. The pod can then be scheduled on another Node in the snapshot using the Schedule methods.
 	UnschedulePod(namespace string, podName string, nodeName string) error

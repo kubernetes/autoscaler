@@ -419,7 +419,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if diff := cmp.Diff(largeNode.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -438,7 +438,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, func(info *framework.NodeInfo) bool { return info.Node().Name == node.Name })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(info *framework.NodeInfo) bool { return info.Node().Name == node.Name }})
 				if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -474,7 +474,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -495,7 +495,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, func(_ *framework.NodeInfo) bool { return false })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return false }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -953,7 +953,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -987,7 +987,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -1021,7 +1021,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
