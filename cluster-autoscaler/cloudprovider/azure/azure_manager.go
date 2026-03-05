@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//go:generate go run azure_instance_types/gen.go
+//go:generate go run azure_instance_types/gen.go westus2
 
 package azure
 

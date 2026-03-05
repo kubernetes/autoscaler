@@ -223,6 +223,46 @@ func TestEmptyTopologyFromScaleSet(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, expectedAzureDiskTopology, azureDiskTopology)
 }
+
+func TestBuildGenericLabelsArch(t *testing.T) {
+	testNodeName := "test-node"
+
+	t.Run("uses InstanceArch when set", func(t *testing.T) {
+		template := NodeTemplate{
+			SkuName:      "Standard_D2ps_v5",
+			InstanceOS:   "linux",
+			InstanceArch: "arm64",
+			Location:     "westus",
+		}
+		labels := buildGenericLabels(template, testNodeName)
+		assert.Equal(t, "arm64", labels[apiv1.LabelArchStable])
+		assert.Equal(t, "arm64", labels["kubernetes.io/arch"])
+	})
+
+	t.Run("falls back to DefaultArch when InstanceArch empty", func(t *testing.T) {
+		template := NodeTemplate{
+			SkuName:    "Standard_D2s_v3",
+			InstanceOS: "linux",
+			Location:   "westus",
+		}
+		labels := buildGenericLabels(template, testNodeName)
+		assert.Equal(t, "amd64", labels[apiv1.LabelArchStable])
+		assert.Equal(t, "amd64", labels["kubernetes.io/arch"])
+	})
+
+	t.Run("amd64 arch label", func(t *testing.T) {
+		template := NodeTemplate{
+			SkuName:      "Standard_D2s_v3",
+			InstanceOS:   "linux",
+			InstanceArch: "amd64",
+			Location:     "westus",
+		}
+		labels := buildGenericLabels(template, testNodeName)
+		assert.Equal(t, "amd64", labels[apiv1.LabelArchStable])
+		assert.Equal(t, "amd64", labels["kubernetes.io/arch"])
+	})
+}
+
 func TestBuildNodeTemplateFromVMPool(t *testing.T) {
 	agentPoolName := "testpool"
 	location := "eastus"
