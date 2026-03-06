@@ -1,0 +1,5 @@
+# Values for deploying metrics-server via Helm chart in e2e tests.
+# Replaces the static k8s-metrics-server.yaml manifest.
+# Chart: https://kubernetes-sigs.github.io/metrics-server/
+args:
+  - --kubelet-insecure-tls
