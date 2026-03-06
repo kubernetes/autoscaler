@@ -62,7 +62,7 @@ kind create cluster --config=.github/kind-config.yaml
 helm upgrade vpa ./charts/vertical-pod-autoscaler \
   --namespace kube-system \
   --reuse-values \
-  --values ./benchmark/hack/values-benchmark.yaml \
+  --values ./benchmark/hack/values.yaml \
   --wait --timeout 5m
 
 # 5. Build and run
@@ -145,7 +145,7 @@ When `--noise-percentage=P` is set, each profile also creates `P%` additional no
 | ------ | ------- |
 | `hack/full-benchmark.sh` | Full local workflow (Kind + VPA + KWOK + configure + benchmark) |
 | `hack/install-kwok.sh` | Install KWOK controller and create fake node |
-| `hack/values-benchmark.yaml` | Helm values for benchmark-specific VPA configuration |
+| `hack/values.yaml` | Helm values for benchmark-specific VPA configuration |
 
 Environment variables accepted by the scripts:
 
@@ -168,7 +168,7 @@ kind delete cluster
 
 The benchmark includes several performance optimizations:
 
-- `values-benchmark.yaml` configures VPA components via Helm:
+- `values.yaml` configures VPA components via Helm:
   - Sets `--kube-api-qps=100` and `--kube-api-burst=200` on all three components
   - Sets `--updater-interval=2m` on the updater (default is 60s)
   - Sets `--memory-saver=true` on the recommender

@@ -80,7 +80,7 @@ echo "  Applying benchmark-specific Helm values..."
 helm upgrade "${HELM_RELEASE_NAME}" "${HELM_CHART_PATH}" \
   --namespace "${HELM_NAMESPACE}" \
   --reuse-values \
-  --values "${SCRIPT_DIR}/values-benchmark.yaml" \
+  --values "${SCRIPT_DIR}/values.yaml" \
   --wait \
   --timeout 5m
 

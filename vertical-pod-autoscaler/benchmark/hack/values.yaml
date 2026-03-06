@@ -1,0 +1,29 @@
+# Helm values for VPA benchmark
+# Used by full-benchmark.sh to configure benchmark-specific settings:
+# - Increased QPS/burst on all components (to avoid client-side throttling)
+# - Longer updater interval (steps can take longer than the default 60s at scale)
+# - Memory saver mode for recommender
+# - Pod labels matching what the benchmark binary expects (app=vpa-<component>)
+
+recommender:
+  podLabels:
+    app: vpa-recommender
+  extraArgs:
+    - --kube-api-qps=100
+    - --kube-api-burst=200
+    - --memory-saver=true
+
+updater:
+  podLabels:
+    app: vpa-updater
+  extraArgs:
+    - --kube-api-qps=100
+    - --kube-api-burst=200
+    - --updater-interval=2m
+
+admissionController:
+  podLabels:
+    app: vpa-admission-controller
+  extraArgs:
+    - --kube-api-qps=100
+    - --kube-api-burst=200
