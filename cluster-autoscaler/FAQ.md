@@ -990,6 +990,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `bulk-mig-instances-listing-enabled` | Fetch GCE mig instances in bulk instead of per mig |  |
 | `bypassed-scheduler-names` | Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up. |  |
 | `capacity-buffer-controller-enabled` | Whether to enable the default controller for capacity buffers or not |  |
+| `capacity-buffer-pod-dry-run-enabled` | Whether to use server dry run to build managed pod templates for capacity buffers. That ensures that the buffers' fake pods will more reliably resemble real pods by going through the pod defaulting, mutating and validating webhooks. No-op if --capacity-buffer-controller-enabled is false. Note: requires "create" permission on pods to call server dry run. No real pods will be created. | true |
 | `capacity-buffer-pod-injection-enabled` | Whether to enable pod list processor that processes ready capacity buffers and injects fake pods accordingly |  |
 | `capacity-quotas-enabled` | Whether to enable CapacityQuota CRD support. |  |
 | `check-capacity-batch-processing` | Whether to enable batch processing for check capacity requests. |  |
@@ -1134,8 +1135,6 @@ The following startup parameters are supported for cluster autoscaler:
 | `v` | number for the log level verbosity |  |
 | `vmodule` | comma-separated list of pattern=N settings for file-filtered logging (only works for text log format) |  |
 | `write-status-configmap` | Should CA write status information to a configmap | true |
-
-
 
 # Troubleshooting
 
