@@ -225,11 +225,19 @@ EOF
   fi
 done
 
+# Support extra Helm values file (e.g., for benchmark-specific configuration)
+EXTRA_HELM_VALUES_ARGS=()
+if [[ -n "${EXTRA_HELM_VALUES:-}" ]]; then
+  echo " ** Using extra Helm values from: ${EXTRA_HELM_VALUES}"
+  EXTRA_HELM_VALUES_ARGS=("--values" "${EXTRA_HELM_VALUES}")
+fi
+
 # Install/Upgrade VPA using Helm chart
 echo " ** Installing/Upgrading VPA via Helm chart"
 helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
   --namespace ${HELM_NAMESPACE} \
   --values "${VALUES_FILE}" \
+  "${EXTRA_HELM_VALUES_ARGS[@]}" \
   "${HELM_SET_ARGS[@]}" \
   --wait \
   --timeout 15m

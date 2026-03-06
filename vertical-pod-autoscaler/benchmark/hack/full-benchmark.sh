@@ -60,9 +60,10 @@ EOF
   kind create cluster --name "${KIND_CLUSTER_NAME}" --config="${KIND_CONFIG}"
 fi
 
-# Step 2: Deploy VPA
+# Step 2: Deploy VPA (with benchmark-specific Helm values)
 echo ""
 echo "=== Step 2: Deploy VPA ==="
+export EXTRA_HELM_VALUES="${SCRIPT_DIR}/values.yaml"
 "${VPA_DIR}/hack/deploy-for-e2e-locally.sh" full-vpa
 
 # Step 3: Install KWOK + create fake node
@@ -70,23 +71,9 @@ echo ""
 echo "=== Step 3: Install KWOK ==="
 "${SCRIPT_DIR}/install-kwok.sh"
 
-# Step 4: Configure VPA deployments for benchmark
+# Step 4: Build and run benchmark
 echo ""
-echo "=== Step 4: Configure VPA ==="
-HELM_CHART_PATH="${VPA_DIR}/charts/vertical-pod-autoscaler"
-HELM_RELEASE_NAME="vpa"
-HELM_NAMESPACE="kube-system"
-echo "  Applying benchmark-specific Helm values..."
-helm upgrade "${HELM_RELEASE_NAME}" "${HELM_CHART_PATH}" \
-  --namespace "${HELM_NAMESPACE}" \
-  --reuse-values \
-  --values "${SCRIPT_DIR}/values.yaml" \
-  --wait \
-  --timeout 5m
-
-# Step 5: Build and run benchmark
-echo ""
-echo "=== Step 5: Build and run benchmark ==="
+echo "=== Step 4: Build and run benchmark ==="
 echo "  Building vpa-benchmark..."
 go build -C "${BENCHMARK_DIR}" -o "${VPA_DIR}/bin/vpa-benchmark" .
 

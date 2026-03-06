@@ -52,20 +52,13 @@ If you prefer to run each step individually (or if the cluster already exists):
 #    create a cluster with the base config or your own)
 kind create cluster --config=.github/kind-config.yaml
 
-# 2. Deploy VPA
-./hack/deploy-for-e2e-locally.sh full-vpa
+# 2. Deploy VPA (with benchmark-specific settings)
+EXTRA_HELM_VALUES=./benchmark/hack/values.yaml ./hack/deploy-for-e2e-locally.sh full-vpa
 
 # 3. Install KWOK and create fake node
 ./benchmark/hack/install-kwok.sh
 
-# 4. Configure VPA deployments for benchmark (QPS/burst, updater interval)
-helm upgrade vpa ./charts/vertical-pod-autoscaler \
-  --namespace kube-system \
-  --reuse-values \
-  --values ./benchmark/hack/values.yaml \
-  --wait --timeout 5m
-
-# 5. Build and run
+# 4. Build and run
 go build -C benchmark -o ../bin/vpa-benchmark .
 ./bin/vpa-benchmark --profile=small --output=results.csv
 ```
