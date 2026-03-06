@@ -72,8 +72,7 @@ export TAG=${TAG:-latest}
 
 
 # Deploy metrics server for E2E tests via Helm chart
-helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/ 2>/dev/null || true
-helm repo update metrics-server
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm upgrade --install local-metrics-server metrics-server/metrics-server \
   --version 3.12.2 \
   --values "${SCRIPT_ROOT}/hack/e2e/values-metrics-server.yaml" \
