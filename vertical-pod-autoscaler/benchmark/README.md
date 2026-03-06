@@ -25,7 +25,7 @@ Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simu
 - Go 1.21+
 - kubectl
 - Kind
-- yq
+- Helm
 
 ## Quick Start (Local)
 
@@ -59,7 +59,11 @@ kind create cluster --config=.github/kind-config.yaml
 ./benchmark/hack/install-kwok.sh
 
 # 4. Configure VPA deployments for benchmark (QPS/burst, updater interval)
-./benchmark/hack/configure-vpa.sh
+helm upgrade vpa ./charts/vertical-pod-autoscaler \
+  --namespace kube-system \
+  --reuse-values \
+  --values ./benchmark/hack/values-benchmark.yaml \
+  --wait --timeout 5m
 
 # 5. Build and run
 go build -C benchmark -o ../bin/vpa-benchmark .
@@ -141,7 +145,7 @@ When `--noise-percentage=P` is set, each profile also creates `P%` additional no
 | ------ | ------- |
 | `hack/full-benchmark.sh` | Full local workflow (Kind + VPA + KWOK + configure + benchmark) |
 | `hack/install-kwok.sh` | Install KWOK controller and create fake node |
-| `hack/configure-vpa.sh` | Configure VPA deployments with benchmark-specific settings |
+| `hack/values-benchmark.yaml` | Helm values for benchmark-specific VPA configuration |
 
 Environment variables accepted by the scripts:
 
@@ -150,7 +154,6 @@ Environment variables accepted by the scripts:
 | `KWOK_VERSION` | `v0.7.0` | `install-kwok.sh` |
 | `KWOK_NAMESPACE` | `kube-system` | `install-kwok.sh` |
 | `KWOK_NODE_NAME` | `kwok-node` | `install-kwok.sh` |
-| `VPA_NAMESPACE` | `kube-system` | `configure-vpa.sh` |
 | `KIND_CLUSTER_NAME` | `kind` | `full-benchmark.sh` |
 
 ## Cleanup
@@ -165,9 +168,10 @@ kind delete cluster
 
 The benchmark includes several performance optimizations:
 
-- `configure-vpa.sh` modifies VPA deployments using `yq`:
+- `values-benchmark.yaml` configures VPA components via Helm:
   - Sets `--kube-api-qps=100` and `--kube-api-burst=200` on all three components
   - Sets `--updater-interval=2m` on the updater (default is 60s)
+  - Sets `--memory-saver=true` on the recommender
 - Pods are assigned directly to the KWOK node via `nodeName`, bypassing the scheduler for faster creation
 - The benchmark script appends `kubeadmConfigPatches` to the base `.github/kind-config.yaml` to increase API server limits (`max-requests-inflight`, `max-mutating-requests-inflight`) and kube-controller-manager client QPS to handle the large number of API calls
 - Uses ReplicaSets instead of Deployments to skip the Deployment controller layer and speed up pod creation, but keep a targetRef for VPA

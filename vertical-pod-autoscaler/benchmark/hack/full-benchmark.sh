@@ -17,7 +17,7 @@
 # Full local benchmark workflow: creates a Kind cluster, deploys VPA, installs
 # KWOK, configures VPA for benchmarking, and runs the benchmark.
 #
-# Prerequisites: go, kind, kubectl, yq, docker
+# Prerequisites: go, kind, kubectl, helm, docker
 #
 # Usage:
 #   ./full-benchmark.sh [benchmark flags...]
@@ -73,7 +73,16 @@ echo "=== Step 3: Install KWOK ==="
 # Step 4: Configure VPA deployments for benchmark
 echo ""
 echo "=== Step 4: Configure VPA ==="
-"${SCRIPT_DIR}/configure-vpa.sh"
+HELM_CHART_PATH="${VPA_DIR}/charts/vertical-pod-autoscaler"
+HELM_RELEASE_NAME="vpa"
+HELM_NAMESPACE="kube-system"
+echo "  Applying benchmark-specific Helm values..."
+helm upgrade "${HELM_RELEASE_NAME}" "${HELM_CHART_PATH}" \
+  --namespace "${HELM_NAMESPACE}" \
+  --reuse-values \
+  --values "${SCRIPT_DIR}/values-benchmark.yaml" \
+  --wait \
+  --timeout 5m
 
 # Step 5: Build and run benchmark
 echo ""
