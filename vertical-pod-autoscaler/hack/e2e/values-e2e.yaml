@@ -1,6 +1,14 @@
-# Helm values for E2E testing (non-local / CI environments)
-# Used by deploy-for-e2e.sh
+# Helm values for E2E testing
+# Used by deploy-for-e2e.sh and deploy-for-e2e-locally.sh
 fullnameOverride: vpa
+
+# Image settings - will be overridden via --set at install time
+# admissionController.image.repository, admissionController.image.tag, etc.
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
 
 # Component configurations for e2e testing
 admissionController:
