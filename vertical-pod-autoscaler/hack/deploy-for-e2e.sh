@@ -59,6 +59,12 @@ case ${SUITE} in
     ;;
 esac
 
+# Install Helm if not available
+if ! command -v helm > /dev/null 2>&1; then
+  echo "Helm not found, installing..."
+  curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+fi
+
 export REGISTRY=gcr.io/`gcloud config get-value core/project`
 export TAG=latest
 
