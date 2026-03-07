@@ -71,8 +71,10 @@ export REGISTRY=${REGISTRY:-localhost:5001}
 export TAG=${TAG:-latest}
 
 
-# Deploy metrics server for E2E tests
-kubectl apply -f "${SCRIPT_ROOT}/hack/e2e/k8s-metrics-server.yaml"
+# Deploy metrics server for E2E tests via Helm chart
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+helm repo update metrics-server
+helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --version 3.13.0 --wait
 
 # Build and load Docker images for each component
 for COMPONENT in ${COMPONENTS}; do
