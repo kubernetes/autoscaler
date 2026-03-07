@@ -1,0 +1,50 @@
+# Helm values for E2E testing (non-local / CI environments)
+# Used by deploy-for-e2e.sh
+fullnameOverride: vpa
+
+# Component configurations for e2e testing
+admissionController:
+  enabled: false  # Enabled dynamically based on suite
+  replicas: 1
+  # Disable pod anti-affinity for e2e
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  # Use application-managed webhook for e2e testing (cert rotation test requires this)
+  registerWebhook: true
+  certGen:
+    enabled: false
+  # Enable certificate reload for e2e rotation test
+  extraArgs:
+    - --reload-cert
+  # Mount certificates with legacy key names (matching gencerts.sh format)
+  volumes:
+    - name: tls-certs
+      secret:
+        secretName: vpa-tls-certs
+  volumeMounts:
+    - name: tls-certs
+      mountPath: /etc/tls-certs
+      readOnly: true
+
+recommender:
+  enabled: false  # Enabled dynamically based on suite
+  replicas: 1
+  # Disable pod anti-affinity for e2e
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  # Disable leader election for single replica
+  leaderElection:
+    enabled: false
+
+updater:
+  enabled: false  # Enabled dynamically based on suite
+  replicas: 1
+  # Disable pod anti-affinity for e2e
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  # Disable leader election for single replica
+  leaderElection:
+    enabled: false
