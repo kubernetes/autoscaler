@@ -55,6 +55,10 @@ type VerticalPodAutoscalerBuilder interface {
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
 	Get() *vpa_types.VerticalPodAutoscaler
 	// pod level related
+	WithPodLevelLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithPodLevelTarget(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithPodLevelUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithPodLevelUncappedTarget(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithPodLevelMinAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithPodLevelMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithPodLevelControlledValues(mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
@@ -99,6 +103,10 @@ type verticalPodAutoscalerBuilder struct {
 	recommender              string
 	oomBumpUpRatio           *resource.Quantity
 	oomMinBumpUp             *resource.Quantity
+	podLevelLowerBound       core.ResourceList
+	podLevelTarget           core.ResourceList
+	podLevelUpperBound       core.ResourceList
+	podLevelUncappedTarget   core.ResourceList
 	podLevelMinAllowed       core.ResourceList
 	podLevelMaxAllowed       core.ResourceList
 	podLevelControlledValues *vpa_types.ContainerControlledValues
@@ -260,6 +268,30 @@ func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_t
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithPodLevelLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.podLevelLowerBound = Resources(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithPodLevelTarget(cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.podLevelTarget = Resources(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithPodLevelUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.podLevelUpperBound = Resources(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithPodLevelUncappedTarget(cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.podLevelUncappedTarget = Resources(cpu, memory)
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) WithPodLevelMinAllowed(cpu, memory string) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.podLevelMinAllowed = Resources(cpu, memory)
@@ -317,12 +349,29 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	resourcePolicy.PodPolicies = &podResourcePolicy
 
 	// VPAs with a single container may still use the old/implicit way of adding recommendations
-	r := b.recommendation.WithContainer(b.containerNames[0]).Get()
-	if r.ContainerRecommendations[0].Target != nil {
-		recommendation = r
+	if b.recommendation != nil && b.containerNames != nil {
+		r := b.recommendation.WithContainer(b.containerNames[0]).Get()
+		if r.ContainerRecommendations[0].Target != nil {
+			recommendation = r
+		}
 	}
 
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
+
+	var podRecommendations *vpa_types.RecommendedPodRes
+	if b.podLevelLowerBound != nil || b.podLevelTarget != nil || b.podLevelUpperBound != nil || b.podLevelUncappedTarget != nil {
+		pr := &vpa_types.RecommendedPodRes{
+			LowerBound: b.podLevelLowerBound,
+			Target:     b.podLevelTarget,
+			UpperBound: b.podLevelUpperBound,
+		}
+		pr.UncappedTarget = b.podLevelTarget
+		if b.podLevelUncappedTarget != nil {
+			pr.UncappedTarget = b.podLevelUncappedTarget
+		}
+		podRecommendations = pr
+	}
+	recommendation.PodRecommendations = podRecommendations
 
 	return &vpa_types.VerticalPodAutoscaler{
 		TypeMeta: meta.TypeMeta{

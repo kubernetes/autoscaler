@@ -105,6 +105,16 @@ func GetHamsterContainerNameByIndex(i int) string {
 	}
 }
 
+// GetHamsterContainerNameByIndexV2 returns name of i-th hamster container.
+func GetHamsterContainerNameByIndexV2(i int) string {
+	switch {
+	case i < 0:
+		panic("negative index")
+	default:
+		return fmt.Sprintf("hamster%d", i+1)
+	}
+}
+
 // GetVpaClientSet return a VpaClientSet
 func GetVpaClientSet(f *framework.Framework) vpa_clientset.Interface {
 	config, err := framework.LoadConfig()

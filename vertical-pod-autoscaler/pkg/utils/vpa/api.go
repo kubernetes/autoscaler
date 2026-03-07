@@ -290,3 +290,47 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 	}
 	return nil
 }
+
+// DetermineManagedContainers determines which containers resource
+// stanzas the VPA components should manage based on container-level policies
+// when the Pod-level recommendation feature is enabled.
+// In other words, it returns the names of containers whose scaling mode is Auto
+func DetermineManagedContainers(vpa *vpa_types.VerticalPodAutoscaler) []string {
+	recs := vpa.Status.Recommendation.ContainerRecommendations
+	containers := make([]string, 0, len(recs))
+
+	for _, rec := range recs {
+		if isContainerScalingModeAuto(rec.ContainerName, vpa.Spec.ResourcePolicy) {
+			containers = append(containers, rec.ContainerName)
+		}
+	}
+	return containers
+}
+
+func isContainerScalingModeAuto(containerName string, resourcePolicy *vpa_types.PodResourcePolicy) bool {
+	policy := GetContainerResourcePolicy(containerName, resourcePolicy)
+	if policy == nil {
+		// no per-container policy container's mode is auto
+		return true
+	}
+	return policy.Mode == nil || *policy.Mode == vpa_types.ContainerScalingModeAuto
+}
+
+// IsPodLevelScalingModeEnabled checks whether scaling at the Pod level is enabled.
+func IsPodLevelScalingModeEnabled(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if vpa.Spec.ResourcePolicy != nil &&
+		vpa.Spec.ResourcePolicy.PodPolicies != nil &&
+		vpa.Spec.ResourcePolicy.PodPolicies.Mode != nil &&
+		*vpa.Spec.ResourcePolicy.PodPolicies.Mode == vpa_types.PodScalingModeAuto {
+		return true
+	}
+	return false
+}
+
+// GetPodControlledValues returns controlled resource values from the podPolicies stanza.
+func GetPodControlledValues(vpaResourcePolicy *vpa_types.PodResourcePolicy) vpa_types.ContainerControlledValues {
+	if vpaResourcePolicy == nil || vpaResourcePolicy.PodPolicies == nil || vpaResourcePolicy.PodPolicies.ControlledValues == nil {
+		return vpa_types.ContainerControlledValuesRequestsAndLimits
+	}
+	return *vpaResourcePolicy.PodPolicies.ControlledValues
+}

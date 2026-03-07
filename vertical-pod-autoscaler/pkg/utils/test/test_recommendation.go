@@ -30,6 +30,7 @@ type RecommendationBuilder interface {
 	WithTargetResource(resource apiv1.ResourceName, value string) RecommendationBuilder
 	WithLowerBound(cpu, memory string) RecommendationBuilder
 	WithUpperBound(cpu, memory string) RecommendationBuilder
+	WithUncappedTarget(cpu, memory string) RecommendationBuilder
 	Get() *vpa_types.RecommendedPodResources
 	GetContainerResources() vpa_types.RecommendedContainerResources
 }

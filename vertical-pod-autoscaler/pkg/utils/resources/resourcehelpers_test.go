@@ -21,7 +21,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -363,21 +362,21 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					GetContainerResources(),
 			},
 			expectedPodRecommendations: vpa_types.RecommendedPodRes{
-				Target: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("0"),
-					v1.ResourceMemory: resource.MustParse("0"),
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("0"),
+					apiv1.ResourceMemory: resource.MustParse("0"),
 				},
-				LowerBound: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("0"),
-					v1.ResourceMemory: resource.MustParse("0"),
+				LowerBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("0"),
+					apiv1.ResourceMemory: resource.MustParse("0"),
 				},
-				UpperBound: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("0"),
-					v1.ResourceMemory: resource.MustParse("0"),
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("0"),
+					apiv1.ResourceMemory: resource.MustParse("0"),
 				},
-				UncappedTarget: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("0"),
-					v1.ResourceMemory: resource.MustParse("0"),
+				UncappedTarget: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("0"),
+					apiv1.ResourceMemory: resource.MustParse("0"),
 				},
 			},
 		},
@@ -398,21 +397,21 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					GetContainerResources(),
 			},
 			expectedPodRecommendations: vpa_types.RecommendedPodRes{
-				Target: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				LowerBound: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				LowerBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UpperBound: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UncappedTarget: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				UncappedTarget: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
 			},
 		},
@@ -439,21 +438,21 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					GetContainerResources(),
 			},
 			expectedPodRecommendations: vpa_types.RecommendedPodRes{
-				Target: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				LowerBound: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				LowerBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UpperBound: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UncappedTarget: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+				UncappedTarget: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("10m"),
+					apiv1.ResourceMemory: resource.MustParse("10Mi"),
 				},
 			},
 		},
@@ -472,6 +471,86 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 
 			assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Cpu().MilliValue(), outRecommendations.UncappedTarget.Cpu().MilliValue())
 			assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Memory().Value(), outRecommendations.UncappedTarget.Memory().Value())
+		})
+	}
+}
+
+func TestPodRequestsAndLimits(t *testing.T) {
+	testCases := []struct {
+		name         string
+		pod          *apiv1.Pod
+		wantRequests apiv1.ResourceList
+		wantLimits   apiv1.ResourceList
+	}{
+		{
+			name:         "resources in the pod spec and the resources in the pod status are both omitted",
+			pod:          test.Pod().Get(),
+			wantRequests: apiv1.ResourceList{},
+			wantLimits:   apiv1.ResourceList{},
+		},
+		{
+			name: "resources in the pod spec is set and no resources in the pod status",
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("100m")).
+				WithMemRequest(resource.MustParse("100Mi")).
+				WithCPULimit(resource.MustParse("120m")).
+				WithMemLimit(resource.MustParse("120Mi")).
+				Get(),
+			wantRequests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("100m"),
+				apiv1.ResourceMemory: resource.MustParse("100Mi"),
+			},
+			wantLimits: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("120m"),
+				apiv1.ResourceMemory: resource.MustParse("120Mi"),
+			},
+		},
+		{
+			name: "resources in the pod spec and the pod status are both set but the latter is preferred",
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("100m")).
+				WithMemRequest(resource.MustParse("100Mi")).
+				WithCPULimit(resource.MustParse("120m")).
+				WithMemLimit(resource.MustParse("120Mi")).
+				AddPodStatus(
+					test.PodStatus().
+						WithCPURequest(resource.MustParse("111m")).
+						WithMemRequest(resource.MustParse("111Mi")).
+						WithCPULimit(resource.MustParse("133m")).
+						WithMemLimit(resource.MustParse("133Mi")).Get()).
+				Get(),
+			wantRequests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("111m"),
+				apiv1.ResourceMemory: resource.MustParse("111Mi"),
+			},
+			wantLimits: apiv1.ResourceList{
+				apiv1.ResourceCPU:    resource.MustParse("133m"),
+				apiv1.ResourceMemory: resource.MustParse("133Mi"),
+			},
+		},
+		{
+			name: "resources in the pod spec and the pod status are both set but the latter is preferred only cpu",
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("100m")).
+				WithCPULimit(resource.MustParse("120m")).
+				AddPodStatus(
+					test.PodStatus().
+						WithCPURequest(resource.MustParse("111m")).
+						WithCPULimit(resource.MustParse("133m")).Get()).
+				Get(),
+			wantRequests: apiv1.ResourceList{
+				apiv1.ResourceCPU: resource.MustParse("111m"),
+			},
+			wantLimits: apiv1.ResourceList{
+				apiv1.ResourceCPU: resource.MustParse("133m"),
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotRequests, gotLimits := PodRequestsAndLimits(tc.pod)
+			assert.Equal(t, tc.wantRequests, gotRequests, "Pod-level requests do not match")
+			assert.Equal(t, tc.wantLimits, gotLimits, "Pod-level limits do not match")
 		})
 	}
 }

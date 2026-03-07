@@ -27,6 +27,7 @@ import (
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -39,13 +40,14 @@ const (
 )
 
 type fakeRecommendationProvider struct {
-	resources              []vpa_api_util.ContainerResources
-	containerToAnnotations vpa_api_util.ContainerToAnnotationsMap
-	e                      error
+	resources    []vpa_api_util.ContainerResources
+	annotations  *utils.Annotations
+	podResources *vpa_api_util.ContainerResources
+	e            error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
-	return frp.resources, frp.containerToAnnotations, frp.e
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error) {
+	return frp.resources, frp.annotations, frp.podResources, frp.e
 }
 
 func addResourcesPatch(idx int) resource_admission.PatchRecord {
@@ -108,7 +110,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		pod                  *core.Pod
 		namespace            string
 		recommendResources   []vpa_api_util.ContainerResources
-		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
+		recommendAnnotations utils.Annotations
 		recommendError       error
 		expectPatches        []resource_admission.PatchRecord
 		expectError          error
@@ -128,7 +130,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					},
 				},
 			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendAnnotations: utils.Annotations{},
 			expectPatches: []resource_admission.PatchRecord{
 				addResourcesPatch(0),
 				addRequestsPatch(0),
@@ -157,7 +159,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					},
 				},
 			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendAnnotations: utils.Annotations{},
 			expectPatches: []resource_admission.PatchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, request),
@@ -177,7 +179,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					},
 				},
 			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendAnnotations: utils.Annotations{},
 			expectPatches: []resource_admission.PatchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, request),
@@ -210,7 +212,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					},
 				},
 			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendAnnotations: utils.Annotations{},
 			expectPatches: []resource_admission.PatchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				addResourcesPatch(1),
@@ -234,7 +236,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					},
 				},
 			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendAnnotations: utils.Annotations{},
 			expectPatches: []resource_admission.PatchRecord{
 				addResourcesPatch(0),
 				addLimitsPatch(0),
@@ -263,7 +265,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					},
 				},
 			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendAnnotations: utils.Annotations{},
 			expectPatches: []resource_admission.PatchRecord{
 				addResourceLimitPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, limit),
@@ -283,7 +285,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					},
 				},
 			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendAnnotations: utils.Annotations{},
 			expectPatches: []resource_admission.PatchRecord{
 				addResourceLimitPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, limit),
@@ -292,7 +294,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
+			frp := fakeRecommendationProvider{tc.recommendResources, &tc.recommendAnnotations, nil, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp)
 			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().WithContainer("test").WithName("name").Get())
 			if tc.expectError == nil {
@@ -333,8 +335,8 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 			}},
 		},
 	}
-	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
-	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, nil}
+	recommendAnnotations := utils.Annotations{}
+	frp := fakeRecommendationProvider{recommendResources, &recommendAnnotations, nil, nil}
 	c := NewResourceUpdatesCalculator(&frp)
 	patches, err := c.CalculatePatches(pod, test.VerticalPodAutoscaler().WithName("name").WithContainer("test").Get())
 	assert.NoError(t, err)

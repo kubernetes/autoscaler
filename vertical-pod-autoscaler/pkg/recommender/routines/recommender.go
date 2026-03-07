@@ -88,7 +88,6 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *v1.VerticalPo
 	listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
 
 	for _, postProcessor := range r.recommendationPostProcessor {
-
 		podLevel := false
 		if vpa.ResourcePolicy != nil &&
 			vpa.ResourcePolicy.PodPolicies != nil &&

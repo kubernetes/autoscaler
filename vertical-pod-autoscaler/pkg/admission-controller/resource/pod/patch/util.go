@@ -69,3 +69,23 @@ func GetPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_adm
 		Value: core.ResourceList{},
 	}
 }
+
+// GetAddResourceRequirementValuePatchAtPodLevel returns a patch record at the Pod level.
+func GetAddResourceRequirementValuePatchAtPodLevel(kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/resources/%s/%s", kind, resource),
+		Value: quantity.String()}
+}
+
+func appendPodLevelResourcePatches(result []resource_admission.PatchRecord, field string, rl core.ResourceList) []resource_admission.PatchRecord {
+	if rl == nil {
+		return result
+	}
+	for _, rn := range []core.ResourceName{core.ResourceCPU, core.ResourceMemory} {
+		if qty, ok := rl[rn]; ok {
+			result = append(result, GetAddResourceRequirementValuePatchAtPodLevel(field, rn, qty))
+		}
+	}
+	return result
+}

@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"slices"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +30,9 @@ import (
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // resourceHandler builds patches for Pods.
@@ -93,6 +96,27 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	if pod.Annotations == nil {
 		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
 	}
+
+	// If Pod-level scaling is enabled, keep only those containers from
+	// the VPA containerRecommendations stanza whose Mode is "Auto" (the default value).
+	// This behavior allows the existing code to calculate patches only
+	// for containers that the user wants to manage.
+	if vpa_api_util.IsPodLevelScalingModeEnabled(controllingVpa) {
+		containers := vpa_api_util.DetermineManagedContainers(controllingVpa)
+		if len(containers) > 0 {
+			containerRecommendations := controllingVpa.Status.Recommendation.ContainerRecommendations
+			updatedContainerRecommendations := make([]vpa_types.RecommendedContainerResources, 0, len(containerRecommendations))
+			for _, c := range containerRecommendations {
+				if slices.Contains(containers, c.ContainerName) {
+					updatedContainerRecommendations = append(updatedContainerRecommendations, c)
+				}
+			}
+			controllingVpa.Status.Recommendation.ContainerRecommendations = updatedContainerRecommendations
+		} else {
+			controllingVpa.Status.Recommendation.ContainerRecommendations = nil
+		}
+	}
+
 	for _, c := range h.patchCalculators {
 		partialPatches, err := c.CalculatePatches(&pod, controllingVpa)
 		if err != nil {

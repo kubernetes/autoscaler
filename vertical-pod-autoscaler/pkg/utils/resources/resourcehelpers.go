@@ -21,7 +21,6 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-
 	metrics_resources "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/resources"
 )
 
@@ -141,4 +140,31 @@ func SumContainerLevelRecommendations(containerRecommendations []vpa_types.Recom
 	}
 
 	return &podRecommendations
+}
+
+// PodRequestsAndLimits returns a copy of the actual Pod-level resource
+// requests and limits:
+//
+//   - If the "In-Place Pod Resize" (IPPR) feature at the Pod-level [1] is enabled, the actual
+//     resource requests are stored in PodStatus.
+//   - Otherwise, fall back to the resource requests defined in PodSpec.
+//
+// [1] https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/5419-pod-level-resources-in-place-resize/
+func PodRequestsAndLimits(pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
+	ps := podStatus(pod)
+	if ps != nil && ps.Resources != nil {
+		return ps.Resources.Requests.DeepCopy(), ps.Resources.Limits.DeepCopy()
+	}
+	klog.V(6).InfoS("Resources are not found in PodStatus. Fall back to resources defined in the PodSpec. This behavior is expected when InPlacePodLevelResourcesVerticalScaling feature gate is disabled.", "podStatus", ps)
+	if pod.Spec.Resources != nil {
+		return pod.Spec.Resources.Requests.DeepCopy(), pod.Spec.Resources.Limits.DeepCopy()
+	}
+	return nil, nil
+}
+
+func podStatus(pod *v1.Pod) *v1.PodStatus {
+	if pod.Status.Resources != nil {
+		return &pod.Status
+	}
+	return nil
 }
