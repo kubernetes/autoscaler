@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -79,7 +80,7 @@ func TestOKWithScaleUp(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 4, time.Now())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
@@ -117,7 +118,7 @@ func TestEmptyOK(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now.Add(-5*time.Second))
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
@@ -159,7 +160,7 @@ func TestHasNodeGroupStartedScaleUp(t *testing.T) {
 			clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 				MaxTotalUnreadyPercentage: 10,
 				OkTotalUnreadyCount:       1,
-			}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+			}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 			err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now.Add(-5*time.Second))
 			assert.NoError(t, err)
 			assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
@@ -234,7 +235,7 @@ func TestRecalculateStateAfterNodeGroupSizeChanged(t *testing.T) {
 
 			fakeLogRecorder, _ := utils.NewStatusMapRecorder(&fake.Clientset{}, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 			clusterState := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder,
-				newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+				newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 			clusterState.acceptableRanges = map[string]AcceptableRange{ngName: tc.acceptableRange}
 			clusterState.perNodeGroupReadiness = map[string]Readiness{ngName: tc.readiness}
 			if tc.scaleUpRequest != nil {
@@ -271,7 +272,7 @@ func TestOKOneUnreadyNode(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
@@ -306,7 +307,7 @@ func TestNodeWithoutNodeGroupDontCrash(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{noNgNode}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
@@ -333,7 +334,7 @@ func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	clusterstate.UpdateScaleDownCandidates([]*scaledown.UnneededNode{{Node: ng1_1}}, now)
 
@@ -387,7 +388,7 @@ func TestMissingNodes(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
@@ -427,7 +428,7 @@ func TestTooManyUnready(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
 	assert.False(t, clusterstate.IsClusterHealthy())
@@ -456,7 +457,7 @@ func TestUnreadyLongAfterCreation(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Unready))
@@ -487,7 +488,7 @@ func TestUnreadyAfterCreationWithIncreasedStartupTime(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(clusterstate.GetClusterReadiness().Unready))
@@ -519,7 +520,7 @@ func TestNotStarted(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().NotStarted))
@@ -555,10 +556,11 @@ func TestExpiredScaleUp(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
-	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{
+	clusterstate := newClusterStateRegistryWithMetrics(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList(), mockMetrics)
+
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 4, now.Add(-3*time.Minute))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
 	assert.NoError(t, err)
@@ -584,7 +586,7 @@ func TestRegisterScaleDown(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	now := time.Now()
 	clusterstate.RegisterScaleDown(provider.GetNodeGroup("ng1"), "ng1-1", now.Add(time.Minute), now)
 	assert.Equal(t, 1, len(clusterstate.scaleDownRequests))
@@ -602,7 +604,7 @@ func TestNodeGroupScaleUpTime(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 
 	// nil node group
 	_, err := clusterstate.NodeGroupScaleUpTime(nil)
@@ -677,7 +679,7 @@ func TestUpcomingNodes(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1, ng5_1, ng5_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
@@ -723,7 +725,7 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
@@ -744,7 +746,7 @@ func TestIncorrectSize(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	now := time.Now()
 	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-5*time.Minute))
 	incorrect := clusterstate.incorrectNodeGroupSizes["ng1"]
@@ -780,7 +782,7 @@ func TestUnregisteredNodes(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 10 * time.Second}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 10 * time.Second}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, time.Now().Add(-time.Minute))
 
 	assert.NoError(t, err)
@@ -829,7 +831,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 10 * time.Second}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 10 * time.Second}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	now.Add(time.Minute)
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, noNgNode}, nil, now)
 
@@ -924,12 +926,11 @@ func TestScaleUpBackoff(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
-	clusterstate := newClusterStateRegistry(
-		provider, ClusterStateRegistryConfig{
-			MaxTotalUnreadyPercentage: 10,
-			OkTotalUnreadyCount:       1,
-		}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 120 * time.Second}),
-		asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate := newClusterStateRegistryWithMetrics(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 120 * time.Second}),
+		asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList(), mockMetrics)
 
 	// After failed scale-up, node group should be still healthy, but should backoff from scale-ups
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 1, now.Add(-180*time.Second))
@@ -1054,7 +1055,7 @@ func TestGetClusterSize(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 
 	// There are 2 actual nodes in 2 node groups with target sizes of 5 and 1.
 	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, notAutoscaledNode}, nil, now)
@@ -1104,6 +1105,7 @@ func TestUpdateScaleUp(t *testing.T) {
 		newBackoff(),
 		nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 10 * time.Second}),
 		asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
+		nodegroupchange.NewNodeGroupChangeObserversList(),
 	)
 
 	// Test cases for `RegisterScaleUp`
@@ -1145,13 +1147,13 @@ func TestScaleUpFailures(t *testing.T) {
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
-	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate := newClusterStateRegistryWithMetrics(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList(), mockMetrics)
 
-	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), string(metrics.Timeout), "", "", "", now)
+	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), cloudprovider.InstanceErrorInfo{ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: string(metrics.Timeout), ErrorMessage: ""}, now)
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "")
-	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng2"), string(metrics.Timeout), "", "", "", now)
+	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng2"), cloudprovider.InstanceErrorInfo{ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: string(metrics.Timeout), ErrorMessage: ""}, now)
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "")
-	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), string(metrics.APIError), "", "", "", now.Add(time.Minute))
+	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), cloudprovider.InstanceErrorInfo{ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: string(metrics.APIError), ErrorMessage: ""}, now.Add(time.Minute))
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.APIError, "", "")
 
 	failures := clusterstate.GetScaleUpFailures()
@@ -1546,6 +1548,7 @@ func TestIsNodeGroupRegistered(t *testing.T) {
 		newBackoff(),
 		nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}),
 		asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
+		nodegroupchange.NewNodeGroupChangeObserversList(),
 	)
 	clusterstate.Recalculate()
 
@@ -1629,6 +1632,7 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 			newBackoff(),
 			nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}),
 			&asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: tc.isUpcomingMockMap},
+			nodegroupchange.NewNodeGroupChangeObserversList(),
 		)
 		if tc.updateNodes {
 			err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
@@ -1676,7 +1680,7 @@ func TestHandleInstanceCreationErrors(t *testing.T) {
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
-	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate := newClusterStateRegistryWithMetrics(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList(), mockMetrics)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
 
 	// UpdateNodes will trigger handleInstanceCreationErrors
@@ -1691,4 +1695,12 @@ type mockMetrics struct {
 
 func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string) {
 	m.Called(reason, gpuResourceName, gpuType)
+}
+
+// newClusterStateRegistryWithMetrics creates new ClusterStateRegistry object and registers all necessary observers for metric mocking.
+func newClusterStateRegistryWithMetrics(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker, scaleStateNotifier *nodegroupchange.NodeGroupChangeObserversList, metrics *mockMetrics) *ClusterStateRegistry {
+	clusterstate := NewClusterStateRegistry(cloudProvider, config, logRecorder, backoff, nodeGroupConfigProcessor, asyncNodeGroupStateChecker, scaleStateNotifier)
+	clusterstate.scaleStateNotifier.Register(clusterstate)
+	clusterstate.scaleStateNotifier.Register(nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, metrics))
+	return clusterstate
 }

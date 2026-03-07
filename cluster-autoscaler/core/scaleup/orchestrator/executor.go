@@ -159,8 +159,6 @@ func (e *scaleUpExecutor) executeScaleUp(
 	now time.Time,
 	atomic bool,
 ) errors.AutoscalerError {
-	gpuConfig := e.autoscalingCtx.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
-	gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
 	klog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
@@ -168,7 +166,11 @@ func (e *scaleUpExecutor) executeScaleUp(
 	if err := e.increaseSize(info.Group, increase, atomic); err != nil {
 		e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
 		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: ")
-		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, now)
+		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, cloudprovider.InstanceErrorInfo{
+			ErrorClass:   cloudprovider.OtherErrorClass,
+			ErrorCode:    string(aerr.Type()),
+			ErrorMessage: aerr.Error(),
+		}, now)
 		return aerr
 	}
 	if increase < 0 {
@@ -180,6 +182,8 @@ func (e *scaleUpExecutor) executeScaleUp(
 		return nil
 	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
+	gpuConfig := e.autoscalingCtx.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
+	gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
 	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType)
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
