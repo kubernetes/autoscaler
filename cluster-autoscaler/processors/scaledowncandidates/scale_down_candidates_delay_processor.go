@@ -105,7 +105,7 @@ func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleDown(nodeGroup cloudpro
 
 // RegisterFailedScaleUp records when the last scale up failed for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterFailedScaleUp(_ cloudprovider.NodeGroup,
-	_ string, _ string, _ string, _ string, _ time.Time) {
+	_ string, _ string, _ string, _ string, _ string, currentTime time.Time) {
 }
 
 // RegisterFailedScaleDown records failed scale-down for a nodegroup.

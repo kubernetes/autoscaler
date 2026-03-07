@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -218,7 +219,14 @@ func RegisterAndRecordSuccessfulScaleDownEvent(autoscalingCtx *ca_context.Autosc
 	scaleStateNotifier.RegisterScaleDown(nodeGroup, node.Name, currentTime, expectedDeleteTime)
 	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
 	metricResourceName, metricGpuType := gpu.GetGpuInfoForMetrics(gpuConfig, autoscalingCtx.CloudProvider.GetAvailableGPUTypes(), node, nodeGroup)
-	metrics.RegisterScaleDown(1, metricResourceName, metricGpuType, nodeScaleDownReason(node, drain))
+	draDriverNames := ""
+	nodeInfo, err := nodeGroup.TemplateNodeInfo()
+	if err != nil {
+		klog.Warningf("Failed to get template node info for a node group: %s", err)
+	} else {
+		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
+	}
+	metrics.RegisterScaleDown(1, metricResourceName, metricGpuType, nodeScaleDownReason(node, drain), draDriverNames)
 	if drain {
 		autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: node %s removed with drain", node.Name)
 	} else {

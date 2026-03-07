@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
@@ -161,6 +162,7 @@ func (e *scaleUpExecutor) executeScaleUp(
 ) errors.AutoscalerError {
 	gpuConfig := e.autoscalingCtx.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
 	gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
+	draDriverNames := dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
 	klog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
@@ -168,7 +170,7 @@ func (e *scaleUpExecutor) executeScaleUp(
 	if err := e.increaseSize(info.Group, increase, atomic); err != nil {
 		e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
 		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: ")
-		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, now)
+		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, draDriverNames, now)
 		return aerr
 	}
 	if increase < 0 {
@@ -180,7 +182,7 @@ func (e *scaleUpExecutor) executeScaleUp(
 		return nil
 	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
-	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType)
+	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType, draDriverNames)
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	return nil
