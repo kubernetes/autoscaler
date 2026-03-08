@@ -17,7 +17,7 @@
 # Full local benchmark workflow: creates a Kind cluster, deploys VPA, installs
 # KWOK, configures VPA for benchmarking, and runs the benchmark.
 #
-# Prerequisites: go, kind, kubectl, yq, docker
+# Prerequisites: go, kind, kubectl, helm, docker
 #
 # Usage:
 #   ./full-benchmark.sh [benchmark flags...]

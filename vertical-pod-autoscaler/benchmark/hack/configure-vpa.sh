@@ -18,29 +18,26 @@
 # - Increased QPS/burst on all components (to avoid client-side throttling)
 # - Longer updater interval (steps can take longer than the default 60s at scale)
 #
-# Prerequisites: kubectl, yq
+# Prerequisites: helm
 #
 # Usage: ./configure-vpa.sh
 
 set -euo pipefail
 
-VPA_NAMESPACE="${VPA_NAMESPACE:-kube-system}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VPA_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+HELM_RELEASE_NAME="${HELM_RELEASE_NAME:-vpa}"
+HELM_NAMESPACE="${HELM_NAMESPACE:-kube-system}"
+HELM_CHART_PATH="${VPA_DIR}/charts/vertical-pod-autoscaler"
+VALUES_FILE="${SCRIPT_DIR}/values-benchmark.yaml"
 
 echo "=== Configuring VPA deployments for benchmark ==="
 
-echo "  Configuring vpa-recommender (QPS=100, burst=200, memory-saver=true)..."
-kubectl get deployment vpa-recommender -n "${VPA_NAMESPACE}" -o yaml | \
-  yq '.spec.template.spec.containers[0].args = ["--kube-api-qps=100", "--kube-api-burst=200", "--memory-saver=true"]' | \
-  kubectl apply -f -
-
-echo "  Configuring vpa-updater (QPS=100, burst=200, updater-interval=2m)..."
-kubectl get deployment vpa-updater -n "${VPA_NAMESPACE}" -o yaml | \
-  yq '.spec.template.spec.containers[0].args = ["--kube-api-qps=100", "--kube-api-burst=200", "--updater-interval=2m"]' | \
-  kubectl apply -f -
-
-echo "  Configuring vpa-admission-controller (QPS=100, burst=200)..."
-kubectl get deployment vpa-admission-controller -n "${VPA_NAMESPACE}" -o yaml | \
-  yq '.spec.template.spec.containers[0].args = ["--kube-api-qps=100", "--kube-api-burst=200"]' | \
-  kubectl apply -f -
+helm upgrade "${HELM_RELEASE_NAME}" "${HELM_CHART_PATH}" \
+  --namespace "${HELM_NAMESPACE}" \
+  --values "${VALUES_FILE}" \
+  --reuse-values \
+  --wait
 
 echo "=== VPA configuration complete ==="
