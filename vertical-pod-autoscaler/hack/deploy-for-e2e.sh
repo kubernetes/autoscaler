@@ -61,8 +61,15 @@ esac
 
 # Install Helm if not available
 if ! command -v helm > /dev/null 2>&1; then
-  echo "Helm not found, installing..."
-  curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  HELM_VERSION="v4.1.1"
+  HELM_CHECKSUM="5d4c7623283e6dfb1971957f4b755468ab64917066a8567dd50464af298f4031"
+  HELM_ARCHIVE="helm-${HELM_VERSION}-linux-amd64.tar.gz"
+  echo "Helm not found, installing ${HELM_VERSION}..."
+  curl -fsSL -o "${HELM_ARCHIVE}" "https://get.helm.sh/${HELM_ARCHIVE}"
+  echo "${HELM_CHECKSUM}  ${HELM_ARCHIVE}" | sha256sum --check
+  tar -zxf "${HELM_ARCHIVE}"
+  mv linux-amd64/helm /usr/local/bin/helm
+  rm -rf linux-amd64 "${HELM_ARCHIVE}"
 fi
 
 export REGISTRY=gcr.io/`gcloud config get-value core/project`
