@@ -70,9 +70,9 @@ func (ip *InstancePoolNodeGroup) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-// deleteNodesInternal performs the actual node deletion logic, converting nodes to OCI refs
+// deleteNodes performs the actual node deletion logic, converting nodes to OCI refs
 // and deleting them. It does not check min size constraints.
-func (ip *InstancePoolNodeGroup) deleteNodesInternal(nodes []*apiv1.Node) error {
+func (ip *InstancePoolNodeGroup) deleteNodes(nodes []*apiv1.Node) error {
 	refs := make([]common.OciRef, 0, len(nodes))
 	for _, node := range nodes {
 		belongs, err := ip.Belongs(node)
@@ -110,7 +110,7 @@ func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
-	return ip.deleteNodesInternal(nodes)
+	return ip.deleteNodes(nodes)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
@@ -119,7 +119,7 @@ func (ip *InstancePoolNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 
 	klog.Infof("ForceDeleteNodes called with %d node(s) (ignoring min size constraint)", len(nodes))
 
-	return ip.deleteNodesInternal(nodes)
+	return ip.deleteNodes(nodes)
 }
 
 // DecreaseTargetSize decreases the target size of the instance-pool based node group. This function
