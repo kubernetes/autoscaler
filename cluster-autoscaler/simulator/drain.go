@@ -30,6 +30,14 @@ import (
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
+// PodMoveInfo contains the pods that should be relocated and those that are blocking the drain.
+type PodMoveInfo struct {
+	Pods             []*apiv1.Pod
+	DaemonSetPods    []*apiv1.Pod
+	OnCompletionPods []*apiv1.Pod
+	BlockingPod      *drain.BlockingPod
+}
+
 // GetPodsToMove returns a list of pods that should be moved elsewhere and a
 // list of DaemonSet pods that should be evicted if the node is drained.
 // Raises error if there is an unreplicated pod.
@@ -38,7 +46,7 @@ import (
 // with dangling created-by annotation).
 // If listers is not nil it checks whether RC, DS, Jobs and RS that created
 // these pods still exist.
-func GetPodsToMove(nodeInfo *framework.NodeInfo, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, listers kube_util.ListerRegistry, remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
+func GetPodsToMove(nodeInfo *framework.NodeInfo, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, listers kube_util.ListerRegistry, remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (PodMoveInfo, error) {
 	if drainabilityRules == nil {
 		drainabilityRules = rules.Default(deleteOptions)
 	}
@@ -50,22 +58,29 @@ func GetPodsToMove(nodeInfo *framework.NodeInfo, deleteOptions options.NodeDelet
 		Listers:             listers,
 		Timestamp:           timestamp,
 	}
+
+	podMoveInfo := PodMoveInfo{}
+
 	for _, podInfo := range nodeInfo.Pods() {
 		pod := podInfo.Pod
+
 		status := drainabilityRules.Drainable(drainCtx, pod, nodeInfo)
 		switch status.Outcome {
 		case drainability.UndefinedOutcome, drainability.DrainOk:
 			if pod_util.IsDaemonSetPod(pod) {
-				daemonSetPods = append(daemonSetPods, pod)
+				podMoveInfo.DaemonSetPods = append(podMoveInfo.DaemonSetPods, pod)
 			} else {
-				pods = append(pods, pod)
+				podMoveInfo.Pods = append(podMoveInfo.Pods, pod)
 			}
+		case drainability.WaitForCompletion:
+			podMoveInfo.OnCompletionPods = append(podMoveInfo.OnCompletionPods, pod)
 		case drainability.BlockDrain:
-			return nil, nil, &drain.BlockingPod{
+			podMoveInfo.BlockingPod = &drain.BlockingPod{
 				Pod:    pod,
 				Reason: status.BlockingReason,
-			}, status.Error
+			}
+			return podMoveInfo, status.Error
 		}
 	}
-	return pods, daemonSetPods, nil, nil
+	return podMoveInfo, nil
 }
