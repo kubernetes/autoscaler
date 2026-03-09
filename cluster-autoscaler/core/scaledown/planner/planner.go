@@ -39,6 +39,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	klog "k8s.io/klog/v2"
@@ -173,6 +174,15 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	p.addUnremovableNodes(unremovableNodes)
 
 	for _, nodeToRemove := range nodesToRemove {
+		if drain.HasActiveOnCompletionPods(nodeToRemove.OnCompletionPods) {
+			klog.V(2).Infof("Node %s has active on-completion pods, delaying scale down", nodeToRemove.Node.Name)
+			p.addUnremovableNodes([]simulator.UnremovableNode{{
+				Node:   nodeToRemove.Node,
+				Reason: simulator.BlockedByOnCompletionPod,
+			}})
+			continue
+		}
+
 		if len(nodeToRemove.PodsToReschedule) > 0 {
 			needDrain = append(needDrain, nodeToRemove.Node)
 		} else {
