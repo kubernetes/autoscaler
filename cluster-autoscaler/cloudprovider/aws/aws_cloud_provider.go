@@ -43,14 +43,15 @@ const (
 
 var (
 	availableGPUTypes = map[string]struct{}{
-		"nvidia-tesla-k80":  {},
-		"nvidia-tesla-p100": {},
-		"nvidia-tesla-v100": {},
-		"nvidia-tesla-t4":   {},
-		"nvidia-tesla-a100": {},
-		"nvidia-a10g":       {},
-		"nvidia-l4":         {},
-		"nvidia-l40s":       {},
+		"nvidia-tesla-k80":    {},
+		"nvidia-tesla-p100":   {},
+		"nvidia-tesla-v100":   {},
+		"nvidia-tesla-t4":     {},
+		"nvidia-tesla-a100":   {},
+		"nvidia-a10g":         {},
+		"nvidia-l4":           {},
+		"nvidia-l40s":         {},
+		"nvidia-rtx-pro-6000": {},
 	}
 )
 
