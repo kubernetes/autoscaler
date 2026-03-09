@@ -11,7 +11,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  replicas: {{ .Values.recommender.replicas }}
+  {{- with .Values.recommender.replicas }}
+  replicas: {{ . }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.recommender.revisionHistoryLimit }}
   {{- with .Values.recommender.updateStrategy }}
   strategy:
