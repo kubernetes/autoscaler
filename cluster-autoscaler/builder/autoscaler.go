@@ -228,7 +228,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		}
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			buffersPodsRegistry := cbprocessor.NewDefaultCapacityBuffersFakePodsRegistry()
+			buffersPodsRegistry := fakepods.NewRegistry(nil)
 			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(
 				capacitybufferClient,
 				[]string{capacitybuffer.ActiveProvisioningStrategy},
