@@ -25,7 +25,7 @@ Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simu
 - Go 1.21+
 - kubectl
 - Kind
-- yq
+- Helm
 
 ## Quick Start (Local)
 
@@ -52,16 +52,13 @@ If you prefer to run each step individually (or if the cluster already exists):
 #    create a cluster with the base config or your own)
 kind create cluster --config=.github/kind-config.yaml
 
-# 2. Deploy VPA
-./hack/deploy-for-e2e-locally.sh full-vpa
+# 2. Deploy VPA for benchmark
+EXTRA_HELM_VALUES=./benchmark/hack/values.yaml ./hack/deploy-for-e2e-locally.sh full-vpa
 
 # 3. Install KWOK and create fake node
 ./benchmark/hack/install-kwok.sh
 
-# 4. Configure VPA deployments for benchmark (QPS/burst, updater interval)
-./benchmark/hack/configure-vpa.sh
-
-# 5. Build and run
+# 4. Build and run
 go build -C benchmark -o ../bin/vpa-benchmark .
 ./bin/vpa-benchmark --profile=small --output=results.csv
 ```
@@ -141,7 +138,7 @@ When `--noise-percentage=P` is set, each profile also creates `P%` additional no
 | ------ | ------- |
 | `hack/full-benchmark.sh` | Full local workflow (Kind + VPA + KWOK + configure + benchmark) |
 | `hack/install-kwok.sh` | Install KWOK controller and create fake node |
-| `hack/configure-vpa.sh` | Configure VPA deployments with benchmark-specific settings |
+| `hack/values.yaml` | Helm values for benchmark-specific VPA configuration |
 
 Environment variables accepted by the scripts:
 
@@ -165,9 +162,10 @@ kind delete cluster
 
 The benchmark includes several performance optimizations:
 
-- `configure-vpa.sh` modifies VPA deployments using `yq`:
+- `values.yaml` configures VPA components via Helm:
   - Sets `--kube-api-qps=100` and `--kube-api-burst=200` on all three components
   - Sets `--updater-interval=2m` on the updater (default is 60s)
+  - Sets `--memory-saver=true` on the recommender
 - Pods are assigned directly to the KWOK node via `nodeName`, bypassing the scheduler for faster creation
 - The benchmark script appends `kubeadmConfigPatches` to the base `.github/kind-config.yaml` to increase API server limits (`max-requests-inflight`, `max-mutating-requests-inflight`) and kube-controller-manager client QPS to handle the large number of API calls
 - Uses ReplicaSets instead of Deployments to skip the Deployment controller layer and speed up pod creation, but keep a targetRef for VPA

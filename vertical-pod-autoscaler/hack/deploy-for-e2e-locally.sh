@@ -33,6 +33,12 @@ function print_help {
   echo " - admission-controller"
   echo " - actuation"
   echo " - full-vpa"
+  echo ""
+  echo "Environment variables:"
+  echo "  REGISTRY           - Container image registry (default: localhost:5001)"
+  echo "  TAG                - Container image tag (default: latest)"
+  echo "  FEATURE_GATES      - Comma-separated list of feature gates to enable"
+  echo "  EXTRA_HELM_VALUES  - Path to an additional Helm values file to use during installation"
 }
 
 if [ $# -eq 0 ]; then
@@ -226,6 +232,12 @@ EOF
     break
   fi
 done
+
+# Extra Helm values file
+if [[ -n "${EXTRA_HELM_VALUES:-}" ]]; then
+  echo " ** Using extra Helm values from: ${EXTRA_HELM_VALUES}"
+  HELM_SET_ARGS=("--values" "${EXTRA_HELM_VALUES}" "${HELM_SET_ARGS[@]}")
+fi
 
 # Install/Upgrade VPA using Helm chart
 echo " ** Installing/Upgrading VPA via Helm chart"

@@ -17,7 +17,7 @@
 # Full local benchmark workflow: creates a Kind cluster, deploys VPA, installs
 # KWOK, configures VPA for benchmarking, and runs the benchmark.
 #
-# Prerequisites: go, kind, kubectl, yq, docker
+# Prerequisites: go, kind, kubectl, helm, docker
 #
 # Usage:
 #   ./full-benchmark.sh [benchmark flags...]
@@ -60,24 +60,19 @@ EOF
   kind create cluster --name "${KIND_CLUSTER_NAME}" --config="${KIND_CONFIG}"
 fi
 
-# Step 2: Deploy VPA
+# Step 2: Deploy VPA for benchmark
 echo ""
 echo "=== Step 2: Deploy VPA ==="
-"${VPA_DIR}/hack/deploy-for-e2e-locally.sh" full-vpa
+EXTRA_HELM_VALUES="${BENCHMARK_DIR}/hack/values.yaml" "${VPA_DIR}/hack/deploy-for-e2e-locally.sh" full-vpa
 
 # Step 3: Install KWOK + create fake node
 echo ""
 echo "=== Step 3: Install KWOK ==="
 "${SCRIPT_DIR}/install-kwok.sh"
 
-# Step 4: Configure VPA deployments for benchmark
+# Step 4: Build and run benchmark
 echo ""
-echo "=== Step 4: Configure VPA ==="
-"${SCRIPT_DIR}/configure-vpa.sh"
-
-# Step 5: Build and run benchmark
-echo ""
-echo "=== Step 5: Build and run benchmark ==="
+echo "=== Step 4: Build and run benchmark ==="
 echo "  Building vpa-benchmark..."
 go build -C "${BENCHMARK_DIR}" -o "${VPA_DIR}/bin/vpa-benchmark" .
 
