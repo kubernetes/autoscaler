@@ -21,8 +21,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
-	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -31,9 +29,7 @@ import (
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.
 // It is inefficient. But hopefully bug-free and good for initial testing.
 type BasicSnapshotStore struct {
-	data        []*internalBasicSnapshotData
-	draSnapshot *drasnapshot.Snapshot
-	csiSnapshot *csisnapshot.Snapshot
+	data []*internalBasicSnapshotData
 }
 
 type internalBasicSnapshotData struct {
@@ -210,16 +206,6 @@ func (snapshot *BasicSnapshotStore) getInternalData() *internalBasicSnapshotData
 	return snapshot.data[len(snapshot.data)-1]
 }
 
-// DraSnapshot returns the DRA snapshot.
-func (snapshot *BasicSnapshotStore) DraSnapshot() *drasnapshot.Snapshot {
-	return snapshot.draSnapshot
-}
-
-// CsiSnapshot returns the CSI snapshot.
-func (snapshot *BasicSnapshotStore) CsiSnapshot() *csisnapshot.Snapshot {
-	return snapshot.csiSnapshot
-}
-
 // AddSchedulerNodeInfo adds a NodeInfo.
 func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo schedulerinterface.NodeInfo) error {
 	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
@@ -253,22 +239,10 @@ func (snapshot *BasicSnapshotStore) IsPVCUsedByPods(key string) bool {
 	return snapshot.getInternalData().isPVCUsedByPods(key)
 }
 
-// SetDraSnapshot replaces the DRA snapshot in the store.
-func (snapshot *BasicSnapshotStore) SetDraSnapshot(draSnapshot *drasnapshot.Snapshot) {
-	snapshot.draSnapshot = draSnapshot
-}
-
-// SetCsiSnapshot replaces the CSI snapshot in the store.
-func (snapshot *BasicSnapshotStore) SetCsiSnapshot(csiSnapshot *csisnapshot.Snapshot) {
-	snapshot.csiSnapshot = csiSnapshot
-}
-
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
 func (snapshot *BasicSnapshotStore) Fork() {
 	forkData := snapshot.getInternalData().clone()
 	snapshot.data = append(snapshot.data, forkData)
-	snapshot.draSnapshot.Fork()
-	snapshot.csiSnapshot.Fork()
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -277,8 +251,6 @@ func (snapshot *BasicSnapshotStore) Revert() {
 		return
 	}
 	snapshot.data = snapshot.data[:len(snapshot.data)-1]
-	snapshot.draSnapshot.Revert()
-	snapshot.csiSnapshot.Revert()
 }
 
 // Commit commits changes done after forking.
@@ -288,8 +260,6 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 		return nil
 	}
 	snapshot.data = append(snapshot.data[:len(snapshot.data)-2], snapshot.data[len(snapshot.data)-1])
-	snapshot.draSnapshot.Commit()
-	snapshot.csiSnapshot.Commit()
 	return nil
 }
 
@@ -297,8 +267,6 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 func (snapshot *BasicSnapshotStore) Clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
-	snapshot.draSnapshot = drasnapshot.NewEmptySnapshot()
-	snapshot.csiSnapshot = csisnapshot.NewEmptySnapshot()
 }
 
 // implementation of SharedLister interface
@@ -314,31 +282,6 @@ func (snapshot *BasicSnapshotStore) NodeInfos() schedulerinterface.NodeInfoListe
 // StorageInfos exposes snapshot as StorageInfoLister.
 func (snapshot *BasicSnapshotStore) StorageInfos() schedulerinterface.StorageInfoLister {
 	return (*basicSnapshotStoreStorageLister)(snapshot)
-}
-
-// ResourceClaims exposes snapshot as ResourceClaimTracker
-func (snapshot *BasicSnapshotStore) ResourceClaims() schedulerinterface.ResourceClaimTracker {
-	return snapshot.DraSnapshot().ResourceClaims()
-}
-
-// ResourceSlices exposes snapshot as ResourceSliceLister.
-func (snapshot *BasicSnapshotStore) ResourceSlices() schedulerinterface.ResourceSliceLister {
-	return snapshot.DraSnapshot().ResourceSlices()
-}
-
-// DeviceClasses exposes the snapshot as DeviceClassLister.
-func (snapshot *BasicSnapshotStore) DeviceClasses() schedulerinterface.DeviceClassLister {
-	return snapshot.DraSnapshot().DeviceClasses()
-}
-
-// DeviceClassResolver exposes the snapshot as DeviceClassResolver.
-func (snapshot *BasicSnapshotStore) DeviceClassResolver() schedulerinterface.DeviceClassResolver {
-	return snapshot.DraSnapshot().DeviceClassResolver()
-}
-
-// CSINodes returns the CSI nodes snapshot.
-func (snapshot *BasicSnapshotStore) CSINodes() schedulerinterface.CSINodeLister {
-	return snapshot.csiSnapshot.CSINodes()
 }
 
 // List returns the list of nodes in the snapshot.
