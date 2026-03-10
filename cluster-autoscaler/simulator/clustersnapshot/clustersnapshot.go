@@ -27,11 +27,23 @@ import (
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
+// Forkable is an interface for objects that can be forked, reverted and committed.
+type Forkable interface {
+	// Fork creates a fork of the object state. All modifications can later be reverted to moment of forking via Revert().
+	// Use WithForkedSnapshot() helper function instead if possible.
+	Fork()
+	// Revert reverts the object state to moment of forking.
+	Revert()
+	// Commit commits changes done after forking.
+	Commit() error
+}
+
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
 	framework.SharedLister
 	ClusterSnapshotStore
+	Forkable
 
 	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
@@ -78,14 +90,6 @@ type ClusterSnapshot interface {
 	// CsiSnapshot returns an interface that allows accessing and modifying the CSINode objects in the snapshot.
 	CsiSnapshot() *csisnapshot.Snapshot
 
-	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
-	// Use WithForkedSnapshot() helper function instead if possible.
-	Fork()
-	// Revert reverts snapshot state to moment of forking.
-	Revert()
-	// Commit commits changes done after forking.
-	Commit() error
-
 	// TODO(DRA): Move unschedulable Pods inside ClusterSnapshot (since their DRA objects are already here), refactor PodListProcessor.
 }
 
@@ -94,6 +98,7 @@ type ClusterSnapshot interface {
 // should be accessed via ClusterSnapshot.
 type ClusterSnapshotStore interface {
 	schedulerinterface.SharedLister
+	Forkable
 
 	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
 	ForceAddPod(pod *apiv1.Pod, nodeName string) error
@@ -110,13 +115,6 @@ type ClusterSnapshotStore interface {
 
 	// Clear resets the snapshot to an empty, unforked state.
 	Clear()
-
-	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
-	Fork()
-	// Revert reverts snapshot state to moment of forking.
-	Revert()
-	// Commit commits changes done after forking.
-	Commit() error
 }
 
 // ErrNodeNotFound means that a node wasn't found in the snapshot.
