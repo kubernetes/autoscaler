@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -40,6 +41,8 @@ type PredicateSnapshot struct {
 	draEnabled                   bool
 	enableCSINodeAwareScheduling bool
 	parallelism                  int
+	draSnapshot                  *drasnapshot.Snapshot
+	csiSnapshot                  *csisnapshot.Snapshot
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
@@ -49,6 +52,8 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 		draEnabled:                   draEnabled,
 		enableCSINodeAwareScheduling: enableCSINodeAwareScheduling,
 		parallelism:                  parallelism,
+		draSnapshot:                  drasnapshot.NewEmptySnapshot(),
+		csiSnapshot:                  csisnapshot.NewEmptySnapshot(),
 	}
 	// Plugin runner really only needs a framework.SharedLister for running the plugins, but it also needs to run the provided Node-matching functions
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
@@ -92,12 +97,12 @@ func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods [
 	if draSnapshot == nil {
 		draSnapshot = drasnapshot.NewEmptySnapshot()
 	}
-	s.ClusterSnapshotStore.SetDraSnapshot(draSnapshot)
+	s.draSnapshot = draSnapshot
 
 	if csiSnapshot == nil {
 		csiSnapshot = csisnapshot.NewEmptySnapshot()
 	}
-	s.ClusterSnapshotStore.SetCsiSnapshot(csiSnapshot)
+	s.csiSnapshot = csiSnapshot
 
 	return nil
 }
@@ -138,14 +143,14 @@ func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, e
 
 	wrappedNodeInfo := framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil)
 	if s.draEnabled {
-		wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
+		wrappedNodeInfo, err = s.draSnapshot.WrapSchedulerNodeInfo(schedNodeInfo)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if s.enableCSINodeAwareScheduling {
-		wrappedNodeInfo, err = s.ClusterSnapshotStore.CsiSnapshot().AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
+		wrappedNodeInfo, err = s.csiSnapshot.AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -165,14 +170,14 @@ func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
 
 		var err error
 		if s.draEnabled {
-			wrappedNodeInfo, err = s.ClusterSnapshotStore.DraSnapshot().WrapSchedulerNodeInfo(schedNodeInfo)
+			wrappedNodeInfo, err = s.draSnapshot.WrapSchedulerNodeInfo(schedNodeInfo)
 			if err != nil {
 				return nil, err
 			}
 		}
 
 		if s.enableCSINodeAwareScheduling {
-			wrappedNodeInfo, err = s.ClusterSnapshotStore.CsiSnapshot().AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
+			wrappedNodeInfo, err = s.csiSnapshot.AddCSINodeInfoToNodeInfo(wrappedNodeInfo)
 			if err != nil {
 				return nil, err
 			}
@@ -187,7 +192,7 @@ func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 	if s.draEnabled {
 		// TODO(DRA): Add transaction-like clean-up in case of errors here - don't modify the state on any errors.
 		if len(nodeInfo.LocalResourceSlices) > 0 {
-			if err := s.ClusterSnapshotStore.DraSnapshot().AddNodeResourceSlices(nodeInfo.Node().Name, nodeInfo.LocalResourceSlices); err != nil {
+			if err := s.draSnapshot.AddNodeResourceSlices(nodeInfo.Node().Name, nodeInfo.LocalResourceSlices); err != nil {
 				return fmt.Errorf("couldn't add ResourceSlices to DRA snapshot: %v", err)
 			}
 		}
@@ -206,7 +211,7 @@ func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 
 	if s.enableCSINodeAwareScheduling {
 		if nodeInfo.CSINode != nil {
-			if err := s.ClusterSnapshotStore.CsiSnapshot().AddCSINode(nodeInfo.CSINode); err != nil {
+			if err := s.csiSnapshot.AddCSINode(nodeInfo.CSINode); err != nil {
 				return err
 			}
 		}
@@ -227,16 +232,16 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 	}
 
 	if s.draEnabled {
-		s.ClusterSnapshotStore.DraSnapshot().RemoveNodeResourceSlices(nodeName)
+		s.draSnapshot.RemoveNodeResourceSlices(nodeName)
 
 		for _, pod := range nodeInfo.Pods() {
-			s.ClusterSnapshotStore.DraSnapshot().RemovePodOwnedClaims(pod.Pod)
+			s.draSnapshot.RemovePodOwnedClaims(pod.Pod)
 		}
 	}
 	if s.enableCSINodeAwareScheduling {
 		// generally a node name is same as csi node name and hence we should be safe
 		if nodeInfo.CSINode != nil {
-			s.ClusterSnapshotStore.CsiSnapshot().RemoveCSINode(nodeName)
+			s.csiSnapshot.RemoveCSINode(nodeName)
 		}
 	}
 	return nil
@@ -308,7 +313,7 @@ func (s *PredicateSnapshot) UnschedulePod(namespace string, podName string, node
 		}
 
 		if len(foundPod.Spec.ResourceClaims) > 0 {
-			if err := s.ClusterSnapshotStore.DraSnapshot().UnreservePodClaims(foundPod); err != nil {
+			if err := s.draSnapshot.UnreservePodClaims(foundPod); err != nil {
 				return err
 			}
 		}
@@ -323,9 +328,75 @@ func (s *PredicateSnapshot) CheckPredicates(pod *apiv1.Pod, nodeName string) clu
 	return err
 }
 
+// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
+func (s *PredicateSnapshot) DraSnapshot() *drasnapshot.Snapshot {
+	return s.draSnapshot
+}
+
+// CsiSnapshot returns an interface that allows accessing and modifying the CSINode objects in the snapshot.
+func (s *PredicateSnapshot) CsiSnapshot() *csisnapshot.Snapshot {
+	return s.csiSnapshot
+}
+
+// Clear resets the snapshot to an empty, unforked state.
+func (s *PredicateSnapshot) Clear() {
+	s.ClusterSnapshotStore.Clear()
+	s.draSnapshot = drasnapshot.NewEmptySnapshot()
+	s.csiSnapshot = csisnapshot.NewEmptySnapshot()
+}
+
+// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
+func (s *PredicateSnapshot) Fork() {
+	s.ClusterSnapshotStore.Fork()
+	s.draSnapshot.Fork()
+	s.csiSnapshot.Fork()
+}
+
+// Revert reverts snapshot state to moment of forking.
+func (s *PredicateSnapshot) Revert() {
+	s.ClusterSnapshotStore.Revert()
+	s.draSnapshot.Revert()
+	s.csiSnapshot.Revert()
+}
+
+// Commit commits changes done after forking.
+func (s *PredicateSnapshot) Commit() error {
+	if err := s.ClusterSnapshotStore.Commit(); err != nil {
+		return err
+	}
+	s.draSnapshot.Commit()
+	s.csiSnapshot.Commit()
+	return nil
+}
+
+// ResourceClaims exposes snapshot as ResourceClaimTracker
+func (s *PredicateSnapshot) ResourceClaims() schedulerinterface.ResourceClaimTracker {
+	return s.draSnapshot.ResourceClaims()
+}
+
+// ResourceSlices exposes snapshot as ResourceSliceLister.
+func (s *PredicateSnapshot) ResourceSlices() schedulerinterface.ResourceSliceLister {
+	return s.draSnapshot.ResourceSlices()
+}
+
+// DeviceClasses exposes the snapshot as DeviceClassLister.
+func (s *PredicateSnapshot) DeviceClasses() schedulerinterface.DeviceClassLister {
+	return s.draSnapshot.DeviceClasses()
+}
+
+// DeviceClassResolver exposes the snapshot as DeviceClassResolver.
+func (s *PredicateSnapshot) DeviceClassResolver() schedulerinterface.DeviceClassResolver {
+	return s.draSnapshot.DeviceClassResolver()
+}
+
+// CSINodes returns the CSI nodes snapshot.
+func (s *PredicateSnapshot) CSINodes() schedulerinterface.CSINodeLister {
+	return s.csiSnapshot.CSINodes()
+}
+
 // verifyScheduledPodResourceClaims verifies that all needed claims are tracked in the DRA snapshot, allocated, and available on the Node.
 func (s *PredicateSnapshot) verifyScheduledPodResourceClaims(pod *apiv1.Pod, node *apiv1.Node) error {
-	claims, err := s.ClusterSnapshotStore.DraSnapshot().PodClaims(pod)
+	claims, err := s.draSnapshot.PodClaims(pod)
 	if err != nil {
 		return fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
 	}
@@ -347,7 +418,7 @@ func (s *PredicateSnapshot) modifyResourceClaimsForScheduledPod(pod *apiv1.Pod, 
 
 	// The pod isn't added to the ReservedFor field of the claim during the Reserve phase (it happens later, in PreBind). We can just do it
 	// manually here. It shouldn't fail, it only fails if ReservedFor is at max length already, but that is checked during the Filter phase.
-	if err := s.ClusterSnapshotStore.DraSnapshot().ReservePodClaims(pod); err != nil {
+	if err := s.draSnapshot.ReservePodClaims(pod); err != nil {
 		return fmt.Errorf("couldn't add pod %s/%s reservations to claims, this shouldn't happen: %v", pod.Namespace, pod.Name, err)
 	}
 	return nil
@@ -363,13 +434,13 @@ func (s *PredicateSnapshot) modifyResourceClaimsForNewPod(podInfo *framework.Pod
 			podOwnedClaims = append(podOwnedClaims, claim)
 		}
 	}
-	if err := s.ClusterSnapshotStore.DraSnapshot().AddClaims(podOwnedClaims); err != nil {
+	if err := s.draSnapshot.AddClaims(podOwnedClaims); err != nil {
 		return fmt.Errorf("couldn't add ResourceSlices for pod %s/%s to DRA snapshot: %v", podInfo.Namespace, podInfo.Name, err)
 	}
 
 	// The Pod-owned claims should already be reserved for the Pod after sanitization, but we need to add the reservation for the new Pod
 	// to the shared claims. This can fail if doing so would exceed the max reservation limit for a claim.
-	if err := s.ClusterSnapshotStore.DraSnapshot().ReservePodClaims(podInfo.Pod); err != nil {
+	if err := s.draSnapshot.ReservePodClaims(podInfo.Pod); err != nil {
 		return fmt.Errorf("couldn't add pod %s/%s reservations to claims, this shouldn't happen: %v", podInfo.Namespace, podInfo.Name, err)
 	}
 	return nil
