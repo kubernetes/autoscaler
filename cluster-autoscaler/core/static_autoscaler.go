@@ -283,6 +283,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	a.DebuggingSnapshotter.StartDataCollection()
 	defer a.DebuggingSnapshotter.Flush()
 
+	// Flush aggregated function durations at the end of the loop.
+	defer metrics.FlushAggregatedDurations()
+
 	podLister := a.AllPodLister()
 	autoscalingCtx := a.AutoscalingContext
 
